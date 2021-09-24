@@ -19,3 +19,10 @@ clean.doLast {
 	delete 'src/main/xtext-gen'
 	delete 'src/test/xtext-gen'
 }
+
+sonarqube.properties {
+	properties['sonar.exlusions'] += [
+		'src/main/xtext-gen/**',
+		'src/test/xtext-gen/**',
+	]
+}

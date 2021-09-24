@@ -108,6 +108,20 @@ task eslint(type: NpmTask) {
 
 check.dependsOn += [eslint]
 
+sonarqube.properties {
+	properties['sonar.sources'] += [
+		'src/main/css',
+		'src/main/html',
+		'src/main/js',
+		"${buildDir}/genrated/sources/xtext/js",
+	]
+	properties['sonar.exclusions'] += [
+		'src/main/css/xtext/**',
+		'src/main/js/xtext/**',
+		"${buildDir}/genrated/sources/xtext/js/**"
+	]
+}
+
 eclipse {
 	project.file.whenMerged {
 		natures.remove('org.eclipse.wst.common.modulecore.ModuleCoreNature')

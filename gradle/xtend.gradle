@@ -13,3 +13,10 @@ clean.doLast {
 	delete 'src/main/xtend-gen'
 	delete 'src/test/xtend-gen'
 }
+
+sonarqube.properties {
+	properties['sonar.exlusions'] += [
+		'src/main/xtend-gen/**',
+		'src/test/xtend-gen/**',
+	]
+}
