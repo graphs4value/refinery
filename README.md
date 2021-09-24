@@ -1,7 +1,8 @@
+# refAInery
 
-# How to contribute
+## How to contribute
 
-## With Eclipse IDE
+### With Eclipse IDE
 
 1. Download and install a _Java 11_ compatible JDK. For Windows, prefer OpenJDK builds from [Adoptium](https://adoptium.net/).
 
@@ -35,6 +36,10 @@
   If you have previously imported the project into Eclipse, this step will likely fail.
   In that case, you can remove the projects from Eclipse, run `git clean -fxd` in the repository, and start over from step 9. 
 
-## With IntelliJ IDEA
+### With IntelliJ IDEA
 
 It is possible to import the project into IntelliJ IDEA, but it gives no editing help for Xtext (`*.xtext`), MWE2 (`*.mwe2`), and Xtend (`*.xtend`) and Ecore class diagrams (`*.aird`, `*.ecore`, `*.genmodel`). 
+
+## License
+
+All code in this repository is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
