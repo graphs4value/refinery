@@ -32,7 +32,7 @@ compileJava.dependsOn(generateEPackage)
 clean.dependsOn(cleanGenerateEPackage)
 
 sonarqube.properties {
-	properties['sonar.exlusions'] += [
+	properties['sonar.exclusions'] += [
 		'src/main/emf-gen/**',
 	]
 }

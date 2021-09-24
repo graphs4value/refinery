@@ -44,3 +44,9 @@ eclipse.classpath {
 		}
 	}
 }
+
+sonarqube.properties {
+	properties['sonar.tests'] += [
+		'src/jmh/java',
+	]
+}
