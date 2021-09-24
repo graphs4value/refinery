@@ -21,7 +21,7 @@ clean.doLast {
 }
 
 sonarqube.properties {
-	properties['sonar.exlusions'] += [
+	properties['sonar.exclusions'] += [
 		'src/main/xtext-gen/**',
 		'src/test/xtext-gen/**',
 	]

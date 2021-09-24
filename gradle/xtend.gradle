@@ -15,7 +15,7 @@ clean.doLast {
 }
 
 sonarqube.properties {
-	properties['sonar.exlusions'] += [
+	properties['sonar.exclusions'] += [
 		'src/main/xtend-gen/**',
 		'src/test/xtend-gen/**',
 	]
