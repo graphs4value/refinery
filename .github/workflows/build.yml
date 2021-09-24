@@ -36,7 +36,8 @@ jobs:
       - name: Cache npm packages
         uses: actions/cache@v2
         with:
-          path: **/node_modules
+          path: |
+            **/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm
       - name: Gradle build
