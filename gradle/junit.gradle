@@ -17,5 +17,11 @@ task slowTest(type: Test) {
 	useJUnitPlatform()
 }
 
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.enabled true
+	}
+}
+
 test.finalizedBy(jacocoTestReport)
-jacocoTestReport.dependsOn(test)
