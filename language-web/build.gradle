@@ -113,12 +113,12 @@ sonarqube.properties {
 		'src/main/css',
 		'src/main/html',
 		'src/main/js',
-		"${buildDir}/genrated/sources/xtext/js",
+		"${buildDir}/generated/sources/xtext/js",
 	]
 	properties['sonar.exclusions'] += [
 		'src/main/css/xtext/**',
 		'src/main/js/xtext/**',
-		"${buildDir}/genrated/sources/xtext/js/**"
+		"${buildDir}/generated/sources/xtext/js/**"
 	]
 }
 
