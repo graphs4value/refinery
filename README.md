@@ -1,5 +1,7 @@
 # refAInery
 
+[![Build](https://github.com/graphs4value/refainery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refainery/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refainery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refainery)
+
 ## How to contribute
 
 ### With Eclipse IDE
