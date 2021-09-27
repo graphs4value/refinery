@@ -1,6 +1,6 @@
-# refAInery
+# Refinery
 
-[![Build](https://github.com/graphs4value/refainery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refainery/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refainery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refainery)
+[![Build](https://github.com/graphs4value/refinery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refinery/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refinery)
 
 ## How to contribute
 

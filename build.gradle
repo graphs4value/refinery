@@ -24,7 +24,7 @@ allprojects {
 }
 
 sonarqube.properties {
-	property 'sonar.projectKey', 'graphs4value_refainery'
+	property 'sonar.projectKey', 'graphs4value_refinery'
 	property 'sonar.organization', 'graphs4value'
 	property 'sonar.host.url', 'https://sonarcloud.io'
 }
