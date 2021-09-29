@@ -1,7 +1,18 @@
+apply plugin: 'java-library'
 apply from: "${rootDir}/gradle/xtext-common.gradle"
 
 dependencies {
-	compile project(':language')
-	compile "org.eclipse.xtext:org.eclipse.xtext.ide:${xtextVersion}"
-	compile "org.eclipse.xtext:org.eclipse.xtext.xbase.ide:${xtextVersion}"
+	api project(':refinery-language')
+	api "org.eclipse.xtext:org.eclipse.xtext.ide:${xtextVersion}"
+	api "org.eclipse.xtext:org.eclipse.xtext.xbase.ide:${xtextVersion}"
+}
+
+def generateXtext = project(':refinery-language').tasks.named('generateXtext')
+
+tasks.named('compileJava') {
+	dependsOn generateXtext
+}
+
+tasks.named('processResources') {
+	dependsOn generateXtext
 }

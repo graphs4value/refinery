@@ -1,7 +1,11 @@
 apply from: "${rootDir}/gradle/java-common.gradle"
 
 dependencies {
-	compile platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
+	implementation platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
+}
+
+configurations.all {
+	exclude group: 'asm'
 }
 
 sourceSets {
@@ -15,7 +19,7 @@ sourceSets {
 	}
 }
 
-clean.doLast {
+tasks.named('clean') {
 	delete 'src/main/xtext-gen'
 	delete 'src/test/xtext-gen'
 }

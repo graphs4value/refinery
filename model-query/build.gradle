@@ -1,6 +1,0 @@
-apply from: "${rootDir}/gradle/java-common.gradle"
-apply from: "${rootDir}/gradle/junit.gradle"
-
-dependencies {
-	compile "org.eclipse.viatra:viatra-query-runtime:${viatraVersion}"
-}

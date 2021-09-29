@@ -1,41 +1,60 @@
+apply plugin: 'java-library'
 apply from: "${rootDir}/gradle/xtext-common.gradle"
 apply from: "${rootDir}/gradle/junit.gradle"
 apply from: "${rootDir}/gradle/mwe2.gradle"
 apply from: "${rootDir}/gradle/xtend.gradle"
 
 dependencies {
-	compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
-	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
-	compile "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
-	compile project(':language-model')
-	testCompile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
-	testCompile "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
+	api "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
+	api "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+	api "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
+	api project(':refinery-language-model')
+	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
+	testImplementation "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
 	mwe2 "org.eclipse.xtext:org.eclipse.xtext.common.types:${xtextVersion}"
 	mwe2 "org.eclipse.xtext:org.eclipse.xtext.xtext.generator:${xtextVersion}"
 	mwe2 "org.eclipse.xtext:xtext-antlr-generator:${xtextAntlrGeneratorVersion}"
-	mwe2 project(':language-mwe2')
+	mwe2 project(':refinery-language-mwe2')
 }
 
-jar {
+tasks.named('jar') {
 	from(sourceSets.main.allSource) {
 		include '**/*.xtext'
 	}
 }
 
-task generateXtextLanguage(type: JavaExec) {
-	main = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
+def generateXtextLanguage = tasks.register('generateXtextLanguage', JavaExec) {
+	mainClass = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
 	classpath = configurations.mwe2
-	inputs.file "src/main/java/org/eclipse/viatra/solver/language/GenerateProblem.mwe2"
-	inputs.file "src/main/java/org/eclipse/viatra/solver/language/Problem.xtext"
-	outputs.dir "src/main/xtext-gen"
-	outputs.dir "src/test/xtext-gen"
-	outputs.dir "../language-ide/src/main/xtext-gen"
-	outputs.dir "../language-web/src/main/xtext-gen"
-	outputs.dir "../language-web/build/generated/sources/xtext"
-	args += "src/main/java/org/eclipse/viatra/solver/language/GenerateProblem.mwe2"
-	args += "-p"
+	inputs.file 'src/main/java/org/eclipse/viatra/solver/language/GenerateProblem.mwe2'
+	inputs.file 'src/main/java/org/eclipse/viatra/solver/language/Problem.xtext'
+	outputs.dir 'src/main/xtext-gen'
+	outputs.dir 'src/test/xtext-gen'
+	outputs.dir '../language-ide/src/main/xtext-gen'
+	outputs.dir '../language-web/src/main/xtext-gen'
+	outputs.dir '../language-web/build/generated/sources/xtext'
+	args += 'src/main/java/org/eclipse/viatra/solver/language/GenerateProblem.mwe2'
+	args += '-p'
 	args += "rootPath=/${projectDir}/.."
 }
 
-generateXtext.dependsOn(generateXtextLanguage)
-clean.dependsOn(cleanGenerateXtextLanguage)
+def generateXtext = tasks.named('generateXtext')
+generateXtext.configure {
+	dependsOn generateXtextLanguage
+}
+
+tasks.named('compileJava') {
+	dependsOn generateXtext
+}
+
+tasks.named('processResources') {
+	dependsOn generateXtext
+}
+
+tasks.named('clean') {
+	delete 'src/main/xtext-gen'
+	delete 'src/test/xtext-gen'
+	delete '../language-ide/src/main/xtext-gen'
+	delete '../language-web/src/main/xtext-gen'
+	delete '../language-web/build/generated/sources/xtext'
+}

@@ -23,8 +23,8 @@ jobs:
         with:
           path: |
             ~/.gradle/caches
-            **/.gradle/npm
-            **/.gradle/nodejs
+            .gradle/node
+            .gradle/yarn
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Cache Sonar packages
@@ -33,13 +33,13 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Cache npm packages
+      - name: Cache yarn packages
         uses: actions/cache@v2
         with:
           path: |
             **/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn
       - name: Gradle build and Sonar analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed by Sonar to get PR information, if any

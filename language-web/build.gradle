@@ -1,41 +1,82 @@
+apply plugin: 'java'
 apply from: "${rootDir}/gradle/xtext-common.gradle"
 
 dependencies {
-	compile project(':language')
-	compile project(':language-ide')
-	compile "org.eclipse.xtext:org.eclipse.xtext.xbase.web:${xtextVersion}"
-	compile "org.eclipse.xtext:org.eclipse.xtext.web.servlet:${xtextVersion}"
-	compile "org.eclipse.xtend:org.eclipse.xtend.lib:${xtextVersion}"
-	compile "org.eclipse.jetty:jetty-server:${jettyVersion}"
-	compile "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
-	compile "org.slf4j:slf4j-simple:${slf4JVersion}"
+	implementation project(':refinery-language')
+	implementation project(':refinery-language-ide')
+	implementation "org.eclipse.xtext:org.eclipse.xtext.xbase.web:${xtextVersion}"
+	implementation "org.eclipse.xtext:org.eclipse.xtext.web.servlet:${xtextVersion}"
+	implementation "org.eclipse.xtend:org.eclipse.xtend.lib:${xtextVersion}"
+	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
+	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+	implementation "org.slf4j:slf4j-simple:${slf4JVersion}"
+}
+
+def generateXtext = project(':refinery-language').tasks.named('generateXtext')
+
+tasks.named('compileJava') {
+	dependsOn generateXtext
+}
+
+tasks.named('processResources') {
+	dependsOn generateXtext
 }
 
 def webpackOutputDir = "${buildDir}/webpack"
 def productionResources = "${webpackOutputDir}/production"
 def mainClass = 'org.eclipse.viatra.solver.language.web.ServerLauncher'
 
-apply plugin: 'com.moowork.node'
+apply plugin: 'org.siouan.frontend-jdk11'
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
-node {
-	version = nodeVersion
-	npmVersion = project.ext.npmVersion
-	download = true
+frontend {
+	nodeVersion = project.ext.nodeVersion
+	nodeInstallDirectory = file("${rootDir}/.gradle/node")
+	yarnEnabled = true
+	yarnVersion = project.ext.yarnVersion
+	yarnInstallDirectory = file("${rootDir}/.gradle/yarn")
+	assembleScript = 'run assemble'
 }
 
-for (environment in ['production', 'development']) {
-	def taskName = 'webpack' + environment.substring(0, 1).toUpperCase() + environment.substring(1);
-	task(taskName, type: NpmTask) {
-		dependsOn ':language:generateXtext'
-		dependsOn npmInstall
-		inputs.dir 'src/main/css'
-		inputs.dir 'src/main/html'
-		inputs.dir 'src/main/js'
-		inputs.dir "${buildDir}/generated/sources/xtext/js"
-		inputs.file 'webpack.config.js'
-		outputs.dir "${webpackOutputDir}/${environment}"
-		args = ['run', 'build']
-		setEnvironment NODE_ENV: environment
+tasks.named('installFrontend') {
+	inputs.files('package.json', 'yarn.lock')
+}
+
+def assembleFrontend = tasks.named('assembleFrontend')
+assembleFrontend.configure {
+	dependsOn generateXtext
+	inputs.dir 'src/main/css'
+	inputs.dir 'src/main/html'
+	inputs.dir 'src/main/js'
+	inputs.dir "${buildDir}/generated/sources/xtext/js"
+	inputs.files('package.json', 'yarn.lock', 'webpack.config.js')
+	outputs.dir productionResources
+}
+
+def eslint = tasks.register('eslint', RunNpmYarn) {
+	inputs.dir 'src/main/js'
+	inputs.files('.eslintrc.js', 'tsconfig.json')
+	script = 'run check:eslint'
+	group = 'verification'
+	description = 'Check for TypeScript errors.'
+}
+
+def stylelint = tasks.register('stylelint', RunNpmYarn) {
+	inputs.dir 'src/main/css'
+	inputs.file '.stylelintrc.js'
+	script = 'run check:stylelint'
+	group = 'verification'
+	description = 'Check for Sass errors.'
+}
+
+tasks.named('check') {
+	dependsOn(eslint, stylelint)
+}
+
+tasks.named('jar') {
+	dependsOn assembleFrontend
+	from(productionResources) {
+		into 'webapp'
 	}
 }
 
@@ -44,21 +85,14 @@ mainClassName = mainClass
 distTar.enabled = false
 distZip.enabled = false
 
-jar {
-	dependsOn webpackProduction
-	from(productionResources) {
-		into 'webapp'
-	}
-}
-
 apply plugin: 'com.github.johnrengelman.shadow'
 shadowDistTar.enabled = false
 shadowDistZip.enabled = false
 
-shadowJar {
-	dependsOn webpackProduction
+tasks.named('shadowJar') {
+	dependsOn assembleFrontend
 	from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
-	configurations = [project.configurations.runtime]
+	configurations = [project.configurations.runtimeClasspath]
 	exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA','schema/*',
 		'.options', '.api_description', '*.profile', 'about.*', 'about_*.html', 'about_files/*',
 		'plugin.xml', 'systembundle.properties', 'profile.list', 'META-INF/resources/xtext/**')
@@ -68,8 +102,8 @@ shadowJar {
 	}
 }
 
-task jettyRun(type: JavaExec) {
-	shouldRunAfter webpackProduction
+def jettyRun = tasks.register('jettyRun', JavaExec) {
+	shouldRunAfter assembleFrontend
 	dependsOn sourceSets.main.runtimeClasspath
 	classpath = sourceSets.main.runtimeClasspath.filter{it.exists()}
 	main = mainClass
@@ -79,46 +113,30 @@ task jettyRun(type: JavaExec) {
 	description = 'Start a Jetty web server serving the Xtex API and assets (without rebuilding assets).'
 }
 
-task jettyRunAssets {
-	dependsOn webpackProduction
+tasks.register('jettyRunAssets') {
+	dependsOn assembleFrontend
 	dependsOn jettyRun
 	group = 'run'
 	description = 'Rebuild assets and start a Jetty web server serving the Xtex API and assets.'
 }
 
-task webpackServe(type: NpmTask) {
-	dependsOn ':language:generateXtext'
-	dependsOn npmInstall
-	outputs.dir "${webpackOutputDir}/hmr"
-	args = ['run', 'serve']
-	setEnvironment NODE_ENV: 'hmr'
+tasks.register('webpackServe', RunNpmYarn) {
+	dependsOn generateXtext
+	outputs.dir "${webpackOutputDir}/development"
+	script = 'run serve'
 	group = 'run'
 	description = 'Start a Webpack dev server with hot module replacement.'
 }
-
-task eslint(type: NpmTask) {
-	dependsOn npmInstall
-	args = ['run', 'eslint']
-	inputs.dir 'src/main/js'
-	inputs.file 'tsconfig.json'
-	inputs.file '.eslintrc.js'
-	group = 'verification'
-	description = 'Checks for TypeScript errors.' 
-}
-
-check.dependsOn += [eslint]
 
 sonarqube.properties {
 	properties['sonar.sources'] += [
 		'src/main/css',
 		'src/main/html',
 		'src/main/js',
-		"${buildDir}/generated/sources/xtext/js",
 	]
 	properties['sonar.exclusions'] += [
 		'src/main/css/xtext/**',
 		'src/main/js/xtext/**',
-		"${buildDir}/generated/sources/xtext/js/**"
 	]
 }
 

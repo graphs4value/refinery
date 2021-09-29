@@ -1,27 +1,28 @@
 apply plugin: 'jacoco'
 
 dependencies {
-	testCompile "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-	testRuntime "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-	testCompile "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
-	testCompile "org.hamcrest:hamcrest:${hamcrestVersion}"
+	testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+	testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
+	testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
 }
 
-test {
+def jacocoTestReport = tasks.named('jacocoTestReport')
+jacocoTestReport.configure {
+	dependsOn test
+	reports {
+		xml.required = true
+	}
+}
+
+tasks.named('test') {
 	useJUnitPlatform {
 		excludeTags 'slow'
 	}
+	finalizedBy jacocoTestReport
 }
 
-task slowTest(type: Test) {
+tasks.register('slowTest', Test) {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 }
-
-jacocoTestReport {
-	dependsOn test
-	reports {
-		xml.enabled true
-	}
-}
-
-test.finalizedBy(jacocoTestReport)

@@ -1,6 +1,6 @@
 configurations {
 	jmh {
-		extendsFrom compile
+		extendsFrom implementation
 	}
 }
 
@@ -14,17 +14,18 @@ sourceSets {
 }
 
 dependencies {
-	jmhCompile "org.openjdk.jmh:jmh-core:${jmhVersion}"
+	jmhImplementation "org.openjdk.jmh:jmh-core:${jmhVersion}"
 	jmhAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}"
 }
 
-task jmh(type: JavaExec, dependsOn: jmhClasses) {
+tasks.register('jmh', JavaExec) {
+	dependsOn tasks.named('jmhClasses')
     main = 'org.openjdk.jmh.Main'
     classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
 }
 
 eclipse.classpath {
-	plusConfigurations += [configurations.jmhCompile, configurations.jmhRuntime]
+	plusConfigurations += [configurations.jmhCompileClasspath, configurations.jmhRuntimeClasspath]
 
 	file.whenMerged { classpath ->
 		for (entry in classpath.entries) {

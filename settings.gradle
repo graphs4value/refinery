@@ -1,7 +1,12 @@
+rootProject.name = 'refinery'
+
 include 'language'
 include 'language-ide'
 include 'language-model'
 include 'language-mwe2'
 include 'language-web'
-include 'model-data'
-include 'model-query'
+include 'store'
+
+for (project in rootProject.children) {
+	project.name = "${rootProject.name}-${project.name}"
+}

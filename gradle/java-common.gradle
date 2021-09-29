@@ -5,16 +5,10 @@ repositories {
 	}
 }
 
-apply plugin: 'java'
-
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
-configurations.all {
-	exclude group: 'asm'
-}
-
-jar {
+tasks.named('jar') {
 	manifest {
 		attributes 'Bundle-SymbolicName': project.name
 	}

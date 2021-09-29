@@ -9,7 +9,7 @@ sourceSets {
 	}
 }
 
-clean.doLast {
+tasks.named('clean') {
 	delete 'src/main/xtend-gen'
 	delete 'src/test/xtend-gen'
 }

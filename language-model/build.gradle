@@ -1,8 +1,9 @@
+apply plugin: 'java-library'
 apply from: "${rootDir}/gradle/java-common.gradle"
 apply from: "${rootDir}/gradle/mwe2.gradle"
 
 dependencies {
-	compile "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
+	api "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
 	mwe2 "org.eclipse.emf:org.eclipse.emf.codegen.ecore:${ecoreCodegenVersion}"
 	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe.utils:${mweVersion}"
 	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe2.lib:${mwe2Version}"
@@ -16,20 +17,29 @@ sourceSets {
 	}
 }
 
-task generateEPackage(type: JavaExec) {
-	main = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
+def generateEPackage = tasks.register('generateEPackage', JavaExec) {
+	mainClass = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
 	classpath = configurations.mwe2
-	inputs.file "src/main/java/org/eclipse/viatra/solver/language/model/GenerateProblemModel.mwe2"
-	inputs.file "src/main/resources/model/problem.ecore"
-	inputs.file "src/main/resources/model/problem.genmodel"
-	outputs.dir "src/main/emf-gen"
-	args += "src/main/java/org/eclipse/viatra/solver/language/model/GenerateProblemModel.mwe2"
-	args += "-p"
+	inputs.file 'src/main/java/org/eclipse/viatra/solver/language/model/GenerateProblemModel.mwe2'
+	inputs.file 'src/main/resources/model/problem.ecore'
+	inputs.file 'src/main/resources/model/problem.genmodel'
+	outputs.dir 'src/main/emf-gen'
+	args += 'src/main/java/org/eclipse/viatra/solver/language/model/GenerateProblemModel.mwe2'
+	args += '-p'
 	args += "rootPath=/${projectDir}"
 }
 
-compileJava.dependsOn(generateEPackage)
-clean.dependsOn(cleanGenerateEPackage)
+tasks.named('compileJava') {
+	dependsOn generateEPackage
+}
+
+tasks.named('processResources') {
+	dependsOn generateEPackage
+}
+
+tasks.named('clean') {
+	delete 'src/main/emf-gen'
+}
 
 sonarqube.properties {
 	properties['sonar.exclusions'] += [

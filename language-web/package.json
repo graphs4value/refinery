@@ -1,13 +1,14 @@
 {
   "name": "language-web",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Web frontend for VIATRA-Generator",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "serve": "webpack serve --hot",
-    "eslint": "eslint ."
+    "assemble": "webpack --node-env production",
+    "serve": "webpack serve --node-env development --hot",
+    "check": "yarn run check:eslint && yarn run check:stylelint",
+    "check:eslint": "eslint .",
+    "check:stylelint": "stylelint src/main/css/**/*.scss"
   },
   "repository": {
     "type": "git",

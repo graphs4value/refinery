@@ -37,7 +37,7 @@ Workflow {
 		language = StandardLanguage {
 			name = "org.eclipse.viatra.solver.language.Problem"
 			fileExtensions = "problem"
-			referencedResource = "platform:/resource/language-model/model/problem.genmodel"
+			referencedResource = "platform:/resource/refinery-language-model/model/problem.genmodel"
 			serializer = {
 				generateStub = false
 			}
