@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "assemble": "webpack --node-env production",
+    "stats": "webpack --node-env production --json > build/webpack/stats.json",
     "serve": "webpack serve --node-env development --hot",
     "check": "yarn run check:eslint && yarn run check:stylelint",
     "check:eslint": "eslint .",

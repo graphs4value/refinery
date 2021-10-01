@@ -38,9 +38,7 @@ frontend {
 	assembleScript = 'run assemble'
 }
 
-tasks.named('installFrontend') {
-	inputs.files('package.json', 'yarn.lock')
-}
+def installFrontend = tasks.named('installFrontend')
 
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
@@ -53,7 +51,20 @@ assembleFrontend.configure {
 	outputs.dir productionResources
 }
 
+tasks.register('webpackStats', RunNpmYarn) {
+	dependsOn installFrontend
+	dependsOn generateXtext
+	inputs.dir 'src/main/css'
+	inputs.dir 'src/main/html'
+	inputs.dir 'src/main/js'
+	inputs.dir "${buildDir}/generated/sources/xtext/js"
+	inputs.files('package.json', 'yarn.lock', 'webpack.config.js')
+	outputs.file "${buildDir}/webpack/stats.json"
+	script = 'run stats'
+}
+
 def eslint = tasks.register('eslint', RunNpmYarn) {
+	dependsOn installFrontend
 	inputs.dir 'src/main/js'
 	inputs.files('.eslintrc.js', 'tsconfig.json')
 	script = 'run check:eslint'
@@ -62,6 +73,7 @@ def eslint = tasks.register('eslint', RunNpmYarn) {
 }
 
 def stylelint = tasks.register('stylelint', RunNpmYarn) {
+	dependsOn installFrontend
 	inputs.dir 'src/main/css'
 	inputs.file '.stylelintrc.js'
 	script = 'run check:stylelint'
@@ -103,7 +115,7 @@ tasks.named('shadowJar') {
 }
 
 def jettyRun = tasks.register('jettyRun', JavaExec) {
-	shouldRunAfter assembleFrontend
+	dependsOn assembleFrontend
 	dependsOn sourceSets.main.runtimeClasspath
 	classpath = sourceSets.main.runtimeClasspath.filter{it.exists()}
 	main = mainClass
@@ -113,14 +125,8 @@ def jettyRun = tasks.register('jettyRun', JavaExec) {
 	description = 'Start a Jetty web server serving the Xtex API and assets (without rebuilding assets).'
 }
 
-tasks.register('jettyRunAssets') {
-	dependsOn assembleFrontend
-	dependsOn jettyRun
-	group = 'run'
-	description = 'Rebuild assets and start a Jetty web server serving the Xtex API and assets.'
-}
-
 tasks.register('webpackServe', RunNpmYarn) {
+	dependsOn installFrontend
 	dependsOn generateXtext
 	outputs.dir "${webpackOutputDir}/development"
 	script = 'run serve'
