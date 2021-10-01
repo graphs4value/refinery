@@ -15,6 +15,7 @@ Workflow {
 				rootPath = rootPath
 				runtimeTest = {
 					enabled = true
+					srcGen = 'src/testFixtures/xtext-gen'
 				}
 				genericIde = {
 					name = "language-ide"
@@ -48,6 +49,8 @@ Workflow {
 				generateStub = false
 			}
 			junitSupport = {
+				generateStub = false
+				skipXbaseTestingPackage = true
 				junitVersion = "5"
 			}
 			webSupport = ProblemWebIntegrationFragment {

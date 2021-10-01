@@ -1,9 +1,5 @@
 apply from: "${rootDir}/gradle/java-common.gradle"
 
-dependencies {
-	implementation platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
-}
-
 configurations.all {
 	exclude group: 'asm'
 }
@@ -13,20 +9,14 @@ sourceSets {
 		java.srcDirs += ['src/main/xtext-gen']
 		resources.srcDirs += ['src/main/xtext-gen']
 	}
-	test {
-		java.srcDirs += ['src/test/xtext-gen']
-		resources.srcDirs += ['src/test/xtext-gen']
-	}
 }
 
 tasks.named('clean') {
 	delete 'src/main/xtext-gen'
-	delete 'src/test/xtext-gen'
 }
 
 sonarqube.properties {
 	properties['sonar.exclusions'] += [
 		'src/main/xtext-gen/**',
-		'src/test/xtext-gen/**',
 	]
 }

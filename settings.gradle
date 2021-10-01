@@ -4,6 +4,7 @@ include 'language'
 include 'language-ide'
 include 'language-model'
 include 'language-mwe2'
+include 'language-to-store'
 include 'language-web'
 include 'store'
 
