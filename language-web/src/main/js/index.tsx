@@ -2,7 +2,7 @@ import { CacheProvider } from '@emotion/react';
 import React from 'react';
 import { render } from 'react-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { getCache } from 'tss-react/cache';
+import createCache from 'tss-react/@emotion/cache';
 
 import { App } from './App';
 import { RootStore, RootStoreProvider } from './RootStore';
@@ -49,9 +49,14 @@ scope Family = 1, Person += 5..10.
 const rootStore = new RootStore();
 rootStore.editorStore.updateValue(initialValue);
 
+const muiCache = createCache({
+  key: 'mui',
+  prepend: true,
+});
+
 const app = (
   <RootStoreProvider rootStore={rootStore}>
-    <CacheProvider value={getCache()}>
+    <CacheProvider value={muiCache}>
       <ThemeProvider>
         <CssBaseline />
         <App />
