@@ -1,9 +1,5 @@
 apply from: "${rootDir}/gradle/java-common.gradle"
 
-configurations.all {
-	exclude group: 'asm'
-}
-
 sourceSets {
 	main {
 		java.srcDirs += ['src/main/xtext-gen']
