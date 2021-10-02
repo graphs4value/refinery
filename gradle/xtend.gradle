@@ -9,6 +9,12 @@ sourceSets {
 	}
 }
 
+xtend.generator {
+	// As of Xtext 2.26.0.M2, the Xbase compiler doesn't know how to handle Java 12 and up
+	// and the build fails with a NullPointerException if such Java version is specified.
+	javaSourceLevel = '11'
+}
+
 tasks.named('clean') {
 	delete 'src/main/xtend-gen'
 	delete 'src/test/xtend-gen'
