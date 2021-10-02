@@ -1,5 +1,5 @@
-import { ThemeProvider as MaterialUiThemeProvider } from '@material-ui/core/styles';
 import { observer } from 'mobx-react-lite';
+import { ThemeProvider as MaterialUiThemeProvider } from '@mui/material/styles';
 import React from 'react';
 
 import { useRootStore } from '../RootStore';

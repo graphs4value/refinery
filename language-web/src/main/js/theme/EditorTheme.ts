@@ -1,4 +1,4 @@
-import { PaletteMode } from '@material-ui/core';
+import type { PaletteMode } from '@mui/material';
 
 import cssVariables from '../../css/themeVariables.module.scss';
 

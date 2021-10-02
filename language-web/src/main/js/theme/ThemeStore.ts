@@ -1,9 +1,9 @@
+import { makeAutoObservable } from 'mobx';
 import {
   Theme,
   createTheme,
   responsiveFontSizes,
-} from '@material-ui/core/styles';
-import { makeAutoObservable } from 'mobx';
+} from '@mui/material/styles';
 
 import {
   EditorTheme,
