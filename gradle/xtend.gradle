@@ -26,3 +26,9 @@ sonarqube.properties {
 		'src/test/xtend-gen/**',
 	]
 }
+
+tasks.named('eclipseJdt') {
+	// Make sure all xtend-gen source folders are available.
+	dependsOn tasks.named('generateXtext')
+	dependsOn tasks.named('generateTestXtext')
+}

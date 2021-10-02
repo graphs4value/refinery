@@ -72,3 +72,8 @@ sonarqube.properties {
 		'src/testFixtures/xtext-gen/**',
 	]
 }
+
+tasks.named('eclipseJdt') {
+	// Make sure all xtext-gen source folders are available.
+	dependsOn generateXtextLanguage
+}
