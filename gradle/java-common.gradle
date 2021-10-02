@@ -25,8 +25,9 @@ eclipse {
 		}
 	}
 
-	jdt.file.whenMerged { properties ->
+	jdt.file.withProperties { properties ->
 		// Allow @SupperessWarnings to suppress SonarLint warnings
 		properties['org.eclipse.jdt.core.compiler.problem.unhandledWarningToken'] = 'ignore'
 	}
 }
+
