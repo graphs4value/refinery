@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const WebpackBeforeBuildPlugin = require('before-build-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-preload');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { SubresourceIntegrityPlugin } = require('webpack-subresource-integrity');
 
@@ -37,6 +37,15 @@ const babelPresets = [
   ],
   '@babel/preset-react',
 ];
+const babelPlugins = [
+  '@babel/plugin-transform-runtime',
+]
+const magicCommentsLoader = {
+  loader: 'magic-comments-loader',
+  options: {
+    webpackChunkName: true,
+  }
+};
 
 module.exports = {
   mode: devMode ? 'development' : 'production',
@@ -44,8 +53,10 @@ module.exports = {
   output: {
     path: outputPath,
     publicPath: '/',
-    filename: devMode ? '[name].js' : '[contenthash].js',
-    chunkFilename: devMode ? '[id].js' : '[contenthash].js',
+    filename: devMode ? '[name].js' : '[name].[contenthash].js',
+    chunkFilename: devMode ? '[name].js' : '[name].[contenthash].js',
+    assetModuleFilename: devMode ? '[name].js' : '[name].[contenthash][ext]',
+    clean: true,
     crossOriginLoading: 'anonymous',
   },
   module: {
@@ -53,41 +64,53 @@ module.exports = {
       {
         test: /\.jsx?$/i,
         ...babelLoaderFilters,
-        loader: 'babel-loader',
-        options: {
-          presets: babelPresets,
-          plugins: [
-            [
-              '@babel/plugin-proposal-class-properties',
-              {
-                loose: false,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: babelPresets,
+              plugins: [
+                [
+                  '@babel/plugin-proposal-class-properties',
+                  {
+                    loose: false,
+                  },
+                  ...babelPlugins,
+                ],
+              ],
+              assumptions: {
+                'setPublicClassFields': false,
               },
-            ],
-          ],
-          assumptions: {
-            'setPublicClassFields': false,
+            },
           },
-        },
+          magicCommentsLoader,
+        ],
       },
       {
         test: /.tsx?$/i,
         ...babelLoaderFilters,
-        loader: 'babel-loader',
-        options: {
-          presets: [
-            ...babelPresets,
-            [
-              '@babel/preset-typescript',
-              {
-                isTSX: true,
-                allExtensions: true,
-                allowDeclareFields: true,
-                onlyRemoveTypeImports: true,
-                optimizeConstEnums: true,
-              },
-            ]
-          ],
-        },
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ...babelPresets,
+                [
+                  '@babel/preset-typescript',
+                  {
+                    isTSX: true,
+                    allExtensions: true,
+                    allowDeclareFields: true,
+                    onlyRemoveTypeImports: true,
+                    optimizeConstEnums: true,
+                  },
+                ]
+              ],
+              plugins: babelPlugins,
+            },
+          },
+          magicCommentsLoader,
+        ],
       },
       {
         test: /\.scss$/i,
@@ -133,8 +156,23 @@ module.exports = {
   },
   devtool: devMode ? 'inline-source-map' : 'source-map',
   optimization: {
+    providedExports: !devMode,
+    sideEffects: devMode ? 'flag' : true,
     splitChunks: {
       chunks: 'all',
+      cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          reuseExistingChunk: true,
+          filename: devMode ? 'vendor.[id].js' : 'vendor.[contenthash].js',
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+      },
     },
   },
   devServer: {
@@ -157,8 +195,8 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[contenthash].css',
-      chunkFilename: '[contenthash].css',
+      filename: '[name].[contenthash].css',
+      chunkFilename: '[name].[contenthash].css',
     }),
     new SubresourceIntegrityPlugin(),
     new HtmlWebpackPlugin({
@@ -173,22 +211,17 @@ module.exports = {
         useShortDoctype: true,
       },
     }),
-    new WebpackBeforeBuildPlugin((stats, callback) => {
-      // https://stackoverflow.com/a/40370750
-      const newlyCreatedAssets = stats.compilation.assets;
-      const unlinked = [];
-      fs.readdir(outputPath, (err, files) => {
-        files.forEach(file => {
-          if (!newlyCreatedAssets[file]) {
-            fs.unlinkSync(path.resolve(outputPath, file));
-            unlinked.push(file);
-          }
-        });
-        if (unlinked.length > 0) {
-          console.log('Removed old assets: ', unlinked);
-        }
-      });
-      callback();
-    }, ['done']),
+    new HtmlWebpackInjectPreload({
+      files: [
+        {
+          match: /(roboto-latin-(400|500)-normal|jetbrains-mono-latin-variable).*\.woff2/,
+          attributes: {
+            as: 'font',
+            type: 'font/woff2',
+            crossorigin: 'anonymous',
+          },
+        },
+      ],
+    }),
   ],
 };

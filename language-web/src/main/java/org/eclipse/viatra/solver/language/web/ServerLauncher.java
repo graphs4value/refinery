@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
 import java.util.Set;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.SessionTrackingMode;
 
 import org.eclipse.jetty.server.Server;
@@ -42,6 +44,7 @@ public class ServerLauncher {
 			handler.setWelcomeFiles(new String[] { "index.html" });
 			addDefaultServlet(handler);
 		}
+		handler.addFilter(CacheControlFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 		server.setHandler(handler);
 	}
 

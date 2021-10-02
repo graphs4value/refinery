@@ -9,12 +9,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 
 import { makeStyles } from './makeStyles';
-import { Editor } from './editor/Editor';
+import { EditorArea } from './editor/EditorArea';
 import { EditorButtons } from './editor/EditorButtons';
 
 const useStyles = makeStyles()((theme) => ({
   container: {
-    maxHeight: '100vh',
+    height: '100vh',
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -85,7 +85,7 @@ export const App = (): JSX.Element => {
         flexShrink={1}
         className={cx(classes.editorBox)}
       >
-        <Editor />
+        <EditorArea />
       </Box>
     </Box>
   );

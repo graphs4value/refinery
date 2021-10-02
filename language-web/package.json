@@ -26,8 +26,8 @@
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-react": "^7.14.5",
     "@babel/preset-typescript": "^7.15.0",
+    "@babel/plugin-transform-runtime": "^7.15.0",
     "babel-loader": "^8.2.2",
-    "before-build-webpack": "^0.2.11",
     "css-loader": "^6.2.0",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^18.2.1",
@@ -38,7 +38,9 @@
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "html-webpack-plugin": "^5.3.2",
     "image-webpack-loader": "^7.0.1",
+    "magic-comments-loader": "^1.4.1",
     "mini-css-extract-plugin": "^2.2.0",
+    "@principalstudio/html-webpack-inject-preload": "^1.2.7",
     "sass": "^1.38.0",
     "sass-loader": "^12.1.0",
     "style-loader": "^3.2.1",
@@ -56,6 +58,7 @@
     "webpack-subresource-integrity": "^5.0.0-rc.1"
   },
   "dependencies": {
+    "@babel/runtime": "^7.15.0",
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.3.0",
     "@fontsource/jetbrains-mono": "^4.5.0",

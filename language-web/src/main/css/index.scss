@@ -30,12 +30,27 @@ body {
   height: 100%;
 }
 
-.CodeMirror, .CodeMirror-hints {
+.problem-fallback-editor {
+  display: block;
+  height: 100%;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 4px 4px 4px 16px;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow: auto;
+}
+
+.CodeMirror, .CodeMirror-hints, .problem-fallback-editor {
   font-size: 16px;
   font-family: 'JetBrains MonoVariable', 'JetBrains Mono', monospace;
   font-feature-settings: 'liga', 'calt';
   font-weight: 400;
   text-rendering: optimizeLegibility;
+  line-height: 1.35;
+  letter-spacing: 0;
 }
 
 @each $themeName, $theme in $themes {
@@ -43,6 +58,16 @@ body {
     &.CodeMirror {
       background: map.get($theme, 'background');
       color: map.get($theme, 'foreground');
+    }
+
+    &.problem-fallback-editor {
+      background: map.get($theme, 'background');
+      color: map.get($theme, 'foreground');
+      caret-color: map.get($theme, 'cursor');
+
+      &::selection {
+        background: map.get($theme, 'selection');
+      }
     }
 
     .CodeMirror-gutters {
@@ -183,11 +208,13 @@ li.CodeMirror-hint-active {
 
 .xtext-marker_read {
   background: rgba(128, 203, 196, 0.2);
+  display: inline-block;
 }
 
 
 .xtext-marker_write {
   background: rgba(255, 229, 100, 0.2);
+  display: inline-block;
 }
 
 .problem-abstract {

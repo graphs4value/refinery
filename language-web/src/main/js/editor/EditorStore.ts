@@ -1,19 +1,14 @@
-import { Editor, EditorConfiguration } from 'codemirror';
-import 'codemirror/addon/selection/active-line';
+import type { Editor, EditorConfiguration } from 'codemirror';
 import {
   createAtom,
   makeAutoObservable,
   observable,
+  runInAction,
 } from 'mobx';
-import 'mode-problem';
-import {
-  IXtextOptions,
-  IXtextServices,
-  createServices,
-  removeServices,
-} from 'xtext/xtext-codemirror';
+import type { IXtextOptions, IXtextServices } from 'xtext/xtext-codemirror';
 
-import { ThemeStore } from '../theme/ThemeStore';
+import type { IEditorChunk } from './editor';
+import type { ThemeStore } from '../theme/ThemeStore';
 
 const xtextLang = 'problem';
 
@@ -33,6 +28,8 @@ export class EditorStore {
 
   atom;
 
+  chunk?: IEditorChunk;
+
   editor?: Editor;
 
   xtextServices?: IXtextServices;
@@ -41,15 +38,56 @@ export class EditorStore {
 
   showLineNumbers = false;
 
+  initialSelection!: { start: number, end: number, focused: boolean };
+
   constructor(themeStore: ThemeStore) {
     this.themeStore = themeStore;
     this.atom = createAtom('EditorStore');
+    this.resetInitialSelection();
     makeAutoObservable(this, {
       themeStore: false,
       atom: false,
+      chunk: observable.ref,
       editor: observable.ref,
       xtextServices: observable.ref,
+      initialSelection: false,
     });
+    import('./editor').then(({ editorChunk }) => {
+      runInAction(() => {
+        this.chunk = editorChunk;
+      });
+    }).catch((error) => {
+      console.warn('Error while loading editor', error);
+    });
+  }
+
+  setInitialSelection(start: number, end: number, focused: boolean): void {
+    this.initialSelection = { start, end, focused };
+    this.applyInitialSelectionToEditor();
+  }
+
+  private resetInitialSelection(): void {
+    this.initialSelection = {
+      start: 0,
+      end: 0,
+      focused: false,
+    };
+  }
+
+  private applyInitialSelectionToEditor(): void {
+    if (this.editor) {
+      const { start, end, focused } = this.initialSelection;
+      const doc = this.editor.getDoc();
+      const startPos = doc.posFromIndex(start);
+      const endPos = doc.posFromIndex(end);
+      doc.setSelection(startPos, endPos, {
+        scroll: true,
+      });
+      if (focused) {
+        this.editor.focus();
+      }
+      this.resetInitialSelection();
+    }
   }
 
   /**
@@ -61,16 +99,23 @@ export class EditorStore {
    * @param newEditor The new CodeMirror instance
    */
   editorDidMount(newEditor: Editor): void {
+    if (!this.chunk) {
+      throw new Error('Editor not loaded yet');
+    }
     if (this.editor) {
       throw new Error('CoreMirror editor mounted before unmounting');
     }
     this.editor = newEditor;
-    this.xtextServices = createServices(newEditor, xtextOptions);
+    this.xtextServices = this.chunk.createServices(newEditor, xtextOptions);
+    this.applyInitialSelectionToEditor();
   }
 
   editorWillUnmount(): void {
+    if (!this.chunk) {
+      throw new Error('Editor not loaded yet');
+    }
     if (this.editor) {
-      removeServices(this.editor);
+      this.chunk.removeServices(this.editor);
     }
     delete this.editor;
     delete this.xtextServices;
@@ -93,10 +138,14 @@ export class EditorStore {
     this.atom.reportObserved();
   }
 
+  get codeMirrorTheme(): string {
+    return `problem-${this.themeStore.className}`;
+  }
+
   get codeMirrorOptions(): EditorConfiguration {
     return {
       ...codeMirrorGlobalOptions,
-      theme: this.themeStore.codeMirrorTheme,
+      theme: this.codeMirrorTheme,
       lineNumbers: this.showLineNumbers,
     };
   }

@@ -51,7 +51,7 @@ export class ThemeStore {
     return responsiveFontSizes(materialUiTheme);
   }
 
-  get codeMirrorTheme(): string {
-    return `problem-${this.currentThemeData.className}`;
+  get className(): string {
+    return this.currentThemeData.className;
   }
 }
