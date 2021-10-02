@@ -15,8 +15,7 @@ export const EditorArea = observer(() => {
         onChange={(e) => editorStore.updateValue(e.target.value)}
         ref={fallbackTextarea}
         className={`problem-fallback-editor cm-s-${editorStore.codeMirrorTheme}`}
-      >
-      </textarea>
+      />
     );
   }
 

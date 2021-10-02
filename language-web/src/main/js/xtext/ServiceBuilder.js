@@ -18,10 +18,11 @@ define([
 	'xtext/services/ContentAssistService',
 	'xtext/services/HoverService',
 	'xtext/services/OccurrencesService',
-	'xtext/services/FormattingService'
+	'xtext/services/FormattingService',
+  '../logging',
 ], function(jQuery, XtextService, LoadResourceService, SaveResourceService, HighlightingService,
 		ValidationService, UpdateService, ContentAssistService, HoverService, OccurrencesService,
-		FormattingService) {
+		FormattingService, logging) {
 	
 	/**
 	 * Builder class for the Xtext services.
@@ -179,12 +180,22 @@ define([
 			});
 		}
 		
-		services.successListeners = [];
+    const log = logging.getLoggerFromRoot('xtext.XtextService');
+		services.successListeners = [function(serviceType, result) {
+      if (log.getLevel() <= log.levels.TRACE) {
+        log.trace('service', serviceType, 'request success', JSON.parse(JSON.stringify(result)));
+      }
+    }];
 		services.errorListeners = [function(serviceType, severity, message, requestData) {
-			if (options.showErrorDialogs)
-				window.alert('Xtext service \'' + serviceType + '\' failed: ' + message);
-			else
-				console.log('Xtext service \'' + serviceType + '\' failed: ' + message);
+      const messageParts = ['service', serviceType, 'failed:', message || '(no message)'];
+      if (requestData) {
+        messageParts.push(JSON.parse(JSON.stringify(requestData)));
+      }
+      if (severity === 'warning') {
+				log.warn(...messageParts);
+      } else {
+        log.error(...messageParts);
+      }
 		}];
 	}
 	

@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
+const { DefinePlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-preload');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { SubresourceIntegrityPlugin } = require('webpack-subresource-integrity');
+
+const packageInfo = require('./package.json');
 
 const currentNodeEnv = process.env.NODE_ENV || 'development';
 const devMode = currentNodeEnv !== 'production';
@@ -194,6 +197,11 @@ module.exports = {
     },
   },
   plugins: [
+    new DefinePlugin({
+      'DEBUG': JSON.stringify(devMode),
+      'PACKAGE_NAME': JSON.stringify(packageInfo.name),
+      'PACKAGE_VERSION': JSON.stringify(packageInfo.version),
+    }),
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
       chunkFilename: '[name].[contenthash].css',

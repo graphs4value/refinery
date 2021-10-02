@@ -8,7 +8,10 @@ import {
 import type { IXtextOptions, IXtextServices } from 'xtext/xtext-codemirror';
 
 import type { IEditorChunk } from './editor';
+import { getLogger } from '../logging';
 import type { ThemeStore } from '../theme/ThemeStore';
+
+const log = getLogger('EditorStore');
 
 const xtextLang = 'problem';
 
@@ -52,12 +55,20 @@ export class EditorStore {
       xtextServices: observable.ref,
       initialSelection: false,
     });
+    this.loadChunk();
+  }
+
+  private loadChunk(): void {
+    const loadingStartMillis = Date.now();
+    log.info('Requesting editor chunk');
     import('./editor').then(({ editorChunk }) => {
       runInAction(() => {
         this.chunk = editorChunk;
       });
+      const loadingDurationMillis = Date.now() - loadingStartMillis;
+      log.info('Loaded editor chunk in', loadingDurationMillis, 'ms');
     }).catch((error) => {
-      console.warn('Error while loading editor', error);
+      log.error('Error while loading editor', error);
     });
   }
 
