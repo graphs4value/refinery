@@ -45,8 +45,7 @@ public class DerivedVariableComputer {
 
 	public void installDerivedVariables(Problem problem, Set<String> nodeNames) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof PredicateDefinition) {
-				PredicateDefinition definition = (PredicateDefinition) statement;
+			if (statement instanceof PredicateDefinition definition) {
 				installDerivedPredicateDefinitionState(definition, nodeNames);
 			}
 		}
@@ -69,16 +68,14 @@ public class DerivedVariableComputer {
 	protected void installDeriveConjunctionState(Conjunction conjunction, Set<String> knownVariables) {
 		Set<String> newVariables = new HashSet<>();
 		for (Literal literal : conjunction.getLiterals()) {
-			if (literal instanceof Atom) {
-				var atom = (Atom) literal;
+			if (literal instanceof Atom atom) {
 				createSigletonVariablesAndCollectVariables(atom, knownVariables, newVariables);
 			}
 		}
 		createVariables(conjunction, newVariables);
 		newVariables.addAll(knownVariables);
 		for (Literal literal : conjunction.getLiterals()) {
-			if (literal instanceof NegativeLiteral) {
-				var negativeLiteral = (NegativeLiteral) literal;
+			if (literal instanceof NegativeLiteral negativeLiteral) {
 				installDeriveNegativeLiteralState(negativeLiteral, newVariables);
 			}
 		}
@@ -93,8 +90,7 @@ public class DerivedVariableComputer {
 	protected void createSigletonVariablesAndCollectVariables(Atom atom, Set<String> knownVariables,
 			Set<String> newVariables) {
 		for (Argument argument : atom.getArguments()) {
-			if (argument instanceof VariableOrNodeArgument) {
-				var variableOrNodeArgument = (VariableOrNodeArgument) argument;
+			if (argument instanceof VariableOrNodeArgument variableOrNodeArgument) {
 				IScope scope = scopeProvider.getScope(variableOrNodeArgument,
 						ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE);
 				List<INode> nodes = NodeModelUtils.findNodesForFeature(variableOrNodeArgument,
@@ -159,8 +155,8 @@ public class DerivedVariableComputer {
 
 	public void discardDerivedVariables(Problem problem) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof PredicateDefinition) {
-				discardPredicateDefinitionState((PredicateDefinition) statement);
+			if (statement instanceof PredicateDefinition predicateDefinition) {
+				discardPredicateDefinitionState(predicateDefinition);
 			}
 		}
 	}
@@ -169,11 +165,10 @@ public class DerivedVariableComputer {
 		for (Conjunction body : definition.getBodies()) {
 			body.getImplicitVariables().clear();
 			for (Literal literal : body.getLiterals()) {
-				if (literal instanceof Atom) {
-					discardDerivedAtomState((Atom) literal);
+				if (literal instanceof Atom atom) {
+					discardDerivedAtomState(atom);
 				}
-				if (literal instanceof NegativeLiteral) {
-					var negativeLiteral = (NegativeLiteral) literal;
+				if (literal instanceof NegativeLiteral negativeLiteral) {
 					negativeLiteral.getImplicitVariables().clear();
 					discardDerivedAtomState(negativeLiteral.getAtom());
 				}
@@ -186,8 +181,7 @@ public class DerivedVariableComputer {
 			return;
 		}
 		for (Argument argument : atom.getArguments()) {
-			if (argument instanceof VariableOrNodeArgument) {
-				var variableOrNodeArgument = (VariableOrNodeArgument) argument;
+			if (argument instanceof VariableOrNodeArgument variableOrNodeArgument) {
 				variableOrNodeArgument.setSingletonVariable(null);
 			}
 		}

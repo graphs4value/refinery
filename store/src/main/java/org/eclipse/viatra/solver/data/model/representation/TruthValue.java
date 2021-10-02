@@ -1,42 +1,49 @@
 package org.eclipse.viatra.solver.data.model.representation;
 
-public class TruthValue {
-	public static final TruthValue True = new TruthValue("true");
-	public static final TruthValue False = new TruthValue("false");
-	public static final TruthValue Unknown = new TruthValue("unknown");
-	public static final TruthValue Error = new TruthValue("error");
-	
+public enum TruthValue {
+	TRUE("true"),
+
+	FALSE("false"),
+
+	UNKNOWN("unknown"),
+
+	ERROR("error");
+
 	private final String name;
-	protected TruthValue(String name) {
+
+	private TruthValue(String name) {
 		this.name = name;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public static TruthValue toTruthValue(boolean value) {
-		if(value) return True;
-		else return False;
+		return value ? TRUE : FALSE;
 	}
+
 	public boolean isConsistent() {
-		return this != Error;
+		return this != ERROR;
 	}
+
 	public boolean isComplete() {
-		return this != Unknown;
+		return this != UNKNOWN;
 	}
+
 	public boolean must() {
-		return this == True || this == Error;
+		return this == TRUE || this == ERROR;
 	}
+
 	public boolean may() {
-		return this == True || this == Unknown;
+		return this == TRUE || this == UNKNOWN;
 	}
-	
+
 	public TruthValue not() {
-		if(this == True) {
-			return False;
-		} else if(this == False) {
-			return True;
+		if (this == TRUE) {
+			return FALSE;
+		} else if (this == FALSE) {
+			return TRUE;
 		} else {
 			return this;
 		}

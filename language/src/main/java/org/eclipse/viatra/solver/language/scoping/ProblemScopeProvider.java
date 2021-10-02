@@ -57,16 +57,14 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	protected IScope getVariableScope(EObject context, IScope delegateScope) {
 		List<Variable> variables = new ArrayList<>();
 		EObject currentContext = context;
-		if (context instanceof VariableOrNodeArgument) {
-			VariableOrNodeArgument argument = (VariableOrNodeArgument) context;
+		if (context instanceof VariableOrNodeArgument argument) {
 			Variable singletonVariable = argument.getSingletonVariable();
 			if (singletonVariable != null) {
 				variables.add(singletonVariable);
 			}
 		}
 		while (currentContext != null && !(currentContext instanceof PredicateDefinition)) {
-			if (currentContext instanceof ExistentialQuantifier) {
-				ExistentialQuantifier quantifier = (ExistentialQuantifier) currentContext;
+			if (currentContext instanceof ExistentialQuantifier quantifier) {
 				variables.addAll(quantifier.getImplicitVariables());
 			}
 			currentContext = currentContext.eContainer();

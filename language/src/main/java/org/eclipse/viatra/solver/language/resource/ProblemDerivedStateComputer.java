@@ -62,8 +62,8 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			return null;
 		}
 		EObject object = contents.get(0);
-		if (object instanceof Problem) {
-			return (Problem) object;
+		if (object instanceof Problem problem) {
+			return problem;
 		}
 		return null;
 	}
@@ -79,12 +79,10 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 
 	protected void installNewNodes(Problem problem, Adapter adapter) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration) {
-				var declaration = (ClassDeclaration) statement;
-				if (!declaration.isAbstract() && declaration.getNewNode() == null) {
-					var newNode = adapter.createNodeIfAbsent(declaration, key -> createNode(NEW_NODE));
-					declaration.setNewNode(newNode);
-				}
+			if (statement instanceof ClassDeclaration declaration && !declaration.isAbstract()
+					&& declaration.getNewNode() == null) {
+				var newNode = adapter.createNodeIfAbsent(declaration, key -> createNode(NEW_NODE));
+				declaration.setNewNode(newNode);
 			}
 		}
 	}
@@ -120,8 +118,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		Set<ClassDeclaration> classDeclarations = new HashSet<>();
 		problem.getNodes().clear();
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration) {
-				var classDeclaration = (ClassDeclaration) statement;
+			if (statement instanceof ClassDeclaration classDeclaration) {
 				classDeclaration.setNewNode(null);
 				classDeclarations.add(classDeclaration);
 			}

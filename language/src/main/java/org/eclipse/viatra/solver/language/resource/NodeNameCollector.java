@@ -52,10 +52,10 @@ public class NodeNameCollector {
 	}
 
 	protected void collectStatementNodeNames(Statement statement) {
-		if (statement instanceof Assertion) {
-			collectAssertionNodeNames((Assertion) statement);
-		} else if (statement instanceof NodeValueAssertion) {
-			collectNodeValueAssertionNodeNames((NodeValueAssertion) statement);
+		if (statement instanceof Assertion assertion) {
+			collectAssertionNodeNames(assertion);
+		} else if (statement instanceof NodeValueAssertion nodeValueAssertion) {
+			collectNodeValueAssertionNodeNames(nodeValueAssertion);
 		}
 	}
 

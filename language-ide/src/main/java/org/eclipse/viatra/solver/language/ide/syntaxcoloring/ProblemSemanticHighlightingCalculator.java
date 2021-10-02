@@ -105,9 +105,8 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			return new String[] { BUILTIN_CLASS };
 		}
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
-		if (eObject instanceof ClassDeclaration) {
+		if (eObject instanceof ClassDeclaration classDeclaration) {
 			classesBuilder.add(CLASS_CLASS);
-			var classDeclaration = (ClassDeclaration) eObject;
 			if (classDeclaration.isAbstract()) {
 				classesBuilder.add(ABSTRACT_CLASS);
 			}
@@ -115,23 +114,20 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (eObject instanceof EnumDeclaration) {
 			classesBuilder.add(ENUM_CLASS);
 		}
-		if (eObject instanceof ReferenceDeclaration) {
+		if (eObject instanceof ReferenceDeclaration referenceDeclaration) {
 			classesBuilder.add(REFERENCE_CLASS);
-			var referenceDeclaration = (ReferenceDeclaration) eObject;
 			if (referenceDeclaration.isContainment()) {
 				classesBuilder.add(CONTAINMENT_CLASS);
 			}
 		}
-		if (eObject instanceof PredicateDefinition) {
+		if (eObject instanceof PredicateDefinition predicateDefinition) {
 			classesBuilder.add(PREDICATE_CLASS);
-			var predicateDefinition = (PredicateDefinition) eObject;
 			if (predicateDefinition.isError()) {
 				classesBuilder.add(ERROR_CLASS);
 			}
 		}
-		if (eObject instanceof Node) {
+		if (eObject instanceof Node node) {
 			classesBuilder.add(NODE_CLASS);
-			var node = (Node) eObject;
 			if (ProblemUtil.isUniqueNode(node)) {
 				classesBuilder.add(UNIQUE_NODE_CLASS);
 			}
@@ -142,9 +138,8 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (eObject instanceof Parameter) {
 			classesBuilder.add(PARAMETER_CLASS);
 		}
-		if (eObject instanceof Variable) {
+		if (eObject instanceof Variable variable) {
 			classesBuilder.add(VARIABLE_CLASS);
-			var variable = (Variable) eObject;
 			if (ProblemUtil.isSingletonVariable(variable)) {
 				classesBuilder.add(SINGLETON_VARIABLE_CLASS);
 			}

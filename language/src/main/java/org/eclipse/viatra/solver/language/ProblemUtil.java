@@ -74,8 +74,8 @@ public final class ProblemUtil {
 			if (!found.contains(current)) {
 				found.add(current);
 				for (Relation superType : current.getSuperTypes()) {
-					if (superType instanceof ClassDeclaration) {
-						queue.addLast((ClassDeclaration) superType);
+					if (superType instanceof ClassDeclaration superDeclaration) {
+						queue.addLast(superDeclaration);
 					}
 				}
 			}

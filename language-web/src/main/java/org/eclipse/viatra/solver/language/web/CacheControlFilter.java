@@ -34,9 +34,7 @@ public class CacheControlFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-			var httpRequest = (HttpServletRequest) request;
-			var httpResponse = (HttpServletResponse) response;
+		if (request instanceof HttpServletRequest httpRequest && response instanceof HttpServletResponse httpResponse) {
 			if (CACHE_URI_PATTERN.matcher(httpRequest.getRequestURI()).matches()) {
 				httpResponse.setHeader(CACHE_CONTROL_HEADER, CACHE_CONTROL_CACHE_VALUE);
 				httpResponse.setDateHeader(EXPIRES_HEADER, System.currentTimeMillis() + EXPIRY * 1000L);

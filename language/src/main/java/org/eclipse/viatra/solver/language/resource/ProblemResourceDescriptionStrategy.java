@@ -80,8 +80,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			// Variables are always private to the containing predicate definition.
 			return false;
 		}
-		if (eObject instanceof Node) {
-			var node = (Node) eObject;
+		if (eObject instanceof Node node) {
 			// Only enum literals and new nodes are visible across problem files.
 			return ProblemUtil.isUniqueNode(node) || ProblemUtil.isNewNode(node);
 		}
@@ -89,8 +88,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	}
 
 	protected boolean shouldExportSimpleName(EObject eObject) {
-		if (eObject instanceof Node) {
-			return !ProblemUtil.isNewNode((Node) eObject);
+		if (eObject instanceof Node node) {
+			return !ProblemUtil.isNewNode(node);
 		}
 		return true;
 	}

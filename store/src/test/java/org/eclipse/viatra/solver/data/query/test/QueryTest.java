@@ -52,7 +52,7 @@ class QueryTest {
 	void modelBuildingTest() {
 		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<Integer> age = new Relation<Integer>("age", 1, null);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.False);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, age, friend));
 		Model model = store.createModel();
@@ -61,8 +61,8 @@ class QueryTest {
 		model.put(person, Tuple.of(1), true);
 		model.put(age, Tuple.of(0), 3);
 		model.put(age, Tuple.of(1), 1);
-		model.put(friend, Tuple.of(0, 1), TruthValue.True);
-		model.put(friend, Tuple.of(1, 0), TruthValue.Unknown);
+		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
+		model.put(friend, Tuple.of(1, 0), TruthValue.UNKNOWN);
 
 		// Sanity check
 		assertTrue(model.get(person, Tuple.of(0)));

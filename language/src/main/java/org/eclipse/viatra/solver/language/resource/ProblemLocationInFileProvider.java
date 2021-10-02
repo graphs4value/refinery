@@ -10,8 +10,8 @@ import org.eclipse.xtext.util.ITextRegion;
 public class ProblemLocationInFileProvider extends DefaultLocationInFileProvider {
 	@Override
 	protected ITextRegion doGetTextRegion(EObject obj, RegionDescription query) {
-		if (obj instanceof Node) {
-			return getNodeTextRegion((Node) obj, query);
+		if (obj instanceof Node node) {
+			return getNodeTextRegion(node, query);
 		}
 		if (obj instanceof ImplicitVariable) {
 			return ITextRegion.EMPTY_REGION;

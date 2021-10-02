@@ -1,7 +1,6 @@
 package org.eclipse.viatra.solver.data.model;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +33,7 @@ public class ModelStoreImpl implements ModelStore {
 		Map<SimilarRelationEquivalenceClass, List<Relation<?>>> symbolRepresentationsPerHashPerArity = new HashMap<>();
 
 		for (DataRepresentation<?, ?> dataRepresentation : dataRepresentations) {
-			if (dataRepresentation instanceof Relation<?>) {
-				Relation<?> symbolRepresentation = (Relation<?>) dataRepresentation;
+			if (dataRepresentation instanceof Relation<?> symbolRepresentation) {
 				addOrCreate(symbolRepresentationsPerHashPerArity,
 						new SimilarRelationEquivalenceClass(symbolRepresentation), symbolRepresentation);
 			} else if (dataRepresentation instanceof AuxilaryData<?, ?>) {
@@ -58,10 +56,10 @@ public class ModelStoreImpl implements ModelStore {
 			List<Relation<?>> symbolGroup) {
 		final ContinousHashProvider<Tuple> hashProvider = symbolGroup.get(0).getHashProvider();
 		final Object defaultValue = symbolGroup.get(0).getDefaultValue();
-		
+
 		List<VersionedMapStore<Tuple, Object>> maps = VersionedMapStoreImpl
 				.createSharedVersionedMapStores(symbolGroup.size(), hashProvider, defaultValue);
-		
+
 		for (int i = 0; i < symbolGroup.size(); i++) {
 			result.put(symbolGroup.get(i), maps.get(i));
 		}
@@ -100,24 +98,20 @@ public class ModelStoreImpl implements ModelStore {
 		}
 		return new ModelImpl(this, maps);
 	}
-	
+
 	@Override
-	@SuppressWarnings("squid:S1751")
 	public synchronized Set<Long> getStates() {
-		// if not empty, return first
-		for(VersionedMapStore<?, ?> store : stores.values()) {
-			return new HashSet<>(store.getStates());
+		var iterator = stores.values().iterator();
+		if (iterator.hasNext()) {
+			return Set.copyOf(iterator.next().getStates());
 		}
-		// if empty
-		Set<Long> result = new HashSet<>();
-		result.add(0l);
-		return result;
+		return Set.of(0l);
 	}
 
 	@Override
 	public synchronized ModelDiffCursor getDiffCursor(long from, long to) {
-		Map<DataRepresentation<?, ?>,DiffCursor<?,?>> diffcursors = new HashMap<>();
-		for(Entry<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> entry : stores.entrySet()) {
+		Map<DataRepresentation<?, ?>, DiffCursor<?, ?>> diffcursors = new HashMap<>();
+		for (Entry<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> entry : stores.entrySet()) {
 			DataRepresentation<?, ?> representation = entry.getKey();
 			DiffCursor<?, ?> diffCursor = entry.getValue().getDiffCursor(from, to);
 			diffcursors.put(representation, diffCursor);

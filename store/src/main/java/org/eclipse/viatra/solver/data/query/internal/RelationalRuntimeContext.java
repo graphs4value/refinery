@@ -37,7 +37,6 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 		return metaContext;
 	}
 
-	// 
 	/**
 	 * TODO: check {@link NavigationHelperImpl#coalesceTraversals(Callable)}
 	 */
@@ -57,8 +56,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
-		if(key instanceof RelationView<?>) {
-			RelationView<?> relationalKey = (RelationView<?>) key;
+		if(key instanceof RelationView<?> relationalKey) {
 			return this.relationUpdateListener.containsRelationalView(relationalKey);
 		} else {
 			return false;
