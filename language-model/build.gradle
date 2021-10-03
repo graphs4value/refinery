@@ -29,12 +29,10 @@ def generateEPackage = tasks.register('generateEPackage', JavaExec) {
 	args += "rootPath=/${projectDir}"
 }
 
-tasks.named('compileJava') {
-	dependsOn generateEPackage
-}
-
-tasks.named('processResources') {
-	dependsOn generateEPackage
+for (taskName in ['compileJava', 'processResources', 'generateEclipseSourceFolders']) {
+	tasks.named(taskName) {
+		dependsOn generateEPackage
+	}
 }
 
 tasks.named('clean') {

@@ -13,4 +13,3 @@ indent_size = 4
 [*.{html,js,json,jsx,scss,ts,tsx,yml}]
 indent_style = space
 indent_size = 2
-

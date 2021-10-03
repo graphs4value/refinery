@@ -46,17 +46,10 @@ def generateXtextLanguage = tasks.register('generateXtextLanguage', JavaExec) {
 	args += "rootPath=/${projectDir}/.."
 }
 
-def generateXtext = tasks.named('generateXtext')
-generateXtext.configure {
-	dependsOn generateXtextLanguage
-}
-
-tasks.named('compileJava') {
-	dependsOn generateXtext
-}
-
-tasks.named('processResources') {
-	dependsOn generateXtext
+for (taskName in ['compileJava', 'processResources', 'generateXtext', 'generateEclipseSourceFolders']) {
+	tasks.named(taskName) {
+		dependsOn generateXtextLanguage
+	}
 }
 
 tasks.named('clean') {
@@ -71,9 +64,4 @@ sonarqube.properties {
 	properties['sonar.exclusions'] += [
 		'src/testFixtures/xtext-gen/**',
 	]
-}
-
-tasks.named('eclipseJdt') {
-	// Make sure all xtext-gen source folders are available.
-	dependsOn generateXtextLanguage
 }

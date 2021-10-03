@@ -16,6 +16,17 @@ tasks.named('jar') {
 
 apply plugin: 'eclipse'
 
+def generateEclipseSourceFolders = tasks.register('generateEclipseSourceFolders')
+
+tasks.register('prepareEclipse') {
+	dependsOn generateEclipseSourceFolders
+	dependsOn tasks.named('eclipseJdt')
+}
+
+tasks.named('eclipseClasspath') {
+	dependsOn generateEclipseSourceFolders
+}
+
 eclipse {
 	classpath.file.whenMerged {
 		for (entry in entries) {
@@ -30,4 +41,3 @@ eclipse {
 		properties['org.eclipse.jdt.core.compiler.problem.unhandledWarningToken'] = 'ignore'
 	}
 }
-

@@ -12,19 +12,17 @@ dependencies {
 	implementation "org.slf4j:slf4j-simple:${slf4JVersion}"
 }
 
-def generateXtext = project(':refinery-language').tasks.named('generateXtext')
+def generateXtextLanguage = project(':refinery-language').tasks.named('generateXtextLanguage')
 
-tasks.named('compileJava') {
-	dependsOn generateXtext
-}
-
-tasks.named('processResources') {
-	dependsOn generateXtext
+for (taskName in ['compileJava', 'processResources']) {
+	tasks.named(taskName) {
+		dependsOn generateXtextLanguage
+	}
 }
 
 def webpackOutputDir = "${buildDir}/webpack"
 def productionResources = "${webpackOutputDir}/production"
-def mainClass = 'org.eclipse.viatra.solver.language.web.ServerLauncher'
+def serverMainClass = 'org.eclipse.viatra.solver.language.web.ServerLauncher'
 
 apply plugin: 'org.siouan.frontend-jdk11'
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
@@ -42,7 +40,7 @@ def installFrontend = tasks.named('installFrontend')
 
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
-	dependsOn generateXtext
+	dependsOn generateXtextLanguage
 	inputs.dir 'src/main/css'
 	inputs.dir 'src/main/html'
 	inputs.dir 'src/main/js'
@@ -53,7 +51,7 @@ assembleFrontend.configure {
 
 tasks.register('webpackStats', RunNpmYarn) {
 	dependsOn installFrontend
-	dependsOn generateXtext
+	dependsOn generateXtextLanguage
 	inputs.dir 'src/main/css'
 	inputs.dir 'src/main/html'
 	inputs.dir 'src/main/js'
@@ -93,7 +91,7 @@ tasks.named('jar') {
 }
 
 apply plugin: 'application'
-mainClassName = mainClass
+mainClassName = serverMainClass
 distTar.enabled = false
 distZip.enabled = false
 
@@ -118,7 +116,7 @@ def jettyRun = tasks.register('jettyRun', JavaExec) {
 	dependsOn assembleFrontend
 	dependsOn sourceSets.main.runtimeClasspath
 	classpath = sourceSets.main.runtimeClasspath.filter{it.exists()}
-	main = mainClass
+	mainClass = serverMainClass
 	standardInput = System.in
 	environment BASE_RESOURCE: productionResources
 	group = 'run'
@@ -127,7 +125,7 @@ def jettyRun = tasks.register('jettyRun', JavaExec) {
 
 tasks.register('webpackServe', RunNpmYarn) {
 	dependsOn installFrontend
-	dependsOn generateXtext
+	dependsOn generateXtextLanguage
 	outputs.dir "${webpackOutputDir}/development"
 	script = 'run serve'
 	group = 'run'
@@ -144,10 +142,4 @@ sonarqube.properties {
 		'src/main/css/xtext/**',
 		'src/main/js/xtext/**',
 	]
-}
-
-eclipse {
-	project.file.whenMerged {
-		natures.remove('org.eclipse.wst.common.modulecore.ModuleCoreNature')
-	}
 }

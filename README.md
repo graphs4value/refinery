@@ -28,7 +28,7 @@
 	  
 7. Clone the project Git repository but do not import it into Eclipse yet.
 
-8. Open a new terminal an run `./gradlew eclipseJdt` (`.\gradlew eclipseJdt` on Windows) in the cloned repository.
+8. Open a new terminal an run `./gradlew prepareEclipse` (`.\gradlew prepareEclipse` on Windows) in the cloned repository.
     * This should complete without any compilation errors.
     * If you get any errors about the JVM version, check whether the `JAVA_HOME` environment variable is set to the location of JDK. You can query the variable with `echo $JAVA_HOME` on Linux and `echo $Env:JAVA_HOME` in PowerShell on Windows. To set it, use `export JAVA_HOME=/java/path/here` or `$Env:JAVA_HOME="C:\java\path\here"`, respectively.
 
