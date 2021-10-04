@@ -8,7 +8,7 @@
     copyrightFields="false" operationReflection="true" importOrganizing="true">
   <foreignModel>problem.ecore</foreignModel>
   <testsDirectory xsi:nil="true"/>
-  <genPackages prefix="Problem" basePackage="org.eclipse.viatra.solver.language.model"
+  <genPackages prefix="Problem" basePackage="tools.refinery.language.model"
       disposableProviderFactory="true" ecorePackage="problem.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//LogicValue">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LogicValue/TRUE"/>

@@ -34,14 +34,14 @@ tasks.named('jar') {
 def generateXtextLanguage = tasks.register('generateXtextLanguage', JavaExec) {
 	mainClass = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
 	classpath = configurations.mwe2
-	inputs.file 'src/main/java/org/eclipse/viatra/solver/language/GenerateProblem.mwe2'
-	inputs.file 'src/main/java/org/eclipse/viatra/solver/language/Problem.xtext'
+	inputs.file 'src/main/java/tools/refinery/language/GenerateProblem.mwe2'
+	inputs.file 'src/main/java/tools/refinery/language/Problem.xtext'
 	outputs.dir 'src/main/xtext-gen'
 	outputs.dir 'src/testFixtures/xtext-gen'
 	outputs.dir '../language-ide/src/main/xtext-gen'
 	outputs.dir '../language-web/src/main/xtext-gen'
 	outputs.dir '../language-web/build/generated/sources/xtext'
-	args += 'src/main/java/org/eclipse/viatra/solver/language/GenerateProblem.mwe2'
+	args += 'src/main/java/tools/refinery/language/GenerateProblem.mwe2'
 	args += '-p'
 	args += "rootPath=/${projectDir}/.."
 }

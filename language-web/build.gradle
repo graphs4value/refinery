@@ -22,7 +22,7 @@ for (taskName in ['compileJava', 'processResources']) {
 
 def webpackOutputDir = "${buildDir}/webpack"
 def productionResources = "${webpackOutputDir}/production"
-def serverMainClass = 'org.eclipse.viatra.solver.language.web.ServerLauncher'
+def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
 
 apply plugin: 'org.siouan.frontend-jdk11'
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn

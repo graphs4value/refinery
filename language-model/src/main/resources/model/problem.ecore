@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="problem" nsURI="http://www.eclipse.org/viatra/solver/language/model/Problem"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="problem" nsURI="https://refinery.tools/emf/2021/Problem"
     nsPrefix="problem">
   <eClassifiers xsi:type="ecore:EClass" name="Problem" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="nodes" upperBound="-1"

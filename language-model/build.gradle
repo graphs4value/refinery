@@ -20,11 +20,11 @@ sourceSets {
 def generateEPackage = tasks.register('generateEPackage', JavaExec) {
 	mainClass = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
 	classpath = configurations.mwe2
-	inputs.file 'src/main/java/org/eclipse/viatra/solver/language/model/GenerateProblemModel.mwe2'
+	inputs.file 'src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2'
 	inputs.file 'src/main/resources/model/problem.ecore'
 	inputs.file 'src/main/resources/model/problem.genmodel'
 	outputs.dir 'src/main/emf-gen'
-	args += 'src/main/java/org/eclipse/viatra/solver/language/model/GenerateProblemModel.mwe2'
+	args += 'src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2'
 	args += '-p'
 	args += "rootPath=/${projectDir}"
 }
