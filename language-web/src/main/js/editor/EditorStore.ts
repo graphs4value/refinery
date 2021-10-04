@@ -24,6 +24,8 @@ const codeMirrorGlobalOptions: EditorConfiguration = {
   mode: `xtext/${xtextLang}`,
   indentUnit: 2,
   styleActiveLine: true,
+  screenReaderLabel: 'Model source code',
+  inputStyle: 'contenteditable',
 };
 
 export class EditorStore {
