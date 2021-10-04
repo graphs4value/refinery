@@ -20,6 +20,6 @@ public class ProblemGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 
 	private static URI getLibraryUri(String libraryName) {
 		return URI.createURI(ProblemGlobalScopeProvider.class.getClassLoader()
-				.getResource("org/eclipse/viatra/solver/language/" + libraryName + ".problem").toString());
+				.getResource("tools/refinery/" + libraryName + ".problem").toString());
 	}
 }
