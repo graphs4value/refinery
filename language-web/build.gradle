@@ -27,9 +27,11 @@ def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
 apply plugin: 'org.siouan.frontend-jdk11'
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
+def nodeDirectory = "${rootDir}/.gradle/node"
+
 frontend {
 	nodeVersion = project.ext.nodeVersion
-	nodeInstallDirectory = file("${rootDir}/.gradle/node")
+	nodeInstallDirectory = file(nodeDirectory)
 	yarnEnabled = true
 	yarnVersion = project.ext.yarnVersion
 	yarnInstallDirectory = file("${rootDir}/.gradle/yarn")
@@ -49,23 +51,16 @@ assembleFrontend.configure {
 	outputs.dir productionResources
 }
 
-tasks.register('webpackStats', RunNpmYarn) {
-	dependsOn installFrontend
-	dependsOn generateXtextLanguage
-	inputs.dir 'src/main/css'
-	inputs.dir 'src/main/html'
-	inputs.dir 'src/main/js'
-	inputs.dir "${buildDir}/generated/sources/xtext/js"
-	inputs.files('package.json', 'yarn.lock', 'webpack.config.js')
-	outputs.file "${buildDir}/webpack/stats.json"
-	script = 'run stats'
-}
-
 def eslint = tasks.register('eslint', RunNpmYarn) {
 	dependsOn installFrontend
 	inputs.dir 'src/main/js'
 	inputs.files('.eslintrc.js', 'tsconfig.json')
-	script = 'run check:eslint'
+	if (project.hasProperty('ci')) {
+		outputs.file "${buildDir}/eslint.json"
+		script = 'run check:eslint:ci'
+	} else {
+		script = 'run check:eslint'
+	}
 	group = 'verification'
 	description = 'Check for TypeScript errors.'
 }
@@ -74,7 +69,12 @@ def stylelint = tasks.register('stylelint', RunNpmYarn) {
 	dependsOn installFrontend
 	inputs.dir 'src/main/css'
 	inputs.file '.stylelintrc.js'
-	script = 'run check:stylelint'
+	if (project.hasProperty('ci')) {
+		outputs.file "${buildDir}/stylelint.json"
+		script = 'run check:stylelint:ci'
+	} else {
+		script = 'run check:stylelint'
+	}
 	group = 'verification'
 	description = 'Check for Sass errors.'
 }
@@ -142,4 +142,7 @@ sonarqube.properties {
 		'src/main/css/xtext/**',
 		'src/main/js/xtext/**',
 	]
+	property 'sonar.nodejs.executable', "${nodeDirectory}/bin/node"
+	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
+	property 'sonar.css.stylelint.reportPaths', "${buildDir}/stylelint.json"
 }
