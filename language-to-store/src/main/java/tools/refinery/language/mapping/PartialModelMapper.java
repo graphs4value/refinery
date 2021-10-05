@@ -1,7 +1,7 @@
 package tools.refinery.language.mapping;
 
-import tools.refinery.data.model.Model;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.store.model.Model;
 
 public class PartialModelMapper {
 	public Model transformProblem(Problem problem) {
