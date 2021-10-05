@@ -25,6 +25,7 @@
     * Add the JDK 17 to _Java > Installed JREs_.
     * Make sure JDK 17 is selected for _JavaSE-17_ at _Java > Installed JREs > Execution Environments_.
     * Set _Gradle > Java home_ to the `JAVA_HOME` directory (the directory which contains the `bin` directory) of JDK 17. Here, Buildship will show a yellow warning sign, which can be safely ignored.
+    * Set _Java > Compiler > JDK Compilance > Compiler compilance level_ to _17_. The warning about using Java 16 system libraries during compilation should disappear.
 	  
 7. Clone the project Git repository but do not import it into Eclipse yet.
 
