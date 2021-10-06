@@ -145,4 +145,6 @@ sonarqube.properties {
 	property 'sonar.nodejs.executable', "${nodeDirectory}/bin/node"
 	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
 	property 'sonar.css.stylelint.reportPaths', "${buildDir}/stylelint.json"
+	// SonarJS does not pick up typescript files with `exactOptionalPropertyTypes`
+	property 'sonar.typescript.tsconfigPath', 'tsconfig.sonar.json'
 }
