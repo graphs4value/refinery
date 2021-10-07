@@ -11,16 +11,17 @@ import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.Set;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.SessionTrackingMode;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.log.Slf4jLog;
 import org.eclipse.jetty.util.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.SessionTrackingMode;
 
 public class ServerLauncher {
 	public static final String DEFAULT_LISTEN_ADDRESS = "localhost";
@@ -30,7 +31,7 @@ public class ServerLauncher {
 	// Use this cookie name for load balancing.
 	public static final String SESSION_COOKIE_NAME = "JSESSIONID";
 
-	private static final Slf4jLog LOG = new Slf4jLog(ServerLauncher.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(ServerLauncher.class);
 
 	private final Server server;
 
@@ -71,15 +72,8 @@ public class ServerLauncher {
 
 	public void start() throws Exception {
 		server.start();
-		LOG.info("Server started " + server.getURI() + "...");
-		LOG.info("Press enter to stop the server...");
-		int key = System.in.read();
-		if (key != -1) {
-			server.stop();
-		} else {
-			LOG.warn("Console input is not available. "
-					+ "In order to stop the server, you need to cancel process manually.");
-		}
+		LOG.info("Server started on {}", server.getURI());
+		server.join();
 	}
 
 	public static void main(String[] args) {
@@ -89,7 +83,7 @@ public class ServerLauncher {
 			var serverLauncher = new ServerLauncher(bindAddress, baseResource);
 			serverLauncher.start();
 		} catch (Exception exception) {
-			LOG.warn(exception);
+			LOG.error("Fatal server error", exception);
 			System.exit(1);
 		}
 	}

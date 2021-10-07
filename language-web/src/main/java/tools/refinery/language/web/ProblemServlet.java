@@ -3,29 +3,27 @@
  */
 package tools.refinery.language.web;
 
-import javax.servlet.ServletException;
-
 import org.eclipse.xtext.util.DisposableRegistry;
-import org.eclipse.xtext.web.servlet.XtextServlet;
+
+import jakarta.servlet.ServletException;
+import tools.refinery.language.web.xtext.XtextServlet;
 
 /**
  * Deploy this class into a servlet container to enable DSL-specific services.
  */
 public class ProblemServlet extends XtextServlet {
-	
-	private static final long serialVersionUID = 1L;
-	
-	// Xtext requires a mutable servlet instance field.
-	@SuppressWarnings("squid:S2226")
-	private DisposableRegistry disposableRegistry;
-	
+
+	private static final long serialVersionUID = -9204695886561362912L;
+
+	private transient DisposableRegistry disposableRegistry;
+
 	@Override
 	public void init() throws ServletException {
 		super.init();
 		var injector = new ProblemWebSetup().createInjectorAndDoEMFRegistration();
 		this.disposableRegistry = injector.getInstance(DisposableRegistry.class);
 	}
-	
+
 	@Override
 	public void destroy() {
 		if (disposableRegistry != null) {
@@ -34,5 +32,5 @@ public class ProblemServlet extends XtextServlet {
 		}
 		super.destroy();
 	}
-	
+
 }

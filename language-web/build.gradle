@@ -4,12 +4,12 @@ apply from: "${rootDir}/gradle/xtext-common.gradle"
 dependencies {
 	implementation project(':refinery-language')
 	implementation project(':refinery-language-ide')
-	implementation "org.eclipse.xtext:org.eclipse.xtext.xbase.web:${xtextVersion}"
-	implementation "org.eclipse.xtext:org.eclipse.xtext.web.servlet:${xtextVersion}"
+	implementation "org.eclipse.xtext:org.eclipse.xtext.web:${xtextVersion}"
 	implementation "org.eclipse.xtend:org.eclipse.xtend.lib:${xtextVersion}"
 	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
 	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
 	implementation "org.slf4j:slf4j-simple:${slf4JVersion}"
+	implementation "org.slf4j:log4j-over-slf4j:${slf4JVersion}"
 }
 
 def generateXtextLanguage = project(':refinery-language').tasks.named('generateXtextLanguage')
