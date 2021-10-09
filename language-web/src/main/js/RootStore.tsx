@@ -8,9 +8,9 @@ export class RootStore {
 
   themeStore;
 
-  constructor() {
+  constructor(initialValue: string) {
     this.themeStore = new ThemeStore();
-    this.editorStore = new EditorStore(this.themeStore);
+    this.editorStore = new EditorStore(initialValue, this.themeStore);
   }
 }
 

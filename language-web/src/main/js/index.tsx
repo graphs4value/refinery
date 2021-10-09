@@ -44,8 +44,7 @@ age(bob, bobAge).
 scope Family = 1, Person += 5..10.
 `;
 
-const rootStore = new RootStore();
-rootStore.editorStore.updateValue(initialValue);
+const rootStore = new RootStore(initialValue);
 
 const app = (
   <RootStoreProvider rootStore={rootStore}>

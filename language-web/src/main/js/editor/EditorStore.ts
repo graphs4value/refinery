@@ -1,201 +1,217 @@
-import type { Editor, EditorConfiguration } from 'codemirror';
+import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/closebrackets';
+import { defaultKeymap, indentWithTab } from '@codemirror/commands';
+import { commentKeymap } from '@codemirror/comment';
+import { foldGutter, foldKeymap } from '@codemirror/fold';
+import { highlightActiveLineGutter, lineNumbers } from '@codemirror/gutter';
+import { classHighlightStyle } from '@codemirror/highlight';
 import {
-  createAtom,
+  history,
+  historyKeymap,
+  redo,
+  redoDepth,
+  undo,
+  undoDepth,
+} from '@codemirror/history';
+import { indentOnInput } from '@codemirror/language';
+import { lintKeymap } from '@codemirror/lint';
+import { bracketMatching } from '@codemirror/matchbrackets';
+import { rectangularSelection } from '@codemirror/rectangular-selection';
+import { searchConfig, searchKeymap } from '@codemirror/search';
+import {
+  EditorState,
+  StateCommand,
+  StateEffect,
+  Transaction,
+  TransactionSpec,
+} from '@codemirror/state';
+import {
+  drawSelection,
+  EditorView,
+  highlightActiveLine,
+  highlightSpecialChars,
+  keymap,
+} from '@codemirror/view';
+import {
   makeAutoObservable,
   observable,
-  runInAction,
+  reaction,
 } from 'mobx';
-import type { IXtextOptions, IXtextServices } from 'xtext/xtext-codemirror';
 
-import type { IEditorChunk } from './editor';
 import { getLogger } from '../logging';
 import type { ThemeStore } from '../theme/ThemeStore';
 
 const log = getLogger('EditorStore');
 
-const xtextLang = 'problem';
-
-const xtextOptions: IXtextOptions = {
-  xtextLang,
-  enableFormattingAction: true,
-};
-
-const codeMirrorGlobalOptions: EditorConfiguration = {
-  mode: `xtext/${xtextLang}`,
-  indentUnit: 2,
-  styleActiveLine: true,
-  screenReaderLabel: 'Model source code',
-  inputStyle: 'contenteditable',
-};
-
 export class EditorStore {
   themeStore;
 
-  atom;
+  state: EditorState;
 
-  chunk?: IEditorChunk;
-
-  editor?: Editor;
-
-  xtextServices?: IXtextServices;
-
-  value = '';
+  emptyHistory: unknown;
 
   showLineNumbers = false;
 
-  initialSelection!: { start: number, end: number, focused: boolean };
+  showSearchPanel = false;
 
-  constructor(themeStore: ThemeStore) {
+  showLintPanel = false;
+
+  readonly defaultDispatcher = (tr: Transaction): void => {
+    this.onTransaction(tr);
+  };
+
+  dispatcher = this.defaultDispatcher;
+
+  constructor(initialValue: string, themeStore: ThemeStore) {
     this.themeStore = themeStore;
-    this.atom = createAtom('EditorStore');
-    this.resetInitialSelection();
+    this.state = EditorState.create({
+      doc: initialValue,
+      extensions: [
+        autocompletion(),
+        classHighlightStyle.extension,
+        closeBrackets(),
+        bracketMatching(),
+        drawSelection(),
+        EditorState.allowMultipleSelections.of(true),
+        EditorView.theme({}, {
+          dark: this.themeStore.darkMode,
+        }),
+        highlightActiveLine(),
+        highlightActiveLineGutter(),
+        highlightSpecialChars(),
+        history(),
+        indentOnInput(),
+        rectangularSelection(),
+        searchConfig({
+          top: true,
+          matchCase: true,
+        }),
+        // We add the gutters to `extensions` in the order we want them to appear.
+        foldGutter(),
+        lineNumbers(),
+        keymap.of([
+          ...closeBracketsKeymap,
+          ...commentKeymap,
+          ...completionKeymap,
+          ...foldKeymap,
+          ...historyKeymap,
+          indentWithTab,
+          // Override keys in `lintKeymap` to go through the `EditorStore`.
+          { key: 'Mod-Shift-m', run: () => this.setLintPanelOpen(true) },
+          ...lintKeymap,
+          // Override keys in `searchKeymap` to go through the `EditorStore`.
+          { key: 'Mod-f', run: () => this.setSearchPanelOpen(true), scope: 'editor search-panel' },
+          { key: 'Escape', run: () => this.setSearchPanelOpen(false), scope: 'editor search-panel' },
+          ...searchKeymap,
+          ...defaultKeymap,
+        ]),
+      ],
+    });
+    reaction(
+      () => this.themeStore.darkMode,
+      (darkMode) => {
+        log.debug('Update editor dark mode', darkMode);
+        this.dispatch({
+          effects: [
+            StateEffect.appendConfig.of(EditorView.theme({}, {
+              dark: darkMode,
+            })),
+          ],
+        });
+      },
+    );
     makeAutoObservable(this, {
       themeStore: false,
-      atom: false,
-      chunk: observable.ref,
-      editor: observable.ref,
-      xtextServices: observable.ref,
-      initialSelection: false,
-    });
-    this.loadChunk();
-  }
-
-  private loadChunk(): void {
-    const loadingStartMillis = Date.now();
-    log.info('Requesting editor chunk');
-    import('./editor').then(({ editorChunk }) => {
-      runInAction(() => {
-        this.chunk = editorChunk;
-      });
-      const loadingDurationMillis = Date.now() - loadingStartMillis;
-      log.info('Loaded editor chunk in', loadingDurationMillis, 'ms');
-    }).catch((error) => {
-      log.error('Error while loading editor', error);
+      state: observable.ref,
+      defaultDispatcher: false,
+      dispatcher: false,
     });
   }
 
-  setInitialSelection(start: number, end: number, focused: boolean): void {
-    this.initialSelection = { start, end, focused };
-    this.applyInitialSelectionToEditor();
+  updateDispatcher(newDispatcher: ((tr: Transaction) => void) | null): void {
+    this.dispatcher = newDispatcher || this.defaultDispatcher;
   }
 
-  private resetInitialSelection(): void {
-    this.initialSelection = {
-      start: 0,
-      end: 0,
-      focused: false,
-    };
+  onTransaction(tr: Transaction): void {
+    log.trace('Editor transaction', tr);
+    this.state = tr.state;
   }
 
-  private applyInitialSelectionToEditor(): void {
-    if (this.editor) {
-      const { start, end, focused } = this.initialSelection;
-      const doc = this.editor.getDoc();
-      const startPos = doc.posFromIndex(start);
-      const endPos = doc.posFromIndex(end);
-      doc.setSelection(startPos, endPos, {
-        scroll: true,
-      });
-      if (focused) {
-        this.editor.focus();
-      }
-      this.resetInitialSelection();
-    }
+  dispatch(...specs: readonly TransactionSpec[]): void {
+    this.dispatcher(this.state.update(...specs));
   }
 
-  /**
-   * Attaches a new CodeMirror instance and creates Xtext services.
-   *
-   * The store will not subscribe to any CodeMirror events. Instead,
-   * the editor component should subscribe to them and relay them to the store.
-   *
-   * @param newEditor The new CodeMirror instance
-   */
-  editorDidMount(newEditor: Editor): void {
-    if (!this.chunk) {
-      throw new Error('Editor not loaded yet');
-    }
-    if (this.editor) {
-      throw new Error('CoreMirror editor mounted before unmounting');
-    }
-    this.editor = newEditor;
-    this.xtextServices = this.chunk.createServices(newEditor, xtextOptions);
-    this.applyInitialSelectionToEditor();
-  }
-
-  editorWillUnmount(): void {
-    if (!this.chunk) {
-      throw new Error('Editor not loaded yet');
-    }
-    if (this.editor) {
-      this.chunk.removeServices(this.editor);
-    }
-    delete this.editor;
-    delete this.xtextServices;
-  }
-
-  /**
-   * Updates the contents of the editor.
-   *
-   * @param newValue The new contents of the editor
-   */
-  updateValue(newValue: string): void {
-    this.value = newValue;
-  }
-
-  reportChanged(): void {
-    this.atom.reportChanged();
-  }
-
-  protected observeEditorChanges(): void {
-    this.atom.reportObserved();
-  }
-
-  get codeMirrorTheme(): string {
-    return `problem-${this.themeStore.className}`;
-  }
-
-  get codeMirrorOptions(): EditorConfiguration {
-    return {
-      ...codeMirrorGlobalOptions,
-      theme: this.codeMirrorTheme,
-      lineNumbers: this.showLineNumbers,
-    };
+  doStateCommand(command: StateCommand): boolean {
+    return command({
+      state: this.state,
+      dispatch: this.dispatcher,
+    });
   }
 
   /**
    * @returns `true` if there is history to undo
    */
   get canUndo(): boolean {
-    this.observeEditorChanges();
-    if (!this.editor) {
-      return false;
-    }
-    const { undo: undoSize } = this.editor.historySize();
-    return undoSize > 0;
+    return undoDepth(this.state) > 0;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   undo(): void {
-    this.editor?.undo();
+    log.debug('Undo', this.doStateCommand(undo));
   }
 
   /**
    * @returns `true` if there is history to redo
    */
   get canRedo(): boolean {
-    this.observeEditorChanges();
-    if (!this.editor) {
-      return false;
-    }
-    const { redo: redoSize } = this.editor.historySize();
-    return redoSize > 0;
+    return redoDepth(this.state) > 0;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   redo(): void {
-    this.editor?.redo();
+    log.debug('Redo', this.doStateCommand(redo));
   }
 
   toggleLineNumbers(): void {
     this.showLineNumbers = !this.showLineNumbers;
+    log.debug('Show line numbers', this.showLineNumbers);
+  }
+
+  /**
+   * Sets whether the CodeMirror search panel should be open.
+   *
+   * This method can be used as a CodeMirror command,
+   * because it returns `false` if it didn't execute,
+   * allowing other commands for the same keybind to run instead.
+   * This matches the behavior of the `openSearchPanel` and `closeSearchPanel`
+   * commands from `'@codemirror/search'`.
+   *
+   * @param newShosSearchPanel whether we should show the search panel
+   * @returns `true` if the state was changed, `false` otherwise
+   */
+  setSearchPanelOpen(newShowSearchPanel: boolean): boolean {
+    if (this.showSearchPanel === newShowSearchPanel) {
+      return false;
+    }
+    this.showSearchPanel = newShowSearchPanel;
+    log.debug('Show search panel', this.showSearchPanel);
+    return true;
+  }
+
+  toggleSearchPanel(): void {
+    this.setSearchPanelOpen(!this.showSearchPanel);
+  }
+
+  setLintPanelOpen(newShowLintPanel: boolean): boolean {
+    if (this.showLintPanel === newShowLintPanel) {
+      return false;
+    }
+    this.showLintPanel = newShowLintPanel;
+    log.debug('Show lint panel', this.showLintPanel);
+    return true;
+  }
+
+  toggleLintPanel(): void {
+    this.setLintPanelOpen(!this.showLintPanel);
   }
 }

@@ -51,6 +51,10 @@ export class ThemeStore {
     return responsiveFontSizes(materialUiTheme);
   }
 
+  get darkMode(): boolean {
+    return this.currentThemeData.paletteMode === 'dark';
+  }
+
   get className(): string {
     return this.currentThemeData.className;
   }

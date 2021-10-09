@@ -2,8 +2,10 @@ import { observer } from 'mobx-react-lite';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import CheckIcon from '@mui/icons-material/Check';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import RedoIcon from '@mui/icons-material/Redo';
+import SearchIcon from '@mui/icons-material/Search';
 import UndoIcon from '@mui/icons-material/Undo';
 import React from 'react';
 
@@ -37,15 +39,34 @@ export const EditorButtons = observer(() => {
           <RedoIcon fontSize="small" />
         </ToggleButton>
       </ToggleButtonGroup>
-      <ToggleButton
-        selected={editorStore.showLineNumbers}
-        onChange={() => editorStore.toggleLineNumbers()}
+      <ToggleButtonGroup
         size="small"
-        aria-label="Show line numbers"
-        value="show-line-numbers"
       >
-        <FormatListNumberedIcon fontSize="small" />
-      </ToggleButton>
+        <ToggleButton
+          selected={editorStore.showLineNumbers}
+          onClick={() => editorStore.toggleLineNumbers()}
+          aria-label="Show line numbers"
+          value="show-line-numbers"
+        >
+          <FormatListNumberedIcon fontSize="small" />
+        </ToggleButton>
+        <ToggleButton
+          selected={editorStore.showSearchPanel}
+          onClick={() => editorStore.toggleSearchPanel()}
+          aria-label="Show find/replace"
+          value="show-search-panel"
+        >
+          <SearchIcon fontSize="small" />
+        </ToggleButton>
+        <ToggleButton
+          selected={editorStore.showLintPanel}
+          onClick={() => editorStore.toggleLintPanel()}
+          aria-label="Show errors and warnings"
+          value="show-lint-panel"
+        >
+          <CheckIcon fontSize="small" />
+        </ToggleButton>
+      </ToggleButtonGroup>
     </Stack>
   );
 });
