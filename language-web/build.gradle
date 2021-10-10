@@ -51,12 +51,12 @@ def generateLezerGrammar = tasks.register('generateLezerGrammar', RunNpmYarn) {
 
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
-	dependsOn generateXtextLanguage
 	dependsOn generateLezerGrammar
 	inputs.dir 'src/main/css'
 	inputs.dir 'src/main/html'
 	inputs.dir 'src/main/js'
-	inputs.dir "${buildDir}/generated/sources/xtext/js"
+	inputs.file "${buildDir}/generated/sources/lezer/problem.ts"
+	inputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
 	inputs.files('package.json', 'yarn.lock', 'webpack.config.js')
 	outputs.dir productionResources
 }
@@ -135,7 +135,7 @@ def jettyRun = tasks.register('jettyRun', JavaExec) {
 
 tasks.register('webpackServe', RunNpmYarn) {
 	dependsOn installFrontend
-	dependsOn generateXtextLanguage
+	dependsOn generateLezerGrammar
 	outputs.dir "${webpackOutputDir}/development"
 	script = 'run serve'
 	group = 'run'

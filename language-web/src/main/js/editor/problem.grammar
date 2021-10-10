@@ -3,40 +3,41 @@
 
 statement {
   ProblemDeclaration {
-    kw<"problem"> QualifiedName "."
+    ckw<"problem"> QualifiedName "."
   } |
   ClassDefinition {
-    kw<"abstract">? kw<"class"> RelationName
+    ckw<"abstract">? ckw<"class"> RelationName
     (ClassBody {  "{" ReferenceDeclaration* "}" } | ".")
   } |
   EnumDefinition {
-    kw<"enum"> RelationName
+    ckw<"enum"> RelationName
     (EnumBody { "{" sep<",", UniqueNodeName> "}" } | ".")
   } |
   PredicateDefinition {
-    (kw<"error"> kw<"pred">? | kw<"pred">) RelationName ParameterList<Parameter>?
+    (ckw<"error"> ckw<"pred">? | ckw<"pred">) RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
   } |
   Assertion {
-    kw<"default">? (NotOp | UnknownOp)? RelationName
+    ckw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument> (":" LogicValue)? "."
   } |
   UniqueDeclaration {
-    kw<"unique"> sep<",", UniqueNodeName> "."
+    ckw<"unique"> sep<",", UniqueNodeName> "."
   } |
   ScopeDeclaration {
-    kw<"scope"> sep<",", ScopeElement> "."
+    ckw<"scope"> sep<",", ScopeElement> "."
   }
 }
 
 ReferenceDeclaration {
-  (kw<"refers"> | kw<"contains">)?
-  RelationName
+  ((kw<"refers"> | kw<"contains">) !times RelationName | !plus RelationName)
   RelationName
   ( "[" Multiplicity? "]" )?
   (kw<"opposite"> RelationName)?
   ";"?
 }
+
+@precedence { times @left, plus }
 
 Parameter { RelationName? VariableName }
 
@@ -53,7 +54,7 @@ Argument { VariableName | Real }
 AssertionArgument { NodeName | StarArgument | Real }
 
 LogicValue {
-  kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
+  ckw<"true"> | ckw<"false"> | ckw<"unknown"> | ckw<"error">
 }
 
 ScopeElement { RelationName ("=" | "+=") Multiplicity }
@@ -71,6 +72,8 @@ NodeName { QualifiedName }
 QualifiedName { identifier ("::" identifier)* }
 
 kw<term> { @specialize[@name={term}]<identifier, term> }
+
+ckw<term> { @extend[@name={term}]<identifier, term> }
 
 ParameterList<content> { "(" sep<",", content> ")" }
 

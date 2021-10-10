@@ -25,7 +25,6 @@ const publicHost = process.env['PUBLIC_HOST'] || listenHost;
 const publicPort = portNumberOrElse('PUBLIC_PORT', listenPort);
 
 const resolveSources = sources => path.resolve(__dirname, 'src', sources);
-const resolveGenerated = sources => path.resolve(__dirname, 'build/generated/sources', sources);
 const mainJsSources = resolveSources('main/js');
 const babelLoaderFilters = {
   include: [mainJsSources],
@@ -150,7 +149,6 @@ module.exports = {
     modules: [
       'node_modules',
       mainJsSources,
-      resolveGenerated('xtext/js'),
     ],
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: {

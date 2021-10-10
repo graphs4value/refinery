@@ -16,7 +16,6 @@ dependencies {
 	mwe2 "org.eclipse.xtext:org.eclipse.xtext.common.types:${xtextVersion}"
 	mwe2 "org.eclipse.xtext:org.eclipse.xtext.xtext.generator:${xtextVersion}"
 	mwe2 "org.eclipse.xtext:xtext-antlr-generator:${xtextAntlrGeneratorVersion}"
-	mwe2 project(':refinery-language-mwe2')
 }
 
 sourceSets {
@@ -41,7 +40,6 @@ def generateXtextLanguage = tasks.register('generateXtextLanguage', JavaExec) {
 	outputs.dir 'src/testFixtures/xtext-gen'
 	outputs.dir '../language-ide/src/main/xtext-gen'
 	outputs.dir '../language-web/src/main/xtext-gen'
-	outputs.dir '../language-web/build/generated/sources/xtext'
 	args += 'src/main/java/tools/refinery/language/GenerateProblem.mwe2'
 	args += '-p'
 	args += "rootPath=/${projectDir}/.."
@@ -58,7 +56,6 @@ tasks.named('clean') {
 	delete 'src/testFixtures/xtext-gen'
 	delete '../language-ide/src/main/xtext-gen'
 	delete '../language-web/src/main/xtext-gen'
-	delete '../language-web/build/generated/sources/xtext'
 }
 
 sonarqube.properties {

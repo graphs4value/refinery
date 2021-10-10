@@ -3,8 +3,6 @@ module tools.refinery.language.GenerateProblem
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
 
-import tools.refinery.language.mwe2.*
-
 var rootPath = ".."
 
 Workflow {
@@ -19,11 +17,6 @@ Workflow {
 				}
 				genericIde = {
 					name = "language-ide"
-				}
-				web = {
-					enabled = true
-					name = "language-web"
-					assets = "../language-web/build/generated/sources/xtext"
 				}
 				mavenLayout = true
 			}
@@ -52,13 +45,6 @@ Workflow {
 				generateStub = false
 				skipXbaseTestingPackage = true
 				junitVersion = "5"
-			}
-			webSupport = ProblemWebIntegrationFragment {
-				highlightingPath = "js/mode-problem.js"
-				generateHtmlExample = false
-				generateJettyLauncher = false
-				generateServlet = false
-				generateWebXml = false
 			}
 		}
 	}

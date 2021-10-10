@@ -1,6 +1,0 @@
-apply plugin: 'java-library'
-apply from: "${rootDir}/gradle/java-common.gradle"
-
-dependencies {
-	api "org.eclipse.xtext:org.eclipse.xtext.xtext.generator:${xtextVersion}"
-}
