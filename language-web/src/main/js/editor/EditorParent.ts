@@ -65,6 +65,9 @@ export const EditorParent = styled('div')(({ theme }) => ({
   '.cmt-number': {
     color: '#6188a6',
   },
+  '.cmt-string': {
+    color: theme.palette.secondary.dark,
+  },
   '.cmt-keyword': {
     color: theme.palette.primary.main,
   },

@@ -1,4 +1,3 @@
-
 @top Problem { statement* }
 
 statement {
@@ -7,6 +6,7 @@ statement {
   } |
   ClassDefinition {
     ckw<"abstract">? ckw<"class"> RelationName
+    (ckw<"extends"> sep<",", RelationName>)?
     (ClassBody {  "{" ReferenceDeclaration* "}" } | ".")
   } |
   EnumDefinition {
@@ -21,6 +21,9 @@ statement {
     ckw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument> (":" LogicValue)? "."
   } |
+  NodeValueAssertion {
+    UniqueNodeName ":" Constant "."
+  } |
   UniqueDeclaration {
     ckw<"unique"> sep<",", UniqueNodeName> "."
   } |
@@ -30,18 +33,17 @@ statement {
 }
 
 ReferenceDeclaration {
-  ((kw<"refers"> | kw<"contains">) !times RelationName | !plus RelationName)
+  (kw<"refers"> | kw<"contains">)?
+  RelationName
   RelationName
   ( "[" Multiplicity? "]" )?
   (kw<"opposite"> RelationName)?
   ";"?
 }
 
-@precedence { times @left, plus }
-
 Parameter { RelationName? VariableName }
 
-Conjunction { sep1<",", Literal> }
+Conjunction { ("," | Literal)+ }
 
 OrOp { ";" }
 
@@ -49,9 +51,11 @@ Literal { NotOp? Atom }
 
 Atom { RelationName ParameterList<Argument>? }
 
-Argument { VariableName | Real }
+Argument { VariableName | Constant }
 
-AssertionArgument { NodeName | StarArgument | Real }
+AssertionArgument { NodeName | StarArgument | Constant }
+
+Constant { Real | String }
 
 LogicValue {
   ckw<"true"> | ckw<"false"> | ckw<"unknown"> | ckw<"error">
@@ -107,6 +111,11 @@ sep1<separator, content> { content (separator content?)* }
   Real { "-"? (exponential | int ("." (int | exponential))?) }
 
   exponential { int ("e" | "E") ("+" | "-")? int }
+
+  String {
+    "'" (![\\'\n] | "\\" ![\n] | "\\\n")+ "'" |
+    "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
+  }
 
   NotOp { "!" }
 
