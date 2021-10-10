@@ -1,8 +1,14 @@
 import { Command, EditorView } from '@codemirror/view';
 import { closeSearchPanel, openSearchPanel } from '@codemirror/search';
 import { closeLintPanel, openLintPanel } from '@codemirror/lint';
+
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { EditorParent } from './EditorParent';
 import { getLogger } from '../logging';
@@ -11,36 +17,49 @@ import { useRootStore } from '../RootStore';
 const log = getLogger('EditorArea');
 
 function usePanel(
-  label: string,
+  panelId: string,
   stateToSet: boolean,
   editorView: EditorView | null,
   openCommand: Command,
   closeCommand: Command,
+  closeCallback: () => void,
 ) {
   const [cachedViewState, setCachedViewState] = useState<boolean>(false);
   useEffect(() => {
     if (editorView === null || cachedViewState === stateToSet) {
       return;
     }
-    const success = stateToSet ? openCommand(editorView) : closeCommand(editorView);
-    if (!success) {
-      log.error(
-        'Failed to synchronize',
-        label,
-        'panel state - store state:',
-        cachedViewState,
-        'view state:',
-        stateToSet,
-      );
+    if (stateToSet) {
+      openCommand(editorView);
+      const buttonQuery = `.cm-${panelId}.cm-panel button[name="close"]`;
+      const closeButton = editorView.dom.querySelector(buttonQuery);
+      if (closeButton) {
+        log.debug('Addig close button callback to', panelId, 'panel');
+        // We must remove the event listener added by CodeMirror from the button
+        // that dispatches a transaction without going through `EditorStorre`.
+        // Cloning a DOM node removes event listeners,
+        // see https://stackoverflow.com/a/9251864
+        const closeButtonWithoutListeners = closeButton.cloneNode(true);
+        closeButtonWithoutListeners.addEventListener('click', (event) => {
+          closeCallback();
+          event.preventDefault();
+        });
+        closeButton.replaceWith(closeButtonWithoutListeners);
+      } else {
+        log.error('Opened', panelId, 'panel has no close button');
+      }
+    } else {
+      closeCommand(editorView);
     }
     setCachedViewState(stateToSet);
   }, [
     stateToSet,
     editorView,
     cachedViewState,
-    label,
+    panelId,
     openCommand,
     closeCommand,
+    closeCallback,
   ]);
   return setCachedViewState;
 }
@@ -56,14 +75,16 @@ export const EditorArea = observer(() => {
     editorViewState,
     openSearchPanel,
     closeSearchPanel,
+    useCallback(() => editorStore.setSearchPanelOpen(false), [editorStore]),
   );
 
   const setLintPanelOpen = usePanel(
-    'lint',
+    'panel-lint',
     editorStore.showLintPanel,
     editorViewState,
     openLintPanel,
     closeLintPanel,
+    useCallback(() => editorStore.setLintPanelOpen(false), [editorStore]),
   );
 
   useEffect(() => {

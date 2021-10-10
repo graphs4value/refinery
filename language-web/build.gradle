@@ -35,14 +35,24 @@ frontend {
 	yarnEnabled = true
 	yarnVersion = project.ext.yarnVersion
 	yarnInstallDirectory = file("${rootDir}/.gradle/yarn")
-	assembleScript = 'run assemble'
+	assembleScript = 'run assemble:webpack'
 }
 
 def installFrontend = tasks.named('installFrontend')
 
+def generateLezerGrammar = tasks.register('generateLezerGrammar', RunNpmYarn) {
+	dependsOn installFrontend
+	inputs.file('src/main/js/editor/problem.grammar')
+	inputs.files('package.json', 'yarn.lock')
+	outputs.file "${buildDir}/generated/sources/lezer/problem.ts"
+	outputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
+	script = 'run assemble:lezer'
+}
+
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
 	dependsOn generateXtextLanguage
+	dependsOn generateLezerGrammar
 	inputs.dir 'src/main/css'
 	inputs.dir 'src/main/html'
 	inputs.dir 'src/main/js'

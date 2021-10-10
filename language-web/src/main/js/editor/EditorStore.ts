@@ -39,6 +39,7 @@ import {
 } from 'mobx';
 
 import { getLogger } from '../logging';
+import { problemLanguageSupport } from './problemLanguageSupport';
 import type { ThemeStore } from '../theme/ThemeStore';
 
 const log = getLogger('EditorStore');
@@ -105,6 +106,7 @@ export class EditorStore {
           ...searchKeymap,
           ...defaultKeymap,
         ]),
+        problemLanguageSupport(),
       ],
     });
     reaction(

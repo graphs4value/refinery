@@ -49,13 +49,29 @@ export const EditorParent = styled('div')(({ theme }) => ({
     background: theme.palette.background.paper,
     borderTop: `1px solid ${theme.palette.divider}`,
     'button[name="close"]': {
-      // HACK We can't hook the panel close button to go through `EditorStore`,
-      // so we hide it altogether.
-      display: 'none',
+      color: theme.palette.text.secondary,
+      cursor: 'pointer',
     },
+  },
+  '.cm-foldPlaceholder': {
+    background: theme.palette.background.paper,
+    borderColor: theme.palette.text.disabled,
+    color: theme.palette.text.secondary,
   },
   '.cmt-comment': {
     fontVariant: 'italic',
     color: theme.palette.text.disabled,
+  },
+  '.cmt-number': {
+    color: '#6188a6',
+  },
+  '.cmt-keyword': {
+    color: theme.palette.primary.main,
+  },
+  '.cmt-typeName, .cmt-atom': {
+    color: theme.palette.text.primary,
+  },
+  '.cmt-variableName': {
+    color: '#c8ae9d',
   },
 }));

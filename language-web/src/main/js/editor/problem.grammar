@@ -1,0 +1,117 @@
+
+@top Problem { statement* }
+
+statement {
+  ProblemDeclaration {
+    kw<"problem"> QualifiedName "."
+  } |
+  ClassDefinition {
+    kw<"abstract">? kw<"class"> RelationName
+    (ClassBody {  "{" ReferenceDeclaration* "}" } | ".")
+  } |
+  EnumDefinition {
+    kw<"enum"> RelationName
+    (EnumBody { "{" sep<",", UniqueNodeName> "}" } | ".")
+  } |
+  PredicateDefinition {
+    (kw<"error"> kw<"pred">? | kw<"pred">) RelationName ParameterList<Parameter>?
+    PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
+  } |
+  Assertion {
+    kw<"default">? (NotOp | UnknownOp)? RelationName
+    ParameterList<AssertionArgument> (":" LogicValue)? "."
+  } |
+  UniqueDeclaration {
+    kw<"unique"> sep<",", UniqueNodeName> "."
+  } |
+  ScopeDeclaration {
+    kw<"scope"> sep<",", ScopeElement> "."
+  }
+}
+
+ReferenceDeclaration {
+  (kw<"refers"> | kw<"contains">)?
+  RelationName
+  RelationName
+  ( "[" Multiplicity? "]" )?
+  (kw<"opposite"> RelationName)?
+  ";"?
+}
+
+Parameter { RelationName? VariableName }
+
+Conjunction { sep1<",", Literal> }
+
+OrOp { ";" }
+
+Literal { NotOp? Atom }
+
+Atom { RelationName ParameterList<Argument>? }
+
+Argument { VariableName | Real }
+
+AssertionArgument { NodeName | StarArgument | Real }
+
+LogicValue {
+  kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
+}
+
+ScopeElement { RelationName ("=" | "+=") Multiplicity }
+
+Multiplicity { (IntMult "..")? (IntMult | StarMult)}
+
+RelationName { QualifiedName }
+
+UniqueNodeName { QualifiedName }
+
+VariableName { QualifiedName }
+
+NodeName { QualifiedName }
+
+QualifiedName { identifier ("::" identifier)* }
+
+kw<term> { @specialize[@name={term}]<identifier, term> }
+
+ParameterList<content> { "(" sep<",", content> ")" }
+
+sep<separator, content> { sep1<separator, content>? }
+
+sep1<separator, content> { content (separator content?)* }
+
+@skip { LineComment | BlockComment | whitespace }
+
+@tokens {
+  whitespace { std.whitespace+ }
+
+  LineComment { ("//" | "%") ![\n]* }
+
+  BlockComment { "/*" blockCommentRest }
+
+  blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
+
+  blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
+
+  @precedence { BlockComment, LineComment }
+
+  identifier { $[A-Za-z_] $[a-zA-Z0-9_]* }
+
+  int { $[0-9]+ }
+
+  IntMult { int }
+
+  StarMult { "*" }
+
+  Real { "-"? (exponential | int ("." (int | exponential))?) }
+
+  exponential { int ("e" | "E") ("+" | "-")? int }
+
+  NotOp { "!" }
+
+  UnknownOp { "?" }
+
+  StarArgument { "*" }
+
+  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "<->"
+}
+
+@detectDelim

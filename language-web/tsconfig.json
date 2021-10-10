@@ -4,7 +4,7 @@
     "module": "ES2020",
     "moduleResolution": "node",
     "paths": {
-      "xtext/*": ["./src/main/js/xtext/*"]
+      "xtext/*": ["./src/main/js/xtext/*"],
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -16,5 +16,5 @@
     "noEmit": true
   },
   "include": ["./src/main/js/**/*"],
-  "exclude": ["./src/main/js/xtext/**/*"]
+  "exclude": ["./build/generated/sources/lezer/*"]
 }
