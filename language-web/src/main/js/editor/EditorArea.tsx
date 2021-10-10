@@ -1,7 +1,6 @@
 import { Command, EditorView } from '@codemirror/view';
 import { closeSearchPanel, openSearchPanel } from '@codemirror/search';
 import { closeLintPanel, openLintPanel } from '@codemirror/lint';
-
 import { observer } from 'mobx-react-lite';
 import React, {
   useCallback,
@@ -64,6 +63,13 @@ function usePanel(
   return setCachedViewState;
 }
 
+function fixCodeMirrorAccessibility(editorView: EditorView) {
+  // Reported by Lighthouse 8.3.0.
+  const { contentDOM } = editorView;
+  contentDOM.removeAttribute('aria-expanded');
+  contentDOM.setAttribute('aria-label', 'Code editor');
+}
+
 export const EditorArea = observer(() => {
   const { editorStore } = useRootStore();
   const editorParentRef = useRef<HTMLDivElement | null>(null);
@@ -109,6 +115,7 @@ export const EditorArea = observer(() => {
         }
       },
     });
+    fixCodeMirrorAccessibility(editorView);
     setEditorViewState(editorView);
     setSearchPanelOpen(false);
     setLintPanelOpen(false);
