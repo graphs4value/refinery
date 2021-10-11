@@ -35,6 +35,8 @@ public class ServerLauncher {
 	public static final int HTTP_DEFAULT_PORT = 80;
 
 	public static final int HTTPS_DEFAULT_PORT = 443;
+	
+	public static final String ALLOWED_ORIGINS_SEPARATOR = ";";
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServerLauncher.class);
 
@@ -166,7 +168,7 @@ public class ServerLauncher {
 	private static Optional<String[]> getAllowedOrigins() {
 		var allowedOrigins = System.getenv("ALLOWED_ORIGINS");
 		if (allowedOrigins != null) {
-			return Optional.of(allowedOrigins.split(XtextWebSocketServlet.ALLOWED_ORIGINS_SEPARATOR));
+			return Optional.of(allowedOrigins.split(ALLOWED_ORIGINS_SEPARATOR));
 		}
 		return getAllowedOriginsFromPublicHostAndPort();
 	}

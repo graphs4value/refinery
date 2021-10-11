@@ -7,10 +7,14 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.StatusCode;
 import org.eclipse.jetty.websocket.api.WriteCallback;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.IServiceContext;
+import org.eclipse.xtext.web.server.IServiceResult;
 import org.eclipse.xtext.web.server.ISession;
 import org.eclipse.xtext.web.server.IUnwrappableServiceResult;
 import org.eclipse.xtext.web.server.InvalidRequestException;
@@ -26,7 +30,7 @@ import com.google.gson.JsonParseException;
 import com.google.inject.Injector;
 
 @WebSocket
-public class XtextWebSocket implements WriteCallback {
+public class XtextWebSocket {
 	private static final Logger LOG = LoggerFactory.getLogger(XtextWebSocket.class);
 
 	private final Gson gson = new Gson();
@@ -40,61 +44,82 @@ public class XtextWebSocket implements WriteCallback {
 		this.resourceServiceProviderRegistry = resourceServiceProviderRegistry;
 	}
 
+	@OnWebSocketConnect
+	public void onConnect(Session webSocketSession) {
+		LOG.debug("New websocket connection from {}", webSocketSession.getRemoteAddress());
+	}
+
+	@OnWebSocketClose
+	public void onClose(Session webSocketSession, int statusCode, String reason) {
+		if (statusCode == StatusCode.NORMAL) {
+			LOG.debug("{} closed connection normally: {}", webSocketSession.getRemoteAddress(), reason);
+		} else {
+			LOG.warn("{} closed connection with status code {}: {}", webSocketSession.getRemoteAddress(), statusCode,
+					reason);
+		}
+	}
+
+	@OnWebSocketError
+	public void onError(Session webSocketSession, Throwable error) {
+		LOG.error("Internal websocket error in connection from" + webSocketSession.getRemoteAddress(), error);
+	}
+
 	@OnWebSocketMessage
 	public void onMessage(Session webSocketSession, Reader reader) {
 		XtextWebSocketRequest request;
 		try {
 			request = gson.fromJson(reader, XtextWebSocketRequest.class);
 		} catch (JsonIOException e) {
-			LOG.error("Cannot read from websocket " + webSocketSession.getRemoteAddress(), e);
+			LOG.error("Cannot read from websocket from" + webSocketSession.getRemoteAddress(), e);
 			if (webSocketSession.isOpen()) {
 				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot read payload");
 			}
 			return;
 		} catch (JsonParseException e) {
-			LOG.warn("Malformed websocket request from " + webSocketSession.getRemoteAddress(), e);
+			LOG.warn("Malformed websocket request from" + webSocketSession.getRemoteAddress(), e);
 			webSocketSession.close(XtextStatusCode.INVALID_JSON, "Invalid JSON payload");
 			return;
 		}
 		var serviceContext = new SimpleServiceContext(session, request.getRequestData());
-		var response = handleMessage(serviceContext);
+		var response = handleMessage(webSocketSession, serviceContext);
 		response.setId(request.getId());
 		var responseString = gson.toJson(response);
 		try {
-			webSocketSession.getRemote().sendPartialString(responseString, true, this);
+			webSocketSession.getRemote().sendPartialString(responseString, true, new WriteCallback() {
+				@Override
+				public void writeFailed(Throwable x) {
+					LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteAddress(), x);
+				}
+			});
 		} catch (IOException e) {
-			LOG.warn("Cannot initiaite async write to websocket to " + webSocketSession.getRemoteAddress(), e);
+			LOG.warn("Cannot initiaite async write to websocket " + webSocketSession.getRemoteAddress(), e);
 			if (webSocketSession.isOpen()) {
 				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot write payload");
 			}
 		}
 	}
 
-	@Override
-	public void writeFailed(Throwable x) {
-		LOG.warn("Cannot complete async write to websocket", x);
-	}
-
-	protected XtextWebSocketResponse handleMessage(IServiceContext serviceContext) {
+	protected XtextWebSocketResponse handleMessage(Session webSocketSession, IServiceContext serviceContext) {
+		IServiceResult serviceResult;
 		try {
 			var injector = getInjector(serviceContext);
 			var serviceDispatcher = injector.getInstance(XtextServiceDispatcher.class);
 			var service = serviceDispatcher.getService(serviceContext);
-			var serviceResult = service.getService().apply();
-			var response = new XtextWebSocketOkResponse();
-			if (serviceResult instanceof IUnwrappableServiceResult unwrappableServiceResult
-					&& unwrappableServiceResult.getContent() != null) {
-				response.setResponseData(unwrappableServiceResult.getContent());
-			} else {
-				response.setResponseData(serviceResult);
-			}
-			return response;
+			serviceResult = service.getService().apply();
 		} catch (InvalidRequestException e) {
-			LOG.warn("Invalid request", e);
+			LOG.warn("Invalid request from websocket " + webSocketSession.getRemoteAddress(), e);
 			var error = new XtextWebSocketErrorResponse();
 			error.setErrorMessage(e.getMessage());
 			return error;
 		}
+		var response = new XtextWebSocketOkResponse();
+		if (serviceResult instanceof IUnwrappableServiceResult unwrappableServiceResult
+				&& unwrappableServiceResult.getContent() != null) {
+			response.setResponseData(unwrappableServiceResult.getContent());
+		} else {
+			response.setResponseData(serviceResult);
+		}
+		return response;
 	}
 
 	/**

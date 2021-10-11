@@ -38,11 +38,11 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		var allowedOriginsStr = config.getInitParameter(ALLOWED_ORIGINS_INIT_PARAM);
-		if (allowedOriginsStr != null) {
+		if (allowedOriginsStr == null) {
+			log.warn("All WebSocket origins are allowed! This setting should not be used in production!");
+		} else {
 			allowedOrigins = Set.of(allowedOriginsStr.split(ALLOWED_ORIGINS_SEPARATOR));
 			log.info("Allowed origins: {}", allowedOrigins);
-		} else {
-			log.warn("All WebSocket origins are allowed! This setting should not be used in production!");
 		}
 		super.init(config);
 	}
@@ -58,7 +58,7 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 	public Object createWebSocket(JettyServerUpgradeRequest req, JettyServerUpgradeResponse resp) {
 		if (allowedOrigins != null) {
 			var origin = req.getOrigin();
-			if (origin != null && !allowedOrigins.contains(origin.toLowerCase())) {
+			if (origin == null || !allowedOrigins.contains(origin.toLowerCase())) {
 				log.error("Connection from {} from forbidden origin {}", req.getRemoteSocketAddress(), origin);
 				try {
 					resp.sendForbidden("Origin not allowed");
@@ -68,7 +68,6 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 				return null;
 			}
 		}
-		log.debug("New connection from {}", req.getRemoteSocketAddress());
 		var session = new SimpleSession();
 		return new XtextWebSocket(session, IResourceServiceProvider.Registry.INSTANCE);
 	}
