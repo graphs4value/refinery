@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jetty.server.Server;
@@ -22,24 +23,28 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.SessionTrackingMode;
+import tools.refinery.language.web.xtext.XtextWebSocketServlet;
 
 public class ServerLauncher {
 	public static final String DEFAULT_LISTEN_ADDRESS = "localhost";
 
 	public static final int DEFAULT_LISTEN_PORT = 1312;
 
-	// Use this cookie name for load balancing.
-	public static final String SESSION_COOKIE_NAME = "JSESSIONID";
+	public static final int DEFAULT_PUBLIC_PORT = 443;
+
+	public static final int HTTP_DEFAULT_PORT = 80;
+
+	public static final int HTTPS_DEFAULT_PORT = 443;
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServerLauncher.class);
 
 	private final Server server;
 
-	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource) {
+	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource, Optional<String[]> allowedOrigins) {
 		server = new Server(bindAddress);
 		var handler = new ServletContextHandler();
 		addSessionHandler(handler);
-		addProblemServlet(handler);
+		addProblemServlet(handler, allowedOrigins);
 		if (baseResource != null) {
 			handler.setBaseResource(baseResource);
 			handler.setWelcomeFiles(new String[] { "index.html" });
@@ -52,12 +57,20 @@ public class ServerLauncher {
 	private void addSessionHandler(ServletContextHandler handler) {
 		var sessionHandler = new SessionHandler();
 		sessionHandler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
-		sessionHandler.setSessionCookie(SESSION_COOKIE_NAME);
 		handler.setSessionHandler(sessionHandler);
 	}
 
-	private void addProblemServlet(ServletContextHandler handler) {
-		handler.addServlet(ProblemServlet.class, "/xtext-service/*");
+	private void addProblemServlet(ServletContextHandler handler, Optional<String[]> allowedOrigins) {
+		var problemServletHolder = new ServletHolder(ProblemWebSocketServlet.class);
+		if (allowedOrigins.isEmpty()) {
+			LOG.warn("All WebSocket origins are allowed! This setting should not be used in production!");
+		} else {
+			var allowedOriginsString = String.join(XtextWebSocketServlet.ALLOWED_ORIGINS_SEPARATOR,
+					allowedOrigins.get());
+			problemServletHolder.setInitParameter(XtextWebSocketServlet.ALLOWED_ORIGINS_INIT_PARAM,
+					allowedOriginsString);
+		}
+		handler.addServlet(problemServletHolder, "/xtext-service/*");
 	}
 
 	private void addDefaultServlet(ServletContextHandler handler) {
@@ -80,7 +93,8 @@ public class ServerLauncher {
 		try {
 			var bindAddress = getBindAddress();
 			var baseResource = getBaseResource();
-			var serverLauncher = new ServerLauncher(bindAddress, baseResource);
+			var allowedOrigins = getAllowedOrigins();
+			var serverLauncher = new ServerLauncher(bindAddress, baseResource, allowedOrigins);
 			serverLauncher.start();
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
@@ -131,5 +145,44 @@ public class ServerLauncher {
 		}
 		// Fall back to just serving a 404.
 		return null;
+	}
+
+	private static String getPublicHost() {
+		var publicHost = System.getenv("PUBLIC_HOST");
+		if (publicHost != null) {
+			return publicHost.toLowerCase();
+		}
+		return null;
+	}
+
+	private static int getPublicPort() {
+		var portStr = System.getenv("PUBLIC_PORT");
+		if (portStr != null) {
+			return Integer.parseInt(portStr);
+		}
+		return DEFAULT_LISTEN_PORT;
+	}
+
+	private static Optional<String[]> getAllowedOrigins() {
+		var allowedOrigins = System.getenv("ALLOWED_ORIGINS");
+		if (allowedOrigins != null) {
+			return Optional.of(allowedOrigins.split(XtextWebSocketServlet.ALLOWED_ORIGINS_SEPARATOR));
+		}
+		return getAllowedOriginsFromPublicHostAndPort();
+	}
+
+	private static Optional<String[]> getAllowedOriginsFromPublicHostAndPort() {
+		var publicHost = getPublicHost();
+		if (publicHost == null) {
+			return Optional.empty();
+		}
+		int publicPort = getPublicPort();
+		var scheme = publicPort == HTTPS_DEFAULT_PORT ? "https" : "http";
+		var urlWithPort = String.format("%s://%s:%d", scheme, publicHost, publicPort);
+		if (publicPort == HTTPS_DEFAULT_PORT || publicPort == HTTP_DEFAULT_PORT) {
+			var urlWithoutPort = String.format("%s://%s", scheme, publicHost);
+			return Optional.of(new String[] { urlWithPort, urlWithoutPort });
+		}
+		return Optional.of(new String[] { urlWithPort });
 	}
 }
