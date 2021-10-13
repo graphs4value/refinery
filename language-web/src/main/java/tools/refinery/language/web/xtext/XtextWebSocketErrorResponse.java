@@ -7,17 +7,58 @@ import com.google.gson.annotations.SerializedName;
 public final class XtextWebSocketErrorResponse implements XtextWebSocketResponse {
 	private String id;
 
+	private int index;
+
 	@SerializedName("error")
+	private XtextWebSocketErrorKind errorKind;
+
+	@SerializedName("message")
 	private String errorMessage;
 
-	@Override
+	public XtextWebSocketErrorResponse(String id, int index, XtextWebSocketErrorKind errorKind, String errorMessage) {
+		super();
+		this.id = id;
+		this.index = index;
+		this.errorKind = errorKind;
+		this.errorMessage = errorMessage;
+	}
+
+	public XtextWebSocketErrorResponse(XtextWebSocketRequest request, int index, XtextWebSocketErrorKind errorKind,
+			String errorMessage) {
+		this(request.getId(), index, errorKind, errorMessage);
+	}
+
+	public XtextWebSocketErrorResponse(XtextWebSocketRequest request, int index, XtextWebSocketErrorKind errorKind) {
+		this(request, index, errorKind, (String) null);
+	}
+
+	public XtextWebSocketErrorResponse(XtextWebSocketRequest request, int index, XtextWebSocketErrorKind errorKind,
+			Throwable t) {
+		this(request, index, errorKind, t.getMessage());
+	}
+
 	public String getId() {
 		return id;
 	}
 
-	@Override
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
+	}
+
+	public XtextWebSocketErrorKind getErrorKind() {
+		return errorKind;
+	}
+
+	public void setErrorKind(XtextWebSocketErrorKind errorKind) {
+		this.errorKind = errorKind;
 	}
 
 	public String getErrorMessage() {
@@ -30,7 +71,7 @@ public final class XtextWebSocketErrorResponse implements XtextWebSocketResponse
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(errorMessage, id);
+		return Objects.hash(errorKind, errorMessage, id, index);
 	}
 
 	@Override
@@ -42,11 +83,13 @@ public final class XtextWebSocketErrorResponse implements XtextWebSocketResponse
 		if (getClass() != obj.getClass())
 			return false;
 		XtextWebSocketErrorResponse other = (XtextWebSocketErrorResponse) obj;
-		return Objects.equals(errorMessage, other.errorMessage) && Objects.equals(id, other.id);
+		return errorKind == other.errorKind && Objects.equals(errorMessage, other.errorMessage)
+				&& Objects.equals(id, other.id) && index == other.index;
 	}
 
 	@Override
 	public String toString() {
-		return "XtextWebSocketError [id=" + id + ", errorMessage=" + errorMessage + "]";
+		return "XtextWebSocketErrorResponse [id=" + id + ", index=" + index + ", errorKind=" + errorKind
+				+ ", errorMessage=" + errorMessage + "]";
 	}
 }

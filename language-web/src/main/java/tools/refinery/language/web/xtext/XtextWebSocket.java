@@ -13,13 +13,18 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
-import org.eclipse.xtext.web.server.IServiceContext;
 import org.eclipse.xtext.web.server.IServiceResult;
 import org.eclipse.xtext.web.server.ISession;
-import org.eclipse.xtext.web.server.IUnwrappableServiceResult;
 import org.eclipse.xtext.web.server.InvalidRequestException;
 import org.eclipse.xtext.web.server.InvalidRequestException.UnknownLanguageException;
+import org.eclipse.xtext.web.server.ServiceConflictResult;
 import org.eclipse.xtext.web.server.XtextServiceDispatcher;
+import org.eclipse.xtext.web.server.contentassist.ContentAssistResult;
+import org.eclipse.xtext.web.server.formatting.FormattingResult;
+import org.eclipse.xtext.web.server.hover.HoverResult;
+import org.eclipse.xtext.web.server.model.DocumentStateResult;
+import org.eclipse.xtext.web.server.occurrences.OccurrencesResult;
+import org.eclipse.xtext.web.server.persistence.ResourceContentResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,17 +85,18 @@ public class XtextWebSocket {
 			webSocketSession.close(XtextStatusCode.INVALID_JSON, "Invalid JSON payload");
 			return;
 		}
-		var serviceContext = new SimpleServiceContext(session, request.getRequestData());
-		var response = handleMessage(webSocketSession, serviceContext);
-		response.setId(request.getId());
-		var responseString = gson.toJson(response);
+		var requestData = request.getRequestData();
+		if (requestData == null || requestData.isEmpty()) {
+			// Nothing to do.
+			return;
+		}
+		int nCalls = requestData.size();
 		try {
-			webSocketSession.getRemote().sendPartialString(responseString, true, new WriteCallback() {
-				@Override
-				public void writeFailed(Throwable x) {
-					LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteAddress(), x);
-				}
-			});
+			int lastCall = handleTransaction(webSocketSession, request);
+			for (int index = lastCall + 1; index < nCalls; index++) {
+				sendReply(webSocketSession,
+						new XtextWebSocketErrorResponse(request, index, XtextWebSocketErrorKind.TRANSACTION_CANCELLED));
+			}
 		} catch (IOException e) {
 			LOG.warn("Cannot initiaite async write to websocket " + webSocketSession.getRemoteAddress(), e);
 			if (webSocketSession.isOpen()) {
@@ -99,27 +105,45 @@ public class XtextWebSocket {
 		}
 	}
 
-	protected XtextWebSocketResponse handleMessage(Session webSocketSession, IServiceContext serviceContext) {
-		IServiceResult serviceResult;
+	protected int handleTransaction(Session webSocketSession, XtextWebSocketRequest request) throws IOException {
+		var requestData = request.getRequestData();
+		var stateId = request.getRequiredStateId();
+		int index = 0;
 		try {
-			var injector = getInjector(serviceContext);
+			var injector = getInjector(request);
 			var serviceDispatcher = injector.getInstance(XtextServiceDispatcher.class);
-			var service = serviceDispatcher.getService(serviceContext);
-			serviceResult = service.getService().apply();
+			int nCalls = requestData.size();
+			for (; index < nCalls; index++) {
+				var serviceContext = new SimpleServiceContext(session, request, stateId, index);
+				var service = serviceDispatcher.getService(serviceContext);
+				var serviceResult = service.getService().apply();
+				sendReply(webSocketSession, new XtextWebSocketOkResponse(request, index, serviceResult));
+				if (serviceResult instanceof ServiceConflictResult) {
+					break;
+				}
+				var nextStateId = getNextStateId(serviceResult);
+				if (nextStateId != null) {
+					stateId = nextStateId;
+				}
+			}
 		} catch (InvalidRequestException e) {
-			LOG.warn("Invalid request from websocket " + webSocketSession.getRemoteAddress(), e);
-			var error = new XtextWebSocketErrorResponse();
-			error.setErrorMessage(e.getMessage());
-			return error;
+			sendReply(webSocketSession,
+					new XtextWebSocketErrorResponse(request, index, XtextWebSocketErrorKind.REQUEST_ERROR, e));
+		} catch (RuntimeException e) {
+			sendReply(webSocketSession,
+					new XtextWebSocketErrorResponse(request, index, XtextWebSocketErrorKind.SERVER_ERROR, e));
 		}
-		var response = new XtextWebSocketOkResponse();
-		if (serviceResult instanceof IUnwrappableServiceResult unwrappableServiceResult
-				&& unwrappableServiceResult.getContent() != null) {
-			response.setResponseData(unwrappableServiceResult.getContent());
-		} else {
-			response.setResponseData(serviceResult);
-		}
-		return response;
+		return index;
+	}
+
+	protected void sendReply(Session webSocketSession, XtextWebSocketResponse response) throws IOException {
+		var responseString = gson.toJson(response);
+		webSocketSession.getRemote().sendPartialString(responseString, true, new WriteCallback() {
+			@Override
+			public void writeFailed(Throwable x) {
+				LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteAddress(), x);
+			}
+		});
 	}
 
 	/**
@@ -131,14 +155,14 @@ public class XtextWebSocket {
 	 * @return the injector for the Xtext language in the request
 	 * @throws UnknownLanguageException if the Xtext language cannot be determined
 	 */
-	protected Injector getInjector(IServiceContext serviceContext) {
+	protected Injector getInjector(XtextWebSocketRequest request) {
 		IResourceServiceProvider resourceServiceProvider = null;
-		var resourceName = serviceContext.getParameter("resource");
+		var resourceName = request.getResourceName();
 		if (resourceName == null) {
 			resourceName = "";
 		}
 		var emfURI = URI.createURI(resourceName);
-		var contentType = serviceContext.getParameter("contentType");
+		var contentType = request.getContentType();
 		if (Strings.isNullOrEmpty(contentType)) {
 			resourceServiceProvider = resourceServiceProviderRegistry.getResourceServiceProvider(emfURI);
 			if (resourceServiceProvider == null) {
@@ -158,5 +182,27 @@ public class XtextWebSocket {
 			}
 		}
 		return resourceServiceProvider.get(Injector.class);
+	}
+
+	protected String getNextStateId(IServiceResult serviceResult) {
+		if (serviceResult instanceof ContentAssistResult contentAssistResult) {
+			return contentAssistResult.getStateId();
+		}
+		if (serviceResult instanceof DocumentStateResult documentStateResult) {
+			return documentStateResult.getStateId();
+		}
+		if (serviceResult instanceof FormattingResult formattingResult) {
+			return formattingResult.getStateId();
+		}
+		if (serviceResult instanceof HoverResult hoverResult) {
+			return hoverResult.getStateId();
+		}
+		if (serviceResult instanceof OccurrencesResult occurrencesResult) {
+			return occurrencesResult.getStateId();
+		}
+		if (serviceResult instanceof ResourceContentResult resourceContentResult) {
+			return resourceContentResult.getStateId();
+		}
+		return null;
 	}
 }

@@ -2,7 +2,7 @@ import styles, { CSPair } from 'ansi-styles';
 import log from 'loglevel';
 import * as prefix from 'loglevel-plugin-prefix';
 
-const colors: Record<string, CSPair> = {
+const colors: Partial<Record<string, CSPair>> = {
   TRACE: styles.magenta,
   DEBUG: styles.cyan,
   INFO: styles.blue,

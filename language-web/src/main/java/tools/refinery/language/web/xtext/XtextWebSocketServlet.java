@@ -24,6 +24,8 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 
 	public static final String ALLOWED_ORIGINS_INIT_PARAM = "tools.refinery.language.web.xtext.XtextWebSocketServlet.allowedOrigin";
 
+	public static final String XTEXT_SUBPROTOCOL_V1 = "tools.refinery.language.web.xtext.v1";
+
 	/**
 	 * Maximum message size should be large enough to upload a full model file.
 	 */
@@ -67,6 +69,13 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 				}
 				return null;
 			}
+		}
+		if (req.getSubProtocols().contains(XTEXT_SUBPROTOCOL_V1)) {
+			resp.setAcceptedSubProtocol(XTEXT_SUBPROTOCOL_V1);
+		} else {
+			log.error("None of the subprotocols {} offered by {} are supported", req.getSubProtocols(),
+					req.getRemoteSocketAddress());
+			resp.setAcceptedSubProtocol(null);
 		}
 		var session = new SimpleSession();
 		return new XtextWebSocket(session, IResourceServiceProvider.Registry.INSTANCE);
