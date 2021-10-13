@@ -17,6 +17,7 @@
 
 5. Open _Help > Eclipse Marketplace_ and install the following software:
     * _Java 17 Support for Eclipse 2021-09_
+    * _EclEmma Java Code Coverage_
     * _SonarLint_
 
 6. Open _Window > Preferences_ and set the following preferences:
