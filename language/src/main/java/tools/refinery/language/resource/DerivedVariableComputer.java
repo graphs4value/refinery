@@ -24,11 +24,12 @@ import tools.refinery.language.model.problem.ImplicitVariable;
 import tools.refinery.language.model.problem.Literal;
 import tools.refinery.language.model.problem.NegativeLiteral;
 import tools.refinery.language.model.problem.Parameter;
-import tools.refinery.language.model.problem.PredicateDefinition;
+import tools.refinery.language.model.problem.ParametricDefinition;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemFactory;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.Statement;
+import tools.refinery.language.model.problem.ValueLiteral;
 import tools.refinery.language.model.problem.VariableOrNodeArgument;
 import tools.refinery.language.naming.NamingUtil;
 
@@ -46,13 +47,13 @@ public class DerivedVariableComputer {
 
 	public void installDerivedVariables(Problem problem, Set<String> nodeNames) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof PredicateDefinition definition) {
-				installDerivedPredicateDefinitionState(definition, nodeNames);
+			if (statement instanceof ParametricDefinition definition) {
+				installDerivedParametricDefinitionState(definition, nodeNames);
 			}
 		}
 	}
 
-	protected void installDerivedPredicateDefinitionState(PredicateDefinition definition, Set<String> nodeNames) {
+	protected void installDerivedParametricDefinitionState(ParametricDefinition definition, Set<String> nodeNames) {
 		Set<String> knownVariables = new HashSet<>();
 		knownVariables.addAll(nodeNames);
 		for (Parameter parameter : definition.getParameters()) {
@@ -71,6 +72,9 @@ public class DerivedVariableComputer {
 		for (Literal literal : conjunction.getLiterals()) {
 			if (literal instanceof Atom atom) {
 				createSigletonVariablesAndCollectVariables(atom, knownVariables, newVariables);
+			} else
+			if (literal instanceof ValueLiteral valueLiteral) {
+				createSigletonVariablesAndCollectVariables(valueLiteral.getAtom(), knownVariables, newVariables);
 			}
 		}
 		createVariables(conjunction, newVariables);
@@ -156,13 +160,13 @@ public class DerivedVariableComputer {
 
 	public void discardDerivedVariables(Problem problem) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof PredicateDefinition predicateDefinition) {
-				discardPredicateDefinitionState(predicateDefinition);
+			if (statement instanceof ParametricDefinition parametricDefinition) {
+				discardParametricDefinitionState(parametricDefinition);
 			}
 		}
 	}
 
-	protected void discardPredicateDefinitionState(PredicateDefinition definition) {
+	protected void discardParametricDefinitionState(ParametricDefinition definition) {
 		for (Conjunction body : definition.getBodies()) {
 			body.getImplicitVariables().clear();
 			for (Literal literal : body.getLiterals()) {
