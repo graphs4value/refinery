@@ -6,7 +6,7 @@ plugins {
 }
 
 allprojects {
-	group = 'org.eclipse.viatra.solver'
+	group = 'tools.refinery'
 	version = '0.0.0-SNAPSHOT'
 
 	sonarqube.properties {
