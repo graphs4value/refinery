@@ -29,20 +29,17 @@ import tools.refinery.store.model.representation.TruthValue;
 
 
 public class PartialModelMapper {
-	
-	private int nodeIter;
-	public PartialModelMapper() {
-		this.nodeIter = 0;
-	}
-	
 	public PartialModelMapperDTO transformProblem(Problem problem) throws PartialModelMapperException {
+		//Defining an integer in order to assign different values to all the nodes
+		int[] nodeIter = new int[] {0};
+		
 		//Getting the relations and the nodes from the given problem
-		PartialModelMapperDTO pmmDTO = initTransform(problem);
+		PartialModelMapperDTO pmmDTO = initTransform(problem, nodeIter);
 		
 		//Getting the relations and the nodes from the built in problem
 		Optional<Problem> builtinProblem = ProblemUtil.getBuiltInLibrary(problem);
 		if (builtinProblem.isEmpty()) throw new PartialModelMapperException("builtin.problem not found");
-		PartialModelMapperDTO builtinProblemDTO = initTransform(builtinProblem.get());
+		PartialModelMapperDTO builtinProblemDTO = initTransform(builtinProblem.get(), nodeIter);
 		
 		//Merging the relation and the nodes from the given problem and from the built in problem
 		pmmDTO.getRelationMap().putAll(builtinProblemDTO.getRelationMap());
@@ -171,7 +168,7 @@ public class PartialModelMapper {
 	}
 	
 	//Getting the relations and nodes from the problem
-	public PartialModelMapperDTO initTransform(Problem problem) {
+	private PartialModelMapperDTO initTransform(Problem problem, int[] nodeIter) {
 		//Defining needed Maps
 		Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationMap = new HashMap<>();
 		Map<Node, Integer> enumNodeMap = new HashMap<>();
@@ -184,7 +181,7 @@ public class PartialModelMapper {
 			if (s instanceof ClassDeclaration cd) {
 				Relation<TruthValue> r1 = new Relation<>(cd.getName(), 1, TruthValue.FALSE);
 				relationMap.put(cd, r1);
-				if(!cd.isAbstract()) newNodeMap.put(cd.getNewNode(), this.nodeIter++);
+				if(!cd.isAbstract()) newNodeMap.put(cd.getNewNode(), nodeIter[0]++);
 				EList<ReferenceDeclaration> refDeclList = cd.getReferenceDeclarations();
 				for (ReferenceDeclaration refDec : refDeclList) {
 					Relation<TruthValue> r2 = new Relation<>(refDec.getName(), 2, TruthValue.FALSE);
@@ -195,12 +192,12 @@ public class PartialModelMapper {
 				Relation<TruthValue> r = new Relation<>(ed.getName(), 1, TruthValue.FALSE);
 				relationMap.put(ed, r);
 				for (Node n : ed.getLiterals()) {
-					enumNodeMap.put(n, nodeIter++);
+					enumNodeMap.put(n, nodeIter[0]++);
 				}
 			}
 			else if (s instanceof UniqueDeclaration ud) {
 				for (Node n : ud.getNodes()) {
-					uniqueNodeMap.put(n, this.nodeIter++);
+					uniqueNodeMap.put(n, nodeIter[0]++);
 				}
 			}
 			else if (s instanceof PredicateDefinition pd) {
@@ -212,7 +209,7 @@ public class PartialModelMapper {
 		//Filling the nodeMap up
 		Map<Node, Integer> nodeMap = new HashMap<>();
 		for(Node n : problem.getNodes()) {
-			nodeMap.put(n, this.nodeIter++);
+			nodeMap.put(n, nodeIter[0]++);
 		}
 		
 		return new PartialModelMapperDTO(null,relationMap,nodeMap,enumNodeMap,uniqueNodeMap,newNodeMap);
