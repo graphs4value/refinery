@@ -34,6 +34,7 @@ class PartialModelMapperTest {
 		mapper = new PartialModelMapper
 	}
 
+	//Testing the relation
 	@Test
 	def void relationTest() {
 		val problem = parseHelper.parse('''
@@ -62,6 +63,7 @@ class PartialModelMapperTest {
 		assertTrue(model.get(relationMap.get(friend), Tuple.of(nodeMap.get(a),nodeMap.get(b))).equals(TruthValue.TRUE));
 	}
 	
+	//Testing the class
 	@Test
 	def void classTest() {
 		val problem = parseHelper.parse('''
@@ -90,6 +92,7 @@ class PartialModelMapperTest {
 		assertTrue(model.get(relationMap.get(person), Tuple.of(nodeMap.get(a))).equals(TruthValue.TRUE));
 	}
 	
+	//Testing the equals and exists from the built in problem
 	@Test
 	def void equalsAndExistTest() {
 		val problem = parseHelper.parse('''
@@ -135,6 +138,7 @@ class PartialModelMapperTest {
 		assertTrue(model.get(relationMap.get(equals), Tuple.of(nodeMap.get(b), newNodeMap.get(PersonNew))).equals(TruthValue.FALSE))
 	}
 	
+	//Testing the equals and exists from the built in problem with a different example
 	@Test
 	def void equalsAndExistTest2() {
 		val problem = parseHelper.parse('''
@@ -180,6 +184,7 @@ class PartialModelMapperTest {
 		assertTrue(model.get(relationMap.get(equals), Tuple.of(nodeMap.get(b), newNodeMap.get(PersonNew))).equals(TruthValue.FALSE));	
 	}
 	
+	//Testing the behavior of the newNodes
 	@Test
 	def void newNodeTest(){
 		val problem = parseHelper.parse('''
@@ -207,6 +212,7 @@ class PartialModelMapperTest {
 		assertTrue(model.get(relationMap.get(Person), Tuple.of(newNodeMap.get(PersonNew))).equals(TruthValue.TRUE));
 	}
 
+	//Testing the behavior of enumerations
 	@Test
 	def void enumTest(){
 		val problem = parseHelper.parse('''
@@ -236,6 +242,7 @@ class PartialModelMapperTest {
 		assertTrue(model.get(relationMap.get(TaxStatus), Tuple.of(enumNodeMap.get(retired))).equals(TruthValue.TRUE));
 	}
 	
+	//Testing the bool from the built in problem
 	@Test
 	def void builtinBoolTest(){
 		val problem = parseHelper.parse('''
@@ -257,9 +264,10 @@ class PartialModelMapperTest {
 		
 		assertTrue(model.getDataRepresentations().contains(relationMap.get(bool)));
 		assertTrue(model.get(relationMap.get(bool), Tuple.of(enumNodeMap.get(trueEnum))).equals(TruthValue.TRUE));
-		//TODO maradék assert
+		assertTrue(model.get(relationMap.get(bool), Tuple.of(enumNodeMap.get(falseEnum))).equals(TruthValue.TRUE));
 	}
 	
+	//Testing different aspects of the behavior
 	@Test
 	def void compositeTest() {
 		val problem = parseHelper.parse('''

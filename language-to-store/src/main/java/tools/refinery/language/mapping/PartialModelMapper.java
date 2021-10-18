@@ -35,15 +35,19 @@ public class PartialModelMapper {
 		this.nodeIter = 0;
 	}
 	
-	public PartialModelMapperDTO transformProblem(Problem problem) throws Exception {
+	public PartialModelMapperDTO transformProblem(Problem problem) throws PartialModelMapperException {
+		//Getting the relations and the nodes from the given problem
 		PartialModelMapperDTO pmmDTO = initTransform(problem);
 		
+		//Getting the relations and the nodes from the built in problem
 		Optional<Problem> builtinProblem = ProblemUtil.getBuiltInLibrary(problem);
-		if (builtinProblem.isEmpty()) throw new Exception("builtin.problem not found");
+		if (builtinProblem.isEmpty()) throw new PartialModelMapperException("builtin.problem not found");
 		PartialModelMapperDTO builtinProblemDTO = initTransform(builtinProblem.get());
+		
+		//Merging the relation and the nodes from the given problem and from the built in problem
 		pmmDTO.getRelationMap().putAll(builtinProblemDTO.getRelationMap());
 		pmmDTO.getNodeMap().putAll(builtinProblemDTO.getNodeMap());
-		pmmDTO.getEnumNodeMap().putAll(builtinProblemDTO.getEnumNodeMap()); //így most valami nem stimmel
+		pmmDTO.getEnumNodeMap().putAll(builtinProblemDTO.getEnumNodeMap());
 		pmmDTO.getNewNodeMap().putAll(builtinProblemDTO.getNewNodeMap());
 		pmmDTO.getUniqueNodeMap().putAll(builtinProblemDTO.getUniqueNodeMap());
 		
@@ -52,6 +56,7 @@ public class PartialModelMapper {
 		Model model = store.createModel();
 		pmmDTO.setModel(model);
 		
+		//Collecting all the nodes in one map
 		Map<Node,Integer> allNodesMap = mergeNodeMaps(pmmDTO.getEnumNodeMap(),
 													  pmmDTO.getUniqueNodeMap(),
 													  pmmDTO.getNewNodeMap(),
@@ -71,16 +76,13 @@ public class PartialModelMapper {
 						pmmDTO.getModel().put(r, Tuple.of(i,j), TruthValue.UNKNOWN);
 					}
 				}
-				else throw new Exception("Relation with arity above 2 is not supported");
+				else throw new PartialModelMapperException("Relation with arity above 2 is not supported");
 			}
 		}
 		
 		//Filling up the exists
-		tools.refinery.language.model.problem.Relation existsRelation = null;
-		for (tools.refinery.language.model.problem.Relation r : builtinProblemDTO.getRelationMap().keySet()) {
-			if (r.getName().equals("exists")) existsRelation = r;
-		}
-		if(existsRelation.equals(null)) throw new Exception("exists not found");
+		tools.refinery.language.model.problem.Relation existsRelation = findingRelationInDTO(builtinProblemDTO, "exists",
+																				  "The exists not found in built in problem");
 		for (Node n : allNodesMap.keySet()) {
 			if(pmmDTO.getNewNodeMap().containsKey(n)) {
 				pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(existsRelation),
@@ -95,11 +97,8 @@ public class PartialModelMapper {
 		}
 		
 		//Filling up the equals
-		tools.refinery.language.model.problem.Relation equalsRelation = null;
-		for (tools.refinery.language.model.problem.Relation r : builtinProblemDTO.getRelationMap().keySet()) {
-			if (r.getName().equals("equals")) equalsRelation = r;
-		}
-		if(equalsRelation.equals(null)) throw new Exception("equals not found");
+		tools.refinery.language.model.problem.Relation equalsRelation = findingRelationInDTO(builtinProblemDTO, "equals",
+																				  "The equals not found in built in problem");
 		for (Node n1 : allNodesMap.keySet()) {
 			for(Node n2 : allNodesMap.keySet()) {
 				if(n1.equals(n2)) {
@@ -126,10 +125,21 @@ public class PartialModelMapper {
 		processAssertions(problem, pmmDTO, allNodesMap);
 		processAssertions(builtinProblem.get(), pmmDTO, allNodesMap);
 		
-		//throw new UnsupportedOperationException();
 		return pmmDTO;
 	}
 
+	//Searches for and gives back a relation in a PartialModelMapperDTO
+	private tools.refinery.language.model.problem.Relation findingRelationInDTO(PartialModelMapperDTO partialModelMapperDTO, String searchedRelation, String errorText)
+			throws PartialModelMapperException {
+		tools.refinery.language.model.problem.Relation relation = null;
+		for (tools.refinery.language.model.problem.Relation r : partialModelMapperDTO.getRelationMap().keySet()) {
+			if (r.getName().equals(searchedRelation)) relation = r;
+		}
+		if(relation.equals(null)) throw new PartialModelMapperException(errorText);
+		return relation;
+	}
+
+	//Processing assertions and placing them in the model
 	private void processAssertions(Problem problem, PartialModelMapperDTO pmmDTO, Map<Node, Integer> allNodesMap) {
 		for(Statement s : problem.getStatements()) {
 			if(s instanceof Assertion assertion) {
@@ -160,6 +170,7 @@ public class PartialModelMapper {
 		}
 	}
 	
+	//Getting the relations and nodes from the problem
 	public PartialModelMapperDTO initTransform(Problem problem) {
 		//Defining needed Maps
 		Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationMap = new HashMap<>();
@@ -183,7 +194,6 @@ public class PartialModelMapper {
 			else if (s instanceof EnumDeclaration ed) {
 				Relation<TruthValue> r = new Relation<>(ed.getName(), 1, TruthValue.FALSE);
 				relationMap.put(ed, r);
-				EList<Node> nodeList = ed.getLiterals();
 				for (Node n : ed.getLiterals()) {
 					enumNodeMap.put(n, nodeIter++);
 				}
@@ -199,9 +209,6 @@ public class PartialModelMapper {
 			}
 		}
 		
-		
-		
-		
 		//Filling the nodeMap up
 		Map<Node, Integer> nodeMap = new HashMap<>();
 		for(Node n : problem.getNodes()) {
@@ -210,22 +217,35 @@ public class PartialModelMapper {
 		
 		return new PartialModelMapperDTO(null,relationMap,nodeMap,enumNodeMap,uniqueNodeMap,newNodeMap);
 	}
-
+	
+	//Merging the maps of nodes into one map
 	private Map<Node, Integer> mergeNodeMaps(Map<Node, Integer> enumNodeMap,
 											 Map<Node, Integer> uniqueNodeMap,
 											 Map<Node, Integer> newNodeMap,
 											 Map<Node, Integer> nodeMap) {
-		Map<Node, Integer> out = new HashMap<>(enumNodeMap);
-		for (Node n : uniqueNodeMap.keySet()) out.put(n, uniqueNodeMap.get(n));
-		for (Node n : newNodeMap.keySet()) out.put(n, newNodeMap.get(n));
-		for (Node n : nodeMap.keySet()) out.put(n, nodeMap.get(n));
+		Map<Node, Integer> out = new HashMap<>();
+		out.putAll(enumNodeMap);
+		out.putAll(uniqueNodeMap);
+		out.putAll(newNodeMap);
+		out.putAll(nodeMap);
 		return out;
 	}
 
+	//Exchange method from LogicValue to TruthValue
 	private TruthValue logicValueToTruthValue(LogicValue value) {
 		if(value.equals(LogicValue.TRUE)) return TruthValue.TRUE;
 		else if(value.equals(LogicValue.FALSE)) return TruthValue.FALSE;
 		else if(value.equals(LogicValue.UNKNOWN)) return TruthValue.UNKNOWN;
 		else return TruthValue.ERROR;
+	}
+	
+	public class PartialModelMapperException extends Exception{
+		private static final long serialVersionUID = 1L;
+		public PartialModelMapperException(String errorText) {
+			super(errorText);
+		}
+		public PartialModelMapperException() {
+			super();
+		}
 	}
 }
