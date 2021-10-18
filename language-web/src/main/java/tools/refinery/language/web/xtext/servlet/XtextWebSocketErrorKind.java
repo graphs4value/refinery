@@ -1,4 +1,4 @@
-package tools.refinery.language.web.xtext;
+package tools.refinery.language.web.xtext.servlet;
 
 import com.google.gson.annotations.SerializedName;
 

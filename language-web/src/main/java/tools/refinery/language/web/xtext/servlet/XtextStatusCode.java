@@ -1,4 +1,4 @@
-package tools.refinery.language.web.xtext;
+package tools.refinery.language.web.xtext.servlet;
 
 public final class XtextStatusCode {
 	public static final int INVALID_JSON = 4007;

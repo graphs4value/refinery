@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.SessionTrackingMode;
-import tools.refinery.language.web.xtext.XtextWebSocketServlet;
+import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 public class ServerLauncher {
 	public static final String DEFAULT_LISTEN_ADDRESS = "localhost";

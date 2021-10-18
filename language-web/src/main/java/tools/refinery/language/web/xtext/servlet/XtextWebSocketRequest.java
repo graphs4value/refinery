@@ -1,4 +1,4 @@
-package tools.refinery.language.web.xtext;
+package tools.refinery.language.web.xtext.servlet;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +18,16 @@ public class XtextWebSocketRequest {
 
 	@SerializedName("request")
 	private List<Map<String, String>> requestData;
+
+	public XtextWebSocketRequest(String id, String resourceName, String contentType, String requiredStateId,
+			List<Map<String, String>> requestData) {
+		super();
+		this.id = id;
+		this.resourceName = resourceName;
+		this.contentType = contentType;
+		this.requiredStateId = requiredStateId;
+		this.requestData = requestData;
+	}
 
 	public String getId() {
 		return id;

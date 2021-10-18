@@ -3,7 +3,7 @@ package tools.refinery.language.web;
 import org.eclipse.xtext.util.DisposableRegistry;
 
 import jakarta.servlet.ServletException;
-import tools.refinery.language.web.xtext.XtextWebSocketServlet;
+import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 public class ProblemWebSocketServlet extends XtextWebSocketServlet {
 

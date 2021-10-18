@@ -1,4 +1,4 @@
-package tools.refinery.language.web.xtext;
+package tools.refinery.language.web.xtext.servlet;
 
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +8,7 @@ import org.eclipse.xtext.web.server.ISession;
 import org.eclipse.xtext.web.server.InvalidRequestException;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 record SimpleServiceContext(ISession session, Map<String, String> parameters) implements IServiceContext {
 
@@ -17,13 +18,9 @@ record SimpleServiceContext(ISession session, Map<String, String> parameters) im
 
 	public static final String STATE_ID_PARAMETER = "requiredStateId";
 
-	public SimpleServiceContext(ISession session, XtextWebSocketRequest request, String stateId, int index) {
-		this(session, addPerTransactionData(request, stateId, request.getRequestData().get(index)));
-	}
-
 	@Override
 	public Set<String> getParameterKeys() {
-		return parameters.keySet();
+		return ImmutableSet.copyOf(parameters.keySet());
 	}
 
 	@Override
@@ -36,8 +33,9 @@ record SimpleServiceContext(ISession session, Map<String, String> parameters) im
 		return session;
 	}
 
-	private static Map<String, String> addPerTransactionData(XtextWebSocketRequest request, String stateId,
-			Map<String, String> parameters) {
+	public static IServiceContext ofTransaction(ISession session, XtextWebSocketRequest request, String stateId,
+			int index) {
+		var parameters = request.getRequestData().get(index);
 		checkParameters(parameters, RESOURCE_NAME_PARAMETER);
 		checkParameters(parameters, CONTENT_TYPE_PARAMETER);
 		checkParameters(parameters, STATE_ID_PARAMETER);
@@ -52,7 +50,8 @@ record SimpleServiceContext(ISession session, Map<String, String> parameters) im
 		if (stateId != null) {
 			builder.put(STATE_ID_PARAMETER, stateId);
 		}
-		return builder.build();
+		var allParameters = builder.build();
+		return new SimpleServiceContext(session, allParameters);
 	}
 
 	private static void checkParameters(Map<String, String> parameters, String perTransactionParameter) {
