@@ -14,4 +14,11 @@
             genModel="src/main/resources/model/problem.genmodel"/>
    </extension>
 
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated problem -->
+      <parser
+            type="problem_xmi"
+            class="tools.refinery.language.model.problem.util.ProblemResourceFactoryImpl"/>
+   </extension>
+
 </plugin>

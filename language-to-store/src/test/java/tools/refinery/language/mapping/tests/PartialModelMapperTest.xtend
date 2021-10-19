@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import tools.refinery.language.mapping.PartialModelMapper
 import tools.refinery.language.model.problem.Problem
+import tools.refinery.language.model.tests.ProblemTestUtil
 import tools.refinery.language.tests.ProblemInjectorProvider
 import tools.refinery.store.model.Tuple
 import tools.refinery.store.model.representation.TruthValue

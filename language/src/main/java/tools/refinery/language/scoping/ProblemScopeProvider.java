@@ -12,7 +12,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import tools.refinery.language.ProblemUtil;
+import tools.refinery.language.model.ProblemUtil;
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.ExistentialQuantifier;
 import tools.refinery.language.model.problem.PredicateDefinition;

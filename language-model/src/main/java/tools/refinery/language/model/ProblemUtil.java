@@ -1,4 +1,4 @@
-package tools.refinery.language;
+package tools.refinery.language.model;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -7,10 +7,9 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-
-import com.google.common.collect.ImmutableList;
 
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.Node;
@@ -19,14 +18,17 @@ import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.Variable;
-import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 
 public final class ProblemUtil {
+	public static final String BUILTIN_LIBRARY_NAME = "builtin";
+
+	public static final URI BUILTIN_LIBRARY_URI = getLibraryUri(BUILTIN_LIBRARY_NAME);
+
+	public static final String NODE_CLASS_NAME = "node";
+
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
-
-	public static final String NODE_CLASS_NAME = "node";
 
 	public static boolean isSingletonVariable(Variable variable) {
 		return variable.eContainingFeature() == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__SINGLETON_VARIABLE;
@@ -44,8 +46,8 @@ public final class ProblemUtil {
 
 	public static Optional<Problem> getBuiltInLibrary(EObject context) {
 		return Optional.ofNullable(context.eResource()).map(Resource::getResourceSet)
-				.map(resourceSet -> resourceSet.getResource(ProblemGlobalScopeProvider.BULTIN_LIBRARY_URI, true))
-				.map(Resource::getContents).filter(contents -> !contents.isEmpty()).map(contents -> contents.get(0))
+				.map(resourceSet -> resourceSet.getResource(BUILTIN_LIBRARY_URI, true)).map(Resource::getContents)
+				.filter(contents -> !contents.isEmpty()).map(contents -> contents.get(0))
 				.filter(Problem.class::isInstance).map(Problem.class::cast);
 	}
 
@@ -53,7 +55,7 @@ public final class ProblemUtil {
 		if (eObject != null) {
 			var eResource = eObject.eResource();
 			if (eResource != null) {
-				return ProblemGlobalScopeProvider.BULTIN_LIBRARY_URI.equals(eResource.getURI());
+				return BUILTIN_LIBRARY_URI.equals(eResource.getURI());
 			}
 		}
 		return false;
@@ -85,10 +87,16 @@ public final class ProblemUtil {
 	}
 
 	public static Collection<ReferenceDeclaration> getAllReferenceDeclarations(ClassDeclaration classDeclaration) {
-		ImmutableList.Builder<ReferenceDeclaration> builder = ImmutableList.builder();
+		Set<ReferenceDeclaration> referenceDeclarations = new HashSet<>();
 		for (ClassDeclaration superclass : getSuperclassesAndSelf(classDeclaration)) {
-			builder.addAll(superclass.getReferenceDeclarations());
+			referenceDeclarations.addAll(superclass.getReferenceDeclarations());
 		}
-		return builder.build();
+		return referenceDeclarations;
+	}
+
+	private static URI getLibraryUri(String libraryName) {
+		return URI.createURI(ProblemUtil.class.getClassLoader()
+				.getResource("model/" + libraryName + "." + ProblemEMFSetup.XMI_RESOURCE_EXTENSION)
+				.toString());
 	}
 }
