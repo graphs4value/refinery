@@ -4,23 +4,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.eclipse.xtext.web.server.ServiceConflictResult;
 import org.eclipse.xtext.web.server.model.DocumentStateResult;
+import org.eclipse.xtext.web.server.syntaxcoloring.HighlightingResult;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,29 +25,35 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.inject.Inject;
 
+import tools.refinery.language.web.xtext.server.ResponseHandler;
+import tools.refinery.language.web.xtext.server.ResponseHandlerException;
+import tools.refinery.language.web.xtext.server.TransactionExecutor;
+import tools.refinery.language.web.xtext.server.message.XtextWebOkResponse;
+import tools.refinery.language.web.xtext.server.message.XtextWebRequest;
+import tools.refinery.language.web.xtext.server.message.XtextWebResponse;
+
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemWebInjectorProvider.class)
 class TransactionExecutorTest {
 	private static final String RESOURCE_NAME = "test.problem";
 
-	private static final String INVALID_STATE_ID = "<invalid_state>";
-
 	private static final String TEST_PROBLEM = """
-				class Person {
-				Person friend[0..*] opposite friend
+			class Person {
+				Person[0..*] friend opposite friend
 			}
 
 			friend(a, b).
 			""";
 
-	private static final Map<String, String> UPDATE_FULL_TEXT_PARAMS = Map.of("serviceType", "update", "fullText",
-			TEST_PROBLEM);
-
-	private static final Map<String, String> VALIDATE_PARAMS = Map.of("serviceType", "validate");
+	private static final Map<String, String> UPDATE_FULL_TEXT_PARAMS = Map.of("resource", RESOURCE_NAME, "serviceType",
+			"update", "fullText", TEST_PROBLEM);
 
 	@Inject
 	private IResourceServiceProvider.Registry resourceServiceProviderRegistry;
+
+	@Inject
+	private AwaitTerminationExecutorServiceProvider executorServices;
 
 	private TransactionExecutor transactionExecutor;
 
@@ -59,93 +61,85 @@ class TransactionExecutorTest {
 	void beforeEach() {
 		transactionExecutor = new TransactionExecutor(new SimpleSession(), resourceServiceProviderRegistry);
 	}
-	
+
 	@Test
-	void emptyBatchTest() {
-		performBatchRequest(null);
+	void updateFullTextTest() throws ResponseHandlerException {
+		var captor = newCaptor();
+		var stateId = updateFullText(captor);
+		assertThatPrecomputedMessagesAreReceived(stateId, captor.getAllValues());
 	}
 
 	@Test
-	void fullTextUpdateTest() {
-		var response = performSingleRequest(null, UPDATE_FULL_TEXT_PARAMS);
-		assertThat(response, hasResponseData(instanceOf(DocumentStateResult.class)));
-	}
-
-	@Test
-	void validationAfterFullTextUpdateInSameBatchTest() {
-		var response = performBatchRequest(null, UPDATE_FULL_TEXT_PARAMS, VALIDATE_PARAMS).get(1);
-		assertThat(response, hasResponseData(instanceOf(ValidationResult.class)));
-	}
-
-	@Test
-	void validationAfterFullTextUpdateInDifferentBatchTest() {
+	void updateDeltaTextHighlightAndValidationChange() throws ResponseHandlerException {
 		var stateId = updateFullText();
-		var validateResponse = performSingleRequest(stateId, VALIDATE_PARAMS);
-		assertThat(validateResponse, hasResponseData(instanceOf(ValidationResult.class)));
+		var responseHandler = sendRequestAndWaitForAllResponses(
+				new XtextWebRequest("bar", Map.of("resource", RESOURCE_NAME, "serviceType", "update", "requiredStateId",
+						stateId, "deltaText", "<invalid text>\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
+
+		var captor = newCaptor();
+		verify(responseHandler, times(3)).onResponse(captor.capture());
+		var newStateId = getStateId("bar", captor.getAllValues().get(0));
+		assertThatPrecomputedMessagesAreReceived(newStateId, captor.getAllValues());
 	}
 
 	@Test
-	void conflictTest() {
-		updateFullText();
-		var response = performSingleRequest(INVALID_STATE_ID, VALIDATE_PARAMS);
-		assertThat(response, hasResponseData(instanceOf(ServiceConflictResult.class)));
+	void updateDeltaTextHighlightChangeOnly() throws ResponseHandlerException {
+		var stateId = updateFullText();
+		var responseHandler = sendRequestAndWaitForAllResponses(
+				new XtextWebRequest("bar", Map.of("resource", RESOURCE_NAME, "serviceType", "update", "requiredStateId",
+						stateId, "deltaText", "class Vehicle.\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
+
+		var captor = newCaptor();
+		verify(responseHandler, times(2)).onResponse(captor.capture());
+		var newStateId = getStateId("bar", captor.getAllValues().get(0));
+		assertHighlightingResponse(newStateId, captor.getAllValues().get(1));
 	}
 
-	@Test
-	void transactionCancelledDueToConflictTest() {
-		updateFullText();
-		var response = performBatchRequest(INVALID_STATE_ID, VALIDATE_PARAMS, VALIDATE_PARAMS).get(1);
-		assertThat(response, hasErrorKind(equalTo(XtextWebSocketErrorKind.TRANSACTION_CANCELLED)));
+	private ArgumentCaptor<XtextWebResponse> newCaptor() {
+		return ArgumentCaptor.forClass(XtextWebResponse.class);
 	}
 
-	@SafeVarargs
-	private List<XtextWebSocketResponse> performBatchRequest(String requiredStateId, Map<String, String>... params) {
-		var id = UUID.randomUUID().toString();
-		var request = new XtextWebSocketRequest(id, RESOURCE_NAME, null, requiredStateId, List.of(params));
-		
+	private String updateFullText() throws ResponseHandlerException {
+		return updateFullText(newCaptor());
+	}
+
+	private String updateFullText(ArgumentCaptor<XtextWebResponse> captor) throws ResponseHandlerException {
+		var responseHandler = sendRequestAndWaitForAllResponses(new XtextWebRequest("foo", UPDATE_FULL_TEXT_PARAMS));
+
+		verify(responseHandler, times(3)).onResponse(captor.capture());
+		return getStateId("foo", captor.getAllValues().get(0));
+	}
+
+	private ResponseHandler sendRequestAndWaitForAllResponses(XtextWebRequest request) throws ResponseHandlerException {
 		var responseHandler = mock(ResponseHandler.class);
-		try {
-			transactionExecutor.handleRequest(request, responseHandler);
-		} catch (IOException e) {
-			fail("Unexpected IOException", e);
-		}
-		
-		var captor = ArgumentCaptor.forClass(XtextWebSocketResponse.class);
-		int nParams = params.length;
-		try {
-			verify(responseHandler, times(nParams)).onResponse(captor.capture());
-		} catch (IOException e) {
-			throw new RuntimeException("Mockito threw unexcepted exception", e);
-		}
-		var allResponses = captor.getAllValues();
-		for (int i = 0; i < nParams; i++) {
-			var response = allResponses.get(i);
-			assertThat(response, hasProperty("id", equalTo(id)));
-			assertThat(response, hasProperty("index", equalTo(i)));
-		}
-		return allResponses;
+		transactionExecutor.setResponseHandler(responseHandler);
+		transactionExecutor.handleRequest(request);
+		executorServices.waitForAllTasksToFinish();
+		return responseHandler;
 	}
 
-	private XtextWebSocketResponse performSingleRequest(String requiredStateId, Map<String, String> param) {
-		return performBatchRequest(requiredStateId, param).get(0);
+	private String getStateId(String requestId, XtextWebResponse okResponse) {
+		assertThat(okResponse, hasProperty("id", equalTo(requestId)));
+		assertThat(okResponse, hasProperty("responseData", instanceOf(DocumentStateResult.class)));
+		return ((DocumentStateResult) ((XtextWebOkResponse) okResponse).getResponseData()).getStateId();
 	}
 
-	private String updateFullText() {
-		var updateResponse = (XtextWebSocketOkResponse) performSingleRequest(null, UPDATE_FULL_TEXT_PARAMS);
-		var documentStateResult = (DocumentStateResult) updateResponse.getResponseData();
-		var stateId = documentStateResult.getStateId();
-		if (INVALID_STATE_ID.equals(stateId)) {
-			throw new RuntimeException("Service returned unexpected stateId: " + stateId);
-		}
-		return stateId;
+	private void assertThatPrecomputedMessagesAreReceived(String stateId, List<XtextWebResponse> responses) {
+		assertHighlightingResponse(stateId, responses.get(1));
+		assertValidationResponse(stateId, responses.get(2));
 	}
 
-	private static Matcher<XtextWebSocketResponse> hasResponseData(Matcher<?> responseDataMatcher) {
-		return hasProperty("responseData", responseDataMatcher);
+	private void assertHighlightingResponse(String stateId, XtextWebResponse highlightingResponse) {
+		assertThat(highlightingResponse, hasProperty("resourceId", equalTo(RESOURCE_NAME)));
+		assertThat(highlightingResponse, hasProperty("stateId", equalTo(stateId)));
+		assertThat(highlightingResponse, hasProperty("service", equalTo("highlighting")));
+		assertThat(highlightingResponse, hasProperty("pushData", instanceOf(HighlightingResult.class)));
 	}
 
-	private static Matcher<XtextWebSocketResponse> hasErrorKind(
-			Matcher<? extends XtextWebSocketErrorKind> errorKindMatcher) {
-		return hasProperty("errorKind", errorKindMatcher);
+	private void assertValidationResponse(String stateId, XtextWebResponse validationResponse) {
+		assertThat(validationResponse, hasProperty("resourceId", equalTo(RESOURCE_NAME)));
+		assertThat(validationResponse, hasProperty("stateId", equalTo(stateId)));
+		assertThat(validationResponse, hasProperty("service", equalTo("validation")));
+		assertThat(validationResponse, hasProperty("pushData", instanceOf(ValidationResult.class)));
 	}
 }

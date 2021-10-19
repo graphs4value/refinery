@@ -26,7 +26,7 @@ public class ProblemWebInjectorProvider extends ProblemInjectorProvider {
 
 	protected ProblemWebModule createWebModule() {
 		// Await termination of the executor service to avoid race conditions between
-		// between the tasks in the service and the {@link
+		// the tasks in the service and the {@link
 		// org.eclipse.xtext.testing.extensions.InjectionExtension}.
 		return new ProblemWebModule() {
 			@SuppressWarnings("unused")

@@ -1,4 +1,4 @@
-package tools.refinery.language.web.xtext.servlet;
+package tools.refinery.language.web.xtext.server.message;
 
 import java.util.Objects;
 
@@ -7,23 +7,20 @@ import org.eclipse.xtext.web.server.IUnwrappableServiceResult;
 
 import com.google.gson.annotations.SerializedName;
 
-public final class XtextWebSocketOkResponse implements XtextWebSocketResponse {
+public final class XtextWebOkResponse implements XtextWebResponse {
 	private String id;
-
-	private int index;
 
 	@SerializedName("response")
 	private Object responseData;
 
-	public XtextWebSocketOkResponse(String id, int index, Object responseData) {
+	public XtextWebOkResponse(String id, Object responseData) {
 		super();
 		this.id = id;
-		this.index = index;
 		this.responseData = responseData;
 	}
 
-	public XtextWebSocketOkResponse(XtextWebSocketRequest request, int index, IServiceResult result) {
-		this(request.getId(), index, maybeUnwrap(result));
+	public XtextWebOkResponse(XtextWebRequest request, IServiceResult result) {
+		this(request.getId(), maybeUnwrap(result));
 	}
 
 	public String getId() {
@@ -32,14 +29,6 @@ public final class XtextWebSocketOkResponse implements XtextWebSocketResponse {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
 	}
 
 	public Object getResponseData() {
@@ -52,7 +41,7 @@ public final class XtextWebSocketOkResponse implements XtextWebSocketResponse {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, index, responseData);
+		return Objects.hash(id, responseData);
 	}
 
 	@Override
@@ -63,13 +52,13 @@ public final class XtextWebSocketOkResponse implements XtextWebSocketResponse {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		XtextWebSocketOkResponse other = (XtextWebSocketOkResponse) obj;
-		return Objects.equals(id, other.id) && index == other.index && Objects.equals(responseData, other.responseData);
+		XtextWebOkResponse other = (XtextWebOkResponse) obj;
+		return Objects.equals(id, other.id) && Objects.equals(responseData, other.responseData);
 	}
 
 	@Override
 	public String toString() {
-		return "XtextWebSocketOkResponse [id=" + id + ", index=" + index + ", responseData=" + responseData + "]";
+		return "XtextWebSocketOkResponse [id=" + id + ", responseData=" + responseData + "]";
 	}
 
 	private static Object maybeUnwrap(IServiceResult result) {

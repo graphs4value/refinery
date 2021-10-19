@@ -12,6 +12,7 @@ dependencies {
 	implementation "org.eclipse.jetty.websocket:websocket-jetty-server:${jettyVersion}"
 	implementation "org.slf4j:slf4j-simple:${slf4JVersion}"
 	implementation "org.slf4j:log4j-over-slf4j:${slf4JVersion}"
+	testImplementation testFixtures(project(':refinery-language'))
 	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
 }
 
