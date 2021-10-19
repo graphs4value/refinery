@@ -13,9 +13,11 @@ import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider;
 
 import com.google.inject.Inject;
 
+import tools.refinery.language.model.ProblemUtil;
+
 public class ProblemLocalScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	private static final QualifiedName BUILTIN_LIBRARY_QUALIFIED_NAME = QualifiedName
-			.create(ProblemGlobalScopeProvider.BUILTIN_LIBRARY_NAME);
+			.create(ProblemUtil.BUILTIN_LIBRARY_NAME);
 
 	@Inject
 	private IResourceDescriptionsProvider resourceDescriptionsProvider;

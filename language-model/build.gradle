@@ -1,9 +1,11 @@
 apply plugin: 'java-library'
+apply plugin: 'java-test-fixtures'
 apply from: "${rootDir}/gradle/java-common.gradle"
 apply from: "${rootDir}/gradle/mwe2.gradle"
 
 dependencies {
 	api "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
+	api "org.eclipse.emf:org.eclipse.emf.ecore.xmi:${ecoreXmiVersion}"
 	mwe2 "org.eclipse.emf:org.eclipse.emf.codegen.ecore:${ecoreCodegenVersion}"
 	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe.utils:${mweVersion}"
 	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe2.lib:${mwe2Version}"

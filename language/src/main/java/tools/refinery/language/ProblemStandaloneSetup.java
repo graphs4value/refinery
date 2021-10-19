@@ -3,11 +3,14 @@
  */
 package tools.refinery.language;
 
-import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.resource.IResourceFactory;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
 
+import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import tools.refinery.language.model.problem.ProblemPackage;
+import tools.refinery.language.model.ProblemEMFSetup;
 
 /**
  * Initialization support for running Xtext languages without Equinox extension
@@ -20,15 +23,22 @@ public class ProblemStandaloneSetup extends ProblemStandaloneSetupGenerated {
 	}
 
 	@Override
-	// Here we can't rely on java.util.HashMap#computeIfAbsent, because
-	// org.eclipse.emf.ecore.impl.EPackageRegistryImpl#containsKey is overridden
-	// without also overriding computeIfAbsent. We must make sure to call the
-	// overridden containsKey implementation.
-	@SuppressWarnings("squid:S3824")
 	public Injector createInjectorAndDoEMFRegistration() {
-		if (!EPackage.Registry.INSTANCE.containsKey(ProblemPackage.eNS_URI)) {
-			EPackage.Registry.INSTANCE.put(ProblemPackage.eNS_URI, ProblemPackage.eINSTANCE);
-		}
+		ProblemEMFSetup.doEMFRegistration();
+		var xmiInjector = createXmiInjector();
+		registerXmiInjector(xmiInjector);
 		return super.createInjectorAndDoEMFRegistration();
+	}
+	
+	protected Injector createXmiInjector() {
+		return Guice.createInjector(new ProblemXmiRuntimeModule());
+	}
+
+	protected void registerXmiInjector(Injector injector) {
+		IResourceFactory resourceFactory = injector.getInstance(IResourceFactory.class);
+		IResourceServiceProvider serviceProvider = injector.getInstance(IResourceServiceProvider.class);
+		
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put(ProblemEMFSetup.XMI_RESOURCE_EXTENSION, resourceFactory);
+		IResourceServiceProvider.Registry.INSTANCE.getExtensionToFactoryMap().put(ProblemEMFSetup.XMI_RESOURCE_EXTENSION, serviceProvider);
 	}
 }

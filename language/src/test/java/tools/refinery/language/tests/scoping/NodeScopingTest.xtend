@@ -12,8 +12,8 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import tools.refinery.language.model.problem.Problem
+import tools.refinery.language.model.tests.ProblemTestUtil
 import tools.refinery.language.tests.ProblemInjectorProvider
-import tools.refinery.language.tests.ProblemTestUtil
 
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.*
