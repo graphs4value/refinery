@@ -132,7 +132,7 @@ public class PartialModelMapper {
 		for (tools.refinery.language.model.problem.Relation r : partialModelMapperDTO.getRelationMap().keySet()) {
 			if (r.getName().equals(searchedRelation)) relation = r;
 		}
-		if(relation.equals(null)) throw new PartialModelMapperException(errorText);
+		if(relation == null) throw new PartialModelMapperException(errorText);
 		return relation;
 	}
 
