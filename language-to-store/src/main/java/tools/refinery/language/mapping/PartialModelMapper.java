@@ -128,12 +128,10 @@ public class PartialModelMapper {
 	//Searches for and gives back a relation in a PartialModelMapperDTO
 	private tools.refinery.language.model.problem.Relation findingRelationInDTO(PartialModelMapperDTO partialModelMapperDTO, String searchedRelation, String errorText)
 			throws PartialModelMapperException {
-		tools.refinery.language.model.problem.Relation relation = null;
 		for (tools.refinery.language.model.problem.Relation r : partialModelMapperDTO.getRelationMap().keySet()) {
-			if (r.getName().equals(searchedRelation)) relation = r;
+			if (searchedRelation.equals(r.getName())) return r;
 		}
-		if(relation == null) throw new PartialModelMapperException(errorText);
-		return relation;
+		throw new PartialModelMapperException(errorText);
 	}
 
 	//Processing assertions and placing them in the model
