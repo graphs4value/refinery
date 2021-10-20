@@ -95,13 +95,13 @@ public class PredicateBuilder_string {
 		return new RelationAtom(view, stringToVariable(variables));
 	}
 	
-	public static PredicateAtom cInPredicate(DNFPredicate referred, String... variables) {
-		return new PredicateAtom(true, false, referred, stringToVariable(variables));
+	public static DNFPredicateCallAtom cInPredicate(DNFPredicate referred, String... variables) {
+		return new DNFPredicateCallAtom(true, false, referred, stringToVariable(variables));
 	}
-	public static PredicateAtom cInTransitivePredicate(DNFPredicate referred, String... variables) {
-		return new PredicateAtom(true, true, referred, stringToVariable(variables));
+	public static DNFPredicateCallAtom cInTransitivePredicate(DNFPredicate referred, String... variables) {
+		return new DNFPredicateCallAtom(true, true, referred, stringToVariable(variables));
 	}
-	public static PredicateAtom cNotInPredicate(DNFPredicate referred, String... variables) {
-		return new PredicateAtom(false, false, referred, stringToVariable(variables));
+	public static DNFPredicateCallAtom cNotInPredicate(DNFPredicate referred, String... variables) {
+		return new DNFPredicateCallAtom(false, false, referred, stringToVariable(variables));
 	}
 }
