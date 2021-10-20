@@ -14,12 +14,12 @@ import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.query.building.DNFAnd;
 import tools.refinery.store.query.building.DNFAtom;
 import tools.refinery.store.query.building.DNFPredicate;
-import tools.refinery.store.query.building.PredicateAtom;
+import tools.refinery.store.query.building.DNFPredicateCallAtom;
 import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.internal.DNF2PQuery;
+import tools.refinery.store.query.internal.DNF2PQuery.SimplePQuery;
 import tools.refinery.store.query.internal.QueriableModelImpl;
 import tools.refinery.store.query.internal.RawPatternMatcher;
-import tools.refinery.store.query.internal.DNF2PQuery.SimplePQuery;
 import tools.refinery.store.query.view.RelationView;
 
 public class QueriableModelStoreImpl implements QueriableModelStore {
@@ -53,7 +53,7 @@ public class QueriableModelStoreImpl implements QueriableModelStore {
 				for (DNFAtom atom : clause.getConstraints()) {
 					if (atom instanceof RelationAtom relationAtom) {
 						validateRelationAtom(relationViews, dnfPredicate, relationAtom);
-					} else if (atom instanceof PredicateAtom predicateAtom) {
+					} else if (atom instanceof DNFPredicateCallAtom predicateAtom) {
 						validatePredicateAtom(predicates, dnfPredicate, predicateAtom);
 					}
 				}
@@ -71,7 +71,7 @@ public class QueriableModelStoreImpl implements QueriableModelStore {
 		}
 	}
 	private void validatePredicateAtom(Set<DNFPredicate> predicates, DNFPredicate dnfPredicate,
-			PredicateAtom predicateAtom) {
+			DNFPredicateCallAtom predicateAtom) {
 		if (!predicates.contains(predicateAtom.getReferred())) {
 			throw new IllegalArgumentException(
 					DNFPredicate.class.getSimpleName() + " " + dnfPredicate.getUniqueName()

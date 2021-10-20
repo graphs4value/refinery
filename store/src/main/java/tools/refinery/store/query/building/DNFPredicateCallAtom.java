@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class PredicateAtom implements DNFAtom {
+public class DNFPredicateCallAtom implements DNFAtom {
 	private DNFPredicate referred;
 	private List<Variable> substitution;
 	private boolean positive;
 	private boolean transitive;
 
-	public PredicateAtom(boolean positive, boolean transitive, DNFPredicate referred, List<Variable> substitution) {
+	public DNFPredicateCallAtom(boolean positive, boolean transitive, DNFPredicate referred, List<Variable> substitution) {
 		this.positive = positive;
 		this.referred = referred;
 		this.substitution = substitution;

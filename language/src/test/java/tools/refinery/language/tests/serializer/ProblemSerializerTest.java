@@ -223,7 +223,10 @@ class ProblemSerializerTest {
 			}
 		}
 		var problemString = outputStream.toString();
-
+		var systemNewline = System.getProperty("line.separator");
+		if (systemNewline != null) {
+			problemString = problemString.replace(systemNewline, "\n");
+		}
 		assertThat(problemString, equalTo(expected));
 	}
 }

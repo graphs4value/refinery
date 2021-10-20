@@ -29,8 +29,8 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.building.DNFAnd;
 import tools.refinery.store.query.building.DNFAtom;
 import tools.refinery.store.query.building.DNFPredicate;
+import tools.refinery.store.query.building.DNFPredicateCallAtom;
 import tools.refinery.store.query.building.EquivalenceAtom;
-import tools.refinery.store.query.building.PredicateAtom;
 import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.building.Variable;
 
@@ -74,7 +74,7 @@ public class DNF2PQuery {
 		if (constraint instanceof RelationAtom relation) {
 			translateRelationAtom(relation, body);
 		}
-		if (constraint instanceof PredicateAtom predicate) {
+		if (constraint instanceof DNFPredicateCallAtom predicate) {
 			translatePredicateAtom(predicate, body, dnf2PQueryMap);
 		}
 	}
@@ -100,7 +100,7 @@ public class DNF2PQuery {
 		new TypeConstraint(body, Tuples.flatTupleOf(variables), relation.getView());
 	}
 
-	private static void translatePredicateAtom(PredicateAtom predicate, PBody body, Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
+	private static void translatePredicateAtom(DNFPredicateCallAtom predicate, PBody body, Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
 		Object[] variables = new Object[predicate.getSubstitution().size()];
 		for (int i = 0; i < predicate.getSubstitution().size(); i++) {
 			variables[i] = body.getOrCreateVariableByName(predicate.getSubstitution().get(i).getName());

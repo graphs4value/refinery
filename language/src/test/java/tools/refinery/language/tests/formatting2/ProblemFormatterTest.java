@@ -5,11 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
 
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.formatting2.IFormatter2;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
+import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -226,6 +228,9 @@ class ProblemFormatterTest {
 		FormatterRequest request = formatterRequestProvider.get();
 		request.setAllowIdentityEdits(false);
 		request.setFormatUndefinedHiddenRegionsOnly(false);
+		var preferences = new MapBasedPreferenceValues();
+		preferences.put(FormatterPreferenceKeys.lineSeparator, "\n");
+		request.setPreferences(preferences);
 		ITextRegionAccess regionAccess = regionBuilder.forNodeModel(resource).create();
 		request.setTextRegionAccess(regionAccess);
 		List<ITextReplacement> replacements = formatter2.format(request);
