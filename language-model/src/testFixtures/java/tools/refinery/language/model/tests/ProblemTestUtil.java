@@ -7,26 +7,33 @@ import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import tools.refinery.language.model.ProblemUtil;
+import tools.refinery.language.model.problem.ActionLiteral;
 import tools.refinery.language.model.problem.Argument;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.AssertionArgument;
 import tools.refinery.language.model.problem.Atom;
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.Conjunction;
+import tools.refinery.language.model.problem.DeleteActionLiteral;
 import tools.refinery.language.model.problem.EnumDeclaration;
 import tools.refinery.language.model.problem.Literal;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.NegativeLiteral;
+import tools.refinery.language.model.problem.NewActionLiteral;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.NodeAssertionArgument;
 import tools.refinery.language.model.problem.NodeValueAssertion;
 import tools.refinery.language.model.problem.Parameter;
+import tools.refinery.language.model.problem.ParametricDefinition;
 import tools.refinery.language.model.problem.PredicateDefinition;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.model.problem.Relation;
+import tools.refinery.language.model.problem.RuleDefinition;
 import tools.refinery.language.model.problem.Statement;
 import tools.refinery.language.model.problem.UniqueDeclaration;
+import tools.refinery.language.model.problem.ValueActionLiteral;
+import tools.refinery.language.model.problem.ValueLiteral;
 import tools.refinery.language.model.problem.Variable;
 import tools.refinery.language.model.problem.VariableOrNode;
 import tools.refinery.language.model.problem.VariableOrNodeArgument;
@@ -49,16 +56,28 @@ public class ProblemTestUtil {
 		return namedStatementOfType(problem, PredicateDefinition.class, name);
 	}
 
-	public Parameter param(PredicateDefinition definition, int i) {
+	public RuleDefinition rule(Problem problem, String name) {
+		return namedStatementOfType(problem, RuleDefinition.class, name);
+	}
+
+	public Parameter param(ParametricDefinition definition, int i) {
 		return definition.getParameters().get(i);
 	}
 
-	public Conjunction conj(PredicateDefinition definition, int i) {
+	public Conjunction conj(ParametricDefinition definition, int i) {
 		return definition.getBodies().get(i);
 	}
 
 	public Literal lit(Conjunction conjunction, int i) {
 		return conjunction.getLiterals().get(i);
+	}
+	
+	public ActionLiteral actionLit(RuleDefinition rule, int i) {
+		return rule.getAction().getActionLiterals().get(i);
+	}
+
+	public Atom valueAtom(Literal literal) {
+		return ((ValueLiteral) literal).getAtom();
 	}
 
 	public Atom negated(Literal literal) {
@@ -83,6 +102,30 @@ public class ProblemTestUtil {
 
 	public Variable variable(Argument argument) {
 		return (Variable) variableOrNode(argument);
+	}
+
+	public Variable variable(ValueActionLiteral valueActionLiteral, int i) {
+		return variable(arg(valueActionLiteral.getAtom(), i));
+	}
+	
+	public Variable variable(NewActionLiteral newActionLiteral) {
+		return newActionLiteral.getVariable();
+	}
+	
+	public VariableOrNode deleteVar(ActionLiteral actionLiteral) {
+		return ((DeleteActionLiteral) actionLiteral).getVariableOrNode();
+	}
+	
+	public VariableOrNode newVar(ActionLiteral actionLiteral) {
+		return ((NewActionLiteral) actionLiteral).getVariable();
+	}
+	
+	public Atom valueAtom(ActionLiteral actionLiteral) {
+		return ((ValueActionLiteral) actionLiteral).getAtom();
+	}
+	
+	public Variable variable(DeleteActionLiteral deleteActionLiteral) {
+		return (Variable) deleteActionLiteral.getVariableOrNode();
 	}
 
 	public Node node(Argument argument) {
