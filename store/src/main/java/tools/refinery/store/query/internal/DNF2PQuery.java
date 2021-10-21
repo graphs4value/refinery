@@ -160,8 +160,8 @@ public class DNF2PQuery {
 			return bodies;
 		}
 
-		public GenericQuerySpecification<GenericPatternMatcher> build() {
-			return new GenericQuerySpecification<GenericPatternMatcher>(this) {
+		public GenericQuerySpecification<RawPatternMatcher> build() {
+			return new GenericQuerySpecification<RawPatternMatcher>(this) {
 
 				@Override
 				public Class<? extends QueryScope> getPreferredScopeClass() {
@@ -169,13 +169,17 @@ public class DNF2PQuery {
 				}
 
 				@Override
-				protected GenericPatternMatcher instantiate(ViatraQueryEngine engine) {
-					return defaultInstantiate(engine);
+				protected RawPatternMatcher instantiate(ViatraQueryEngine engine) {
+					RawPatternMatcher matcher = engine.getExistingMatcher(this);
+			        if (matcher == null) {
+			            matcher = engine.getMatcher(this);
+			        } 	
+			        return matcher;
 				}
 
 				@Override
-				public GenericPatternMatcher instantiate() {
-					return new GenericPatternMatcher(this);
+				public RawPatternMatcher instantiate() {
+					return new RawPatternMatcher(this);
 				}
 
 			};
