@@ -12,6 +12,7 @@ import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.IQueryGroup;
 
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.Tuple;
@@ -24,18 +25,24 @@ import tools.refinery.store.query.building.DNFPredicate;
 public class QueriableModelImpl implements QueriableModel {
 	protected final QueriableModelStore store;
 	protected final Model model;
+	protected final Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery;
 	
-	protected final RelationalScope scope;
-	protected final AdvancedViatraQueryEngine engine;
-	protected final Map<DNFPredicate, RawPatternMatcher> predicate2Matcher;
+	protected RelationalScope scope;
+	protected AdvancedViatraQueryEngine engine;
+	protected Map<DNFPredicate, RawPatternMatcher> predicate2Matcher;
 
 	public QueriableModelImpl(QueriableModelStore store, Model model,
 			Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery) {
 		this.store = store;
 		this.model = model;
-		this.scope = new RelationalScope(model, store.getViews());
-		this.engine = AdvancedViatraQueryEngine.createUnmanagedEngine(scope);
-		this.predicate2Matcher = initMatchers(engine, predicates2PQuery);
+		this.predicates2PQuery = predicates2PQuery;
+		initEngine();
+	}
+
+	private void initEngine() {
+		this.scope = new RelationalScope(this.model, this.store.getViews());
+		this.engine = AdvancedViatraQueryEngine.createUnmanagedEngine(this.scope);
+		this.predicate2Matcher = initMatchers(this.engine, this.predicates2PQuery);
 	}
 
 	private Map<DNFPredicate, RawPatternMatcher> initMatchers(AdvancedViatraQueryEngine engine,
@@ -172,20 +179,34 @@ public class QueriableModelImpl implements QueriableModel {
 
 	@Override
 	public ModelDiffCursor getDiffCursor(long to) {
-		// TODO Auto-generated method stub
-		return null;
+		return model.getDiffCursor(to);
 	}
 
 	@Override
 	public long commit() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.model.commit();
 	}
 
 	@Override
 	public void restore(long state) {
-		// TODO Auto-generated method stub
-
+		restoreWithDiffReplay(state);
 	}
 
+	public void restoreWithDiffReplay(long state) {
+		var modelDiffCursor = getDiffCursor(state);
+		for(DataRepresentation<?,?> dataRepresentation : this.getDataRepresentations()) {
+			restoreRepresentationWithDiffReplay(modelDiffCursor, dataRepresentation);
+		}
+	}
+
+	private <K,V> void restoreRepresentationWithDiffReplay(ModelDiffCursor modelDiffCursor,
+			DataRepresentation<K, V> dataRepresentation) {
+		DiffCursor<K,V> diffCursor = modelDiffCursor.getCursor(dataRepresentation);
+		this.putAll(dataRepresentation, diffCursor);
+	}
+	
+	public void restoreWithReinit(long state) {
+		model.restore(state);
+		this.initEngine();
+	}
 }
