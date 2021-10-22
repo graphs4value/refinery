@@ -12,7 +12,7 @@ import org.eclipse.xtext.util.IAcceptor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import tools.refinery.language.ProblemUtil;
+import tools.refinery.language.model.ProblemUtil;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.Problem;

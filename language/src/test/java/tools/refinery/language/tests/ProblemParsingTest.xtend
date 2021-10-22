@@ -10,6 +10,7 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import tools.refinery.language.model.problem.Problem
+import tools.refinery.language.model.tests.ProblemTestUtil
 
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.*
@@ -19,10 +20,10 @@ import static org.hamcrest.Matchers.*
 class ProblemParsingTest {
 	@Inject
 	ParseHelper<Problem> parseHelper
-	
+
 	@Inject
 	extension ProblemTestUtil
-	
+
 	@Test
 	def void exampleTest() {
 		val it = parseHelper.parse('''

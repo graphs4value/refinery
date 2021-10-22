@@ -8,7 +8,7 @@ Problem:
 	statements+=Statement*;
 
 Statement:
-	ClassDeclaration | EnumDeclaration | PredicateDefinition | Assertion | NodeValueAssertion | ScopeDeclaration |
+	ClassDeclaration | EnumDeclaration | PredicateDefinition | RuleDefinition | Assertion | NodeValueAssertion | ScopeDeclaration |
 	UniqueDeclaration;
 
 ClassDeclaration:
@@ -32,11 +32,25 @@ ReferenceDeclaration:
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
 
+enum PredicateKind:
+	DIRECT="direct";
+
 PredicateDefinition:
-	(error?="error" "pred"? | "pred")
+	(error?="error" "pred"? | kind=PredicateKind? "pred")
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
+	".";
+
+enum RuleKind:
+	DIRECT="direct";
+
+RuleDefinition:
+	kind=RuleKind "rule"
+	name=Identifier
+	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+	(":" bodies+=Conjunction (";" bodies+=Conjunction)*
+	"~>" action=Action)?
 	".";
 
 Parameter:
@@ -45,16 +59,44 @@ Parameter:
 Conjunction:
 	literals+=Literal ("," literals+=Literal)*;
 
+Action:
+	actionLiterals+=ActionLiteral ("," actionLiterals+=ActionLiteral)*;
+
 Literal:
-	Atom | NegativeLiteral;
+	Atom | ValueLiteral | NegativeLiteral;
+
+ValueLiteral:
+	atom=Atom
+	(refinement?=":"|"=")
+	values+=LogicConstant ("|" values+=LogicConstant)*;
 
 NegativeLiteral:
 	"!" atom=Atom;
+
+ActionLiteral:
+	ValueActionLiteral | DeleteActionLiteral | NewActionLiteral;
+
+ValueActionLiteral:
+	atom=Atom
+	(refinement?=":"|"=")
+	value=LogicValue;
+
+DeleteActionLiteral:
+	"delete" variableOrNode=[VariableOrNode|QualifiedName];
+
+NewActionLiteral:
+	"new" variable=NewVariable;
+	
+NewVariable:
+	name=Identifier;
 
 Atom:
 	relation=[Relation|QualifiedName]
 	transitiveClosure?="+"?
 	"(" (arguments+=Argument ("," arguments+=Argument)*)? ")";
+
+LogicConstant:
+	value=LogicValue;
 
 Argument:
 	VariableOrNodeArgument | ConstantArgument;
@@ -142,7 +184,7 @@ QualifiedName hidden():
 
 Identifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" | "scope" |
-	"unique" | "default" | "problem" | "contains" | "refers";
+	"unique" | "default" | "problem" | "contains" | "refers" | "new" | "delete";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

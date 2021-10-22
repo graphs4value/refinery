@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="problem" nsURI="https://refinery.tools/emf/2021/Problem"
-    nsPrefix="problem">
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="problem" nsURI="https://refinery.tools/emf/2021/Problem" nsPrefix="problem">
   <eClassifiers xsi:type="ecore:EClass" name="Problem" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="nodes" upperBound="-1"
         eType="#//Node" containment="true"/>
@@ -28,12 +27,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PredicateDefinition" eSuperTypes="#//Relation #//Statement">
+  <eClassifiers xsi:type="ecore:EClass" name="PredicateDefinition" eSuperTypes="#//Relation #//ParametricDefinition">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="error" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameters" upperBound="-1"
-        eType="#//Parameter" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="bodies" upperBound="-1"
-        eType="#//Conjunction" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//PredicateKind"
+        defaultValueLiteral="PARTIAL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>
@@ -51,9 +48,7 @@
         eType="#//Argument" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ImplicitVariable" eSuperTypes="#//Variable"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NegativeLiteral" eSuperTypes="#//ExistentialQuantifier #//Literal">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="atom" eType="#//Atom" containment="true"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NegativeLiteral" eSuperTypes="#//ExistentialQuantifier #//CompoundLiteral"/>
   <eClassifiers xsi:type="ecore:EClass" name="ExistentialQuantifier" abstract="true"
       interface="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="implicitVariables" upperBound="-1"
@@ -142,4 +137,55 @@
         eType="#//Node" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="WildcardAssertionArgument" eSuperTypes="#//AssertionArgument"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ParametricDefinition" abstract="true"
+      interface="true" eSuperTypes="#//Statement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bodies" upperBound="-1"
+        eType="#//Conjunction" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parameters" upperBound="-1"
+        eType="#//Parameter" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RuleDefinition" eSuperTypes="#//ParametricDefinition #//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//RuleKind"
+        defaultValueLiteral="DIRECT"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="action" eType="#//Action"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Action">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="actionLiterals" upperBound="-1"
+        eType="#//ActionLiteral" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActionLiteral" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ValueActionLiteral" eSuperTypes="#//ActionLiteral">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="atom" eType="#//Atom" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="#//LogicValue"
+        defaultValueLiteral="TRUE"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="refinement" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="FALSE"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DeleteActionLiteral" eSuperTypes="#//ActionLiteral">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableOrNode" eType="#//VariableOrNode"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NewActionLiteral" eSuperTypes="#//ActionLiteral">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//NewVariable"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NewVariable" eSuperTypes="#//Variable"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CompoundLiteral" abstract="true" eSuperTypes="#//Literal">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="atom" eType="#//Atom" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ValueLiteral" eSuperTypes="#//CompoundLiteral">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="values" upperBound="-1"
+        eType="#//LogicConstant" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="refinement" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="LogicConstant">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="#//LogicValue"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="PredicateKind">
+    <eLiterals name="PARTIAL"/>
+    <eLiterals name="DIRECT" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="RuleKind">
+    <eLiterals name="DIRECT"/>
+  </eClassifiers>
 </ecore:EPackage>
