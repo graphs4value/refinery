@@ -1,6 +1,5 @@
 package tools.refinery.store.query.internal;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
@@ -10,30 +9,24 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.model.Tuple;
 import tools.refinery.store.query.view.RelationView;
 
-public class RelationUpdateListenerEntry<D> {
+public class ViewUpdateTranslator<D> {
 	final RelationView<D> key;
 	final ITuple filter;
 	final IQueryRuntimeContextListener listener;
 	
-	public RelationUpdateListenerEntry(RelationView<D> key, ITuple filter, IQueryRuntimeContextListener listener) {
+	public ViewUpdateTranslator(RelationView<D> key, ITuple filter, IQueryRuntimeContextListener listener) {
 		super();
 		this.key = key;
 		this.filter = filter;
 		this.listener = listener;
 	}
 	
-	public void processChange(Tuple tuple, D oldValue, D newValue) {
-		Object[] oldTuple = isMatching(key.getWrappedKey().transform(tuple, oldValue), filter);
-		Object[] newTuple = isMatching(key.getWrappedKey().transform(tuple, newValue), filter);
-		
-		if(!Arrays.equals(oldTuple, newTuple)) {
-			if(oldTuple != null) {
-				listener.update(key, Tuples.flatTupleOf(oldTuple), false);
-			}
-			if(newTuple != null) {
-				listener.update(key, Tuples.flatTupleOf(newTuple), true);
-			}
-		}
+	public void processChange(ViewUpdate change) {
+		listener.update(key, Tuples.flatTupleOf(change.tuple()), change.isInsertion());
+	}
+
+	public Object[] isMatching(Tuple tuple, D value){
+		return isMatching(key.getWrappedKey().transform(tuple, value), filter);
 	}
 	
 	private Object[] isMatching(Object[] tuple, ITuple filter) {
@@ -55,9 +48,9 @@ public class RelationUpdateListenerEntry<D> {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RelationUpdateListenerEntry))
+		if (!(obj instanceof ViewUpdateTranslator))
 			return false;
-		RelationUpdateListenerEntry<?> other = (RelationUpdateListenerEntry<?>) obj;
+		ViewUpdateTranslator<?> other = (ViewUpdateTranslator<?>) obj;
 		return Objects.equals(filter, other.filter) && Objects.equals(key, other.key)
 				&& Objects.equals(listener, other.listener);
 	}

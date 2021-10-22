@@ -11,7 +11,7 @@ public class RelationalEngineContext implements IEngineContext{
 	private final RelationalRuntimeContext runtimeContext;
 	
 
-	public RelationalEngineContext(Model model, RelationUpdateListener updateListener) {
+	public RelationalEngineContext(Model model, ModelUpdateListener updateListener) {
 		runtimeContext = new RelationalRuntimeContext(model, updateListener);
 	}
 
