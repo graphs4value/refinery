@@ -1,17 +1,13 @@
 package tools.refinery.store.query.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine;
-import org.eclipse.viatra.query.runtime.api.GenericPatternMatch;
 import org.eclipse.viatra.query.runtime.api.GenericPatternMatcher;
 import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
@@ -32,72 +28,71 @@ import tools.refinery.store.query.building.PredicateAtom;
 import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.building.Variable;
 import tools.refinery.store.query.internal.DNF2PQuery;
-import tools.refinery.store.query.internal.PredicateTranslator;
+import tools.refinery.store.query.internal.RawPatternMatcher;
 import tools.refinery.store.query.view.FilteredRelationView;
-import tools.refinery.store.query.view.FunctionalRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.query.view.RelationView;
 
 class QueryTest {
-	@Test
-	void minimalTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-
-		RelationView<Boolean> persionView = new KeyOnlyRelationView(person);
-		GenericQuerySpecification<GenericPatternMatcher> personQuery = (new PredicateTranslator("PersonQuery"))
-				.addParameter("p", persionView).addConstraint(persionView, "p").build();
-
-		ModelStore store = new ModelStoreImpl(Set.of(person));
-		Model model = store.createModel();
-
-		model.put(person, Tuple.of(0), true);
-		model.put(person, Tuple.of(1), true);
-
-		RelationalScope scope = new RelationalScope(model, Set.of(persionView));
-
-		ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
-		GenericPatternMatcher personMatcher = engine.getMatcher(personQuery);
-
-		assertEquals(2, personMatcher.countMatches());
-	}
-
-	void modelBuildingTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<Integer> age = new Relation<Integer>("age", 1, null);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
-
-		ModelStore store = new ModelStoreImpl(Set.of(person, age, friend));
-		Model model = store.createModel();
-
-		model.put(person, Tuple.of(0), true);
-		model.put(person, Tuple.of(1), true);
-		model.put(age, Tuple.of(0), 3);
-		model.put(age, Tuple.of(1), 1);
-		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
-		model.put(friend, Tuple.of(1, 0), TruthValue.UNKNOWN);
-
-		// Sanity check
-		assertTrue(model.get(person, Tuple.of(0)));
-		assertTrue(model.get(person, Tuple.of(1)));
-		assertFalse(model.get(person, Tuple.of(2)));
-
-		RelationView<Boolean> persionView = new KeyOnlyRelationView(person);
-		RelationView<Integer> ageView = new FunctionalRelationView<>(age);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
-		RelationView<TruthValue> friendMayView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.may());
-
-		RelationalScope scope = new RelationalScope(model, Set.of(persionView, ageView, friendMustView, friendMayView));
-
-		GenericQuerySpecification<GenericPatternMatcher> personQuery = (new PredicateTranslator("PersonQuery"))
-				.addParameter("p", persionView).addConstraint(persionView, "p").build();
-
-		ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
-		GenericPatternMatcher personMatcher = engine.getMatcher(personQuery);
-		Collection<GenericPatternMatch> personMatches = personMatcher.getAllMatches();
-		for (GenericPatternMatch personMatch : personMatches) {
-			System.out.println(personMatch);
-		}
-	}
+//	@Test
+//	void minimalTest() {
+//		Relation<Boolean> person = new Relation<>("Person", 1, false);
+//
+//		RelationView<Boolean> persionView = new KeyOnlyRelationView(person);
+//		GenericQuerySpecification<GenericPatternMatcher> personQuery = (new PredicateTranslator("PersonQuery"))
+//				.addParameter("p", persionView).addConstraint(persionView, "p").build();
+//
+//		ModelStore store = new ModelStoreImpl(Set.of(person));
+//		Model model = store.createModel();
+//
+//		model.put(person, Tuple.of(0), true);
+//		model.put(person, Tuple.of(1), true);
+//
+//		RelationalScope scope = new RelationalScope(model, Set.of(persionView));
+//
+//		ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
+//		GenericPatternMatcher personMatcher = engine.getMatcher(personQuery);
+//
+//		assertEquals(2, personMatcher.countMatches());
+//	}
+//
+//	void modelBuildingTest() {
+//		Relation<Boolean> person = new Relation<>("Person", 1, false);
+//		Relation<Integer> age = new Relation<Integer>("age", 1, null);
+//		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+//
+//		ModelStore store = new ModelStoreImpl(Set.of(person, age, friend));
+//		Model model = store.createModel();
+//
+//		model.put(person, Tuple.of(0), true);
+//		model.put(person, Tuple.of(1), true);
+//		model.put(age, Tuple.of(0), 3);
+//		model.put(age, Tuple.of(1), 1);
+//		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
+//		model.put(friend, Tuple.of(1, 0), TruthValue.UNKNOWN);
+//
+//		// Sanity check
+//		assertTrue(model.get(person, Tuple.of(0)));
+//		assertTrue(model.get(person, Tuple.of(1)));
+//		assertFalse(model.get(person, Tuple.of(2)));
+//
+//		RelationView<Boolean> persionView = new KeyOnlyRelationView(person);
+//		RelationView<Integer> ageView = new FunctionalRelationView<>(age);
+//		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+//		RelationView<TruthValue> friendMayView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.may());
+//
+//		RelationalScope scope = new RelationalScope(model, Set.of(persionView, ageView, friendMustView, friendMayView));
+//
+//		GenericQuerySpecification<GenericPatternMatcher> personQuery = (new PredicateTranslator("PersonQuery"))
+//				.addParameter("p", persionView).addConstraint(persionView, "p").build();
+//
+//		ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
+//		GenericPatternMatcher personMatcher = engine.getMatcher(personQuery);
+//		Collection<GenericPatternMatch> personMatches = personMatcher.getAllMatches();
+//		for (GenericPatternMatch personMatch : personMatches) {
+//			System.out.println(personMatch);
+//		}
+//	}
 
 	@Test
 	@Disabled
@@ -110,7 +105,7 @@ class QueryTest {
 		RelationAtom personRelationAtom = new RelationAtom(persionView, parameters);
 		DNFAnd clause = new DNFAnd(new HashSet<>(parameters), Arrays.asList(personRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("TypeConstraint", parameters, Arrays.asList(clause));
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, asset));
 		Model model = store.createModel();
@@ -147,7 +142,7 @@ class QueryTest {
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
 		Model model = store.createModel();
@@ -196,7 +191,7 @@ class QueryTest {
 				Arrays.asList(personRelationAtom3, personRelationAtom4, friendPredicateAtom));
 		DNFPredicate predicate = new DNFPredicate("PatternCall", substitution, Arrays.asList(patternCallClause));
 
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
 		Model model = store.createModel();
@@ -246,7 +241,7 @@ class QueryTest {
 		DNFPredicate predicate = new DNFPredicate("NegativePatternCall", substitution,
 				Arrays.asList(negativePatternCallClause));
 
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
 		Model model = store.createModel();
@@ -283,7 +278,7 @@ class QueryTest {
 				Arrays.asList(personRelationAtom1, personRelationAtom2, equivalenceAtom));
 		DNFPredicate predicate = new DNFPredicate("Equality", parameters, Arrays.asList(clause));
 
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person));
 		Model model = store.createModel();
@@ -322,7 +317,7 @@ class QueryTest {
 				friendRelationAtom1, friendRelationAtom2, inequivalenceAtom));
 		DNFPredicate predicate = new DNFPredicate("Inequality", parameters, Arrays.asList(clause));
 
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
 		Model model = store.createModel();
@@ -371,7 +366,7 @@ class QueryTest {
 		DNFPredicate predicate = new DNFPredicate("TransitivePatternCall", substitution,
 				Arrays.asList(patternCallClause));
 
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
 		Model model = store.createModel();
@@ -417,7 +412,7 @@ class QueryTest {
 				Arrays.asList(animalRelationAtom1, animalRelationAtom2, friendRelationAtom2));
 
 		DNFPredicate predicate = new DNFPredicate("Or", parameters, Arrays.asList(clause1, clause2));
-		GenericQuerySpecification<GenericPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
 		ModelStore store = new ModelStoreImpl(Set.of(person, animal, friend));
 		Model model = store.createModel();
