@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.viatra.query.runtime.api.GenericPatternMatcher;
 import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
 import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
@@ -27,7 +26,6 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 
-import tools.refinery.store.query.RelationalScope;
 import tools.refinery.store.query.building.DNFAnd;
 import tools.refinery.store.query.building.DNFAtom;
 import tools.refinery.store.query.building.DNFPredicate;

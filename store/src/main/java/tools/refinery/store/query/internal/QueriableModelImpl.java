@@ -14,16 +14,18 @@ import org.eclipse.viatra.query.runtime.api.IQueryGroup;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelDiffCursor;
+import tools.refinery.store.model.Tuple;
 import tools.refinery.store.model.representation.DataRepresentation;
+import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.QueriableModel;
 import tools.refinery.store.query.QueriableModelStore;
-import tools.refinery.store.query.RelationalScope;
 import tools.refinery.store.query.building.DNFPredicate;
 
 public class QueriableModelImpl implements QueriableModel {
 	protected final QueriableModelStore store;
 	protected final Model model;
-
+	
+	protected final RelationalScope scope;
 	protected final AdvancedViatraQueryEngine engine;
 	protected final Map<DNFPredicate, RawPatternMatcher> predicate2Matcher;
 
@@ -31,13 +33,9 @@ public class QueriableModelImpl implements QueriableModel {
 			Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery) {
 		this.store = store;
 		this.model = model;
-		this.engine = initEngine(store, model);
+		this.scope = new RelationalScope(model, store.getViews());
+		this.engine = AdvancedViatraQueryEngine.createUnmanagedEngine(scope);
 		this.predicate2Matcher = initMatchers(engine, predicates2PQuery);
-	}
-
-	private AdvancedViatraQueryEngine initEngine(QueriableModelStore store, Model model) {
-		RelationalScope scope = new RelationalScope(model, store.getViews());
-		return AdvancedViatraQueryEngine.createUnmanagedEngine(scope);
 	}
 
 	private Map<DNFPredicate, RawPatternMatcher> initMatchers(AdvancedViatraQueryEngine engine,
@@ -75,16 +73,30 @@ public class QueriableModelImpl implements QueriableModel {
 		return model.getAll(representation);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> V put(DataRepresentation<K, V> representation, K key, V value) {
-		// TODO Auto-generated method stub
-		return null;
+		V oldValue = this.model.put(representation, key, value);
+		if(representation instanceof Relation<?> relation) {
+			this.scope.processUpdate((Relation<V>)relation, (Tuple)key, oldValue, value);
+		}
+		return oldValue;
 	}
 
 	@Override
 	public <K, V> void putAll(DataRepresentation<K, V> representation, Cursor<K, V> cursor) {
-		// TODO Auto-generated method stub
-
+		if(representation instanceof Relation<?>) {
+			@SuppressWarnings("unchecked")
+			Relation<V> relation = (Relation<V>) representation;
+			while(cursor.move()) {
+				Tuple key = (Tuple) cursor.getKey();
+				V newValue = cursor.getValue();
+				V oldValue = this.model.put(relation, key, newValue);
+				this.scope.processUpdate(relation, key, oldValue, newValue);
+			}
+		} else {
+			this.model.putAll(representation, cursor);
+		}
 	}
 
 	@Override
@@ -155,8 +167,7 @@ public class QueriableModelImpl implements QueriableModel {
 	}
 	@Override
 	public void flushChanges() {
-		// TODO Auto-generated method stub
-		
+		this.scope.flush();
 	}
 
 	@Override
