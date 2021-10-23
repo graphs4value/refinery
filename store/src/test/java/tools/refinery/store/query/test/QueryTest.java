@@ -2,10 +2,13 @@ package tools.refinery.store.query.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine;
 import org.eclipse.viatra.query.runtime.api.GenericPatternMatcher;
@@ -18,6 +21,7 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
 import tools.refinery.store.model.Tuple;
+import tools.refinery.store.model.Tuple.Tuple1;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
 import tools.refinery.store.query.QueriableModel;
@@ -96,7 +100,21 @@ class QueryTest {
 //			System.out.println(personMatch);
 //		}
 //	}
-
+	
+	private void compareMatchSets(Stream<Object[]> matchSet, Set<List<Tuple>> expected) {
+		Set<List<Tuple>> translatedMatchSet = new HashSet<>();
+		var interator = matchSet.iterator();
+		while(interator.hasNext()) {
+			var element = interator.next();
+			List<Tuple> elementToTranslatedMatchSet = new ArrayList<>();
+			for(int i=0; i<element.length; i++) {
+				elementToTranslatedMatchSet.add((Tuple) element[i]);
+			}
+			translatedMatchSet.add(elementToTranslatedMatchSet);
+		}
+		assertEquals(translatedMatchSet, expected);
+	}
+	
 	@Test
 	//@Disabled
 	void typeConstraintTest() {
@@ -127,7 +145,11 @@ class QueryTest {
 		
 		System.out.println("Res3");
 		model.flushChanges();
+		compareMatchSets(model.allResults(predicate), Set.of(
+			List.of(Tuple.of(0)),
+			List.of(Tuple.of(1))));
 		System.out.println(model.countResults(predicate));
+		model.allResults(predicate).forEach(x -> System.out.println(x));
 		
 
 		//RelationalScope scope = new RelationalScope(model, Set.of(persionView));
