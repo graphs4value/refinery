@@ -17,6 +17,7 @@ import tools.refinery.store.query.building.DNFPredicate;
 import tools.refinery.store.query.building.PredicateAtom;
 import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.internal.DNF2PQuery;
+import tools.refinery.store.query.internal.QueriableModelImpl;
 import tools.refinery.store.query.internal.RawPatternMatcher;
 import tools.refinery.store.query.view.RelationView;
 
@@ -105,23 +106,21 @@ public class QueriableModelStoreImpl implements QueriableModelStore {
 
 	@Override
 	public QueriableModel createModel() {
-		// TODO Auto-generated method stub
-		return null;
+		return new QueriableModelImpl(this, this.store.createModel(), predicates);
 	}
 
 	@Override
 	public QueriableModel createModel(long state) {
-		// TODO Auto-generated method stub
-		return null;
+		return new QueriableModelImpl(this, this.store.createModel(state), predicates);
 	}
 
 	@Override
-	public Set<Long> getStates() {
+	public synchronized Set<Long> getStates() {
 		return this.store.getStates();
 	}
 
 	@Override
-	public ModelDiffCursor getDiffCursor(long from, long to) {
+	public synchronized ModelDiffCursor getDiffCursor(long from, long to) {
 		return this.store.getDiffCursor(from, to);
 	}
 }

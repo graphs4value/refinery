@@ -86,9 +86,6 @@ public class ModelUpdateListener {
 					typedBuffer.addChange(key, oldValue, newValue);
 				}
 			}
-		} else {
-			throw new IllegalArgumentException(
-					"Relation " + relation.getName() + " is not in the scope of the update listener.");
 		}
 	}
 

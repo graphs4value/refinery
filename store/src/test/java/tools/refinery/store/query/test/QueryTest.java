@@ -20,6 +20,9 @@ import tools.refinery.store.model.ModelStoreImpl;
 import tools.refinery.store.model.Tuple;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.query.QueriableModel;
+import tools.refinery.store.query.QueriableModelStore;
+import tools.refinery.store.query.QueriableModelStoreImpl;
 import tools.refinery.store.query.building.DNFAnd;
 import tools.refinery.store.query.building.DNFPredicate;
 import tools.refinery.store.query.building.EquivalenceAtom;
@@ -95,7 +98,7 @@ class QueryTest {
 //	}
 
 	@Test
-	@Disabled
+	//@Disabled
 	void typeConstraintTest() {
 		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<Boolean> asset = new Relation<>("Asset", 1, false);
@@ -105,22 +108,34 @@ class QueryTest {
 		RelationAtom personRelationAtom = new RelationAtom(persionView, parameters);
 		DNFAnd clause = new DNFAnd(new HashSet<>(parameters), Arrays.asList(personRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("TypeConstraint", parameters, Arrays.asList(clause));
-		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
+		//GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
 
-		ModelStore store = new ModelStoreImpl(Set.of(person, asset));
-		Model model = store.createModel();
-
+		//ModelStore store = new ModelStoreImpl(Set.of(person, asset));
+		QueriableModelStore store = new QueriableModelStoreImpl(Set.of(person, asset), Set.of(persionView), Set.of(predicate));
+		QueriableModel model = store.createModel();
+		
+		System.out.println("Res1");
+		model.allResults(predicate).forEach(x -> System.out.println(x));
+		
 		model.put(person, Tuple.of(0), true);
 		model.put(person, Tuple.of(1), true);
 		model.put(asset, Tuple.of(1), true);
 		model.put(asset, Tuple.of(2), true);
+		
+		System.out.println("Res2");
+		model.allResults(predicate).forEach(x -> System.out.println(x));
+		
+		System.out.println("Res3");
+		model.flushChanges();
+		System.out.println(model.countResults(predicate));
+		
 
-		RelationalScope scope = new RelationalScope(model, Set.of(persionView));
+		//RelationalScope scope = new RelationalScope(model, Set.of(persionView));
 
-		ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
-		GenericPatternMatcher matcher = engine.getMatcher(query);
+		//ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
+		//GenericPatternMatcher matcher = engine.getMatcher(query);
 
-		assertEquals(2, matcher.countMatches());
+		//assertEquals(2, matcher.countMatches());
 	}
 
 	@Test
