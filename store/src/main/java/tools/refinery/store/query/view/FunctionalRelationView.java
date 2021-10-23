@@ -37,7 +37,7 @@ public class FunctionalRelationView<D> extends RelationView<D> {
 	public static <D> Object[] toTuple1ArrayPlusValue(Tuple t, D value) {
 		Object[] result = new Object[t.getSize()+1];
 		for(int i = 0; i<t.getSize(); i++) {
-			result[i] = t.get(i);
+			result[i] = Tuple.of(t.get(i));
 		}
 		result[t.getSize()] = value;
 		return result;
