@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -25,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.inject.Inject;
 
+import tools.refinery.language.web.ProblemWebInjectorProvider;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;
@@ -37,6 +39,8 @@ import tools.refinery.language.web.xtext.server.message.XtextWebResponse;
 @InjectWith(ProblemWebInjectorProvider.class)
 class TransactionExecutorTest {
 	private static final String RESOURCE_NAME = "test.problem";
+
+	private static final String PROBLEM_CONTENT_TYPE = "application/x-tools.refinery.problem";
 
 	private static final String TEST_PROBLEM = """
 			class Person {
@@ -95,6 +99,21 @@ class TransactionExecutorTest {
 		assertHighlightingResponse(newStateId, captor.getAllValues().get(1));
 	}
 
+	@Test
+	void fullTextWithoutResourceTest() throws ResponseHandlerException {
+		var resourceServiceProvider = resourceServiceProviderRegistry
+				.getResourceServiceProvider(URI.createFileURI(RESOURCE_NAME));
+		resourceServiceProviderRegistry.getContentTypeToFactoryMap().put(PROBLEM_CONTENT_TYPE, resourceServiceProvider);
+		var responseHandler = sendRequestAndWaitForAllResponses(new XtextWebRequest("foo",
+				Map.of("contentType", PROBLEM_CONTENT_TYPE, "fullText", TEST_PROBLEM, "serviceType", "validate")));
+
+		var captor = newCaptor();
+		verify(responseHandler).onResponse(captor.capture());
+		var response = captor.getValue();
+		assertThat(response, hasProperty("id", equalTo("foo")));
+		assertThat(response, hasProperty("responseData", instanceOf(ValidationResult.class)));
+	}
+
 	private ArgumentCaptor<XtextWebResponse> newCaptor() {
 		return ArgumentCaptor.forClass(XtextWebResponse.class);
 	}
@@ -132,14 +151,14 @@ class TransactionExecutorTest {
 	private void assertHighlightingResponse(String stateId, XtextWebResponse highlightingResponse) {
 		assertThat(highlightingResponse, hasProperty("resourceId", equalTo(RESOURCE_NAME)));
 		assertThat(highlightingResponse, hasProperty("stateId", equalTo(stateId)));
-		assertThat(highlightingResponse, hasProperty("service", equalTo("highlighting")));
+		assertThat(highlightingResponse, hasProperty("service", equalTo("highlight")));
 		assertThat(highlightingResponse, hasProperty("pushData", instanceOf(HighlightingResult.class)));
 	}
 
 	private void assertValidationResponse(String stateId, XtextWebResponse validationResponse) {
 		assertThat(validationResponse, hasProperty("resourceId", equalTo(RESOURCE_NAME)));
 		assertThat(validationResponse, hasProperty("stateId", equalTo(stateId)));
-		assertThat(validationResponse, hasProperty("service", equalTo("validation")));
+		assertThat(validationResponse, hasProperty("service", equalTo("validate")));
 		assertThat(validationResponse, hasProperty("pushData", instanceOf(ValidationResult.class)));
 	}
 }

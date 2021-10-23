@@ -14,6 +14,7 @@ dependencies {
 	implementation "org.slf4j:log4j-over-slf4j:${slf4JVersion}"
 	testImplementation testFixtures(project(':refinery-language'))
 	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
+	testImplementation "org.eclipse.jetty.websocket:websocket-jetty-client:${jettyVersion}"
 }
 
 def generateXtextLanguage = project(':refinery-language').tasks.named('generateXtextLanguage')

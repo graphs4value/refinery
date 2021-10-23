@@ -18,6 +18,7 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +74,7 @@ public class ServerLauncher {
 					allowedOriginsString);
 		}
 		handler.addServlet(problemServletHolder, "/xtext-service/*");
+		JettyWebSocketServletContainerInitializer.configure(handler, null);
 	}
 
 	private void addDefaultServlet(ServletContextHandler handler) {

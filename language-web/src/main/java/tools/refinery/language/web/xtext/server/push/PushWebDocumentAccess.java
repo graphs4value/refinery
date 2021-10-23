@@ -58,10 +58,10 @@ public class PushWebDocumentAccess extends XtextWebDocumentAccess {
 	
 	protected String getPrecomputedServiceName(AbstractCachedService<? extends IServiceResult> service) {
 		if (service instanceof ValidationService) {
-			return "validation";
+			return "validate";
 		}
 		if (service instanceof HighlightingService) {
-			return "highlighting";
+			return "highlight";
 		}
 		throw new IllegalArgumentException("Unknown precomputed service: " + service);
 	}
