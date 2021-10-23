@@ -10,7 +10,7 @@ public class KeyOnlyRelationView extends FilteredRelationView<Boolean>{
 	}
 	@Override
 	protected boolean filter(Tuple key, Boolean value) {
-		return true;
+		return !value.equals(representation.getDefaultValue());
 	}
 	
 }
