@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +20,6 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
 import tools.refinery.store.model.Tuple;
-import tools.refinery.store.model.Tuple.Tuple1;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
 import tools.refinery.store.query.QueriableModel;
@@ -116,7 +114,6 @@ class QueryTest {
 	}
 	
 	@Test
-	//@Disabled
 	void typeConstraintTest() {
 		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<Boolean> asset = new Relation<>("Asset", 1, false);
@@ -126,42 +123,27 @@ class QueryTest {
 		RelationAtom personRelationAtom = new RelationAtom(persionView, parameters);
 		DNFAnd clause = new DNFAnd(new HashSet<>(parameters), Arrays.asList(personRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("TypeConstraint", parameters, Arrays.asList(clause));
-		//GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
-
-		//ModelStore store = new ModelStoreImpl(Set.of(person, asset));
+		
 		QueriableModelStore store = new QueriableModelStoreImpl(Set.of(person, asset), Set.of(persionView), Set.of(predicate));
 		QueriableModel model = store.createModel();
 		
-		System.out.println("Res1");
-		model.allResults(predicate).forEach(x -> System.out.println(x));
+		assertEquals(0, model.countResults(predicate));
 		
 		model.put(person, Tuple.of(0), true);
 		model.put(person, Tuple.of(1), true);
 		model.put(asset, Tuple.of(1), true);
 		model.put(asset, Tuple.of(2), true);
 		
-		System.out.println("Res2");
-		model.allResults(predicate).forEach(x -> System.out.println(x));
+		assertEquals(0, model.countResults(predicate));
 		
-		System.out.println("Res3");
 		model.flushChanges();
+		assertEquals(2, model.countResults(predicate));
 		compareMatchSets(model.allResults(predicate), Set.of(
 			List.of(Tuple.of(0)),
 			List.of(Tuple.of(1))));
-		System.out.println(model.countResults(predicate));
-		model.allResults(predicate).forEach(x -> System.out.println(x));
-		
-
-		//RelationalScope scope = new RelationalScope(model, Set.of(persionView));
-
-		//ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
-		//GenericPatternMatcher matcher = engine.getMatcher(query);
-
-		//assertEquals(2, matcher.countMatches());
 	}
 
 	@Test
-	@Disabled
 	void relationConstraintTest() {
 		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
@@ -179,24 +161,22 @@ class QueryTest {
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
-		GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(predicate).build();
-
-		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
-		Model model = store.createModel();
-
+		QueriableModelStore store = new QueriableModelStoreImpl(Set.of(person, friend), Set.of(persionView,friendMustView), Set.of(predicate));
+		QueriableModel model = store.createModel();
+		
+		assertEquals(0, model.countResults(predicate));
+		
 		model.put(person, Tuple.of(0), true);
 		model.put(person, Tuple.of(1), true);
 		model.put(person, Tuple.of(2), true);
 		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
 		model.put(friend, Tuple.of(1, 0), TruthValue.TRUE);
 		model.put(friend, Tuple.of(1, 2), TruthValue.TRUE);
-
-		RelationalScope scope = new RelationalScope(model, Set.of(persionView, friendMustView));
-
-		ViatraQueryEngine engine = AdvancedViatraQueryEngine.on(scope);
-		GenericPatternMatcher matcher = engine.getMatcher(query);
-
-		assertEquals(3, matcher.countMatches());
+		
+		assertEquals(0, model.countResults(predicate));
+		
+		model.flushChanges();
+		assertEquals(3, model.countResults(predicate));
 	}
 
 	@Test
