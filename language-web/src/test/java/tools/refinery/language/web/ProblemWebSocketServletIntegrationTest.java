@@ -3,25 +3,25 @@ package tools.refinery.language.web;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.StatusCode;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.exceptions.UpgradeException;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
@@ -30,13 +30,17 @@ import org.eclipse.xtext.testing.GlobalRegistries.GlobalStateMemento;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import tools.refinery.language.web.tests.WebSocketIntegrationTestClient;
+import tools.refinery.language.web.xtext.servlet.XtextStatusCode;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 class ProblemWebSocketServletIntegrationTest {
 	private static int SERVER_PORT = 28080;
 
-	private static long TIMEOUT_MILLIS = Duration.ofSeconds(1).toMillis();
+	private static String SERVLET_URI = "/xtext-service";
 
 	private GlobalStateMemento stateBeforeInjectorCreation;
 
@@ -45,128 +49,156 @@ class ProblemWebSocketServletIntegrationTest {
 	private WebSocketClient client;
 
 	@BeforeEach
-	void startServer() throws Exception {
+	void beforeEach() throws Exception {
 		stateBeforeInjectorCreation = GlobalRegistries.makeCopyOfGlobalState();
-		server = new Server(new InetSocketAddress(SERVER_PORT));
-		var handler = new ServletContextHandler();
-		handler.addServlet(ProblemWebSocketServlet.class, "/xtext-service/*");
-		JettyWebSocketServletContainerInitializer.configure(handler, null);
-		server.setHandler(handler);
-		server.start();
 		client = new WebSocketClient();
 		client.start();
 	}
 
 	@AfterEach
-	void stopServer() throws Exception {
+	void afterEach() throws Exception {
 		client.stop();
-		server.stop();
+		client = null;
+		if (server != null) {
+			server.stop();
+			server = null;
+		}
 		stateBeforeInjectorCreation.restoreGlobalState();
+		stateBeforeInjectorCreation = null;
 	}
 
 	@Test
-	void updateTest() throws IOException {
+	void updateTest() {
+		startServer(null);
 		var clientSocket = new UpdateTestClient();
-		var upgradeRequest = new ClientUpgradeRequest();
-		upgradeRequest.setSubProtocols(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
-		var sessionFuture = client.connect(clientSocket, URI.create("ws://localhost:" + SERVER_PORT + "/xtext-service"),
-				upgradeRequest);
-		var session = sessionFuture.join();
+		var session = connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
 		assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(),
 				equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
 		clientSocket.waitForTestResult();
+		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+		var responses = clientSocket.getResponses();
+		assertThat(responses, hasSize(5));
+		assertThat(responses.get(0), equalTo("{\"id\":\"foo\",\"response\":{\"stateId\":\"-80000000\"}}"));
+		assertThat(responses.get(1), startsWith(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"highlight\",\"push\":{\"regions\":["));
+		assertThat(responses.get(2), equalTo(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"validate\",\"push\":{\"issues\":[]}}"));
+		assertThat(responses.get(3), equalTo("{\"id\":\"bar\",\"response\":{\"stateId\":\"-7fffffff\"}}"));
+		assertThat(responses.get(4), startsWith(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"highlight\",\"push\":{\"regions\":["));
 	}
 
 	@WebSocket
-	public static class UpdateTestClient {
-		private boolean finished = false;
-
-		private Object lock = new Object();
-
-		private Throwable error;
-
-		private int closeStatusCode;
-
-		private String closeReason;
-
-		private List<String> responses = new ArrayList<>();
-
-		@OnWebSocketConnect
-		public void onConnect(Session session) {
-			try {
-				session.getRemote().sendString(
-						"{\"id\":\"foo\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"fullText\":\"class Person.\n\"}}");
-			} catch (IOException e) {
-				finishedWithError(e);
+	public static class UpdateTestClient extends WebSocketIntegrationTestClient {
+		@Override
+		protected void arrange(Session session, int responsesReceived) throws IOException {
+			switch (responsesReceived) {
+			case 0 -> session.getRemote().sendString(
+					"{\"id\":\"foo\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"fullText\":\"class Person.\n\"}}");
+			case 3 -> session.getRemote().sendString(
+					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"requiredStateId\":\"-80000000\",\"deltaText\":\"class Car.\n\",\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}");
+			case 5 -> session.close();
 			}
 		}
+	}
 
-		@OnWebSocketClose
-		public void onClose(int statusCode, String reason) {
-			closeStatusCode = statusCode;
-			closeReason = reason;
-			testFinished();
-		}
+	@Test
+	void badSubProtocolTest() {
+		startServer(null);
+		var clientSocket = new CloseImmediatelyTestClient();
+		var session = connect(clientSocket, null, "<invalid sub-protocol>");
+		assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(), equalTo(null));
+		clientSocket.waitForTestResult();
+		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+	}
 
-		@OnWebSocketError
-		public void onError(Throwable error) {
-			finishedWithError(error);
+	@WebSocket
+	public static class CloseImmediatelyTestClient extends WebSocketIntegrationTestClient {
+		@Override
+		protected void arrange(Session session, int responsesReceived) throws IOException {
+			session.close();
 		}
+	}
 
-		@OnWebSocketMessage
-		public void onMessage(Session session, String message) {
-			try {
-				responses.add(message);
-				switch (responses.size()) {
-				case 3 -> session.getRemote().sendString(
-						"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"requiredStateId\":\"-80000000\",\"deltaText\":\"class Car.\n\",\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}");
-				case 5 -> session.close();
-				}
-			} catch (IOException e) {
-				finishedWithError(e);
-			}
-		}
+	@Test
+	void subProtocolNegotiationTest() {
+		startServer(null);
+		var clientSocket = new CloseImmediatelyTestClient();
+		var session = connect(clientSocket, null, "<invalid sub-protocol>", XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
+		assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(),
+				equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
+		clientSocket.waitForTestResult();
+		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+	}
 
-		private void finishedWithError(Throwable t) {
-			error = t;
-			testFinished();
-		}
+	@Test
+	void invalidJsonTest() {
+		startServer(null);
+		var clientSocket = new InvalidJsonTestClient();
+		connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
+		clientSocket.waitForTestResult();
+		assertThat(clientSocket.getCloseStatusCode(), equalTo(XtextStatusCode.INVALID_JSON));
+	}
 
-		private void testFinished() {
-			synchronized (lock) {
-				finished = true;
-				lock.notify();
-			}
+	@WebSocket
+	public static class InvalidJsonTestClient extends WebSocketIntegrationTestClient {
+		@Override
+		protected void arrange(Session session, int responsesReceived) throws IOException {
+			session.getRemote().sendString("<invalid json>");
 		}
+	}
 
-		public void waitForTestResult() {
-			synchronized (lock) {
-				if (!finished) {
-					try {
-						lock.wait(TIMEOUT_MILLIS);
-					} catch (InterruptedException e) {
-						fail("Unexpected InterruptedException", e);
-					}
-				}
-			}
-			if (!finished) {
-				fail("Test still not finished after timeout");
-			}
-			if (error != null) {
-				fail("Unexpected exception in websocket thread", error);
-			}
-			if (closeStatusCode != StatusCode.NORMAL) {
-				fail("Abnormal close status " + closeStatusCode + ": " + closeReason);
-			}
-			assertThat(responses, hasSize(5));
-			assertThat(responses.get(0), equalTo("{\"id\":\"foo\",\"response\":{\"stateId\":\"-80000000\"}}"));
-			assertThat(responses.get(1), startsWith(
-					"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"highlight\",\"push\":{\"regions\":["));
-			assertThat(responses.get(2), equalTo(
-					"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"validate\",\"push\":{\"issues\":[]}}"));
-			assertThat(responses.get(3), equalTo("{\"id\":\"bar\",\"response\":{\"stateId\":\"-7fffffff\"}}"));
-			assertThat(responses.get(4), startsWith(
-					"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"highlight\",\"push\":{\"regions\":["));
+	@ParameterizedTest(name = "Origin: {0}")
+	@ValueSource(strings = { "https://refinery.example", "https://refinery.example:443", "HTTPS://REFINERY.EXAMPLE" })
+	void validOriginTest(String origin) {
+		startServer("https://refinery.example;https://refinery.example:443");
+		var clientSocket = new CloseImmediatelyTestClient();
+		connect(clientSocket, origin, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
+		clientSocket.waitForTestResult();
+		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+	}
+
+	@Test
+	void invalidOriginTest() {
+		startServer("https://refinery.example;https://refinery.example:443");
+		var clientSocket = new CloseImmediatelyTestClient();
+		var exception = assertThrows(CompletionException.class,
+				() -> connect(clientSocket, "https://invalid.example", XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
+		var innerException = exception.getCause();
+		assertThat(innerException, instanceOf(UpgradeException.class));
+		assertThat(((UpgradeException) innerException).getResponseStatusCode(), equalTo(HttpStatus.FORBIDDEN_403));
+	}
+
+	private void startServer(String allowedOrigins) {
+		server = new Server(new InetSocketAddress(SERVER_PORT));
+		var handler = new ServletContextHandler();
+		var holder = new ServletHolder(ProblemWebSocketServlet.class);
+		if (allowedOrigins != null) {
+			holder.setInitParameter(ProblemWebSocketServlet.ALLOWED_ORIGINS_INIT_PARAM, allowedOrigins);
 		}
+		handler.addServlet(holder, SERVLET_URI);
+		JettyWebSocketServletContainerInitializer.configure(handler, null);
+		server.setHandler(handler);
+		try {
+			server.start();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to start websocket server");
+		}
+	}
+
+	private Session connect(Object webSocketClient, String origin, String... subProtocols) {
+		var upgradeRequest = new ClientUpgradeRequest();
+		if (origin != null) {
+			upgradeRequest.setHeader(HttpHeader.ORIGIN.name(), origin);
+		}
+		upgradeRequest.setSubProtocols(subProtocols);
+		CompletableFuture<Session> sessionFuture;
+		try {
+			sessionFuture = client.connect(webSocketClient, URI.create("ws://localhost:" + SERVER_PORT + SERVLET_URI),
+					upgradeRequest);
+		} catch (IOException e) {
+			throw new AssertionError("Unexpected exception while connection to websocket", e);
+		}
+		return sessionFuture.join();
 	}
 }

@@ -1,4 +1,4 @@
-package tools.refinery.language.web;
+package tools.refinery.language.web.tests;
 
 import org.eclipse.xtext.ide.ExecutorServiceProvider;
 import org.eclipse.xtext.util.DisposableRegistry;
@@ -9,7 +9,8 @@ import com.google.inject.Injector;
 
 import tools.refinery.language.ide.ProblemIdeModule;
 import tools.refinery.language.tests.ProblemInjectorProvider;
-import tools.refinery.language.web.xtext.servlet.AwaitTerminationExecutorServiceProvider;
+import tools.refinery.language.web.ProblemWebModule;
+import tools.refinery.language.web.ProblemWebSetup;
 
 public class ProblemWebInjectorProvider extends ProblemInjectorProvider {
 

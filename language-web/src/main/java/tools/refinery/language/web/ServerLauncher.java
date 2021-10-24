@@ -73,7 +73,7 @@ public class ServerLauncher {
 			problemServletHolder.setInitParameter(XtextWebSocketServlet.ALLOWED_ORIGINS_INIT_PARAM,
 					allowedOriginsString);
 		}
-		handler.addServlet(problemServletHolder, "/xtext-service/*");
+		handler.addServlet(problemServletHolder, "/xtext-service");
 		JettyWebSocketServletContainerInitializer.configure(handler, null);
 	}
 

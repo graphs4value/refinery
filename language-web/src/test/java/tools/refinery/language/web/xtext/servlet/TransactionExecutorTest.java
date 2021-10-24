@@ -26,7 +26,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.inject.Inject;
 
-import tools.refinery.language.web.ProblemWebInjectorProvider;
+import tools.refinery.language.web.tests.AwaitTerminationExecutorServiceProvider;
+import tools.refinery.language.web.tests.ProblemWebInjectorProvider;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;

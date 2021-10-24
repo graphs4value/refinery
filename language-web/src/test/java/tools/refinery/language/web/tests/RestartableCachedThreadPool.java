@@ -1,4 +1,4 @@
-package tools.refinery.language.web.xtext.servlet;
+package tools.refinery.language.web.tests;
 
 import java.util.Collection;
 import java.util.List;
