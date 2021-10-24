@@ -46,7 +46,11 @@ public class DNF2PQuery {
 		Map<Variable, PParameter> parameters = new HashMap<>();
 
 		predicate.getVariables().forEach(variable -> parameters.put(variable, new PParameter(variable.getName())));
-		query.setParameter(new ArrayList<>(parameters.values()));
+		List<PParameter> parameterList = new ArrayList<>();
+		for(var param : predicate.getVariables()) {
+			parameterList.add(parameters.get(param));
+		}
+		query.setParameter(parameterList);
 		for (DNFAnd clause : predicate.getClauses()) {
 			PBody body = new PBody(query);
 			List<ExportedParameter> symbolicParameters = new ArrayList<>();
