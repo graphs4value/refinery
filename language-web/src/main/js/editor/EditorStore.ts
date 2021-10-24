@@ -41,6 +41,7 @@ import {
 import { getLogger } from '../logging';
 import { problemLanguageSupport } from './problemLanguageSupport';
 import type { ThemeStore } from '../theme/ThemeStore';
+import { XtextClient } from './XtextClient';
 
 const log = getLogger('EditorStore');
 
@@ -49,7 +50,7 @@ export class EditorStore {
 
   state: EditorState;
 
-  emptyHistory: unknown;
+  client: XtextClient;
 
   showLineNumbers = false;
 
@@ -109,6 +110,7 @@ export class EditorStore {
         problemLanguageSupport(),
       ],
     });
+    this.client = new XtextClient(this);
     reaction(
       () => this.themeStore.darkMode,
       (darkMode) => {
@@ -137,6 +139,7 @@ export class EditorStore {
   onTransaction(tr: Transaction): void {
     log.trace('Editor transaction', tr);
     this.state = tr.state;
+    this.client.onTransaction(tr);
   }
 
   dispatch(...specs: readonly TransactionSpec[]): void {

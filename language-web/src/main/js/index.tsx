@@ -26,7 +26,7 @@ enum TaxStatus {
 % A child cannot have any dependents.
 error invalidTaxStatus(Person p) <->
   taxStatus(p, child),
-  children(p, _q),
+  children(p, _q)
 ; taxStatus(p, retired),
   parent(p, q),
   !taxStatus(q, retired).

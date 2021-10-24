@@ -191,7 +191,10 @@ module.exports = {
     host: listenHost,
     port: listenPort,
     proxy: {
-      '/xtext-service': `${apiPort === 443 ? 'https' : 'http'}://${apiHost}:${apiPort}`,
+      '/xtext-service': {
+        target: `${apiPort === 443 ? 'https' : 'http'}://${apiHost}:${apiPort}`,
+        ws: true,
+      },
     },
   },
   plugins: [

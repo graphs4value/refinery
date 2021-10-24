@@ -61,7 +61,7 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 		if (webSocketSession == null) {
 			return;
 		}
-		if (statusCode == StatusCode.NORMAL) {
+		if (statusCode == StatusCode.NORMAL || statusCode == StatusCode.SHUTDOWN) {
 			LOG.debug("{} closed connection normally: {}", webSocketSession.getRemoteAddress(), reason);
 		} else {
 			LOG.warn("{} closed connection with status code {}: {}", webSocketSession.getRemoteAddress(), statusCode,
