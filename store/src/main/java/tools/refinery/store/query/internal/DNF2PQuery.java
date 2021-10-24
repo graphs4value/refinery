@@ -54,10 +54,10 @@ public class DNF2PQuery {
 		for (DNFAnd clause : predicate.getClauses()) {
 			PBody body = new PBody(query);
 			List<ExportedParameter> symbolicParameters = new ArrayList<>();
-			parameters.forEach((variable, parameter) -> {
-				PVariable pVar = body.getOrCreateVariableByName(variable.getName());
-				symbolicParameters.add(new ExportedParameter(body, pVar, parameter));
-			});
+			for(var param : predicate.getVariables()) {
+				PVariable pVar = body.getOrCreateVariableByName(param.getName());
+				symbolicParameters.add(new ExportedParameter(body, pVar, parameters.get(param)));
+			}
 			body.setSymbolicParameters(symbolicParameters);
 			query.addBody(body);
 			for (DNFAtom constraint : clause.getConstraints()) {

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -115,7 +116,7 @@ class QueryTest {
 
 		List<Variable> parameters = Arrays.asList(new Variable("p1"));
 		RelationAtom personRelationAtom = new RelationAtom(persionView, parameters);
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters), Arrays.asList(personRelationAtom));
+		DNFAnd clause = new DNFAnd(Collections.emptySet(), Arrays.asList(personRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("TypeConstraint", parameters, Arrays.asList(clause));
 		
 		QueriableModelStore store = new QueriableModelStoreImpl(Set.of(person, asset), Set.of(persionView), Set.of(predicate));
@@ -151,7 +152,7 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
@@ -193,7 +194,7 @@ class QueryTest {
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom1 = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
 		RelationAtom friendRelationAtom2 = new RelationAtom(friendMustView, Arrays.asList(p2, p1));
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom1, friendRelationAtom2));
 		DNFPredicate predicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
@@ -245,7 +246,7 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Set.of(p2),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate predicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
