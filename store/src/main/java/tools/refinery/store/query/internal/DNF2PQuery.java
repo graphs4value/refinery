@@ -35,9 +35,9 @@ import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.building.Variable;
 
 public class DNF2PQuery {
-	private static Map<DNFPredicate, SimplePQuery> DNF2PQueryMap = new HashMap<>();
+	//private static Map<DNFPredicate, SimplePQuery> DNF2PQueryMap = new HashMap<>();
 
-	public static SimplePQuery translate(DNFPredicate predicate) {
+	public static SimplePQuery translate(DNFPredicate predicate, Map<DNFPredicate, SimplePQuery> DNF2PQueryMap) {
 		SimplePQuery query = DNF2PQueryMap.get(predicate);
 		if (query != null) {
 			return query;
@@ -61,14 +61,14 @@ public class DNF2PQuery {
 			body.setSymbolicParameters(symbolicParameters);
 			query.addBody(body);
 			for (DNFAtom constraint : clause.getConstraints()) {
-				translateDNFAtom(constraint, body);
+				translateDNFAtom(constraint, body, DNF2PQueryMap);
 			}
 		}
 		DNF2PQueryMap.put(predicate, query);
 		return query;
 	}
 
-	private static void translateDNFAtom(DNFAtom constraint, PBody body) {
+	private static void translateDNFAtom(DNFAtom constraint, PBody body, Map<DNFPredicate, SimplePQuery> DNF2PQueryMap) {
 		if (constraint instanceof EquivalenceAtom equivalence) {
 			translateEquivalenceAtom(equivalence, body);
 		}
@@ -76,7 +76,7 @@ public class DNF2PQuery {
 			translateRelationAtom(relation, body);
 		}
 		if (constraint instanceof PredicateAtom predicate) {
-			translatePredicateAtom(predicate, body);
+			translatePredicateAtom(predicate, body, DNF2PQueryMap);
 		}
 	}
 
@@ -101,7 +101,7 @@ public class DNF2PQuery {
 		new TypeConstraint(body, Tuples.flatTupleOf(variables), relation.getView());
 	}
 
-	private static void translatePredicateAtom(PredicateAtom predicate, PBody body) {
+	private static void translatePredicateAtom(PredicateAtom predicate, PBody body, Map<DNFPredicate, SimplePQuery> DNF2PQueryMap) {
 		Object[] variables = new Object[predicate.getSubstitution().size()];
 		for (int i = 0; i < predicate.getSubstitution().size(); i++) {
 			variables[i] = body.getOrCreateVariableByName(predicate.getSubstitution().get(i).getName());
@@ -112,17 +112,17 @@ public class DNF2PQuery {
 					throw new IllegalArgumentException("Transitive Predicate Atoms must be binary.");
 				}
 				new BinaryTransitiveClosure(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred()));
+						DNF2PQuery.translate(predicate.getReferred(), DNF2PQueryMap));
 			} else {
 				new PositivePatternCall(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred()));
+						DNF2PQuery.translate(predicate.getReferred(), DNF2PQueryMap));
 			}
 		} else {
 			if (predicate.isTransitive()) {
 				throw new InputMismatchException("Transitive Predicate Atoms cannot be negative.");
 			} else {
 				new NegativePatternCall(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred()));
+						DNF2PQuery.translate(predicate.getReferred(), DNF2PQueryMap));
 			}
 		}
 	}

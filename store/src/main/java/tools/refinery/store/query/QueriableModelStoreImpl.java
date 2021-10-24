@@ -19,6 +19,7 @@ import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.internal.DNF2PQuery;
 import tools.refinery.store.query.internal.QueriableModelImpl;
 import tools.refinery.store.query.internal.RawPatternMatcher;
+import tools.refinery.store.query.internal.DNF2PQuery.SimplePQuery;
 import tools.refinery.store.query.view.RelationView;
 
 public class QueriableModelStoreImpl implements QueriableModelStore {
@@ -82,9 +83,9 @@ public class QueriableModelStoreImpl implements QueriableModelStore {
 
 	private Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> initPredicates(Set<DNFPredicate> predicates) {
 		Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> result = new HashMap<>();
-
+		Map<DNFPredicate, SimplePQuery> dnf2PQueryMap = new HashMap<>();
 		for (DNFPredicate dnfPredicate : predicates) {
-			GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(dnfPredicate).build();
+			GenericQuerySpecification<RawPatternMatcher> query = DNF2PQuery.translate(dnfPredicate,dnf2PQueryMap).build();
 			result.put(dnfPredicate, query);
 		}
 

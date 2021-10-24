@@ -74,8 +74,6 @@ public abstract class RelationView<D> extends BaseInputKeyWrapper<RelationView<D
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
-			return false;
 		if (!(obj instanceof RelationView))
 			return false;
 		@SuppressWarnings("unchecked")
