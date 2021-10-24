@@ -236,10 +236,47 @@ class QueryTest {
 				List.of(Tuple.of(0), Tuple.of(2)),
 				List.of(Tuple.of(2), Tuple.of(0))
 				));
-		
 	}
 	
-	// existTest
+	@Test
+	void existTest() {
+		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		RelationView<Boolean> persionView = new KeyOnlyRelationView(person);
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+
+		Variable p1 = new Variable("p1");
+		Variable p2 = new Variable("p2");
+		List<Variable> parameters = Arrays.asList(p1);
+
+		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
+		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
+		RelationAtom friendRelationAtom = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
+		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
+		DNFPredicate predicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
+
+		QueriableModelStore store = new QueriableModelStoreImpl(Set.of(person, friend), Set.of(persionView,friendMustView), Set.of(predicate));
+		QueriableModel model = store.createModel();
+		
+		assertEquals(0, model.countResults(predicate));
+		
+		model.put(person, Tuple.of(0), true);
+		model.put(person, Tuple.of(1), true);
+		model.put(person, Tuple.of(2), true);
+		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
+		model.put(friend, Tuple.of(1, 0), TruthValue.TRUE);
+		model.put(friend, Tuple.of(1, 2), TruthValue.TRUE);
+		
+		assertEquals(0, model.countResults(predicate));
+		
+		model.flushChanges();
+		assertEquals(2, model.countResults(predicate));
+		compareMatchSets(model.allResults(predicate), Set.of(
+				List.of(Tuple.of(0)),
+				List.of(Tuple.of(1))
+				));
+	}
 	
 	@Test
 	@Disabled
