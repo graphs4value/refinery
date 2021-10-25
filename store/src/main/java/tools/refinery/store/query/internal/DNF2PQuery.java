@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.viatra.query.runtime.api.GenericPatternMatcher;
 import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
 import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
@@ -27,7 +26,6 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 
-import tools.refinery.store.query.RelationalScope;
 import tools.refinery.store.query.building.DNFAnd;
 import tools.refinery.store.query.building.DNFAtom;
 import tools.refinery.store.query.building.DNFPredicate;
@@ -37,9 +35,9 @@ import tools.refinery.store.query.building.RelationAtom;
 import tools.refinery.store.query.building.Variable;
 
 public class DNF2PQuery {
-	private static Map<DNFPredicate, SimplePQuery> DNF2PQueryMap = new HashMap<>();
+	//private static Map<DNFPredicate, SimplePQuery> DNF2PQueryMap = new HashMap<>();
 
-	public static SimplePQuery translate(DNFPredicate predicate) {
+	public static SimplePQuery translate(DNFPredicate predicate, Map<DNFPredicate, SimplePQuery> DNF2PQueryMap) {
 		SimplePQuery query = DNF2PQueryMap.get(predicate);
 		if (query != null) {
 			return query;
@@ -48,25 +46,29 @@ public class DNF2PQuery {
 		Map<Variable, PParameter> parameters = new HashMap<>();
 
 		predicate.getVariables().forEach(variable -> parameters.put(variable, new PParameter(variable.getName())));
-		query.setParameter(new ArrayList<>(parameters.values()));
+		List<PParameter> parameterList = new ArrayList<>();
+		for(var param : predicate.getVariables()) {
+			parameterList.add(parameters.get(param));
+		}
+		query.setParameter(parameterList);
 		for (DNFAnd clause : predicate.getClauses()) {
 			PBody body = new PBody(query);
 			List<ExportedParameter> symbolicParameters = new ArrayList<>();
-			parameters.forEach((variable, parameter) -> {
-				PVariable pVar = body.getOrCreateVariableByName(variable.getName());
-				symbolicParameters.add(new ExportedParameter(body, pVar, parameter));
-			});
+			for(var param : predicate.getVariables()) {
+				PVariable pVar = body.getOrCreateVariableByName(param.getName());
+				symbolicParameters.add(new ExportedParameter(body, pVar, parameters.get(param)));
+			}
 			body.setSymbolicParameters(symbolicParameters);
 			query.addBody(body);
 			for (DNFAtom constraint : clause.getConstraints()) {
-				translateDNFAtom(constraint, body);
+				translateDNFAtom(constraint, body, DNF2PQueryMap);
 			}
 		}
 		DNF2PQueryMap.put(predicate, query);
 		return query;
 	}
 
-	private static void translateDNFAtom(DNFAtom constraint, PBody body) {
+	private static void translateDNFAtom(DNFAtom constraint, PBody body, Map<DNFPredicate, SimplePQuery> DNF2PQueryMap) {
 		if (constraint instanceof EquivalenceAtom equivalence) {
 			translateEquivalenceAtom(equivalence, body);
 		}
@@ -74,7 +76,7 @@ public class DNF2PQuery {
 			translateRelationAtom(relation, body);
 		}
 		if (constraint instanceof PredicateAtom predicate) {
-			translatePredicateAtom(predicate, body);
+			translatePredicateAtom(predicate, body, DNF2PQueryMap);
 		}
 	}
 
@@ -99,7 +101,7 @@ public class DNF2PQuery {
 		new TypeConstraint(body, Tuples.flatTupleOf(variables), relation.getView());
 	}
 
-	private static void translatePredicateAtom(PredicateAtom predicate, PBody body) {
+	private static void translatePredicateAtom(PredicateAtom predicate, PBody body, Map<DNFPredicate, SimplePQuery> DNF2PQueryMap) {
 		Object[] variables = new Object[predicate.getSubstitution().size()];
 		for (int i = 0; i < predicate.getSubstitution().size(); i++) {
 			variables[i] = body.getOrCreateVariableByName(predicate.getSubstitution().get(i).getName());
@@ -110,17 +112,17 @@ public class DNF2PQuery {
 					throw new IllegalArgumentException("Transitive Predicate Atoms must be binary.");
 				}
 				new BinaryTransitiveClosure(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred()));
+						DNF2PQuery.translate(predicate.getReferred(), DNF2PQueryMap));
 			} else {
 				new PositivePatternCall(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred()));
+						DNF2PQuery.translate(predicate.getReferred(), DNF2PQueryMap));
 			}
 		} else {
 			if (predicate.isTransitive()) {
 				throw new InputMismatchException("Transitive Predicate Atoms cannot be negative.");
 			} else {
 				new NegativePatternCall(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred()));
+						DNF2PQuery.translate(predicate.getReferred(), DNF2PQueryMap));
 			}
 		}
 	}
@@ -160,8 +162,8 @@ public class DNF2PQuery {
 			return bodies;
 		}
 
-		public GenericQuerySpecification<GenericPatternMatcher> build() {
-			return new GenericQuerySpecification<GenericPatternMatcher>(this) {
+		public GenericQuerySpecification<RawPatternMatcher> build() {
+			return new GenericQuerySpecification<RawPatternMatcher>(this) {
 
 				@Override
 				public Class<? extends QueryScope> getPreferredScopeClass() {
@@ -169,13 +171,17 @@ public class DNF2PQuery {
 				}
 
 				@Override
-				protected GenericPatternMatcher instantiate(ViatraQueryEngine engine) {
-					return defaultInstantiate(engine);
+				protected RawPatternMatcher instantiate(ViatraQueryEngine engine) {
+					RawPatternMatcher matcher = engine.getExistingMatcher(this);
+			        if (matcher == null) {
+			            matcher = engine.getMatcher(this);
+			        } 	
+			        return matcher;
 				}
 
 				@Override
-				public GenericPatternMatcher instantiate() {
-					return new GenericPatternMatcher(this);
+				public RawPatternMatcher instantiate() {
+					return new RawPatternMatcher(this);
 				}
 
 			};

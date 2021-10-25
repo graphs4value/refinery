@@ -25,12 +25,12 @@ import tools.refinery.store.query.view.RelationView;
 
 public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	private final RelationalQueryMetaContext metaContext = new RelationalQueryMetaContext();
-	private final RelationUpdateListener relationUpdateListener;
+	private final ModelUpdateListener modelUpdateListener;
 	private final Model model;
 	
-	public RelationalRuntimeContext(Model model, RelationUpdateListener relationUpdateListener) {
+	public RelationalRuntimeContext(Model model, ModelUpdateListener relationUpdateListener) {
 		this.model = model;
-		this.relationUpdateListener = relationUpdateListener;
+		this.modelUpdateListener = relationUpdateListener;
 	}
 	
 	@Override
@@ -58,7 +58,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
 		if(key instanceof RelationView<?> relationalKey) {
-			return this.relationUpdateListener.containsRelationalView(relationalKey);
+			return this.modelUpdateListener.containsRelationalView(relationalKey);
 		} else {
 			return false;
 		}
@@ -74,7 +74,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	RelationView<?> checkKey(IInputKey key) {
 		if(key instanceof RelationView) {
 			RelationView<?> relationViewKey = (RelationView<?>) key;
-			if(relationUpdateListener.containsRelationalView(relationViewKey)) {
+			if(modelUpdateListener.containsRelationalView(relationViewKey)) {
 				return relationViewKey;
 			} else {
 				throw new IllegalStateException("Query is asking for non-indexed key");
@@ -144,14 +144,14 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public void addUpdateListener(IInputKey key, Tuple seed, IQueryRuntimeContextListener listener) {
 		RelationView<?> relationalKey = checkKey(key);
-		this.relationUpdateListener.addListener(relationalKey, seed, listener);
+		this.modelUpdateListener.addListener(relationalKey, seed, listener);
 		
 	}
 
 	@Override
 	public void removeUpdateListener(IInputKey key, Tuple seed, IQueryRuntimeContextListener listener) {
 		RelationView<?> relationalKey = checkKey(key);
-		this.relationUpdateListener.removeListener(relationalKey, seed, listener);
+		this.modelUpdateListener.removeListener(relationalKey, seed, listener);
 	}
 
 	@Override

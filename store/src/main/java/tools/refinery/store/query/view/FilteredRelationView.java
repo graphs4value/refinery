@@ -32,7 +32,7 @@ public class FilteredRelationView<D> extends RelationView<D>{
 	public static Object[] toTuple1Array(Tuple t) {
 		Object[] result = new Object[t.getSize()];
 		for(int i = 0; i<t.getSize(); i++) {
-			result[i] = t.get(i);
+			result[i] = Tuple.of(t.get(i));
 		}
 		return result;
 	}
