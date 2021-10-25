@@ -49,7 +49,8 @@ public abstract class RelationView<D> extends BaseInputKeyWrapper<RelationView<D
 	protected abstract Object[] forwardMap(Tuple key, D value);
 
 	public abstract boolean get(Model model, Object[] tuple);
-
+	
+	@SuppressWarnings("squid:S1168")
 	public Object[] transform(Tuple tuple, D value) {
 		if (filter(tuple, value)) {
 			return forwardMap(tuple, value);

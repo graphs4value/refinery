@@ -70,7 +70,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 			throw new IllegalStateException("Engine tries to index a new key " +key);
 		}
 	}
-	
+	@SuppressWarnings("squid:S1452")
 	RelationView<?> checkKey(IInputKey key) {
 		if(key instanceof RelationView) {
 			RelationView<?> relationViewKey = (RelationView<?>) key;
@@ -121,14 +121,6 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 		}
 		return true;
 	}
-//	private Object[] toObjectMask(RelationViewKey<?> relationalViewKey, TupleMask seedMask, ITuple seed) {
-//		final int arity = relationalViewKey.getArity();
-//		Object[] result = new Object[arity];
-//		for(int i = 0; i<seedMask.indices.length; i++) {
-//			result[seedMask.indices[i]] = seed.get(i);
-//		}
-//		return result;
-//	}
 
 	@Override
 	public Iterable<? extends Object> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
