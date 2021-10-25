@@ -28,7 +28,7 @@ public class ViewUpdateTranslator<D> {
 	public Object[] isMatching(Tuple tuple, D value){
 		return isMatching(key.getWrappedKey().transform(tuple, value), filter);
 	}
-	
+	@SuppressWarnings("squid:S1168")
 	private Object[] isMatching(Object[] tuple, ITuple filter) {
 		for(int i = 0; i<filter.getSize(); i++) {
 			final Object filterObject = filter.get(i);

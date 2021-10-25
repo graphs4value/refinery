@@ -35,17 +35,11 @@ public class ModelUpdateListener {
 		Relation<?> relation = view.getRepresentation();
 
 		// 1. register views to relations, if necessary
-		var views = relation2View.get(relation);
-		if (views == null) {
-			views = new HashSet<>();
-			relation2View.put(relation, views);
-		}
+		var views = relation2View.computeIfAbsent(relation, x->new HashSet<>());
 		views.add(view);
 
 		// 2. register notifier map to views, if necessary
-		if (!view2Buffers.containsKey(view)) {
-			view2Buffers.put(view, new HashSet<>());
-		}
+		view2Buffers.computeIfAbsent(view, x->new HashSet<>());
 	}
 
 	boolean containsRelationalView(RelationView<?> relationalKey) {

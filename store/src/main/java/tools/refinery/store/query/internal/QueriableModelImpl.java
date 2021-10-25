@@ -174,7 +174,6 @@ public class QueriableModelImpl implements QueriableModel {
 	}
 	@Override
 	public void flushChanges() {
-		//this.initEngine();
 		this.scope.flush();
 	}
 
