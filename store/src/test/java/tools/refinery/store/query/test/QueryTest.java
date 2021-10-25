@@ -65,7 +65,6 @@ class QueryTest {
 		model.put(asset, Tuple.of(1), true);
 		model.put(asset, Tuple.of(2), true);
 
-
 		model.flushChanges();
 		assertEquals(2, model.countResults(predicate));
 		compareMatchSets(model.allResults(predicate), Set.of(List.of(Tuple.of(0)), List.of(Tuple.of(1))));
@@ -214,14 +213,14 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom1 = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause1 = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause1 = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom1));
 
 		// Animal-Animal friendship
 		RelationAtom animalRelationAtom1 = new RelationAtom(animalView, Arrays.asList(p1));
 		RelationAtom animalRelationAtom2 = new RelationAtom(animalView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom2 = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause2 = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause2 = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(animalRelationAtom1, animalRelationAtom2, friendRelationAtom2));
 
 		// No inter-species friendship
@@ -259,7 +258,7 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		EquivalenceAtom equivalenceAtom = new EquivalenceAtom(true, p1, p2);
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, equivalenceAtom));
 		DNFPredicate predicate = new DNFPredicate("Equality", parameters, Arrays.asList(clause));
 
@@ -293,7 +292,7 @@ class QueryTest {
 		RelationAtom friendRelationAtom1 = new RelationAtom(friendMustView, Arrays.asList(p1, p3));
 		RelationAtom friendRelationAtom2 = new RelationAtom(friendMustView, Arrays.asList(p2, p3));
 		EquivalenceAtom inequivalenceAtom = new EquivalenceAtom(false, p1, p2);
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters), Arrays.asList(personRelationAtom1, personRelationAtom2,
+		DNFAnd clause = new DNFAnd(Collections.emptySet(), Arrays.asList(personRelationAtom1, personRelationAtom2,
 				friendRelationAtom1, friendRelationAtom2, inequivalenceAtom));
 		DNFPredicate predicate = new DNFPredicate("Inequality", parameters, Arrays.asList(clause));
 
@@ -327,7 +326,7 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate friendPredicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
@@ -337,7 +336,7 @@ class QueryTest {
 		RelationAtom personRelationAtom3 = new RelationAtom(persionView, Arrays.asList(p3));
 		RelationAtom personRelationAtom4 = new RelationAtom(persionView, Arrays.asList(p4));
 		PredicateAtom friendPredicateAtom = new PredicateAtom(true, false, friendPredicate, substitution);
-		DNFAnd patternCallClause = new DNFAnd(new HashSet<>(substitution),
+		DNFAnd patternCallClause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom3, personRelationAtom4, friendPredicateAtom));
 		DNFPredicate predicate = new DNFPredicate("PatternCall", substitution, Arrays.asList(patternCallClause));
 
@@ -371,7 +370,7 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate friendPredicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
@@ -381,7 +380,7 @@ class QueryTest {
 		RelationAtom personRelationAtom3 = new RelationAtom(persionView, Arrays.asList(p3));
 		RelationAtom personRelationAtom4 = new RelationAtom(persionView, Arrays.asList(p4));
 		PredicateAtom friendPredicateAtom = new PredicateAtom(false, false, friendPredicate, substitution);
-		DNFAnd negativePatternCallClause = new DNFAnd(new HashSet<>(substitution),
+		DNFAnd negativePatternCallClause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom3, personRelationAtom4, friendPredicateAtom));
 		DNFPredicate predicate = new DNFPredicate("NegativePatternCall", substitution,
 				Arrays.asList(negativePatternCallClause));
@@ -415,7 +414,7 @@ class QueryTest {
 		RelationAtom personRelationAtom1 = new RelationAtom(persionView, Arrays.asList(p1));
 		RelationAtom personRelationAtom2 = new RelationAtom(persionView, Arrays.asList(p2));
 		RelationAtom friendRelationAtom = new RelationAtom(friendMustView, Arrays.asList(p1, p2));
-		DNFAnd clause = new DNFAnd(new HashSet<>(parameters),
+		DNFAnd clause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom1, personRelationAtom2, friendRelationAtom));
 		DNFPredicate friendPredicate = new DNFPredicate("RelationConstraint", parameters, Arrays.asList(clause));
 
@@ -425,7 +424,7 @@ class QueryTest {
 		RelationAtom personRelationAtom3 = new RelationAtom(persionView, Arrays.asList(p3));
 		RelationAtom personRelationAtom4 = new RelationAtom(persionView, Arrays.asList(p4));
 		PredicateAtom friendPredicateAtom = new PredicateAtom(true, true, friendPredicate, substitution);
-		DNFAnd patternCallClause = new DNFAnd(new HashSet<>(substitution),
+		DNFAnd patternCallClause = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(personRelationAtom3, personRelationAtom4, friendPredicateAtom));
 		DNFPredicate predicate = new DNFPredicate("TransitivePatternCall", substitution,
 				Arrays.asList(patternCallClause));
