@@ -12,7 +12,8 @@ export interface IXtextWebOkResponse {
 
 export function isOkResponse(response: unknown): response is IXtextWebOkResponse {
   const okResponse = response as IXtextWebOkResponse;
-  return typeof okResponse.id === 'string'
+  return typeof okResponse === 'object'
+    && typeof okResponse.id === 'string'
     && typeof okResponse.response !== 'undefined';
 }
 
@@ -30,7 +31,8 @@ export interface IXtextWebErrorResponse {
 
 export function isErrorResponse(response: unknown): response is IXtextWebErrorResponse {
   const errorResponse = response as IXtextWebErrorResponse;
-  return typeof errorResponse.id === 'string'
+  return typeof errorResponse === 'object'
+    && typeof errorResponse.id === 'string'
     && typeof errorResponse.error === 'string'
     && VALID_XTEXT_WEB_ERROR_KINDS.includes(errorResponse.error)
     && typeof errorResponse.message === 'string';
@@ -48,7 +50,8 @@ export interface IXtextWebPushMessage {
 
 export function isPushMessage(response: unknown): response is IXtextWebPushMessage {
   const pushMessage = response as IXtextWebPushMessage;
-  return typeof pushMessage.resource === 'string'
+  return typeof pushMessage === 'object'
+    && typeof pushMessage.resource === 'string'
     && typeof pushMessage.stateId === 'string'
     && typeof pushMessage.service === 'string'
     && typeof pushMessage.push !== 'undefined';

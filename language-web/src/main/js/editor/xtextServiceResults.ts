@@ -4,7 +4,8 @@ export interface IPongResult {
 
 export function isPongResult(result: unknown): result is IPongResult {
   const pongResult = result as IPongResult;
-  return typeof pongResult.pong === 'string';
+  return typeof pongResult === 'object'
+    && typeof pongResult.pong === 'string';
 }
 
 export interface IDocumentStateResult {
@@ -13,7 +14,8 @@ export interface IDocumentStateResult {
 
 export function isDocumentStateResult(result: unknown): result is IDocumentStateResult {
   const documentStateResult = result as IDocumentStateResult;
-  return typeof documentStateResult.stateId === 'string';
+  return typeof documentStateResult === 'object'
+    && typeof documentStateResult.stateId === 'string';
 }
 
 export const VALID_CONFLICTS = ['invalidStateId', 'canceled'] as const;
@@ -50,7 +52,8 @@ export interface IIssue {
 
 export function isIssue(value: unknown): value is IIssue {
   const issue = value as IIssue;
-  return typeof issue.description === 'string'
+  return typeof issue === 'object'
+    && typeof issue.description === 'string'
     && typeof issue.severity === 'string'
     && VALID_SEVERITIES.includes(issue.severity)
     && typeof issue.line === 'number'
@@ -65,6 +68,7 @@ export interface IValidationResult {
 
 export function isValidationResult(result: unknown): result is IValidationResult {
   const validationResult = result as IValidationResult;
-  return Array.isArray(validationResult.issues)
+  return typeof validationResult === 'object'
+    && Array.isArray(validationResult.issues)
     && validationResult.issues.every(isIssue);
 }
