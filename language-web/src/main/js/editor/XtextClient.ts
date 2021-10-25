@@ -1,4 +1,4 @@
-import { Diagnostic, setDiagnostics } from '@codemirror/lint';
+import type { Diagnostic } from '@codemirror/lint';
 import {
   ChangeDesc,
   ChangeSet,
@@ -108,7 +108,7 @@ export class XtextClient {
         message: issue.description,
       });
     });
-    this.store.dispatch(setDiagnostics(this.store.state, diagnostics));
+    this.store.updateDiagnostics(diagnostics);
   }
 
   private computeChangesSinceLastUpdate() {

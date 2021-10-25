@@ -14,7 +14,11 @@ import {
   undoDepth,
 } from '@codemirror/history';
 import { indentOnInput } from '@codemirror/language';
-import { lintKeymap } from '@codemirror/lint';
+import {
+  Diagnostic,
+  lintKeymap,
+  setDiagnostics,
+} from '@codemirror/lint';
 import { bracketMatching } from '@codemirror/matchbrackets';
 import { rectangularSelection } from '@codemirror/rectangular-selection';
 import { searchConfig, searchKeymap } from '@codemirror/search';
@@ -57,6 +61,12 @@ export class EditorStore {
   showSearchPanel = false;
 
   showLintPanel = false;
+
+  errorCount = 0;
+
+  warningCount = 0;
+
+  infoCount = 0;
 
   readonly defaultDispatcher = (tr: Transaction): void => {
     this.onTransaction(tr);
@@ -151,6 +161,39 @@ export class EditorStore {
       state: this.state,
       dispatch: this.dispatcher,
     });
+  }
+
+  updateDiagnostics(diagnostics: Diagnostic[]): void {
+    this.dispatch(setDiagnostics(this.state, diagnostics));
+    this.errorCount = 0;
+    this.warningCount = 0;
+    this.infoCount = 0;
+    diagnostics.forEach(({ severity }) => {
+      switch (severity) {
+        case 'error':
+          this.errorCount += 1;
+          break;
+        case 'warning':
+          this.warningCount += 1;
+          break;
+        case 'info':
+          this.infoCount += 1;
+          break;
+      }
+    });
+  }
+
+  get highestDiagnosticLevel(): Diagnostic['severity'] | null {
+    if (this.errorCount > 0) {
+      return 'error';
+    }
+    if (this.warningCount > 0) {
+      return 'warning';
+    }
+    if (this.infoCount > 0) {
+      return 'info';
+    }
+    return null;
   }
 
   /**
