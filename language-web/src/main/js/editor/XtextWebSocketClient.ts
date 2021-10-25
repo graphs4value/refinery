@@ -16,7 +16,7 @@ const WEBSOCKET_CLOSE_OK = 1000;
 
 const RECONNECT_DELAY_MS = 1000;
 
-const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+const BACKGROUND_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 const PING_TIMEOUT_MS = 10 * 1000;
 
@@ -48,6 +48,9 @@ export class XtextWebSocketClient {
   constructor(onReconnect: ReconnectHandler, onPush: PushHandler) {
     this.onReconnect = onReconnect;
     this.onPush = onPush;
+    document.addEventListener('visibilitychange', () => {
+      this.scheduleIdleTimeout();
+    });
     this.reconnect();
   }
 
@@ -79,6 +82,8 @@ export class XtextWebSocketClient {
         return;
       }
       log.info('Connected to xtext web services');
+      this.scheduleIdleTimeout();
+      this.schedulePingTimeout();
       this.onReconnect();
     });
     this.connection.addEventListener('error', (event) => {
@@ -94,18 +99,29 @@ export class XtextWebSocketClient {
       }
       this.cleanupAndMaybeReconnect();
     });
-    this.scheduleIdleTimeout();
-    this.schedulePingTimeout();
   }
 
   private scheduleIdleTimeout() {
-    if (this.idleTimeout !== null) {
-      clearTimeout(this.idleTimeout);
+    if (document.visibilityState === 'hidden') {
+      if (this.idleTimeout !== null) {
+        return;
+      }
+      log.info('Lost visibility, will disconnect in', BACKGROUND_IDLE_TIMEOUT_MS, 'ms');
+      this.idleTimeout = setTimeout(() => {
+        this.idleTimeout = null;
+        if (!this.isClosed && document.visibilityState === 'hidden') {
+          log.info('Closing websocket connection due to inactivity');
+          this.close();
+        }
+      }, BACKGROUND_IDLE_TIMEOUT_MS);
+    } else {
+      log.info('Gained visibility, connection will be kept alive');
+      if (this.idleTimeout !== null) {
+        clearTimeout(this.idleTimeout);
+        this.idleTimeout = null;
+      }
+      this.ensureOpen();
     }
-    this.idleTimeout = setTimeout(() => {
-      log.info('Closing websocket connection due to inactivity');
-      this.close();
-    }, IDLE_TIMEOUT_MS);
   }
 
   private schedulePingTimeout() {
@@ -120,17 +136,17 @@ export class XtextWebSocketClient {
         const ping = nanoid();
         log.trace('ping:', ping);
         this.pingTimeout = null;
-        this.internalSend({
+        this.send({
           ping,
-        }).catch((error) => {
-          log.error('ping error', error);
-          this.forceReconnectDueToError();
         }).then((result) => {
           if (!isPongResult(result) || result.pong !== ping) {
             log.error('invalid pong');
             this.forceReconnectDueToError();
           }
           log.trace('pong:', ping);
+        }).catch((error) => {
+          log.error('ping error', error);
+          this.forceReconnectDueToError();
         });
       }
       this.schedulePingTimeout();
@@ -179,11 +195,6 @@ export class XtextWebSocketClient {
     if (!this.isOpen) {
       throw new Error('Connection is not open');
     }
-    this.scheduleIdleTimeout();
-    return this.internalSend(request);
-  }
-
-  private internalSend(request: unknown): Promise<unknown> {
     const messageId = this.nextMessageId.toString(16);
     if (messageId in this.pendingRequests) {
       log.error('Message id wraparound still pending', messageId);
