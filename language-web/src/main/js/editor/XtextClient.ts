@@ -2,7 +2,6 @@ import { Diagnostic, setDiagnostics } from '@codemirror/lint';
 import {
   ChangeDesc,
   ChangeSet,
-  EditorState,
   Transaction,
 } from '@codemirror/state';
 import { nanoid } from 'nanoid';
@@ -63,6 +62,7 @@ export class XtextClient {
   onTransaction(transaction: Transaction): void {
     const { changes } = transaction;
     if (!changes.empty) {
+      this.webSocketClient.ensureOpen();
       this.dirtyChanges = this.dirtyChanges.composeDesc(changes.desc);
       this.scheduleUpdate();
     }

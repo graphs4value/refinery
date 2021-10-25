@@ -46,6 +46,11 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 
 	public void handleRequest(XtextWebRequest request) throws ResponseHandlerException {
 		var serviceContext = new SimpleServiceContext(session, request.getRequestData());
+		var ping = serviceContext.getParameter("ping");
+		if (ping != null) {
+			responseHandler.onResponse(new XtextWebOkResponse(request, new PongResult(ping)));
+			return;
+		}
 		try {
 			var injector = getInjector(serviceContext);
 			var serviceDispatcher = injector.getInstance(XtextServiceDispatcher.class);

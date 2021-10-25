@@ -1,3 +1,12 @@
+export interface IPongResult {
+  pong: string;
+}
+
+export function isPongResult(result: unknown): result is IPongResult {
+  const pongResult = result as IPongResult;
+  return typeof pongResult.pong === 'string';
+}
+
 export interface IDocumentStateResult {
   stateId: string;
 }

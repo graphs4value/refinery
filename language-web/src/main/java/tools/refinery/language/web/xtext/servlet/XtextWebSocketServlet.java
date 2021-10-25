@@ -31,7 +31,7 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 	 */
 	private static final long MAX_FRAME_SIZE = 4L * 1024L * 1024L;
 
-	private static final Duration IDLE_TIMEOUT = Duration.ofMinutes(10);
+	private static final Duration IDLE_TIMEOUT = Duration.ofSeconds(30);
 
 	private transient Logger log = LoggerFactory.getLogger(getClass());
 

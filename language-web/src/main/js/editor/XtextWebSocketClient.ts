@@ -1,3 +1,5 @@
+import { nanoid } from 'nanoid';
+
 import { getLogger } from '../logging';
 import { PendingRequest } from './PendingRequest';
 import {
@@ -6,12 +8,17 @@ import {
   isPushMessage,
   IXtextWebRequest,
 } from './xtextMessages';
+import { isPongResult } from './xtextServiceResults';
 
 const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
 const WEBSOCKET_CLOSE_OK = 1000;
 
 const RECONNECT_DELAY_MS = 1000;
+
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+
+const PING_TIMEOUT_MS = 10 * 1000;
 
 const log = getLogger('XtextWebSocketClient');
 
@@ -34,6 +41,10 @@ export class XtextWebSocketClient {
 
   reconnectTimeout: NodeJS.Timeout | null = null;
 
+  idleTimeout: NodeJS.Timeout | null = null;
+
+  pingTimeout: NodeJS.Timeout | null = null;
+
   constructor(onReconnect: ReconnectHandler, onPush: PushHandler) {
     this.onReconnect = onReconnect;
     this.onPush = onPush;
@@ -42,6 +53,18 @@ export class XtextWebSocketClient {
 
   get isOpen(): boolean {
     return this.connection.readyState === WebSocket.OPEN;
+  }
+
+  get isClosed(): boolean {
+    return this.connection.readyState === WebSocket.CLOSING
+      || this.connection.readyState === WebSocket.CLOSED;
+  }
+
+  ensureOpen(): void {
+    if (this.isClosed) {
+      this.closing = false;
+      this.reconnect();
+    }
   }
 
   private reconnect() {
@@ -71,18 +94,75 @@ export class XtextWebSocketClient {
       }
       this.cleanupAndMaybeReconnect();
     });
+    this.scheduleIdleTimeout();
+    this.schedulePingTimeout();
+  }
+
+  private scheduleIdleTimeout() {
+    if (this.idleTimeout !== null) {
+      clearTimeout(this.idleTimeout);
+    }
+    this.idleTimeout = setTimeout(() => {
+      log.info('Closing websocket connection due to inactivity');
+      this.close();
+    }, IDLE_TIMEOUT_MS);
+  }
+
+  private schedulePingTimeout() {
+    if (this.pingTimeout !== null) {
+      return;
+    }
+    this.pingTimeout = setTimeout(() => {
+      if (this.isClosed) {
+        return;
+      }
+      if (this.isOpen) {
+        const ping = nanoid();
+        log.trace('ping:', ping);
+        this.pingTimeout = null;
+        this.internalSend({
+          ping,
+        }).catch((error) => {
+          log.error('ping error', error);
+          this.forceReconnectDueToError();
+        }).then((result) => {
+          if (!isPongResult(result) || result.pong !== ping) {
+            log.error('invalid pong');
+            this.forceReconnectDueToError();
+          }
+          log.trace('pong:', ping);
+        });
+      }
+      this.schedulePingTimeout();
+    }, PING_TIMEOUT_MS);
   }
 
   private cleanupAndMaybeReconnect() {
+    this.cleanup();
+    if (!this.closing) {
+      this.delayedReconnect();
+    }
+  }
+
+  private cleanup() {
     this.pendingRequests.forEach((pendingRequest) => {
       pendingRequest.reject(new Error('Websocket closed'));
     });
     this.pendingRequests.clear();
-    if (this.closing) {
-      return;
+    if (this.idleTimeout !== null) {
+      clearTimeout(this.idleTimeout);
+      this.idleTimeout = null;
     }
+    if (this.pingTimeout !== null) {
+      clearTimeout(this.pingTimeout);
+      this.pingTimeout = null;
+    }
+  }
+
+  private delayedReconnect() {
     if (this.reconnectTimeout !== null) {
       clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
     }
     this.reconnectTimeout = setTimeout(() => {
       log.info('Attempting to reconnect websocket');
@@ -99,6 +179,11 @@ export class XtextWebSocketClient {
     if (!this.isOpen) {
       throw new Error('Connection is not open');
     }
+    this.scheduleIdleTimeout();
+    return this.internalSend(request);
+  }
+
+  private internalSend(request: unknown): Promise<unknown> {
     const messageId = this.nextMessageId.toString(16);
     if (messageId in this.pendingRequests) {
       log.error('Message id wraparound still pending', messageId);
@@ -171,15 +256,15 @@ export class XtextWebSocketClient {
   }
 
   private closeConnection() {
-    if (this.connection && this.connection.readyState !== WebSocket.CLOSING
-      && this.connection.readyState !== WebSocket.CLOSED) {
+    if (!this.isClosed) {
       log.info('Closing websocket connection');
-      this.connection.close();
+      this.connection.close(1000, 'end session');
     }
   }
 
   close(): void {
     this.closing = true;
     this.closeConnection();
+    this.cleanup();
   }
 }
