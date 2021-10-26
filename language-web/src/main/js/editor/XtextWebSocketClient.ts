@@ -15,11 +15,9 @@ const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
 const WEBSOCKET_CLOSE_OK = 1000;
 
-const RECONNECT_DELAY_MS = [1000, 5000, 30_000];
+const RECONNECT_DELAY_MS = [200, 1000, 5000, 30_000];
 
 const MAX_RECONNECT_DELAY_MS = RECONNECT_DELAY_MS[RECONNECT_DELAY_MS.length - 1];
-
-const MAX_APP_ERROR_COUNT = 1;
 
 const BACKGROUND_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
@@ -33,7 +31,7 @@ type PushHandler = (
   resourceId: string,
   stateId: string,
   service: string,
-  data: unknown
+  data: unknown,
 ) => Promise<void>;
 
 enum State {
@@ -58,8 +56,6 @@ export class XtextWebSocketClient {
   onPush: PushHandler;
 
   state = State.Initial;
-
-  appErrorCount = 0;
 
   reconnectTryCount = 0;
 
@@ -106,7 +102,7 @@ export class XtextWebSocketClient {
     this.connection.addEventListener('open', () => {
       if (this.connection.protocol !== XTEXT_SUBPROTOCOL_V1) {
         log.error('Unknown subprotocol', this.connection.protocol, 'selected by server');
-        this.handleProtocolError();
+        this.forceReconnectOnError();
       }
       if (document.visibilityState === 'hidden') {
         this.handleTabHidden();
@@ -115,7 +111,6 @@ export class XtextWebSocketClient {
       }
       log.info('Connected to websocket');
       this.nextMessageId = 0;
-      this.appErrorCount = 0;
       this.reconnectTryCount = 0;
       this.pingTimer.schedule();
       this.onReconnect().catch((error) => {
@@ -124,7 +119,7 @@ export class XtextWebSocketClient {
     });
     this.connection.addEventListener('error', (event) => {
       log.error('Unexpected websocket error', event);
-      this.handleProtocolError();
+      this.forceReconnectOnError();
     });
     this.connection.addEventListener('message', (event) => {
       this.handleMessage(event.data);
@@ -136,7 +131,7 @@ export class XtextWebSocketClient {
         return;
       }
       log.error('Websocket closed unexpectedly', event.code, event.reason);
-      this.handleProtocolError();
+      this.forceReconnectOnError();
     });
   }
 
@@ -158,13 +153,13 @@ export class XtextWebSocketClient {
   }
 
   private handleTabHidden() {
-    log.trace('Tab became hidden while websocket is connected');
+    log.debug('Tab hidden while websocket is connected');
     this.state = State.TabHiddenIdle;
     this.idleTimer.schedule();
   }
 
   private handleTabVisibleConnected() {
-    log.trace('Tab became visible while websocket is connected');
+    log.debug('Tab visible while websocket is connected');
     this.state = State.TabVisible;
   }
 
@@ -202,11 +197,11 @@ export class XtextWebSocketClient {
         this.pingTimer.schedule();
       } else {
         log.error('Invalid pong');
-        this.handleProtocolError();
+        this.forceReconnectOnError();
       }
     }).catch((error) => {
       log.error('Error while waiting for ping', error);
-      this.handleProtocolError();
+      this.forceReconnectOnError();
     });
   }
 
@@ -241,7 +236,7 @@ export class XtextWebSocketClient {
   private handleMessage(messageStr: unknown) {
     if (typeof messageStr !== 'string') {
       log.error('Unexpected binary message', messageStr);
-      this.handleProtocolError();
+      this.forceReconnectOnError();
       return;
     }
     log.trace('Incoming websocket message', messageStr);
@@ -250,7 +245,7 @@ export class XtextWebSocketClient {
       message = JSON.parse(messageStr);
     } catch (error) {
       log.error('Json parse error', error);
-      this.handleProtocolError();
+      this.forceReconnectOnError();
       return;
     }
     if (isOkResponse(message)) {
@@ -259,7 +254,7 @@ export class XtextWebSocketClient {
       this.rejectRequest(message.id, new Error(`${message.error} error: ${message.message}`));
       if (message.error === 'server') {
         log.error('Reconnecting due to server error: ', message.message);
-        this.handleApplicationError();
+        this.forceReconnectOnError();
       }
     } else if (isPushMessage(message)) {
       this.onPush(
@@ -272,7 +267,7 @@ export class XtextWebSocketClient {
       });
     } else {
       log.error('Unexpected websocket message', message);
-      this.handleProtocolError();
+      this.forceReconnectOnError();
     }
   }
 
@@ -301,31 +296,14 @@ export class XtextWebSocketClient {
     this.handleWaitingForDisconnect();
   }
 
-  private handleProtocolError() {
+  forceReconnectOnError(): void {
     if (this.isLogicallyClosed) {
       return;
     }
     this.abortPendingRequests();
-    this.closeConnection(1000, 'reconnecting due to protocol error');
-    log.error('Reconnecting after delay due to protocol error');
+    this.closeConnection(1000, 'reconnecting due to error');
+    log.error('Reconnecting after delay due to error');
     this.handleErrorState();
-  }
-
-  handleApplicationError(): void {
-    if (this.isLogicallyClosed) {
-      return;
-    }
-    this.abortPendingRequests();
-    this.closeConnection(1000, 'reconnecting due to application error');
-    this.appErrorCount += 1;
-    if (this.appErrorCount <= MAX_APP_ERROR_COUNT) {
-      log.error('Immediately reconnecting due to application error');
-      this.state = State.Initial;
-      this.reconnect();
-    } else {
-      log.error('Reconnecting after delay due to application error');
-      this.handleErrorState();
-    }
   }
 
   private abortPendingRequests() {

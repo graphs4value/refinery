@@ -223,7 +223,7 @@ export class XtextClient {
         this.pendingUpdate = null;
         switch (newStateId) {
           case UpdateAction.ForceReconnect:
-            this.webSocketClient.handleApplicationError();
+            this.webSocketClient.forceReconnectOnError();
             break;
           case UpdateAction.FullTextUpdate:
             await this.updateFullText();
