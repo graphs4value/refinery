@@ -9,16 +9,24 @@ export class PendingRequest {
 
   private readonly rejectCallback: (reason?: unknown) => void;
 
+  private readonly timeoutCallback: () => void;
+
   private resolved = false;
 
   private timeoutId: NodeJS.Timeout;
 
-  constructor(resolve: (value: unknown) => void, reject: (reason?: unknown) => void) {
+  constructor(
+    resolve: (value: unknown) => void,
+    reject: (reason?: unknown) => void,
+    timeout: () => void,
+  ) {
     this.resolveCallback = resolve;
     this.rejectCallback = reject;
+    this.timeoutCallback = timeout;
     this.timeoutId = setTimeout(() => {
       if (!this.resolved) {
         this.reject(new Error('Request timed out'));
+        this.timeoutCallback();
       }
     }, REQUEST_TIMEOUT_MS);
   }

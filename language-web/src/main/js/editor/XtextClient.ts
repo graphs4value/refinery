@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid';
 
 import type { EditorStore } from './EditorStore';
 import { getLogger } from '../logging';
+import { Timer } from '../utils/Timer';
 import {
   isDocumentStateResult,
   isServiceConflictResult,
@@ -36,7 +37,9 @@ export class XtextClient {
 
   dirtyChanges: ChangeDesc;
 
-  updateTimeout: NodeJS.Timeout | null = null;
+  updateTimer = new Timer(() => {
+    this.handleUpdate();
+  }, UPDATE_TIMEOUT_MS);
 
   store: EditorStore;
 
@@ -46,15 +49,11 @@ export class XtextClient {
     this.store = store;
     this.dirtyChanges = this.newEmptyChangeDesc();
     this.webSocketClient = new XtextWebSocketClient(
-      () => {
-        this.updateFullText().catch((error) => {
-          log.error('Unexpected error during initial update', error);
-        });
+      async () => {
+        await this.updateFullText();
       },
-      (resource, stateId, service, push) => {
-        this.onPush(resource, stateId, service, push).catch((error) => {
-          log.error('Unexected error during push message handling', error);
-        });
+      async (resource, stateId, service, push) => {
+        await this.onPush(resource, stateId, service, push);
       },
     );
   }
@@ -62,9 +61,8 @@ export class XtextClient {
   onTransaction(transaction: Transaction): void {
     const { changes } = transaction;
     if (!changes.empty) {
-      this.webSocketClient.ensureOpen();
       this.dirtyChanges = this.dirtyChanges.composeDesc(changes.desc);
-      this.scheduleUpdate();
+      this.updateTimer.reschedule();
     }
   }
 
@@ -118,22 +116,16 @@ export class XtextClient {
     return this.pendingUpdate.composeDesc(this.dirtyChanges);
   }
 
-  private scheduleUpdate() {
-    if (this.updateTimeout !== null) {
-      clearTimeout(this.updateTimeout);
+  private handleUpdate() {
+    if (!this.webSocketClient.isOpen || this.dirtyChanges.empty) {
+      return;
     }
-    this.updateTimeout = setTimeout(() => {
-      this.updateTimeout = null;
-      if (!this.webSocketClient.isOpen || this.dirtyChanges.empty) {
-        return;
-      }
-      if (!this.pendingUpdate) {
-        this.updateDeltaText().catch((error) => {
-          log.error('Unexpected error during scheduled update', error);
-        });
-      }
-      this.scheduleUpdate();
-    }, UPDATE_TIMEOUT_MS);
+    if (!this.pendingUpdate) {
+      this.updateDeltaText().catch((error) => {
+        log.error('Unexpected error during scheduled update', error);
+      });
+    }
+    this.updateTimer.reschedule();
   }
 
   private newEmptyChangeDesc() {
@@ -169,7 +161,7 @@ export class XtextClient {
       return;
     }
     const delta = this.computeDelta();
-    log.debug('Editor delta', delta);
+    log.trace('Editor delta', delta);
     await this.withUpdate(async () => {
       const result = await this.webSocketClient.send({
         resource: this.resourceName,
@@ -231,7 +223,7 @@ export class XtextClient {
         this.pendingUpdate = null;
         switch (newStateId) {
           case UpdateAction.ForceReconnect:
-            this.webSocketClient.forceReconnectDueToError();
+            this.webSocketClient.handleApplicationError();
             break;
           case UpdateAction.FullTextUpdate:
             await this.updateFullText();
