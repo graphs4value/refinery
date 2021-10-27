@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 
 import { getLogger } from '../logging';
-import { PendingRequest } from './PendingRequest';
+import { PendingTask } from '../utils/PendingTask';
 import { Timer } from '../utils/Timer';
 import {
   isErrorResponse,
@@ -22,6 +22,8 @@ const MAX_RECONNECT_DELAY_MS = RECONNECT_DELAY_MS[RECONNECT_DELAY_MS.length - 1]
 const BACKGROUND_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 const PING_TIMEOUT_MS = 10 * 1000;
+
+const REQUEST_TIMEOUT_MS = 1000;
 
 const log = getLogger('XtextWebSocketClient');
 
@@ -49,7 +51,7 @@ export class XtextWebSocketClient {
 
   connection!: WebSocket;
 
-  pendingRequests = new Map<string, PendingRequest>();
+  pendingRequests = new Map<string, PendingTask<unknown>>();
 
   onReconnect: ReconnectHandler;
 
@@ -223,14 +225,14 @@ export class XtextWebSocketClient {
       id: messageId,
       request,
     } as IXtextWebRequest);
-    const promise = new Promise((resolve, reject) => {
-      this.pendingRequests.set(messageId, new PendingRequest(resolve, reject, () => {
-        this.removePendingRequest(messageId);
-      }));
-    });
     log.trace('Sending message', message);
-    this.connection.send(message);
-    return promise;
+    return new Promise((resolve, reject) => {
+      const task = new PendingTask(resolve, reject, REQUEST_TIMEOUT_MS, () => {
+        this.removePendingRequest(messageId);
+      });
+      this.pendingRequests.set(messageId, task);
+      this.connection.send(message);
+    });
   }
 
   private handleMessage(messageStr: unknown) {
