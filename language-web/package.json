@@ -81,6 +81,7 @@
     "@codemirror/view": "^0.19.9",
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.3.0",
+    "escape-string-regexp": "^5.0.0",
     "@fontsource/jetbrains-mono": "^4.5.0",
     "@fontsource/roboto": "^4.5.0",
     "@lezer/lr": "^0.15.4",

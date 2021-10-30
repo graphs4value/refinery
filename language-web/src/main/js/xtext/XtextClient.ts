@@ -14,23 +14,18 @@ import { XtextWebSocketClient } from './XtextWebSocketClient';
 const log = getLogger('xtext.XtextClient');
 
 export class XtextClient {
-  webSocketClient: XtextWebSocketClient;
+  private webSocketClient: XtextWebSocketClient;
 
-  updateService: UpdateService;
+  private updateService: UpdateService;
 
-  contentAssistService: ContentAssistService;
+  private contentAssistService: ContentAssistService;
 
-  validationService: ValidationService;
+  private validationService: ValidationService;
 
   constructor(store: EditorStore) {
     this.webSocketClient = new XtextWebSocketClient(
-      async () => {
-        this.updateService.xtextStateId = null;
-        await this.updateService.updateFullText();
-      },
-      async (resource, stateId, service, push) => {
-        await this.onPush(resource, stateId, service, push);
-      },
+      () => this.updateService.onConnect(),
+      (resource, stateId, service, push) => this.onPush(resource, stateId, service, push),
     );
     this.updateService = new UpdateService(store, this.webSocketClient);
     this.contentAssistService = new ContentAssistService(this.updateService);

@@ -4,11 +4,53 @@ import type {
   CompletionResult,
 } from '@codemirror/autocomplete';
 import type { ChangeSet, Transaction } from '@codemirror/state';
+import escapeStringRegexp from 'escape-string-regexp';
 
 import { getLogger } from '../logging';
 import type { UpdateService } from './UpdateService';
+import type { IContentAssistEntry } from './xtextServiceResults';
+
+const PROPOSALS_LIMIT = 1000;
+
+const IDENTIFIER_REGEXP_STR = '[a-zA-Z0-9_]*';
 
 const log = getLogger('xtext.ContentAssistService');
+
+function createCompletion(entry: IContentAssistEntry): Completion {
+  let boost;
+  switch (entry.kind) {
+    case 'KEYWORD':
+      boost = -99;
+      break;
+    case 'TEXT':
+    case 'SNIPPET':
+      boost = -90;
+      break;
+    default:
+      boost = 0;
+      break;
+  }
+  return {
+    label: entry.proposal,
+    detail: entry.description,
+    info: entry.documentation,
+    type: entry.kind?.toLowerCase(),
+    boost,
+  };
+}
+
+function computeSpan(prefix: string, entryCount: number) {
+  const escapedPrefix = escapeStringRegexp(prefix);
+  if (entryCount < PROPOSALS_LIMIT) {
+    // Proposals with the current prefix fit the proposals limit.
+    // We can filter client side as long as the current prefix is preserved.
+    return new RegExp(`^${escapedPrefix}${IDENTIFIER_REGEXP_STR}$`);
+  }
+  // The current prefix overflows the proposals limits,
+  // so we have to fetch the completions again on the next keypress.
+  // Hopefully, it'll return a shorter list and we'll be able to filter client side.
+  return new RegExp(`^${escapedPrefix}$`);
+}
 
 export class ContentAssistService {
   updateService: UpdateService;
@@ -28,7 +70,7 @@ export class ContentAssistService {
   async contentAssist(context: CompletionContext): Promise<CompletionResult> {
     const tokenBefore = context.tokenBefore(['QualifiedName']);
     let range: { from: number, to: number };
-    let selection: { selectionStart?: number, selectionEnd?: number };
+    let prefix = '';
     if (tokenBefore === null) {
       if (!context.explicit) {
         return {
@@ -40,16 +82,16 @@ export class ContentAssistService {
         from: context.pos,
         to: context.pos,
       };
-      selection = {};
+      prefix = '';
     } else {
       range = {
         from: tokenBefore.from,
         to: tokenBefore.to,
       };
-      selection = {
-        selectionStart: tokenBefore.from,
-        selectionEnd: tokenBefore.to,
-      };
+      const prefixLength = context.pos - tokenBefore.from;
+      if (prefixLength > 0) {
+        prefix = tokenBefore.text.substring(0, context.pos - tokenBefore.from);
+      }
     }
     if (!context.explicit && this.shouldReturnCachedCompletion(tokenBefore)) {
       log.trace('Returning cached completion result');
@@ -64,7 +106,7 @@ export class ContentAssistService {
       resource: this.updateService.resourceName,
       serviceType: 'assist',
       caretOffset: context.pos,
-      ...selection,
+      proposalsLimit: PROPOSALS_LIMIT,
     }, context);
     if (context.aborted) {
       return {
@@ -74,19 +116,13 @@ export class ContentAssistService {
     }
     const options: Completion[] = [];
     entries.forEach((entry) => {
-      options.push({
-        label: entry.proposal,
-        detail: entry.description,
-        info: entry.documentation,
-        type: entry.kind?.toLowerCase(),
-        boost: entry.kind === 'KEYWORD' ? -90 : 0,
-      });
+      options.push(createCompletion(entry));
     });
     log.debug('Fetched', options.length, 'completions from server');
     this.lastCompletion = {
       ...range,
       options,
-      span: /^[a-zA-Z0-9_:]*$/,
+      span: computeSpan(prefix, entries.length),
     };
     return this.lastCompletion;
   }

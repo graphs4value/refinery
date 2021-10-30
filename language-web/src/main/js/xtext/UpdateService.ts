@@ -53,6 +53,11 @@ export class UpdateService {
     this.webSocketClient = webSocketClient;
   }
 
+  onConnect(): Promise<void> {
+    this.xtextStateId = null;
+    return this.updateFullText();
+  }
+
   onTransaction(transaction: Transaction): void {
     const { changes } = transaction;
     if (!changes.empty) {
