@@ -21,6 +21,11 @@ export const VALID_XTEXT_WEB_ERROR_KINDS = ['request', 'server'] as const;
 
 export type XtextWebErrorKind = typeof VALID_XTEXT_WEB_ERROR_KINDS[number];
 
+export function isXtextWebErrorKind(value: unknown): value is XtextWebErrorKind {
+  return typeof value === 'string'
+    && VALID_XTEXT_WEB_ERROR_KINDS.includes(value as XtextWebErrorKind);
+}
+
 export interface IXtextWebErrorResponse {
   id: string;
 
@@ -33,8 +38,7 @@ export function isErrorResponse(response: unknown): response is IXtextWebErrorRe
   const errorResponse = response as IXtextWebErrorResponse;
   return typeof errorResponse === 'object'
     && typeof errorResponse.id === 'string'
-    && typeof errorResponse.error === 'string'
-    && VALID_XTEXT_WEB_ERROR_KINDS.includes(errorResponse.error)
+    && isXtextWebErrorKind(errorResponse.error)
     && typeof errorResponse.message === 'string';
 }
 

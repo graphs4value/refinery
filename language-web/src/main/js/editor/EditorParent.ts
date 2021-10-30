@@ -5,13 +5,15 @@ export const EditorParent = styled('div')(({ theme }) => ({
   '&, .cm-editor': {
     height: '100%',
   },
-  '.cm-scroller': {
+  '.cm-scroller, .cm-tooltip-autocomplete, .cm-completionLabel, .cm-completionDetail': {
     fontSize: 16,
     fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
     fontFeatureSettings: '"liga", "calt"',
     fontWeight: 400,
     letterSpacing: 0,
     textRendering: 'optimizeLegibility',
+  },
+  '.cm-scroller': {
     color: theme.palette.text.secondary,
   },
   '.cm-gutters': {
@@ -59,7 +61,7 @@ export const EditorParent = styled('div')(({ theme }) => ({
     color: theme.palette.text.secondary,
   },
   '.cmt-comment': {
-    fontVariant: 'italic',
+    fontStyle: 'italic',
     color: theme.palette.text.disabled,
   },
   '.cmt-number': {
@@ -76,5 +78,11 @@ export const EditorParent = styled('div')(({ theme }) => ({
   },
   '.cmt-variableName': {
     color: '#c8ae9d',
+  },
+  '.cm-completionIcon': {
+    width: 16,
+    padding: 0,
+    marginRight: '0.5em',
+    textAlign: 'center',
   },
 }));

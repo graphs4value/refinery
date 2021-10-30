@@ -1,3 +1,8 @@
+import {
+  Completion,
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 import type { Diagnostic } from '@codemirror/lint';
 import {
   ChangeDesc,
@@ -10,21 +15,20 @@ import type { EditorStore } from './EditorStore';
 import { getLogger } from '../logging';
 import { Timer } from '../utils/Timer';
 import {
+  IContentAssistEntry,
+  isContentAssistResult,
   isDocumentStateResult,
-  isServiceConflictResult,
+  isInvalidStateIdConflictResult,
   isValidationResult,
 } from './xtextServiceResults';
 import { XtextWebSocketClient } from './XtextWebSocketClient';
+import { PendingTask } from '../utils/PendingTask';
 
-const UPDATE_TIMEOUT_MS = 300;
+const UPDATE_TIMEOUT_MS = 500;
+
+const WAIT_FOR_UPDATE_TIMEOUT_MS = 1000;
 
 const log = getLogger('XtextClient');
-
-enum UpdateAction {
-  ForceReconnect,
-
-  FullTextUpdate,
-}
 
 export class XtextClient {
   resourceName: string;
@@ -36,6 +40,10 @@ export class XtextClient {
   pendingUpdate: ChangeDesc | null;
 
   dirtyChanges: ChangeDesc;
+
+  lastCompletion: CompletionResult | null = null;
+
+  updateListeners: PendingTask<void>[] = [];
 
   updateTimer = new Timer(() => {
     this.handleUpdate();
@@ -50,6 +58,7 @@ export class XtextClient {
     this.dirtyChanges = this.newEmptyChangeDesc();
     this.webSocketClient = new XtextWebSocketClient(
       async () => {
+        this.xtextStateId = null;
         await this.updateFullText();
       },
       async (resource, stateId, service, push) => {
@@ -61,6 +70,10 @@ export class XtextClient {
   onTransaction(transaction: Transaction): void {
     const { changes } = transaction;
     if (!changes.empty) {
+      if (this.shouldInvalidateCachedCompletion(transaction)) {
+        log.trace('Invalidating cached completions');
+        this.lastCompletion = null;
+      }
       this.dirtyChanges = this.dirtyChanges.composeDesc(changes.desc);
       this.updateTimer.reschedule();
     }
@@ -110,18 +123,15 @@ export class XtextClient {
   }
 
   private computeChangesSinceLastUpdate() {
-    if (this.pendingUpdate === null) {
-      return this.dirtyChanges;
-    }
-    return this.pendingUpdate.composeDesc(this.dirtyChanges);
+    return this.pendingUpdate?.composeDesc(this.dirtyChanges) || this.dirtyChanges;
   }
 
   private handleUpdate() {
     if (!this.webSocketClient.isOpen || this.dirtyChanges.empty) {
       return;
     }
-    if (!this.pendingUpdate) {
-      this.updateDeltaText().catch((error) => {
+    if (this.pendingUpdate === null) {
+      this.update().catch((error) => {
         log.error('Unexpected error during scheduled update', error);
       });
     }
@@ -134,33 +144,28 @@ export class XtextClient {
   }
 
   private async updateFullText() {
-    await this.withUpdate(async () => {
-      const result = await this.webSocketClient.send({
-        resource: this.resourceName,
-        serviceType: 'update',
-        fullText: this.store.state.doc.sliceString(0),
-      });
-      if (isDocumentStateResult(result)) {
-        return result.stateId;
-      }
-      if (isServiceConflictResult(result)) {
-        log.error('Full text update conflict:', result.conflict);
-        if (result.conflict === 'canceled') {
-          return UpdateAction.FullTextUpdate;
-        }
-        return UpdateAction.ForceReconnect;
-      }
-      log.error('Unexpected full text update result:', result);
-      return UpdateAction.ForceReconnect;
-    });
+    await this.withUpdate(() => this.doUpdateFullText());
   }
 
-  private async updateDeltaText() {
-    if (this.xtextStateId === null) {
-      await this.updateFullText();
+  private async doUpdateFullText(): Promise<[string, void]> {
+    const result = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'update',
+      fullText: this.store.state.doc.sliceString(0),
+    });
+    if (isDocumentStateResult(result)) {
+      return [result.stateId, undefined];
+    }
+    log.error('Unexpected full text update result:', result);
+    throw new Error('Full text update failed');
+  }
+
+  async update(): Promise<void> {
+    await this.prepareForDeltaUpdate();
+    const delta = this.computeDelta();
+    if (delta === null) {
       return;
     }
-    const delta = this.computeDelta();
     log.trace('Editor delta', delta);
     await this.withUpdate(async () => {
       const result = await this.webSocketClient.send({
@@ -170,20 +175,170 @@ export class XtextClient {
         ...delta,
       });
       if (isDocumentStateResult(result)) {
-        return result.stateId;
+        return [result.stateId, undefined];
       }
-      if (isServiceConflictResult(result)) {
-        log.error('Delta text update conflict:', result.conflict);
-        return UpdateAction.FullTextUpdate;
+      if (isInvalidStateIdConflictResult(result)) {
+        return this.doFallbackToUpdateFullText();
       }
       log.error('Unexpected delta text update result:', result);
-      return UpdateAction.ForceReconnect;
+      throw new Error('Delta text update failed');
     });
+  }
+
+  private doFallbackToUpdateFullText() {
+    if (this.pendingUpdate === null) {
+      throw new Error('Only a pending update can be extended');
+    }
+    log.warn('Delta update failed, performing full text update');
+    this.xtextStateId = null;
+    this.pendingUpdate = this.pendingUpdate.composeDesc(this.dirtyChanges);
+    this.dirtyChanges = this.newEmptyChangeDesc();
+    return this.doUpdateFullText();
+  }
+
+  async contentAssist(context: CompletionContext): Promise<CompletionResult> {
+    const tokenBefore = context.tokenBefore(['QualifiedName']);
+    if (tokenBefore === null && !context.explicit) {
+      return {
+        from: context.pos,
+        options: [],
+      };
+    }
+    const range = {
+      from: tokenBefore?.from || context.pos,
+      to: tokenBefore?.to || context.pos,
+    };
+    if (this.shouldReturnCachedCompletion(tokenBefore)) {
+      log.trace('Returning cached completion result');
+      // Postcondition of `shouldReturnCachedCompletion`: `lastCompletion !== null`
+      return {
+        ...this.lastCompletion as CompletionResult,
+        ...range,
+      };
+    }
+    const entries = await this.fetchContentAssist(context);
+    if (context.aborted) {
+      return {
+        ...range,
+        options: [],
+      };
+    }
+    const options: Completion[] = [];
+    entries.forEach((entry) => {
+      options.push({
+        label: entry.proposal,
+        detail: entry.description,
+        info: entry.documentation,
+        type: entry.kind?.toLowerCase(),
+        boost: entry.kind === 'KEYWORD' ? -90 : 0,
+      });
+    });
+    log.debug('Fetched', options.length, 'completions from server');
+    this.lastCompletion = {
+      ...range,
+      options,
+      span: /[a-zA-Z0-9_:]/,
+    };
+    return this.lastCompletion;
+  }
+
+  private shouldReturnCachedCompletion(
+    token: { from: number, to: number, text: string } | null,
+  ) {
+    if (token === null || this.lastCompletion === null) {
+      return false;
+    }
+    const { from, to, text } = token;
+    const { from: lastFrom, to: lastTo, span } = this.lastCompletion;
+    if (!lastTo) {
+      return true;
+    }
+    const transformedFrom = this.dirtyChanges.mapPos(lastFrom);
+    const transformedTo = this.dirtyChanges.mapPos(lastTo, 1);
+    return from >= transformedFrom && to <= transformedTo && span && span.exec(text);
+  }
+
+  private shouldInvalidateCachedCompletion(transaction: Transaction) {
+    if (this.lastCompletion === null) {
+      return false;
+    }
+    const { from: lastFrom, to: lastTo } = this.lastCompletion;
+    if (!lastTo) {
+      return true;
+    }
+    const transformedFrom = this.dirtyChanges.mapPos(lastFrom);
+    const transformedTo = this.dirtyChanges.mapPos(lastTo, 1);
+    let invalidate = false;
+    transaction.changes.iterChangedRanges((fromA, toA) => {
+      if (fromA < transformedFrom || toA > transformedTo) {
+        invalidate = true;
+      }
+    });
+    return invalidate;
+  }
+
+  private async fetchContentAssist(context: CompletionContext) {
+    await this.prepareForDeltaUpdate();
+    const delta = this.computeDelta();
+    if (delta === null) {
+      // Poscondition of `prepareForDeltaUpdate`: `xtextStateId !== null`
+      return this.doFetchContentAssist(context, this.xtextStateId as string);
+    }
+    log.trace('Editor delta', delta);
+    return await this.withUpdate(async () => {
+      const result = await this.webSocketClient.send({
+        requiredStateId: this.xtextStateId,
+        ...this.computeContentAssistParams(context),
+        ...delta,
+      });
+      if (isContentAssistResult(result)) {
+        return [result.stateId, result.entries];
+      }
+      if (isInvalidStateIdConflictResult(result)) {
+        const [newStateId] = await this.doFallbackToUpdateFullText();
+        if (context.aborted) {
+          return [newStateId, [] as IContentAssistEntry[]];
+        }
+        const entries = await this.doFetchContentAssist(context, newStateId);
+        return [newStateId, entries];
+      }
+      log.error('Unextpected content assist result with delta update', result);
+      throw new Error('Unexpexted content assist result with delta update');
+    });
+  }
+
+  private async doFetchContentAssist(context: CompletionContext, expectedStateId: string) {
+    const result = await this.webSocketClient.send({
+      requiredStateId: expectedStateId,
+      ...this.computeContentAssistParams(context),
+    });
+    if (isContentAssistResult(result) && result.stateId === expectedStateId) {
+      return result.entries;
+    }
+    log.error('Unexpected content assist result', result);
+    throw new Error('Unexpected content assist result');
+  }
+
+  private computeContentAssistParams(context: CompletionContext) {
+    const tokenBefore = context.tokenBefore(['QualifiedName']);
+    let selection = {};
+    if (tokenBefore !== null) {
+      selection = {
+        selectionStart: tokenBefore.from,
+        selectionEnd: tokenBefore.to,
+      };
+    }
+    return {
+      resource: this.resourceName,
+      serviceType: 'assist',
+      caretOffset: tokenBefore?.from || context.pos,
+      ...selection,
+    };
   }
 
   private computeDelta() {
     if (this.dirtyChanges.empty) {
-      return {};
+      return null;
     }
     let minFromA = Number.MAX_SAFE_INTEGER;
     let maxToA = 0;
@@ -202,34 +357,68 @@ export class XtextClient {
     };
   }
 
-  private async withUpdate(callback: () => Promise<string | UpdateAction>) {
+  private async withUpdate<T>(callback: () => Promise<[string, T]>): Promise<T> {
     if (this.pendingUpdate !== null) {
-      log.error('Another update is pending, will not perform update');
-      return;
+      throw new Error('Another update is pending, will not perform update');
     }
     this.pendingUpdate = this.dirtyChanges;
     this.dirtyChanges = this.newEmptyChangeDesc();
-    let newStateId: string | UpdateAction = UpdateAction.ForceReconnect;
+    let newStateId: string | null = null;
     try {
-      newStateId = await callback();
-    } catch (error) {
-      log.error('Error while updating state', error);
-    } finally {
-      if (typeof newStateId === 'string') {
-        this.xtextStateId = newStateId;
-        this.pendingUpdate = null;
+      let result: T;
+      [newStateId, result] = await callback();
+      this.xtextStateId = newStateId;
+      this.pendingUpdate = null;
+      // Copy `updateListeners` so that we don't get into a race condition
+      // if one of the listeners adds another listener.
+      const listeners = this.updateListeners;
+      this.updateListeners = [];
+      listeners.forEach((listener) => {
+        listener.resolve();
+      });
+      return result;
+    } catch (e) {
+      log.error('Error while update', e);
+      if (this.pendingUpdate === null) {
+        log.error('pendingUpdate was cleared during update');
       } else {
         this.dirtyChanges = this.pendingUpdate.composeDesc(this.dirtyChanges);
-        this.pendingUpdate = null;
-        switch (newStateId) {
-          case UpdateAction.ForceReconnect:
-            this.webSocketClient.forceReconnectOnError();
-            break;
-          case UpdateAction.FullTextUpdate:
-            await this.updateFullText();
-            break;
-        }
       }
+      this.pendingUpdate = null;
+      this.webSocketClient.forceReconnectOnError();
+      const listeners = this.updateListeners;
+      this.updateListeners = [];
+      listeners.forEach((listener) => {
+        listener.reject(e);
+      });
+      throw e;
+    }
+  }
+
+  private async prepareForDeltaUpdate() {
+    if (this.pendingUpdate === null) {
+      if (this.xtextStateId === null) {
+        return;
+      }
+      await this.updateFullText();
+    }
+    let nowMs = Date.now();
+    const endMs = nowMs + WAIT_FOR_UPDATE_TIMEOUT_MS;
+    while (this.pendingUpdate !== null && nowMs < endMs) {
+      const timeoutMs = endMs - nowMs;
+      const promise = new Promise((resolve, reject) => {
+        const task = new PendingTask(resolve, reject, timeoutMs);
+        this.updateListeners.push(task);
+      });
+      // We must keep waiting uptil the update has completed,
+      // so the tasks can't be started in parallel.
+      // eslint-disable-next-line no-await-in-loop
+      await promise;
+      nowMs = Date.now();
+    }
+    if (this.pendingUpdate !== null || this.xtextStateId === null) {
+      log.error('No successful update in', WAIT_FOR_UPDATE_TIMEOUT_MS, 'ms');
+      throw new Error('Failed to wait for successful update');
     }
   }
 }

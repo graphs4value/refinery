@@ -79,7 +79,12 @@ export class EditorStore {
     this.state = EditorState.create({
       doc: initialValue,
       extensions: [
-        autocompletion(),
+        autocompletion({
+          activateOnTyping: true,
+          override: [
+            (context) => this.client.contentAssist(context),
+          ],
+        }),
         classHighlightStyle.extension,
         closeBrackets(),
         bracketMatching(),
