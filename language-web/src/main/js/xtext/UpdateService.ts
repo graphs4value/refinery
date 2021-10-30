@@ -7,8 +7,8 @@ import { nanoid } from 'nanoid';
 
 import type { EditorStore } from '../editor/EditorStore';
 import type { XtextWebSocketClient } from './XtextWebSocketClient';
+import { ConditionVariable } from '../utils/ConditionVariable';
 import { getLogger } from '../utils/logger';
-import { PendingTask } from '../utils/PendingTask';
 import { Timer } from '../utils/Timer';
 import {
   IContentAssistEntry,
@@ -40,7 +40,10 @@ export class UpdateService {
 
   private webSocketClient: XtextWebSocketClient;
 
-  private updateListeners: PendingTask<void>[] = [];
+  private updatedCondition = new ConditionVariable(
+    () => this.pendingUpdate === null && this.xtextStateId !== null,
+    WAIT_FOR_UPDATE_TIMEOUT_MS,
+  );
 
   private idleUpdateTimer = new Timer(() => {
     this.handleIdleUpdate();
@@ -59,9 +62,8 @@ export class UpdateService {
   }
 
   onTransaction(transaction: Transaction): void {
-    const { changes } = transaction;
-    if (!changes.empty) {
-      this.dirtyChanges = this.dirtyChanges.composeDesc(changes.desc);
+    if (transaction.docChanged) {
+      this.dirtyChanges = this.dirtyChanges.composeDesc(transaction.changes.desc);
       this.idleUpdateTimer.reschedule();
     }
   }
@@ -221,13 +223,7 @@ export class UpdateService {
       [newStateId, result] = await callback();
       this.xtextStateId = newStateId;
       this.pendingUpdate = null;
-      // Copy `updateListeners` so that we don't get into a race condition
-      // if one of the listeners adds another listener.
-      const listeners = this.updateListeners;
-      this.updateListeners = [];
-      listeners.forEach((listener) => {
-        listener.resolve();
-      });
+      this.updatedCondition.notifyAll();
       return result;
     } catch (e) {
       log.error('Error while update', e);
@@ -238,39 +234,17 @@ export class UpdateService {
       }
       this.pendingUpdate = null;
       this.webSocketClient.forceReconnectOnError();
-      const listeners = this.updateListeners;
-      this.updateListeners = [];
-      listeners.forEach((listener) => {
-        listener.reject(e);
-      });
+      this.updatedCondition.rejectAll(e);
       throw e;
     }
   }
 
   private async prepareForDeltaUpdate() {
-    if (this.pendingUpdate === null) {
-      if (this.xtextStateId === null) {
-        return;
-      }
+    // If no update is pending, but the full text hasn't been uploaded to the server yet,
+    // we must start a full text upload.
+    if (this.pendingUpdate === null && this.xtextStateId === null) {
       await this.updateFullText();
     }
-    let nowMs = Date.now();
-    const endMs = nowMs + WAIT_FOR_UPDATE_TIMEOUT_MS;
-    while (this.pendingUpdate !== null && nowMs < endMs) {
-      const timeoutMs = endMs - nowMs;
-      const promise = new Promise((resolve, reject) => {
-        const task = new PendingTask(resolve, reject, timeoutMs);
-        this.updateListeners.push(task);
-      });
-      // We must keep waiting uptil the update has completed,
-      // so the tasks can't be started in parallel.
-      // eslint-disable-next-line no-await-in-loop
-      await promise;
-      nowMs = Date.now();
-    }
-    if (this.pendingUpdate !== null || this.xtextStateId === null) {
-      log.error('No successful update in', WAIT_FOR_UPDATE_TIMEOUT_MS, 'ms');
-      throw new Error('Failed to wait for successful update');
-    }
+    await this.updatedCondition.waitFor();
   }
 }

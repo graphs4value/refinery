@@ -3,7 +3,7 @@ import type {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
-import type { ChangeSet, Transaction } from '@codemirror/state';
+import type { Transaction } from '@codemirror/state';
 import escapeStringRegexp from 'escape-string-regexp';
 
 import type { UpdateService } from './UpdateService';
@@ -62,7 +62,7 @@ export class ContentAssistService {
   }
 
   onTransaction(transaction: Transaction): void {
-    if (this.shouldInvalidateCachedCompletion(transaction.changes)) {
+    if (this.shouldInvalidateCachedCompletion(transaction)) {
       this.lastCompletion = null;
     }
   }
@@ -142,8 +142,8 @@ export class ContentAssistService {
     return from >= transformedFrom && to <= transformedTo && span && span.exec(text);
   }
 
-  private shouldInvalidateCachedCompletion(changes: ChangeSet) {
-    if (changes.empty || this.lastCompletion === null) {
+  private shouldInvalidateCachedCompletion(transaction: Transaction) {
+    if (!transaction.docChanged || this.lastCompletion === null) {
       return false;
     }
     const { from: lastFrom, to: lastTo } = this.lastCompletion;
@@ -152,7 +152,7 @@ export class ContentAssistService {
     }
     const [transformedFrom, transformedTo] = this.mapRangeInclusive(lastFrom, lastTo);
     let invalidate = false;
-    changes.iterChangedRanges((fromA, toA) => {
+    transaction.changes.iterChangedRanges((fromA, toA) => {
       if (fromA < transformedFrom || toA > transformedTo) {
         invalidate = true;
       }
