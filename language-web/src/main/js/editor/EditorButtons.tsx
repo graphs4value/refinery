@@ -80,7 +80,7 @@ export const EditorButtons = observer(() => {
         <ToggleButton
           selected={editorStore.showLintPanel}
           onClick={() => editorStore.toggleLintPanel()}
-          aria-label={`${editorStore.errorCount} errors, ${editorStore.warningCount} warnings, ${editorStore.infoCount} info`}
+          aria-label="Show diagnostics panel"
           value="show-lint-panel"
         >
           {getLintIcon(editorStore.highestDiagnosticLevel)}
