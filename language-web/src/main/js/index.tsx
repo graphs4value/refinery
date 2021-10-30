@@ -9,27 +9,27 @@ import { ThemeProvider } from './theme/ThemeProvider';
 import '../css/index.scss';
 
 const initialValue = `class Family {
-  contains Person[] members
+    contains Person[] members
 }
 
 class Person {
-  Person[] children opposite parent
-  Person[0..1] parent opposite children
-  int age
-  TaxStatus taxStatus
+    Person[] children opposite parent
+    Person[0..1] parent opposite children
+    int age
+    TaxStatus taxStatus
 }
 
 enum TaxStatus {
-  child, student, adult, retired
+    child, student, adult, retired
 }
 
 % A child cannot have any dependents.
 pred invalidTaxStatus(Person p) <->
-  taxStatus(p, child),
-  children(p, _q)
-; taxStatus(p, retired),
-  parent(p, q),
-  !taxStatus(q, retired).
+    taxStatus(p, child),
+    children(p, _q)
+  ; taxStatus(p, retired),
+    parent(p, q),
+    !taxStatus(q, retired).
 
 unique family.
 Family(family).

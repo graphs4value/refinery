@@ -3,6 +3,7 @@ import {
   foldInside,
   foldNodeProp,
   indentNodeProp,
+  indentUnit,
   LanguageSupport,
   LRLanguage,
 } from '@codemirror/language';
@@ -79,5 +80,7 @@ const problemLanguage = LRLanguage.define({
 });
 
 export function problemLanguageSupport(): LanguageSupport {
-  return new LanguageSupport(problemLanguage);
+  return new LanguageSupport(problemLanguage, [
+    indentUnit.of('    '),
+  ]);
 }

@@ -78,7 +78,7 @@ export function indentDeclaration(context: TreeIndentContext): number {
 export function indentPredicate(context: TreeIndentContext): number {
   const clauseIndent = indentDeclarationStrategy(context, 1);
   if (/^\s+(;|\.)/.exec(context.textAfter) !== null) {
-    return clauseIndent - context.unit;
+    return clauseIndent - 2;
   }
   return clauseIndent;
 }
