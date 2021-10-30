@@ -133,6 +133,34 @@ export const EditorParent = styled('div')(({ theme }) => {
     '.cmt-variableName': {
       color: '#c8ae9d',
     },
+    '.cmt-problem-node': {
+      '&, & .cmt-variableName': {
+        color: theme.palette.text.secondary,
+      },
+    },
+    '.cmt-problem-unique': {
+      '&, & .cmt-variableName': {
+        color: theme.palette.text.primary,
+      },
+    },
+    '.cmt-problem-abstract, .cmt-problem-new': {
+      fontStyle: 'italic',
+    },
+    '.cmt-problem-containment': {
+      fontWeight: 700,
+    },
+    '.cmt-problem-error': {
+      '&, & .cmt-typeName': {
+        color: theme.palette.error.main,
+      },
+    },
+    '.cmt-problem-builtin': {
+      '&, & .cmt-typeName, & .cmt-atom, & .cmt-variableName': {
+        color: theme.palette.primary.main,
+        fontWeight: 400,
+        fontStyle: 'normal',
+      },
+    },
     '.cm-tooltip-autocomplete': {
       background: theme.palette.background.paper,
       boxShadow: `0px 2px 4px -1px rgb(0 0 0 / 20%),

@@ -6,6 +6,7 @@ import type { Transaction } from '@codemirror/state';
 
 import type { EditorStore } from '../editor/EditorStore';
 import { ContentAssistService } from './ContentAssistService';
+import { HighlightingService } from './HighlightingService';
 import { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
 import { ValidationService } from './ValidationService';
@@ -20,6 +21,8 @@ export class XtextClient {
 
   private contentAssistService: ContentAssistService;
 
+  private highlightingService: HighlightingService;
+
   private validationService: ValidationService;
 
   constructor(store: EditorStore) {
@@ -29,6 +32,7 @@ export class XtextClient {
     );
     this.updateService = new UpdateService(store, this.webSocketClient);
     this.contentAssistService = new ContentAssistService(this.updateService);
+    this.highlightingService = new HighlightingService(store, this.updateService);
     this.validationService = new ValidationService(store, this.updateService);
   }
 
@@ -50,11 +54,11 @@ export class XtextClient {
       await this.updateService.updateFullText();
     }
     switch (service) {
+      case 'highlight':
+        this.highlightingService.onPush(push);
+        return;
       case 'validate':
         this.validationService.onPush(push);
-        return;
-      case 'highlight':
-        // TODO
         return;
       default:
         log.error('Unknown push service:', service);

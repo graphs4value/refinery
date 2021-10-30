@@ -17,30 +17,20 @@ import com.google.inject.Inject;
 
 import tools.refinery.language.model.ProblemUtil;
 import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.EnumDeclaration;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.Parameter;
 import tools.refinery.language.model.problem.PredicateDefinition;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
-import tools.refinery.language.model.problem.Variable;
 
 public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighlightingCalculator {
-	private static final String BUILTIN_CLASS = "cm-keyword";
-	private static final String CLASS_CLASS = "problem-class";
-	private static final String ABSTRACT_CLASS = "problem-abstract";
-	private static final String ENUM_CLASS = "problem-enum";
-	private static final String REFERENCE_CLASS = "problem-reference";
-	private static final String CONTAINMENT_CLASS = "problem-containment";
-	private static final String PREDICATE_CLASS = "problem-predicate";
-	private static final String ERROR_CLASS = "problem-error";
-	private static final String NODE_CLASS = "problem-node";
-	private static final String UNIQUE_NODE_CLASS = "problem-unique-node";
-	private static final String NEW_NODE_CLASS = "problem-new-node";
-	private static final String PARAMETER_CLASS = "problem-parameter";
-	private static final String VARIABLE_CLASS = "problem-variable";
-	private static final String SINGLETON_VARIABLE_CLASS = "problem-singleton-variable";
+	private static final String BUILTIN_CLASS = "builtin";
+	private static final String ABSTRACT_CLASS = "abstract";
+	private static final String CONTAINMENT_CLASS = "containment";
+	private static final String ERROR_CLASS = "error";
+	private static final String NODE_CLASS = "node";
+	private static final String UNIQUE_NODE_CLASS = "unique";
+	private static final String NEW_NODE_CLASS = "new";
 
 	@Inject
 	private OperationCanceledManager operationCanceledManager;
@@ -57,7 +47,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (!(object instanceof NamedElement)) {
 			return;
 		}
-		String[] highlightClass = getHighlightClass(object);
+		String[] highlightClass = getHighlightClass(object, null);
 		if (highlightClass.length > 0) {
 			highlightFeature(acceptor, object, ProblemPackage.Literals.NAMED_ELEMENT__NAME, highlightClass);
 		}
@@ -80,7 +70,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	protected void highlightSingleValue(EObject object, EReference reference, IHighlightedPositionAcceptor acceptor) {
 		EObject valueObj = (EObject) object.eGet(reference);
-		String[] highlightClass = getHighlightClass(valueObj);
+		String[] highlightClass = getHighlightClass(valueObj, reference);
 		if (highlightClass.length > 0) {
 			highlightFeature(acceptor, object, reference, highlightClass);
 		}
@@ -94,55 +84,42 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		for (var i = 0; i < size; i++) {
 			EObject valueInList = values.get(i);
 			INode node = nodes.get(i);
-			String[] highlightClass = getHighlightClass(valueInList);
+			String[] highlightClass = getHighlightClass(valueInList, reference);
 			if (highlightClass.length > 0) {
 				highlightNode(acceptor, node, highlightClass);
 			}
 		}
 	}
 
-	protected String[] getHighlightClass(EObject eObject) {
+	protected String[] getHighlightClass(EObject eObject, EReference reference) {
 		if (ProblemUtil.isBuiltIn(eObject)) {
 			return new String[] { BUILTIN_CLASS };
 		}
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
 		if (eObject instanceof ClassDeclaration classDeclaration) {
-			classesBuilder.add(CLASS_CLASS);
 			if (classDeclaration.isAbstract()) {
 				classesBuilder.add(ABSTRACT_CLASS);
 			}
 		}
-		if (eObject instanceof EnumDeclaration) {
-			classesBuilder.add(ENUM_CLASS);
-		}
 		if (eObject instanceof ReferenceDeclaration referenceDeclaration) {
-			classesBuilder.add(REFERENCE_CLASS);
 			if (referenceDeclaration.isContainment()) {
 				classesBuilder.add(CONTAINMENT_CLASS);
 			}
 		}
 		if (eObject instanceof PredicateDefinition predicateDefinition) {
-			classesBuilder.add(PREDICATE_CLASS);
 			if (predicateDefinition.isError()) {
 				classesBuilder.add(ERROR_CLASS);
 			}
 		}
 		if (eObject instanceof Node node) {
-			classesBuilder.add(NODE_CLASS);
+			if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE) {
+				classesBuilder.add(NODE_CLASS);
+			}
 			if (ProblemUtil.isUniqueNode(node)) {
 				classesBuilder.add(UNIQUE_NODE_CLASS);
 			}
 			if (ProblemUtil.isNewNode(node)) {
 				classesBuilder.add(NEW_NODE_CLASS);
-			}
-		}
-		if (eObject instanceof Parameter) {
-			classesBuilder.add(PARAMETER_CLASS);
-		}
-		if (eObject instanceof Variable variable) {
-			classesBuilder.add(VARIABLE_CLASS);
-			if (ProblemUtil.isSingletonVariable(variable)) {
-				classesBuilder.add(SINGLETON_VARIABLE_CLASS);
 			}
 		}
 		List<String> classes = classesBuilder.build();

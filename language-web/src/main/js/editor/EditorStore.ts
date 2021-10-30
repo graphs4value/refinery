@@ -30,6 +30,7 @@ import {
   TransactionSpec,
 } from '@codemirror/state';
 import {
+  DecorationSet,
   drawSelection,
   EditorView,
   highlightActiveLine,
@@ -43,8 +44,9 @@ import {
 } from 'mobx';
 
 import { problemLanguageSupport } from '../language/problemLanguageSupport';
-import { getLogger } from '../utils/logger';
+import { semanticHighlighting, setSemanticHighlighting } from './semanticHighlighting';
 import type { ThemeStore } from '../theme/ThemeStore';
+import { getLogger } from '../utils/logger';
 import { XtextClient } from '../xtext/XtextClient';
 
 const log = getLogger('editor.EditorStore');
@@ -103,6 +105,7 @@ export class EditorStore {
           top: true,
           matchCase: true,
         }),
+        semanticHighlighting,
         // We add the gutters to `extensions` in the order we want them to appear.
         foldGutter(),
         lineNumbers(),
@@ -199,6 +202,10 @@ export class EditorStore {
       return 'info';
     }
     return null;
+  }
+
+  updateSemanticHighlighting(decorations: DecorationSet): void {
+    this.dispatch(setSemanticHighlighting(decorations));
   }
 
   /**

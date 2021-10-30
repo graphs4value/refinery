@@ -24,15 +24,20 @@ export class ValidationService {
     }
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
     const diagnostics: Diagnostic[] = [];
-    push.issues.forEach((issue) => {
-      if (issue.severity === 'ignore') {
+    push.issues.forEach(({
+      offset,
+      length,
+      severity,
+      description,
+    }) => {
+      if (severity === 'ignore') {
         return;
       }
       diagnostics.push({
-        from: allChanges.mapPos(issue.offset),
-        to: allChanges.mapPos(issue.offset + issue.length),
-        severity: issue.severity,
-        message: issue.description,
+        from: allChanges.mapPos(offset),
+        to: allChanges.mapPos(offset + length),
+        severity,
+        message: description,
       });
     });
     this.store.updateDiagnostics(diagnostics);

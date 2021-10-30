@@ -198,3 +198,29 @@ export function isContentAssistResult(result: unknown): result is IContentAssist
   return isDocumentStateResult(result)
     && isArrayOfType(contentAssistResult.entries, isContentAssistEntry);
 }
+
+export interface IHighlightingRegion {
+  offset: number;
+
+  length: number;
+
+  styleClasses: string[];
+}
+
+export function isHighlightingRegion(value: unknown): value is IHighlightingRegion {
+  const region = value as IHighlightingRegion;
+  return typeof region === 'object'
+    && typeof region.offset === 'number'
+    && typeof region.length === 'number'
+    && isArrayOfType(region.styleClasses, (s): s is string => typeof s === 'string');
+}
+
+export interface IHighlightingResult {
+  regions: IHighlightingRegion[];
+}
+
+export function isHighlightingResult(result: unknown): result is IHighlightingResult {
+  const highlightingResult = result as IHighlightingResult;
+  return typeof highlightingResult === 'object'
+    && isArrayOfType(highlightingResult.regions, isHighlightingRegion);
+}
