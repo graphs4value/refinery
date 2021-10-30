@@ -224,3 +224,16 @@ export function isHighlightingResult(result: unknown): result is IHighlightingRe
   return typeof highlightingResult === 'object'
     && isArrayOfType(highlightingResult.regions, isHighlightingRegion);
 }
+
+export interface IOccurrencesResult extends IDocumentStateResult {
+  writeRegions: ITextRegion[];
+
+  readRegions: ITextRegion[];
+}
+
+export function isOccurrencesResult(result: unknown): result is IOccurrencesResult {
+  const occurrencesResult = result as IOccurrencesResult;
+  return isDocumentStateResult(occurrencesResult)
+    && isArrayOfType(occurrencesResult.writeRegions, isTextRegion)
+    && isArrayOfType(occurrencesResult.readRegions, isTextRegion);
+}

@@ -7,6 +7,7 @@ import type { Transaction } from '@codemirror/state';
 import type { EditorStore } from '../editor/EditorStore';
 import { ContentAssistService } from './ContentAssistService';
 import { HighlightingService } from './HighlightingService';
+import { OccurrencesService } from './OccurrencesService';
 import { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
 import { ValidationService } from './ValidationService';
@@ -25,6 +26,8 @@ export class XtextClient {
 
   private validationService: ValidationService;
 
+  private occurrencesService: OccurrencesService;
+
   constructor(store: EditorStore) {
     this.webSocketClient = new XtextWebSocketClient(
       () => this.updateService.onConnect(),
@@ -34,6 +37,11 @@ export class XtextClient {
     this.contentAssistService = new ContentAssistService(this.updateService);
     this.highlightingService = new HighlightingService(store, this.updateService);
     this.validationService = new ValidationService(store, this.updateService);
+    this.occurrencesService = new OccurrencesService(
+      store,
+      this.webSocketClient,
+      this.updateService,
+    );
   }
 
   onTransaction(transaction: Transaction): void {
@@ -41,6 +49,7 @@ export class XtextClient {
     // _before_ the current edit, so we call it before `updateService`.
     this.contentAssistService.onTransaction(transaction);
     this.updateService.onTransaction(transaction);
+    this.occurrencesService.onTransaction(transaction);
   }
 
   private async onPush(resource: string, stateId: string, service: string, push: unknown) {

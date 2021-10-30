@@ -30,7 +30,6 @@ import {
   TransactionSpec,
 } from '@codemirror/state';
 import {
-  DecorationSet,
   drawSelection,
   EditorView,
   highlightActiveLine,
@@ -43,8 +42,13 @@ import {
   reaction,
 } from 'mobx';
 
+import { findOccurrences, IOccurrence, setOccurrences } from './findOccurrences';
 import { problemLanguageSupport } from '../language/problemLanguageSupport';
-import { semanticHighlighting, setSemanticHighlighting } from './semanticHighlighting';
+import {
+  IHighlightRange,
+  semanticHighlighting,
+  setSemanticHighlighting,
+} from './semanticHighlighting';
 import type { ThemeStore } from '../theme/ThemeStore';
 import { getLogger } from '../utils/logger';
 import { XtextClient } from '../xtext/XtextClient';
@@ -95,6 +99,7 @@ export class EditorStore {
         EditorView.theme({}, {
           dark: this.themeStore.darkMode,
         }),
+        findOccurrences,
         highlightActiveLine(),
         highlightActiveLineGutter(),
         highlightSpecialChars(),
@@ -204,8 +209,12 @@ export class EditorStore {
     return null;
   }
 
-  updateSemanticHighlighting(decorations: DecorationSet): void {
-    this.dispatch(setSemanticHighlighting(decorations));
+  updateSemanticHighlighting(ranges: IHighlightRange[]): void {
+    this.dispatch(setSemanticHighlighting(ranges));
+  }
+
+  updateOccurrences(write: IOccurrence[], read: IOccurrence[]): void {
+    this.dispatch(setOccurrences(write, read));
   }
 
   /**

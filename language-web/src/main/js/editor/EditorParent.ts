@@ -190,5 +190,11 @@ export const EditorParent = styled('div')(({ theme }) => {
       textAlign: 'center',
     },
     ...codeMirrorLintStyle,
+    '.cm-problem-write': {
+      background: 'rgba(255, 255, 128, 0.3)',
+    },
+    '.cm-problem-read': {
+      background: 'rgba(255, 255, 255, 0.15)',
+    },
   };
 });

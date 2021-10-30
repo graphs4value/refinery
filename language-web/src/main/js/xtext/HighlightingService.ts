@@ -1,7 +1,5 @@
-import { Decoration } from '@codemirror/view';
-import { Range, RangeSet } from '@codemirror/rangeset';
-
 import type { EditorStore } from '../editor/EditorStore';
+import type { IHighlightRange } from '../editor/semanticHighlighting';
 import type { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
 import { isHighlightingResult } from './xtextServiceResults';
@@ -24,7 +22,7 @@ export class HighlightingService {
       return;
     }
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
-    const decorations: Range<Decoration>[] = [];
+    const ranges: IHighlightRange[] = [];
     push.regions.forEach(({ offset, length, styleClasses }) => {
       if (styleClasses.length === 0) {
         return;
@@ -34,10 +32,12 @@ export class HighlightingService {
       if (to <= from) {
         return;
       }
-      decorations.push(Decoration.mark({
-        class: styleClasses.map((c) => `cmt-problem-${c}`).join(' '),
-      }).range(from, to));
+      ranges.push({
+        from,
+        to,
+        classes: styleClasses,
+      });
     });
-    this.store.updateSemanticHighlighting(RangeSet.of(decorations, true));
+    this.store.updateSemanticHighlighting(ranges);
   }
 }
