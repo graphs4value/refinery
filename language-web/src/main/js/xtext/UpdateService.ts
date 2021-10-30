@@ -1,132 +1,71 @@
 import {
-  Completion,
-  CompletionContext,
-  CompletionResult,
-} from '@codemirror/autocomplete';
-import type { Diagnostic } from '@codemirror/lint';
-import {
   ChangeDesc,
   ChangeSet,
   Transaction,
 } from '@codemirror/state';
 import { nanoid } from 'nanoid';
 
-import type { EditorStore } from './EditorStore';
+import type { EditorStore } from '../editor/EditorStore';
 import { getLogger } from '../logging';
+import type { XtextWebSocketClient } from './XtextWebSocketClient';
+import { PendingTask } from '../utils/PendingTask';
 import { Timer } from '../utils/Timer';
 import {
   IContentAssistEntry,
   isContentAssistResult,
   isDocumentStateResult,
   isInvalidStateIdConflictResult,
-  isValidationResult,
 } from './xtextServiceResults';
-import { XtextWebSocketClient } from './XtextWebSocketClient';
-import { PendingTask } from '../utils/PendingTask';
 
 const UPDATE_TIMEOUT_MS = 500;
 
 const WAIT_FOR_UPDATE_TIMEOUT_MS = 1000;
 
-const log = getLogger('XtextClient');
+const log = getLogger('xtext.UpdateService');
 
-export class XtextClient {
+export interface IAbortSignal {
+  aborted: boolean;
+}
+
+export class UpdateService {
   resourceName: string;
-
-  webSocketClient: XtextWebSocketClient;
 
   xtextStateId: string | null = null;
 
-  pendingUpdate: ChangeDesc | null;
+  private store: EditorStore;
 
-  dirtyChanges: ChangeDesc;
+  private pendingUpdate: ChangeDesc | null = null;
 
-  lastCompletion: CompletionResult | null = null;
+  private dirtyChanges: ChangeDesc;
 
-  updateListeners: PendingTask<void>[] = [];
+  private webSocketClient: XtextWebSocketClient;
 
-  updateTimer = new Timer(() => {
-    this.handleUpdate();
+  private updateListeners: PendingTask<void>[] = [];
+
+  private idleUpdateTimer = new Timer(() => {
+    this.handleIdleUpdate();
   }, UPDATE_TIMEOUT_MS);
 
-  store: EditorStore;
-
-  constructor(store: EditorStore) {
+  constructor(store: EditorStore, webSocketClient: XtextWebSocketClient) {
     this.resourceName = `${nanoid(7)}.problem`;
-    this.pendingUpdate = null;
     this.store = store;
     this.dirtyChanges = this.newEmptyChangeDesc();
-    this.webSocketClient = new XtextWebSocketClient(
-      async () => {
-        this.xtextStateId = null;
-        await this.updateFullText();
-      },
-      async (resource, stateId, service, push) => {
-        await this.onPush(resource, stateId, service, push);
-      },
-    );
+    this.webSocketClient = webSocketClient;
   }
 
   onTransaction(transaction: Transaction): void {
     const { changes } = transaction;
     if (!changes.empty) {
-      if (this.shouldInvalidateCachedCompletion(transaction)) {
-        log.trace('Invalidating cached completions');
-        this.lastCompletion = null;
-      }
       this.dirtyChanges = this.dirtyChanges.composeDesc(changes.desc);
-      this.updateTimer.reschedule();
+      this.idleUpdateTimer.reschedule();
     }
   }
 
-  private async onPush(resource: string, stateId: string, service: string, push: unknown) {
-    if (resource !== this.resourceName) {
-      log.error('Unknown resource name: expected:', this.resourceName, 'got:', resource);
-      return;
-    }
-    if (stateId !== this.xtextStateId) {
-      log.error('Unexpected xtext state id: expected:', this.xtextStateId, 'got:', resource);
-      await this.updateFullText();
-    }
-    switch (service) {
-      case 'validate':
-        this.onValidate(push);
-        return;
-      case 'highlight':
-        // TODO
-        return;
-      default:
-        log.error('Unknown push service:', service);
-        break;
-    }
-  }
-
-  private onValidate(push: unknown) {
-    if (!isValidationResult(push)) {
-      log.error('Invalid validation result', push);
-      return;
-    }
-    const allChanges = this.computeChangesSinceLastUpdate();
-    const diagnostics: Diagnostic[] = [];
-    push.issues.forEach((issue) => {
-      if (issue.severity === 'ignore') {
-        return;
-      }
-      diagnostics.push({
-        from: allChanges.mapPos(issue.offset),
-        to: allChanges.mapPos(issue.offset + issue.length),
-        severity: issue.severity,
-        message: issue.description,
-      });
-    });
-    this.store.updateDiagnostics(diagnostics);
-  }
-
-  private computeChangesSinceLastUpdate() {
+  computeChangesSinceLastUpdate(): ChangeDesc {
     return this.pendingUpdate?.composeDesc(this.dirtyChanges) || this.dirtyChanges;
   }
 
-  private handleUpdate() {
+  private handleIdleUpdate() {
     if (!this.webSocketClient.isOpen || this.dirtyChanges.empty) {
       return;
     }
@@ -135,7 +74,7 @@ export class XtextClient {
         log.error('Unexpected error during scheduled update', error);
       });
     }
-    this.updateTimer.reschedule();
+    this.idleUpdateTimer.reschedule();
   }
 
   private newEmptyChangeDesc() {
@@ -143,7 +82,7 @@ export class XtextClient {
     return changeSet.desc;
   }
 
-  private async updateFullText() {
+  async updateFullText(): Promise<void> {
     await this.withUpdate(() => this.doUpdateFullText());
   }
 
@@ -196,99 +135,24 @@ export class XtextClient {
     return this.doUpdateFullText();
   }
 
-  async contentAssist(context: CompletionContext): Promise<CompletionResult> {
-    const tokenBefore = context.tokenBefore(['QualifiedName']);
-    if (tokenBefore === null && !context.explicit) {
-      return {
-        from: context.pos,
-        options: [],
-      };
-    }
-    const range = {
-      from: tokenBefore?.from || context.pos,
-      to: tokenBefore?.to || context.pos,
-    };
-    if (this.shouldReturnCachedCompletion(tokenBefore)) {
-      log.trace('Returning cached completion result');
-      // Postcondition of `shouldReturnCachedCompletion`: `lastCompletion !== null`
-      return {
-        ...this.lastCompletion as CompletionResult,
-        ...range,
-      };
-    }
-    const entries = await this.fetchContentAssist(context);
-    if (context.aborted) {
-      return {
-        ...range,
-        options: [],
-      };
-    }
-    const options: Completion[] = [];
-    entries.forEach((entry) => {
-      options.push({
-        label: entry.proposal,
-        detail: entry.description,
-        info: entry.documentation,
-        type: entry.kind?.toLowerCase(),
-        boost: entry.kind === 'KEYWORD' ? -90 : 0,
-      });
-    });
-    log.debug('Fetched', options.length, 'completions from server');
-    this.lastCompletion = {
-      ...range,
-      options,
-      span: /[a-zA-Z0-9_:]/,
-    };
-    return this.lastCompletion;
-  }
-
-  private shouldReturnCachedCompletion(
-    token: { from: number, to: number, text: string } | null,
-  ) {
-    if (token === null || this.lastCompletion === null) {
-      return false;
-    }
-    const { from, to, text } = token;
-    const { from: lastFrom, to: lastTo, span } = this.lastCompletion;
-    if (!lastTo) {
-      return true;
-    }
-    const transformedFrom = this.dirtyChanges.mapPos(lastFrom);
-    const transformedTo = this.dirtyChanges.mapPos(lastTo, 1);
-    return from >= transformedFrom && to <= transformedTo && span && span.exec(text);
-  }
-
-  private shouldInvalidateCachedCompletion(transaction: Transaction) {
-    if (this.lastCompletion === null) {
-      return false;
-    }
-    const { from: lastFrom, to: lastTo } = this.lastCompletion;
-    if (!lastTo) {
-      return true;
-    }
-    const transformedFrom = this.dirtyChanges.mapPos(lastFrom);
-    const transformedTo = this.dirtyChanges.mapPos(lastTo, 1);
-    let invalidate = false;
-    transaction.changes.iterChangedRanges((fromA, toA) => {
-      if (fromA < transformedFrom || toA > transformedTo) {
-        invalidate = true;
-      }
-    });
-    return invalidate;
-  }
-
-  private async fetchContentAssist(context: CompletionContext) {
+  async fetchContentAssist(
+    params: Record<string, unknown>,
+    signal: IAbortSignal,
+  ): Promise<IContentAssistEntry[]> {
     await this.prepareForDeltaUpdate();
+    if (signal.aborted) {
+      return [];
+    }
     const delta = this.computeDelta();
     if (delta === null) {
       // Poscondition of `prepareForDeltaUpdate`: `xtextStateId !== null`
-      return this.doFetchContentAssist(context, this.xtextStateId as string);
+      return this.doFetchContentAssist(params, this.xtextStateId as string);
     }
     log.trace('Editor delta', delta);
-    return await this.withUpdate(async () => {
+    return this.withUpdate(async () => {
       const result = await this.webSocketClient.send({
+        ...params,
         requiredStateId: this.xtextStateId,
-        ...this.computeContentAssistParams(context),
         ...delta,
       });
       if (isContentAssistResult(result)) {
@@ -296,10 +160,10 @@ export class XtextClient {
       }
       if (isInvalidStateIdConflictResult(result)) {
         const [newStateId] = await this.doFallbackToUpdateFullText();
-        if (context.aborted) {
-          return [newStateId, [] as IContentAssistEntry[]];
+        if (signal.aborted) {
+          return [newStateId, []];
         }
-        const entries = await this.doFetchContentAssist(context, newStateId);
+        const entries = await this.doFetchContentAssist(params, newStateId);
         return [newStateId, entries];
       }
       log.error('Unextpected content assist result with delta update', result);
@@ -307,33 +171,16 @@ export class XtextClient {
     });
   }
 
-  private async doFetchContentAssist(context: CompletionContext, expectedStateId: string) {
+  private async doFetchContentAssist(params: Record<string, unknown>, expectedStateId: string) {
     const result = await this.webSocketClient.send({
+      ...params,
       requiredStateId: expectedStateId,
-      ...this.computeContentAssistParams(context),
     });
     if (isContentAssistResult(result) && result.stateId === expectedStateId) {
       return result.entries;
     }
     log.error('Unexpected content assist result', result);
     throw new Error('Unexpected content assist result');
-  }
-
-  private computeContentAssistParams(context: CompletionContext) {
-    const tokenBefore = context.tokenBefore(['QualifiedName']);
-    let selection = {};
-    if (tokenBefore !== null) {
-      selection = {
-        selectionStart: tokenBefore.from,
-        selectionEnd: tokenBefore.to,
-      };
-    }
-    return {
-      resource: this.resourceName,
-      serviceType: 'assist',
-      caretOffset: tokenBefore?.from || context.pos,
-      ...selection,
-    };
   }
 
   private computeDelta() {

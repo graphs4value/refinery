@@ -47,7 +47,7 @@ def installFrontend = tasks.named('installFrontend')
 
 def generateLezerGrammar = tasks.register('generateLezerGrammar', RunNpmYarn) {
 	dependsOn installFrontend
-	inputs.file('src/main/js/editor/problem.grammar')
+	inputs.file('src/main/js/language/problem.grammar')
 	inputs.files('package.json', 'yarn.lock')
 	outputs.file "${buildDir}/generated/sources/lezer/problem.ts"
 	outputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
@@ -152,10 +152,6 @@ sonarqube.properties {
 		'src/main/css',
 		'src/main/html',
 		'src/main/js',
-	]
-	properties['sonar.exclusions'] += [
-		'src/main/css/xtext/**',
-		'src/main/js/xtext/**',
 	]
 	property 'sonar.nodejs.executable', "${nodeDirectory}/bin/node"
 	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"

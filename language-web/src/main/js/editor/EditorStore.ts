@@ -42,10 +42,10 @@ import {
   reaction,
 } from 'mobx';
 
+import { problemLanguageSupport } from '../language/problemLanguageSupport';
 import { getLogger } from '../logging';
-import { problemLanguageSupport } from './problemLanguageSupport';
 import type { ThemeStore } from '../theme/ThemeStore';
-import { XtextClient } from './XtextClient';
+import { XtextClient } from '../xtext/XtextClient';
 
 const log = getLogger('EditorStore');
 

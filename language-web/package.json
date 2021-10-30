@@ -4,7 +4,7 @@
   "description": "Web frontend for VIATRA-Generator",
   "main": "index.js",
   "scripts": {
-    "assemble:lezer": "lezer-generator src/main/js/editor/problem.grammar -o build/generated/sources/lezer/problem.ts",
+    "assemble:lezer": "lezer-generator src/main/js/language/problem.grammar -o build/generated/sources/lezer/problem.ts",
     "assemble:webpack": "webpack --node-env production",
     "serve": "webpack serve --node-env development --hot",
     "check": "yarn run check:eslint && yarn run check:stylelint",

@@ -28,7 +28,6 @@ const resolveSources = sources => path.resolve(__dirname, 'src', sources);
 const mainJsSources = resolveSources('main/js');
 const babelLoaderFilters = {
   include: [mainJsSources],
-  exclude: [resolveSources('main/js/xtext')],
 };
 const babelPresets = [
   [
@@ -151,9 +150,6 @@ module.exports = {
       mainJsSources,
     ],
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    alias: {
-      images: resolveSources('main/images'),
-    },
   },
   devtool: devMode ? 'inline-source-map' : 'source-map',
   optimization: {
