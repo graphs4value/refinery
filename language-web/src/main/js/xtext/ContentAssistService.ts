@@ -14,20 +14,28 @@ const PROPOSALS_LIMIT = 1000;
 
 const IDENTIFIER_REGEXP_STR = '[a-zA-Z0-9_]*';
 
+const HIGH_PRIORITY_KEYWORDS = ['<->'];
+
+const QUALIFIED_NAME_SEPARATOR_REGEXP = /::/g;
+
 const log = getLogger('xtext.ContentAssistService');
 
 function createCompletion(entry: IContentAssistEntry): Completion {
   let boost;
   switch (entry.kind) {
     case 'KEYWORD':
-      boost = -99;
+      // Some hard-to-type operators should be on top.
+      boost = HIGH_PRIORITY_KEYWORDS.includes(entry.proposal) ? 10 : -99;
       break;
     case 'TEXT':
     case 'SNIPPET':
       boost = -90;
       break;
-    default:
-      boost = 0;
+    default: {
+      // Penalize qualified names (vs available unqualified names).
+      const extraSegments = entry.proposal.match(QUALIFIED_NAME_SEPARATOR_REGEXP)?.length || 0;
+      boost = Math.max(-5 * extraSegments, -50);
+    }
       break;
   }
   return {
