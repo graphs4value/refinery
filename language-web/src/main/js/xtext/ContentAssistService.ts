@@ -6,8 +6,8 @@ import type {
 import type { ChangeSet, Transaction } from '@codemirror/state';
 import escapeStringRegexp from 'escape-string-regexp';
 
-import { getLogger } from '../logging';
 import type { UpdateService } from './UpdateService';
+import { getLogger } from '../utils/logger';
 import type { IContentAssistEntry } from './xtextServiceResults';
 
 const PROPOSALS_LIMIT = 1000;

@@ -6,8 +6,8 @@ import {
 import { nanoid } from 'nanoid';
 
 import type { EditorStore } from '../editor/EditorStore';
-import { getLogger } from '../logging';
 import type { XtextWebSocketClient } from './XtextWebSocketClient';
+import { getLogger } from '../utils/logger';
 import { PendingTask } from '../utils/PendingTask';
 import { Timer } from '../utils/Timer';
 import {

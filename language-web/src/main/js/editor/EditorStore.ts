@@ -43,11 +43,11 @@ import {
 } from 'mobx';
 
 import { problemLanguageSupport } from '../language/problemLanguageSupport';
-import { getLogger } from '../logging';
+import { getLogger } from '../utils/logger';
 import type { ThemeStore } from '../theme/ThemeStore';
 import { XtextClient } from '../xtext/XtextClient';
 
-const log = getLogger('EditorStore');
+const log = getLogger('editor.EditorStore');
 
 export class EditorStore {
   themeStore;

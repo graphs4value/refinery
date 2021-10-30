@@ -10,10 +10,10 @@ import React, {
 } from 'react';
 
 import { EditorParent } from './EditorParent';
-import { getLogger } from '../logging';
 import { useRootStore } from '../RootStore';
+import { getLogger } from '../utils/logger';
 
-const log = getLogger('EditorArea');
+const log = getLogger('editor.EditorArea');
 
 function usePanel(
   panelId: string,

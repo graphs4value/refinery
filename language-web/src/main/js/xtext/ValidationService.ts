@@ -1,8 +1,8 @@
 import type { Diagnostic } from '@codemirror/lint';
 
 import type { EditorStore } from '../editor/EditorStore';
-import { getLogger } from '../logging';
 import type { UpdateService } from './UpdateService';
+import { getLogger } from '../utils/logger';
 import { isValidationResult } from './xtextServiceResults';
 
 const log = getLogger('xtext.ValidationService');

@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-import { getLogger } from '../logging';
+import { getLogger } from '../utils/logger';
 import { PendingTask } from '../utils/PendingTask';
 import { Timer } from '../utils/Timer';
 import {
@@ -25,7 +25,7 @@ const PING_TIMEOUT_MS = 10 * 1000;
 
 const REQUEST_TIMEOUT_MS = 1000;
 
-const log = getLogger('XtextWebSocketClient');
+const log = getLogger('xtext.XtextWebSocketClient');
 
 type ReconnectHandler = () => Promise<void>;
 

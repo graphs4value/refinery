@@ -6,8 +6,8 @@ import type { Transaction } from '@codemirror/state';
 
 import type { EditorStore } from '../editor/EditorStore';
 import { ContentAssistService } from './ContentAssistService';
-import { getLogger } from '../logging';
 import { UpdateService } from './UpdateService';
+import { getLogger } from '../utils/logger';
 import { ValidationService } from './ValidationService';
 import { XtextWebSocketClient } from './XtextWebSocketClient';
 
