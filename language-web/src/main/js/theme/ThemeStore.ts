@@ -42,6 +42,9 @@ export class ThemeStore {
         secondary: {
           main: themeData.secondary,
         },
+        error: {
+          main: themeData.secondary,
+        },
         text: {
           primary: themeData.foregroundHighlight,
           secondary: themeData.foreground,

@@ -77,11 +77,36 @@ export const EditorParent = styled('div')(({ theme }) => {
       color: theme.palette.text.secondary,
     },
     '.cm-panel': {
+      '&, & button, & input': {
+        fontFamily: '"Roboto","Helvetica","Arial",sans-serif',
+      },
       background: theme.palette.background.paper,
       borderTop: `1px solid ${theme.palette.divider}`,
       'button[name="close"]': {
+        background: 'transparent',
         color: theme.palette.text.secondary,
         cursor: 'pointer',
+      },
+    },
+    '.cm-panel.cm-panel-lint': {
+      'button[name="close"]': {
+        // Close button interferes with scrollbar, so we better hide it.
+        // The panel can still be closed from the toolbar.
+        display: 'none',
+      },
+      ul: {
+        li: {
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          cursor: 'pointer',
+        },
+        '[aria-selected]': {
+          background: '#3e4453',
+          color: theme.palette.text.primary,
+        },
+        '&:focus [aria-selected]': {
+          background: theme.palette.primary.main,
+          color: theme.palette.primary.contrastText,
+        },
       },
     },
     '.cm-foldPlaceholder': {
@@ -107,6 +132,28 @@ export const EditorParent = styled('div')(({ theme }) => {
     },
     '.cmt-variableName': {
       color: '#c8ae9d',
+    },
+    '.cm-tooltip-autocomplete': {
+      background: theme.palette.background.paper,
+      boxShadow: `0px 2px 4px -1px rgb(0 0 0 / 20%),
+        0px 4px 5px 0px rgb(0 0 0 / 14%),
+        0px 1px 10px 0px rgb(0 0 0 / 12%)`,
+      '.cm-completionIcon': {
+        color: theme.palette.text.secondary,
+      },
+      '.cm-completionLabel': {
+        color: theme.palette.text.primary,
+      },
+      '.cm-completionDetail': {
+        color: theme.palette.text.secondary,
+        fontStyle: 'normal',
+      },
+      '[aria-selected]': {
+        background: `${theme.palette.primary.main} !important`,
+        '.cm-completionIcon, .cm-completionLabel, .cm-completionDetail': {
+          color: theme.palette.primary.contrastText,
+        },
+      },
     },
     '.cm-completionIcon': {
       width: 16,
