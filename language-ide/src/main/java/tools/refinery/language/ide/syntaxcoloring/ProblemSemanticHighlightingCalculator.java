@@ -96,20 +96,14 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			return new String[] { BUILTIN_CLASS };
 		}
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
-		if (eObject instanceof ClassDeclaration classDeclaration) {
-			if (classDeclaration.isAbstract()) {
-				classesBuilder.add(ABSTRACT_CLASS);
-			}
+		if (eObject instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
+			classesBuilder.add(ABSTRACT_CLASS);
 		}
-		if (eObject instanceof ReferenceDeclaration referenceDeclaration) {
-			if (referenceDeclaration.isContainment()) {
-				classesBuilder.add(CONTAINMENT_CLASS);
-			}
+		if (eObject instanceof ReferenceDeclaration referenceDeclaration && referenceDeclaration.isContainment()) {
+			classesBuilder.add(CONTAINMENT_CLASS);
 		}
-		if (eObject instanceof PredicateDefinition predicateDefinition) {
-			if (predicateDefinition.isError()) {
-				classesBuilder.add(ERROR_CLASS);
-			}
+		if (eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError()) {
+			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {
 			if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE) {
