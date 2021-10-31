@@ -95,8 +95,9 @@ export const EditorArea = observer(() => {
 
   useEffect(() => {
     if (editorParentRef.current === null) {
-      // Nothing to clean up.
-      return () => {};
+      return () => {
+        // Nothing to clean up.
+      };
     }
 
     const editorView = new EditorView({
