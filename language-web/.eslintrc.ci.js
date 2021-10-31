@@ -28,5 +28,6 @@ module.exports = {
   ignorePatterns: [
     '*.js',
     'build/**/*',
+    'node_modules/**/*',
   ],
 };
