@@ -1,5 +1,6 @@
 import type { Diagnostic } from '@codemirror/lint';
 import { observer } from 'mobx-react-lite';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -38,26 +39,27 @@ export const EditorButtons = observer(() => {
       direction="row"
       spacing={1}
     >
-      <ToggleButtonGroup
-        size="small"
+      <Stack
+        direction="row"
+        alignItems="center"
       >
-        <ToggleButton
+        <IconButton
           disabled={!editorStore.canUndo}
           onClick={() => editorStore.undo()}
           aria-label="Undo"
           value="undo"
         >
           <UndoIcon fontSize="small" />
-        </ToggleButton>
-        <ToggleButton
+        </IconButton>
+        <IconButton
           disabled={!editorStore.canRedo}
           onClick={() => editorStore.redo()}
           aria-label="Redo"
           value="redo"
         >
           <RedoIcon fontSize="small" />
-        </ToggleButton>
-      </ToggleButtonGroup>
+        </IconButton>
+      </Stack>
       <ToggleButtonGroup
         size="small"
       >
