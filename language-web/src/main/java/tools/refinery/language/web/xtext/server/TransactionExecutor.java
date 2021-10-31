@@ -1,7 +1,9 @@
 package tools.refinery.language.web.xtext.server;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
@@ -13,6 +15,8 @@ import org.eclipse.xtext.web.server.ISession;
 import org.eclipse.xtext.web.server.InvalidRequestException;
 import org.eclipse.xtext.web.server.InvalidRequestException.UnknownLanguageException;
 import org.eclipse.xtext.web.server.XtextServiceDispatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.inject.Injector;
@@ -27,6 +31,8 @@ import tools.refinery.language.web.xtext.server.push.PushWebDocument;
 import tools.refinery.language.web.xtext.servlet.SimpleServiceContext;
 
 public class TransactionExecutor implements IDisposable, PrecomputationListener {
+	private static final Logger LOG = LoggerFactory.getLogger(TransactionExecutor.class);
+
 	private final ISession session;
 
 	private final IResourceServiceProvider.Registry resourceServiceProviderRegistry;
@@ -34,6 +40,12 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 	private final Map<String, WeakReference<PushWebDocument>> subscriptions = new HashMap<>();
 
 	private ResponseHandler responseHandler;
+
+	private Object callPendingLock = new Object();
+
+	private boolean callPending;
+
+	private List<XtextWebPushMessage> pendingPushMessages = new ArrayList<>();
 
 	public TransactionExecutor(ISession session, IResourceServiceProvider.Registry resourceServiceProviderRegistry) {
 		this.session = session;
@@ -51,6 +63,15 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 			responseHandler.onResponse(new XtextWebOkResponse(request, new PongResult(ping)));
 			return;
 		}
+		synchronized (callPendingLock) {
+			if (callPending) {
+				LOG.error("Reentrant request detected");
+			}
+			if (!pendingPushMessages.isEmpty()) {
+				LOG.error("{} push messages got stuck without a pending request", pendingPushMessages.size());
+			}
+			callPending = true;
+		}
 		try {
 			var injector = getInjector(serviceContext);
 			var serviceDispatcher = injector.getInstance(XtextServiceDispatcher.class);
@@ -61,13 +82,36 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 			responseHandler.onResponse(new XtextWebErrorResponse(request, XtextWebErrorKind.REQUEST_ERROR, e));
 		} catch (RuntimeException e) {
 			responseHandler.onResponse(new XtextWebErrorResponse(request, XtextWebErrorKind.SERVER_ERROR, e));
+		} finally {
+			synchronized (callPendingLock) {
+				for (var message : pendingPushMessages) {
+					try {
+						responseHandler.onResponse(message);
+					} catch (ResponseHandlerException | RuntimeException e) {
+						LOG.error("Error while flushing push message", e);
+					}
+				}
+				pendingPushMessages.clear();
+				callPending = false;
+			}
 		}
 	}
 
 	@Override
 	public void onPrecomputedServiceResult(String resourceId, String stateId, String serviceName,
 			IServiceResult serviceResult) throws ResponseHandlerException {
-		responseHandler.onResponse(new XtextWebPushMessage(resourceId, stateId, serviceName, serviceResult));
+		var message = new XtextWebPushMessage(resourceId, stateId, serviceName, serviceResult);
+		synchronized (callPendingLock) {
+			// If we're currently responding to a call we must delay any push messages until
+			// the reply is sent, because push messages relating to the new state id must be
+			// sent after the response with the new state id so that the client knows about
+			// the new state when it receives the push message.
+			if (callPending) {
+				pendingPushMessages.add(message);
+			} else {
+				responseHandler.onResponse(message);
+			}
+		}
 	}
 
 	@Override
