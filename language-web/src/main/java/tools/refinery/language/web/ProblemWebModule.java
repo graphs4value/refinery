@@ -3,9 +3,33 @@
  */
 package tools.refinery.language.web;
 
+import org.eclipse.xtext.web.server.XtextServiceDispatcher;
+import org.eclipse.xtext.web.server.model.IWebDocumentProvider;
+import org.eclipse.xtext.web.server.model.XtextWebDocumentAccess;
+import org.eclipse.xtext.web.server.occurrences.OccurrencesService;
+
+import tools.refinery.language.web.occurrences.ProblemOccurrencesService;
+import tools.refinery.language.web.xtext.server.push.PushServiceDispatcher;
+import tools.refinery.language.web.xtext.server.push.PushWebDocumentAccess;
+import tools.refinery.language.web.xtext.server.push.PushWebDocumentProvider;
 
 /**
  * Use this class to register additional components to be used within the web application.
  */
 public class ProblemWebModule extends AbstractProblemWebModule {
+	public Class<? extends IWebDocumentProvider> bindIWebDocumentProvider() {
+		return PushWebDocumentProvider.class;
+	}
+	
+	public Class<? extends XtextWebDocumentAccess> bindXtextWebDocumentAccess() {
+		return PushWebDocumentAccess.class;
+	}
+	
+	public Class<? extends XtextServiceDispatcher> bindXtextServiceDispatcher() {
+		return PushServiceDispatcher.class;
+	}
+	
+	public Class<? extends OccurrencesService> bindOccurrencesService() {
+		return ProblemOccurrencesService.class;
+	}
 }

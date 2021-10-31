@@ -3,16 +3,22 @@
  */
 package tools.refinery.language.ide;
 
+import org.eclipse.xtext.ide.editor.contentassist.IPrefixMatcher;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 
+import tools.refinery.language.ide.contentassist.FuzzyMatcher;
 import tools.refinery.language.ide.syntaxcoloring.ProblemSemanticHighlightingCalculator;
 
 /**
  * Use this class to register ide components.
  */
 public class ProblemIdeModule extends AbstractProblemIdeModule {
-
 	public Class<? extends ISemanticHighlightingCalculator> bindISemanticHighlightingCalculator() {
 		return ProblemSemanticHighlightingCalculator.class;
+	}
+	
+	@Override
+	public Class<? extends IPrefixMatcher> bindIPrefixMatcher() {
+		return FuzzyMatcher.class;
 	}
 }

@@ -42,6 +42,9 @@ export class ThemeStore {
         secondary: {
           main: themeData.secondary,
         },
+        error: {
+          main: themeData.secondary,
+        },
         text: {
           primary: themeData.foregroundHighlight,
           secondary: themeData.foreground,
@@ -49,6 +52,10 @@ export class ThemeStore {
       },
     });
     return responsiveFontSizes(materialUiTheme);
+  }
+
+  get darkMode(): boolean {
+    return this.currentThemeData.paletteMode === 'dark';
   }
 
   get className(): string {

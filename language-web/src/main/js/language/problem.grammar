@@ -1,0 +1,145 @@
+@top Problem { statement* }
+
+statement {
+  ProblemDeclaration {
+    ckw<"problem"> QualifiedName "."
+  } |
+  ClassDefinition {
+    ckw<"abstract">? ckw<"class"> RelationName
+    (ckw<"extends"> sep<",", RelationName>)?
+    (ClassBody {  "{" ReferenceDeclaration* "}" } | ".")
+  } |
+  EnumDefinition {
+    ckw<"enum"> RelationName
+    (EnumBody { "{" sep<",", UniqueNodeName> "}" } | ".")
+  } |
+  PredicateDefinition {
+    (ckw<"error"> ckw<"pred">? | ckw<"direct">? ckw<"pred">)
+    RelationName ParameterList<Parameter>?
+    PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
+  } |
+  RuleDefinition {
+    ckw<"direct">? ckw<"rule">
+    RuleName ParameterList<Parameter>?
+    RuleBody { ":" sep<OrOp, Conjunction> "~>" sep<OrOp, Action> "." }
+  } |
+  Assertion {
+    ckw<"default">? (NotOp | UnknownOp)? RelationName
+    ParameterList<AssertionArgument> (":" LogicValue)? "."
+  } |
+  NodeValueAssertion {
+    UniqueNodeName ":" Constant "."
+  } |
+  UniqueDeclaration {
+    ckw<"unique"> sep<",", UniqueNodeName> "."
+  } |
+  ScopeDeclaration {
+    ckw<"scope"> sep<",", ScopeElement> "."
+  }
+}
+
+ReferenceDeclaration {
+  (kw<"refers"> | kw<"contains">)?
+  RelationName
+  RelationName
+  ( "[" Multiplicity? "]" )?
+  (kw<"opposite"> RelationName)?
+  ";"?
+}
+
+Parameter { RelationName? VariableName }
+
+Conjunction { ("," | Literal)+ }
+
+OrOp { ";" }
+
+Literal { NotOp? Atom (("=" | ":") sep1<"|", LogicValue>)? }
+
+Atom { RelationName "+"? ParameterList<Argument> }
+
+Action { ("," | ActionLiteral)+ }
+
+ActionLiteral {
+   ckw<"new"> VariableName |
+   ckw<"delete"> VariableName |
+   Literal
+}
+
+Argument { VariableName | Constant }
+
+AssertionArgument { NodeName | StarArgument | Constant }
+
+Constant { Real | String }
+
+LogicValue {
+  ckw<"true"> | ckw<"false"> | ckw<"unknown"> | ckw<"error">
+}
+
+ScopeElement { RelationName ("=" | "+=") Multiplicity }
+
+Multiplicity { (IntMult "..")? (IntMult | StarMult)}
+
+RelationName { QualifiedName }
+
+RuleName { QualifiedName }
+
+UniqueNodeName { QualifiedName }
+
+VariableName { QualifiedName }
+
+NodeName { QualifiedName }
+
+QualifiedName { identifier ("::" identifier)* }
+
+kw<term> { @specialize[@name={term}]<identifier, term> }
+
+ckw<term> { @extend[@name={term}]<identifier, term> }
+
+ParameterList<content> { "(" sep<",", content> ")" }
+
+sep<separator, content> { sep1<separator, content>? }
+
+sep1<separator, content> { content (separator content)* }
+
+@skip { LineComment | BlockComment | whitespace }
+
+@tokens {
+  whitespace { std.whitespace+ }
+
+  LineComment { ("//" | "%") ![\n]* }
+
+  BlockComment { "/*" blockCommentRest }
+
+  blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
+
+  blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
+
+  @precedence { BlockComment, LineComment }
+
+  identifier { $[A-Za-z_] $[a-zA-Z0-9_]* }
+
+  int { $[0-9]+ }
+
+  IntMult { int }
+
+  StarMult { "*" }
+
+  Real { "-"? (exponential | int ("." (int | exponential))?) }
+
+  exponential { int ("e" | "E") ("+" | "-")? int }
+
+  String {
+    "'" (![\\'\n] | "\\" ![\n] | "\\\n")+ "'" |
+    "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
+  }
+
+  NotOp { "!" }
+
+  UnknownOp { "?" }
+
+  StarArgument { "*" }
+
+  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "<->" "~>"
+}
+
+@detectDelim

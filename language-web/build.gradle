@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply from: "${rootDir}/gradle/xtext-common.gradle"
+apply from: "${rootDir}/gradle/junit.gradle"
 
 dependencies {
 	implementation project(':refinery-language')
@@ -8,8 +9,12 @@ dependencies {
 	implementation "org.eclipse.xtend:org.eclipse.xtend.lib:${xtextVersion}"
 	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
 	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+	implementation "org.eclipse.jetty.websocket:websocket-jetty-server:${jettyVersion}"
 	implementation "org.slf4j:slf4j-simple:${slf4JVersion}"
 	implementation "org.slf4j:log4j-over-slf4j:${slf4JVersion}"
+	testImplementation testFixtures(project(':refinery-language'))
+	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
+	testImplementation "org.eclipse.jetty.websocket:websocket-jetty-client:${jettyVersion}"
 }
 
 def generateXtextLanguage = project(':refinery-language').tasks.named('generateXtextLanguage')
@@ -35,18 +40,28 @@ frontend {
 	yarnEnabled = true
 	yarnVersion = project.ext.yarnVersion
 	yarnInstallDirectory = file("${rootDir}/.gradle/yarn")
-	assembleScript = 'run assemble'
+	assembleScript = 'run assemble:webpack'
 }
 
 def installFrontend = tasks.named('installFrontend')
 
+def generateLezerGrammar = tasks.register('generateLezerGrammar', RunNpmYarn) {
+	dependsOn installFrontend
+	inputs.file('src/main/js/language/problem.grammar')
+	inputs.files('package.json', 'yarn.lock')
+	outputs.file "${buildDir}/generated/sources/lezer/problem.ts"
+	outputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
+	script = 'run assemble:lezer'
+}
+
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
-	dependsOn generateXtextLanguage
+	dependsOn generateLezerGrammar
 	inputs.dir 'src/main/css'
 	inputs.dir 'src/main/html'
 	inputs.dir 'src/main/js'
-	inputs.dir "${buildDir}/generated/sources/xtext/js"
+	inputs.file "${buildDir}/generated/sources/lezer/problem.ts"
+	inputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
 	inputs.files('package.json', 'yarn.lock', 'webpack.config.js')
 	outputs.dir productionResources
 }
@@ -125,7 +140,7 @@ def jettyRun = tasks.register('jettyRun', JavaExec) {
 
 tasks.register('webpackServe', RunNpmYarn) {
 	dependsOn installFrontend
-	dependsOn generateXtextLanguage
+	dependsOn generateLezerGrammar
 	outputs.dir "${webpackOutputDir}/development"
 	script = 'run serve'
 	group = 'run'
@@ -137,10 +152,6 @@ sonarqube.properties {
 		'src/main/css',
 		'src/main/html',
 		'src/main/js',
-	]
-	properties['sonar.exclusions'] += [
-		'src/main/css/xtext/**',
-		'src/main/js/xtext/**',
 	]
 	property 'sonar.nodejs.executable', "${nodeDirectory}/bin/node"
 	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"

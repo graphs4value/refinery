@@ -26,7 +26,7 @@ EnumLiteral returns Node:
 	name=Identifier;
 
 ReferenceDeclaration:
-	(-> (containment?="contains" | "refers"))?
+	(containment?="contains" | "refers")?
 	referenceType=[Relation|QualifiedName]
 	("[" multiplicity=Multiplicity "]")?
 	name=Identifier
@@ -184,7 +184,7 @@ QualifiedName hidden():
 
 Identifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" | "scope" |
-	"unique" | "default" | "problem" | "contains" | "refers" | "new" | "delete";
+	"unique" | "default" | "problem" | "new" | "delete";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

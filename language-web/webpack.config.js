@@ -25,11 +25,9 @@ const publicHost = process.env['PUBLIC_HOST'] || listenHost;
 const publicPort = portNumberOrElse('PUBLIC_PORT', listenPort);
 
 const resolveSources = sources => path.resolve(__dirname, 'src', sources);
-const resolveGenerated = sources => path.resolve(__dirname, 'build/generated/sources', sources);
 const mainJsSources = resolveSources('main/js');
 const babelLoaderFilters = {
   include: [mainJsSources],
-  exclude: [resolveSources('main/js/xtext')],
 };
 const babelPresets = [
   [
@@ -150,12 +148,8 @@ module.exports = {
     modules: [
       'node_modules',
       mainJsSources,
-      resolveGenerated('xtext/js'),
     ],
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    alias: {
-      images: resolveSources('main/images'),
-    },
   },
   devtool: devMode ? 'inline-source-map' : 'source-map',
   optimization: {
@@ -193,7 +187,10 @@ module.exports = {
     host: listenHost,
     port: listenPort,
     proxy: {
-      '/xtext-service': `${apiPort === 443 ? 'https' : 'http'}://${apiHost}:${apiPort}`,
+      '/xtext-service': {
+        target: `${apiPort === 443 ? 'https' : 'http'}://${apiHost}:${apiPort}`,
+        ws: true,
+      },
     },
   },
   plugins: [

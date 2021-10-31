@@ -9,23 +9,34 @@ import { ThemeProvider } from './theme/ThemeProvider';
 import '../css/index.scss';
 
 const initialValue = `class Family {
-  contains Person[] members
+    contains Person[] members
 }
 
 class Person {
-  Person[] children opposite parent
-  Person[0..1] parent opposite children
-  int age
-  TaxStatus taxStatus
+    Person[] children opposite parent
+    Person[0..1] parent opposite children
+    int age
+    TaxStatus taxStatus
 }
 
 enum TaxStatus {
-  child, student, adult, retired
+    child, student, adult, retired
 }
 
 % A child cannot have any dependents.
-error invalidTaxStatus(Person p) <->
-  taxStatus(p, child), children(p, _q).
+pred invalidTaxStatus(Person p) <->
+    taxStatus(p, child),
+    children(p, _q)
+  ; taxStatus(p, retired),
+    parent(p, q),
+    !taxStatus(q, retired).
+
+direct rule createChild(p):
+    children(p, newPerson) = unknown,
+    equals(newPerson, newPerson) = unknown
+ ~> new q,
+    children(p, q) = true,
+    taxStatus(q, child) = true.
 
 unique family.
 Family(family).
@@ -44,8 +55,7 @@ age(bob, bobAge).
 scope Family = 1, Person += 5..10.
 `;
 
-const rootStore = new RootStore();
-rootStore.editorStore.updateValue(initialValue);
+const rootStore = new RootStore(initialValue);
 
 const app = (
   <RootStoreProvider rootStore={rootStore}>
