@@ -14,11 +14,12 @@ import {
   foldBlockComment,
   foldConjunction,
   foldDeclaration,
+  foldWholeNode,
 } from './folding';
 import {
   indentBlockComment,
   indentDeclaration,
-  indentPredicate,
+  indentPredicateOrRule,
 } from './indentation';
 
 const parserWithMetadata = (parser as LRParser).configure({
@@ -26,9 +27,10 @@ const parserWithMetadata = (parser as LRParser).configure({
     styleTags({
       LineComment: t.lineComment,
       BlockComment: t.blockComment,
-      'problem class enum pred unique scope': t.definitionKeyword,
-      'abstract extends refers contains opposite error default': t.modifier,
+      'problem class enum pred rule unique scope': t.definitionKeyword,
+      'abstract extends refers contains opposite error direct default': t.modifier,
       'true false unknown error': t.keyword,
+      'new delete': t.operatorKeyword,
       NotOp: t.keyword,
       UnknownOp: t.keyword,
       OrOp: t.keyword,
@@ -37,19 +39,21 @@ const parserWithMetadata = (parser as LRParser).configure({
       StarMult: t.number,
       String: t.string,
       'RelationName/QualifiedName': t.typeName,
+      'RuleName/QualifiedName': t.macroName,
       'UniqueNodeName/QualifiedName': t.atom,
       'VariableName/QualifiedName': t.variableName,
       '{ }': t.brace,
       '( )': t.paren,
       '[ ]': t.squareBracket,
       '. .. , :': t.separator,
-      '<->': t.definitionOperator,
+      '<-> ~>': t.definitionOperator,
     }),
     indentNodeProp.add({
       ProblemDeclaration: indentDeclaration,
       UniqueDeclaration: indentDeclaration,
       ScopeDeclaration: indentDeclaration,
-      PredicateBody: indentPredicate,
+      PredicateBody: indentPredicateOrRule,
+      RuleBody: indentPredicateOrRule,
       BlockComment: indentBlockComment,
     }),
     foldNodeProp.add({
@@ -57,7 +61,9 @@ const parserWithMetadata = (parser as LRParser).configure({
       EnumBody: foldInside,
       ParameterList: foldInside,
       PredicateBody: foldInside,
+      RuleBody: foldInside,
       Conjunction: foldConjunction,
+      Action: foldWholeNode,
       UniqueDeclaration: foldDeclaration,
       ScopeDeclaration: foldDeclaration,
       BlockComment: foldBlockComment,
@@ -75,7 +81,7 @@ const problemLanguage = LRLanguage.define({
       },
       line: '%',
     },
-    indentOnInput: /^\s*(?:\{|\}|\(|\)|;|\.)$/,
+    indentOnInput: /^\s*(?:\{|\}|\(|\)|;|\.|~>)$/,
   },
 });
 

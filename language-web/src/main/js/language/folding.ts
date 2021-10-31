@@ -75,18 +75,22 @@ export function foldDeclaration(node: SyntaxNode, state: EditorState): FoldRange
  * @param node the node to fold
  * @returns the folding range or `null` is there is nothing to fold
  */
-export function foldConjunction(node: SyntaxNode): FoldRange | null {
+function foldWithSibling(node: SyntaxNode): FoldRange | null {
   const { parent } = node;
   if (parent === null) {
     return null;
   }
-  const { cursor } = parent;
-  let nConjunctions = 0;
-  while (cursor.next()) {
+  const { firstChild } = parent;
+  if (firstChild === null) {
+    return null;
+  }
+  const { cursor } = firstChild;
+  let nSiblings = 0;
+  while (cursor.nextSibling()) {
     if (cursor.type === node.type) {
-      nConjunctions += 1;
+      nSiblings += 1;
     }
-    if (nConjunctions >= 2) {
+    if (nSiblings >= 2) {
       return {
         from: node.from,
         to: node.to,
@@ -94,4 +98,18 @@ export function foldConjunction(node: SyntaxNode): FoldRange | null {
     }
   }
   return null;
+}
+
+export function foldWholeNode(node: SyntaxNode): FoldRange {
+  return {
+    from: node.from,
+    to: node.to,
+  };
+}
+
+export function foldConjunction(node: SyntaxNode): FoldRange | null {
+  if (node.parent?.type?.name === 'PredicateBody') {
+    return foldWithSibling(node);
+  }
+  return foldWholeNode(node);
 }

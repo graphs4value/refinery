@@ -127,7 +127,7 @@ export const EditorParent = styled('div')(({ theme }) => {
     '.cmt-keyword': {
       color: theme.palette.primary.main,
     },
-    '.cmt-typeName, .cmt-atom': {
+    '.cmt-typeName, .cmt-macroName, .cmt-atom': {
       color: theme.palette.text.primary,
     },
     '.cmt-variableName': {

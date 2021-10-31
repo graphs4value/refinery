@@ -14,8 +14,14 @@ statement {
     (EnumBody { "{" sep<",", UniqueNodeName> "}" } | ".")
   } |
   PredicateDefinition {
-    (ckw<"error"> ckw<"pred">? | ckw<"pred">) RelationName ParameterList<Parameter>?
+    (ckw<"error"> ckw<"pred">? | ckw<"direct">? ckw<"pred">)
+    RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
+  } |
+  RuleDefinition {
+    ckw<"direct">? ckw<"rule">
+    RuleName ParameterList<Parameter>?
+    RuleBody { ":" sep<OrOp, Conjunction> "~>" sep<OrOp, Action> "." }
   } |
   Assertion {
     ckw<"default">? (NotOp | UnknownOp)? RelationName
@@ -47,9 +53,17 @@ Conjunction { ("," | Literal)+ }
 
 OrOp { ";" }
 
-Literal { NotOp? Atom }
+Literal { NotOp? Atom (("=" | ":") sep1<"|", LogicValue>)? }
 
-Atom { RelationName ParameterList<Argument>? }
+Atom { RelationName "+"? ParameterList<Argument> }
+
+Action { ("," | ActionLiteral)+ }
+
+ActionLiteral {
+   ckw<"new"> VariableName |
+   ckw<"delete"> VariableName |
+   Literal
+}
 
 Argument { VariableName | Constant }
 
@@ -67,6 +81,8 @@ Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 
 RelationName { QualifiedName }
 
+RuleName { QualifiedName }
+
 UniqueNodeName { QualifiedName }
 
 VariableName { QualifiedName }
@@ -83,7 +99,7 @@ ParameterList<content> { "(" sep<",", content> ")" }
 
 sep<separator, content> { sep1<separator, content>? }
 
-sep1<separator, content> { content (separator content?)* }
+sep1<separator, content> { content (separator content)* }
 
 @skip { LineComment | BlockComment | whitespace }
 
@@ -123,7 +139,7 @@ sep1<separator, content> { content (separator content?)* }
 
   StarArgument { "*" }
 
-  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "<->"
+  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "<->" "~>"
 }
 
 @detectDelim

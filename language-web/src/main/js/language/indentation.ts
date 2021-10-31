@@ -75,10 +75,13 @@ export function indentDeclaration(context: TreeIndentContext): number {
   return indentDeclarationStrategy(context, 1);
 }
 
-export function indentPredicate(context: TreeIndentContext): number {
+export function indentPredicateOrRule(context: TreeIndentContext): number {
   const clauseIndent = indentDeclarationStrategy(context, 1);
   if (/^\s+(;|\.)/.exec(context.textAfter) !== null) {
     return clauseIndent - 2;
+  }
+  if (/^\s+(~>)/.exec(context.textAfter) !== null) {
+    return clauseIndent - 3;
   }
   return clauseIndent;
 }

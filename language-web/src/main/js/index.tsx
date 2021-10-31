@@ -31,6 +31,13 @@ pred invalidTaxStatus(Person p) <->
     parent(p, q),
     !taxStatus(q, retired).
 
+direct rule createChild(p):
+    children(p, newPerson) = unknown,
+    equals(newPerson, newPerson) = unknown
+ ~> new q,
+    children(p, q) = true,
+    taxStatus(q, child) = true.
+
 unique family.
 Family(family).
 members(family, anne).
