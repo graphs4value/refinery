@@ -27,14 +27,14 @@ const REQUEST_TIMEOUT_MS = 1000;
 
 const log = getLogger('xtext.XtextWebSocketClient');
 
-type ReconnectHandler = () => Promise<void>;
+export type ReconnectHandler = () => void;
 
-type PushHandler = (
+export type PushHandler = (
   resourceId: string,
   stateId: string,
   service: string,
   data: unknown,
-) => Promise<void>;
+) => void;
 
 enum State {
   Initial,
@@ -47,29 +47,29 @@ enum State {
 }
 
 export class XtextWebSocketClient {
-  nextMessageId = 0;
+  private nextMessageId = 0;
 
-  connection!: WebSocket;
+  private connection!: WebSocket;
 
-  pendingRequests = new Map<string, PendingTask<unknown>>();
+  private readonly pendingRequests = new Map<string, PendingTask<unknown>>();
 
-  onReconnect: ReconnectHandler;
+  private readonly onReconnect: ReconnectHandler;
 
-  onPush: PushHandler;
+  private readonly onPush: PushHandler;
 
-  state = State.Initial;
+  private state = State.Initial;
 
-  reconnectTryCount = 0;
+  private reconnectTryCount = 0;
 
-  idleTimer = new Timer(() => {
+  private readonly idleTimer = new Timer(() => {
     this.handleIdleTimeout();
   }, BACKGROUND_IDLE_TIMEOUT_MS);
 
-  pingTimer = new Timer(() => {
+  private readonly pingTimer = new Timer(() => {
     this.sendPing();
   }, PING_TIMEOUT_MS);
 
-  reconnectTimer = new Timer(() => {
+  private readonly reconnectTimer = new Timer(() => {
     this.handleReconnect();
   });
 
@@ -115,9 +115,7 @@ export class XtextWebSocketClient {
       this.nextMessageId = 0;
       this.reconnectTryCount = 0;
       this.pingTimer.schedule();
-      this.onReconnect().catch((error) => {
-        log.error('Unexpected error in onReconnect handler', error);
-      });
+      this.onReconnect();
     });
     this.connection.addEventListener('error', (event) => {
       log.error('Unexpected websocket error', event);
@@ -264,9 +262,7 @@ export class XtextWebSocketClient {
         message.stateId,
         message.service,
         message.push,
-      ).catch((error) => {
-        log.error('Unexpected error in onPush handler', error);
-      });
+      );
     } else {
       log.error('Unexpected websocket message', message);
       this.forceReconnectOnError();

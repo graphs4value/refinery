@@ -16,21 +16,21 @@ import { XtextWebSocketClient } from './XtextWebSocketClient';
 const log = getLogger('xtext.XtextClient');
 
 export class XtextClient {
-  private webSocketClient: XtextWebSocketClient;
+  private readonly webSocketClient: XtextWebSocketClient;
 
-  private updateService: UpdateService;
+  private readonly updateService: UpdateService;
 
-  private contentAssistService: ContentAssistService;
+  private readonly contentAssistService: ContentAssistService;
 
-  private highlightingService: HighlightingService;
+  private readonly highlightingService: HighlightingService;
 
-  private validationService: ValidationService;
+  private readonly validationService: ValidationService;
 
-  private occurrencesService: OccurrencesService;
+  private readonly occurrencesService: OccurrencesService;
 
   constructor(store: EditorStore) {
     this.webSocketClient = new XtextWebSocketClient(
-      () => this.updateService.onConnect(),
+      () => this.updateService.onReconnect(),
       (resource, stateId, service, push) => this.onPush(resource, stateId, service, push),
     );
     this.updateService = new UpdateService(store, this.webSocketClient);
@@ -52,15 +52,17 @@ export class XtextClient {
     this.occurrencesService.onTransaction(transaction);
   }
 
-  private async onPush(resource: string, stateId: string, service: string, push: unknown) {
+  private onPush(resource: string, stateId: string, service: string, push: unknown) {
     const { resourceName, xtextStateId } = this.updateService;
     if (resource !== resourceName) {
       log.error('Unknown resource name: expected:', resourceName, 'got:', resource);
       return;
     }
     if (stateId !== xtextStateId) {
-      log.error('Unexpected xtext state id: expected:', xtextStateId, 'got:', resource);
-      await this.updateService.updateFullText();
+      log.error('Unexpected xtext state id: expected:', xtextStateId, 'got:', stateId);
+      // The current push message might be stale (referring to a previous state),
+      // so this is not neccessarily an error and there is no need to force-reconnect.
+      return;
     }
     switch (service) {
       case 'highlight':

@@ -7,9 +7,9 @@ import { isHighlightingResult } from './xtextServiceResults';
 const log = getLogger('xtext.ValidationService');
 
 export class HighlightingService {
-  private store: EditorStore;
+  private readonly store: EditorStore;
 
-  private updateService: UpdateService;
+  private readonly updateService: UpdateService;
 
   constructor(store: EditorStore, updateService: UpdateService) {
     this.store = store;

@@ -34,19 +34,19 @@ function transformOccurrences(regions: ITextRegion[]): IOccurrence[] {
 }
 
 export class OccurrencesService {
-  private store: EditorStore;
+  private readonly store: EditorStore;
 
-  private webSocketClient: XtextWebSocketClient;
+  private readonly webSocketClient: XtextWebSocketClient;
 
-  private updateService: UpdateService;
+  private readonly updateService: UpdateService;
 
   private hasOccurrences = false;
 
-  private findOccurrencesTimer = new Timer(() => {
+  private readonly findOccurrencesTimer = new Timer(() => {
     this.handleFindOccurrences();
   }, FIND_OCCURRENCES_TIMEOUT_MS);
 
-  private clearOccurrencesTimer = new Timer(() => {
+  private readonly clearOccurrencesTimer = new Timer(() => {
     this.clearOccurrences();
   }, CLEAR_OCCURRENCES_TIMEOUT_MS);
 

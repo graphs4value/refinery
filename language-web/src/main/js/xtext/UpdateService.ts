@@ -32,20 +32,27 @@ export class UpdateService {
 
   xtextStateId: string | null = null;
 
-  private store: EditorStore;
+  private readonly store: EditorStore;
 
+  /**
+   * The changes being synchronized to the server if a full or delta text update is running,
+   * `null` otherwise.
+   */
   private pendingUpdate: ChangeDesc | null = null;
 
+  /**
+   * Local changes not yet sychronized to the server and not part of the running update, if any.
+   */
   private dirtyChanges: ChangeDesc;
 
-  private webSocketClient: XtextWebSocketClient;
+  private readonly webSocketClient: XtextWebSocketClient;
 
-  private updatedCondition = new ConditionVariable(
+  private readonly updatedCondition = new ConditionVariable(
     () => this.pendingUpdate === null && this.xtextStateId !== null,
     WAIT_FOR_UPDATE_TIMEOUT_MS,
   );
 
-  private idleUpdateTimer = new Timer(() => {
+  private readonly idleUpdateTimer = new Timer(() => {
     this.handleIdleUpdate();
   }, UPDATE_TIMEOUT_MS);
 
@@ -56,9 +63,11 @@ export class UpdateService {
     this.webSocketClient = webSocketClient;
   }
 
-  onConnect(): Promise<void> {
+  onReconnect(): void {
     this.xtextStateId = null;
-    return this.updateFullText();
+    this.updateFullText().catch((error) => {
+      log.error('Unexpected error during initial update', error);
+    });
   }
 
   onTransaction(transaction: Transaction): void {
@@ -68,6 +77,14 @@ export class UpdateService {
     }
   }
 
+  /**
+   * Computes the summary of any changes happened since the last complete update.
+   *
+   * The result reflects any changes that happened since the `xtextStateId`
+   * version was uploaded to the server.
+   *
+   * @return the summary of changes since the last update
+   */
   computeChangesSinceLastUpdate(): ChangeDesc {
     return this.pendingUpdate?.composeDesc(this.dirtyChanges) || this.dirtyChanges;
   }
@@ -106,6 +123,15 @@ export class UpdateService {
     throw new Error('Full text update failed');
   }
 
+  /**
+   * Makes sure that the document state on the server reflects recent
+   * local changes.
+   *
+   * Performs either an update with delta text or a full text update if needed.
+   * If there are not local dirty changes, the promise resolves immediately.
+   *
+   * @return a promise resolving when the update is completed
+   */
   async update(): Promise<void> {
     await this.prepareForDeltaUpdate();
     const delta = this.computeDelta();
@@ -151,31 +177,36 @@ export class UpdateService {
       return [];
     }
     const delta = this.computeDelta();
-    if (delta === null) {
-      // Poscondition of `prepareForDeltaUpdate`: `xtextStateId !== null`
-      return this.doFetchContentAssist(params, this.xtextStateId as string);
-    }
-    log.trace('Editor delta', delta);
-    return this.withUpdate(async () => {
-      const result = await this.webSocketClient.send({
-        ...params,
-        requiredStateId: this.xtextStateId,
-        ...delta,
-      });
-      if (isContentAssistResult(result)) {
-        return [result.stateId, result.entries];
-      }
-      if (isInvalidStateIdConflictResult(result)) {
-        const [newStateId] = await this.doFallbackToUpdateFullText();
-        if (signal.aborted) {
-          return [newStateId, []];
+    if (delta !== null) {
+      log.trace('Editor delta', delta);
+      const entries = await this.withUpdate(async () => {
+        const result = await this.webSocketClient.send({
+          ...params,
+          requiredStateId: this.xtextStateId,
+          ...delta,
+        });
+        if (isContentAssistResult(result)) {
+          return [result.stateId, result.entries];
         }
-        const entries = await this.doFetchContentAssist(params, newStateId);
-        return [newStateId, entries];
+        if (isInvalidStateIdConflictResult(result)) {
+          const [newStateId] = await this.doFallbackToUpdateFullText();
+          // We must finish this state update transaction to prepare for any push events
+          // before querying for content assist, so we just return `null` and will query
+          // the content assist service later.
+          return [newStateId, null];
+        }
+        log.error('Unextpected content assist result with delta update', result);
+        throw new Error('Unexpexted content assist result with delta update');
+      });
+      if (entries !== null) {
+        return entries;
       }
-      log.error('Unextpected content assist result with delta update', result);
-      throw new Error('Unexpexted content assist result with delta update');
-    });
+      if (signal.aborted) {
+        return [];
+      }
+    }
+    // Poscondition of `prepareForDeltaUpdate`: `xtextStateId !== null`
+    return this.doFetchContentAssist(params, this.xtextStateId as string);
   }
 
   private async doFetchContentAssist(params: Record<string, unknown>, expectedStateId: string) {
@@ -211,6 +242,27 @@ export class UpdateService {
     };
   }
 
+  /**
+   * Executes an asynchronous callback that updates the state on the server.
+   *
+   * Ensures that updates happen sequentially and manages `pendingUpdate`
+   * and `dirtyChanges` to reflect changes being synchronized to the server
+   * and not yet synchronized to the server, respectively.
+   *
+   * Optionally, `callback` may return a second value that is retured by this function.
+   *
+   * Once the remote procedure call to update the server state finishes
+   * and returns the new `stateId`, `callback` must return _immediately_
+   * to ensure that the local `stateId` is updated likewise to be able to handle
+   * push messages referring to the new `stateId` from the server.
+   * If additional work is needed to compute the second value in some cases,
+   * use `T | null` instead of `T` as a return type and signal the need for additional
+   * computations by returning `null`. Thus additional computations can be performed
+   * outside of the critical section.
+   *
+   * @param callback the asynchronous callback that updates the server state
+   * @return a promise resolving to the second value returned by `callback`
+   */
   private async withUpdate<T>(callback: () => Promise<[string, T]>): Promise<T> {
     if (this.pendingUpdate !== null) {
       throw new Error('Another update is pending, will not perform update');
@@ -239,6 +291,14 @@ export class UpdateService {
     }
   }
 
+  /**
+   * Ensures that there is some state available on the server (`xtextStateId`)
+   * and that there is not pending update.
+   *
+   * After this function resolves, a delta text update is possible.
+   *
+   * @return a promise resolving when there is a valid state id but no pending update
+   */
   private async prepareForDeltaUpdate() {
     // If no update is pending, but the full text hasn't been uploaded to the server yet,
     // we must start a full text upload.

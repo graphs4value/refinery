@@ -56,11 +56,11 @@ import { XtextClient } from '../xtext/XtextClient';
 const log = getLogger('editor.EditorStore');
 
 export class EditorStore {
-  themeStore;
+  private readonly themeStore;
 
   state: EditorState;
 
-  client: XtextClient;
+  private readonly client: XtextClient;
 
   showLineNumbers = false;
 
@@ -74,11 +74,11 @@ export class EditorStore {
 
   infoCount = 0;
 
-  readonly defaultDispatcher = (tr: Transaction): void => {
+  private readonly defaultDispatcher = (tr: Transaction): void => {
     this.onTransaction(tr);
   };
 
-  dispatcher = this.defaultDispatcher;
+  private dispatcher = this.defaultDispatcher;
 
   constructor(initialValue: string, themeStore: ThemeStore) {
     this.themeStore = themeStore;
@@ -148,10 +148,7 @@ export class EditorStore {
       },
     );
     makeAutoObservable(this, {
-      themeStore: false,
       state: observable.ref,
-      defaultDispatcher: false,
-      dispatcher: false,
     });
   }
 

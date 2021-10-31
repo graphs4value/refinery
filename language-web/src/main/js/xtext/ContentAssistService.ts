@@ -61,9 +61,9 @@ function computeSpan(prefix: string, entryCount: number) {
 }
 
 export class ContentAssistService {
-  updateService: UpdateService;
+  private readonly updateService: UpdateService;
 
-  lastCompletion: CompletionResult | null = null;
+  private lastCompletion: CompletionResult | null = null;
 
   constructor(updateService: UpdateService) {
     this.updateService = updateService;
