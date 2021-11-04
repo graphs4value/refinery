@@ -12,6 +12,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import tools.refinery.language.model.problem.ClassDeclaration;
+import tools.refinery.language.model.problem.ImplicitVariable;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemPackage;
@@ -32,6 +33,24 @@ public final class ProblemUtil {
 
 	public static boolean isSingletonVariable(Variable variable) {
 		return variable.eContainingFeature() == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__SINGLETON_VARIABLE;
+	}
+	
+	public static boolean isImplicitVariable(Variable variable) {
+		return variable instanceof ImplicitVariable;
+	}
+	
+	public static boolean isImplicitNode(Node node) {
+		return node.eContainingFeature() == ProblemPackage.Literals.PROBLEM__NODES;
+	}
+	
+	public static boolean isImplicit(EObject eObject) {
+		if (eObject instanceof Node node) {
+			return isImplicitNode(node);
+		} else if (eObject instanceof Variable variable) {
+			return isImplicitVariable(variable);
+		} else {
+			return false;
+		}
 	}
 
 	public static boolean isUniqueNode(Node node) {
