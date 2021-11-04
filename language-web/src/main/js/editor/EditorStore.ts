@@ -112,8 +112,8 @@ export class EditorStore {
         }),
         semanticHighlighting,
         // We add the gutters to `extensions` in the order we want them to appear.
-        foldGutter(),
         lineNumbers(),
+        foldGutter(),
         keymap.of([
           ...closeBracketsKeymap,
           ...commentKeymap,
