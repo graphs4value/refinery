@@ -16,7 +16,15 @@ public class ReferenceCounter {
 	@Inject
 	private IResourceScopeCache cache;
 
-	public Map<EObject, Integer> getReferenceCounts(Problem problem) {
+	public int countReferences(Problem problem, EObject eObject) {
+		var count = getReferenceCounts(problem).get(eObject);
+		if (count == null) {
+			return 0;
+		}
+		return count;
+	}
+
+	protected Map<EObject, Integer> getReferenceCounts(Problem problem) {
 		var resource = problem.eResource();
 		if (resource == null) {
 			return doGetReferenceCounts(problem);

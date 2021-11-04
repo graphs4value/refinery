@@ -50,9 +50,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return true;
 		}
 		if (rootModel instanceof Problem problem) {
-			var referenceCounts = referenceCounter.getReferenceCounts(problem);
-			var count = referenceCounts.get(eObject);
-			return count != null && count >= 2;
+			return referenceCounter.countReferences(problem, eObject) >= 2;
 		}
 		return true;
 	}
