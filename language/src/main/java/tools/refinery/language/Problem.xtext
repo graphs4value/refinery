@@ -154,7 +154,7 @@ ScopeDeclaration:
 	"scope" typeScopes+=TypeScope ("," typeScopes+=TypeScope)* ".";
 
 TypeScope:
-	targetType=[ClassDeclaration]
+	targetType=[ClassDeclaration|QualifiedName]
 	(increment?="+=" | "=")
 	multiplicity=DefiniteMultiplicity;
 
@@ -183,8 +183,8 @@ QualifiedName hidden():
 	Identifier ("::" Identifier)*;
 
 Identifier:
-	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" | "scope" |
-	"unique" | "default" | "problem" | "new" | "delete";
+	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" |
+	"unique" | "problem" | "new" | "delete";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

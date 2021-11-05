@@ -24,7 +24,7 @@ statement {
     RuleBody { ":" sep<OrOp, Conjunction> "~>" sep<OrOp, Action> "." }
   } |
   Assertion {
-    ckw<"default">? (NotOp | UnknownOp)? RelationName
+    kw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument> (":" LogicValue)? "."
   } |
   NodeValueAssertion {
@@ -34,7 +34,7 @@ statement {
     ckw<"unique"> sep<",", UniqueNodeName> "."
   } |
   ScopeDeclaration {
-    ckw<"scope"> sep<",", ScopeElement> "."
+    kw<"scope"> sep<",", ScopeElement> "."
   }
 }
 
