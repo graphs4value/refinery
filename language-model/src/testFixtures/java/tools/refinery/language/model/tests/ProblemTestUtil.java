@@ -16,6 +16,7 @@ import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.Conjunction;
 import tools.refinery.language.model.problem.DeleteActionLiteral;
 import tools.refinery.language.model.problem.EnumDeclaration;
+import tools.refinery.language.model.problem.IndividualDeclaration;
 import tools.refinery.language.model.problem.Literal;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.NegativeLiteral;
@@ -31,7 +32,6 @@ import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.RuleDefinition;
 import tools.refinery.language.model.problem.Statement;
-import tools.refinery.language.model.problem.UniqueDeclaration;
 import tools.refinery.language.model.problem.ValueActionLiteral;
 import tools.refinery.language.model.problem.ValueLiteral;
 import tools.refinery.language.model.problem.Variable;
@@ -148,8 +148,8 @@ public class ProblemTestUtil {
 		return named(problem.getNodes(), name);
 	}
 
-	public Node uniqueNode(Problem problem, String name) {
-		var uniqueNodes = statementsOfType(problem, UniqueDeclaration.class)
+	public Node individualNode(Problem problem, String name) {
+		var uniqueNodes = statementsOfType(problem, IndividualDeclaration.class)
 				.flatMap(declaration -> declaration.getNodes().stream());
 		return named(uniqueNodes, name);
 	}

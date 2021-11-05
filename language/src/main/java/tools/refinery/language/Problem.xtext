@@ -9,7 +9,7 @@ Problem:
 
 Statement:
 	ClassDeclaration | EnumDeclaration | PredicateDefinition | RuleDefinition | Assertion | NodeValueAssertion | ScopeDeclaration |
-	UniqueDeclaration;
+	IndividualDeclaration;
 
 ClassDeclaration:
 	abstract?="abstract"? "class"
@@ -173,8 +173,8 @@ RangeMultiplicity:
 ExactMultiplicity:
 	exactValue=INT;
 
-UniqueDeclaration:
-	"unique" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+IndividualDeclaration:
+	"individual" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
 
 UpperBound returns ecore::EInt:
 	INT | "*";
@@ -184,7 +184,7 @@ QualifiedName hidden():
 
 Identifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" |
-	"unique" | "problem" | "new" | "delete";
+	"individual" | "problem" | "new" | "delete" | "direct" | "rule";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

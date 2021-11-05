@@ -83,7 +83,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		}
 		if (eObject instanceof Node node) {
 			// Only enum literals and new nodes are visible across problem files.
-			return ProblemUtil.isUniqueNode(node) || ProblemUtil.isNewNode(node);
+			return ProblemUtil.isIndividualNode(node) || ProblemUtil.isNewNode(node);
 		}
 		return true;
 	}

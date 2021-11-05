@@ -123,8 +123,8 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//NodeValueAssertion/node"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//NodeValueAssertion/value"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//UniqueDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//UniqueDeclaration/nodes"/>
+    <genClasses ecoreClass="problem.ecore#//IndividualDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//IndividualDeclaration/nodes"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//WildcardAssertionArgument"/>
     <genClasses ecoreClass="problem.ecore#//ParametricDefinition">

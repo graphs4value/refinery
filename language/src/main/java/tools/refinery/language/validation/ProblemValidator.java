@@ -27,7 +27,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	public static final String SINGLETON_VARIABLE_ISSUE = ISSUE_PREFIX + "SINGLETON_VARIABLE";
 
-	public static final String NON_UNIQUE_NODE_ISSUE = ISSUE_PREFIX + "NON_UNIQUE_NODE";
+	public static final String NON_INDIVIDUAL_NODE_ISSUE = ISSUE_PREFIX + "NON_INDIVIDUAL_NODE";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
@@ -51,12 +51,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkNonUniqueNode(VariableOrNodeArgument argument) {
 		var variableOrNode = argument.getVariableOrNode();
-		if (variableOrNode instanceof Node node && !ProblemUtil.isUniqueNode(node)) {
+		if (variableOrNode instanceof Node node && !ProblemUtil.isIndividualNode(node)) {
 			var name = node.getName();
-			var message = "Only unique nodes can be referenced in predicates. Mark '%s' as unique with the declaration 'unique %s.'"
+			var message = "Only individual nodes can be referenced in predicates. Mark '%s' as individual with the declaration 'individual %s.'"
 					.formatted(name, name);
 			error(message, argument, ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE,
-					INSIGNIFICANT_INDEX, NON_UNIQUE_NODE_ISSUE);
+					INSIGNIFICANT_INDEX, NON_INDIVIDUAL_NODE_ISSUE);
 		}
 	}
 }

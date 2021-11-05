@@ -79,7 +79,7 @@ class TransactionExecutorTest {
 		var stateId = updateFullText();
 		var responseHandler = sendRequestAndWaitForAllResponses(
 				new XtextWebRequest("bar", Map.of("resource", RESOURCE_NAME, "serviceType", "update", "requiredStateId",
-						stateId, "deltaText", "unique q.\nnode(q).\n<invalid text>\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
+						stateId, "deltaText", "individual q.\nnode(q).\n<invalid text>\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
 
 		var captor = newCaptor();
 		verify(responseHandler, times(3)).onResponse(captor.capture());
@@ -92,7 +92,7 @@ class TransactionExecutorTest {
 		var stateId = updateFullText();
 		var responseHandler = sendRequestAndWaitForAllResponses(
 				new XtextWebRequest("bar", Map.of("resource", RESOURCE_NAME, "serviceType", "update", "requiredStateId",
-						stateId, "deltaText", "unique q.\nnode(q).\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
+						stateId, "deltaText", "individual q.\nnode(q).\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
 
 		var captor = newCaptor();
 		verify(responseHandler, times(2)).onResponse(captor.capture());

@@ -290,7 +290,7 @@ class PartialModelMapperTest {
 			error invalidTaxStatus(Person p) <->
 				taxStatus(p, child), children(p, _q).
 			
-			unique family.
+			individual family.
 			Family(family).
 			members(family, anne): true.
 			members(family, bob).
@@ -322,7 +322,7 @@ class PartialModelMapperTest {
 		val anne = problem.node("anne")
 		val bob = problem.node("bob")
 		val ciri = problem.node("ciri")
-		val family = problem.uniqueNode("family")
+		val family = problem.individualNode("family")
 		val adult = problem.findEnum("TaxStatus").literal("adult")
 		
 		assertTrue(model.getDataRepresentations().contains(relationMap.get(Family)))

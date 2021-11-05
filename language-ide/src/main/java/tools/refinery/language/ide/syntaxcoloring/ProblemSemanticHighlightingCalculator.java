@@ -29,7 +29,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	private static final String CONTAINMENT_CLASS = "containment";
 	private static final String ERROR_CLASS = "error";
 	private static final String NODE_CLASS = "node";
-	private static final String UNIQUE_NODE_CLASS = "unique";
+	private static final String INDIVIDUAL_NODE_CLASS = "individual";
 	private static final String NEW_NODE_CLASS = "new";
 
 	@Inject
@@ -109,8 +109,8 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE) {
 				classesBuilder.add(NODE_CLASS);
 			}
-			if (ProblemUtil.isUniqueNode(node)) {
-				classesBuilder.add(UNIQUE_NODE_CLASS);
+			if (ProblemUtil.isIndividualNode(node)) {
+				classesBuilder.add(INDIVIDUAL_NODE_CLASS);
 			}
 			if (ProblemUtil.isNewNode(node)) {
 				classesBuilder.add(NEW_NODE_CLASS);
