@@ -96,7 +96,7 @@ class ProblemWebSocketServletIntegrationTest {
 			case 0 -> session.getRemote().sendString(
 					"{\"id\":\"foo\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"fullText\":\"class Person.\n\"}}");
 			case 3 -> session.getRemote().sendString(
-					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"requiredStateId\":\"-80000000\",\"deltaText\":\"unique q.\nnode(q).\n\",\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}");
+					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"requiredStateId\":\"-80000000\",\"deltaText\":\"individual q.\nnode(q).\n\",\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}");
 			case 5 -> session.close();
 			}
 		}

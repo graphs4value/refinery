@@ -143,7 +143,7 @@ export const EditorParent = styled('div')(({ theme }) => {
         color: theme.palette.text.secondary,
       },
     },
-    '.cmt-problem-unique': {
+    '.cmt-problem-individual': {
       '&, & .cmt-variableName': {
         color: theme.palette.text.primary,
       },

@@ -15,7 +15,7 @@ statement {
   } |
   EnumDefinition {
     ckw<"enum"> RelationName
-    (EnumBody { "{" sep<",", UniqueNodeName> "}" } | ".")
+    (EnumBody { "{" sep<",", IndividualNodeName> "}" } | ".")
   } |
   PredicateDefinition {
     (ckw<"error"> ckw<"pred">? | ckw<"direct">? ckw<"pred">)
@@ -32,10 +32,10 @@ statement {
     ParameterList<AssertionArgument> (":" LogicValue)? "."
   } |
   NodeValueAssertion {
-    UniqueNodeName ":" Constant "."
+    IndividualNodeName ":" Constant "."
   } |
-  UniqueDeclaration {
-    ckw<"unique"> sep<",", UniqueNodeName> "."
+  IndividualDeclaration {
+    ckw<"individual"> sep<",", IndividualNodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
@@ -87,7 +87,7 @@ RelationName { QualifiedName }
 
 RuleName { QualifiedName }
 
-UniqueNodeName { QualifiedName }
+IndividualNodeName { QualifiedName }
 
 VariableName { QualifiedName }
 

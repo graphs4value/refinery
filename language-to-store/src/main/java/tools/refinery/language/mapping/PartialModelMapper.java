@@ -12,6 +12,7 @@ import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.AssertionArgument;
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.EnumDeclaration;
+import tools.refinery.language.model.problem.IndividualDeclaration;
 import tools.refinery.language.model.problem.LogicValue;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.NodeAssertionArgument;
@@ -19,7 +20,6 @@ import tools.refinery.language.model.problem.PredicateDefinition;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.model.problem.Statement;
-import tools.refinery.language.model.problem.UniqueDeclaration;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
@@ -183,7 +183,7 @@ public class PartialModelMapper {
 				for (Node n : ed.getLiterals()) {
 					enumNodeMap.put(n, nodeIter[0]++);
 				}
-			} else if (s instanceof UniqueDeclaration ud) {
+			} else if (s instanceof IndividualDeclaration ud) {
 				for (Node n : ud.getNodes()) {
 					uniqueNodeMap.put(n, nodeIter[0]++);
 				}

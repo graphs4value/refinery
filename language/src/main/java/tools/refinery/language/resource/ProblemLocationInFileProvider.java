@@ -21,7 +21,7 @@ public class ProblemLocationInFileProvider extends DefaultLocationInFileProvider
 	}
 
 	protected ITextRegion getNodeTextRegion(Node node, RegionDescription query) {
-		if (ProblemUtil.isUniqueNode(node)) {
+		if (ProblemUtil.isIndividualNode(node)) {
 			return super.doGetTextRegion(node, query);
 		}
 		if (ProblemUtil.isNewNode(node)) {

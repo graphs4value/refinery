@@ -77,50 +77,50 @@ class NodeScopingTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("uniqueNodeReferenceSource")
-	def void uniqueNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@MethodSource("individualNodeReferenceSource")
+	def void individualNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		val it = parseHelper.parse('''
 			«IF namedProblem»problem test.«ENDIF»
-			unique a, b.
+			individual a, b.
 			pred predicate(node x, node y) <-> node(x).
 			predicate(«qualifiedNamePrefix»a, «qualifiedNamePrefix»a).
 			?predicate(«qualifiedNamePrefix»a, «qualifiedNamePrefix»b).
 		''')
 		assertThat(errors, empty)
 		assertThat(nodeNames, empty)
-		assertThat(assertion(0).arg(0).node, equalTo(uniqueNode('a')))
-		assertThat(assertion(0).arg(1).node, equalTo(uniqueNode('a')))
-		assertThat(assertion(1).arg(0).node, equalTo(uniqueNode('a')))
-		assertThat(assertion(1).arg(1).node, equalTo(uniqueNode('b')))
+		assertThat(assertion(0).arg(0).node, equalTo(individualNode('a')))
+		assertThat(assertion(0).arg(1).node, equalTo(individualNode('a')))
+		assertThat(assertion(1).arg(0).node, equalTo(individualNode('a')))
+		assertThat(assertion(1).arg(1).node, equalTo(individualNode('b')))
 	}
 
 	@ParameterizedTest
-	@MethodSource("uniqueNodeReferenceSource")
-	def void uniqueNodeInNodeValueAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@MethodSource("individualNodeReferenceSource")
+	def void individualNodeInNodeValueAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		val it = parseHelper.parse('''
 			«IF namedProblem»problem test.«ENDIF»
-			unique a.
+			individual a.
 			«qualifiedNamePrefix»a: 16.
 		''')
 		assertThat(errors, empty)
 		assertThat(nodeNames, empty)
-		assertThat(nodeValueAssertion(0).node, equalTo(uniqueNode('a')))
+		assertThat(nodeValueAssertion(0).node, equalTo(individualNode('a')))
 	}
 
 	@ParameterizedTest
-	@MethodSource("uniqueNodeReferenceSource")
-	def void uniqueNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@MethodSource("individualNodeReferenceSource")
+	def void individualNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
 		val it = parseHelper.parse('''
 			«IF namedProblem»problem test.«ENDIF»
-			unique b.
+			individual b.
 			pred predicate(node a) <-> node(«qualifiedNamePrefix»b).
 		''')
 		assertThat(errors, empty)
 		assertThat(nodeNames, empty)
-		assertThat(pred("predicate").conj(0).lit(0).arg(0).node, equalTo(uniqueNode("b")))
+		assertThat(pred("predicate").conj(0).lit(0).arg(0).node, equalTo(individualNode("b")))
 	}
 	
-	static def uniqueNodeReferenceSource() {
+	static def individualNodeReferenceSource() {
 		Stream.of(
 			Arguments.of("", false),
 			Arguments.of("", true),

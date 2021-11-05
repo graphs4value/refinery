@@ -53,9 +53,9 @@ public final class ProblemUtil {
 		}
 	}
 
-	public static boolean isUniqueNode(Node node) {
+	public static boolean isIndividualNode(Node node) {
 		var containingFeature = node.eContainingFeature();
-		return containingFeature == ProblemPackage.Literals.UNIQUE_DECLARATION__NODES
+		return containingFeature == ProblemPackage.Literals.INDIVIDUAL_DECLARATION__NODES
 				|| containingFeature == ProblemPackage.Literals.ENUM_DECLARATION__LITERALS;
 	}
 

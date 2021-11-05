@@ -46,7 +46,7 @@ class ProblemParsingTest {
 			error invalidTaxStatus(Person p) <->
 				taxStatus(p, child), children(p, _q).
 			
-			unique family.
+			individual family.
 			Family(family).
 			members(family, anne): true.
 			members(family, bob).
