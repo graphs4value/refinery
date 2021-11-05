@@ -7,17 +7,10 @@ import { syntaxTree } from '@codemirror/language';
 import type { Transaction } from '@codemirror/state';
 import escapeStringRegexp from 'escape-string-regexp';
 
+import { implicitCompletion } from '../language/props';
 import type { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
 import type { IContentAssistEntry } from './xtextServiceResults';
-
-const IMPLICIT_COMPLETION_TOKENS = [
-  'QualifiedName',
-  'true',
-  'false',
-  'unknown',
-  'error',
-];
 
 const PROPOSALS_LIMIT = 1000;
 
@@ -32,7 +25,7 @@ interface IFoundToken {
 
   to: number;
 
-  name: string;
+  implicitCompletion: boolean;
 
   text: string;
 }
@@ -50,14 +43,14 @@ function findToken({ pos, state }: CompletionContext): IFoundToken | null {
   return {
     from: token.from,
     to: token.to,
-    name: token.name,
+    implicitCompletion: token.type.prop(implicitCompletion) || false,
     text: state.sliceDoc(token.from, token.to),
   };
 }
 
 function shouldCompleteImplicitly(token: IFoundToken | null, context: CompletionContext): boolean {
   return token !== null
-    && IMPLICIT_COMPLETION_TOKENS.includes(token.name)
+    && token.implicitCompletion
     && context.pos - token.from >= 2;
 }
 

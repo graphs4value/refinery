@@ -85,6 +85,7 @@
     "escape-string-regexp": "^5.0.0",
     "@fontsource/jetbrains-mono": "^4.5.0",
     "@fontsource/roboto": "^4.5.1",
+    "@lezer/common": "^0.15.7",
     "@lezer/lr": "^0.15.4",
     "loglevel": "^1.7.1",
     "loglevel-plugin-prefix": "^0.8.4",
