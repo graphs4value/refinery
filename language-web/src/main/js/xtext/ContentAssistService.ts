@@ -3,9 +3,11 @@ import type {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
+import { syntaxTree } from '@codemirror/language';
 import type { Transaction } from '@codemirror/state';
 import escapeStringRegexp from 'escape-string-regexp';
 
+import { implicitCompletion } from '../language/props';
 import type { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
 import type { IContentAssistEntry } from './xtextServiceResults';
@@ -14,11 +16,56 @@ const PROPOSALS_LIMIT = 1000;
 
 const IDENTIFIER_REGEXP_STR = '[a-zA-Z0-9_]*';
 
-const HIGH_PRIORITY_KEYWORDS = ['<->'];
-
-const QUALIFIED_NAME_SEPARATOR_REGEXP = /::/g;
+const HIGH_PRIORITY_KEYWORDS = ['<->', '~>'];
 
 const log = getLogger('xtext.ContentAssistService');
+
+interface IFoundToken {
+  from: number;
+
+  to: number;
+
+  implicitCompletion: boolean;
+
+  text: string;
+}
+
+function findToken({ pos, state }: CompletionContext): IFoundToken | null {
+  const token = syntaxTree(state).resolveInner(pos, -1);
+  if (token === null) {
+    return null;
+  }
+  if (token.firstChild !== null) {
+    // We only autocomplete terminal nodes. If the current node is nonterminal,
+    // returning `null` makes us autocomplete with the empty prefix instead.
+    return null;
+  }
+  return {
+    from: token.from,
+    to: token.to,
+    implicitCompletion: token.type.prop(implicitCompletion) || false,
+    text: state.sliceDoc(token.from, token.to),
+  };
+}
+
+function shouldCompleteImplicitly(token: IFoundToken | null, context: CompletionContext): boolean {
+  return token !== null
+    && token.implicitCompletion
+    && context.pos - token.from >= 2;
+}
+
+function computeSpan(prefix: string, entryCount: number): RegExp {
+  const escapedPrefix = escapeStringRegexp(prefix);
+  if (entryCount < PROPOSALS_LIMIT) {
+    // Proposals with the current prefix fit the proposals limit.
+    // We can filter client side as long as the current prefix is preserved.
+    return new RegExp(`^${escapedPrefix}${IDENTIFIER_REGEXP_STR}$`);
+  }
+  // The current prefix overflows the proposals limits,
+  // so we have to fetch the completions again on the next keypress.
+  // Hopefully, it'll return a shorter list and we'll be able to filter client side.
+  return new RegExp(`^${escapedPrefix}$`);
+}
 
 function createCompletion(entry: IContentAssistEntry): Completion {
   let boost;
@@ -33,7 +80,7 @@ function createCompletion(entry: IContentAssistEntry): Completion {
       break;
     default: {
       // Penalize qualified names (vs available unqualified names).
-      const extraSegments = entry.proposal.match(QUALIFIED_NAME_SEPARATOR_REGEXP)?.length || 0;
+      const extraSegments = entry.proposal.match(/::/g)?.length || 0;
       boost = Math.max(-5 * extraSegments, -50);
     }
       break;
@@ -45,19 +92,6 @@ function createCompletion(entry: IContentAssistEntry): Completion {
     type: entry.kind?.toLowerCase(),
     boost,
   };
-}
-
-function computeSpan(prefix: string, entryCount: number) {
-  const escapedPrefix = escapeStringRegexp(prefix);
-  if (entryCount < PROPOSALS_LIMIT) {
-    // Proposals with the current prefix fit the proposals limit.
-    // We can filter client side as long as the current prefix is preserved.
-    return new RegExp(`^${escapedPrefix}${IDENTIFIER_REGEXP_STR}$`);
-  }
-  // The current prefix overflows the proposals limits,
-  // so we have to fetch the completions again on the next keypress.
-  // Hopefully, it'll return a shorter list and we'll be able to filter client side.
-  return new RegExp(`^${escapedPrefix}$`);
 }
 
 export class ContentAssistService {
@@ -76,16 +110,16 @@ export class ContentAssistService {
   }
 
   async contentAssist(context: CompletionContext): Promise<CompletionResult> {
-    const tokenBefore = context.tokenBefore(['QualifiedName']);
+    const tokenBefore = findToken(context);
+    if (!context.explicit && !shouldCompleteImplicitly(tokenBefore, context)) {
+      return {
+        from: context.pos,
+        options: [],
+      };
+    }
     let range: { from: number, to: number };
     let prefix = '';
     if (tokenBefore === null) {
-      if (!context.explicit) {
-        return {
-          from: context.pos,
-          options: [],
-        };
-      }
       range = {
         from: context.pos,
         to: context.pos,
@@ -124,7 +158,12 @@ export class ContentAssistService {
     }
     const options: Completion[] = [];
     entries.forEach((entry) => {
-      options.push(createCompletion(entry));
+      if (prefix === entry.prefix) {
+        // Xtext will generate completions that do not complete the current token,
+        // e.g., `(` after trying to complete an indetifier,
+        // but we ignore those, since CodeMirror won't filter for them anyways.
+        options.push(createCompletion(entry));
+      }
     });
     log.debug('Fetched', options.length, 'completions from server');
     this.lastCompletion = {
@@ -137,7 +176,7 @@ export class ContentAssistService {
 
   private shouldReturnCachedCompletion(
     token: { from: number, to: number, text: string } | null,
-  ) {
+  ): boolean {
     if (token === null || this.lastCompletion === null) {
       return false;
     }
@@ -147,10 +186,13 @@ export class ContentAssistService {
       return true;
     }
     const [transformedFrom, transformedTo] = this.mapRangeInclusive(lastFrom, lastTo);
-    return from >= transformedFrom && to <= transformedTo && span && span.exec(text);
+    return from >= transformedFrom
+      && to <= transformedTo
+      && typeof span !== 'undefined'
+      && span.exec(text) !== null;
   }
 
-  private shouldInvalidateCachedCompletion(transaction: Transaction) {
+  private shouldInvalidateCachedCompletion(transaction: Transaction): boolean {
     if (!transaction.docChanged || this.lastCompletion === null) {
       return false;
     }

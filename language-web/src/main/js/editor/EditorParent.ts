@@ -34,6 +34,9 @@ export const EditorParent = styled('div')(({ theme }) => {
     '&, .cm-editor': {
       height: '100%',
     },
+    '.cm-content': {
+      padding: 0,
+    },
     '.cm-scroller, .cm-tooltip-autocomplete, .cm-completionLabel, .cm-completionDetail': {
       fontSize: 16,
       fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
@@ -46,7 +49,7 @@ export const EditorParent = styled('div')(({ theme }) => {
       color: theme.palette.text.secondary,
     },
     '.cm-gutters': {
-      background: theme.palette.background.default,
+      background: 'rgba(255, 255, 255, 0.1)',
       color: theme.palette.text.disabled,
       border: 'none',
     },
@@ -57,7 +60,9 @@ export const EditorParent = styled('div')(({ theme }) => {
       background: 'rgba(0, 0, 0, 0.3)',
     },
     '.cm-activeLineGutter': {
-      background: 'rgba(0, 0, 0, 0.3)',
+      background: 'transparent',
+    },
+    '.cm-lineNumbers .cm-activeLineGutter': {
       color: theme.palette.text.primary,
     },
     '.cm-cursor, .cm-cursor-primary': {
