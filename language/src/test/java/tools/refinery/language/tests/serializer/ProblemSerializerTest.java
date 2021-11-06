@@ -36,7 +36,7 @@ import tools.refinery.language.tests.ProblemInjectorProvider;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemInjectorProvider.class)
-public class ProblemSerializerTest {
+class ProblemSerializerTest {
 	@Inject
 	ResourceSet resourceSet;
 
