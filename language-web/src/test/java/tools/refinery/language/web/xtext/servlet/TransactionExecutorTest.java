@@ -92,7 +92,7 @@ class TransactionExecutorTest {
 		var stateId = updateFullText();
 		var responseHandler = sendRequestAndWaitForAllResponses(
 				new XtextWebRequest("bar", Map.of("resource", RESOURCE_NAME, "serviceType", "update", "requiredStateId",
-						stateId, "deltaText", "individual q.\nnode(q).\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
+						stateId, "deltaText", "indiv q.\nnode(q).\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
 
 		var captor = newCaptor();
 		verify(responseHandler, times(2)).onResponse(captor.capture());

@@ -53,7 +53,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = argument.getVariableOrNode();
 		if (variableOrNode instanceof Node node && !ProblemUtil.isIndividualNode(node)) {
 			var name = node.getName();
-			var message = "Only individual nodes can be referenced in predicates. Mark '%s' as individual with the declaration 'individual %s.'"
+			var message = "Only individual nodes can be referenced in predicates. Mark '%s' as individual with the declaration 'indiv %s.'"
 					.formatted(name, name);
 			error(message, argument, ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE,
 					INSIGNIFICANT_INDEX, NON_INDIVIDUAL_NODE_ISSUE);

@@ -27,7 +27,7 @@ const parserWithMetadata = (parser as LRParser).configure({
     styleTags({
       LineComment: t.lineComment,
       BlockComment: t.blockComment,
-      'problem class enum pred rule individual scope': t.definitionKeyword,
+      'problem class enum pred rule indiv scope': t.definitionKeyword,
       'abstract extends refers contains opposite error direct default': t.modifier,
       'true false unknown error': t.keyword,
       'new delete': t.operatorKeyword,

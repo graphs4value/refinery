@@ -109,12 +109,12 @@ ConstantArgument:
 
 Assertion:
 	default?="default"?
-	(relation=[Relation|QualifiedName]
-	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
-	":" value=LogicValue |
-	value=ShortLogicValue?
+	(value=ShortLogicValue?
 	relation=[Relation|QualifiedName]
-	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")")
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
+	| relation=[Relation|QualifiedName]
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
+	":" value=LogicValue)
 	".";
 
 AssertionArgument:
@@ -174,7 +174,7 @@ ExactMultiplicity:
 	exactValue=INT;
 
 IndividualDeclaration:
-	"individual" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+	"indiv" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
 
 UpperBound returns ecore::EInt:
 	INT | "*";
@@ -184,7 +184,7 @@ QualifiedName hidden():
 
 Identifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" |
-	"individual" | "problem" | "new" | "delete" | "direct" | "rule";
+	"indiv" | "problem" | "new" | "delete" | "direct" | "rule";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

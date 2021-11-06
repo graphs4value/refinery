@@ -35,7 +35,7 @@ statement {
     IndividualNodeName ":" Constant "."
   } |
   IndividualDeclaration {
-    ckw<"individual"> sep<",", IndividualNodeName> "."
+    ckw<"indiv"> sep<",", IndividualNodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."

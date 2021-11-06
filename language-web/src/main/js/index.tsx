@@ -38,7 +38,7 @@ direct rule createChild(p):
     children(p, q) = true,
     taxStatus(q, child) = true.
 
-individual family.
+indiv family.
 Family(family).
 members(family, anne).
 members(family, bob).

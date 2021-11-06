@@ -290,7 +290,7 @@ class PartialModelMapperTest {
 			error invalidTaxStatus(Person p) <->
 				taxStatus(p, child), children(p, _q).
 			
-			individual family.
+			indiv family.
 			Family(family).
 			members(family, anne): true.
 			members(family, bob).
