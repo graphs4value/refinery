@@ -81,7 +81,7 @@ class NodeScopingTest {
 	def void individualNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		val it = parseHelper.parse('''
 			«IF namedProblem»problem test.«ENDIF»
-			individual a, b.
+			indiv a, b.
 			pred predicate(node x, node y) <-> node(x).
 			predicate(«qualifiedNamePrefix»a, «qualifiedNamePrefix»a).
 			?predicate(«qualifiedNamePrefix»a, «qualifiedNamePrefix»b).
@@ -99,7 +99,7 @@ class NodeScopingTest {
 	def void individualNodeInNodeValueAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		val it = parseHelper.parse('''
 			«IF namedProblem»problem test.«ENDIF»
-			individual a.
+			indiv a.
 			«qualifiedNamePrefix»a: 16.
 		''')
 		assertThat(errors, empty)
@@ -112,7 +112,7 @@ class NodeScopingTest {
 	def void individualNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
 		val it = parseHelper.parse('''
 			«IF namedProblem»problem test.«ENDIF»
-			individual b.
+			indiv b.
 			pred predicate(node a) <-> node(«qualifiedNamePrefix»b).
 		''')
 		assertThat(errors, empty)

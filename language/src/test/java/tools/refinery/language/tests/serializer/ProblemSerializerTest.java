@@ -74,7 +74,7 @@ public class ProblemSerializerTest {
 		problem.getStatements().add(individualDeclaration);
 		createAssertion(pred, node);
 
-		assertSerializedResult("pred foo ( node p ) . individual a . foo ( a ) : true .");
+		assertSerializedResult("pred foo ( node p ) . indiv a . foo ( a ) : true .");
 	}
 
 	private PredicateDefinition createPred() {
