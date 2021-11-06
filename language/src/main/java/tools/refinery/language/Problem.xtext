@@ -109,12 +109,12 @@ ConstantArgument:
 
 Assertion:
 	default?="default"?
-	(relation=[Relation|QualifiedName]
-	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
-	":" value=LogicValue |
-	value=ShortLogicValue?
+	(value=ShortLogicValue?
 	relation=[Relation|QualifiedName]
-	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")")
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
+	| relation=[Relation|QualifiedName]
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
+	":" value=LogicValue)
 	".";
 
 AssertionArgument:

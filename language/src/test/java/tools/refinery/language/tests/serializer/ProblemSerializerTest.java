@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -15,6 +16,9 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.google.inject.Inject;
 
@@ -53,6 +57,27 @@ public class ProblemSerializerTest {
 		builtin = ProblemUtil.getBuiltInLibrary(problem).get();
 	}
 
+	@ParameterizedTest
+	@MethodSource
+	void assertionTest(LogicValue value, String serializedAssertion) {
+		var pred = createPred();
+		var node = ProblemFactory.eINSTANCE.createNode();
+		node.setName("a");
+		var individualDeclaration = ProblemFactory.eINSTANCE.createIndividualDeclaration();
+		individualDeclaration.getNodes().add(node);
+		problem.getStatements().add(individualDeclaration);
+		createAssertion(pred, node, value);
+
+		assertSerializedResult("pred foo ( node p ) . indiv a . " + serializedAssertion);
+	}
+
+	static Stream<Arguments> assertionTest() {
+		return Stream.of(Arguments.of(LogicValue.TRUE, "foo ( a ) ."),
+				Arguments.of(LogicValue.FALSE, "! foo ( a ) ."),
+				Arguments.of(LogicValue.UNKNOWN, "? foo ( a ) ."),
+				Arguments.of(LogicValue.ERROR, "foo ( a ) : error ."));
+	}
+
 	@Test
 	void implicitNodeTest() {
 		var pred = createPred();
@@ -61,20 +86,7 @@ public class ProblemSerializerTest {
 		problem.getNodes().add(node);
 		createAssertion(pred, node);
 
-		assertSerializedResult("pred foo ( node p ) . foo ( a ) : true .");
-	}
-
-	@Test
-	void individualNodeTest() {
-		var pred = createPred();
-		var node = ProblemFactory.eINSTANCE.createNode();
-		node.setName("a");
-		var individualDeclaration = ProblemFactory.eINSTANCE.createIndividualDeclaration();
-		individualDeclaration.getNodes().add(node);
-		problem.getStatements().add(individualDeclaration);
-		createAssertion(pred, node);
-
-		assertSerializedResult("pred foo ( node p ) . indiv a . foo ( a ) : true .");
+		assertSerializedResult("pred foo ( node p ) . foo ( a ) .");
 	}
 
 	private PredicateDefinition createPred() {
@@ -88,7 +100,7 @@ public class ProblemSerializerTest {
 		problem.getStatements().add(pred);
 		return pred;
 	}
-	
+
 	@Test
 	void newNodeTest() {
 		var classDeclaration = ProblemFactory.eINSTANCE.createClassDeclaration();
@@ -99,16 +111,20 @@ public class ProblemSerializerTest {
 		problem.getStatements().add(classDeclaration);
 		createAssertion(classDeclaration, newNode);
 
-		assertSerializedResult("class Foo . Foo ( Foo::new ) : true .");
+		assertSerializedResult("class Foo . Foo ( Foo::new ) .");
 	}
-	
+
 	private void createAssertion(Relation relation, Node node) {
+		createAssertion(relation, node, LogicValue.TRUE);
+	}
+
+	private void createAssertion(Relation relation, Node node, LogicValue value) {
 		var assertion = ProblemFactory.eINSTANCE.createAssertion();
 		assertion.setRelation(relation);
 		var argument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
 		argument.setNode(node);
 		assertion.getArguments().add(argument);
-		assertion.setValue(LogicValue.TRUE);
+		assertion.setValue(value);
 		problem.getStatements().add(assertion);
 	}
 
@@ -149,7 +165,7 @@ public class ProblemSerializerTest {
 		atom.getArguments().add(arg2);
 		return atom;
 	}
-	
+
 	@Test
 	void singletonVariableTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
@@ -175,7 +191,7 @@ public class ProblemSerializerTest {
 		conjunction.getLiterals().add(atom);
 		pred.getBodies().add(conjunction);
 		problem.getStatements().add(pred);
-		
+
 		assertSerializedResult("pred foo ( node p ) <-> equals ( p , _q ) .");
 	}
 
