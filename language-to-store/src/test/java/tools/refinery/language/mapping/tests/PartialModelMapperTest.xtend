@@ -260,7 +260,7 @@ class PartialModelMapperTest {
 		val enumNodeMap = modelAndMaps.enumNodeMap
 		
 		val bool = builtin.findEnum("bool")
-		val trueEnum = builtin.findEnum("bool").literal("true") //Emiatt nem sikerül a teszt
+		val trueEnum = builtin.findEnum("bool").literal("true")
 		val falseEnum = builtin.findEnum("bool").literal("false")
 		
 		assertTrue(model.getDataRepresentations().contains(relationMap.get(bool)))
