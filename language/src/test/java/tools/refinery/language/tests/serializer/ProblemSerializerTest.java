@@ -38,16 +38,16 @@ import tools.refinery.language.tests.ProblemInjectorProvider;
 @InjectWith(ProblemInjectorProvider.class)
 class ProblemSerializerTest {
 	@Inject
-	ResourceSet resourceSet;
+	private ResourceSet resourceSet;
 
 	@Inject
-	ProblemTestUtil testUtil;
+	private ProblemTestUtil testUtil;
 
-	Resource resource;
+	private Resource resource;
 
-	Problem problem;
+	private Problem problem;
 
-	Problem builtin;
+	private Problem builtin;
 
 	@BeforeEach
 	void beforeEach() {
@@ -68,14 +68,16 @@ class ProblemSerializerTest {
 		problem.getStatements().add(individualDeclaration);
 		createAssertion(pred, node, value);
 
-		assertSerializedResult("pred foo ( node p ) . indiv a . " + serializedAssertion);
+		assertSerializedResult("""
+				pred foo(node p).
+
+				indiv a.
+				""" + serializedAssertion + "\n");
 	}
 
 	static Stream<Arguments> assertionTest() {
-		return Stream.of(Arguments.of(LogicValue.TRUE, "foo ( a ) ."),
-				Arguments.of(LogicValue.FALSE, "! foo ( a ) ."),
-				Arguments.of(LogicValue.UNKNOWN, "? foo ( a ) ."),
-				Arguments.of(LogicValue.ERROR, "foo ( a ) : error ."));
+		return Stream.of(Arguments.of(LogicValue.TRUE, "foo(a)."), Arguments.of(LogicValue.FALSE, "!foo(a)."),
+				Arguments.of(LogicValue.UNKNOWN, "?foo(a)."), Arguments.of(LogicValue.ERROR, "foo(a): error."));
 	}
 
 	@Test
@@ -86,7 +88,11 @@ class ProblemSerializerTest {
 		problem.getNodes().add(node);
 		createAssertion(pred, node);
 
-		assertSerializedResult("pred foo ( node p ) . foo ( a ) .");
+		assertSerializedResult("""
+				pred foo(node p).
+
+				foo(a).
+				""");
 	}
 
 	private PredicateDefinition createPred() {
@@ -111,7 +117,11 @@ class ProblemSerializerTest {
 		problem.getStatements().add(classDeclaration);
 		createAssertion(classDeclaration, newNode);
 
-		assertSerializedResult("class Foo . Foo ( Foo::new ) .");
+		assertSerializedResult("""
+				class Foo.
+
+				Foo(Foo::new).
+				""");
 	}
 
 	private void createAssertion(Relation relation, Node node) {
@@ -151,7 +161,9 @@ class ProblemSerializerTest {
 		pred.getBodies().add(conjunction);
 		problem.getStatements().add(pred);
 
-		assertSerializedResult("pred foo ( node p1 , node p2 ) <-> equals ( p1 , q ) , equals ( q , p2 ) .");
+		assertSerializedResult("""
+				pred foo(node p1, node p2) <-> equals(p1, q), equals(q, p2).
+				""");
 	}
 
 	private Atom createAtom(Relation relation, VariableOrNode variable1, VariableOrNode variable2) {
@@ -192,7 +204,9 @@ class ProblemSerializerTest {
 		pred.getBodies().add(conjunction);
 		problem.getStatements().add(pred);
 
-		assertSerializedResult("pred foo ( node p ) <-> equals ( p , _q ) .");
+		assertSerializedResult("""
+				pred foo(node p) <-> equals(p, _q).
+				""");
 	}
 
 	private void assertSerializedResult(String expected) {

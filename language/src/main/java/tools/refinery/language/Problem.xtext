@@ -8,7 +8,8 @@ Problem:
 	statements+=Statement*;
 
 Statement:
-	ClassDeclaration | EnumDeclaration | PredicateDefinition | RuleDefinition | Assertion | NodeValueAssertion | ScopeDeclaration |
+	ClassDeclaration | EnumDeclaration | PredicateDefinition | RuleDefinition | Assertion | NodeValueAssertion |
+	ScopeDeclaration |
 	IndividualDeclaration;
 
 ClassDeclaration:
@@ -67,7 +68,7 @@ Literal:
 
 ValueLiteral:
 	atom=Atom
-	(refinement?=":"|"=")
+	(refinement?=":" | "=")
 	values+=LogicConstant ("|" values+=LogicConstant)*;
 
 NegativeLiteral:
@@ -78,7 +79,7 @@ ActionLiteral:
 
 ValueActionLiteral:
 	atom=Atom
-	(refinement?=":"|"=")
+	(refinement?=":" | "=")
 	value=LogicValue;
 
 DeleteActionLiteral:
@@ -86,7 +87,7 @@ DeleteActionLiteral:
 
 NewActionLiteral:
 	"new" variable=NewVariable;
-	
+
 NewVariable:
 	name=Identifier;
 
