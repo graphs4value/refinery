@@ -2,7 +2,6 @@ import type { Diagnostic } from '@codemirror/lint';
 
 import type { EditorStore } from '../editor/EditorStore';
 import type { UpdateService } from './UpdateService';
-import { getLogger } from '../utils/logger';
 import { validationResult } from './xtextServiceResults';
 
 export class ValidationService {
