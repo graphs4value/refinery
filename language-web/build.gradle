@@ -5,16 +5,15 @@ apply from: "${rootDir}/gradle/junit.gradle"
 dependencies {
 	implementation project(':refinery-language')
 	implementation project(':refinery-language-ide')
-	implementation "org.eclipse.xtext:org.eclipse.xtext.web:${xtextVersion}"
-	implementation "org.eclipse.xtend:org.eclipse.xtend.lib:${xtextVersion}"
-	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
-	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
-	implementation "org.eclipse.jetty.websocket:websocket-jetty-server:${jettyVersion}"
-	implementation "org.slf4j:slf4j-simple:${slf4JVersion}"
-	implementation "org.slf4j:log4j-over-slf4j:${slf4JVersion}"
+	implementation libs.xtend.lib
+	implementation libs.xtext.web
+	implementation libs.jetty.server
+	implementation libs.jetty.servlet
+	implementation libs.jetty.websocket.server
+	implementation libs.slf4j.simple
+	implementation libs.slf4j.log4j
 	testImplementation testFixtures(project(':refinery-language'))
-	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
-	testImplementation "org.eclipse.jetty.websocket:websocket-jetty-client:${jettyVersion}"
+	testImplementation libs.jetty.websocket.client
 }
 
 def generateXtextLanguage = project(':refinery-language').tasks.named('generateXtextLanguage')
@@ -29,7 +28,7 @@ def webpackOutputDir = "${buildDir}/webpack"
 def productionResources = "${webpackOutputDir}/production"
 def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
 
-apply plugin: 'org.siouan.frontend-jdk11'
+apply plugin: libs.plugins.frontend.get().pluginId
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
 def nodeDirectory = "${rootDir}/.gradle/node"
@@ -110,7 +109,7 @@ mainClassName = serverMainClass
 distTar.enabled = false
 distZip.enabled = false
 
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: libs.plugins.shadow.get().pluginId
 shadowDistTar.enabled = false
 shadowDistZip.enabled = false
 

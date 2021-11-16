@@ -3,8 +3,8 @@ apply from: "${rootDir}/gradle/xtext-common.gradle"
 
 dependencies {
 	api project(':refinery-language')
-	api "org.eclipse.xtext:org.eclipse.xtext.ide:${xtextVersion}"
-	api "org.eclipse.xtext:org.eclipse.xtext.xbase.ide:${xtextVersion}"
+	api libs.xtext.ide
+	api libs.xtext.xbase.ide
 }
 
 def generateXtextLanguage = project(':refinery-language').tasks.named('generateXtextLanguage')

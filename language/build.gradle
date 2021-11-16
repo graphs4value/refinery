@@ -6,16 +6,15 @@ apply from: "${rootDir}/gradle/mwe2.gradle"
 apply from: "${rootDir}/gradle/xtend.gradle"
 
 dependencies {
-	api platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
-	api "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
-	api "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
-	api "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
+	api platform(libs.xtext.bom)
+	api libs.ecore
+	api libs.xtext.core
+	api libs.xtext.xbase
 	api project(':refinery-language-model')
-	testFixturesApi "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
+	testFixturesApi libs.xtext.testing
 	testFixturesApi testFixtures(project(':refinery-language-model'))
-	mwe2 "org.eclipse.xtext:org.eclipse.xtext.common.types:${xtextVersion}"
-	mwe2 "org.eclipse.xtext:org.eclipse.xtext.xtext.generator:${xtextVersion}"
-	mwe2 "org.eclipse.xtext:xtext-antlr-generator:${xtextAntlrGeneratorVersion}"
+	mwe2 libs.xtext.generator
+	mwe2 libs.xtext.generator.antlr
 }
 
 sourceSets {

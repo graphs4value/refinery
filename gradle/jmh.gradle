@@ -14,8 +14,8 @@ sourceSets {
 }
 
 dependencies {
-	jmhImplementation "org.openjdk.jmh:jmh-core:${jmhVersion}"
-	jmhAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}"
+	jmhImplementation libs.jmh.core
+	jmhAnnotationProcessor libs.jmh.annprocess
 }
 
 tasks.register('jmh', JavaExec) {

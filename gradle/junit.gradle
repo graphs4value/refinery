@@ -1,12 +1,12 @@
 apply plugin: 'jacoco'
 
 dependencies {
-	testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-	testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
-	testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
-	testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-	testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+	testImplementation libs.hamcrest
+	testImplementation libs.junit.api
+	testRuntimeOnly libs.junit.engine
+	testImplementation libs.junit.params
+	testImplementation libs.mockito.core
+	testImplementation libs.mockito.junit
 }
 
 def jacocoTestReport = tasks.named('jacocoTestReport')

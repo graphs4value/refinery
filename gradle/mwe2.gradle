@@ -5,7 +5,7 @@ configurations {
 }
 
 dependencies {
-	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe2.launch:${mwe2Version}"
+	mwe2 libs.mwe2.launch
 }
 
 eclipse.classpath.plusConfigurations += [configurations.mwe2]

@@ -4,13 +4,13 @@ apply from: "${rootDir}/gradle/java-common.gradle"
 apply from: "${rootDir}/gradle/mwe2.gradle"
 
 dependencies {
-	api "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
-	api "org.eclipse.emf:org.eclipse.emf.ecore.xmi:${ecoreXmiVersion}"
-	mwe2 "org.eclipse.emf:org.eclipse.emf.codegen.ecore:${ecoreCodegenVersion}"
-	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe.utils:${mweVersion}"
-	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe2.lib:${mwe2Version}"
-	mwe2 "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
-	mwe2 "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+	api libs.ecore
+	api libs.ecore.xmi
+	mwe2 libs.ecore.codegen
+	mwe2 libs.mwe.utils
+	mwe2 libs.mwe2.lib
+	mwe2 libs.xtext.core
+	mwe2 libs.xtext.xbase
 }
 
 sourceSets {
