@@ -7,6 +7,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CheckIcon from '@mui/icons-material/Check';
 import ErrorIcon from '@mui/icons-material/Error';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import FormatPaint from '@mui/icons-material/FormatPaint';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import RedoIcon from '@mui/icons-material/Redo';
 import SearchIcon from '@mui/icons-material/Search';
@@ -47,7 +48,6 @@ export const EditorButtons = observer(() => {
           disabled={!editorStore.canUndo}
           onClick={() => editorStore.undo()}
           aria-label="Undo"
-          value="undo"
         >
           <UndoIcon fontSize="small" />
         </IconButton>
@@ -55,7 +55,6 @@ export const EditorButtons = observer(() => {
           disabled={!editorStore.canRedo}
           onClick={() => editorStore.redo()}
           aria-label="Redo"
-          value="redo"
         >
           <RedoIcon fontSize="small" />
         </IconButton>
@@ -88,6 +87,12 @@ export const EditorButtons = observer(() => {
           {getLintIcon(editorStore.highestDiagnosticLevel)}
         </ToggleButton>
       </ToggleButtonGroup>
+      <IconButton
+        onClick={() => editorStore.formatText()}
+        aria-label="Automatic format"
+      >
+        <FormatPaint fontSize="small" />
+      </IconButton>
     </Stack>
   );
 });

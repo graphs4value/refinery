@@ -1,62 +1,40 @@
-export interface IXtextWebRequest {
-  id: string;
+import { z } from 'zod';
 
-  request: unknown;
-}
+export const xtextWebRequest = z.object({
+  id: z.string().nonempty(),
+  request: z.unknown(),
+});
 
-export interface IXtextWebOkResponse {
-  id: string;
+export type XtextWebRequest = z.infer<typeof xtextWebRequest>;
 
-  response: unknown;
-}
+export const xtextWebOkResponse = z.object({
+  id: z.string().nonempty(),
+  response: z.unknown(),
+});
 
-export function isOkResponse(response: unknown): response is IXtextWebOkResponse {
-  const okResponse = response as IXtextWebOkResponse;
-  return typeof okResponse === 'object'
-    && typeof okResponse.id === 'string'
-    && typeof okResponse.response !== 'undefined';
-}
+export type XtextWebOkResponse = z.infer<typeof xtextWebOkResponse>;
 
-export const VALID_XTEXT_WEB_ERROR_KINDS = ['request', 'server'] as const;
+export const xtextWebErrorKind = z.enum(['request', 'server']);
 
-export type XtextWebErrorKind = typeof VALID_XTEXT_WEB_ERROR_KINDS[number];
+export type XtextWebErrorKind = z.infer<typeof xtextWebErrorKind>;
 
-export function isXtextWebErrorKind(value: unknown): value is XtextWebErrorKind {
-  return typeof value === 'string'
-    && VALID_XTEXT_WEB_ERROR_KINDS.includes(value as XtextWebErrorKind);
-}
+export const xtextWebErrorResponse = z.object({
+  id: z.string().nonempty(),
+  error: xtextWebErrorKind,
+  message: z.string(),
+});
 
-export interface IXtextWebErrorResponse {
-  id: string;
+export type XtextWebErrorResponse = z.infer<typeof xtextWebErrorResponse>;
 
-  error: XtextWebErrorKind;
+export const xtextWebPushService = z.enum(['highlight', 'validate']);
 
-  message: string;
-}
+export type XtextWebPushService = z.infer<typeof xtextWebPushService>;
 
-export function isErrorResponse(response: unknown): response is IXtextWebErrorResponse {
-  const errorResponse = response as IXtextWebErrorResponse;
-  return typeof errorResponse === 'object'
-    && typeof errorResponse.id === 'string'
-    && isXtextWebErrorKind(errorResponse.error)
-    && typeof errorResponse.message === 'string';
-}
+export const xtextWebPushMessage = z.object({
+  resource: z.string().nonempty(),
+  stateId: z.string().nonempty(),
+  service: xtextWebPushService,
+  push: z.unknown(),
+});
 
-export interface IXtextWebPushMessage {
-  resource: string;
-
-  stateId: string;
-
-  service: string;
-
-  push: unknown;
-}
-
-export function isPushMessage(response: unknown): response is IXtextWebPushMessage {
-  const pushMessage = response as IXtextWebPushMessage;
-  return typeof pushMessage === 'object'
-    && typeof pushMessage.resource === 'string'
-    && typeof pushMessage.stateId === 'string'
-    && typeof pushMessage.service === 'string'
-    && typeof pushMessage.push !== 'undefined';
-}
+export type XtextWebPushMessage = z.infer<typeof xtextWebPushMessage>;

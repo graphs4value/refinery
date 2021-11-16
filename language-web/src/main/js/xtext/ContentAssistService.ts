@@ -10,7 +10,7 @@ import escapeStringRegexp from 'escape-string-regexp';
 import { implicitCompletion } from '../language/props';
 import type { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
-import type { IContentAssistEntry } from './xtextServiceResults';
+import type { ContentAssistEntry } from './xtextServiceResults';
 
 const PROPOSALS_LIMIT = 1000;
 
@@ -67,8 +67,8 @@ function computeSpan(prefix: string, entryCount: number): RegExp {
   return new RegExp(`^${escapedPrefix}$`);
 }
 
-function createCompletion(entry: IContentAssistEntry): Completion {
-  let boost;
+function createCompletion(entry: ContentAssistEntry): Completion {
+  let boost: number;
   switch (entry.kind) {
     case 'KEYWORD':
       // Some hard-to-type operators should be on top.

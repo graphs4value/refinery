@@ -7,9 +7,9 @@ import { getLogger } from '../utils/logger';
 import { Timer } from '../utils/Timer';
 import { XtextWebSocketClient } from './XtextWebSocketClient';
 import {
-  isOccurrencesResult,
-  isServiceConflictResult,
-  ITextRegion,
+  isConflictResult,
+  occurrencesResult,
+  TextRegion,
 } from './xtextServiceResults';
 
 const FIND_OCCURRENCES_TIMEOUT_MS = 1000;
@@ -20,7 +20,7 @@ const CLEAR_OCCURRENCES_TIMEOUT_MS = 10;
 
 const log = getLogger('xtext.OccurrencesService');
 
-function transformOccurrences(regions: ITextRegion[]): IOccurrence[] {
+function transformOccurrences(regions: TextRegion[]): IOccurrence[] {
   const occurrences: IOccurrence[] = [];
   regions.forEach(({ offset, length }) => {
     if (length > 0) {
@@ -87,21 +87,32 @@ export class OccurrencesService {
       caretOffset: this.store.state.selection.main.head,
     });
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
-    if (!allChanges.empty
-      || (isServiceConflictResult(result) && result.conflict === 'canceled')) {
+    if (!allChanges.empty || isConflictResult(result, 'canceled')) {
       // Stale occurrences result, the user already made some changes.
       // We can safely ignore the occurrences and schedule a new find occurrences call.
       this.clearOccurrences();
       this.findOccurrencesTimer.schedule();
       return;
     }
-    if (!isOccurrencesResult(result) || result.stateId !== this.updateService.xtextStateId) {
-      log.error('Unexpected occurrences result', result);
+    const parsedOccurrencesResult = occurrencesResult.safeParse(result);
+    if (!parsedOccurrencesResult.success) {
+      log.error(
+        'Unexpected occurences result',
+        result,
+        'not an OccurrencesResult: ',
+        parsedOccurrencesResult.error,
+      );
       this.clearOccurrences();
       return;
     }
-    const write = transformOccurrences(result.writeRegions);
-    const read = transformOccurrences(result.readRegions);
+    const { stateId, writeRegions, readRegions } = parsedOccurrencesResult.data;
+    if (stateId !== this.updateService.xtextStateId) {
+      log.error('Unexpected state id, expected:', this.updateService.xtextStateId, 'got:', stateId);
+      this.clearOccurrences();
+      return;
+    }
+    const write = transformOccurrences(writeRegions);
+    const read = transformOccurrences(readRegions);
     this.hasOccurrences = write.length > 0 || read.length > 0;
     log.debug('Found', write.length, 'write and', read.length, 'read occurrences');
     this.store.updateOccurrences(write, read);

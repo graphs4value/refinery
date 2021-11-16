@@ -12,6 +12,7 @@ import { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
 import { ValidationService } from './ValidationService';
 import { XtextWebSocketClient } from './XtextWebSocketClient';
+import { XtextWebPushService } from './xtextMessages';
 
 const log = getLogger('xtext.XtextClient');
 
@@ -52,7 +53,7 @@ export class XtextClient {
     this.occurrencesService.onTransaction(transaction);
   }
 
-  private onPush(resource: string, stateId: string, service: string, push: unknown) {
+  private onPush(resource: string, stateId: string, service: XtextWebPushService, push: unknown) {
     const { resourceName, xtextStateId } = this.updateService;
     if (resource !== resourceName) {
       log.error('Unknown resource name: expected:', resourceName, 'got:', resource);
@@ -70,14 +71,16 @@ export class XtextClient {
         return;
       case 'validate':
         this.validationService.onPush(push);
-        return;
-      default:
-        log.error('Unknown push service:', service);
-        break;
     }
   }
 
   contentAssist(context: CompletionContext): Promise<CompletionResult> {
     return this.contentAssistService.contentAssist(context);
+  }
+
+  formatText(): void {
+    this.updateService.formatText().catch((e) => {
+      log.error('Error while formatting text', e);
+    });
   }
 }

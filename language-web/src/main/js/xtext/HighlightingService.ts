@@ -1,10 +1,7 @@
 import type { EditorStore } from '../editor/EditorStore';
 import type { IHighlightRange } from '../editor/semanticHighlighting';
 import type { UpdateService } from './UpdateService';
-import { getLogger } from '../utils/logger';
-import { isHighlightingResult } from './xtextServiceResults';
-
-const log = getLogger('xtext.ValidationService');
+import { highlightingResult } from './xtextServiceResults';
 
 export class HighlightingService {
   private readonly store: EditorStore;
@@ -17,13 +14,10 @@ export class HighlightingService {
   }
 
   onPush(push: unknown): void {
-    if (!isHighlightingResult(push)) {
-      log.error('Invalid highlighting result', push);
-      return;
-    }
+    const { regions } = highlightingResult.parse(push);
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
     const ranges: IHighlightRange[] = [];
-    push.regions.forEach(({ offset, length, styleClasses }) => {
+    regions.forEach(({ offset, length, styleClasses }) => {
       if (styleClasses.length === 0) {
         return;
       }

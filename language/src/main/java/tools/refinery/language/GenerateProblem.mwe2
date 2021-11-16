@@ -39,6 +39,9 @@ Workflow {
 			serializer = {
 				generateStub = false
 			}
+			formatter = {
+				generateStub = true
+			}
 			validator = {
 				generateDeprecationValidation = true
 			}
