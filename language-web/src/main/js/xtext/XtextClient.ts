@@ -77,4 +77,10 @@ export class XtextClient {
   contentAssist(context: CompletionContext): Promise<CompletionResult> {
     return this.contentAssistService.contentAssist(context);
   }
+
+  formatText(): void {
+    this.updateService.formatText().catch((e) => {
+      log.error('Error while formatting text', e);
+    });
+  }
 }

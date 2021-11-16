@@ -1,6 +1,8 @@
 import {
   ChangeDesc,
   ChangeSet,
+  ChangeSpec,
+  StateEffect,
   Transaction,
 } from '@codemirror/state';
 import { nanoid } from 'nanoid';
@@ -14,6 +16,7 @@ import {
   ContentAssistEntry,
   contentAssistResult,
   documentStateResult,
+  formattingResult,
   isConflictResult,
 } from './xtextServiceResults';
 
@@ -22,6 +25,8 @@ const UPDATE_TIMEOUT_MS = 500;
 const WAIT_FOR_UPDATE_TIMEOUT_MS = 1000;
 
 const log = getLogger('xtext.UpdateService');
+
+const setDirtyChanges = StateEffect.define<ChangeSet>();
 
 export interface IAbortSignal {
   aborted: boolean;
@@ -38,12 +43,12 @@ export class UpdateService {
    * The changes being synchronized to the server if a full or delta text update is running,
    * `null` otherwise.
    */
-  private pendingUpdate: ChangeDesc | null = null;
+  private pendingUpdate: ChangeSet | null = null;
 
   /**
    * Local changes not yet sychronized to the server and not part of the running update, if any.
    */
-  private dirtyChanges: ChangeDesc;
+  private dirtyChanges: ChangeSet;
 
   private readonly webSocketClient: XtextWebSocketClient;
 
@@ -59,7 +64,7 @@ export class UpdateService {
   constructor(store: EditorStore, webSocketClient: XtextWebSocketClient) {
     this.resourceName = `${nanoid(7)}.problem`;
     this.store = store;
-    this.dirtyChanges = this.newEmptyChangeDesc();
+    this.dirtyChanges = this.newEmptyChangeSet();
     this.webSocketClient = webSocketClient;
   }
 
@@ -71,8 +76,19 @@ export class UpdateService {
   }
 
   onTransaction(transaction: Transaction): void {
+    const setDirtyChangesEffect = transaction.effects.find(
+      (effect) => effect.is(setDirtyChanges),
+    ) as StateEffect<ChangeSet> | undefined;
+    if (setDirtyChangesEffect) {
+      const { value } = setDirtyChangesEffect;
+      if (this.pendingUpdate !== null) {
+        this.pendingUpdate = ChangeSet.empty(value.length);
+      }
+      this.dirtyChanges = value;
+      return;
+    }
     if (transaction.docChanged) {
-      this.dirtyChanges = this.dirtyChanges.composeDesc(transaction.changes.desc);
+      this.dirtyChanges = this.dirtyChanges.compose(transaction.changes);
       this.idleUpdateTimer.reschedule();
     }
   }
@@ -86,7 +102,7 @@ export class UpdateService {
    * @return the summary of changes since the last update
    */
   computeChangesSinceLastUpdate(): ChangeDesc {
-    return this.pendingUpdate?.composeDesc(this.dirtyChanges) || this.dirtyChanges;
+    return this.pendingUpdate?.composeDesc(this.dirtyChanges.desc) || this.dirtyChanges.desc;
   }
 
   private handleIdleUpdate() {
@@ -101,9 +117,8 @@ export class UpdateService {
     this.idleUpdateTimer.reschedule();
   }
 
-  private newEmptyChangeDesc() {
-    const changeSet = ChangeSet.of([], this.store.state.doc.length);
-    return changeSet.desc;
+  private newEmptyChangeSet() {
+    return ChangeSet.of([], this.store.state.doc.length);
   }
 
   async updateFullText(): Promise<void> {
@@ -160,8 +175,8 @@ export class UpdateService {
     }
     log.warn('Delta update failed, performing full text update');
     this.xtextStateId = null;
-    this.pendingUpdate = this.pendingUpdate.composeDesc(this.dirtyChanges);
-    this.dirtyChanges = this.newEmptyChangeDesc();
+    this.pendingUpdate = this.pendingUpdate.compose(this.dirtyChanges);
+    this.dirtyChanges = this.newEmptyChangeSet();
     return this.doUpdateFullText();
   }
 
@@ -188,6 +203,7 @@ export class UpdateService {
           return [stateId, resultEntries];
         }
         if (isConflictResult(result, 'invalidStateId')) {
+          log.warn('Server state invalid during content assist');
           const [newStateId] = await this.doFallbackToUpdateFullText();
           // We must finish this state update transaction to prepare for any push events
           // before querying for content assist, so we just return `null` and will query
@@ -219,6 +235,31 @@ export class UpdateService {
     return entries;
   }
 
+  async formatText(): Promise<void> {
+    await this.update();
+    let { from, to } = this.store.state.selection.main;
+    if (to <= from) {
+      from = 0;
+      to = this.store.state.doc.length;
+    }
+    log.debug('Formatting from', from, 'to', to);
+    await this.withUpdate(async () => {
+      const result = await this.webSocketClient.send({
+        resource: this.resourceName,
+        serviceType: 'format',
+        selectionStart: from,
+        selectionEnd: to,
+      });
+      const { stateId, formattedText } = formattingResult.parse(result);
+      this.applyBeforeDirtyChanges({
+        from,
+        to,
+        insert: formattedText,
+      });
+      return [stateId, null];
+    });
+  }
+
   private computeDelta() {
     if (this.dirtyChanges.empty) {
       return null;
@@ -238,6 +279,20 @@ export class UpdateService {
       deltaReplaceLength: maxToA - minFromA,
       deltaText: this.store.state.doc.sliceString(minFromB, maxToB),
     };
+  }
+
+  private applyBeforeDirtyChanges(changeSpec: ChangeSpec) {
+    const pendingChanges = this.pendingUpdate?.compose(this.dirtyChanges) || this.dirtyChanges;
+    const revertChanges = pendingChanges.invert(this.store.state.doc);
+    const applyBefore = ChangeSet.of(changeSpec, revertChanges.newLength);
+    const redoChanges = pendingChanges.map(applyBefore.desc);
+    const changeSet = revertChanges.compose(applyBefore).compose(redoChanges);
+    this.store.dispatch({
+      changes: changeSet,
+      effects: [
+        setDirtyChanges.of(redoChanges),
+      ],
+    });
   }
 
   /**
@@ -266,7 +321,7 @@ export class UpdateService {
       throw new Error('Another update is pending, will not perform update');
     }
     this.pendingUpdate = this.dirtyChanges;
-    this.dirtyChanges = this.newEmptyChangeDesc();
+    this.dirtyChanges = this.newEmptyChangeSet();
     let newStateId: string | null = null;
     try {
       let result: T;
@@ -280,7 +335,7 @@ export class UpdateService {
       if (this.pendingUpdate === null) {
         log.error('pendingUpdate was cleared during update');
       } else {
-        this.dirtyChanges = this.pendingUpdate.composeDesc(this.dirtyChanges);
+        this.dirtyChanges = this.pendingUpdate.compose(this.dirtyChanges);
       }
       this.pendingUpdate = null;
       this.webSocketClient.forceReconnectOnError();

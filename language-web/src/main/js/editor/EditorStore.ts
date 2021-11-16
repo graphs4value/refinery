@@ -115,6 +115,7 @@ export class EditorStore {
         lineNumbers(),
         foldGutter(),
         keymap.of([
+          { key: 'Mod-Shift-f', run: () => this.formatText() },
           ...closeBracketsKeymap,
           ...commentKeymap,
           ...completionKeymap,
@@ -279,5 +280,10 @@ export class EditorStore {
 
   toggleLintPanel(): void {
     this.setLintPanelOpen(!this.showLintPanel);
+  }
+
+  formatText(): boolean {
+    this.client.formatText();
+    return true;
   }
 }

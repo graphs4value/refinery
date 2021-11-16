@@ -105,19 +105,19 @@ class ProblemFormatterTest {
 	void classWithoutBodyTest() {
 		testFormatter("  class  Foo  .  ", "class Foo.\n");
 	}
-	
+
 	@Test
 	void abstractClassWithoutBodyTest() {
 		testFormatter("  abstract  class  Foo  .  ", "abstract class Foo.\n");
 	}
-	
+
 	@Test
 	void classExtendsWithoutBodyTest() {
 		testFormatter("  class  Foo.  class  Bar  .  class  Quux  extends  Foo  ,  Bar  .  ", """
 				class Foo.
-				
+
 				class Bar.
-				
+
 				class Quux extends Foo, Bar.
 				""");
 	}
@@ -134,9 +134,9 @@ class ProblemFormatterTest {
 	void classExtendsWithBodyTest() {
 		testFormatter("  class  Foo.  class  Bar  .  class  Quux  extends  Foo  ,  Bar  {  }  ", """
 				class Foo.
-				
+
 				class Bar.
-				
+
 				class Quux extends Foo, Bar {
 				}
 				""");
@@ -200,7 +200,7 @@ class ProblemFormatterTest {
 				problem test.
 
 				pred foo(node a).
-				
+
 				class Foo.
 
 				foo(n1, n2).

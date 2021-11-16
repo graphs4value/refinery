@@ -103,3 +103,10 @@ export const occurrencesResult = documentStateResult.extend({
 });
 
 export type OccurrencesResult = z.infer<typeof occurrencesResult>;
+
+export const formattingResult = documentStateResult.extend({
+  formattedText: z.string(),
+  replaceRegion: textRegion,
+});
+
+export type FormattingResult = z.infer<typeof formattingResult>;
