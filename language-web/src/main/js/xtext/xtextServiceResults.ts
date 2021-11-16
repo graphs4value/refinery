@@ -1,239 +1,105 @@
-export interface IPongResult {
-  pong: string;
+import { z } from 'zod';
+
+export const pongResult = z.object({
+  pong: z.string().nonempty(),
+});
+
+export type PongResult = z.infer<typeof pongResult>;
+
+export const documentStateResult = z.object({
+  stateId: z.string().nonempty(),
+});
+
+export type DocumentStateResult = z.infer<typeof documentStateResult>;
+
+export const conflict = z.enum(['invalidStateId', 'canceled']);
+
+export type Conflict = z.infer<typeof conflict>;
+
+export const serviceConflictResult = z.object({
+  conflict,
+});
+
+export type ServiceConflictResult = z.infer<typeof serviceConflictResult>;
+
+export function isConflictResult(result: unknown, conflictType: Conflict): boolean {
+  const parsedConflictResult = serviceConflictResult.safeParse(result);
+  return parsedConflictResult.success && parsedConflictResult.data.conflict === conflictType;
 }
 
-export function isPongResult(result: unknown): result is IPongResult {
-  const pongResult = result as IPongResult;
-  return typeof pongResult === 'object'
-    && typeof pongResult.pong === 'string';
-}
+export const severity = z.enum(['error', 'warning', 'info', 'ignore']);
 
-export interface IDocumentStateResult {
-  stateId: string;
-}
+export type Severity = z.infer<typeof severity>;
 
-export function isDocumentStateResult(result: unknown): result is IDocumentStateResult {
-  const documentStateResult = result as IDocumentStateResult;
-  return typeof documentStateResult === 'object'
-    && typeof documentStateResult.stateId === 'string';
-}
+export const issue = z.object({
+  description: z.string().nonempty(),
+  severity,
+  line: z.number().int(),
+  column: z.number().int().nonnegative(),
+  offset: z.number().int().nonnegative(),
+  length: z.number().int().nonnegative(),
+});
 
-export const VALID_CONFLICTS = ['invalidStateId', 'canceled'] as const;
+export type Issue = z.infer<typeof issue>;
 
-export type Conflict = typeof VALID_CONFLICTS[number];
+export const validationResult = z.object({
+  issues: issue.array(),
+});
 
-export function isConflict(value: unknown): value is Conflict {
-  return typeof value === 'string' && VALID_CONFLICTS.includes(value as Conflict);
-}
+export type ValidationResult = z.infer<typeof validationResult>;
 
-export interface IServiceConflictResult {
-  conflict: Conflict;
-}
+export const replaceRegion = z.object({
+  offset: z.number().int().nonnegative(),
+  length: z.number().int().nonnegative(),
+  text: z.string(),
+});
 
-export function isServiceConflictResult(result: unknown): result is IServiceConflictResult {
-  const serviceConflictResult = result as IServiceConflictResult;
-  return typeof serviceConflictResult === 'object'
-    && isConflict(serviceConflictResult.conflict);
-}
+export type ReplaceRegion = z.infer<typeof replaceRegion>;
 
-export function isInvalidStateIdConflictResult(result: unknown): boolean {
-  return isServiceConflictResult(result) && result.conflict === 'invalidStateId';
-}
+export const textRegion = z.object({
+  offset: z.number().int().nonnegative(),
+  length: z.number().int().nonnegative(),
+});
 
-export const VALID_SEVERITIES = ['error', 'warning', 'info', 'ignore'] as const;
+export type TextRegion = z.infer<typeof textRegion>;
 
-export type Severity = typeof VALID_SEVERITIES[number];
+export const contentAssistEntry = z.object({
+  prefix: z.string(),
+  proposal: z.string().nonempty(),
+  label: z.string().optional(),
+  description: z.string().nonempty().optional(),
+  documentation: z.string().nonempty().optional(),
+  escapePosition: z.number().int().nonnegative().optional(),
+  textReplacements: replaceRegion.array(),
+  editPositions: textRegion.array(),
+  kind: z.string().nonempty(),
+});
 
-export function isSeverity(value: unknown): value is Severity {
-  return typeof value === 'string' && VALID_SEVERITIES.includes(value as Severity);
-}
+export type ContentAssistEntry = z.infer<typeof contentAssistEntry>;
 
-export interface IIssue {
-  description: string;
+export const contentAssistResult = documentStateResult.extend({
+  entries: contentAssistEntry.array(),
+});
 
-  severity: Severity;
+export type ContentAssistResult = z.infer<typeof contentAssistResult>;
 
-  line: number;
+export const highlightingRegion = z.object({
+  offset: z.number().int().nonnegative(),
+  length: z.number().int().nonnegative(),
+  styleClasses: z.string().nonempty().array(),
+});
 
-  column: number;
+export type HighlightingRegion = z.infer<typeof highlightingRegion>;
 
-  offset: number;
+export const highlightingResult = z.object({
+  regions: highlightingRegion.array(),
+});
 
-  length: number;
-}
+export type HighlightingResult = z.infer<typeof highlightingResult>;
 
-export function isIssue(value: unknown): value is IIssue {
-  const issue = value as IIssue;
-  return typeof issue === 'object'
-    && typeof issue.description === 'string'
-    && isSeverity(issue.severity)
-    && typeof issue.line === 'number'
-    && typeof issue.column === 'number'
-    && typeof issue.offset === 'number'
-    && typeof issue.length === 'number';
-}
+export const occurrencesResult = documentStateResult.extend({
+  writeRegions: textRegion.array(),
+  readRegions: textRegion.array(),
+});
 
-export interface IValidationResult {
-  issues: IIssue[];
-}
-
-function isArrayOfType<T>(value: unknown, check: (entry: unknown) => entry is T): value is T[] {
-  return Array.isArray(value) && (value as T[]).every(check);
-}
-
-export function isValidationResult(result: unknown): result is IValidationResult {
-  const validationResult = result as IValidationResult;
-  return typeof validationResult === 'object'
-    && isArrayOfType(validationResult.issues, isIssue);
-}
-
-export interface IReplaceRegion {
-  offset: number;
-
-  length: number;
-
-  text: string;
-}
-
-export function isReplaceRegion(value: unknown): value is IReplaceRegion {
-  const replaceRegion = value as IReplaceRegion;
-  return typeof replaceRegion === 'object'
-    && typeof replaceRegion.offset === 'number'
-    && typeof replaceRegion.length === 'number'
-    && typeof replaceRegion.text === 'string';
-}
-
-export interface ITextRegion {
-  offset: number;
-
-  length: number;
-}
-
-export function isTextRegion(value: unknown): value is ITextRegion {
-  const textRegion = value as ITextRegion;
-  return typeof textRegion === 'object'
-    && typeof textRegion.offset === 'number'
-    && typeof textRegion.length === 'number';
-}
-
-export const VALID_XTEXT_CONTENT_ASSIST_ENTRY_KINDS = [
-  'TEXT',
-  'METHOD',
-  'FUNCTION',
-  'CONSTRUCTOR',
-  'FIELD',
-  'VARIABLE',
-  'CLASS',
-  'INTERFACE',
-  'MODULE',
-  'PROPERTY',
-  'UNIT',
-  'VALUE',
-  'ENUM',
-  'KEYWORD',
-  'SNIPPET',
-  'COLOR',
-  'FILE',
-  'REFERENCE',
-  'UNKNOWN',
-] as const;
-
-export type XtextContentAssistEntryKind = typeof VALID_XTEXT_CONTENT_ASSIST_ENTRY_KINDS[number];
-
-export function isXtextContentAssistEntryKind(
-  value: unknown,
-): value is XtextContentAssistEntryKind {
-  return typeof value === 'string'
-    && VALID_XTEXT_CONTENT_ASSIST_ENTRY_KINDS.includes(value as XtextContentAssistEntryKind);
-}
-
-export interface IContentAssistEntry {
-  prefix: string;
-
-  proposal: string;
-
-  label?: string;
-
-  description?: string;
-
-  documentation?: string;
-
-  escapePosition?: number;
-
-  textReplacements: IReplaceRegion[];
-
-  editPositions: ITextRegion[];
-
-  kind: XtextContentAssistEntryKind | string;
-}
-
-function isStringOrUndefined(value: unknown): value is string | undefined {
-  return typeof value === 'string' || typeof value === 'undefined';
-}
-
-function isNumberOrUndefined(value: unknown): value is number | undefined {
-  return typeof value === 'number' || typeof value === 'undefined';
-}
-
-export function isContentAssistEntry(value: unknown): value is IContentAssistEntry {
-  const entry = value as IContentAssistEntry;
-  return typeof entry === 'object'
-    && typeof entry.prefix === 'string'
-    && typeof entry.proposal === 'string'
-    && isStringOrUndefined(entry.label)
-    && isStringOrUndefined(entry.description)
-    && isStringOrUndefined(entry.documentation)
-    && isNumberOrUndefined(entry.escapePosition)
-    && isArrayOfType(entry.textReplacements, isReplaceRegion)
-    && isArrayOfType(entry.editPositions, isTextRegion)
-    && typeof entry.kind === 'string';
-}
-
-export interface IContentAssistResult extends IDocumentStateResult {
-  entries: IContentAssistEntry[];
-}
-
-export function isContentAssistResult(result: unknown): result is IContentAssistResult {
-  const contentAssistResult = result as IContentAssistResult;
-  return isDocumentStateResult(result)
-    && isArrayOfType(contentAssistResult.entries, isContentAssistEntry);
-}
-
-export interface IHighlightingRegion {
-  offset: number;
-
-  length: number;
-
-  styleClasses: string[];
-}
-
-export function isHighlightingRegion(value: unknown): value is IHighlightingRegion {
-  const region = value as IHighlightingRegion;
-  return typeof region === 'object'
-    && typeof region.offset === 'number'
-    && typeof region.length === 'number'
-    && isArrayOfType(region.styleClasses, (s): s is string => typeof s === 'string');
-}
-
-export interface IHighlightingResult {
-  regions: IHighlightingRegion[];
-}
-
-export function isHighlightingResult(result: unknown): result is IHighlightingResult {
-  const highlightingResult = result as IHighlightingResult;
-  return typeof highlightingResult === 'object'
-    && isArrayOfType(highlightingResult.regions, isHighlightingRegion);
-}
-
-export interface IOccurrencesResult extends IDocumentStateResult {
-  writeRegions: ITextRegion[];
-
-  readRegions: ITextRegion[];
-}
-
-export function isOccurrencesResult(result: unknown): result is IOccurrencesResult {
-  const occurrencesResult = result as IOccurrencesResult;
-  return isDocumentStateResult(occurrencesResult)
-    && isArrayOfType(occurrencesResult.writeRegions, isTextRegion)
-    && isArrayOfType(occurrencesResult.readRegions, isTextRegion);
-}
+export type OccurrencesResult = z.infer<typeof occurrencesResult>;

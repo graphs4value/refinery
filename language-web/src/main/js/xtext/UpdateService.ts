@@ -11,10 +11,10 @@ import { ConditionVariable } from '../utils/ConditionVariable';
 import { getLogger } from '../utils/logger';
 import { Timer } from '../utils/Timer';
 import {
-  IContentAssistEntry,
-  isContentAssistResult,
-  isDocumentStateResult,
-  isInvalidStateIdConflictResult,
+  ContentAssistEntry,
+  contentAssistResult,
+  documentStateResult,
+  isConflictResult,
 } from './xtextServiceResults';
 
 const UPDATE_TIMEOUT_MS = 500;
@@ -116,11 +116,8 @@ export class UpdateService {
       serviceType: 'update',
       fullText: this.store.state.doc.sliceString(0),
     });
-    if (isDocumentStateResult(result)) {
-      return [result.stateId, undefined];
-    }
-    log.error('Unexpected full text update result:', result);
-    throw new Error('Full text update failed');
+    const { stateId } = documentStateResult.parse(result);
+    return [stateId, undefined];
   }
 
   /**
@@ -146,14 +143,14 @@ export class UpdateService {
         requiredStateId: this.xtextStateId,
         ...delta,
       });
-      if (isDocumentStateResult(result)) {
-        return [result.stateId, undefined];
+      const parsedDocumentStateResult = documentStateResult.safeParse(result);
+      if (parsedDocumentStateResult.success) {
+        return [parsedDocumentStateResult.data.stateId, undefined];
       }
-      if (isInvalidStateIdConflictResult(result)) {
+      if (isConflictResult(result, 'invalidStateId')) {
         return this.doFallbackToUpdateFullText();
       }
-      log.error('Unexpected delta text update result:', result);
-      throw new Error('Delta text update failed');
+      throw parsedDocumentStateResult.error;
     });
   }
 
@@ -171,7 +168,7 @@ export class UpdateService {
   async fetchContentAssist(
     params: Record<string, unknown>,
     signal: IAbortSignal,
-  ): Promise<IContentAssistEntry[]> {
+  ): Promise<ContentAssistEntry[]> {
     await this.prepareForDeltaUpdate();
     if (signal.aborted) {
       return [];
@@ -185,18 +182,19 @@ export class UpdateService {
           requiredStateId: this.xtextStateId,
           ...delta,
         });
-        if (isContentAssistResult(result)) {
-          return [result.stateId, result.entries];
+        const parsedContentAssistResult = contentAssistResult.safeParse(result);
+        if (parsedContentAssistResult.success) {
+          const { stateId, entries: resultEntries } = parsedContentAssistResult.data;
+          return [stateId, resultEntries];
         }
-        if (isInvalidStateIdConflictResult(result)) {
+        if (isConflictResult(result, 'invalidStateId')) {
           const [newStateId] = await this.doFallbackToUpdateFullText();
           // We must finish this state update transaction to prepare for any push events
           // before querying for content assist, so we just return `null` and will query
           // the content assist service later.
           return [newStateId, null];
         }
-        log.error('Unextpected content assist result with delta update', result);
-        throw new Error('Unexpexted content assist result with delta update');
+        throw parsedContentAssistResult.error;
       });
       if (entries !== null) {
         return entries;
@@ -214,11 +212,11 @@ export class UpdateService {
       ...params,
       requiredStateId: expectedStateId,
     });
-    if (isContentAssistResult(result) && result.stateId === expectedStateId) {
-      return result.entries;
+    const { stateId, entries } = contentAssistResult.parse(result);
+    if (stateId !== expectedStateId) {
+      throw new Error(`Unexpected state id, expected: ${expectedStateId} got: ${stateId}`);
     }
-    log.error('Unexpected content assist result', result);
-    throw new Error('Unexpected content assist result');
+    return entries;
   }
 
   private computeDelta() {

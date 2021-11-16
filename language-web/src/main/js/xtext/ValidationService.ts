@@ -3,9 +3,7 @@ import type { Diagnostic } from '@codemirror/lint';
 import type { EditorStore } from '../editor/EditorStore';
 import type { UpdateService } from './UpdateService';
 import { getLogger } from '../utils/logger';
-import { isValidationResult } from './xtextServiceResults';
-
-const log = getLogger('xtext.ValidationService');
+import { validationResult } from './xtextServiceResults';
 
 export class ValidationService {
   private readonly store: EditorStore;
@@ -18,13 +16,10 @@ export class ValidationService {
   }
 
   onPush(push: unknown): void {
-    if (!isValidationResult(push)) {
-      log.error('Invalid validation result', push);
-      return;
-    }
+    const { issues } = validationResult.parse(push);
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
     const diagnostics: Diagnostic[] = [];
-    push.issues.forEach(({
+    issues.forEach(({
       offset,
       length,
       severity,

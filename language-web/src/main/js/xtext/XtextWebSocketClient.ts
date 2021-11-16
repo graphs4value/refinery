@@ -4,12 +4,13 @@ import { getLogger } from '../utils/logger';
 import { PendingTask } from '../utils/PendingTask';
 import { Timer } from '../utils/Timer';
 import {
-  isErrorResponse,
-  isOkResponse,
-  isPushMessage,
-  IXtextWebRequest,
+  xtextWebErrorResponse,
+  XtextWebRequest,
+  xtextWebOkResponse,
+  xtextWebPushMessage,
+  XtextWebPushService,
 } from './xtextMessages';
-import { isPongResult } from './xtextServiceResults';
+import { pongResult } from './xtextServiceResults';
 
 const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
@@ -32,7 +33,7 @@ export type ReconnectHandler = () => void;
 export type PushHandler = (
   resourceId: string,
   stateId: string,
-  service: string,
+  service: XtextWebPushService,
   data: unknown,
 ) => void;
 
@@ -192,11 +193,12 @@ export class XtextWebSocketClient {
     const ping = nanoid();
     log.trace('Ping', ping);
     this.send({ ping }).then((result) => {
-      if (isPongResult(result) && result.pong === ping) {
+      const parsedPongResult = pongResult.safeParse(result);
+      if (parsedPongResult.success && parsedPongResult.data.pong === ping) {
         log.trace('Pong', ping);
         this.pingTimer.schedule();
       } else {
-        log.error('Invalid pong');
+        log.error('Invalid pong:', parsedPongResult, 'expected:', ping);
         this.forceReconnectOnError();
       }
     }).catch((error) => {
@@ -222,7 +224,7 @@ export class XtextWebSocketClient {
     const message = JSON.stringify({
       id: messageId,
       request,
-    } as IXtextWebRequest);
+    } as XtextWebRequest);
     log.trace('Sending message', message);
     return new Promise((resolve, reject) => {
       const task = new PendingTask(resolve, reject, REQUEST_TIMEOUT_MS, () => {
@@ -248,23 +250,42 @@ export class XtextWebSocketClient {
       this.forceReconnectOnError();
       return;
     }
-    if (isOkResponse(message)) {
-      this.resolveRequest(message.id, message.response);
-    } else if (isErrorResponse(message)) {
-      this.rejectRequest(message.id, new Error(`${message.error} error: ${message.message}`));
-      if (message.error === 'server') {
-        log.error('Reconnecting due to server error: ', message.message);
+    const okResponse = xtextWebOkResponse.safeParse(message);
+    if (okResponse.success) {
+      const { id, response } = okResponse.data;
+      this.resolveRequest(id, response);
+      return;
+    }
+    const errorResponse = xtextWebErrorResponse.safeParse(message);
+    if (errorResponse.success) {
+      const { id, error, message: errorMessage } = errorResponse.data;
+      this.rejectRequest(id, new Error(`${error} error: ${errorMessage}`));
+      if (error === 'server') {
+        log.error('Reconnecting due to server error: ', errorMessage);
         this.forceReconnectOnError();
       }
-    } else if (isPushMessage(message)) {
-      this.onPush(
-        message.resource,
-        message.stateId,
-        message.service,
-        message.push,
-      );
+      return;
+    }
+    const pushMessage = xtextWebPushMessage.safeParse(message);
+    if (pushMessage.success) {
+      const {
+        resource,
+        stateId,
+        service,
+        push,
+      } = pushMessage.data;
+      this.onPush(resource, stateId, service, push);
     } else {
-      log.error('Unexpected websocket message', message);
+      log.error(
+        'Unexpected websocket message:',
+        message,
+        'not ok response because:',
+        okResponse.error,
+        'not error response because:',
+        errorResponse.error,
+        'not push message because:',
+        pushMessage.error,
+      );
       this.forceReconnectOnError();
     }
   }
