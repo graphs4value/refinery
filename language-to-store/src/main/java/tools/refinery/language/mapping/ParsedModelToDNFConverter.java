@@ -115,15 +115,15 @@ public class ParsedModelToDNFConverter {
 				if (variableOrNode instanceof tools.refinery.language.model.problem.Variable variable) {
 					return convertVariable(variable, mappings);
 				} else if (variableOrNode instanceof Node node) {
-					throw new Exception("Node is not implemented yet");
+					throw new UnsupportedOperationException("Node is not implemented yet");
 				} else {
-					throw new Exception("Unknown variableOrNodeArgument type");
+					throw new UnsupportedOperationException("Unknown variableOrNodeArgument type");
 				}
 			} else {
 				return convertVariable(implicitVar, mappings);
 			}
 		} else {
-			throw new Exception("Unknown Argument type");
+			throw new UnsupportedOperationException("Unknown Argument type");
 		}
 	}
 
@@ -160,7 +160,7 @@ public class ParsedModelToDNFConverter {
 				}
 				return new DNFPredicateCallAtom(true, transitive, dnfPredicate, arguments);
 			} else {
-				throw new Exception("Unknown Relation type in Atom");
+				throw new UnsupportedOperationException("Unknown Relation type in Atom");
 			}
 		} else if (literal instanceof NegativeLiteral negativeLiteral) {
 			Atom atom = negativeLiteral.getAtom();
@@ -173,10 +173,10 @@ public class ParsedModelToDNFConverter {
 				}
 				return new DNFPredicateCallAtom(false, transitive, dnfPredicate, arguments);
 			} else {
-				throw new Exception("Unknown Relation type in Atom");
+				throw new UnsupportedOperationException("Unknown Relation type in Atom");
 			}
 		} else {
-			throw new Exception("Unknown Literal type");
+			throw new UnsupportedOperationException("Unknown Literal type");
 		}
 	}
 }
