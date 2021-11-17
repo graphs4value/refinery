@@ -1,9 +1,7 @@
 plugins {
-	id 'java'
-	id 'application'
 	alias libs.plugins.frontend
-	alias libs.plugins.shadow
-	id 'tools.refinery.xtext-conventions'
+	id 'refinery-java-application'
+	id 'refinery-xtext-conventions'
 }
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
@@ -99,19 +97,14 @@ tasks.named('check') {
 	dependsOn(eslint, stylelint)
 }
 
+mainClassName = serverMainClass
+
 tasks.named('jar') {
 	dependsOn assembleFrontend
 	from(productionResources) {
 		into 'webapp'
 	}
 }
-
-mainClassName = serverMainClass
-distTar.enabled = false
-distZip.enabled = false
-
-shadowDistTar.enabled = false
-shadowDistZip.enabled = false
 
 tasks.named('shadowJar') {
 	dependsOn assembleFrontend

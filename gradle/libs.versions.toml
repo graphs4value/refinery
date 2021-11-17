@@ -26,6 +26,7 @@ mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version
 mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.6.2.M1" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
+shadowGradle = { group = "gradle.plugin.com.github.johnrengelman", name = "shadow", version = "7.1.0" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
 sonarqubeGradle = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "3.3" }
@@ -43,5 +44,4 @@ xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", v
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
 
 [plugins]
-shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.0" }
 frontend = { id = "org.siouan.frontend-jdk11", version = "5.3.0" }

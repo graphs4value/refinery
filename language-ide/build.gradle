@@ -1,6 +1,6 @@
 plugins {
-	id 'java-library'
-	id 'tools.refinery.xtext-conventions'
+	id 'refinery-java-library'
+	id 'refinery-xtext-conventions'
 }
 
 dependencies {

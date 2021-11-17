@@ -1,9 +1,9 @@
 plugins {
-	id 'java-library'
 	id 'java-test-fixtures'
-	id 'tools.refinery.xtext-conventions'
-	id 'tools.refinery.mwe2-conventions'
-	id 'tools.refinery.xtend-conventions'
+	id 'refinery-java-library'
+	id 'refinery-mwe2'
+	id 'refinery-xtend'
+	id 'refinery-xtext-conventions'
 }
 
 dependencies {

@@ -1,6 +1,6 @@
 plugins {
 	id 'eclipse'
-	id 'tools.refinery.java-conventions'
+	id 'refinery-java-conventions'
 }
 
 configurations {
