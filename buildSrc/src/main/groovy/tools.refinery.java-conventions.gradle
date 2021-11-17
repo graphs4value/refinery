@@ -1,5 +1,6 @@
 plugins {
 	id 'eclipse'
+	id 'jacoco'
 }
 
 repositories {
@@ -9,8 +10,37 @@ repositories {
 	}
 }
 
+dependencies {
+	testImplementation libs.hamcrest
+	testImplementation libs.junit.api
+	testRuntimeOnly libs.junit.engine
+	testImplementation libs.junit.params
+	testImplementation libs.mockito.core
+	testImplementation libs.mockito.junit
+}
+
 sourceCompatibility = '17'
 targetCompatibility = '17'
+
+def jacocoTestReport = tasks.named('jacocoTestReport')
+jacocoTestReport.configure {
+	dependsOn test
+	reports {
+		xml.required = true
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform {
+		excludeTags 'slow'
+	}
+	finalizedBy jacocoTestReport
+}
+
+tasks.register('slowTest', Test) {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
 
 tasks.named('jar') {
 	manifest {

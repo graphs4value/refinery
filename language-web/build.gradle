@@ -4,7 +4,6 @@ plugins {
 	alias libs.plugins.frontend
 	alias libs.plugins.shadow
 	id 'tools.refinery.xtext-conventions'
-	id 'tools.refinery.junit-conventions'
 }
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn

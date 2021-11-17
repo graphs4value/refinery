@@ -1,7 +1,6 @@
 plugins {
 	id 'java-library'
 	id 'tools.refinery.java-conventions'
-	id 'tools.refinery.junit-conventions'
 	id 'tools.refinery.xtend-conventions'
 }
 
