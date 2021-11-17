@@ -1,7 +1,9 @@
-apply plugin: 'java-library'
-apply from: "${rootDir}/gradle/java-common.gradle"
-apply from: "${rootDir}/gradle/junit.gradle"
-apply from: "${rootDir}/gradle/jmh.gradle"
+plugins {
+	id 'java-library'
+	id 'tools.refinery.java-conventions'
+	id 'tools.refinery.junit-conventions'
+	id 'tools.refinery.jmh-conventions'
+}
 
 dependencies {
 	implementation libs.ecore

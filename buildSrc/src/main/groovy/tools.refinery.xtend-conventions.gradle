@@ -1,4 +1,8 @@
-apply plugin: libs.plugins.xtend.get().pluginId
+plugins {
+	id 'org.sonarqube'
+	id 'org.xtext.xtend'
+	id 'tools.refinery.java-conventions'
+}
 
 sourceSets {
 	main {

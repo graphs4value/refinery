@@ -1,3 +1,8 @@
+plugins {
+	id 'eclipse'
+	id 'tools.refinery.java-conventions'
+}
+
 configurations {
 	mwe2 {
 		extendsFrom implementation

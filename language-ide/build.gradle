@@ -1,5 +1,7 @@
-apply plugin: 'java-library'
-apply from: "${rootDir}/gradle/xtext-common.gradle"
+plugins {
+	id 'java-library'
+	id 'tools.refinery.xtext-conventions'
+}
 
 dependencies {
 	api project(':refinery-language')

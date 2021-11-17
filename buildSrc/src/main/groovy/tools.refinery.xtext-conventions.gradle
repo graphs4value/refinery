@@ -1,4 +1,7 @@
-apply from: "${rootDir}/gradle/java-common.gradle"
+plugins {
+	id 'org.sonarqube'
+	id 'tools.refinery.java-conventions'
+}
 
 sourceSets {
 	main {

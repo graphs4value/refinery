@@ -1,3 +1,7 @@
+plugins {
+	id 'eclipse'
+}
+
 repositories {
 	mavenCentral()
 	maven {
@@ -13,8 +17,6 @@ tasks.named('jar') {
 		attributes 'Bundle-SymbolicName': project.name
 	}
 }
-
-apply plugin: 'eclipse'
 
 def generateEclipseSourceFolders = tasks.register('generateEclipseSourceFolders')
 

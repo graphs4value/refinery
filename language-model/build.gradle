@@ -1,7 +1,9 @@
-apply plugin: 'java-library'
-apply plugin: 'java-test-fixtures'
-apply from: "${rootDir}/gradle/java-common.gradle"
-apply from: "${rootDir}/gradle/mwe2.gradle"
+plugins {
+	id 'java-library'
+	id 'java-test-fixtures'
+	id 'tools.refinery.java-conventions'
+	id 'tools.refinery.mwe2-conventions'
+}
 
 dependencies {
 	api libs.ecore

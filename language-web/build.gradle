@@ -1,6 +1,13 @@
-apply plugin: 'java'
-apply from: "${rootDir}/gradle/xtext-common.gradle"
-apply from: "${rootDir}/gradle/junit.gradle"
+plugins {
+	id 'java'
+	id 'application'
+	alias libs.plugins.frontend
+	alias libs.plugins.shadow
+	id 'tools.refinery.xtext-conventions'
+	id 'tools.refinery.junit-conventions'
+}
+
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
 dependencies {
 	implementation project(':refinery-language')
@@ -27,10 +34,6 @@ for (taskName in ['compileJava', 'processResources']) {
 def webpackOutputDir = "${buildDir}/webpack"
 def productionResources = "${webpackOutputDir}/production"
 def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
-
-apply plugin: libs.plugins.frontend.get().pluginId
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
-
 def nodeDirectory = "${rootDir}/.gradle/node"
 
 frontend {
@@ -104,12 +107,10 @@ tasks.named('jar') {
 	}
 }
 
-apply plugin: 'application'
 mainClassName = serverMainClass
 distTar.enabled = false
 distZip.enabled = false
 
-apply plugin: libs.plugins.shadow.get().pluginId
 shadowDistTar.enabled = false
 shadowDistZip.enabled = false
 

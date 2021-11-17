@@ -1,9 +1,11 @@
-apply plugin: 'java-library'
-apply plugin: 'java-test-fixtures'
-apply from: "${rootDir}/gradle/xtext-common.gradle"
-apply from: "${rootDir}/gradle/junit.gradle"
-apply from: "${rootDir}/gradle/mwe2.gradle"
-apply from: "${rootDir}/gradle/xtend.gradle"
+plugins {
+	id 'java-library'
+	id 'java-test-fixtures'
+	id 'tools.refinery.xtext-conventions'
+	id 'tools.refinery.junit-conventions'
+	id 'tools.refinery.mwe2-conventions'
+	id 'tools.refinery.xtend-conventions'
+}
 
 dependencies {
 	api platform(libs.xtext.bom)

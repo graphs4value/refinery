@@ -1,8 +1,6 @@
 plugins {
-	alias libs.plugins.shadow apply false
-	alias libs.plugins.frontend apply false
-	alias libs.plugins.sonarqube
-	alias libs.plugins.xtend apply false
+	id 'eclipse'
+	id 'org.sonarqube'
 }
 
 allprojects {

@@ -1,4 +1,7 @@
-apply plugin: 'jacoco'
+plugins {
+	id 'jacoco'
+	id 'tools.refinery.java-conventions'
+}
 
 dependencies {
 	testImplementation libs.hamcrest
