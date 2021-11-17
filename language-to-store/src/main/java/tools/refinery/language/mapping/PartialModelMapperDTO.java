@@ -1,6 +1,7 @@
 package tools.refinery.language.mapping;
 
 import java.util.Map;
+import java.util.Set;
 
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.store.model.Model;
@@ -50,5 +51,16 @@ public class PartialModelMapperDTO {
 
 	public void setModel(Model model) {
 		this.model = model;
+	}
+	
+	// Searches for and gives back a relation in a PartialModelMapperDTO
+	public static tools.refinery.language.model.problem.Relation findingRelationInDTO(
+			Set<tools.refinery.language.model.problem.Relation> partialModelMapperDTO, String searchedRelation, String errorText)
+			throws ModelToStoreException {
+		for (tools.refinery.language.model.problem.Relation r : partialModelMapperDTO) {
+			if (searchedRelation.equals(r.getName()))
+				return r;
+		}
+		throw new ModelToStoreException(errorText);
 	}
 }

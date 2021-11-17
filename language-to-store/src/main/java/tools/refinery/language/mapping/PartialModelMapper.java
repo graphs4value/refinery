@@ -3,6 +3,7 @@ package tools.refinery.language.mapping;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.eclipse.emf.common.util.EList;
@@ -28,7 +29,7 @@ import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
 
 public class PartialModelMapper {
-	public PartialModelMapperDTO transformProblem(Problem problem) throws PartialModelMapperException {
+	public PartialModelMapperDTO transformProblem(Problem problem) throws ModelToStoreException {
 		// Defining an integer in order to assign different values to all the nodes
 		int[] nodeIter = new int[] { 0 };
 
@@ -38,7 +39,7 @@ public class PartialModelMapper {
 		// Getting the relations and the nodes from the built in problem
 		Optional<Problem> builtinProblem = ProblemUtil.getBuiltInLibrary(problem);
 		if (builtinProblem.isEmpty())
-			throw new PartialModelMapperException("builtin.problem not found");
+			throw new ModelToStoreException("builtin problem not found");
 		PartialModelMapperDTO builtinProblemDTO = initTransform(builtinProblem.get(), nodeIter);
 
 		// Merging the relation and the nodes from the given problem and from the built
@@ -59,6 +60,66 @@ public class PartialModelMapper {
 				pmmDTO.getNewNodeMap(), pmmDTO.getNodeMap());
 
 		// Filling up the relations with unknown truth values
+		fillModelWithUnknown(pmmDTO, allNodesMap);
+
+		// Filling up the exists
+		fillExistInModel(pmmDTO, builtinProblemDTO, allNodesMap);
+
+		// Filling up the equals
+		fillEqualsInModel(pmmDTO, builtinProblemDTO, allNodesMap);
+		
+		// Transforming the assertions
+		processAssertions(problem, pmmDTO, allNodesMap);
+		processAssertions(builtinProblem.get(), pmmDTO, allNodesMap);
+
+		return pmmDTO;
+	}
+
+	//This method fills up the equals relation in the model of pmmDTO
+	private void fillEqualsInModel(PartialModelMapperDTO pmmDTO, PartialModelMapperDTO builtinProblemDTO,
+			Map<Node, Integer> allNodesMap) throws ModelToStoreException {
+		tools.refinery.language.model.problem.Relation equalsRelation = 
+				PartialModelMapperDTO.findingRelationInDTO(
+						builtinProblemDTO.getRelationMap().keySet(),
+						"equals", "The equals not found in built in problem");
+		for (Entry<Node,Integer> e1 : allNodesMap.entrySet()) {
+			for (Entry<Node,Integer> e2 : allNodesMap.entrySet()) {
+				if (e1.equals(e2)) {
+					if (pmmDTO.getNewNodeMap().containsKey(e1.getKey())) {
+						pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(equalsRelation),
+								Tuple.of(e1.getValue(), e2.getValue()), TruthValue.UNKNOWN);
+					} else {
+						pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(equalsRelation),
+								Tuple.of(e1.getValue(), e2.getValue()), TruthValue.TRUE);
+					}
+				} else {
+					pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(equalsRelation),
+							Tuple.of(e1.getValue(), e2.getValue()), TruthValue.FALSE);
+				}
+			}
+		}
+	}
+
+	//This method fills up the exist relation in the model of pmmDTO
+	private void fillExistInModel(PartialModelMapperDTO pmmDTO, PartialModelMapperDTO builtinProblemDTO,
+			Map<Node, Integer> allNodesMap) throws ModelToStoreException {
+		tools.refinery.language.model.problem.Relation existsRelation = 
+				PartialModelMapperDTO.findingRelationInDTO(
+						builtinProblemDTO.getRelationMap().keySet(),
+						"exists", "The exists not found in built in problem");
+		for (Entry<Node,Integer> e : allNodesMap.entrySet()) {
+			if (pmmDTO.getNewNodeMap().containsKey(e.getKey())) {
+				pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(existsRelation),
+						Tuple.of(e.getValue()), TruthValue.UNKNOWN);
+			} else {
+				pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(existsRelation),
+						Tuple.of(e.getValue()), TruthValue.TRUE);
+			}
+		}
+	}
+
+	//This method fills up the relations of pmmDTO with unknown values
+	private void fillModelWithUnknown(PartialModelMapperDTO pmmDTO, Map<Node, Integer> allNodesMap) throws ModelToStoreException {
 		for (tools.refinery.language.model.problem.Relation relation : pmmDTO.getRelationMap().keySet()) {
 			if (!(relation instanceof PredicateDefinition pd && pd.isError())) {
 				Relation<TruthValue> r = pmmDTO.getRelationMap().get(relation);
@@ -73,59 +134,9 @@ public class PartialModelMapper {
 						}
 					}
 				else
-					throw new PartialModelMapperException("Relation with arity above 2 is not supported");
+					throw new ModelToStoreException("Relation with arity above 2 is not supported");
 			}
 		}
-
-		// Filling up the exists
-		tools.refinery.language.model.problem.Relation existsRelation = findingRelationInDTO(builtinProblemDTO,
-				"exists", "The exists not found in built in problem");
-		for (Node n : allNodesMap.keySet()) {
-			if (pmmDTO.getNewNodeMap().containsKey(n)) {
-				pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(existsRelation),
-						Tuple.of(allNodesMap.get(n)), TruthValue.UNKNOWN);
-			} else {
-				pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(existsRelation),
-						Tuple.of(allNodesMap.get(n)), TruthValue.TRUE);
-			}
-		}
-
-		// Filling up the equals
-		tools.refinery.language.model.problem.Relation equalsRelation = findingRelationInDTO(builtinProblemDTO,
-				"equals", "The equals not found in built in problem");
-		for (Node n1 : allNodesMap.keySet()) {
-			for (Node n2 : allNodesMap.keySet()) {
-				if (n1.equals(n2)) {
-					if (pmmDTO.getNewNodeMap().containsKey(n1)) {
-						pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(equalsRelation),
-								Tuple.of(allNodesMap.get(n1), allNodesMap.get(n2)), TruthValue.UNKNOWN);
-					} else {
-						pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(equalsRelation),
-								Tuple.of(allNodesMap.get(n1), allNodesMap.get(n2)), TruthValue.TRUE);
-					}
-				} else {
-					pmmDTO.getModel().put(builtinProblemDTO.getRelationMap().get(equalsRelation),
-							Tuple.of(allNodesMap.get(n1), allNodesMap.get(n2)), TruthValue.FALSE);
-				}
-			}
-		}
-
-		// Transforming the assertions
-		processAssertions(problem, pmmDTO, allNodesMap);
-		processAssertions(builtinProblem.get(), pmmDTO, allNodesMap);
-
-		return pmmDTO;
-	}
-
-	// Searches for and gives back a relation in a PartialModelMapperDTO
-	private tools.refinery.language.model.problem.Relation findingRelationInDTO(
-			PartialModelMapperDTO partialModelMapperDTO, String searchedRelation, String errorText)
-			throws PartialModelMapperException {
-		for (tools.refinery.language.model.problem.Relation r : partialModelMapperDTO.getRelationMap().keySet()) {
-			if (searchedRelation.equals(r.getName()))
-				return r;
-		}
-		throw new PartialModelMapperException(errorText);
 	}
 
 	// Processing assertions and placing them in the model
@@ -223,17 +234,5 @@ public class PartialModelMapper {
 			return TruthValue.UNKNOWN;
 		else
 			return TruthValue.ERROR;
-	}
-
-	public class PartialModelMapperException extends Exception {
-		private static final long serialVersionUID = 1L;
-
-		public PartialModelMapperException(String errorText) {
-			super(errorText);
-		}
-
-		public PartialModelMapperException() {
-			super();
-		}
 	}
 }
