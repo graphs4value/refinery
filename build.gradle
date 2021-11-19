@@ -2,8 +2,3 @@ plugins {
 	id 'eclipse'
 	id 'refinery-sonarqube'
 }
-
-allprojects {
-	group = 'tools.refinery'
-	version = '0.0.0-SNAPSHOT'
-}

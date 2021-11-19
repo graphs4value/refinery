@@ -45,7 +45,10 @@ tasks.register('slowTest', Test) {
 
 tasks.named('jar') {
 	manifest {
-		attributes 'Bundle-SymbolicName': project.name
+		attributes(
+			'Bundle-SymbolicName': "${project.group}.${project.name}",
+			'Bundle-Version': project.version
+		)
 	}
 }
 

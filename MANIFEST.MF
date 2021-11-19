@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: tools.refinery.refinery-language
+Bundle-Version: 0.0.0-SNAPSHOT
+
