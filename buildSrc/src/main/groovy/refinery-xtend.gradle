@@ -1,7 +1,7 @@
 plugins {
-	id 'org.sonarqube'
 	id 'org.xtext.xtend'
 	id 'refinery-java-conventions'
+	id 'refinery-sonarqube'
 }
 
 sourceSets {

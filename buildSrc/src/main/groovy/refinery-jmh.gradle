@@ -1,6 +1,6 @@
 plugins {
-	id 'org.sonarqube'
 	id 'refinery-java-conventions'
+	id 'refinery-sonarqube'
 }
 
 configurations {
