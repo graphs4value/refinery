@@ -3,7 +3,7 @@ export class Timer {
 
   readonly defaultTimeout: number;
 
-  timeout: NodeJS.Timeout | null = null;
+  timeout: number | null = null;
 
   constructor(callback: () => void, defaultTimeout = 0) {
     this.callback = () => {

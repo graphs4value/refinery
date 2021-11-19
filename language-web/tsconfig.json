@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES2020",
+    "target": "es2020",
+    "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -10,7 +10,8 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": false,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": ["./src/main/js/**/*"],
   "exclude": ["./build/generated/sources/lezer/*"]

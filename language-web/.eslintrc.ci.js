@@ -24,10 +24,17 @@ module.exports = {
     // Make sure switches are exhaustive: https://stackoverflow.com/a/60166264
     'default-case': 'off',
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    // https://github.com/airbnb/javascript/pull/2501
+    'react/function-component-definition': ['error', {
+      namedComponents: 'function-expression',
+      namedComponents: 'function-declaration',
+    }],
+  },
+  env: {
+    browser: true,
   },
   ignorePatterns: [
     '*.js',
     'build/**/*',
-    'node_modules/**/*',
   ],
 };

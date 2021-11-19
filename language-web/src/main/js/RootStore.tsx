@@ -16,11 +16,19 @@ export class RootStore {
 
 const StoreContext = createContext<RootStore | undefined>(undefined);
 
-export const RootStoreProvider: React.FC<{ rootStore: RootStore }> = ({ children, rootStore }) => (
-  <StoreContext.Provider value={rootStore}>
-    {children}
-  </StoreContext.Provider>
-);
+export interface RootStoreProviderProps {
+  children: JSX.Element;
+
+  rootStore: RootStore;
+}
+
+export function RootStoreProvider({ children, rootStore }: RootStoreProviderProps): JSX.Element {
+  return (
+    <StoreContext.Provider value={rootStore}>
+      {children}
+    </StoreContext.Provider>
+  );
+}
 
 export const useRootStore = (): RootStore => {
   const rootStore = useContext(StoreContext);

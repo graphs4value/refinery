@@ -4,7 +4,7 @@ plugins {
 	id 'refinery-xtext-conventions'
 }
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
 
 dependencies {
 	implementation project(':refinery-language')
@@ -34,17 +34,35 @@ def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
 def nodeDirectory = "${rootDir}/.gradle/node"
 
 frontend {
-	nodeVersion = project.ext.nodeVersion
-	nodeInstallDirectory = file(nodeDirectory)
+	nodeVersion = project.ext['frontend.nodeVersion']
+	nodeInstallDirectory = file('.node')
 	yarnEnabled = true
-	yarnVersion = project.ext.yarnVersion
-	yarnInstallDirectory = file("${rootDir}/.gradle/yarn")
+	yarnVersion = project.ext['frontend.yarnVersion']
 	assembleScript = 'run assemble:webpack'
 }
 
-def installFrontend = tasks.named('installFrontend')
+tasks.named('installYarnGlobally') {
+	// Do not check for updates all the time, since we only use yarn 1 for calling yarn berry. 
+	outputs.dir "${frontend.nodeInstallDirectory.get()}/lib/node_modules/yarn"
+}
 
-def generateLezerGrammar = tasks.register('generateLezerGrammar', RunNpmYarn) {
+tasks.named('enableYarnBerry') {
+	// Yarn berry is checked into the repository, so there's no need to install it.
+	enabled = false
+}
+
+tasks.named('installYarn') {
+	// Yarn berry is checked into the repository, so there's no need to install it.
+	enabled = false
+}
+
+def installFrontend = tasks.named('installFrontend')
+installFrontend.configure {
+	inputs.files('package.json', 'yarn.lock')
+	outputs.file '.pnp.cjs'
+}
+
+def generateLezerGrammar = tasks.register('generateLezerGrammar', RunYarn) {
 	dependsOn installFrontend
 	inputs.file('src/main/js/language/problem.grammar')
 	inputs.files('package.json', 'yarn.lock')
@@ -65,7 +83,7 @@ assembleFrontend.configure {
 	outputs.dir productionResources
 }
 
-def eslint = tasks.register('eslint', RunNpmYarn) {
+def eslint = tasks.register('eslint', RunYarn) {
 	dependsOn installFrontend
 	inputs.dir 'src/main/js'
 	inputs.files('.eslintrc.js', 'tsconfig.json')
@@ -79,7 +97,7 @@ def eslint = tasks.register('eslint', RunNpmYarn) {
 	description = 'Check for TypeScript errors.'
 }
 
-def stylelint = tasks.register('stylelint', RunNpmYarn) {
+def stylelint = tasks.register('stylelint', RunYarn) {
 	dependsOn installFrontend
 	inputs.dir 'src/main/css'
 	inputs.file '.stylelintrc.js'
@@ -127,10 +145,10 @@ def jettyRun = tasks.register('jettyRun', JavaExec) {
 	standardInput = System.in
 	environment BASE_RESOURCE: productionResources
 	group = 'run'
-	description = 'Start a Jetty web server serving the Xtex API and assets (without rebuilding assets).'
+	description = 'Start a Jetty web server serving the Xtex API and assets.'
 }
 
-tasks.register('webpackServe', RunNpmYarn) {
+tasks.register('webpackServe', RunYarn) {
 	dependsOn installFrontend
 	dependsOn generateLezerGrammar
 	outputs.dir "${webpackOutputDir}/development"
@@ -145,7 +163,7 @@ sonarqube.properties {
 		'src/main/html',
 		'src/main/js',
 	]
-	property 'sonar.nodejs.executable', "${nodeDirectory}/bin/node"
+	property 'sonar.nodejs.executable', "${frontend.nodeInstallDirectory.get()}/bin/node"
 	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
 	property 'sonar.css.stylelint.reportPaths', "${buildDir}/stylelint.json"
 	// SonarJS does not pick up typescript files with `exactOptionalPropertyTypes`

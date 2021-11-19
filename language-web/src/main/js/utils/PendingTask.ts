@@ -9,7 +9,7 @@ export class PendingTask<T> {
 
   private resolved = false;
 
-  private timeout: NodeJS.Timeout | null;
+  private timeout: number | null;
 
   constructor(
     resolveCallback: (value: T) => void,

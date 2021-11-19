@@ -10,4 +10,3 @@ build/
 .launch
 .project
 .settings
-node_modules/

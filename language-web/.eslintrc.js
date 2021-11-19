@@ -6,4 +6,4 @@ module.exports = {
     './.eslintrc.ci.js',
     'plugin:sonarjs/recommended',
   ],
-}
+};
