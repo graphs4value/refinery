@@ -9,7 +9,7 @@
     "serve": "webpack serve --node-env development --hot",
     "check": "yarn run check:eslint && yarn run check:stylelint",
     "check:eslint": "eslint .",
-    "check:eslint:ci": "eslint -c ./.eslintrc.ci.js -f json -o build/eslint.json .",
+    "check:eslint:ci": "eslint -f json -o build/eslint.json .",
     "check:stylelint": "stylelint src/main/css/**/*.scss",
     "check:stylelint:ci": "stylelint -f json src/main/css/**/*.scss > build/stylelint.json"
   },
@@ -45,7 +45,6 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "eslint-plugin-sonarjs": "^0.10.0",
     "html-webpack-plugin": "^5.5.0",
     "image-webpack-loader": "^8.0.1",
     "magic-comments-loader": "^1.4.1",

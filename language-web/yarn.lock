@@ -4571,15 +4571,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-sonarjs@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "eslint-plugin-sonarjs@npm:0.10.0"
-  peerDependencies:
-    eslint: ^5.0.0 || ^6.0.0 || ^7.0.0
-  checksum: 6ef5b2050180a612b310610d9b1f2a89508ecf41326573cd62977ad085b25a6be7e31f47eee5857fb43b4bbd1bea1454419b52545ee3cb6cb2185a1938872009
-  languageName: node
-  linkType: hard
-
 "eslint-scope@npm:5.1.1, eslint-scope@npm:^5.1.1":
   version: 5.1.1
   resolution: "eslint-scope@npm:5.1.1"
@@ -8721,7 +8712,6 @@ __metadata:
     eslint-plugin-jsx-a11y: ^6.5.1
     eslint-plugin-react: ^7.27.1
     eslint-plugin-react-hooks: ^4.3.0
-    eslint-plugin-sonarjs: ^0.10.0
     html-webpack-plugin: ^5.5.0
     image-webpack-loader: ^8.0.1
     loglevel: ^1.8.0
