@@ -2077,7 +2077,7 @@ __metadata:
     "@mui/icons-material": 5.1.1
     "@mui/material": 5.1.1
     "@principalstudio/html-webpack-inject-preload": ^1.2.7
-    "@types/react": ^17.0.35
+    "@types/react": ^17.0.36
     "@types/react-dom": ^17.0.11
     "@typescript-eslint/eslint-plugin": ^5.4.0
     "@typescript-eslint/parser": ^5.4.0
@@ -2112,7 +2112,7 @@ __metadata:
     stylelint: ^14.1.0
     stylelint-config-recommended-scss: ^5.0.2
     stylelint-scss: ^4.0.0
-    typescript: ~4.4.4
+    typescript: ~4.5.2
     webpack: ^5.64.2
     webpack-cli: ^4.9.1
     webpack-dev-server: ^4.5.0
@@ -2121,11 +2121,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@refinery/worktree@workspace:.":
+"@refinery/root@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@refinery/worktree@workspace:."
+  resolution: "@refinery/root@workspace:."
   dependencies:
-    typescript: ~4.4.4
+    eslint: ^8.3.0
+    stylelint: ^14.1.0
+    typescript: ~4.5.2
   languageName: unknown
   linkType: soft
 
@@ -2295,14 +2297,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^17.0.35":
-  version: 17.0.35
-  resolution: "@types/react@npm:17.0.35"
+"@types/react@npm:*, @types/react@npm:^17.0.36":
+  version: 17.0.36
+  resolution: "@types/react@npm:17.0.36"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 33e2bf8068ccc5330f089f5d4bee54649c2d5b512edee4a9e44c113271a69ea8c71ddbd3103b205eb971fd4c358e9f69d707df08bec90b3c33492db374614eb7
+  checksum: feeaa484d5d7e354ba6830b06342dec6fd1a2ac87f73d21d3d4f2a3d311459de4090330a1e8af7275c8d1e7737b655a7550c8dd3dbc74ccf34ffd3fc824bbd12
   languageName: node
   linkType: hard
 
@@ -10187,23 +10189,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:~4.4.4":
-  version: 4.4.4
-  resolution: "typescript@npm:4.4.4"
+"typescript@npm:~4.5.2":
+  version: 4.5.2
+  resolution: "typescript@npm:4.5.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 89ecb8436bb48ef5594d49289f5f89103071716b6e4844278f4fb3362856e31203e187a9c76d205c3f0b674d221a058fd28310dbcbcf5d95e9a57229bb5203f1
+  checksum: 74f9ce65d532bdf5d0214b3f60cf37992180023388c87a11ee6f838a803067ef0b63c600fa501b0deb07f989257dce1e244c9635ed79feca40bbccf6e0aa1ebc
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@~4.4.4#~builtin<compat/typescript>":
-  version: 4.4.4
-  resolution: "typescript@patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=ddd1e8"
+"typescript@patch:typescript@~4.5.2#~builtin<compat/typescript>":
+  version: 4.5.2
+  resolution: "typescript@patch:typescript@npm%3A4.5.2#~builtin<compat/typescript>::version=4.5.2&hash=493e53"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: bd629ad0da4a15d79aaad56baf3ee7d96f6a181760d430ae77f8c5325df7bffd9edee57544a3970e3651e8b796fe03a5838a7eb39c6d46cc3866c0b23d36a0dd
+  checksum: 53838d56aba6fcc947d63aa0771e5d966b1b648fddafed6e221d7f38c71219c4e036ece8cfe9e35ed80cf5a35ff4eb958934c993f99c3233773ec4f9ccd53f69
   languageName: node
   linkType: hard
 
