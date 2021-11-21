@@ -1,4 +1,4 @@
 plugins {
-	id 'eclipse'
+	id 'refinery-frontend-worktree'
 	id 'refinery-sonarqube'
 }

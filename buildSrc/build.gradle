@@ -7,10 +7,8 @@ repositories {
 }
 
 dependencies {
+	implementation libs.frontendGradle
 	implementation libs.shadowGradle
 	implementation libs.sonarqubeGradle
 	implementation libs.xtendGradle
 }
-
-sourceCompatibility = '17'
-targetCompatibility = '17'

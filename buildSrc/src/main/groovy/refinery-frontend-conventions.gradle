@@ -1,0 +1,14 @@
+plugins {
+	id 'org.siouan.frontend-jdk11'
+}
+
+frontend {
+	nodeVersion = project.ext['frontend.nodeVersion']
+	nodeInstallDirectory = file("${rootDir}/.node")
+	yarnEnabled = true
+	yarnVersion = project.ext['frontend.yarnVersion']
+}
+
+tasks.named('enableYarnBerry') {
+	enabled = false
+}

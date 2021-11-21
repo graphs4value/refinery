@@ -11,6 +11,7 @@ xtext = "2.26.0.M2"
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.25.0" }
 ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.16.0" }
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.27.0" }
+frontendGradle = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty", name = "jetty-servlet", version.ref = "jetty" }
@@ -42,6 +43,3 @@ xtext-testing = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.testing
 xtext-web = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.web", version.ref = "xtext" }
 xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", version.ref = "xtext" }
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
-
-[plugins]
-frontend = { id = "org.siouan.frontend-jdk11", version = "6.0.0" }

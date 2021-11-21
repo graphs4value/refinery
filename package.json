@@ -1,0 +1,9 @@
+{
+  "name": "@refinery/worktree",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "language-web"
+  ],
+  "packageManager": "yarn@3.1.0"
+}

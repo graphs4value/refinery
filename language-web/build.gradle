@@ -1,5 +1,5 @@
 plugins {
-	alias libs.plugins.frontend
+	id 'refinery-frontend-workspace'
 	id 'refinery-java-application'
 	id 'refinery-xtext-conventions'
 }
@@ -31,36 +31,12 @@ for (taskName in ['compileJava', 'processResources']) {
 def webpackOutputDir = "${buildDir}/webpack"
 def productionResources = "${webpackOutputDir}/production"
 def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
-def nodeDirectory = "${rootDir}/.gradle/node"
 
 frontend {
-	nodeVersion = project.ext['frontend.nodeVersion']
-	nodeInstallDirectory = file('.node')
-	yarnEnabled = true
-	yarnVersion = project.ext['frontend.yarnVersion']
-	assembleScript = 'run assemble:webpack'
-}
-
-tasks.named('installYarnGlobally') {
-	// Do not check for updates all the time, since we only use yarn 1 for calling yarn berry. 
-	outputs.dir "${frontend.nodeInstallDirectory.get()}/lib/node_modules/yarn"
-}
-
-tasks.named('enableYarnBerry') {
-	// Yarn berry is checked into the repository, so there's no need to install it.
-	enabled = false
-}
-
-tasks.named('installYarn') {
-	// Yarn berry is checked into the repository, so there's no need to install it.
-	enabled = false
+	assembleScript = 'assemble:webpack'
 }
 
 def installFrontend = tasks.named('installFrontend')
-installFrontend.configure {
-	inputs.files('package.json', 'yarn.lock')
-	outputs.file '.pnp.cjs'
-}
 
 def generateLezerGrammar = tasks.register('generateLezerGrammar', RunYarn) {
 	dependsOn installFrontend

@@ -1,5 +1,5 @@
 {
-  "name": "refinery",
+  "name": "@refinery/language-web",
   "version": "0.0.0",
   "description": "Web frontend for VIATRA-Generator",
   "main": "index.js",
@@ -37,7 +37,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "babel-loader": "^8.2.3",
     "css-loader": "^6.5.1",
-    "eslint": "^8.2.0",
+    "eslint": "^8.3.0",
     "eslint-config-airbnb": "^19.0.0",
     "eslint-config-airbnb-typescript": "^16.0.0",
     "eslint-import-resolver-node": "^0.3.6",
@@ -55,10 +55,10 @@
     "sass-loader": "^12.3.0",
     "style-loader": "^3.3.1",
     "stylelint": "^14.1.0",
-    "stylelint-config-recommended-scss": "^5.0.1",
+    "stylelint-config-recommended-scss": "^5.0.2",
     "stylelint-scss": "^4.0.0",
     "typescript": "~4.4.4",
-    "webpack": "^5.64.1",
+    "webpack": "^5.64.2",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.5.0",
     "webpack-subresource-integrity": "^5.0.0"
