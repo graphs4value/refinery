@@ -2,6 +2,7 @@
 .classpath
 .gradle/
 .launch
+.log/
 .node/
 .pnp.*
 .project

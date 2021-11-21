@@ -2124,6 +2124,8 @@ __metadata:
 "@refinery/worktree@workspace:.":
   version: 0.0.0-use.local
   resolution: "@refinery/worktree@workspace:."
+  dependencies:
+    typescript: ~4.4.4
   languageName: unknown
   linkType: soft
 
