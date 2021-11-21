@@ -1,0 +1,80 @@
+Info 0    [18:52:45.728] Starting TS Server
+Info 1    [18:52:45.728] Version: 4.4.4
+Info 2    [18:52:45.728] Arguments: /usr/bin/node /usr/bin/tsserver --logFile /home/kris/bme/research/refinery/.log/tsserver.log --logVerbosity info --cancellationPipeName /tmp/721c6e54ae23cdfff3e77bb4d6cfef58/tscancellation*
+Info 3    [18:52:45.728] Platform: linux NodeVersion: 14 CaseSensitive: true
+Info 4    [18:52:45.728] ServerMode: undefined syntaxOnly: false hasUnknownServerMode: undefined
+Info 5    [18:52:45.739] Format host information updated
+Info 6    [18:52:45.742] Search path: /home/kris/bme/research/refinery/language-web/src/main/js/xtext
+Info 7    [18:52:45.742] For info: /home/kris/bme/research/refinery/language-web/src/main/js/xtext/XtextClient.ts :: Config file name: /home/kris/bme/research/refinery/language-web/tsconfig.json
+Info 8    [18:52:45.742] Creating configuration project /home/kris/bme/research/refinery/language-web/tsconfig.json
+Info 9    [18:52:45.759] Config: /home/kris/bme/research/refinery/language-web/tsconfig.json : {
+ "rootNames": [
+  "/home/kris/bme/research/refinery/language-web/src/main/js/App.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/RootStore.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/global.d.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/index.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/EditorArea.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/EditorButtons.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/EditorParent.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/EditorStore.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/GenerateButton.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/decorationSetExtension.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/findOccurrences.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/editor/semanticHighlighting.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/language/folding.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/language/indentation.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/language/problemLanguageSupport.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/language/props.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/theme/EditorTheme.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/theme/ThemeProvider.tsx",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/theme/ThemeStore.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/utils/ConditionVariable.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/utils/PendingTask.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/utils/Timer.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/utils/logger.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/ContentAssistService.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/HighlightingService.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/OccurrencesService.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/UpdateService.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/ValidationService.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/XtextClient.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/XtextWebSocketClient.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/xtextMessages.ts",
+  "/home/kris/bme/research/refinery/language-web/src/main/js/xtext/xtextServiceResults.ts"
+ ],
+ "options": {
+  "target": 7,
+  "module": 99,
+  "moduleResolution": 2,
+  "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true,
+  "jsx": 2,
+  "strict": true,
+  "noImplicitOverride": true,
+  "noImplicitReturns": true,
+  "exactOptionalPropertyTypes": false,
+  "noEmit": true,
+  "skipLibCheck": true,
+  "configFilePath": "/home/kris/bme/research/refinery/language-web/tsconfig.json"
+ }
+}
+Info 10   [18:52:45.765] Starting updateGraphWorker: Project: /home/kris/bme/research/refinery/language-web/tsconfig.json
+Info 11   [18:52:47.123] Finishing updateGraphWorker: Project: /home/kris/bme/research/refinery/language-web/tsconfig.json Version: 1 structureChanged: true structureIsReused:: Not Elapsed: 1357.446198001504ms
+Info 12   [18:52:47.123] Project '/home/kris/bme/research/refinery/language-web/tsconfig.json' (Configured)
+Info 13   [18:52:47.123] 	Files (75)
+
+Info 14   [18:52:47.123] -----------------------------------------------
+Info 15   [19:04:08.114] FileWatcher:: Triggered with /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 1:: WatchInfo: /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 500 undefined WatchType: Closed Script info
+Info 16   [19:04:08.115] Elapsed:: 0.4804379940032959ms FileWatcher:: Triggered with /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 1:: WatchInfo: /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 500 undefined WatchType: Closed Script info
+Info 17   [19:04:08.365] Starting updateGraphWorker: Project: /home/kris/bme/research/refinery/language-web/tsconfig.json
+Info 18   [19:04:08.366] Finishing updateGraphWorker: Project: /home/kris/bme/research/refinery/language-web/tsconfig.json Version: 2 structureChanged: false structureIsReused:: Not Elapsed: 1.220656007528305ms
+Info 19   [19:04:10.615] Before ensureProjectForOpenFiles:
+Info 20   [19:04:10.615] After ensureProjectForOpenFiles:
+Info 21   [19:04:10.616] got projects updated in background, updating diagnostics for /home/kris/bme/research/refinery/language-web/src/main/js/xtext/XtextClient.ts
+Info 22   [19:05:06.136] FileWatcher:: Triggered with /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 1:: WatchInfo: /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 500 undefined WatchType: Closed Script info
+Info 23   [19:05:06.136] Elapsed:: 0.05515900254249573ms FileWatcher:: Triggered with /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 1:: WatchInfo: /home/kris/bme/research/refinery/language-web/build/generated/sources/lezer/problem.ts 500 undefined WatchType: Closed Script info
+Info 24   [19:05:06.387] Starting updateGraphWorker: Project: /home/kris/bme/research/refinery/language-web/tsconfig.json
+Info 25   [19:05:06.388] Finishing updateGraphWorker: Project: /home/kris/bme/research/refinery/language-web/tsconfig.json Version: 3 structureChanged: false structureIsReused:: Not Elapsed: 0.5408300012350082ms
+Info 26   [19:05:08.637] Before ensureProjectForOpenFiles:
+Info 27   [19:05:08.637] After ensureProjectForOpenFiles:
+Info 28   [19:05:08.637] got projects updated in background, updating diagnostics for /home/kris/bme/research/refinery/language-web/src/main/js/xtext/XtextClient.ts

@@ -5,6 +5,11 @@ plugins {
 frontend {
 	yarnGlobalInstallScript = "install -g yarn@${project.ext['frontend.yarn1Version']}"
 	yarnInstallScript = "set version ${frontend.yarnVersion.get()} --only-if-needed"
+	if (project.hasProperty('ci')) {
+		installScript = 'install --immutable --inline-builds'
+	} else {
+		installScript = 'install'
+	}
 }
 
 ext.frontedPropertiesFile = "${frontend.nodeInstallDirectory.get()}/frontend.properties"
