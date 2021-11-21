@@ -2,7 +2,8 @@ name: Build
 on:
   push:
     branches:
-      - main
+      - '**'
+      - '!gh-pages'
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -10,10 +11,16 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Check for Sonar secret
+        id: check-secret
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "::set-output name=is_SONAR_TOKEN_set::${{ env.SONAR_TOKEN != '' }}"
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
+          fetch-depth: ${{ !steps.check-secret.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
       - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
@@ -27,11 +34,13 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       - name: Cache Sonar packages
         uses: actions/cache@v2
+        if: ${{ steps.check-secret.is_SONAR_TOKEN_set }}
         with:
-          path: ~/.sonar/cache
+          path: |
+            ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Cache yarn packages
+      - name: Cache node distribution
         uses: actions/cache@v2
         with:
           path: |
@@ -45,12 +54,14 @@ jobs:
             **/.yarn/cache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn
+      - name: Gradle build
+        if: ${{ !steps.check-secret.is_SONAR_TOKEN_set }}
+        run: |
+          ./gradlew build -Pci --info
       - name: Gradle build and Sonar analyze
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ steps.check-secret.is_SONAR_TOKEN_set }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed by Sonar to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonarqube -Pci --info
-      - name: Gradle build for pull request
-        if: ${{ github.event_name == 'pull_request' }}
-        run: ./gradlew build --info
+        run: |
+          ./gradlew build sonarqube -Pci --info
