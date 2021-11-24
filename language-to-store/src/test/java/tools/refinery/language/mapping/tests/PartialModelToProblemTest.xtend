@@ -178,15 +178,15 @@ class PartialModelToProblemTest {
 		assertTrue(containsAssertion(problemOut, "exists", Tuple.of(b), LogicValue.TRUE).get)
 		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(a,a), LogicValue.TRUE).get)
 		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(b,b), LogicValue.TRUE).get)
-		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(a,b), LogicValue.FALSE).empty)
-		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(b,a), LogicValue.FALSE).empty)
+		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(a,b), LogicValue.FALSE).get)
+		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(b,a), LogicValue.FALSE).get)
 		
 		assertTrue(containsAssertion(problemOut, "exists", Tuple.of(personNew), LogicValue.UNKNOWN).get)
 		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(personNew,personNew), LogicValue.UNKNOWN).get)
-		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(personNew,a), LogicValue.FALSE).empty)
-		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(personNew,b), LogicValue.FALSE).empty)
-		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(a,personNew), LogicValue.FALSE).empty)
-		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(b,personNew), LogicValue.FALSE).empty)
+		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(personNew,a), LogicValue.FALSE).get)
+		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(personNew,b), LogicValue.FALSE).get)
+		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(a,personNew), LogicValue.FALSE).get)
+		assertTrue(containsAssertion(problemOut, "equals", Tuple.of(b,personNew), LogicValue.FALSE).get)
 	}
 	
 	@Test
