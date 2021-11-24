@@ -29,56 +29,77 @@ import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
 
+//This class enables the transformation from Model to Problem
 public class PartialModelToProblem {
 	
+	//The resource set provider is needed in order to reach the built in problem
 	@Inject
 	private Provider<ResourceSet> resourceSetProvider;
 	
+	//With this method a Problem is created from the Model
 	public Problem transformModelToProblem(Model model) throws ModelToStoreException{
-		Problem problem = ProblemFactory.eINSTANCE.createProblem();
+		Problem problem = ProblemFactory.eINSTANCE.createProblem(); //Creating the Problem object
+		
+		//Getting a resource and attaching the problem to the resource
+			//in order to reach the built in problem
 		ResourceSet resourceSet = resourceSetProvider.get();
 		Resource resource = resourceSet.createResource(URI.createFileURI("transform.problem"));
 		resource.getContents().add(problem);
 		
+		//Getting the built in node relation for the type of nodes in the new Problem object
 		Optional<Problem> builtin = ProblemUtil.getBuiltInLibrary(problem);
 		if (builtin.isEmpty()) throw new ModelToStoreException("builtin problem not found");
 		Optional<ClassDeclaration> nodeType = ProblemUtil.getNodeClassDeclaration(problem);
 		if (nodeType.isEmpty()) throw new ModelToStoreException("node class declaration not found in builtin problem");
 		
+		//This list is used to not allow any duplication of nodes in the Problem
 		ArrayList<Integer> nodeList = new ArrayList<>();
+		
+		//Iterating through the model the first time, here we create:
+			//every relation of the Problem except the assertions
+			//and we create the nodes of the Problem as well
 		Set<DataRepresentation<?,?>> drSet = model.getDataRepresentations();
 		for(DataRepresentation<?,?> dr : drSet ) {
 			if(dr instanceof Relation<?>) {
 				@SuppressWarnings("unchecked")
 				Relation<TruthValue> relation = (Relation<TruthValue>) dr;
 				
+				//Checking if the relation is a built in relation.
 				Optional<Statement> statement = problemContainsRelation(builtin.get(), relation);
 				if(statement.isPresent()) {
+					//If the relation is a built in relation we do not create a new relation,
+						//instead we put the relation from the built in problem inside the Problem object
 					problem.getStatements().add(statement.get());
 				}
 				else {
+					//If the relation is not a built in relation we create a new relation
 					PredicateDefinition pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
 					pred.setName(relation.getName());
 					createParametersForPredicate(relation, pred, nodeType.get());
 					problem.getStatements().add(pred);
 				}
+				//We fill the nodes of the Problem object up
 				fillNodesFromRelation(model, problem, nodeList, relation);
 			}
 		}
 		
+		//Iterating through the model the second time, here we create every needed assertion for the Problem
 		for(DataRepresentation<?,?> dr : drSet ) {
 			if(dr instanceof Relation<?>) {
 				@SuppressWarnings("unchecked")
 				Relation<TruthValue> relation = (Relation<TruthValue>) dr;
 				
+				//We transfer all the assertions from the model into the Problem
 				createAssertionsForRelation(model, problem, relation);
+				//False assertions are not stored in the model, we must create these from scratch
 				fillRelationWithFalseAssertions(problem, relation);
 			}
 		}
-		
+		//Lastly we give back the prepared Problem object
 		return problem;
 	}
 	
+	//This method fills up any combination of nodes with false assertions, when those combination weren't in the model
 	private void fillRelationWithFalseAssertions(Problem problem, Relation<TruthValue> relation) throws ModelToStoreException {
 		if(relation.getArity()==1) {
 			for(Node n : problem.getNodes()) {
@@ -105,6 +126,8 @@ public class PartialModelToProblem {
 		else throw new ModelToStoreException("Unsupported number of arguments in relation.");
 	}
 
+	//This method gives back, whether the problem contains an assertion or not.
+	//The searched assertion is given with the relation of the assertions, and its arguments values
 	private boolean existsAssertionInProblem(Problem problem, Relation<TruthValue> relation, Tuple tuple) {
 		for(Statement s : problem.getStatements()) {
 			if(s instanceof Assertion a) {
@@ -119,11 +142,10 @@ public class PartialModelToProblem {
 				}
 			}
 		}
-		
-		
 		return false;
 	}
 
+	//This method creates parameters for the given predicate with the given node type.
 	private void createParametersForPredicate(Relation<TruthValue> relation,
 											  PredicateDefinition pred,
 											  ClassDeclaration nodeType) {
@@ -135,6 +157,8 @@ public class PartialModelToProblem {
 		}
 	}
 	
+	//This method fills up the node-list of the Problem object
+	//With the given nodeList it is solved that there are no duplicates of nodes
 	private void fillNodesFromRelation(Model model,
 						   Problem problem,
 						   ArrayList<Integer> nodeList,
@@ -153,6 +177,7 @@ public class PartialModelToProblem {
 		}
 	}
 
+	//With this method an assertion is created for the Problem object
 	private void createAssertion(Problem problem, Relation<TruthValue> relation, Tuple tuple, LogicValue value) throws ModelToStoreException {
 		Assertion assertion = ProblemFactory.eINSTANCE.createAssertion();
 		
@@ -183,6 +208,7 @@ public class PartialModelToProblem {
 		problem.getStatements().add(assertion);
 	}
 	
+	//With this method all assertions are created for a specific relation
 	private void createAssertionsForRelation(Model model,
 								  Problem problem,
 								  Relation<TruthValue> storeRelation) throws ModelToStoreException {
@@ -194,6 +220,7 @@ public class PartialModelToProblem {
 		}
 	}
 
+	//This method searches for a node in the Problem object
 	private Optional<Node> findNodeInProblem(Problem problem, String nodeName) {
 		for (Node n : problem.getNodes()) {
 			if (n.getName().equals(nodeName)) return Optional.of(n);
@@ -201,6 +228,7 @@ public class PartialModelToProblem {
 		return Optional.empty();
 	}
 
+	//This method gives back the relation from the problem Object if found.
 	private Optional<Statement> problemContainsRelation(Problem problem, Relation<TruthValue> relation) {
 		for(Statement s : problem.getStatements()) {
 			if(s instanceof ClassDeclaration cd &&
