@@ -1,5 +1,6 @@
 plugins {
 	id 'groovy-gradle-plugin'
+	alias libs.plugins.versions
 }
 
 repositories {
@@ -7,8 +8,8 @@ repositories {
 }
 
 dependencies {
-	implementation libs.frontendGradle
-	implementation libs.shadowGradle
-	implementation libs.sonarqubeGradle
-	implementation libs.xtendGradle
+	implementation libs.gradlePlugin.frontend
+	implementation libs.gradlePlugin.shadow
+	implementation libs.gradlePlugin.sonarqube
+	implementation libs.gradlePlugin.xtend
 }
