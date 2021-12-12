@@ -1,5 +1,3 @@
-enableFeaturePreview 'VERSION_CATALOGS'
-
 rootProject.name = 'refinery'
 
 include 'language'
@@ -10,5 +8,9 @@ include 'language-web'
 include 'store'
 
 for (project in rootProject.children) {
-	project.name = "${rootProject.name}-${project.name}"
+	def projectName = project.name
+	project.name = "${rootProject.name}-${projectName}"
+	project.projectDir = file("subprojects/${projectName}")
 }
+
+enableFeaturePreview 'VERSION_CATALOGS'
