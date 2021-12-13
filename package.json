@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "subprojects/language-web"
+    "subprojects/frontend"
   ],
   "devDependencies": {
     "eslint": "^8.4.1",

@@ -9,7 +9,7 @@ import {
 } from '@codemirror/language';
 import { LRParser } from '@lezer/lr';
 
-import { parser } from '../../../../build/generated/sources/lezer/problem';
+import { parser } from '../../build/generated/sources/lezer/problem';
 import {
   foldBlockComment,
   foldConjunction,

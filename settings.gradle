@@ -1,5 +1,6 @@
 rootProject.name = 'refinery'
 
+include 'frontend'
 include 'language'
 include 'language-ide'
 include 'language-model'

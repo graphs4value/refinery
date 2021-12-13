@@ -6,7 +6,7 @@ import { App } from './App';
 import { RootStore, RootStoreProvider } from './RootStore';
 import { ThemeProvider } from './theme/ThemeProvider';
 
-import '../css/index.scss';
+import './index.scss';
 
 const initialValue = `class Family {
     contains Person[] members

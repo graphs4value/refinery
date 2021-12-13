@@ -1,10 +1,14 @@
 plugins {
-	id 'refinery-frontend-workspace'
 	id 'refinery-java-application'
 	id 'refinery-xtext-conventions'
 }
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+configurations {
+	webapp {
+		canBeConsumed = false
+		canBeResolved = true
+	}
+}
 
 dependencies {
 	implementation project(':refinery-language')
@@ -16,6 +20,7 @@ dependencies {
 	implementation libs.jetty.websocket.server
 	implementation libs.slf4j.simple
 	implementation libs.slf4j.log4j
+	webapp project(path: ':refinery-frontend', configuration: 'productionAssets')
 	testImplementation testFixtures(project(':refinery-language'))
 	testImplementation libs.jetty.websocket.client
 }
@@ -28,120 +33,36 @@ for (taskName in ['compileJava', 'processResources']) {
 	}
 }
 
-def webpackOutputDir = "${buildDir}/webpack"
-def productionResources = "${webpackOutputDir}/production"
-def serverMainClass = 'tools.refinery.language.web.ServerLauncher'
-
-frontend {
-	assembleScript = 'assemble:webpack'
-}
-
-def installFrontend = tasks.named('installFrontend')
-
-def generateLezerGrammar = tasks.register('generateLezerGrammar', RunYarn) {
-	dependsOn installFrontend
-	inputs.file('src/main/js/language/problem.grammar')
-	inputs.files('package.json', 'yarn.lock')
-	outputs.file "${buildDir}/generated/sources/lezer/problem.ts"
-	outputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
-	script = 'run assemble:lezer'
-}
-
-def assembleFrontend = tasks.named('assembleFrontend')
-assembleFrontend.configure {
-	dependsOn generateLezerGrammar
-	inputs.dir 'src/main/css'
-	inputs.dir 'src/main/html'
-	inputs.dir 'src/main/js'
-	inputs.file "${buildDir}/generated/sources/lezer/problem.ts"
-	inputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
-	inputs.files('package.json', 'yarn.lock', 'webpack.config.js')
-	outputs.dir productionResources
-}
-
-def eslint = tasks.register('eslint', RunYarn) {
-	dependsOn installFrontend
-	inputs.dir 'src/main/js'
-	inputs.files('.eslintrc.js', 'tsconfig.json')
-	if (project.hasProperty('ci')) {
-		outputs.file "${buildDir}/eslint.json"
-		script = 'run check:eslint:ci'
-	} else {
-		script = 'run check:eslint'
-	}
-	group = 'verification'
-	description = 'Check for TypeScript errors.'
-}
-
-def stylelint = tasks.register('stylelint', RunYarn) {
-	dependsOn installFrontend
-	inputs.dir 'src/main/css'
-	inputs.file '.stylelintrc.js'
-	if (project.hasProperty('ci')) {
-		outputs.file "${buildDir}/stylelint.json"
-		script = 'run check:stylelint:ci'
-	} else {
-		script = 'run check:stylelint'
-	}
-	group = 'verification'
-	description = 'Check for Sass errors.'
-}
-
-tasks.named('check') {
-	dependsOn(eslint, stylelint)
-}
-
-mainClassName = serverMainClass
+mainClassName = 'tools.refinery.language.web.ServerLauncher'
 
 tasks.named('jar') {
-	dependsOn assembleFrontend
-	from(productionResources) {
+	dependsOn project.configurations.webapp
+	from(project.configurations.webapp) {
 		into 'webapp'
 	}
 }
 
 tasks.named('shadowJar') {
-	dependsOn assembleFrontend
-	from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
+	dependsOn project.configurations.webapp
+	from(project.sourceSets.main.output)
 	configurations = [project.configurations.runtimeClasspath]
 	exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA','schema/*',
 		'.options', '.api_description', '*.profile', 'about.*', 'about_*.html', 'about_files/*',
 		'plugin.xml', 'systembundle.properties', 'profile.list', 'META-INF/resources/xtext/**')
 	append('plugin.properties')
-	from(productionResources) {
+	from(project.configurations.webapp) {
 		into 'webapp'
 	}
 }
 
 def jettyRun = tasks.register('jettyRun', JavaExec) {
-	dependsOn assembleFrontend
+	dependsOn project.configurations.webapp
 	dependsOn sourceSets.main.runtimeClasspath
-	classpath = sourceSets.main.runtimeClasspath.filter{it.exists()}
-	mainClass = serverMainClass
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = mainClassName
 	standardInput = System.in
-	environment BASE_RESOURCE: productionResources
+	def baseResource = project.configurations.webapp.incoming.artifacts.artifactFiles.first()
+	environment BASE_RESOURCE: baseResource
 	group = 'run'
 	description = 'Start a Jetty web server serving the Xtex API and assets.'
-}
-
-tasks.register('webpackServe', RunYarn) {
-	dependsOn installFrontend
-	dependsOn generateLezerGrammar
-	outputs.dir "${webpackOutputDir}/development"
-	script = 'run serve'
-	group = 'run'
-	description = 'Start a Webpack dev server with hot module replacement.'
-}
-
-sonarqube.properties {
-	properties['sonar.sources'] += [
-		'src/main/css',
-		'src/main/html',
-		'src/main/js',
-	]
-	property 'sonar.nodejs.executable', "${frontend.nodeInstallDirectory.get()}/bin/node"
-	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
-	property 'sonar.css.stylelint.reportPaths', "${buildDir}/stylelint.json"
-	// SonarJS does not pick up typescript files with `exactOptionalPropertyTypes`
-	property 'sonar.typescript.tsconfigPath', 'tsconfig.sonar.json'
 }

@@ -26,7 +26,6 @@ module.exports = {
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     // https://github.com/airbnb/javascript/pull/2501
     'react/function-component-definition': ['error', {
-      namedComponents: 'function-expression',
       namedComponents: 'function-declaration',
     }],
   },

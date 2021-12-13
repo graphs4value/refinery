@@ -1,6 +1,6 @@
 import type { PaletteMode } from '@mui/material';
 
-import cssVariables from '../../css/themeVariables.module.scss';
+import cssVariables from '../themeVariables.module.scss';
 
 export enum EditorTheme {
   Light,

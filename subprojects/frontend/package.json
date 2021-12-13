@@ -1,23 +1,23 @@
 {
-  "name": "@refinery/language-web",
+  "name": "@refinery/frontend",
   "version": "0.0.0",
-  "description": "Web frontend for VIATRA-Generator",
+  "description": "Web frontend for Refinery",
   "main": "index.js",
   "scripts": {
-    "assemble:lezer": "lezer-generator src/main/js/language/problem.grammar -o build/generated/sources/lezer/problem.ts",
+    "assemble:lezer": "lezer-generator src/language/problem.grammar -o build/generated/sources/lezer/problem.ts",
     "assemble:webpack": "webpack --node-env production",
     "serve": "webpack serve --node-env development --hot",
     "check": "yarn run check:eslint && yarn run check:stylelint",
     "check:eslint": "eslint .",
     "check:eslint:ci": "eslint -f json -o build/eslint.json .",
-    "check:stylelint": "stylelint src/main/css/**/*.scss",
-    "check:stylelint:ci": "stylelint -f json src/main/css/**/*.scss > build/stylelint.json"
+    "check:stylelint": "stylelint src/**/*.scss",
+    "check:stylelint:ci": "stylelint -f json src/**/*.scss > build/stylelint.json"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/graphs4value/refinery.git"
   },
-  "author": "VIATRA-Generator authors",
+  "author": "Refinery authors",
   "license": "EPL-2.0",
   "bugs": {
     "url": "https://github.com/graphs4value/issues"
@@ -47,9 +47,8 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "html-webpack-plugin": "^5.5.0",
     "image-webpack-loader": "^8.0.1",
-    "magic-comments-loader": "^1.4.1",
     "mini-css-extract-plugin": "^2.4.5",
-    "postcss": "^8.4.4",
+    "postcss": "^8.4.5",
     "postcss-scss": "^4.0.2",
     "sass": "^1.45.0",
     "sass-loader": "^12.4.0",
@@ -81,7 +80,7 @@
     "@codemirror/search": "^0.19.4",
     "@codemirror/state": "^0.19.6",
     "@codemirror/view": "^0.19.29",
-    "@emotion/react": "^11.7.0",
+    "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@fontsource/jetbrains-mono": "^4.5.0",
     "@fontsource/roboto": "^4.5.1",

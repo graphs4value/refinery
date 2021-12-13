@@ -1608,16 +1608,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/cache@npm:^11.6.0":
-  version: 11.6.0
-  resolution: "@emotion/cache@npm:11.6.0"
+"@emotion/cache@npm:^11.6.0, @emotion/cache@npm:^11.7.1":
+  version: 11.7.1
+  resolution: "@emotion/cache@npm:11.7.1"
   dependencies:
     "@emotion/memoize": ^0.7.4
     "@emotion/sheet": ^1.1.0
     "@emotion/utils": ^1.0.0
     "@emotion/weak-memoize": ^0.2.5
-    stylis: ^4.0.10
-  checksum: 3c72c50bfe06fd7ec2728988181173664183d2320305a01bb757caa6a9d485de25fccde1b173d810423d2ff88a178d5a72cc21db76b9e458311a8ce3044dd2a1
+    stylis: 4.0.13
+  checksum: cf7aa8fe3bacfdedcda94b53e76a7635e122043439715fcfbf7f1a81340cfe6099a59134481a03ec3e0437466566d18528577d1e6ea92f5b98c372b8b38a8f35
   languageName: node
   linkType: hard
 
@@ -1644,12 +1644,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/react@npm:^11.7.0":
-  version: 11.7.0
-  resolution: "@emotion/react@npm:11.7.0"
+"@emotion/react@npm:^11.7.1":
+  version: 11.7.1
+  resolution: "@emotion/react@npm:11.7.1"
   dependencies:
     "@babel/runtime": ^7.13.10
-    "@emotion/cache": ^11.6.0
+    "@emotion/cache": ^11.7.1
     "@emotion/serialize": ^1.0.2
     "@emotion/sheet": ^1.1.0
     "@emotion/utils": ^1.0.0
@@ -1663,7 +1663,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 8b50d61caabe04ae413ae23b98c170da643754ec89f25eb001464095685686585d0f88988bc36432f231e6de6abdbee73308c42ba427de9eaaf5a54d7f2f6ae5
+  checksum: 3392aa71f9c68c16022947959f7f842174e6b075b3baf58e185462411cd9b5a87557109a9225b1abaa2d7200a08b7cb9d7f21aa035f0d36b2c89e19b2a124e02
   languageName: node
   linkType: hard
 
@@ -2041,9 +2041,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@refinery/language-web@workspace:subprojects/language-web":
+"@refinery/frontend@workspace:subprojects/frontend":
   version: 0.0.0-use.local
-  resolution: "@refinery/language-web@workspace:subprojects/language-web"
+  resolution: "@refinery/frontend@workspace:subprojects/frontend"
   dependencies:
     "@babel/core": ^7.16.0
     "@babel/plugin-transform-runtime": ^7.16.4
@@ -2067,7 +2067,7 @@ __metadata:
     "@codemirror/search": ^0.19.4
     "@codemirror/state": ^0.19.6
     "@codemirror/view": ^0.19.29
-    "@emotion/react": ^11.7.0
+    "@emotion/react": ^11.7.1
     "@emotion/styled": ^11.6.0
     "@fontsource/jetbrains-mono": ^4.5.0
     "@fontsource/roboto": ^4.5.1
@@ -2097,12 +2097,11 @@ __metadata:
     image-webpack-loader: ^8.0.1
     loglevel: ^1.8.0
     loglevel-plugin-prefix: ^0.8.4
-    magic-comments-loader: ^1.4.1
     mini-css-extract-plugin: ^2.4.5
     mobx: ^6.3.8
     mobx-react-lite: ^3.2.2
     nanoid: ^3.1.30
-    postcss: ^8.4.4
+    postcss: ^8.4.5
     postcss-scss: ^4.0.2
     react: ^17.0.2
     react-dom: ^17.0.2
@@ -7032,17 +7031,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"magic-comments-loader@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "magic-comments-loader@npm:1.4.1"
-  dependencies:
-    loader-utils: ^2.0.0
-    micromatch: ^4.0.4
-    schema-utils: ^3.1.1
-  checksum: 8e2c70ae7cebbe545b33087da7bb028133ffa58fb84dddf3fc844a465a93fb3f5dc0a8c0ff46279d0e2936da98170f0d06eff3ad8d27413124f2cc9ee2df4246
-  languageName: node
-  linkType: hard
-
 "make-dir@npm:^1.0.0, make-dir@npm:^1.2.0":
   version: 1.3.0
   resolution: "make-dir@npm:1.3.0"
@@ -8321,14 +8309,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.2.15, postcss@npm:^8.3.11, postcss@npm:^8.4.4":
-  version: 8.4.4
-  resolution: "postcss@npm:8.4.4"
+"postcss@npm:^8.2.15, postcss@npm:^8.3.11, postcss@npm:^8.4.5":
+  version: 8.4.5
+  resolution: "postcss@npm:8.4.5"
   dependencies:
     nanoid: ^3.1.30
     picocolors: ^1.0.0
     source-map-js: ^1.0.1
-  checksum: 6cf3fe0ecdf5a0d2aeb5e8404938c7eab968704e2e29dc5421e90b4014eb1975c1c0ad828425f2428807ef6e3fcfadd71f988ab55cb06c28ac2866f22403255b
+  checksum: b78abdd89c10f7b48f4bdcd376104a19d6e9c7495ab521729bdb3df315af6c211360e9f06887ad3bc0ab0f61a04b91d68ea11462997c79cced58b9ccd66fac07
   languageName: node
   linkType: hard
 
@@ -9769,7 +9757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylis@npm:^4.0.10, stylis@npm:^4.0.3":
+"stylis@npm:4.0.13, stylis@npm:^4.0.3":
   version: 4.0.13
   resolution: "stylis@npm:4.0.13"
   checksum: 8ea7a87028b6383c6a982231c4b5b6150031ce028e0fdaf7b2ace82253d28a8af50cc5a9da8a421d3c7c4441592f393086e332795add672aa4a825f0fe3713a3

@@ -1,6 +1,6 @@
 @detectDelim
 
-@external prop implicitCompletion from '../../../../src/main/js/language/props.ts'
+@external prop implicitCompletion from '../../../../src/language/props.ts'
 
 @top Problem { statement* }
 

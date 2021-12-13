@@ -13,10 +13,11 @@ const currentNodeEnv = process.env.NODE_ENV || 'development';
 const devMode = currentNodeEnv !== 'production';
 const outputPath = path.resolve(__dirname, 'build/webpack', currentNodeEnv);
 
-const portNumberOrElse = (envName, fallback) => {
+function portNumberOrElse (envName, fallback) {
   const value = process.env[envName];
   return value ? parseInt(value) : fallback;
-};
+}
+
 const listenHost = process.env['LISTEN_HOST'] || 'localhost';
 const listenPort = portNumberOrElse('LISTEN_PORT', 1313);
 const apiHost = process.env['API_HOST'] || listenHost;
@@ -24,78 +25,34 @@ const apiPort = portNumberOrElse('API_PORT', 1312);
 const publicHost = process.env['PUBLIC_HOST'] || listenHost;
 const publicPort = portNumberOrElse('PUBLIC_PORT', listenPort);
 
-const resolveSources = sources => path.resolve(__dirname, 'src', sources);
-const mainJsSources = resolveSources('main/js');
-const babelLoaderFilters = {
-  include: [mainJsSources],
-};
-const babelPresets = [
-  [
-    '@babel/preset-env',
-    {
-      targets: 'defaults',
-    },
-  ],
-  '@babel/preset-react',
-];
-const babelPlugins = [
-  '@babel/plugin-transform-runtime',
-]
-const magicCommentsLoader = {
-  loader: 'magic-comments-loader',
-  options: {
-    webpackChunkName: true,
-  }
-};
-
 module.exports = {
   mode: devMode ? 'development' : 'production',
-  entry: './src/main/js',
+  entry: './src/index',
   output: {
     path: outputPath,
     publicPath: '/',
     filename: devMode ? '[name].js' : '[name].[contenthash].js',
-    chunkFilename: devMode ? '[name].js' : '[name].[contenthash].js',
-    assetModuleFilename: devMode ? '[name].js' : '[name].[contenthash][ext]',
+    assetModuleFilename: devMode ? '[name][ext]' : '[name].[contenthash][ext]',
     clean: true,
     crossOriginLoading: 'anonymous',
   },
   module: {
     rules: [
       {
-        test: /\.jsx?$/i,
-        ...babelLoaderFilters,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: babelPresets,
-              plugins: [
-                [
-                  '@babel/plugin-proposal-class-properties',
-                  {
-                    loose: false,
-                  },
-                  ...babelPlugins,
-                ],
-              ],
-              assumptions: {
-                'setPublicClassFields': false,
-              },
-            },
-          },
-          magicCommentsLoader,
-        ],
-      },
-      {
-        test: /.tsx?$/i,
-        ...babelLoaderFilters,
+        test: /.[jt]sx?$/i,
+        include: [path.resolve(__dirname, 'src')],
         use: [
           {
             loader: 'babel-loader',
             options: {
               presets: [
-                ...babelPresets,
+                [
+                  '@babel/preset-env',
+                  {
+                    targets: 'defaults',
+                  },
+                ],
+                '@babel/preset-react',
                 [
                   '@babel/preset-typescript',
                   {
@@ -107,10 +64,11 @@ module.exports = {
                   },
                 ]
               ],
-              plugins: babelPlugins,
+              plugins: [
+                '@babel/plugin-transform-runtime',
+              ],
             },
           },
-          magicCommentsLoader,
         ],
       },
       {
@@ -145,11 +103,7 @@ module.exports = {
     ],
   },
   resolve: {
-    modules: [
-      'node_modules',
-      mainJsSources,
-    ],
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
   devtool: devMode ? 'inline-source-map' : 'source-map',
   optimization: {
@@ -157,19 +111,6 @@ module.exports = {
     sideEffects: devMode ? 'flag' : true,
     splitChunks: {
       chunks: 'all',
-      cacheGroups: {
-        defaultVendors: {
-          test: /[\\/]node_modules[\\/]/,
-          priority: -10,
-          reuseExistingChunk: true,
-          filename: devMode ? 'vendor.[id].js' : 'vendor.[contenthash].js',
-        },
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true,
-        },
-      },
     },
   },
   devServer: {
@@ -205,16 +146,7 @@ module.exports = {
     }),
     new SubresourceIntegrityPlugin(),
     new HtmlWebpackPlugin({
-      template: 'src/main/html/index.html',
-      minify: devMode ? false : {
-        collapseWhitespace: true,
-        removeComments: true,
-        removeOptionalTags: true,
-        removeRedundantAttributes: true,
-        removeScriptTypeAttributes: true,
-        removeStyleLinkTypeAttributes: true,
-        useShortDoctype: true,
-      },
+      template: 'src/index.html',
     }),
     new HtmlWebpackInjectPreload({
       files: [

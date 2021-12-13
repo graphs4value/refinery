@@ -1,5 +1,0 @@
-[src/main/css/xtext/**.css]
-indent_style = tab
-
-[src/main/js/xtext/**.js]
-indent_style = tab
