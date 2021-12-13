@@ -19,15 +19,15 @@ public class DirectRelationAtom implements DNFAtom {
 		this.substitution = substitution;
 		this.allowedTruthValues = allowedTruthValues;
 	}
-	
+
 	public Relation<TruthValue> getRelation() {
 		return relation;
 	}
-	
+
 	public List<Variable> getSubstitution() {
 		return substitution;
 	}
-	
+
 	public Set<TruthValue> getAllowedTruthValues() {
 		return allowedTruthValues;
 	}

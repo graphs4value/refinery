@@ -174,7 +174,7 @@ public class DNF2PQuery {
 					RawPatternMatcher matcher = engine.getExistingMatcher(this);
 			        if (matcher == null) {
 			            matcher = engine.getMatcher(this);
-			        } 	
+			        }
 			        return matcher;
 				}
 

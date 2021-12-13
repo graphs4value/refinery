@@ -438,7 +438,7 @@ class QueryTest {
 		model.put(person, Tuple.of(2), true);
 		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
 		model.put(friend, Tuple.of(1, 2), TruthValue.TRUE);
-		
+
 		model.flushChanges();
 		assertEquals(3, model.countResults(predicate));
 	}
