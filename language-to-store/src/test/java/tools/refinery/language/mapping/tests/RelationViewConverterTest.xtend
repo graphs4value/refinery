@@ -11,21 +11,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import tools.refinery.language.mapping.ParsedModelToDNFConverter
+import tools.refinery.language.mapping.PartialModelMapper
+import tools.refinery.language.mapping.RelationViewConverter
 import tools.refinery.language.model.problem.Problem
 import tools.refinery.language.model.tests.ProblemTestUtil
 import tools.refinery.language.tests.ProblemInjectorProvider
-import tools.refinery.store.model.representation.TruthValue
 import tools.refinery.store.query.building.DNFPredicateCallAtom
-import tools.refinery.store.query.building.DirectRelationAtom
+import tools.refinery.store.query.building.RelationAtom
 
-import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertNotEquals
 import static org.junit.jupiter.api.Assertions.assertTrue
-import tools.refinery.language.mapping.RelationViewConverter
-import tools.refinery.language.mapping.RelationViewMappings
-import tools.refinery.store.model.representation.Relation
-import tools.refinery.language.mapping.PartialModelMapper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(ProblemInjectorProvider)
@@ -69,10 +66,16 @@ class RelationViewConverterTest {
 		assertTrue(relationViewMappings.mustViewMap.containsKey(personRel));
 		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
 		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
-		assertFalse(relationViewMappings.helperDirectPredicates.containsKey(mayRelView));
-		assertFalse(relationViewMappings.helperDirectPredicates.containsKey(mustRelView));
+		assertFalse(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertFalse(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mayDNFAtom = dnfAnd.get(0)
+		val mustDNFAtom = dnfAnd.get(1)
+		assertEquals((mayDNFAtom as RelationAtom).getView, mayRelView)
+		assertEquals((mustDNFAtom as RelationAtom).getView, mustRelView)
 	}
-	
+
 	@Test
 	def void errorRelationViewTest() {
 		val it = parseHelper.parse('''
@@ -91,10 +94,17 @@ class RelationViewConverterTest {
 		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
 		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
 		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
-		assertTrue(relationViewMappings.helperDirectPredicates.containsKey(mayRelView));
-		assertFalse(relationViewMappings.helperDirectPredicates.containsKey(mustRelView));
+		assertTrue(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertFalse(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mayDNFAtom = dnfAnd.get(0)
+		val mustDNFAtom = dnfAnd.get(1)
+		val mayRelAtom = (mayDNFAtom as DNFPredicateCallAtom).referred.clauses.get(0).constraints.get(0)
+		assertEquals((mayRelAtom as RelationAtom).view, mayRelView)
+		assertEquals((mustDNFAtom as RelationAtom).view, mustRelView)
 	}
-	
+
 	@Test
 	def void unknownRelationViewTest() {
 		val it = parseHelper.parse('''
@@ -113,10 +123,17 @@ class RelationViewConverterTest {
 		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
 		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
 		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
-		assertFalse(relationViewMappings.helperDirectPredicates.containsKey(mayRelView));
-		assertTrue(relationViewMappings.helperDirectPredicates.containsKey(mustRelView));
+		assertFalse(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertTrue(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mayDNFAtom = dnfAnd.get(0)
+		val mustDNFAtom = dnfAnd.get(1)
+		val mustRelAtom = (mustDNFAtom as DNFPredicateCallAtom).referred.clauses.get(0).constraints.get(0)
+		assertEquals((mayDNFAtom as RelationAtom).view, mayRelView)
+		assertEquals((mustRelAtom as RelationAtom).view, mustRelView)
 	}
-	
+
 	@Test
 	def void falseRelationViewTest() {
 		val it = parseHelper.parse('''
@@ -135,7 +152,172 @@ class RelationViewConverterTest {
 		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
 		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
 		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
-		assertTrue(relationViewMappings.helperDirectPredicates.containsKey(mayRelView));
-		assertTrue(relationViewMappings.helperDirectPredicates.containsKey(mustRelView));
+		assertTrue(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertTrue(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mayDNFAtom = dnfAnd.get(0)
+		val mustDNFAtom = dnfAnd.get(1)
+		val mayRelAtom = (mayDNFAtom as DNFPredicateCallAtom).referred.clauses.get(0).constraints.get(0)
+		val mustRelAtom = (mustDNFAtom as DNFPredicateCallAtom).referred.clauses.get(0).constraints.get(0)
+		assertEquals((mayRelAtom as RelationAtom).view, mayRelView)
+		assertEquals((mustRelAtom as RelationAtom).view, mustRelView)
+	}
+
+	@Test
+	def void falseErrorRelationViewTest() {
+		val it = parseHelper.parse('''
+			class Person.
+			direct pred p(a) <-> Person(a) = false | error.
+			
+		''')
+		EcoreUtil.resolveAll(it)
+
+		val pred = pred("p")
+		val relationMap = partialModelMapper.transformProblem(it).relationMap
+		val mappings = dnfConverter.transformPred(Set.of(pred), new HashMap(), relationMap)
+		val relationViewMappings = relationViewConverter.convertDirectPredicates(mappings.predicateMap.values,
+			relationMap.values)
+
+		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
+		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
+		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
+		assertTrue(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertFalse(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mayDNFAtom = dnfAnd.get(0)
+		val mayRelAtom = (mayDNFAtom as DNFPredicateCallAtom).referred.clauses.get(0).constraints.get(0)
+		assertEquals((mayRelAtom as RelationAtom).view, mayRelView)
+	}
+
+	@Test
+	def void falseUnknownRelationViewTest() {
+		val it = parseHelper.parse('''
+			class Person.
+			direct pred p(a) <-> Person(a) = false | unknown.
+			
+		''')
+		EcoreUtil.resolveAll(it)
+
+		val pred = pred("p")
+		val relationMap = partialModelMapper.transformProblem(it).relationMap
+		val mappings = dnfConverter.transformPred(Set.of(pred), new HashMap(), relationMap)
+		val relationViewMappings = relationViewConverter.convertDirectPredicates(mappings.predicateMap.values,
+			relationMap.values)
+
+		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
+		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
+		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
+		assertFalse(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertTrue(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mustDNFAtom = dnfAnd.get(0)
+		val mustRelAtom = (mustDNFAtom as DNFPredicateCallAtom).referred.clauses.get(0).constraints.get(0)
+		assertEquals((mustRelAtom as RelationAtom).view, mustRelView)
+	}
+
+	@Test
+	def void trueErrorRelationViewTest() {
+		val it = parseHelper.parse('''
+			class Person.
+			direct pred p(a) <-> Person(a) = true | error.
+			
+		''')
+		EcoreUtil.resolveAll(it)
+
+		val pred = pred("p")
+		val relationMap = partialModelMapper.transformProblem(it).relationMap
+		val mappings = dnfConverter.transformPred(Set.of(pred), new HashMap(), relationMap)
+		val relationViewMappings = relationViewConverter.convertDirectPredicates(mappings.predicateMap.values,
+			relationMap.values)
+
+		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
+		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
+		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
+		assertFalse(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertFalse(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mustDNFAtom = dnfAnd.get(0)
+		assertEquals((mustDNFAtom as RelationAtom).view, mustRelView)
+	}
+
+	@Test
+	def void trueUnknownRelationViewTest() {
+		val it = parseHelper.parse('''
+			class Person.
+			direct pred p(a) <-> Person(a) = true | unknown.
+			
+		''')
+		EcoreUtil.resolveAll(it)
+
+		val pred = pred("p")
+		val relationMap = partialModelMapper.transformProblem(it).relationMap
+		val mappings = dnfConverter.transformPred(Set.of(pred), new HashMap(), relationMap)
+		val relationViewMappings = relationViewConverter.convertDirectPredicates(mappings.predicateMap.values,
+			relationMap.values)
+
+		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
+		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
+		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
+		assertFalse(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertFalse(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		val mayDNFAtom = dnfAnd.get(0)
+		assertEquals((mayDNFAtom as RelationAtom).view, mayRelView)
+	}
+
+	@Test
+	def void allTruthValueRelationViewTest() {
+		val it = parseHelper.parse('''
+			class Person.
+			direct pred p(a) <-> Person(a) = true | false | unknown | error.
+			
+		''')
+		EcoreUtil.resolveAll(it)
+
+		val pred = pred("p")
+		val relationMap = partialModelMapper.transformProblem(it).relationMap
+		val mappings = dnfConverter.transformPred(Set.of(pred), new HashMap(), relationMap)
+		val relationViewMappings = relationViewConverter.convertDirectPredicates(mappings.predicateMap.values,
+			relationMap.values)
+
+		val personRel = relationViewMappings.relations.findFirst[name.equals("Person")]
+		val mayRelView = relationViewMappings.mayViewMap.get(personRel);
+		val mustRelView = relationViewMappings.mustViewMap.get(personRel);
+		assertFalse(relationViewMappings.mayHelperDirectPredicates.containsKey(mayRelView));
+		assertFalse(relationViewMappings.mustHelperDirectPredicates.containsKey(mustRelView));
+
+		val dnfAnd = relationViewMappings.directPredicates.get(0).clauses.get(0).constraints
+		assertTrue(dnfAnd.empty)
+	}
+
+	@Test
+	def void directPredicateReferenceTest() {
+		val it = parseHelper.parse('''
+			class Person.
+			direct pred p1(a) <-> Person(a) = true.
+			direct pred p2(a) <-> p1(a).
+			
+		''')
+		EcoreUtil.resolveAll(it)
+
+		val relationMap = partialModelMapper.transformProblem(it).relationMap
+		val mappings = dnfConverter.transformPred(Set.of(pred("p1"), pred("p2")), new HashMap(), relationMap)
+		val dnfPreds = mappings.predicateMap.values
+
+		val p1 = dnfPreds.findFirst[name.equals("p1")]
+		val p2 = dnfPreds.findFirst[name.equals("p2")]
+		val p1Call = p2.clauses.get(0).constraints.get(0) as DNFPredicateCallAtom
+		assertEquals(p1, p1Call.referred)
+
+		val relationViewMappings = relationViewConverter.convertDirectPredicates(dnfPreds, relationMap.values)
+		val p1Conv = relationViewMappings.directPredicates.findFirst[name.equals("p1")]
+		val p2Conv = relationViewMappings.directPredicates.findFirst[name.equals("p2")]
+		val p1ConvCall = p2Conv.clauses.get(0).constraints.get(0) as DNFPredicateCallAtom
+		assertEquals(p1Conv, p1ConvCall.referred)
 	}
 }

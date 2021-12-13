@@ -4,6 +4,6 @@ apply from: "${rootDir}/gradle/junit.gradle"
 apply from: "${rootDir}/gradle/jmh.gradle"
 
 dependencies {
-	implementation "org.eclipse.viatra:viatra-query-runtime:${viatraVersion}"
+	api "org.eclipse.viatra:viatra-query-runtime:${viatraVersion}"
 	implementation "org.eclipse.emf:org.eclipse.emf.ecore:${ecoreVersion}"
 }

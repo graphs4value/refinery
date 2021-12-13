@@ -33,7 +33,7 @@ import tools.refinery.store.query.building.DirectRelationAtom;
 import tools.refinery.store.query.building.Variable;
 
 public class ParsedModelToDNFConverter {
-	public Mappings transformPred(Set<PredicateDefinition> predicates, Map<Node, DNFNode> nodeMap,
+	public Mappings transformPred(Set<PredicateDefinition> predicates, Map<Node, Integer> nodeMap,
 			Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationMap) throws Exception {
 		Mappings mappings = new Mappings(new HashMap<>(), new HashMap<>(), nodeMap, relationMap);
 		for (PredicateDefinition predicate : predicates) {
@@ -74,7 +74,7 @@ public class ParsedModelToDNFConverter {
 		return dnfVar;
 	}
 
-	protected DNFNode convertNode(Node node, Mappings mappings) {
+	protected Integer convertNode(Node node, Mappings mappings) {
 		return mappings.getNodeMap().get(node);
 	}
 

@@ -41,6 +41,16 @@ public class PartialModelMapper {
 			throw new PartialModelMapperException("builtin.problem not found");
 		PartialModelMapperDTO builtinProblemDTO = initTransform(builtinProblem.get(), nodeIter);
 
+		prepareRelations(pmmDTO, builtinProblemDTO);
+
+		prepareStore(pmmDTO);
+
+		fillModel(problem, pmmDTO, builtinProblem, builtinProblemDTO);
+
+		return pmmDTO;
+	}
+
+	public void prepareRelations(PartialModelMapperDTO pmmDTO, PartialModelMapperDTO builtinProblemDTO) {
 		// Merging the relation and the nodes from the given problem and from the built
 		// in problem
 		pmmDTO.getRelationMap().putAll(builtinProblemDTO.getRelationMap());
@@ -48,15 +58,18 @@ public class PartialModelMapper {
 		pmmDTO.getEnumNodeMap().putAll(builtinProblemDTO.getEnumNodeMap());
 		pmmDTO.getNewNodeMap().putAll(builtinProblemDTO.getNewNodeMap());
 		pmmDTO.getUniqueNodeMap().putAll(builtinProblemDTO.getUniqueNodeMap());
+	}
 
+	public void prepareStore(PartialModelMapperDTO pmmDTO) {
 		// Definition of store and model
 		ModelStore store = new ModelStoreImpl(new HashSet<>(pmmDTO.getRelationMap().values()));
 		Model model = store.createModel();
 		pmmDTO.setModel(model);
+	}
 
-		// Collecting all the nodes in one map
-		Map<Node, Integer> allNodesMap = mergeNodeMaps(pmmDTO.getEnumNodeMap(), pmmDTO.getUniqueNodeMap(),
-				pmmDTO.getNewNodeMap(), pmmDTO.getNodeMap());
+	public void fillModel(Problem problem, PartialModelMapperDTO pmmDTO, Optional<Problem> builtinProblem,
+			PartialModelMapperDTO builtinProblemDTO) throws PartialModelMapperException {
+		Map<Node, Integer> allNodesMap = prepareNodes(pmmDTO);
 
 		// Filling up the relations with unknown truth values
 		for (tools.refinery.language.model.problem.Relation relation : pmmDTO.getRelationMap().keySet()) {
@@ -113,8 +126,13 @@ public class PartialModelMapper {
 		// Transforming the assertions
 		processAssertions(problem, pmmDTO, allNodesMap);
 		processAssertions(builtinProblem.get(), pmmDTO, allNodesMap);
+	}
 
-		return pmmDTO;
+	public Map<Node, Integer> prepareNodes(PartialModelMapperDTO pmmDTO) {
+		// Collecting all the nodes in one map
+		Map<Node, Integer> allNodesMap = mergeNodeMaps(pmmDTO.getEnumNodeMap(), pmmDTO.getUniqueNodeMap(),
+				pmmDTO.getNewNodeMap(), pmmDTO.getNodeMap());
+		return allNodesMap;
 	}
 
 	// Searches for and gives back a relation in a PartialModelMapperDTO
@@ -156,7 +174,7 @@ public class PartialModelMapper {
 	}
 
 	// Getting the relations and nodes from the problem
-	private PartialModelMapperDTO initTransform(Problem problem, int[] nodeIter) {
+	public PartialModelMapperDTO initTransform(Problem problem, int[] nodeIter) {
 		// Defining needed Maps
 		Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationMap = new HashMap<>();
 		Map<Node, Integer> enumNodeMap = new HashMap<>();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,62 +31,84 @@ public class RelationViewConverter {
 			mustViewMap.put(relation, new FilteredRelationView<>(relation, (k, v) -> v.must()));
 		}
 		Set<DNFPredicate> dnfPredicates = new HashSet<>();
-		Map<RelationView<TruthValue>, DNFPredicate> dnfPredHelpers = new HashMap<>();
-		for (DNFPredicate dnfPredicate : originalPredicates) {
-			List<DNFAnd> clauses = new ArrayList<>();
-			for (DNFAnd clause : dnfPredicate.getClauses()) {
-				List<DNFAtom> dnfAtoms = new ArrayList<>();
-				for (DNFAtom dnfAtom : clause.getConstraints()) {
-					if (dnfAtom instanceof DirectRelationAtom directRelationAtom) {
-						List<DNFAtom> newAtoms = convertDirectRelationView(dnfPredHelpers,
+		Map<DNFPredicate, DNFPredicate> dnfPredicateConversions = createPredicateConversionMap(originalPredicates);
+		Map<RelationView<TruthValue>, DNFPredicate> mayHelpers = new HashMap<>();
+		Map<RelationView<TruthValue>, DNFPredicate> mustHelpers = new HashMap<>();
+		for (Map.Entry<DNFPredicate, DNFPredicate> entry : dnfPredicateConversions.entrySet()) {
+			DNFPredicate originalPredicate = entry.getKey();
+			DNFPredicate newPredicate = entry.getValue();
+			List<DNFAnd> clauses = newPredicate.getClauses();
+			for (DNFAnd originalClause : originalPredicate.getClauses()) {
+				List<DNFAtom> newAtoms = new ArrayList<>();
+				for (DNFAtom originalAtom : originalClause.getConstraints()) {
+					if (originalAtom instanceof DirectRelationAtom directRelationAtom) {
+						List<DNFAtom> relationAtoms = convertDirectRelationView(mayHelpers, mustHelpers,
 								mayViewMap.get(directRelationAtom.getRelation()),
 								mustViewMap.get(directRelationAtom.getRelation()), directRelationAtom);
-						dnfAtoms.addAll(newAtoms);
-					} else if (dnfAtom instanceof DNFPredicateCallAtom dnfPredicateCallAtom) {
-						dnfAtoms.add(dnfPredicateCallAtom);
+						newAtoms.addAll(relationAtoms);
+					} else if (originalAtom instanceof DNFPredicateCallAtom dnfPredicateCallAtom) {
+						DNFPredicateCallAtom callAtom = new DNFPredicateCallAtom(dnfPredicateCallAtom.isPositive(),
+								dnfPredicateCallAtom.isTransitive(),
+								dnfPredicateConversions.get(dnfPredicateCallAtom.getReferred()),
+								dnfPredicateCallAtom.getSubstitution());
+						newAtoms.add(callAtom);
 					} else
 						throw new UnsupportedOperationException("Unknown DNFAtom type");
 				}
-				clauses.add(new DNFAnd(clause.getExistentiallyQuantified(), dnfAtoms));
+				clauses.add(new DNFAnd(originalClause.getExistentiallyQuantified(), newAtoms));
 			}
-			dnfPredicates.add(new DNFPredicate(dnfPredicate.getName(), dnfPredicate.getVariables(), clauses));
+			dnfPredicates.add(newPredicate);
 		}
-		return new RelationViewMappings(dnfPredicates, dnfPredHelpers, mayViewMap, mustViewMap, new HashSet<>(relations));
+		return new RelationViewMappings(dnfPredicates, mayHelpers, mustHelpers, mayViewMap, mustViewMap,
+				new HashSet<>(relations));
+	}
+
+	public Map<DNFPredicate, DNFPredicate> createPredicateConversionMap(Collection<DNFPredicate> originalPredicates) {
+		Map<DNFPredicate, DNFPredicate> dnfPredicateConversions = new HashMap<>();
+		for (DNFPredicate originalPred : originalPredicates) {
+			dnfPredicateConversions.put(originalPred,
+					new DNFPredicate(originalPred.getName(), originalPred.getVariables(), new ArrayList<DNFAnd>()));
+		}
+		return dnfPredicateConversions;
 	}
 
 	public DNFPredicateCallAtom createMayNotDNFPredicateHelper(RelationView<TruthValue> relationView,
-			Map<RelationView<TruthValue>, DNFPredicate> dnfPredHelpers, DirectRelationAtom directRelationAtom) {
-		DNFPredicate mayNotPredicate = dnfPredHelpers.get(relationView);
-		if (mayNotPredicate == null) {
-			DNFAtom mayRelationAtom = new RelationAtom(
-					new FilteredRelationView<>(directRelationAtom.getRelation(), (k, v) -> v.may()),
-					directRelationAtom.getSubstitution());
+			Map<RelationView<TruthValue>, DNFPredicate> mayHelpers, DirectRelationAtom directRelationAtom) {
+		DNFPredicate mayPredicate = mayHelpers.get(relationView);
+		if (mayPredicate == null) {
+			List<Variable> substitution = new ArrayList<>();
+			for (Variable variable : directRelationAtom.getSubstitution()) {
+				substitution.add(new Variable(variable.getName()));
+			}
+			DNFAtom mayRelationAtom = new RelationAtom(relationView, substitution);
 			DNFAnd clauses = new DNFAnd(Set.of(), List.of(mayRelationAtom));
-			DNFPredicate dnfPredicate = new DNFPredicate("mayNot" + relationView.getRepresentation().getName(),
-					List.of(new Variable("V")), List.of(clauses));
-			dnfPredHelpers.put(relationView, dnfPredicate);
+			mayPredicate = new DNFPredicate("may" + directRelationAtom.getRelation().getName(), substitution,
+					List.of(clauses));
+			mayHelpers.put(relationView, mayPredicate);
 		}
-		return new DNFPredicateCallAtom(false, false, mayNotPredicate, directRelationAtom.getSubstitution());
+		return new DNFPredicateCallAtom(false, false, mayPredicate, directRelationAtom.getSubstitution());
 	}
 
 	public DNFPredicateCallAtom createMustNotDNFPredicateHelper(RelationView<TruthValue> relationView,
-			Map<RelationView<TruthValue>, DNFPredicate> dnfPredHelpers, DirectRelationAtom directRelationAtom) {
-		DNFPredicate mustNotPredicate = dnfPredHelpers.get(relationView);
-		if (mustNotPredicate == null) {
-			DNFAtom mustRelationAtom = new RelationAtom(
-					new FilteredRelationView<>(directRelationAtom.getRelation(), (k, v) -> v.must()),
-					directRelationAtom.getSubstitution());
+			Map<RelationView<TruthValue>, DNFPredicate> mustHelpers, DirectRelationAtom directRelationAtom) {
+		DNFPredicate mustPredicate = mustHelpers.get(relationView);
+		if (mustPredicate == null) {
+			List<Variable> substitution = new ArrayList<>();
+			for (Variable variable : directRelationAtom.getSubstitution()) {
+				substitution.add(new Variable(variable.getName()));
+			}
+			DNFAtom mustRelationAtom = new RelationAtom(relationView, substitution);
 			DNFAnd clauses = new DNFAnd(Set.of(), List.of(mustRelationAtom));
-			DNFPredicate dnfPredicate = new DNFPredicate("mustNot" + relationView.getRepresentation().getName(),
-					List.of(new Variable("V")), List.of(clauses));
-			dnfPredHelpers.put(relationView, dnfPredicate);
+			mustPredicate = new DNFPredicate("must" + directRelationAtom.getRelation().getName(), substitution,
+					List.of(clauses));
+			mustHelpers.put(relationView, mustPredicate);
 		}
-		return new DNFPredicateCallAtom(false, false, mustNotPredicate, directRelationAtom.getSubstitution());
+		return new DNFPredicateCallAtom(false, false, mustPredicate, directRelationAtom.getSubstitution());
 	}
 
-	public List<DNFAtom> convertDirectRelationView(Map<RelationView<TruthValue>, DNFPredicate> dnfPredHelpers,
-			RelationView<TruthValue> mayRelView, RelationView<TruthValue> mustRelView,
-			DirectRelationAtom directRelationAtom) {
+	public List<DNFAtom> convertDirectRelationView(Map<RelationView<TruthValue>, DNFPredicate> mayHelpers,
+			Map<RelationView<TruthValue>, DNFPredicate> mustHelpers, RelationView<TruthValue> mayRelView,
+			RelationView<TruthValue> mustRelView, DirectRelationAtom directRelationAtom) {
 		DNFAtom mayRelationAtom = new RelationAtom(mayRelView, directRelationAtom.getSubstitution());
 		DNFAtom mustRelationAtom = new RelationAtom(mustRelView, directRelationAtom.getSubstitution());
 
@@ -112,22 +135,22 @@ public class RelationViewConverter {
 		}
 		switch (truthValues) {
 		case E:
-			dnfAtoms.add(createMayNotDNFPredicateHelper(mayRelView, dnfPredHelpers, directRelationAtom));
+			dnfAtoms.add(createMayNotDNFPredicateHelper(mayRelView, mayHelpers, directRelationAtom));
 			dnfAtoms.add(mustRelationAtom);
 			break;
 		case U:
 			dnfAtoms.add(mayRelationAtom);
-			dnfAtoms.add(createMustNotDNFPredicateHelper(mustRelView, dnfPredHelpers, directRelationAtom));
+			dnfAtoms.add(createMustNotDNFPredicateHelper(mustRelView, mustHelpers, directRelationAtom));
 			break;
 		case F:
-			dnfAtoms.add(createMayNotDNFPredicateHelper(mayRelView, dnfPredHelpers, directRelationAtom));
-			dnfAtoms.add(createMustNotDNFPredicateHelper(mustRelView, dnfPredHelpers, directRelationAtom));
+			dnfAtoms.add(createMayNotDNFPredicateHelper(mayRelView, mayHelpers, directRelationAtom));
+			dnfAtoms.add(createMustNotDNFPredicateHelper(mustRelView, mustHelpers, directRelationAtom));
 			break;
 		case F | E:
-			dnfAtoms.add(createMayNotDNFPredicateHelper(mayRelView, dnfPredHelpers, directRelationAtom));
+			dnfAtoms.add(createMayNotDNFPredicateHelper(mayRelView, mayHelpers, directRelationAtom));
 			break;
 		case F | U:
-			dnfAtoms.add(createMustNotDNFPredicateHelper(mustRelView, dnfPredHelpers, directRelationAtom));
+			dnfAtoms.add(createMustNotDNFPredicateHelper(mustRelView, mustHelpers, directRelationAtom));
 			break;
 		case T:
 			dnfAtoms.add(mayRelationAtom);

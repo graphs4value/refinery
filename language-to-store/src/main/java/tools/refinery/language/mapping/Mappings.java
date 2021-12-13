@@ -14,11 +14,11 @@ import tools.refinery.store.query.building.Variable;
 public class Mappings {
 	private Map<PredicateDefinition, DNFPredicate> predicateMap;
 	private Map<tools.refinery.language.model.problem.Variable, Variable> variableMap;
-	private Map<Node, DNFNode> nodeMap;
+	private Map<Node, Integer> nodeMap;
 	private Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationMap;
 
 	public Mappings(Map<PredicateDefinition, DNFPredicate> predicateMap,
-			Map<tools.refinery.language.model.problem.Variable, Variable> variableMap, Map<Node, DNFNode> nodeMap,
+			Map<tools.refinery.language.model.problem.Variable, Variable> variableMap, Map<Node, Integer> nodeMap,
 			Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationMap) {
 		this.predicateMap = predicateMap;
 		this.variableMap = variableMap;
@@ -30,7 +30,7 @@ public class Mappings {
 		return variableMap;
 	}
 
-	public Map<Node, DNFNode> getNodeMap() {
+	public Map<Node, Integer> getNodeMap() {
 		return nodeMap;
 	}
 
