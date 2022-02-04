@@ -8,15 +8,14 @@
 
 1. Download and install a _Java 17_ compatible JDK. For Windows, prefer OpenJDK builds from [Adoptium](https://adoptium.net/).
 
-2. Download and extract the [Eclipse IDE for Java and DSL Developers 2021-09](https://www.eclipse.org/downloads/packages/release/2021-09/r/eclipse-ide-java-and-dsl-developers) package.
+2. Download and extract the [Eclipse IDE for Java and DSL Developers 2021-12](https://www.eclipse.org/downloads/packages/release/2021-12/r/eclipse-ide-java-and-dsl-developers) package.
 
 3. Launch Eclipse and create a new workspace.
 
-4. Open _Help > Install New Software..._ and install the following software from the _2021-09_ update site:
+4. Open _Help > Install New Software..._ and install the following software from the _2021-12_ update site:
     * _Modeling > Ecore Diagram Editor (SDK)_
 
 5. Open _Help > Eclipse Marketplace_ and install the following software:
-    * _Java 17 Support for Eclipse 2021-09_
     * _EclEmma Java Code Coverage_
     * _SonarLint_
 

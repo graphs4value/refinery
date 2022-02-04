@@ -1,0 +1,20 @@
+module tools.refinery.language.model.GenerateProblemModel
+
+Workflow {
+	bean = org.eclipse.emf.mwe.utils.StandaloneSetup {
+		projectMapping = {
+			projectName = "tools.refinery.refinery-language-model"
+			path = "."
+		}
+	}
+
+	component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+		directory = "src/main/emf-gen"
+	}
+
+	component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {
+		generateCustomClasses = false
+		genModel = "platform:/resource/tools.refinery.refinery-language-model/src/main/resources/model/problem.genmodel"
+		srcPath = "platform:/resource/tools.refinery.refinery-language-model/src/main/emf-gen"
+	}
+}

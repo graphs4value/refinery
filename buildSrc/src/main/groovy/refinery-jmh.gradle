@@ -1,0 +1,58 @@
+plugins {
+	id 'refinery-java-conventions'
+	id 'refinery-sonarqube'
+}
+
+configurations {
+	jmh {
+		extendsFrom implementation
+	}
+}
+
+sourceSets {
+	jmh {
+		java.srcDirs = ['src/jmh/java']
+        resources.srcDirs = ['src/jmh/resources']
+        compileClasspath += sourceSets.main.runtimeClasspath
+        compileClasspath += sourceSets.test.runtimeClasspath
+	}
+}
+
+dependencies {
+	jmhImplementation libs.jmh.core
+	jmhAnnotationProcessor libs.jmh.annprocess
+}
+
+tasks.register('jmh', JavaExec) {
+	dependsOn tasks.named('jmhClasses')
+    main = 'org.openjdk.jmh.Main'
+    classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
+}
+
+eclipse.classpath {
+	plusConfigurations += [configurations.jmhCompileClasspath, configurations.jmhRuntimeClasspath]
+
+	file.whenMerged { classpath ->
+		for (entry in classpath.entries) {
+			// Workaround from https://github.com/gradle/gradle/issues/4802#issuecomment-407902081
+			if (entry in org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry) {
+				def usedBy = (entry.entryAttributes['gradle_used_by_scope'] ?: '').split(',')
+				if (usedBy == ['jmh']) {
+					// Allow test helper classes to be used in benchmarks from Eclipse
+					// and do not expose JMH dependencies to the main source code.
+					entry.entryAttributes['test'] = true
+				} else if ((usedBy.contains('main') || usedBy.contains('test')) && !usedBy.contains('jmh')) {
+					// main and test sources are also used by jmh sources.
+					usedBy += 'jmh'
+					entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
+				}
+			}
+		}
+	}
+}
+
+sonarqube.properties {
+	properties['sonar.tests'] += [
+		'src/jmh/java',
+	]
+}

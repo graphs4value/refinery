@@ -1,0 +1,66 @@
+plugins {
+	id 'java-test-fixtures'
+	id 'refinery-java-library'
+	id 'refinery-mwe2'
+	id 'refinery-sonarqube'
+	id 'refinery-xtend'
+	id 'refinery-xtext-conventions'
+}
+
+dependencies {
+	api platform(libs.xtext.bom)
+	api libs.ecore
+	api libs.xtext.core
+	api libs.xtext.xbase
+	api project(':refinery-language-model')
+	testFixturesApi libs.xtext.testing
+	testFixturesApi testFixtures(project(':refinery-language-model'))
+	mwe2 libs.xtext.generator
+	mwe2 libs.xtext.generator.antlr
+}
+
+sourceSets {
+	testFixtures {
+		java.srcDirs += ['src/testFixtures/xtext-gen']
+		resources.srcDirs += ['src/testFixtures/xtext-gen']
+	}
+}
+
+tasks.named('jar') {
+	from(sourceSets.main.allSource) {
+		include '**/*.xtext'
+	}
+}
+
+def generateXtextLanguage = tasks.register('generateXtextLanguage', JavaExec) {
+	mainClass = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
+	classpath = configurations.mwe2
+	inputs.file 'src/main/java/tools/refinery/language/GenerateProblem.mwe2'
+	inputs.file 'src/main/java/tools/refinery/language/Problem.xtext'
+	outputs.dir 'src/main/xtext-gen'
+	outputs.dir 'src/testFixtures/xtext-gen'
+	outputs.dir '../language-ide/src/main/xtext-gen'
+	outputs.dir '../language-web/src/main/xtext-gen'
+	args += 'src/main/java/tools/refinery/language/GenerateProblem.mwe2'
+	args += '-p'
+	args += "rootPath=/${projectDir}/.."
+}
+
+for (taskName in ['compileJava', 'processResources', 'generateXtext', 'generateEclipseSourceFolders']) {
+	tasks.named(taskName) {
+		dependsOn generateXtextLanguage
+	}
+}
+
+tasks.named('clean') {
+	delete 'src/main/xtext-gen'
+	delete 'src/testFixtures/xtext-gen'
+	delete '../language-ide/src/main/xtext-gen'
+	delete '../language-web/src/main/xtext-gen'
+}
+
+sonarqube.properties {
+	properties['sonar.exclusions'] += [
+		'src/testFixtures/xtext-gen/**',
+	]
+}

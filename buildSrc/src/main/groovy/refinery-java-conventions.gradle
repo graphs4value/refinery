@@ -1,0 +1,79 @@
+plugins {
+	id 'eclipse'
+	id 'jacoco'
+	id 'java'
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url 'https://repo.eclipse.org/content/groups/releases/'
+	}
+}
+
+dependencies {
+	testImplementation libs.hamcrest
+	testImplementation libs.junit.api
+	testRuntimeOnly libs.junit.engine
+	testImplementation libs.junit.params
+	testImplementation libs.mockito.core
+	testImplementation libs.mockito.junit
+}
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+def jacocoTestReport = tasks.named('jacocoTestReport')
+jacocoTestReport.configure {
+	dependsOn test
+	reports {
+		xml.required = true
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform {
+		excludeTags 'slow'
+	}
+	finalizedBy jacocoTestReport
+}
+
+tasks.register('slowTest', Test) {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+tasks.named('jar') {
+	manifest {
+		attributes(
+			'Bundle-SymbolicName': "${project.group}.${project.name}",
+			'Bundle-Version': project.version
+		)
+	}
+}
+
+def generateEclipseSourceFolders = tasks.register('generateEclipseSourceFolders')
+
+tasks.register('prepareEclipse') {
+	dependsOn generateEclipseSourceFolders
+	dependsOn tasks.named('eclipseJdt')
+}
+
+tasks.named('eclipseClasspath') {
+	dependsOn generateEclipseSourceFolders
+}
+
+eclipse {
+	classpath.file.whenMerged {
+		for (entry in entries) {
+			if (entry.path.endsWith('-gen')) {
+				entry.entryAttributes['ignore_optional_problems'] = true
+			}
+		}
+	}
+
+	jdt.file.withProperties { properties ->
+		// Allow @SupperessWarnings to suppress SonarLint warnings
+		properties['org.eclipse.jdt.core.compiler.problem.unhandledWarningToken'] = 'ignore'
+	}
+}

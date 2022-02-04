@@ -1,0 +1,101 @@
+plugins {
+	id 'refinery-frontend-workspace'
+	id 'refinery-sonarqube'
+}
+
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+
+def webpackOutputDir = "${buildDir}/webpack"
+def productionResources = file("${webpackOutputDir}/production")
+
+frontend {
+	assembleScript = 'assemble:webpack'
+}
+
+configurations {
+	productionAssets {
+		canBeConsumed = true
+		canBeResolved = false
+	}
+}
+
+def installFrontend = tasks.named('installFrontend')
+
+def generateLezerGrammar = tasks.register('generateLezerGrammar', RunYarn) {
+	dependsOn installFrontend
+	inputs.file 'src/language/problem.grammar'
+	inputs.file 'package.json'
+	inputs.file rootProject.file('yarn.lock')
+	outputs.file "${buildDir}/generated/sources/lezer/problem.ts"
+	outputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
+	script = 'run assemble:lezer'
+}
+
+def assembleFrontend = tasks.named('assembleFrontend')
+assembleFrontend.configure {
+	dependsOn generateLezerGrammar
+	inputs.dir 'src'
+	inputs.file "${buildDir}/generated/sources/lezer/problem.ts"
+	inputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
+	inputs.files('package.json', 'webpack.config.js')
+	inputs.file rootProject.file('yarn.lock')
+	outputs.dir productionResources
+}
+
+artifacts {
+	productionAssets(productionResources) {
+		builtBy assembleFrontend
+	}
+}
+
+def eslint = tasks.register('eslint', RunYarn) {
+	dependsOn installFrontend
+	inputs.dir 'src'
+	inputs.files('.eslintrc.js', 'tsconfig.json')
+	inputs.file rootProject.file('yarn.lock')
+	if (project.hasProperty('ci')) {
+		outputs.file "${buildDir}/eslint.json"
+		script = 'run check:eslint:ci'
+	} else {
+		script = 'run check:eslint'
+	}
+	group = 'verification'
+	description = 'Check for TypeScript errors.'
+}
+
+def stylelint = tasks.register('stylelint', RunYarn) {
+	dependsOn installFrontend
+	inputs.dir 'src'
+	inputs.file '.stylelintrc.js'
+	inputs.file rootProject.file('yarn.lock')
+	if (project.hasProperty('ci')) {
+		outputs.file "${buildDir}/stylelint.json"
+		script = 'run check:stylelint:ci'
+	} else {
+		script = 'run check:stylelint'
+	}
+	group = 'verification'
+	description = 'Check for Sass errors.'
+}
+
+tasks.named('check') {
+	dependsOn(eslint, stylelint)
+}
+
+tasks.register('webpackServe', RunYarn) {
+	dependsOn installFrontend
+	dependsOn generateLezerGrammar
+	outputs.dir "${webpackOutputDir}/development"
+	script = 'run serve'
+	group = 'run'
+	description = 'Start a Webpack dev server with hot module replacement.'
+}
+
+sonarqube.properties {
+	properties['sonar.sources'] += ['src']
+	property 'sonar.nodejs.executable', "${frontend.nodeInstallDirectory.get()}/bin/node"
+	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
+	property 'sonar.css.stylelint.reportPaths', "${buildDir}/stylelint.json"
+	// SonarJS does not pick up typescript files with `exactOptionalPropertyTypes`
+	property 'sonar.typescript.tsconfigPath', 'tsconfig.sonar.json'
+}

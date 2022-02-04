@@ -1,0 +1,14 @@
+{
+  "name": "@refinery/root",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "subprojects/frontend"
+  ],
+  "devDependencies": {
+    "eslint": "^8.4.1",
+    "stylelint": "^14.1.0",
+    "typescript": "~4.5.4"
+  },
+  "packageManager": "yarn@3.1.1"
+}

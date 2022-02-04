@@ -1,0 +1,10 @@
+plugins {
+	id 'refinery-java-library'
+	id 'refinery-xtext-conventions'
+}
+
+dependencies {
+	api project(':refinery-language-model')
+	api project(':refinery-store')
+	testImplementation testFixtures(project(':refinery-language'))
+}
