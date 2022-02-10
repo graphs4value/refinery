@@ -32,6 +32,7 @@
 8. Open a new terminal an run `./gradlew prepareEclipse` (`.\gradlew prepareEclipse` on Windows) in the cloned repository.
     * This should complete without any compilation errors.
     * If you get any errors about the JVM version, check whether the `JAVA_HOME` environment variable is set to the location of JDK. You can query the variable with `echo $JAVA_HOME` on Linux and `echo $Env:JAVA_HOME` in PowerShell on Windows. To set it, use `export JAVA_HOME=/java/path/here` or `$Env:JAVA_HOME="C:\java\path\here"`, respectively.
+    * If the build fails with a `Host name must not be empty` error, you [might need to remove the empty proxy configuration from your global `gradle.properties` file](https://stackoverflow.com/a/62128323).
 
 9. Select _File > Import... > Gradle > Existing Gradle Project_ and import the cloned repository in Eclipse.
     * Make sure to select the root of the repository (containing this file) as the _Project root directory_ and that the _Gradle distribution_ is _Gradle wrapper_.
