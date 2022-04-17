@@ -1,4 +1,4 @@
-package tools.refinery.store.map.benchmarks;
+package tools.refinery.store.map.benchmarks.put;
 
 import java.util.ArrayList;
 import java.util.HashMap;
