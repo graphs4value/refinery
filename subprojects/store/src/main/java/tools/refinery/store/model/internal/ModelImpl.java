@@ -33,7 +33,7 @@ public class ModelImpl implements Model {
 		if (maps.containsKey(representation)) {
 			return (VersionedMap<K, V>) maps.get(representation);
 		} else {
-			throw new IllegalArgumentException("Model does have representation " + representation);
+			throw new IllegalArgumentException("Model does not have representation " + representation);
 		}
 	}
 
