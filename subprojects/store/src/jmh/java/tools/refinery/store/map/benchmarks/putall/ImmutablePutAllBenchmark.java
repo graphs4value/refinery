@@ -23,9 +23,9 @@ public class ImmutablePutAllBenchmark {
 	@Benchmark
 	public void immutablePutAllBenchmark(ImmutablePutAllExecutionPlan executionPlan, Blackhole blackhole) {
 		var sut = executionPlan.createSut();
-		var sutFilled = executionPlan.getSut();
+		var sutFilled = executionPlan.getSut().getAll();
 		for (int i = 0; i < executionPlan.nPutAll; i++) {
-			sut.putAll(sutFilled.getAll());
+			sut.putAll(sutFilled);
 		}
 		blackhole.consume(sut);
 		blackhole.consume(sutFilled);
@@ -34,9 +34,9 @@ public class ImmutablePutAllBenchmark {
 	@Benchmark
 	public void immutablePutAllAndCommitBenchmark(ImmutablePutAllExecutionPlan executionPlan, Blackhole blackhole) {
 		var sut = executionPlan.createSut();
-		var sutFilled = executionPlan.getSut();
+		var sutFilled = executionPlan.getSut().getAll();
 		for (int i = 0; i < executionPlan.nPutAll; i++) {
-			sut.putAll(sutFilled.getAll());
+			sut.putAll(sutFilled);
 			if (i % 10 == 0) {
 				blackhole.consume(sut.commit());
 			}

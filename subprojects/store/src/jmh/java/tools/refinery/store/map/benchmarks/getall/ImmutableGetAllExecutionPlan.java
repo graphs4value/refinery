@@ -19,8 +19,8 @@ import java.util.Random;
 @State(Scope.Benchmark)
 public class ImmutableGetAllExecutionPlan {
 
-	@Param({ "100", "10000" })
-	public int nGet;
+	@Param({ "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192", "16384" })
+	public int nGetAll;
 
 	@Param({ "32", "1000", "100000" })
 	public int nKeys;

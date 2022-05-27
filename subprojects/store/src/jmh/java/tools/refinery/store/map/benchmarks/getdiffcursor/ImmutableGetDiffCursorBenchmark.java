@@ -9,6 +9,8 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
+import tools.refinery.store.map.DiffCursor;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -23,28 +25,59 @@ public class ImmutableGetDiffCursorBenchmark {
 	@Benchmark
 	public void immutableGetDiffCursorBenchmark(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilledAndCommitted = executionPlan.getSut();
+		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
+			blackhole.consume(sutFilledAndCommitted.getDiffCursor(executionPlan.nextKey()));
+		}
+	}
+	
+	@Benchmark
+	public void immutableGetDiffCursorBenchmarkContinuous(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilledAndCommitted = executionPlan.getSut();
 		int nCommit = executionPlan.getnCommit();
 		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
-			sutFilledAndCommitted.getDiffCursor(i % nCommit);
+			blackhole.consume(sutFilledAndCommitted.getDiffCursor(i % nCommit));
 		}
-		blackhole.consume(sutFilledAndCommitted);
 	}
 
 	@Benchmark
 	public void immutableGetDiffCursorAndCommitBenchmark(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilledAndCommitted = executionPlan.getSut();
+		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
+			blackhole.consume(sutFilledAndCommitted.getDiffCursor(executionPlan.nextKey()));
+			if (i % 10 == 0) {
+				blackhole.consume(sutFilledAndCommitted.commit());
+			}
+		}	
+	}
+	
+	@Benchmark
+	public void immutableGetDiffCursorAndCommitBenchmarkContinuous(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilledAndCommitted = executionPlan.getSut();
 		int nCommit = executionPlan.getnCommit();
 		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
-			sutFilledAndCommitted.getDiffCursor(i % nCommit);
+			blackhole.consume(sutFilledAndCommitted.getDiffCursor(i % nCommit));
 			if (i % 10 == 0) {
 				blackhole.consume(sutFilledAndCommitted.commit());
 			}
 		}
-		blackhole.consume(sutFilledAndCommitted);
 	}
 
 	@Benchmark
 	public void baselineGetDiffCursorBenchmark(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilled = executionPlan.getFilledHashMap();
+		var store = executionPlan.getStore();
+		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
+			Map<Integer, String> mapFromStore = store.get(executionPlan.nextKey());
+			Map<Integer, String> difference = new HashMap<>();
+			difference.putAll(sutFilled);
+			difference.putAll(mapFromStore);
+			blackhole.consume(difference.entrySet().removeAll(mapFromStore.entrySet()));
+		}
+		blackhole.consume(store);
+	}
+	
+	@Benchmark
+	public void baselineGetDiffCursorBenchmarkContinuous(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilled = executionPlan.getFilledHashMap();
 		var store = executionPlan.getStore();
 		int nCommit = executionPlan.getnCommit();
@@ -53,10 +86,8 @@ public class ImmutableGetDiffCursorBenchmark {
 			Map<Integer, String> difference = new HashMap<>();
 			difference.putAll(sutFilled);
 			difference.putAll(mapFromStore);
-			difference.entrySet().removeAll(mapFromStore.entrySet());
+			blackhole.consume(difference.entrySet().removeAll(mapFromStore.entrySet()));
 		}
-
-		blackhole.consume(sutFilled);
 		blackhole.consume(store);
 	}
 
@@ -64,19 +95,34 @@ public class ImmutableGetDiffCursorBenchmark {
 	public void baselineGetDiffCursorAndCommitBenchmark(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilled = executionPlan.getFilledHashMap();
 		var store = executionPlan.getStore();
+		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
+			Map<Integer, String> mapFromStore = store.get(executionPlan.nextKey());
+			Map<Integer, String> difference = new HashMap<>();
+			difference.putAll(sutFilled);
+			difference.putAll(mapFromStore);
+			blackhole.consume(difference.entrySet().removeAll(mapFromStore.entrySet()));
+			if (i % 10 == 0) {
+				blackhole.consume(store.add(mapFromStore));
+			}
+		}
+		blackhole.consume(store);
+	}
+	
+	@Benchmark
+	public void baselineGetDiffCursorAndCommitBenchmarkContinuous(ImmutableGetDiffCursorExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilled = executionPlan.getFilledHashMap();
+		var store = executionPlan.getStore();
 		int nCommit = executionPlan.getnCommit();
 		for (int i = 0; i < executionPlan.nGetDiffCursor; i++) {
 			Map<Integer, String> mapFromStore = store.get(i % nCommit);
 			Map<Integer, String> difference = new HashMap<>();
 			difference.putAll(sutFilled);
 			difference.putAll(mapFromStore);
-			difference.entrySet().removeAll(mapFromStore.entrySet());
+			blackhole.consume(difference.entrySet().removeAll(mapFromStore.entrySet()));
 			if (i % 10 == 0) {
 				blackhole.consume(store.add(mapFromStore));
 			}
 		}
-
-		blackhole.consume(sutFilled);
 		blackhole.consume(store);
 	}
 }

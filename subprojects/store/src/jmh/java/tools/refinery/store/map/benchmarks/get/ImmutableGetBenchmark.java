@@ -24,30 +24,58 @@ public class ImmutableGetBenchmark {
 	public void immutableGetBenchmark(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
 		var sut = executionPlan.getSut();
 		for (int i = 0; i < executionPlan.nGet; i++) {
-			sut.get(executionPlan.nextKey());
+			blackhole.consume(sut.get(executionPlan.nextKey()));
 		}
-		blackhole.consume(sut);
+		
 	}
-
+	
+	@Benchmark
+	public void immutableGetBenchmarkContinuous(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
+		var sut = executionPlan.getSut();
+		for (int i = 0; i < executionPlan.nGet; i++) {
+			blackhole.consume(sut.get(i % executionPlan.nKeys));
+		}
+		
+	}
+	
 	@Benchmark
 	public void immutableGetAndCommitBenchmark(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
 		var sut = executionPlan.getSut();
 		for (int i = 0; i < executionPlan.nGet; i++) {
-			sut.get(executionPlan.nextKey());
+			blackhole.consume(sut.get(executionPlan.nextKey()));
 			if (i % 10 == 0) {
 				blackhole.consume(sut.commit());
 			}
 		}
-		blackhole.consume(sut);
+		
+	}
+	
+	@Benchmark
+	public void immutableGetAndCommitBenchmarkContinuous(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
+		var sut = executionPlan.getSut();
+		for (int i = 0; i < executionPlan.nGet; i++) {
+			blackhole.consume(sut.get(i % executionPlan.nKeys));
+			if (i % 10 == 0) {
+				blackhole.consume(sut.commit());
+			}
+		}
+		
 	}
 
 	@Benchmark
 	public void baselineGetBenchmark(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
 		var hashMap = executionPlan.getFilledHashMap();
 		for (int i = 0; i < executionPlan.nGet; i++) {
-			hashMap.get(executionPlan.nextKey());
+			blackhole.consume(hashMap.get(executionPlan.nextKey()));
 		}
-		blackhole.consume(hashMap);
+	}
+	
+	@Benchmark
+	public void baselineGetBenchmarkContinuous(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
+		var hashMap = executionPlan.getFilledHashMap();
+		for (int i = 0; i < executionPlan.nGet; i++) {
+			blackhole.consume(hashMap.get(i % executionPlan.nKeys));
+		}
 	}
 
 	@Benchmark
@@ -55,12 +83,22 @@ public class ImmutableGetBenchmark {
 		var hashMap = executionPlan.getFilledHashMap();
 		var store = new ArrayList<HashMap<Integer, String>>();
 		for (int i = 0; i < executionPlan.nGet; i++) {
-			hashMap.get(executionPlan.nextKey());
+			blackhole.consume(hashMap.get(executionPlan.nextKey()));
 			if (i % 10 == 0) {
-				store.add(new HashMap<>(hashMap));
+				blackhole.consume(store.add(new HashMap<>(hashMap)));
 			}
 		}
-		blackhole.consume(hashMap);
-		blackhole.consume(store);
+	}
+	
+	@Benchmark
+	public void baselineGetAndCommitBenchmarkContinuous(ImmutableGetExecutionPlan executionPlan, Blackhole blackhole) {
+		var hashMap = executionPlan.getFilledHashMap();
+		var store = new ArrayList<HashMap<Integer, String>>();
+		for (int i = 0; i < executionPlan.nGet; i++) {
+			blackhole.consume(hashMap.get(i % executionPlan.nKeys));
+			if (i % 10 == 0) {
+				blackhole.consume(store.add(new HashMap<>(hashMap)));
+			}
+		}
 	}
 }

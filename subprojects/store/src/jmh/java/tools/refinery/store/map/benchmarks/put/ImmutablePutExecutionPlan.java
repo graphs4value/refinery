@@ -17,7 +17,7 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Benchmark)
 public class ImmutablePutExecutionPlan {
 
-	@Param({ "100", "10000" })
+	@Param({ "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192", "16384" })
 	public int nPut;
 
 	@Param({ "32", "1000", "100000" })

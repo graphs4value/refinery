@@ -27,6 +27,15 @@ public class ImmutablePutBenchmark {
 		}
 		blackhole.consume(sut);
 	}
+	
+	@Benchmark
+	public void immutablePutBenchmarkContinuous(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
+		var sut = executionPlan.createSut();
+		for (int i = 0; i < executionPlan.nPut; i++) {
+			sut.put(i % executionPlan.nKeys, executionPlan.nextValue());
+		}
+		blackhole.consume(sut);
+	}
 
 	@Benchmark
 	public void immutablePutAndCommitBenchmark(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
@@ -41,6 +50,19 @@ public class ImmutablePutBenchmark {
 	}
 
 	@Benchmark
+	public void immutablePutAndCommitBenchmarkContinuous(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
+		var sut = executionPlan.createSut();
+		for (int i = 0; i < executionPlan.nPut; i++) {
+			sut.put(i % executionPlan.nKeys, executionPlan.nextValue());
+			if (i % 10 == 0) {
+				blackhole.consume(sut.commit());
+			}
+		}
+		blackhole.consume(sut);
+	}
+
+	
+	@Benchmark
 	public void baselinePutBenchmark(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
 		var sut = new HashMap<Integer, String>();
 		for (int i = 0; i < executionPlan.nPut; i++) {
@@ -54,13 +76,48 @@ public class ImmutablePutBenchmark {
 		}
 		blackhole.consume(sut);
 	}
-
+	
 	@Benchmark
+	public void baselinePutBenchmarkContinuous(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
+		var sut = new HashMap<Integer, String>();
+		for (int i = 0; i < executionPlan.nPut; i++) {
+			var key = i % executionPlan.nKeys;
+			var value = executionPlan.nextValue();
+			if (executionPlan.isDefault(value)) {
+				sut.remove(key);
+			} else {
+				sut.put(key, value);
+			}
+		}
+		blackhole.consume(sut);
+	}
+
+	//@Benchmark
 	public void baselinePutAndCommitBenchmark(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
 		var sut = new HashMap<Integer, String>();
 		var store = new ArrayList<HashMap<Integer, String>>();
 		for (int i = 0; i < executionPlan.nPut; i++) {
 			var key = executionPlan.nextKey();
+			var value = executionPlan.nextValue();
+			if (executionPlan.isDefault(value)) {
+				sut.remove(key);
+			} else {
+				sut.put(key, value);
+			}
+			if (i % 10 == 0) {
+				store.add(new HashMap<>(sut));
+			}
+		}
+		blackhole.consume(sut);
+		blackhole.consume(store);
+	}
+	
+	@Benchmark
+	public void baselinePutAndCommitBenchmarkContinuous(ImmutablePutExecutionPlan executionPlan, Blackhole blackhole) {
+		var sut = new HashMap<Integer, String>();
+		var store = new ArrayList<HashMap<Integer, String>>();
+		for (int i = 0; i < executionPlan.nPut; i++) {
+			var key = i % executionPlan.nKeys;
 			var value = executionPlan.nextValue();
 			if (executionPlan.isDefault(value)) {
 				sut.remove(key);

@@ -18,8 +18,17 @@ import java.util.concurrent.TimeUnit;
 @Warmup(time = 1, timeUnit = TimeUnit.SECONDS)
 public class ImmutableRestoreBenchmark {
 
-	@Benchmark
-	public void immutableGetDiffCursorBenchmark(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
+	//@Benchmark
+	public void immutableRestoreBenchmark(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilledAndCommitted = executionPlan.getSut();
+		for (int i = 0; i < executionPlan.nRestore; i++) {
+			sutFilledAndCommitted.restore(executionPlan.nextKey());
+		}
+		blackhole.consume(sutFilledAndCommitted);
+	}
+	
+	//@Benchmark
+	public void immutableRestoreBenchmarkContinuous(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilledAndCommitted = executionPlan.getSut();
 		int nCommit = executionPlan.getnCommit();
 		for (int i = 0; i < executionPlan.nRestore; i++) {
@@ -28,8 +37,20 @@ public class ImmutableRestoreBenchmark {
 		blackhole.consume(sutFilledAndCommitted);
 	}
 
-	@Benchmark
-	public void immutableGetDiffCursorAndCommitBenchmark(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
+	//@Benchmark
+	public void immutableRestoreAndCommitBenchmark(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilledAndCommitted = executionPlan.getSut();
+		for (int i = 0; i < executionPlan.nRestore; i++) {
+			sutFilledAndCommitted.restore(executionPlan.nextKey());
+			if (i % 10 == 0) {
+				blackhole.consume(sutFilledAndCommitted.commit());
+			}
+		}
+		blackhole.consume(sutFilledAndCommitted);
+	}
+	
+	//@Benchmark
+	public void immutableRestoreAndCommitBenchmarkContinuous(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilledAndCommitted = executionPlan.getSut();
 		int nCommit = executionPlan.getnCommit();
 		for (int i = 0; i < executionPlan.nRestore; i++) {
@@ -41,8 +62,20 @@ public class ImmutableRestoreBenchmark {
 		blackhole.consume(sutFilledAndCommitted);
 	}
 
-	@Benchmark
+	//@Benchmark
 	public void baselineRestoreBenchmark(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilled = executionPlan.getFilledHashMap();
+		var store = executionPlan.getStore();
+		for (int i = 0; i < executionPlan.nRestore; i++) {
+			sutFilled = store.get(executionPlan.nextKey());
+		}
+
+		blackhole.consume(sutFilled);
+		blackhole.consume(store);
+	}
+	
+	//@Benchmark
+	public void baselineRestoreBenchmarkContinuous(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilled = executionPlan.getFilledHashMap();
 		var store = executionPlan.getStore();
 		int nCommit = executionPlan.getnCommit();
@@ -54,8 +87,22 @@ public class ImmutableRestoreBenchmark {
 		blackhole.consume(store);
 	}
 
-	@Benchmark
+	//@Benchmark
 	public void baselineRestoreAndCommitBenchmark(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
+		var sutFilled = executionPlan.getFilledHashMap();
+		var store = executionPlan.getStore();
+		for (int i = 0; i < executionPlan.nRestore; i++) {
+			sutFilled = store.get(executionPlan.nextKey());
+			if (i % 10 == 0) {
+				blackhole.consume(store.add(sutFilled));
+			}
+		}
+		blackhole.consume(sutFilled);
+		blackhole.consume(store);
+	}
+	
+	//@Benchmark
+	public void baselineRestoreAndCommitBenchmarkContinuous(ImmutableRestoreExecutionPlan executionPlan, Blackhole blackhole) {
 		var sutFilled = executionPlan.getFilledHashMap();
 		var store = executionPlan.getStore();
 		int nCommit = executionPlan.getnCommit();
