@@ -1,0 +1,48 @@
+ImmutableCommitBenchmark.baselineCommitBenchmark          16       32          2  avgt    5     0.010 �    0.012  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark          16       32          3  avgt    5     0.010 �    0.010  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         256   100000          2  avgt    5  1616.755 � 1124.846  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         256   100000          3  avgt    5  1704.386 �  640.016  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         512       32          3  avgt    5     0.397 �    0.323  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         512     1000          2  avgt    5    11.359 �   14.706  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         512     1000          3  avgt    5    10.591 �    8.579  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         512   100000          2  avgt    5  4578.035 �  863.320  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark         512   100000          3  avgt    5  3689.052 � 1093.269  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        1024       32          2  avgt    5     0.638 �    0.701  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        1024       32          3  avgt    5     0.587 �    0.527  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        1024     1000          2  avgt    5    17.922 �   11.670  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        1024     1000          3  avgt    5    19.408 �   20.955  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        2048     1000          2  avgt    5    40.379 �   43.215  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        4096       32          2  avgt    5     4.282 �    1.861  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        4096       32          3  avgt    5     3.322 �    2.313  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        4096     1000          2  avgt    5   113.227 �  174.189  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        8192       32          2  avgt    5     5.688 �    5.780  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        8192       32          3  avgt    5     5.629 �    7.050  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        8192     1000          2  avgt    5   343.622 �  430.036  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark        8192     1000          3  avgt    5   355.405 �  157.313  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark       16384       32          3  avgt    5    11.238 �   12.541  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark       16384     1000          2  avgt    5  1372.257 �  870.304  ms/op
+ImmutableCommitBenchmark.baselineCommitBenchmark       16384     1000          3  avgt    5  1176.905 �  595.897  ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark         16       32          2  avgt    5     0.639             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark         16       32          3  avgt    5     0.078             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        256   100000          2  avgt    5     0.585             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        256   100000          3  avgt    5     0.151             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        512       32          3  avgt    2     0.139             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        512     1000          2  avgt    2     0.237             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        512     1000          3  avgt    2     0.608             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        512   100000          2  avgt    2     0.169             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark        512   100000          3  avgt    3     1.588 �   47.932  ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       1024       32          2  avgt    3     1.266 �   35.458  ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       1024       32          3  avgt    2     0.525             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       1024     1000          2  avgt    5     0.299             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       1024     1000          3  avgt    5     0.767             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       2048     1000          2  avgt    5     6.044             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       4096       32          2  avgt    2     3.390             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       4096       32          3  avgt    2     1.873             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       4096     1000          2  avgt    5    22.180             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       8192       32          2  avgt    5    48.802             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       8192       32          3  avgt    5     9.721             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       8192     1000          2  avgt    5    98.751             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark       8192     1000          3  avgt    9    25.686             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark      16384       32          3  avgt    9    66.004             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark      16384     1000          2  avgt    9    18.210             ms/op
+ImmutableCommitBenchmark.immutableCommitBenchmark      16384     1000          3  avgt    9    21.787             ms/op
