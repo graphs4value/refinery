@@ -1,0 +1,2199 @@
+Type-safe dependency accessors is an incubating feature.
+> Task :buildSrc:extractPluginRequests UP-TO-DATE
+> Task :buildSrc:generatePluginAdapters UP-TO-DATE
+> Task :buildSrc:compileJava UP-TO-DATE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:compileGroovyPlugins UP-TO-DATE
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+> Task :buildSrc:processResources UP-TO-DATE
+> Task :buildSrc:classes UP-TO-DATE
+> Task :buildSrc:jar UP-TO-DATE
+> Task :buildSrc:assemble UP-TO-DATE
+> Task :buildSrc:pluginUnderTestMetadata UP-TO-DATE
+> Task :buildSrc:compileTestJava NO-SOURCE
+> Task :buildSrc:compileTestGroovy NO-SOURCE
+> Task :buildSrc:processTestResources NO-SOURCE
+> Task :buildSrc:testClasses UP-TO-DATE
+> Task :buildSrc:test NO-SOURCE
+> Task :buildSrc:validatePlugins UP-TO-DATE
+> Task :buildSrc:check UP-TO-DATE
+> Task :buildSrc:build UP-TO-DATE
+> Task :refinery-store:compileJava UP-TO-DATE
+> Task :refinery-store:processResources NO-SOURCE
+> Task :refinery-store:classes UP-TO-DATE
+> Task :refinery-store:compileTestJava UP-TO-DATE
+> Task :refinery-store:processTestResources NO-SOURCE
+> Task :refinery-store:testClasses UP-TO-DATE
+> Task :refinery-store:compileJmhJava
+> Task :refinery-store:processJmhResources NO-SOURCE
+> Task :refinery-store:jmhClasses
+
+> Task :refinery-store:jmh
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16, nKeys = 32, nValues = 2)
+
+# Run progress: 0.00% complete, ETA 01:36:00
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.026 ms/op
+# Warmup Iteration   2: 0.032 ms/op
+# Warmup Iteration   3: 0.034 ms/op
+# Warmup Iteration   4: 0.026 ms/op
+# Warmup Iteration   5: 0.025 ms/op
+Iteration   1: 0.024 ms/op
+Iteration   2: 0.025 ms/op
+Iteration   3: 0.031 ms/op
+Iteration   4: 0.047 ms/op
+Iteration   5: 0.043 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.034 ±(99.9%) 0.040 ms/op [Average]
+  (min, avg, max) = (0.024, 0.034, 0.047), stdev = 0.010
+  CI (99.9%): [? 0, 0.074] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16, nKeys = 32, nValues = 3)
+
+# Run progress: 0.17% complete, ETA 01:41:34
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.028 ms/op
+# Warmup Iteration   2: 0.027 ms/op
+# Warmup Iteration   3: 0.025 ms/op
+# Warmup Iteration   4: 0.025 ms/op
+# Warmup Iteration   5: 0.024 ms/op
+Iteration   1: 0.023 ms/op
+Iteration   2: 0.023 ms/op
+Iteration   3: 0.030 ms/op
+Iteration   4: 0.044 ms/op
+Iteration   5: 0.045 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.033 ±(99.9%) 0.043 ms/op [Average]
+  (min, avg, max) = (0.023, 0.033, 0.045), stdev = 0.011
+  CI (99.9%): [? 0, 0.076] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16, nKeys = 1000, nValues = 2)
+
+# Run progress: 0.35% complete, ETA 01:41:03
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.926 ms/op
+# Warmup Iteration   2: 0.875 ms/op
+# Warmup Iteration   3: 0.866 ms/op
+# Warmup Iteration   4: 0.738 ms/op
+# Warmup Iteration   5: 0.750 ms/op
+Iteration   1: 0.741 ms/op
+Iteration   2: 0.750 ms/op
+Iteration   3: 0.991 ms/op
+Iteration   4: 1.564 ms/op
+Iteration   5: 1.544 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1.118 ±(99.9%) 1.580 ms/op [Average]
+  (min, avg, max) = (0.741, 1.118, 1.564), stdev = 0.410
+  CI (99.9%): [? 0, 2.698] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16, nKeys = 1000, nValues = 3)
+
+# Run progress: 0.52% complete, ETA 01:40:45
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.837 ms/op
+# Warmup Iteration   2: 0.771 ms/op
+# Warmup Iteration   3: 0.754 ms/op
+# Warmup Iteration   4: 0.775 ms/op
+# Warmup Iteration   5: 0.769 ms/op
+Iteration   1: 0.785 ms/op
+Iteration   2: 0.727 ms/op
+Iteration   3: 0.925 ms/op
+Iteration   4: 1.372 ms/op
+Iteration   5: 1.796 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1.121 ±(99.9%) 1.749 ms/op [Average]
+  (min, avg, max) = (0.727, 1.121, 1.796), stdev = 0.454
+  CI (99.9%): [? 0, 2.870] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16, nKeys = 100000, nValues = 2)
+
+# Run progress: 0.69% complete, ETA 01:40:20
+# Fork: 1 of 1
+# Warmup Iteration   1: 134.276 ms/op
+# Warmup Iteration   2: 129.442 ms/op
+# Warmup Iteration   3: 122.186 ms/op
+# Warmup Iteration   4: 127.816 ms/op
+# Warmup Iteration   5: 128.483 ms/op
+Iteration   1: 120.477 ms/op
+Iteration   2: 116.883 ms/op
+Iteration   3: 220.164 ms/op
+Iteration   4: 197.354 ms/op
+Iteration   5: 217.587 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  174.493 ±(99.9%) 199.177 ms/op [Average]
+  (min, avg, max) = (116.883, 174.493, 220.164), stdev = 51.726
+  CI (99.9%): [? 0, 373.671] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16, nKeys = 100000, nValues = 3)
+
+# Run progress: 0.87% complete, ETA 01:41:52
+# Fork: 1 of 1
+# Warmup Iteration   1: 134.047 ms/op
+# Warmup Iteration   2: 121.979 ms/op
+# Warmup Iteration   3: 127.394 ms/op
+# Warmup Iteration   4: 128.148 ms/op
+# Warmup Iteration   5: 120.535 ms/op
+Iteration   1: 122.005 ms/op
+Iteration   2: 131.812 ms/op
+Iteration   3: 231.203 ms/op
+Iteration   4: 211.087 ms/op
+Iteration   5: 221.578 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  183.537 ±(99.9%) 201.377 ms/op [Average]
+  (min, avg, max) = (122.005, 183.537, 231.203), stdev = 52.297
+  CI (99.9%): [? 0, 384.914] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 32, nKeys = 32, nValues = 2)
+
+# Run progress: 1.04% complete, ETA 01:43:04
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.055 ms/op
+# Warmup Iteration   2: 0.052 ms/op
+# Warmup Iteration   3: 0.052 ms/op
+# Warmup Iteration   4: 0.052 ms/op
+# Warmup Iteration   5: 0.055 ms/op
+Iteration   1: 0.051 ms/op
+Iteration   2: 0.053 ms/op
+Iteration   3: 0.069 ms/op
+Iteration   4: 0.116 ms/op
+Iteration   5: 0.101 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.078 ±(99.9%) 0.113 ms/op [Average]
+  (min, avg, max) = (0.051, 0.078, 0.116), stdev = 0.029
+  CI (99.9%): [? 0, 0.191] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 32, nKeys = 32, nValues = 3)
+
+# Run progress: 1.22% complete, ETA 01:42:23
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.050 ms/op
+# Warmup Iteration   2: 0.046 ms/op
+# Warmup Iteration   3: 0.048 ms/op
+# Warmup Iteration   4: 0.047 ms/op
+# Warmup Iteration   5: 0.045 ms/op
+Iteration   1: 0.056 ms/op
+Iteration   2: 0.048 ms/op
+Iteration   3: 0.060 ms/op
+Iteration   4: 0.098 ms/op
+Iteration   5: 0.078 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.068 ±(99.9%) 0.078 ms/op [Average]
+  (min, avg, max) = (0.048, 0.068, 0.098), stdev = 0.020
+  CI (99.9%): [? 0, 0.145] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 32, nKeys = 1000, nValues = 2)
+
+# Run progress: 1.39% complete, ETA 01:41:47
+# Fork: 1 of 1
+# Warmup Iteration   1: 1.786 ms/op
+# Warmup Iteration   2: 1.524 ms/op
+# Warmup Iteration   3: 1.521 ms/op
+# Warmup Iteration   4: 1.553 ms/op
+# Warmup Iteration   5: 1.511 ms/op
+Iteration   1: 1.535 ms/op
+Iteration   2: 1.592 ms/op
+Iteration   3: 2.121 ms/op
+Iteration   4: 3.522 ms/op
+Iteration   5: 3.169 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  2.388 ±(99.9%) 3.513 ms/op [Average]
+  (min, avg, max) = (1.535, 2.388, 3.522), stdev = 0.912
+  CI (99.9%): [? 0, 5.901] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 32, nKeys = 1000, nValues = 3)
+
+# Run progress: 1.56% complete, ETA 01:41:17
+# Fork: 1 of 1
+# Warmup Iteration   1: 1.609 ms/op
+# Warmup Iteration   2: 1.571 ms/op
+# Warmup Iteration   3: 1.571 ms/op
+# Warmup Iteration   4: 1.520 ms/op
+# Warmup Iteration   5: 1.613 ms/op
+Iteration   1: 1.451 ms/op
+Iteration   2: 1.637 ms/op
+Iteration   3: 2.206 ms/op
+Iteration   4: 3.207 ms/op
+Iteration   5: 3.083 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  2.317 ±(99.9%) 3.106 ms/op [Average]
+  (min, avg, max) = (1.451, 2.317, 3.207), stdev = 0.807
+  CI (99.9%): [? 0, 5.423] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 32, nKeys = 100000, nValues = 2)
+
+# Run progress: 1.74% complete, ETA 01:40:51
+# Fork: 1 of 1
+# Warmup Iteration   1: 271.258 ms/op
+# Warmup Iteration   2: 280.418 ms/op
+# Warmup Iteration   3: 278.514 ms/op
+# Warmup Iteration   4: 275.620 ms/op
+# Warmup Iteration   5: 330.786 ms/op
+Iteration   1: 282.216 ms/op
+Iteration   2: 407.057 ms/op
+Iteration   3: 500.621 ms/op
+Iteration   4: 484.126 ms/op
+Iteration   5: 529.327 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  440.669 ±(99.9%) 383.038 ms/op [Average]
+  (min, avg, max) = (282.216, 440.669, 529.327), stdev = 99.474
+  CI (99.9%): [57.632, 823.707] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 32, nKeys = 100000, nValues = 3)
+
+# Run progress: 1.91% complete, ETA 01:42:30
+# Fork: 1 of 1
+# Warmup Iteration   1: 303.039 ms/op
+# Warmup Iteration   2: 278.059 ms/op
+# Warmup Iteration   3: 297.153 ms/op
+# Warmup Iteration   4: 274.121 ms/op
+# Warmup Iteration   5: 341.564 ms/op
+Iteration   1: 410.799 ms/op
+Iteration   2: 574.553 ms/op
+Iteration   3: 665.471 ms/op
+Iteration   4: 460.786 ms/op
+Iteration   5: 457.162 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  513.754 ±(99.9%) 400.737 ms/op [Average]
+  (min, avg, max) = (410.799, 513.754, 665.471), stdev = 104.070
+  CI (99.9%): [113.017, 914.492] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 64, nKeys = 32, nValues = 2)
+
+# Run progress: 2.08% complete, ETA 01:43:49
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.118 ms/op
+# Warmup Iteration   2: 0.119 ms/op
+# Warmup Iteration   3: 0.123 ms/op
+# Warmup Iteration   4: 0.131 ms/op
+# Warmup Iteration   5: 0.131 ms/op
+Iteration   1: 0.129 ms/op
+Iteration   2: 0.119 ms/op
+Iteration   3: 0.175 ms/op
+Iteration   4: 0.259 ms/op
+Iteration   5: 0.264 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.189 ±(99.9%) 0.266 ms/op [Average]
+  (min, avg, max) = (0.119, 0.189, 0.264), stdev = 0.069
+  CI (99.9%): [? 0, 0.455] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 64, nKeys = 32, nValues = 3)
+
+# Run progress: 2.26% complete, ETA 01:43:13
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.119 ms/op
+# Warmup Iteration   2: 0.120 ms/op
+# Warmup Iteration   3: 0.123 ms/op
+# Warmup Iteration   4: 0.123 ms/op
+# Warmup Iteration   5: 0.120 ms/op
+Iteration   1: 0.123 ms/op
+Iteration   2: 0.137 ms/op
+Iteration   3: 0.175 ms/op
+Iteration   4: 0.310 ms/op
+Iteration   5: 0.225 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.194 ±(99.9%) 0.293 ms/op [Average]
+  (min, avg, max) = (0.123, 0.194, 0.310), stdev = 0.076
+  CI (99.9%): [? 0, 0.487] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 64, nKeys = 1000, nValues = 2)
+
+# Run progress: 2.43% complete, ETA 01:42:40
+# Fork: 1 of 1
+# Warmup Iteration   1: 4.426 ms/op
+# Warmup Iteration   2: 4.040 ms/op
+# Warmup Iteration   3: 4.090 ms/op
+# Warmup Iteration   4: 3.961 ms/op
+# Warmup Iteration   5: 3.927 ms/op
+Iteration   1: 3.862 ms/op
+Iteration   2: 3.927 ms/op
+Iteration   3: 5.430 ms/op
+Iteration   4: 8.888 ms/op
+Iteration   5: 7.282 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  5.878 ±(99.9%) 8.415 ms/op [Average]
+  (min, avg, max) = (3.862, 5.878, 8.888), stdev = 2.185
+  CI (99.9%): [? 0, 14.293] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 64, nKeys = 1000, nValues = 3)
+
+# Run progress: 2.60% complete, ETA 01:42:12
+# Fork: 1 of 1
+# Warmup Iteration   1: 4.245 ms/op
+# Warmup Iteration   2: 5.741 ms/op
+# Warmup Iteration   3: 4.378 ms/op
+# Warmup Iteration   4: 4.406 ms/op
+# Warmup Iteration   5: 3.952 ms/op
+Iteration   1: 3.974 ms/op
+Iteration   2: 4.505 ms/op
+Iteration   3: 5.907 ms/op
+Iteration   4: 9.879 ms/op
+Iteration   5: 8.655 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  6.584 ±(99.9%) 9.955 ms/op [Average]
+  (min, avg, max) = (3.974, 6.584, 9.879), stdev = 2.585
+  CI (99.9%): [? 0, 16.539] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 64, nKeys = 100000, nValues = 2)
+
+# Run progress: 2.78% complete, ETA 01:41:47
+# Fork: 1 of 1
+# Warmup Iteration   1: 733.435 ms/op
+# Warmup Iteration   2: 722.191 ms/op
+# Warmup Iteration   3: 679.596 ms/op
+# Warmup Iteration   4: 603.139 ms/op
+# Warmup Iteration   5: 728.140 ms/op
+Iteration   1: 1543.004 ms/op
+Iteration   2: 1391.085 ms/op
+Iteration   3: 1463.841 ms/op
+Iteration   4: 1281.823 ms/op
+Iteration   5: 1452.409 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1426.432 ±(99.9%) 374.446 ms/op [Average]
+  (min, avg, max) = (1281.823, 1426.432, 1543.004), stdev = 97.242
+  CI (99.9%): [1051.986, 1800.879] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 64, nKeys = 100000, nValues = 3)
+
+# Run progress: 2.95% complete, ETA 01:43:46
+# Fork: 1 of 1
+# Warmup Iteration   1: 666.477 ms/op
+# Warmup Iteration   2: 590.010 ms/op
+# Warmup Iteration   3: 604.298 ms/op
+# Warmup Iteration   4: 556.426 ms/op
+# Warmup Iteration   5: 514.524 ms/op
+Iteration   1: 511.302 ms/op
+Iteration   2: 1084.792 ms/op
+Iteration   3: 1048.524 ms/op
+Iteration   4: 909.109 ms/op
+Iteration   5: 794.290 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  869.604 ±(99.9%) 890.515 ms/op [Average]
+  (min, avg, max) = (511.302, 869.604, 1084.792), stdev = 231.264
+  CI (99.9%): [? 0, 1760.118] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 128, nKeys = 32, nValues = 2)
+
+# Run progress: 3.13% complete, ETA 01:44:55
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.216 ms/op
+# Warmup Iteration   2: 0.209 ms/op
+# Warmup Iteration   3: 0.214 ms/op
+# Warmup Iteration   4: 0.216 ms/op
+# Warmup Iteration   5: 0.227 ms/op
+Iteration   1: 0.225 ms/op
+Iteration   2: 0.200 ms/op
+Iteration   3: 0.295 ms/op
+Iteration   4: 0.463 ms/op
+Iteration   5: 0.378 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.312 ±(99.9%) 0.421 ms/op [Average]
+  (min, avg, max) = (0.200, 0.312, 0.463), stdev = 0.109
+  CI (99.9%): [? 0, 0.733] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 128, nKeys = 32, nValues = 3)
+
+# Run progress: 3.30% complete, ETA 01:44:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.222 ms/op
+# Warmup Iteration   2: 0.205 ms/op
+# Warmup Iteration   3: 0.207 ms/op
+# Warmup Iteration   4: 0.198 ms/op
+# Warmup Iteration   5: 0.203 ms/op
+Iteration   1: 0.214 ms/op
+Iteration   2: 0.200 ms/op
+Iteration   3: 0.276 ms/op
+Iteration   4: 0.459 ms/op
+Iteration   5: 0.386 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.307 ±(99.9%) 0.432 ms/op [Average]
+  (min, avg, max) = (0.200, 0.307, 0.459), stdev = 0.112
+  CI (99.9%): [? 0, 0.739] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 128, nKeys = 1000, nValues = 2)
+
+# Run progress: 3.47% complete, ETA 01:43:48
+# Fork: 1 of 1
+# Warmup Iteration   1: 6.642 ms/op
+# Warmup Iteration   2: 5.947 ms/op
+# Warmup Iteration   3: 6.087 ms/op
+# Warmup Iteration   4: 5.982 ms/op
+# Warmup Iteration   5: 5.904 ms/op
+Iteration   1: 6.139 ms/op
+Iteration   2: 5.928 ms/op
+Iteration   3: 7.570 ms/op
+Iteration   4: 13.750 ms/op
+Iteration   5: 11.592 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  8.996 ±(99.9%) 13.470 ms/op [Average]
+  (min, avg, max) = (5.928, 8.996, 13.750), stdev = 3.498
+  CI (99.9%): [? 0, 22.466] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 128, nKeys = 1000, nValues = 3)
+
+# Run progress: 3.65% complete, ETA 01:43:18
+# Fork: 1 of 1
+# Warmup Iteration   1: 6.408 ms/op
+# Warmup Iteration   2: 5.976 ms/op
+# Warmup Iteration   3: 6.044 ms/op
+# Warmup Iteration   4: 6.179 ms/op
+# Warmup Iteration   5: 5.986 ms/op
+Iteration   1: 6.210 ms/op
+Iteration   2: 6.070 ms/op
+Iteration   3: 7.183 ms/op
+Iteration   4: 14.055 ms/op
+Iteration   5: 11.481 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  9.000 ±(99.9%) 13.801 ms/op [Average]
+  (min, avg, max) = (6.070, 9.000, 14.055), stdev = 3.584
+  CI (99.9%): [? 0, 22.800] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 128, nKeys = 100000, nValues = 2)
+
+# Run progress: 3.82% complete, ETA 01:42:50
+# Fork: 1 of 1
+# Warmup Iteration   1: 1056.845 ms/op
+# Warmup Iteration   2: 1038.423 ms/op
+# Warmup Iteration   3: 1013.369 ms/op
+# Warmup Iteration   4: 1038.421 ms/op
+# Warmup Iteration   5: 1012.618 ms/op
+Iteration   1: 1398.134 ms/op
+Iteration   2: 1759.702 ms/op
+Iteration   3: 1648.206 ms/op
+Iteration   4: 1656.262 ms/op
+Iteration   5: 1817.293 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1655.919 ±(99.9%) 618.881 ms/op [Average]
+  (min, avg, max) = (1398.134, 1655.919, 1817.293), stdev = 160.721
+  CI (99.9%): [1037.039, 2274.800] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 128, nKeys = 100000, nValues = 3)
+
+# Run progress: 3.99% complete, ETA 01:44:47
+# Fork: 1 of 1
+# Warmup Iteration   1: 1071.449 ms/op
+# Warmup Iteration   2: 972.978 ms/op
+# Warmup Iteration   3: 980.480 ms/op
+# Warmup Iteration   4: 1042.470 ms/op
+# Warmup Iteration   5: 2005.766 ms/op
+Iteration   1: 1836.904 ms/op
+Iteration   2: 1788.018 ms/op
+Iteration   3: 1814.698 ms/op
+Iteration   4: 1976.197 ms/op
+Iteration   5: 1813.058 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1845.775 ±(99.9%) 288.545 ms/op [Average]
+  (min, avg, max) = (1788.018, 1845.775, 1976.197), stdev = 74.934
+  CI (99.9%): [1557.229, 2134.320] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 256, nKeys = 32, nValues = 2)
+
+# Run progress: 4.17% complete, ETA 01:47:31
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.434 ms/op
+# Warmup Iteration   2: 0.426 ms/op
+# Warmup Iteration   3: 0.412 ms/op
+# Warmup Iteration   4: 0.456 ms/op
+# Warmup Iteration   5: 0.474 ms/op
+Iteration   1: 0.488 ms/op
+Iteration   2: 0.453 ms/op
+Iteration   3: 0.654 ms/op
+Iteration   4: 0.945 ms/op
+Iteration   5: 0.828 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.673 ±(99.9%) 0.820 ms/op [Average]
+  (min, avg, max) = (0.453, 0.673, 0.945), stdev = 0.213
+  CI (99.9%): [? 0, 1.494] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 256, nKeys = 32, nValues = 3)
+
+# Run progress: 4.34% complete, ETA 01:46:53
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.462 ms/op
+# Warmup Iteration   2: 0.467 ms/op
+# Warmup Iteration   3: 0.524 ms/op
+# Warmup Iteration   4: 0.471 ms/op
+# Warmup Iteration   5: 0.456 ms/op
+Iteration   1: 0.466 ms/op
+Iteration   2: 0.471 ms/op
+Iteration   3: 0.652 ms/op
+Iteration   4: 1.184 ms/op
+Iteration   5: 1.108 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  0.776 ±(99.9%) 1.335 ms/op [Average]
+  (min, avg, max) = (0.466, 0.776, 1.184), stdev = 0.347
+  CI (99.9%): [? 0, 2.111] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 256, nKeys = 1000, nValues = 2)
+
+# Run progress: 4.51% complete, ETA 01:46:17
+# Fork: 1 of 1
+# Warmup Iteration   1: 13.852 ms/op
+# Warmup Iteration   2: 13.292 ms/op
+# Warmup Iteration   3: 13.973 ms/op
+# Warmup Iteration   4: 14.083 ms/op
+# Warmup Iteration   5: 13.810 ms/op
+Iteration   1: 13.627 ms/op
+Iteration   2: 13.823 ms/op
+Iteration   3: 20.172 ms/op
+Iteration   4: 31.252 ms/op
+Iteration   5: 26.278 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  21.031 ±(99.9%) 29.797 ms/op [Average]
+  (min, avg, max) = (13.627, 21.031, 31.252), stdev = 7.738
+  CI (99.9%): [? 0, 50.827] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 256, nKeys = 1000, nValues = 3)
+
+# Run progress: 4.69% complete, ETA 01:45:45
+# Fork: 1 of 1
+# Warmup Iteration   1: 12.892 ms/op
+# Warmup Iteration   2: 13.966 ms/op
+# Warmup Iteration   3: 14.094 ms/op
+# Warmup Iteration   4: 14.759 ms/op
+# Warmup Iteration   5: 14.673 ms/op
+Iteration   1: 14.588 ms/op
+Iteration   2: 14.364 ms/op
+Iteration   3: 21.139 ms/op
+Iteration   4: 31.441 ms/op
+Iteration   5: 30.085 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  22.323 ±(99.9%) 31.517 ms/op [Average]
+  (min, avg, max) = (14.364, 22.323, 31.441), stdev = 8.185
+  CI (99.9%): [? 0, 53.840] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 256, nKeys = 100000, nValues = 2)
+
+# Run progress: 4.86% complete, ETA 01:45:14
+# Fork: 1 of 1
+# Warmup Iteration   1: 2467.577 ms/op
+# Warmup Iteration   2: 2616.879 ms/op
+# Warmup Iteration   3: 2664.231 ms/op
+# Warmup Iteration   4: 4529.318 ms/op
+# Warmup Iteration   5: 3960.417 ms/op
+Iteration   1: 3898.340 ms/op
+Iteration   2: 3690.153 ms/op
+Iteration   3: 3572.438 ms/op
+Iteration   4: 3303.330 ms/op
+Iteration   5: 3487.047 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  3590.261 ±(99.9%) 857.129 ms/op [Average]
+  (min, avg, max) = (3303.330, 3590.261, 3898.340), stdev = 222.594
+  CI (99.9%): [2733.133, 4447.390] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 256, nKeys = 100000, nValues = 3)
+
+# Run progress: 5.03% complete, ETA 01:52:24
+# Fork: 1 of 1
+# Warmup Iteration   1: 2241.006 ms/op
+# Warmup Iteration   2: 2124.028 ms/op
+# Warmup Iteration   3: 2024.744 ms/op
+# Warmup Iteration   4: 2877.745 ms/op
+# Warmup Iteration   5: 3554.139 ms/op
+Iteration   1: 3377.056 ms/op
+Iteration   2: 3604.522 ms/op
+Iteration   3: 3412.931 ms/op
+Iteration   4: 3582.296 ms/op
+Iteration   5: 3378.442 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  3471.049 ±(99.9%) 434.710 ms/op [Average]
+  (min, avg, max) = (3377.056, 3471.049, 3604.522), stdev = 112.893
+  CI (99.9%): [3036.339, 3905.760] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 512, nKeys = 32, nValues = 2)
+
+# Run progress: 5.21% complete, ETA 01:57:49
+# Fork: 1 of 1
+# Warmup Iteration   1: 1.017 ms/op
+# Warmup Iteration   2: 0.807 ms/op
+# Warmup Iteration   3: 0.805 ms/op
+# Warmup Iteration   4: 0.880 ms/op
+# Warmup Iteration   5: 0.949 ms/op
+Iteration   1: 0.931 ms/op
+Iteration   2: 0.861 ms/op
+Iteration   3: 1.061 ms/op
+Iteration   4: 1.532 ms/op
+Iteration   5: 1.377 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1.152 ±(99.9%) 1.117 ms/op [Average]
+  (min, avg, max) = (0.861, 1.152, 1.532), stdev = 0.290
+  CI (99.9%): [0.036, 2.269] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 512, nKeys = 32, nValues = 3)
+
+# Run progress: 5.38% complete, ETA 01:56:53
+# Fork: 1 of 1
+# Warmup Iteration   1: 0.886 ms/op
+# Warmup Iteration   2: 0.804 ms/op
+# Warmup Iteration   3: 0.815 ms/op
+# Warmup Iteration   4: 0.830 ms/op
+# Warmup Iteration   5: 0.810 ms/op
+Iteration   1: 0.796 ms/op
+Iteration   2: 0.836 ms/op
+Iteration   3: 1.062 ms/op
+Iteration   4: 1.808 ms/op
+Iteration   5: 1.804 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1.261 ±(99.9%) 1.954 ms/op [Average]
+  (min, avg, max) = (0.796, 1.261, 1.808), stdev = 0.507
+  CI (99.9%): [? 0, 3.215] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 512, nKeys = 1000, nValues = 2)
+
+# Run progress: 5.56% complete, ETA 01:55:59
+# Fork: 1 of 1
+# Warmup Iteration   1: 26.187 ms/op
+# Warmup Iteration   2: 24.577 ms/op
+# Warmup Iteration   3: 24.012 ms/op
+# Warmup Iteration   4: 23.180 ms/op
+# Warmup Iteration   5: 23.932 ms/op
+Iteration   1: 24.069 ms/op
+Iteration   2: 22.994 ms/op
+Iteration   3: 35.410 ms/op
+Iteration   4: 52.808 ms/op
+Iteration   5: 40.582 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  35.173 ±(99.9%) 47.627 ms/op [Average]
+  (min, avg, max) = (22.994, 35.173, 52.808), stdev = 12.369
+  CI (99.9%): [? 0, 82.800] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 512, nKeys = 1000, nValues = 3)
+
+# Run progress: 5.73% complete, ETA 01:55:11
+# Fork: 1 of 1
+# Warmup Iteration   1: 25.909 ms/op
+# Warmup Iteration   2: 23.497 ms/op
+# Warmup Iteration   3: 24.457 ms/op
+# Warmup Iteration   4: 23.739 ms/op
+# Warmup Iteration   5: 22.952 ms/op
+Iteration   1: 23.238 ms/op
+Iteration   2: 23.473 ms/op
+Iteration   3: 33.281 ms/op
+Iteration   4: 52.038 ms/op
+Iteration   5: 43.285 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  35.063 ±(99.9%) 48.442 ms/op [Average]
+  (min, avg, max) = (23.238, 35.063, 52.038), stdev = 12.580
+  CI (99.9%): [? 0, 83.505] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 512, nKeys = 100000, nValues = 2)
+
+# Run progress: 5.90% complete, ETA 01:54:25
+# Fork: 1 of 1
+# Warmup Iteration   1: 3767.127 ms/op
+# Warmup Iteration   2: 3426.140 ms/op
+# Warmup Iteration   3: 6072.345 ms/op
+# Warmup Iteration   4: 6428.263 ms/op
+# Warmup Iteration   5: 6604.883 ms/op
+Iteration   1: 6234.962 ms/op
+Iteration   2: 6186.049 ms/op
+Iteration   3: 6167.326 ms/op
+Iteration   4: 6386.729 ms/op
+Iteration   5: 6132.905 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  6221.594 ±(99.9%) 382.759 ms/op [Average]
+  (min, avg, max) = (6132.905, 6221.594, 6386.729), stdev = 99.401
+  CI (99.9%): [5838.835, 6604.353] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 512, nKeys = 100000, nValues = 3)
+
+# Run progress: 6.08% complete, ETA 02:05:54
+# Fork: 1 of 1
+# Warmup Iteration   1: 3514.865 ms/op
+# Warmup Iteration   2: 3442.771 ms/op
+# Warmup Iteration   3: 5847.966 ms/op
+# Warmup Iteration   4: 6500.871 ms/op
+# Warmup Iteration   5: 5698.872 ms/op
+Iteration   1: 5973.023 ms/op
+Iteration   2: 6050.532 ms/op
+Iteration   3: 5847.266 ms/op
+Iteration   4: 5245.953 ms/op
+Iteration   5: 5425.193 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  5708.394 ±(99.9%) 1361.989 ms/op [Average]
+  (min, avg, max) = (5245.953, 5708.394, 6050.532), stdev = 353.704
+  CI (99.9%): [4346.405, 7070.382] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 1024, nKeys = 32, nValues = 2)
+
+# Run progress: 6.25% complete, ETA 02:15:43
+# Fork: 1 of 1
+# Warmup Iteration   1: 1.572 ms/op
+# Warmup Iteration   2: 1.383 ms/op
+# Warmup Iteration   3: 1.372 ms/op
+# Warmup Iteration   4: 1.375 ms/op
+# Warmup Iteration   5: 1.450 ms/op
+Iteration   1: 1.409 ms/op
+Iteration   2: 1.368 ms/op
+Iteration   3: 1.610 ms/op
+Iteration   4: 2.551 ms/op
+Iteration   5: 2.192 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1.826 ±(99.9%) 2.010 ms/op [Average]
+  (min, avg, max) = (1.368, 1.826, 2.551), stdev = 0.522
+  CI (99.9%): [? 0, 3.836] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 1024, nKeys = 32, nValues = 3)
+
+# Run progress: 6.42% complete, ETA 02:14:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 1.591 ms/op
+# Warmup Iteration   2: 1.401 ms/op
+# Warmup Iteration   3: 1.405 ms/op
+# Warmup Iteration   4: 1.383 ms/op
+# Warmup Iteration   5: 1.428 ms/op
+Iteration   1: 1.435 ms/op
+Iteration   2: 1.388 ms/op
+Iteration   3: 1.627 ms/op
+Iteration   4: 2.313 ms/op
+Iteration   5: 2.234 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1.799 ±(99.9%) 1.705 ms/op [Average]
+  (min, avg, max) = (1.388, 1.799, 2.313), stdev = 0.443
+  CI (99.9%): [0.095, 3.504] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 1024, nKeys = 1000, nValues = 2)
+
+# Run progress: 6.60% complete, ETA 02:13:02
+# Fork: 1 of 1
+# Warmup Iteration   1: 45.399 ms/op
+# Warmup Iteration   2: 40.765 ms/op
+# Warmup Iteration   3: 40.289 ms/op
+# Warmup Iteration   4: 42.091 ms/op
+# Warmup Iteration   5: 40.295 ms/op
+Iteration   1: 41.695 ms/op
+Iteration   2: 40.576 ms/op
+Iteration   3: 49.407 ms/op
+Iteration   4: 69.154 ms/op
+Iteration   5: 65.339 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  53.234 ±(99.9%) 51.229 ms/op [Average]
+  (min, avg, max) = (40.576, 53.234, 69.154), stdev = 13.304
+  CI (99.9%): [2.005, 104.463] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 1024, nKeys = 1000, nValues = 3)
+
+# Run progress: 6.77% complete, ETA 02:11:50
+# Fork: 1 of 1
+# Warmup Iteration   1: 45.418 ms/op
+# Warmup Iteration   2: 40.238 ms/op
+# Warmup Iteration   3: 41.176 ms/op
+# Warmup Iteration   4: 41.475 ms/op
+# Warmup Iteration   5: 39.881 ms/op
+Iteration   1: 42.025 ms/op
+Iteration   2: 39.413 ms/op
+Iteration   3: 53.746 ms/op
+Iteration   4: 72.843 ms/op
+Iteration   5: 64.886 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  54.582 ±(99.9%) 55.405 ms/op [Average]
+  (min, avg, max) = (39.413, 54.582, 72.843), stdev = 14.388
+  CI (99.9%): [? 0, 109.987] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 1024, nKeys = 100000, nValues = 2)
+
+# Run progress: 6.94% complete, ETA 02:10:42
+# Fork: 1 of 1
+# Warmup Iteration   1: 6476.121 ms/op
+# Warmup Iteration   2: 9292.183 ms/op
+# Warmup Iteration   3: 9318.232 ms/op
+# Warmup Iteration   4: 9802.140 ms/op
+# Warmup Iteration   5: 9581.354 ms/op
+Iteration   1: 9850.322 ms/op
+Iteration   2: 9629.316 ms/op
+Iteration   3: 9675.786 ms/op
+Iteration   4: 9323.035 ms/op
+Iteration   5: 9437.936 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  9583.279 ±(99.9%) 795.790 ms/op [Average]
+  (min, avg, max) = (9323.035, 9583.279, 9850.322), stdev = 206.664
+  CI (99.9%): [8787.489, 10379.069] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 1024, nKeys = 100000, nValues = 3)
+
+# Run progress: 7.12% complete, ETA 02:27:29
+# Fork: 1 of 1
+# Warmup Iteration   1: 6349.229 ms/op
+# Warmup Iteration   2: 9316.876 ms/op
+# Warmup Iteration   3: 9881.188 ms/op
+# Warmup Iteration   4: 9654.927 ms/op
+# Warmup Iteration   5: 9873.238 ms/op
+Iteration   1: 9867.890 ms/op
+Iteration   2: 9660.136 ms/op
+Iteration   3: 10020.088 ms/op
+Iteration   4: 9954.902 ms/op
+Iteration   5: 10188.938 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  9938.391 ±(99.9%) 750.919 ms/op [Average]
+  (min, avg, max) = (9660.136, 9938.391, 10188.938), stdev = 195.011
+  CI (99.9%): [9187.472, 10689.309] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 2048, nKeys = 32, nValues = 2)
+
+# Run progress: 7.29% complete, ETA 02:43:54
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.927 ms/op
+# Warmup Iteration   2: 2.765 ms/op
+# Warmup Iteration   3: 2.756 ms/op
+# Warmup Iteration   4: 2.747 ms/op
+# Warmup Iteration   5: 2.860 ms/op
+Iteration   1: 2.737 ms/op
+Iteration   2: 2.710 ms/op
+Iteration   3: 3.212 ms/op
+Iteration   4: 4.404 ms/op
+Iteration   5: 5.302 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  3.673 ±(99.9%) 4.392 ms/op [Average]
+  (min, avg, max) = (2.710, 3.673, 5.302), stdev = 1.141
+  CI (99.9%): [? 0, 8.065] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 2048, nKeys = 32, nValues = 3)
+
+# Run progress: 7.47% complete, ETA 02:41:57
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.047 ms/op
+# Warmup Iteration   2: 2.825 ms/op
+# Warmup Iteration   3: 2.782 ms/op
+# Warmup Iteration   4: 2.807 ms/op
+# Warmup Iteration   5: 2.876 ms/op
+Iteration   1: 2.766 ms/op
+Iteration   2: 2.813 ms/op
+Iteration   3: 3.391 ms/op
+Iteration   4: 4.482 ms/op
+Iteration   5: 5.095 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  3.709 ±(99.9%) 3.999 ms/op [Average]
+  (min, avg, max) = (2.766, 3.709, 5.095), stdev = 1.038
+  CI (99.9%): [? 0, 7.708] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 2048, nKeys = 1000, nValues = 2)
+
+# Run progress: 7.64% complete, ETA 02:40:05
+# Fork: 1 of 1
+# Warmup Iteration   1: 87.024 ms/op
+# Warmup Iteration   2: 81.748 ms/op
+# Warmup Iteration   3: 81.140 ms/op
+# Warmup Iteration   4: 80.082 ms/op
+# Warmup Iteration   5: 96.525 ms/op
+Iteration   1: 90.274 ms/op
+Iteration   2: 91.547 ms/op
+Iteration   3: 112.493 ms/op
+Iteration   4: 150.237 ms/op
+Iteration   5: 192.612 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  127.433 ±(99.9%) 168.509 ms/op [Average]
+  (min, avg, max) = (90.274, 127.433, 192.612), stdev = 43.761
+  CI (99.9%): [? 0, 295.941] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 2048, nKeys = 1000, nValues = 3)
+
+# Run progress: 7.81% complete, ETA 02:38:24
+# Fork: 1 of 1
+# Warmup Iteration   1: 91.814 ms/op
+# Warmup Iteration   2: 86.739 ms/op
+# Warmup Iteration   3: 85.776 ms/op
+# Warmup Iteration   4: 83.942 ms/op
+# Warmup Iteration   5: 85.435 ms/op
+Iteration   1: 84.165 ms/op
+Iteration   2: 84.938 ms/op
+Iteration   3: 102.822 ms/op
+Iteration   4: 114.538 ms/op
+Iteration   5: 110.705 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  99.434 ±(99.9%) 54.792 ms/op [Average]
+  (min, avg, max) = (84.165, 99.434, 114.538), stdev = 14.229
+  CI (99.9%): [44.641, 154.226] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 2048, nKeys = 100000, nValues = 2)
+
+# Run progress: 7.99% complete, ETA 02:36:46
+# Fork: 1 of 1
+# Warmup Iteration   1: 17115.136 ms/op
+# Warmup Iteration   2: 22303.516 ms/op
+# Warmup Iteration   3: 19916.786 ms/op
+# Warmup Iteration   4: 19959.278 ms/op
+# Warmup Iteration   5: 19626.988 ms/op
+Iteration   1: 18353.132 ms/op
+Iteration   2: 17050.547 ms/op
+Iteration   3: 17218.793 ms/op
+Iteration   4: 18719.384 ms/op
+Iteration   5: 21504.463 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  18569.264 ±(99.9%) 6892.254 ms/op [Average]
+  (min, avg, max) = (17050.547, 18569.264, 21504.463), stdev = 1789.896
+  CI (99.9%): [11677.010, 25461.518] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 2048, nKeys = 100000, nValues = 3)
+
+# Run progress: 8.16% complete, ETA 03:09:13
+# Fork: 1 of 1
+# Warmup Iteration   1: 18047.798 ms/op
+# Warmup Iteration   2: 21168.336 ms/op
+# Warmup Iteration   3: 20909.312 ms/op
+# Warmup Iteration   4: 19160.260 ms/op
+# Warmup Iteration   5: 16863.570 ms/op
+Iteration   1: 16824.082 ms/op
+Iteration   2: 17253.261 ms/op
+Iteration   3: 17571.597 ms/op
+Iteration   4: 17623.447 ms/op
+Iteration   5: 17157.592 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  17285.996 ±(99.9%) 1257.171 ms/op [Average]
+  (min, avg, max) = (16824.082, 17285.996, 17623.447), stdev = 326.483
+  CI (99.9%): [16028.825, 18543.167] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 4096, nKeys = 32, nValues = 2)
+
+# Run progress: 8.33% complete, ETA 03:38:30
+# Fork: 1 of 1
+# Warmup Iteration   1: 6.690 ms/op
+# Warmup Iteration   2: 6.306 ms/op
+# Warmup Iteration   3: 6.337 ms/op
+# Warmup Iteration   4: 6.247 ms/op
+# Warmup Iteration   5: 6.216 ms/op
+Iteration   1: 6.281 ms/op
+Iteration   2: 6.180 ms/op
+Iteration   3: 6.911 ms/op
+Iteration   4: 9.086 ms/op
+Iteration   5: 10.268 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  7.745 ±(99.9%) 7.063 ms/op [Average]
+  (min, avg, max) = (6.180, 7.745, 10.268), stdev = 1.834
+  CI (99.9%): [0.683, 14.808] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 4096, nKeys = 32, nValues = 3)
+
+# Run progress: 8.51% complete, ETA 03:35:31
+# Fork: 1 of 1
+# Warmup Iteration   1: 7.006 ms/op
+# Warmup Iteration   2: 6.673 ms/op
+# Warmup Iteration   3: 5.747 ms/op
+# Warmup Iteration   4: 5.750 ms/op
+# Warmup Iteration   5: 5.859 ms/op
+Iteration   1: 5.854 ms/op
+Iteration   2: 5.899 ms/op
+Iteration   3: 6.407 ms/op
+Iteration   4: 7.306 ms/op
+Iteration   5: 6.850 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  6.463 ±(99.9%) 2.400 ms/op [Average]
+  (min, avg, max) = (5.854, 6.463, 7.306), stdev = 0.623
+  CI (99.9%): [4.063, 8.863] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 4096, nKeys = 1000, nValues = 2)
+
+# Run progress: 8.68% complete, ETA 03:32:39
+# Fork: 1 of 1
+# Warmup Iteration   1: 188.563 ms/op
+# Warmup Iteration   2: 201.883 ms/op
+# Warmup Iteration   3: 177.909 ms/op
+# Warmup Iteration   4: 189.935 ms/op
+# Warmup Iteration   5: 217.559 ms/op
+Iteration   1: 218.120 ms/op
+Iteration   2: 227.047 ms/op
+Iteration   3: 350.555 ms/op
+Iteration   4: 336.675 ms/op
+Iteration   5: 292.865 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  285.052 ±(99.9%) 234.709 ms/op [Average]
+  (min, avg, max) = (218.120, 285.052, 350.555), stdev = 60.953
+  CI (99.9%): [50.344, 519.761] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 4096, nKeys = 1000, nValues = 3)
+
+# Run progress: 8.85% complete, ETA 03:30:04
+# Fork: 1 of 1
+# Warmup Iteration   1: 196.871 ms/op
+# Warmup Iteration   2: 173.407 ms/op
+# Warmup Iteration   3: 169.838 ms/op
+# Warmup Iteration   4: 183.286 ms/op
+# Warmup Iteration   5: 173.768 ms/op
+Iteration   1: 181.980 ms/op
+Iteration   2: 171.660 ms/op
+Iteration   3: 287.401 ms/op
+Iteration   4: 301.520 ms/op
+Iteration   5: 312.411 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  250.994 ±(99.9%) 263.335 ms/op [Average]
+  (min, avg, max) = (171.660, 250.994, 312.411), stdev = 68.387
+  CI (99.9%): [? 0, 514.329] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 4096, nKeys = 100000, nValues = 2)
+
+# Run progress: 9.03% complete, ETA 03:27:34
+# Fork: 1 of 1
+# Warmup Iteration   1: 41906.801 ms/op
+# Warmup Iteration   2: 46130.237 ms/op
+# Warmup Iteration   3: 47052.594 ms/op
+# Warmup Iteration   4: 45683.965 ms/op
+# Warmup Iteration   5: 45863.140 ms/op
+Iteration   1: 46526.760 ms/op
+Iteration   2: 43492.428 ms/op
+Iteration   3: 42601.158 ms/op
+Iteration   4: 45495.080 ms/op
+Iteration   5: 48155.858 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  45254.256 ±(99.9%) 8661.707 ms/op [Average]
+  (min, avg, max) = (42601.158, 45254.256, 48155.858), stdev = 2249.418
+  CI (99.9%): [36592.550, 53915.963] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 4096, nKeys = 100000, nValues = 3)
+
+# Run progress: 9.20% complete, ETA 04:37:51
+# Fork: 1 of 1
+# Warmup Iteration   1: 42725.603 ms/op
+# Warmup Iteration   2: 48158.764 ms/op
+# Warmup Iteration   3: 47778.009 ms/op
+# Warmup Iteration   4: 48652.666 ms/op
+# Warmup Iteration   5: 40199.351 ms/op
+Iteration   1: 46949.941 ms/op
+Iteration   2: 44453.500 ms/op
+Iteration   3: 46457.472 ms/op
+Iteration   4: 43525.807 ms/op
+Iteration   5: 46817.411 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  45640.826 ±(99.9%) 5980.317 ms/op [Average]
+  (min, avg, max) = (43525.807, 45640.826, 46949.941), stdev = 1553.069
+  CI (99.9%): [39660.509, 51621.143] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 8192, nKeys = 32, nValues = 2)
+
+# Run progress: 9.38% complete, ETA 05:45:42
+# Fork: 1 of 1
+# Warmup Iteration   1: 12.701 ms/op
+# Warmup Iteration   2: 11.447 ms/op
+# Warmup Iteration   3: 11.591 ms/op
+# Warmup Iteration   4: 11.688 ms/op
+# Warmup Iteration   5: 11.976 ms/op
+Iteration   1: 11.599 ms/op
+Iteration   2: 11.408 ms/op
+Iteration   3: 14.120 ms/op
+Iteration   4: 21.689 ms/op
+Iteration   5: 24.162 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  16.596 ±(99.9%) 22.878 ms/op [Average]
+  (min, avg, max) = (11.408, 16.596, 24.162), stdev = 5.941
+  CI (99.9%): [? 0, 39.474] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 8192, nKeys = 32, nValues = 3)
+
+# Run progress: 9.55% complete, ETA 05:40:26
+# Fork: 1 of 1
+# Warmup Iteration   1: 13.120 ms/op
+# Warmup Iteration   2: 11.925 ms/op
+# Warmup Iteration   3: 11.943 ms/op
+# Warmup Iteration   4: 11.953 ms/op
+# Warmup Iteration   5: 12.193 ms/op
+Iteration   1: 12.241 ms/op
+Iteration   2: 11.924 ms/op
+Iteration   3: 14.942 ms/op
+Iteration   4: 22.150 ms/op
+Iteration   5: 21.817 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  16.615 ±(99.9%) 19.410 ms/op [Average]
+  (min, avg, max) = (11.924, 16.615, 22.150), stdev = 5.041
+  CI (99.9%): [? 0, 36.025] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 8192, nKeys = 1000, nValues = 2)
+
+# Run progress: 9.72% complete, ETA 05:35:20
+# Fork: 1 of 1
+# Warmup Iteration   1: 378.362 ms/op
+# Warmup Iteration   2: 346.527 ms/op
+# Warmup Iteration   3: 350.720 ms/op
+# Warmup Iteration   4: 367.849 ms/op
+# Warmup Iteration   5: 367.112 ms/op
+Iteration   1: 351.885 ms/op
+Iteration   2: 345.562 ms/op
+Iteration   3: 542.813 ms/op
+Iteration   4: 657.580 ms/op
+Iteration   5: 724.594 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  524.487 ±(99.9%) 666.667 ms/op [Average]
+  (min, avg, max) = (345.562, 524.487, 724.594), stdev = 173.131
+  CI (99.9%): [? 0, 1191.154] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 8192, nKeys = 1000, nValues = 3)
+
+# Run progress: 9.90% complete, ETA 05:30:36
+# Fork: 1 of 1
+# Warmup Iteration   1: 367.012 ms/op
+# Warmup Iteration   2: 344.550 ms/op
+# Warmup Iteration   3: 343.487 ms/op
+# Warmup Iteration   4: 343.471 ms/op
+# Warmup Iteration   5: 358.556 ms/op
+Iteration   1: 338.012 ms/op
+Iteration   2: 340.890 ms/op
+Iteration   3: 540.723 ms/op
+Iteration   4: 651.226 ms/op
+Iteration   5: 601.560 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  494.482 ±(99.9%) 565.422 ms/op [Average]
+  (min, avg, max) = (338.012, 494.482, 651.226), stdev = 146.838
+  CI (99.9%): [? 0, 1059.904] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 8192, nKeys = 100000, nValues = 2)
+
+# Run progress: 10.07% complete, ETA 05:26:02
+# Fork: 1 of 1
+# Warmup Iteration   1: 85821.265 ms/op
+# Warmup Iteration   2: 91247.750 ms/op
+# Warmup Iteration   3: 82159.016 ms/op
+# Warmup Iteration   4: 81928.069 ms/op
+# Warmup Iteration   5: 92339.876 ms/op
+Iteration   1: 93178.447 ms/op
+Iteration   2: 94581.602 ms/op
+Iteration   3: 91016.072 ms/op
+Iteration   4: 85165.724 ms/op
+Iteration   5: 81770.042 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  89142.377 ±(99.9%) 21051.338 ms/op [Average]
+  (min, avg, max) = (81770.042, 89142.377, 94581.602), stdev = 5466.966
+  CI (99.9%): [68091.040, 110193.715] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 8192, nKeys = 100000, nValues = 3)
+
+# Run progress: 10.24% complete, ETA 07:28:22
+# Fork: 1 of 1
+# Warmup Iteration   1: 77514.891 ms/op
+# Warmup Iteration   2: 84036.041 ms/op
+# Warmup Iteration   3: 81702.430 ms/op
+# Warmup Iteration   4: 82969.334 ms/op
+# Warmup Iteration   5: 82345.260 ms/op
+Iteration   1: 82359.728 ms/op
+Iteration   2: 81485.293 ms/op
+Iteration   3: 80879.549 ms/op
+Iteration   4: 80437.250 ms/op
+Iteration   5: 79012.407 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  80834.846 ±(99.9%) 4805.487 ms/op [Average]
+  (min, avg, max) = (79012.407, 80834.846, 82359.728), stdev = 1247.970
+  CI (99.9%): [76029.359, 85640.332] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16384, nKeys = 32, nValues = 2)
+
+# Run progress: 10.42% complete, ETA 09:16:37
+# Fork: 1 of 1
+# Warmup Iteration   1: 24.549 ms/op
+# Warmup Iteration   2: 23.112 ms/op
+# Warmup Iteration   3: 22.551 ms/op
+# Warmup Iteration   4: 22.738 ms/op
+# Warmup Iteration   5: 22.468 ms/op
+Iteration   1: 22.633 ms/op
+Iteration   2: 23.114 ms/op
+Iteration   3: 25.822 ms/op
+Iteration   4: 37.422 ms/op
+Iteration   5: 39.721 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  29.742 ±(99.9%) 31.543 ms/op [Average]
+  (min, avg, max) = (22.633, 29.742, 39.721), stdev = 8.192
+  CI (99.9%): [? 0, 61.286] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16384, nKeys = 32, nValues = 3)
+
+# Run progress: 10.59% complete, ETA 09:07:56
+# Fork: 1 of 1
+# Warmup Iteration   1: 24.618 ms/op
+# Warmup Iteration   2: 23.199 ms/op
+# Warmup Iteration   3: 22.724 ms/op
+# Warmup Iteration   4: 22.455 ms/op
+# Warmup Iteration   5: 22.398 ms/op
+Iteration   1: 22.978 ms/op
+Iteration   2: 24.489 ms/op
+Iteration   3: 29.328 ms/op
+Iteration   4: 37.286 ms/op
+Iteration   5: 38.213 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  30.459 ±(99.9%) 27.202 ms/op [Average]
+  (min, avg, max) = (22.978, 30.459, 38.213), stdev = 7.064
+  CI (99.9%): [3.256, 57.661] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16384, nKeys = 1000, nValues = 2)
+
+# Run progress: 10.76% complete, ETA 08:59:31
+# Fork: 1 of 1
+# Warmup Iteration   1: 716.695 ms/op
+# Warmup Iteration   2: 691.721 ms/op
+# Warmup Iteration   3: 686.392 ms/op
+# Warmup Iteration   4: 679.882 ms/op
+# Warmup Iteration   5: 681.535 ms/op
+Iteration   1: 763.345 ms/op
+Iteration   2: 798.082 ms/op
+Iteration   3: 786.155 ms/op
+Iteration   4: 838.415 ms/op
+Iteration   5: 918.206 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  820.841 ±(99.9%) 234.349 ms/op [Average]
+  (min, avg, max) = (763.345, 820.841, 918.206), stdev = 60.860
+  CI (99.9%): [586.491, 1055.190] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16384, nKeys = 1000, nValues = 3)
+
+# Run progress: 10.94% complete, ETA 08:52:01
+# Fork: 1 of 1
+# Warmup Iteration   1: 733.811 ms/op
+# Warmup Iteration   2: 714.015 ms/op
+# Warmup Iteration   3: 692.725 ms/op
+# Warmup Iteration   4: 721.288 ms/op
+# Warmup Iteration   5: 734.297 ms/op
+Iteration   1: 1005.611 ms/op
+Iteration   2: 1039.224 ms/op
+Iteration   3: 1104.893 ms/op
+Iteration   4: 1316.885 ms/op
+Iteration   5: 1184.228 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  1130.168 ±(99.9%) 480.212 ms/op [Average]
+  (min, avg, max) = (1005.611, 1130.168, 1316.885), stdev = 124.709
+  CI (99.9%): [649.956, 1610.380] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16384, nKeys = 100000, nValues = 2)
+
+# Run progress: 11.11% complete, ETA 08:44:43
+# Fork: 1 of 1
+# Warmup Iteration   1: 158338.457 ms/op
+# Warmup Iteration   2: 163762.307 ms/op
+# Warmup Iteration   3: 166324.830 ms/op
+# Warmup Iteration   4: 163812.276 ms/op
+# Warmup Iteration   5: 162758.611 ms/op
+Iteration   1: 163952.355 ms/op
+Iteration   2: 162757.875 ms/op
+Iteration   3: 163026.559 ms/op
+Iteration   4: 161662.446 ms/op
+Iteration   5: 163841.662 ms/op
+
+
+Result "tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark":
+  163048.179 ±(99.9%) 3577.241 ms/op [Average]
+  (min, avg, max) = (161662.446, 163048.179, 163952.355), stdev = 928.998
+  CI (99.9%): [159470.939, 166625.420] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getdiffcursor.ImmutableGetDiffCursorBenchmark.baselineGetDiffCursorAndCommitBenchmark
+# Parameters: (nCommit = 10, nGetDiffCursor = 16384, nKeys = 100000, nValues = 3)
+
+# Run progress: 11.28% complete, ETA 12:09:19
+# Fork: 1 of 1
+# Warmup Iteration   1: 158783.373 ms/op
+# Warmup Iteration   2: 161903.887 ms/op
+# Warmup Iteration   3: 164232.880 ms/op
+# Warmup Iteration   4: 158683.813 ms/op
+# Warmup Iteration   5: 159549.735 ms/op
+Iteration   1: 158393.125 ms/op
+Iteration   2: 161021.837 ms/op
+Iteration   3: Terminate batch job (Y/N)? 

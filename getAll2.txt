@@ -1,0 +1,2293 @@
+Type-safe dependency accessors is an incubating feature.
+> Task :buildSrc:extractPluginRequests UP-TO-DATE
+> Task :buildSrc:generatePluginAdapters UP-TO-DATE
+> Task :buildSrc:compileJava UP-TO-DATE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:compileGroovyPlugins UP-TO-DATE
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+> Task :buildSrc:processResources UP-TO-DATE
+> Task :buildSrc:classes UP-TO-DATE
+> Task :buildSrc:jar UP-TO-DATE
+> Task :buildSrc:assemble UP-TO-DATE
+> Task :buildSrc:pluginUnderTestMetadata UP-TO-DATE
+> Task :buildSrc:compileTestJava NO-SOURCE
+> Task :buildSrc:compileTestGroovy NO-SOURCE
+> Task :buildSrc:processTestResources NO-SOURCE
+> Task :buildSrc:testClasses UP-TO-DATE
+> Task :buildSrc:test NO-SOURCE
+> Task :buildSrc:validatePlugins UP-TO-DATE
+> Task :buildSrc:check UP-TO-DATE
+> Task :buildSrc:build UP-TO-DATE
+> Task :refinery-store:compileJava UP-TO-DATE
+> Task :refinery-store:processResources NO-SOURCE
+> Task :refinery-store:classes UP-TO-DATE
+> Task :refinery-store:compileTestJava UP-TO-DATE
+> Task :refinery-store:processTestResources NO-SOURCE
+> Task :refinery-store:testClasses UP-TO-DATE
+> Task :refinery-store:compileJmhJava
+> Task :refinery-store:processJmhResources NO-SOURCE
+> Task :refinery-store:jmhClasses
+
+> Task :refinery-store:jmh
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16, nKeys = 32, nValues = 2)
+
+# Run progress: 0.00% complete, ETA 00:11:00
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.181 ns/op
+# Warmup Iteration   2: 3.060 ns/op
+# Warmup Iteration   3: 3.223 ns/op
+# Warmup Iteration   4: 2.871 ns/op
+# Warmup Iteration   5: 2.918 ns/op
+Iteration   1: 3.244 ns/op
+Iteration   2: 2.781 ns/op
+Iteration   3: 3.088 ns/op
+Iteration   4: 3.866 ns/op
+Iteration   5: 4.409 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.478 ±(99.9%) 2.517 ns/op [Average]
+  (min, avg, max) = (2.781, 3.478, 4.409), stdev = 0.654
+  CI (99.9%): [0.961, 5.995] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16, nKeys = 32, nValues = 3)
+
+# Run progress: 1.52% complete, ETA 00:11:25
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.965 ns/op
+# Warmup Iteration   2: 2.989 ns/op
+# Warmup Iteration   3: 2.921 ns/op
+# Warmup Iteration   4: 2.872 ns/op
+# Warmup Iteration   5: 2.758 ns/op
+Iteration   1: 2.643 ns/op
+Iteration   2: 2.637 ns/op
+Iteration   3: 3.201 ns/op
+Iteration   4: 4.526 ns/op
+Iteration   5: 4.731 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.547 ±(99.9%) 3.910 ns/op [Average]
+  (min, avg, max) = (2.637, 3.547, 4.731), stdev = 1.016
+  CI (99.9%): [? 0, 7.458] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16, nKeys = 1000, nValues = 2)
+
+# Run progress: 3.03% complete, ETA 00:11:12
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.943 ns/op
+# Warmup Iteration   2: 3.005 ns/op
+# Warmup Iteration   3: 2.625 ns/op
+# Warmup Iteration   4: 2.804 ns/op
+# Warmup Iteration   5: 2.636 ns/op
+Iteration   1: 2.637 ns/op
+Iteration   2: 2.651 ns/op
+Iteration   3: 3.081 ns/op
+Iteration   4: 4.134 ns/op
+Iteration   5: 4.676 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.436 ±(99.9%) 3.554 ns/op [Average]
+  (min, avg, max) = (2.637, 3.436, 4.676), stdev = 0.923
+  CI (99.9%): [? 0, 6.989] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16, nKeys = 1000, nValues = 3)
+
+# Run progress: 4.55% complete, ETA 00:11:00
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.913 ns/op
+# Warmup Iteration   2: 3.020 ns/op
+# Warmup Iteration   3: 2.632 ns/op
+# Warmup Iteration   4: 2.707 ns/op
+# Warmup Iteration   5: 2.809 ns/op
+Iteration   1: 2.667 ns/op
+Iteration   2: 2.631 ns/op
+Iteration   3: 2.945 ns/op
+Iteration   4: 4.096 ns/op
+Iteration   5: 4.255 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.319 ±(99.9%) 3.055 ns/op [Average]
+  (min, avg, max) = (2.631, 3.319, 4.255), stdev = 0.793
+  CI (99.9%): [0.264, 6.374] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16, nKeys = 100000, nValues = 2)
+
+# Run progress: 6.06% complete, ETA 00:10:48
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.964 ns/op
+# Warmup Iteration   2: 2.910 ns/op
+# Warmup Iteration   3: 2.643 ns/op
+# Warmup Iteration   4: 2.657 ns/op
+# Warmup Iteration   5: 2.705 ns/op
+Iteration   1: 2.838 ns/op
+Iteration   2: 2.742 ns/op
+Iteration   3: 2.998 ns/op
+Iteration   4: 4.063 ns/op
+Iteration   5: 4.299 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.388 ±(99.9%) 2.828 ns/op [Average]
+  (min, avg, max) = (2.742, 3.388, 4.299), stdev = 0.734
+  CI (99.9%): [0.560, 6.216] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16, nKeys = 100000, nValues = 3)
+
+# Run progress: 7.58% complete, ETA 00:10:39
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.959 ns/op
+# Warmup Iteration   2: 2.978 ns/op
+# Warmup Iteration   3: 2.659 ns/op
+# Warmup Iteration   4: 2.666 ns/op
+# Warmup Iteration   5: 2.823 ns/op
+Iteration   1: 2.824 ns/op
+Iteration   2: 2.684 ns/op
+Iteration   3: 3.081 ns/op
+Iteration   4: 3.762 ns/op
+Iteration   5: 4.544 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.379 ±(99.9%) 2.972 ns/op [Average]
+  (min, avg, max) = (2.684, 3.379, 4.544), stdev = 0.772
+  CI (99.9%): [0.407, 6.351] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 32, nKeys = 32, nValues = 2)
+
+# Run progress: 9.09% complete, ETA 00:10:29
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.949 ns/op
+# Warmup Iteration   2: 2.945 ns/op
+# Warmup Iteration   3: 2.618 ns/op
+# Warmup Iteration   4: 2.668 ns/op
+# Warmup Iteration   5: 2.660 ns/op
+Iteration   1: 2.654 ns/op
+Iteration   2: 2.871 ns/op
+Iteration   3: 3.069 ns/op
+Iteration   4: 3.811 ns/op
+Iteration   5: 4.048 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.291 ±(99.9%) 2.339 ns/op [Average]
+  (min, avg, max) = (2.654, 3.291, 4.048), stdev = 0.607
+  CI (99.9%): [0.952, 5.630] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 32, nKeys = 32, nValues = 3)
+
+# Run progress: 10.61% complete, ETA 00:10:18
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.936 ns/op
+# Warmup Iteration   2: 3.003 ns/op
+# Warmup Iteration   3: 2.660 ns/op
+# Warmup Iteration   4: 2.659 ns/op
+# Warmup Iteration   5: 2.656 ns/op
+Iteration   1: 2.607 ns/op
+Iteration   2: 2.795 ns/op
+Iteration   3: 3.062 ns/op
+Iteration   4: 3.976 ns/op
+Iteration   5: 4.179 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.324 ±(99.9%) 2.736 ns/op [Average]
+  (min, avg, max) = (2.607, 3.324, 4.179), stdev = 0.710
+  CI (99.9%): [0.588, 6.060] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 32, nKeys = 1000, nValues = 2)
+
+# Run progress: 12.12% complete, ETA 00:10:07
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.010 ns/op
+# Warmup Iteration   2: 3.098 ns/op
+# Warmup Iteration   3: 2.834 ns/op
+# Warmup Iteration   4: 2.603 ns/op
+# Warmup Iteration   5: 2.641 ns/op
+Iteration   1: 2.652 ns/op
+Iteration   2: 2.659 ns/op
+Iteration   3: 3.438 ns/op
+Iteration   4: 4.180 ns/op
+Iteration   5: 4.159 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.418 ±(99.9%) 2.916 ns/op [Average]
+  (min, avg, max) = (2.652, 3.418, 4.180), stdev = 0.757
+  CI (99.9%): [0.502, 6.334] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 32, nKeys = 1000, nValues = 3)
+
+# Run progress: 13.64% complete, ETA 00:09:56
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.970 ns/op
+# Warmup Iteration   2: 3.012 ns/op
+# Warmup Iteration   3: 2.640 ns/op
+# Warmup Iteration   4: 2.607 ns/op
+# Warmup Iteration   5: 2.635 ns/op
+Iteration   1: 2.619 ns/op
+Iteration   2: 2.812 ns/op
+Iteration   3: 3.192 ns/op
+Iteration   4: 5.179 ns/op
+Iteration   5: 4.189 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.598 ±(99.9%) 4.125 ns/op [Average]
+  (min, avg, max) = (2.619, 3.598, 5.179), stdev = 1.071
+  CI (99.9%): [? 0, 7.723] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 32, nKeys = 100000, nValues = 2)
+
+# Run progress: 15.15% complete, ETA 00:09:46
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.097 ns/op
+# Warmup Iteration   2: 2.996 ns/op
+# Warmup Iteration   3: 2.676 ns/op
+# Warmup Iteration   4: 2.811 ns/op
+# Warmup Iteration   5: 2.922 ns/op
+Iteration   1: 2.979 ns/op
+Iteration   2: 2.718 ns/op
+Iteration   3: 3.154 ns/op
+Iteration   4: 5.247 ns/op
+Iteration   5: 4.429 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.705 ±(99.9%) 4.178 ns/op [Average]
+  (min, avg, max) = (2.718, 3.705, 5.247), stdev = 1.085
+  CI (99.9%): [? 0, 7.883] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 32, nKeys = 100000, nValues = 3)
+
+# Run progress: 16.67% complete, ETA 00:09:36
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.052 ns/op
+# Warmup Iteration   2: 3.147 ns/op
+# Warmup Iteration   3: 2.639 ns/op
+# Warmup Iteration   4: 2.800 ns/op
+# Warmup Iteration   5: 2.784 ns/op
+Iteration   1: 2.734 ns/op
+Iteration   2: 2.661 ns/op
+Iteration   3: 3.381 ns/op
+Iteration   4: 4.504 ns/op
+Iteration   5: 4.366 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.529 ±(99.9%) 3.366 ns/op [Average]
+  (min, avg, max) = (2.661, 3.529, 4.504), stdev = 0.874
+  CI (99.9%): [0.163, 6.895] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 64, nKeys = 32, nValues = 2)
+
+# Run progress: 18.18% complete, ETA 00:09:26
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.065 ns/op
+# Warmup Iteration   2: 3.226 ns/op
+# Warmup Iteration   3: 2.662 ns/op
+# Warmup Iteration   4: 2.728 ns/op
+# Warmup Iteration   5: 2.704 ns/op
+Iteration   1: 3.054 ns/op
+Iteration   2: 2.727 ns/op
+Iteration   3: 3.071 ns/op
+Iteration   4: 4.739 ns/op
+Iteration   5: 4.405 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.599 ±(99.9%) 3.489 ns/op [Average]
+  (min, avg, max) = (2.727, 3.599, 4.739), stdev = 0.906
+  CI (99.9%): [0.110, 7.088] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 64, nKeys = 32, nValues = 3)
+
+# Run progress: 19.70% complete, ETA 00:09:15
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.007 ns/op
+# Warmup Iteration   2: 3.083 ns/op
+# Warmup Iteration   3: 2.692 ns/op
+# Warmup Iteration   4: 2.739 ns/op
+# Warmup Iteration   5: 2.691 ns/op
+Iteration   1: 2.728 ns/op
+Iteration   2: 2.688 ns/op
+Iteration   3: 3.108 ns/op
+Iteration   4: 4.820 ns/op
+Iteration   5: 3.954 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.459 ±(99.9%) 3.523 ns/op [Average]
+  (min, avg, max) = (2.688, 3.459, 4.820), stdev = 0.915
+  CI (99.9%): [? 0, 6.983] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 64, nKeys = 1000, nValues = 2)
+
+# Run progress: 21.21% complete, ETA 00:09:04
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.070 ns/op
+# Warmup Iteration   2: 3.027 ns/op
+# Warmup Iteration   3: 2.710 ns/op
+# Warmup Iteration   4: 2.743 ns/op
+# Warmup Iteration   5: 2.716 ns/op
+Iteration   1: 2.709 ns/op
+Iteration   2: 2.705 ns/op
+Iteration   3: 3.161 ns/op
+Iteration   4: 4.242 ns/op
+Iteration   5: 4.783 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.520 ±(99.9%) 3.636 ns/op [Average]
+  (min, avg, max) = (2.705, 3.520, 4.783), stdev = 0.944
+  CI (99.9%): [? 0, 7.156] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 64, nKeys = 1000, nValues = 3)
+
+# Run progress: 22.73% complete, ETA 00:08:54
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.988 ns/op
+# Warmup Iteration   2: 3.069 ns/op
+# Warmup Iteration   3: 2.659 ns/op
+# Warmup Iteration   4: 2.711 ns/op
+# Warmup Iteration   5: 2.716 ns/op
+Iteration   1: 2.679 ns/op
+Iteration   2: 2.691 ns/op
+Iteration   3: 3.174 ns/op
+Iteration   4: 4.048 ns/op
+Iteration   5: 4.676 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.453 ±(99.9%) 3.394 ns/op [Average]
+  (min, avg, max) = (2.679, 3.453, 4.676), stdev = 0.881
+  CI (99.9%): [0.060, 6.847] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 64, nKeys = 100000, nValues = 2)
+
+# Run progress: 24.24% complete, ETA 00:08:44
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.491 ns/op
+# Warmup Iteration   2: 3.151 ns/op
+# Warmup Iteration   3: 2.839 ns/op
+# Warmup Iteration   4: 2.865 ns/op
+# Warmup Iteration   5: 2.922 ns/op
+Iteration   1: 2.863 ns/op
+Iteration   2: 2.837 ns/op
+Iteration   3: 3.402 ns/op
+Iteration   4: 4.747 ns/op
+Iteration   5: 4.690 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.708 ±(99.9%) 3.658 ns/op [Average]
+  (min, avg, max) = (2.837, 3.708, 4.747), stdev = 0.950
+  CI (99.9%): [0.050, 7.365] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 64, nKeys = 100000, nValues = 3)
+
+# Run progress: 25.76% complete, ETA 00:08:33
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.064 ns/op
+# Warmup Iteration   2: 3.229 ns/op
+# Warmup Iteration   3: 2.648 ns/op
+# Warmup Iteration   4: 2.754 ns/op
+# Warmup Iteration   5: 2.695 ns/op
+Iteration   1: 2.645 ns/op
+Iteration   2: 2.708 ns/op
+Iteration   3: 3.722 ns/op
+Iteration   4: 4.344 ns/op
+Iteration   5: 4.331 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.550 ±(99.9%) 3.221 ns/op [Average]
+  (min, avg, max) = (2.645, 3.550, 4.344), stdev = 0.837
+  CI (99.9%): [0.329, 6.771] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 128, nKeys = 32, nValues = 2)
+
+# Run progress: 27.27% complete, ETA 00:08:24
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.981 ns/op
+# Warmup Iteration   2: 3.027 ns/op
+# Warmup Iteration   3: 2.647 ns/op
+# Warmup Iteration   4: 2.683 ns/op
+# Warmup Iteration   5: 2.810 ns/op
+Iteration   1: 2.695 ns/op
+Iteration   2: 2.684 ns/op
+Iteration   3: 3.022 ns/op
+Iteration   4: 3.958 ns/op
+Iteration   5: 4.568 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.385 ±(99.9%) 3.238 ns/op [Average]
+  (min, avg, max) = (2.684, 3.385, 4.568), stdev = 0.841
+  CI (99.9%): [0.147, 6.623] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 128, nKeys = 32, nValues = 3)
+
+# Run progress: 28.79% complete, ETA 00:08:13
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.020 ns/op
+# Warmup Iteration   2: 2.991 ns/op
+# Warmup Iteration   3: 2.672 ns/op
+# Warmup Iteration   4: 2.704 ns/op
+# Warmup Iteration   5: 2.730 ns/op
+Iteration   1: 2.699 ns/op
+Iteration   2: 2.681 ns/op
+Iteration   3: 3.155 ns/op
+Iteration   4: 4.512 ns/op
+Iteration   5: 4.237 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.457 ±(99.9%) 3.329 ns/op [Average]
+  (min, avg, max) = (2.681, 3.457, 4.512), stdev = 0.864
+  CI (99.9%): [0.128, 6.785] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 128, nKeys = 1000, nValues = 2)
+
+# Run progress: 30.30% complete, ETA 00:08:03
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.971 ns/op
+# Warmup Iteration   2: 3.058 ns/op
+# Warmup Iteration   3: 2.700 ns/op
+# Warmup Iteration   4: 2.673 ns/op
+# Warmup Iteration   5: 2.808 ns/op
+Iteration   1: 2.657 ns/op
+Iteration   2: 2.670 ns/op
+Iteration   3: 3.249 ns/op
+Iteration   4: 3.842 ns/op
+Iteration   5: 4.393 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.362 ±(99.9%) 2.909 ns/op [Average]
+  (min, avg, max) = (2.657, 3.362, 4.393), stdev = 0.755
+  CI (99.9%): [0.453, 6.271] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 128, nKeys = 1000, nValues = 3)
+
+# Run progress: 31.82% complete, ETA 00:07:52
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.051 ns/op
+# Warmup Iteration   2: 2.990 ns/op
+# Warmup Iteration   3: 2.700 ns/op
+# Warmup Iteration   4: 2.706 ns/op
+# Warmup Iteration   5: 2.709 ns/op
+Iteration   1: 2.709 ns/op
+Iteration   2: 2.678 ns/op
+Iteration   3: 3.212 ns/op
+Iteration   4: 3.854 ns/op
+Iteration   5: 4.048 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.300 ±(99.9%) 2.443 ns/op [Average]
+  (min, avg, max) = (2.678, 3.300, 4.048), stdev = 0.634
+  CI (99.9%): [0.857, 5.743] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 128, nKeys = 100000, nValues = 2)
+
+# Run progress: 33.33% complete, ETA 00:07:42
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.022 ns/op
+# Warmup Iteration   2: 2.966 ns/op
+# Warmup Iteration   3: 2.664 ns/op
+# Warmup Iteration   4: 2.689 ns/op
+# Warmup Iteration   5: 2.754 ns/op
+Iteration   1: 2.700 ns/op
+Iteration   2: 2.691 ns/op
+Iteration   3: 3.551 ns/op
+Iteration   4: 4.754 ns/op
+Iteration   5: 4.230 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.585 ±(99.9%) 3.532 ns/op [Average]
+  (min, avg, max) = (2.691, 3.585, 4.754), stdev = 0.917
+  CI (99.9%): [0.053, 7.117] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 128, nKeys = 100000, nValues = 3)
+
+# Run progress: 34.85% complete, ETA 00:07:31
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.984 ns/op
+# Warmup Iteration   2: 3.053 ns/op
+# Warmup Iteration   3: 2.680 ns/op
+# Warmup Iteration   4: 2.691 ns/op
+# Warmup Iteration   5: 2.758 ns/op
+Iteration   1: 2.675 ns/op
+Iteration   2: 2.723 ns/op
+Iteration   3: 3.374 ns/op
+Iteration   4: 4.330 ns/op
+Iteration   5: 4.020 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.425 ±(99.9%) 2.876 ns/op [Average]
+  (min, avg, max) = (2.675, 3.425, 4.330), stdev = 0.747
+  CI (99.9%): [0.549, 6.300] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 256, nKeys = 32, nValues = 2)
+
+# Run progress: 36.36% complete, ETA 00:07:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.998 ns/op
+# Warmup Iteration   2: 3.013 ns/op
+# Warmup Iteration   3: 2.672 ns/op
+# Warmup Iteration   4: 2.631 ns/op
+# Warmup Iteration   5: 2.766 ns/op
+Iteration   1: 2.730 ns/op
+Iteration   2: 2.739 ns/op
+Iteration   3: 3.252 ns/op
+Iteration   4: 4.003 ns/op
+Iteration   5: 3.999 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.345 ±(99.9%) 2.448 ns/op [Average]
+  (min, avg, max) = (2.730, 3.345, 4.003), stdev = 0.636
+  CI (99.9%): [0.897, 5.792] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 256, nKeys = 32, nValues = 3)
+
+# Run progress: 37.88% complete, ETA 00:07:10
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.991 ns/op
+# Warmup Iteration   2: 3.008 ns/op
+# Warmup Iteration   3: 2.697 ns/op
+# Warmup Iteration   4: 2.689 ns/op
+# Warmup Iteration   5: 2.694 ns/op
+Iteration   1: 2.717 ns/op
+Iteration   2: 2.659 ns/op
+Iteration   3: 3.244 ns/op
+Iteration   4: 4.100 ns/op
+Iteration   5: 4.208 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.386 ±(99.9%) 2.844 ns/op [Average]
+  (min, avg, max) = (2.659, 3.386, 4.208), stdev = 0.739
+  CI (99.9%): [0.541, 6.230] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 256, nKeys = 1000, nValues = 2)
+
+# Run progress: 39.39% complete, ETA 00:07:00
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.023 ns/op
+# Warmup Iteration   2: 3.014 ns/op
+# Warmup Iteration   3: 2.685 ns/op
+# Warmup Iteration   4: 2.676 ns/op
+# Warmup Iteration   5: 2.682 ns/op
+Iteration   1: 2.860 ns/op
+Iteration   2: 2.691 ns/op
+Iteration   3: 3.200 ns/op
+Iteration   4: 4.448 ns/op
+Iteration   5: 4.110 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.462 ±(99.9%) 2.995 ns/op [Average]
+  (min, avg, max) = (2.691, 3.462, 4.448), stdev = 0.778
+  CI (99.9%): [0.467, 6.457] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 256, nKeys = 1000, nValues = 3)
+
+# Run progress: 40.91% complete, ETA 00:06:49
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.012 ns/op
+# Warmup Iteration   2: 3.266 ns/op
+# Warmup Iteration   3: 2.699 ns/op
+# Warmup Iteration   4: 2.696 ns/op
+# Warmup Iteration   5: 2.660 ns/op
+Iteration   1: 2.758 ns/op
+Iteration   2: 2.676 ns/op
+Iteration   3: 3.247 ns/op
+Iteration   4: 4.385 ns/op
+Iteration   5: 4.328 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.479 ±(99.9%) 3.199 ns/op [Average]
+  (min, avg, max) = (2.676, 3.479, 4.385), stdev = 0.831
+  CI (99.9%): [0.280, 6.678] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 256, nKeys = 100000, nValues = 2)
+
+# Run progress: 42.42% complete, ETA 00:06:39
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.027 ns/op
+# Warmup Iteration   2: 3.003 ns/op
+# Warmup Iteration   3: 2.656 ns/op
+# Warmup Iteration   4: 2.661 ns/op
+# Warmup Iteration   5: 2.739 ns/op
+Iteration   1: 2.773 ns/op
+Iteration   2: 2.647 ns/op
+Iteration   3: 3.328 ns/op
+Iteration   4: 4.129 ns/op
+Iteration   5: 4.719 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.519 ±(99.9%) 3.427 ns/op [Average]
+  (min, avg, max) = (2.647, 3.519, 4.719), stdev = 0.890
+  CI (99.9%): [0.093, 6.946] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 256, nKeys = 100000, nValues = 3)
+
+# Run progress: 43.94% complete, ETA 00:06:29
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.087 ns/op
+# Warmup Iteration   2: 2.960 ns/op
+# Warmup Iteration   3: 2.677 ns/op
+# Warmup Iteration   4: 2.685 ns/op
+# Warmup Iteration   5: 2.686 ns/op
+Iteration   1: 2.734 ns/op
+Iteration   2: 2.652 ns/op
+Iteration   3: 3.436 ns/op
+Iteration   4: 5.013 ns/op
+Iteration   5: 4.519 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.671 ±(99.9%) 4.080 ns/op [Average]
+  (min, avg, max) = (2.652, 3.671, 5.013), stdev = 1.060
+  CI (99.9%): [? 0, 7.751] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 512, nKeys = 32, nValues = 2)
+
+# Run progress: 45.45% complete, ETA 00:06:18
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.006 ns/op
+# Warmup Iteration   2: 2.955 ns/op
+# Warmup Iteration   3: 2.654 ns/op
+# Warmup Iteration   4: 2.669 ns/op
+# Warmup Iteration   5: 2.676 ns/op
+Iteration   1: 2.851 ns/op
+Iteration   2: 2.650 ns/op
+Iteration   3: 3.279 ns/op
+Iteration   4: 4.780 ns/op
+Iteration   5: 4.417 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.595 ±(99.9%) 3.666 ns/op [Average]
+  (min, avg, max) = (2.650, 3.595, 4.780), stdev = 0.952
+  CI (99.9%): [? 0, 7.261] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 512, nKeys = 32, nValues = 3)
+
+# Run progress: 46.97% complete, ETA 00:06:08
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.065 ns/op
+# Warmup Iteration   2: 2.976 ns/op
+# Warmup Iteration   3: 2.666 ns/op
+# Warmup Iteration   4: 2.679 ns/op
+# Warmup Iteration   5: 2.661 ns/op
+Iteration   1: 2.692 ns/op
+Iteration   2: 2.683 ns/op
+Iteration   3: 3.040 ns/op
+Iteration   4: 4.096 ns/op
+Iteration   5: 4.558 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.414 ±(99.9%) 3.317 ns/op [Average]
+  (min, avg, max) = (2.683, 3.414, 4.558), stdev = 0.861
+  CI (99.9%): [0.097, 6.731] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 512, nKeys = 1000, nValues = 2)
+
+# Run progress: 48.48% complete, ETA 00:05:57
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.012 ns/op
+# Warmup Iteration   2: 3.132 ns/op
+# Warmup Iteration   3: 2.651 ns/op
+# Warmup Iteration   4: 2.671 ns/op
+# Warmup Iteration   5: 2.667 ns/op
+Iteration   1: 2.675 ns/op
+Iteration   2: 2.762 ns/op
+Iteration   3: 3.277 ns/op
+Iteration   4: 4.184 ns/op
+Iteration   5: 4.474 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.474 ±(99.9%) 3.158 ns/op [Average]
+  (min, avg, max) = (2.675, 3.474, 4.474), stdev = 0.820
+  CI (99.9%): [0.317, 6.632] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 512, nKeys = 1000, nValues = 3)
+
+# Run progress: 50.00% complete, ETA 00:05:47
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.012 ns/op
+# Warmup Iteration   2: 3.047 ns/op
+# Warmup Iteration   3: 2.646 ns/op
+# Warmup Iteration   4: 2.683 ns/op
+# Warmup Iteration   5: 2.705 ns/op
+Iteration   1: 2.704 ns/op
+Iteration   2: 2.718 ns/op
+Iteration   3: 3.064 ns/op
+Iteration   4: 4.225 ns/op
+Iteration   5: 4.126 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.367 ±(99.9%) 2.897 ns/op [Average]
+  (min, avg, max) = (2.704, 3.367, 4.225), stdev = 0.752
+  CI (99.9%): [0.471, 6.264] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 512, nKeys = 100000, nValues = 2)
+
+# Run progress: 51.52% complete, ETA 00:05:36
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.044 ns/op
+# Warmup Iteration   2: 3.006 ns/op
+# Warmup Iteration   3: 2.628 ns/op
+# Warmup Iteration   4: 2.668 ns/op
+# Warmup Iteration   5: 2.669 ns/op
+Iteration   1: 2.669 ns/op
+Iteration   2: 2.718 ns/op
+Iteration   3: 3.325 ns/op
+Iteration   4: 3.903 ns/op
+Iteration   5: 4.757 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.474 ±(99.9%) 3.374 ns/op [Average]
+  (min, avg, max) = (2.669, 3.474, 4.757), stdev = 0.876
+  CI (99.9%): [0.101, 6.848] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 512, nKeys = 100000, nValues = 3)
+
+# Run progress: 53.03% complete, ETA 00:05:26
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.990 ns/op
+# Warmup Iteration   2: 3.038 ns/op
+# Warmup Iteration   3: 2.685 ns/op
+# Warmup Iteration   4: 2.701 ns/op
+# Warmup Iteration   5: 2.681 ns/op
+Iteration   1: 2.683 ns/op
+Iteration   2: 2.718 ns/op
+Iteration   3: 3.548 ns/op
+Iteration   4: 4.129 ns/op
+Iteration   5: 4.221 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.460 ±(99.9%) 2.848 ns/op [Average]
+  (min, avg, max) = (2.683, 3.460, 4.221), stdev = 0.740
+  CI (99.9%): [0.612, 6.308] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 1024, nKeys = 32, nValues = 2)
+
+# Run progress: 54.55% complete, ETA 00:05:15
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.015 ns/op
+# Warmup Iteration   2: 3.000 ns/op
+# Warmup Iteration   3: 2.682 ns/op
+# Warmup Iteration   4: 2.716 ns/op
+# Warmup Iteration   5: 2.681 ns/op
+Iteration   1: 2.700 ns/op
+Iteration   2: 2.786 ns/op
+Iteration   3: 3.130 ns/op
+Iteration   4: 3.988 ns/op
+Iteration   5: 4.028 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.326 ±(99.9%) 2.476 ns/op [Average]
+  (min, avg, max) = (2.700, 3.326, 4.028), stdev = 0.643
+  CI (99.9%): [0.850, 5.803] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 1024, nKeys = 32, nValues = 3)
+
+# Run progress: 56.06% complete, ETA 00:05:05
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.957 ns/op
+# Warmup Iteration   2: 3.058 ns/op
+# Warmup Iteration   3: 2.678 ns/op
+# Warmup Iteration   4: 2.700 ns/op
+# Warmup Iteration   5: 2.701 ns/op
+Iteration   1: 2.729 ns/op
+Iteration   2: 2.716 ns/op
+Iteration   3: 3.102 ns/op
+Iteration   4: 4.161 ns/op
+Iteration   5: 3.945 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.331 ±(99.9%) 2.625 ns/op [Average]
+  (min, avg, max) = (2.716, 3.331, 4.161), stdev = 0.682
+  CI (99.9%): [0.706, 5.956] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 1024, nKeys = 1000, nValues = 2)
+
+# Run progress: 57.58% complete, ETA 00:04:54
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.012 ns/op
+# Warmup Iteration   2: 3.043 ns/op
+# Warmup Iteration   3: 2.682 ns/op
+# Warmup Iteration   4: 2.756 ns/op
+# Warmup Iteration   5: 2.701 ns/op
+Iteration   1: 2.638 ns/op
+Iteration   2: 2.791 ns/op
+Iteration   3: 3.012 ns/op
+Iteration   4: 4.315 ns/op
+Iteration   5: 4.583 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.468 ±(99.9%) 3.505 ns/op [Average]
+  (min, avg, max) = (2.638, 3.468, 4.583), stdev = 0.910
+  CI (99.9%): [? 0, 6.973] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 1024, nKeys = 1000, nValues = 3)
+
+# Run progress: 59.09% complete, ETA 00:04:44
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.141 ns/op
+# Warmup Iteration   2: 3.197 ns/op
+# Warmup Iteration   3: 2.757 ns/op
+# Warmup Iteration   4: 2.740 ns/op
+# Warmup Iteration   5: 2.745 ns/op
+Iteration   1: 2.733 ns/op
+Iteration   2: 2.780 ns/op
+Iteration   3: 3.080 ns/op
+Iteration   4: 4.210 ns/op
+Iteration   5: 3.875 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.336 ±(99.9%) 2.579 ns/op [Average]
+  (min, avg, max) = (2.733, 3.336, 4.210), stdev = 0.670
+  CI (99.9%): [0.757, 5.914] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 1024, nKeys = 100000, nValues = 2)
+
+# Run progress: 60.61% complete, ETA 00:04:33
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.993 ns/op
+# Warmup Iteration   2: 3.404 ns/op
+# Warmup Iteration   3: 2.680 ns/op
+# Warmup Iteration   4: 2.677 ns/op
+# Warmup Iteration   5: 2.686 ns/op
+Iteration   1: 2.718 ns/op
+Iteration   2: 2.769 ns/op
+Iteration   3: 3.508 ns/op
+Iteration   4: 4.433 ns/op
+Iteration   5: 4.379 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.562 ±(99.9%) 3.204 ns/op [Average]
+  (min, avg, max) = (2.718, 3.562, 4.433), stdev = 0.832
+  CI (99.9%): [0.357, 6.766] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 1024, nKeys = 100000, nValues = 3)
+
+# Run progress: 62.12% complete, ETA 00:04:23
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.007 ns/op
+# Warmup Iteration   2: 3.088 ns/op
+# Warmup Iteration   3: 2.646 ns/op
+# Warmup Iteration   4: 2.666 ns/op
+# Warmup Iteration   5: 2.702 ns/op
+Iteration   1: 2.707 ns/op
+Iteration   2: 2.732 ns/op
+Iteration   3: 3.457 ns/op
+Iteration   4: 4.284 ns/op
+Iteration   5: 4.326 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.501 ±(99.9%) 3.055 ns/op [Average]
+  (min, avg, max) = (2.707, 3.501, 4.326), stdev = 0.793
+  CI (99.9%): [0.446, 6.556] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 2048, nKeys = 32, nValues = 2)
+
+# Run progress: 63.64% complete, ETA 00:04:12
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.328 ns/op
+# Warmup Iteration   2: 3.031 ns/op
+# Warmup Iteration   3: 2.673 ns/op
+# Warmup Iteration   4: 2.722 ns/op
+# Warmup Iteration   5: 2.685 ns/op
+Iteration   1: 2.707 ns/op
+Iteration   2: 2.764 ns/op
+Iteration   3: 3.239 ns/op
+Iteration   4: 4.504 ns/op
+Iteration   5: 4.160 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.475 ±(99.9%) 3.151 ns/op [Average]
+  (min, avg, max) = (2.707, 3.475, 4.504), stdev = 0.818
+  CI (99.9%): [0.324, 6.626] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 2048, nKeys = 32, nValues = 3)
+
+# Run progress: 65.15% complete, ETA 00:04:02
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.025 ns/op
+# Warmup Iteration   2: 3.079 ns/op
+# Warmup Iteration   3: 2.685 ns/op
+# Warmup Iteration   4: 2.714 ns/op
+# Warmup Iteration   5: 2.719 ns/op
+Iteration   1: 2.685 ns/op
+Iteration   2: 2.722 ns/op
+Iteration   3: 3.241 ns/op
+Iteration   4: 4.430 ns/op
+Iteration   5: 4.733 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.562 ±(99.9%) 3.704 ns/op [Average]
+  (min, avg, max) = (2.685, 3.562, 4.733), stdev = 0.962
+  CI (99.9%): [? 0, 7.266] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 2048, nKeys = 1000, nValues = 2)
+
+# Run progress: 66.67% complete, ETA 00:03:51
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.995 ns/op
+# Warmup Iteration   2: 3.081 ns/op
+# Warmup Iteration   3: 2.637 ns/op
+# Warmup Iteration   4: 2.723 ns/op
+# Warmup Iteration   5: 2.684 ns/op
+Iteration   1: 2.684 ns/op
+Iteration   2: 2.863 ns/op
+Iteration   3: 3.135 ns/op
+Iteration   4: 4.034 ns/op
+Iteration   5: 4.007 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.345 ±(99.9%) 2.456 ns/op [Average]
+  (min, avg, max) = (2.684, 3.345, 4.034), stdev = 0.638
+  CI (99.9%): [0.889, 5.801] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 2048, nKeys = 1000, nValues = 3)
+
+# Run progress: 68.18% complete, ETA 00:03:41
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.003 ns/op
+# Warmup Iteration   2: 3.087 ns/op
+# Warmup Iteration   3: 2.702 ns/op
+# Warmup Iteration   4: 2.678 ns/op
+# Warmup Iteration   5: 2.721 ns/op
+Iteration   1: 2.677 ns/op
+Iteration   2: 2.743 ns/op
+Iteration   3: 3.280 ns/op
+Iteration   4: 4.452 ns/op
+Iteration   5: 4.089 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.448 ±(99.9%) 3.068 ns/op [Average]
+  (min, avg, max) = (2.677, 3.448, 4.452), stdev = 0.797
+  CI (99.9%): [0.380, 6.516] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 2048, nKeys = 100000, nValues = 2)
+
+# Run progress: 69.70% complete, ETA 00:03:30
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.013 ns/op
+# Warmup Iteration   2: 3.042 ns/op
+# Warmup Iteration   3: 2.679 ns/op
+# Warmup Iteration   4: 2.724 ns/op
+# Warmup Iteration   5: 2.665 ns/op
+Iteration   1: 2.671 ns/op
+Iteration   2: 2.794 ns/op
+Iteration   3: 3.324 ns/op
+Iteration   4: 4.421 ns/op
+Iteration   5: 4.278 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.498 ±(99.9%) 3.146 ns/op [Average]
+  (min, avg, max) = (2.671, 3.498, 4.421), stdev = 0.817
+  CI (99.9%): [0.352, 6.643] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 2048, nKeys = 100000, nValues = 3)
+
+# Run progress: 71.21% complete, ETA 00:03:19
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.988 ns/op
+# Warmup Iteration   2: 3.073 ns/op
+# Warmup Iteration   3: 2.671 ns/op
+# Warmup Iteration   4: 2.689 ns/op
+# Warmup Iteration   5: 2.710 ns/op
+Iteration   1: 2.673 ns/op
+Iteration   2: 2.746 ns/op
+Iteration   3: 3.701 ns/op
+Iteration   4: 4.068 ns/op
+Iteration   5: 4.174 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.472 ±(99.9%) 2.767 ns/op [Average]
+  (min, avg, max) = (2.673, 3.472, 4.174), stdev = 0.719
+  CI (99.9%): [0.705, 6.240] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 4096, nKeys = 32, nValues = 2)
+
+# Run progress: 72.73% complete, ETA 00:03:09
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.037 ns/op
+# Warmup Iteration   2: 3.004 ns/op
+# Warmup Iteration   3: 2.694 ns/op
+# Warmup Iteration   4: 2.717 ns/op
+# Warmup Iteration   5: 2.674 ns/op
+Iteration   1: 2.638 ns/op
+Iteration   2: 2.737 ns/op
+Iteration   3: 3.453 ns/op
+Iteration   4: 4.374 ns/op
+Iteration   5: 4.416 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.524 ±(99.9%) 3.294 ns/op [Average]
+  (min, avg, max) = (2.638, 3.524, 4.416), stdev = 0.855
+  CI (99.9%): [0.230, 6.817] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 4096, nKeys = 32, nValues = 3)
+
+# Run progress: 74.24% complete, ETA 00:02:58
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.035 ns/op
+# Warmup Iteration   2: 3.044 ns/op
+# Warmup Iteration   3: 2.721 ns/op
+# Warmup Iteration   4: 2.714 ns/op
+# Warmup Iteration   5: 2.671 ns/op
+Iteration   1: 2.674 ns/op
+Iteration   2: 2.643 ns/op
+Iteration   3: 3.376 ns/op
+Iteration   4: 4.243 ns/op
+Iteration   5: 4.132 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.414 ±(99.9%) 2.950 ns/op [Average]
+  (min, avg, max) = (2.643, 3.414, 4.243), stdev = 0.766
+  CI (99.9%): [0.463, 6.364] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 4096, nKeys = 1000, nValues = 2)
+
+# Run progress: 75.76% complete, ETA 00:02:48
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.027 ns/op
+# Warmup Iteration   2: 3.092 ns/op
+# Warmup Iteration   3: 2.845 ns/op
+# Warmup Iteration   4: 2.691 ns/op
+# Warmup Iteration   5: 2.722 ns/op
+Iteration   1: 2.681 ns/op
+Iteration   2: 2.737 ns/op
+Iteration   3: 3.305 ns/op
+Iteration   4: 4.470 ns/op
+Iteration   5: 4.364 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.511 ±(99.9%) 3.322 ns/op [Average]
+  (min, avg, max) = (2.681, 3.511, 4.470), stdev = 0.863
+  CI (99.9%): [0.189, 6.834] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 4096, nKeys = 1000, nValues = 3)
+
+# Run progress: 77.27% complete, ETA 00:02:37
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.124 ns/op
+# Warmup Iteration   2: 2.996 ns/op
+# Warmup Iteration   3: 2.702 ns/op
+# Warmup Iteration   4: 2.641 ns/op
+# Warmup Iteration   5: 2.668 ns/op
+Iteration   1: 2.664 ns/op
+Iteration   2: 2.689 ns/op
+Iteration   3: 3.438 ns/op
+Iteration   4: 4.432 ns/op
+Iteration   5: 4.673 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.579 ±(99.9%) 3.640 ns/op [Average]
+  (min, avg, max) = (2.664, 3.579, 4.673), stdev = 0.945
+  CI (99.9%): [? 0, 7.219] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 4096, nKeys = 100000, nValues = 2)
+
+# Run progress: 78.79% complete, ETA 00:02:27
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.024 ns/op
+# Warmup Iteration   2: 3.020 ns/op
+# Warmup Iteration   3: 2.695 ns/op
+# Warmup Iteration   4: 2.652 ns/op
+# Warmup Iteration   5: 2.677 ns/op
+Iteration   1: 2.692 ns/op
+Iteration   2: 2.642 ns/op
+Iteration   3: 3.631 ns/op
+Iteration   4: 4.559 ns/op
+Iteration   5: 4.770 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.659 ±(99.9%) 3.857 ns/op [Average]
+  (min, avg, max) = (2.642, 3.659, 4.770), stdev = 1.002
+  CI (99.9%): [? 0, 7.516] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 4096, nKeys = 100000, nValues = 3)
+
+# Run progress: 80.30% complete, ETA 00:02:16
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.004 ns/op
+# Warmup Iteration   2: 3.453 ns/op
+# Warmup Iteration   3: 2.851 ns/op
+# Warmup Iteration   4: 2.708 ns/op
+# Warmup Iteration   5: 2.707 ns/op
+Iteration   1: 2.783 ns/op
+Iteration   2: 2.838 ns/op
+Iteration   3: 2.721 ns/op
+Iteration   4: 2.732 ns/op
+Iteration   5: 2.708 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  2.756 ±(99.9%) 0.207 ns/op [Average]
+  (min, avg, max) = (2.708, 2.756, 2.838), stdev = 0.054
+  CI (99.9%): [2.549, 2.964] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 8192, nKeys = 32, nValues = 2)
+
+# Run progress: 81.82% complete, ETA 00:02:06
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.114 ns/op
+# Warmup Iteration   2: 3.138 ns/op
+# Warmup Iteration   3: 2.676 ns/op
+# Warmup Iteration   4: 2.793 ns/op
+# Warmup Iteration   5: 2.782 ns/op
+Iteration   1: 2.746 ns/op
+Iteration   2: 2.788 ns/op
+Iteration   3: 2.888 ns/op
+Iteration   4: 2.953 ns/op
+Iteration   5: 2.724 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  2.820 ±(99.9%) 0.375 ns/op [Average]
+  (min, avg, max) = (2.724, 2.820, 2.953), stdev = 0.097
+  CI (99.9%): [2.444, 3.195] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 8192, nKeys = 32, nValues = 3)
+
+# Run progress: 83.33% complete, ETA 00:01:55
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.008 ns/op
+# Warmup Iteration   2: 3.004 ns/op
+# Warmup Iteration   3: 2.648 ns/op
+# Warmup Iteration   4: 2.791 ns/op
+# Warmup Iteration   5: 2.793 ns/op
+Iteration   1: 2.818 ns/op
+Iteration   2: 2.703 ns/op
+Iteration   3: 2.675 ns/op
+Iteration   4: 2.731 ns/op
+Iteration   5: 2.851 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  2.756 ±(99.9%) 0.291 ns/op [Average]
+  (min, avg, max) = (2.675, 2.756, 2.851), stdev = 0.076
+  CI (99.9%): [2.465, 3.046] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 8192, nKeys = 1000, nValues = 2)
+
+# Run progress: 84.85% complete, ETA 00:01:45
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.053 ns/op
+# Warmup Iteration   2: 3.020 ns/op
+# Warmup Iteration   3: 2.681 ns/op
+# Warmup Iteration   4: 2.827 ns/op
+# Warmup Iteration   5: 2.685 ns/op
+Iteration   1: 2.676 ns/op
+Iteration   2: 2.696 ns/op
+Iteration   3: 3.176 ns/op
+Iteration   4: 4.799 ns/op
+Iteration   5: 4.426 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.555 ±(99.9%) 3.831 ns/op [Average]
+  (min, avg, max) = (2.676, 3.555, 4.799), stdev = 0.995
+  CI (99.9%): [? 0, 7.386] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 8192, nKeys = 1000, nValues = 3)
+
+# Run progress: 86.36% complete, ETA 00:01:34
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.971 ns/op
+# Warmup Iteration   2: 3.047 ns/op
+# Warmup Iteration   3: 2.730 ns/op
+# Warmup Iteration   4: 2.654 ns/op
+# Warmup Iteration   5: 2.739 ns/op
+Iteration   1: 2.681 ns/op
+Iteration   2: 2.630 ns/op
+Iteration   3: 3.096 ns/op
+Iteration   4: 4.113 ns/op
+Iteration   5: 5.056 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.515 ±(99.9%) 4.033 ns/op [Average]
+  (min, avg, max) = (2.630, 3.515, 5.056), stdev = 1.047
+  CI (99.9%): [? 0, 7.548] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 8192, nKeys = 100000, nValues = 2)
+
+# Run progress: 87.88% complete, ETA 00:01:24
+# Fork: 1 of 1
+# Warmup Iteration   1: 2.988 ns/op
+# Warmup Iteration   2: 3.035 ns/op
+# Warmup Iteration   3: 2.713 ns/op
+# Warmup Iteration   4: 2.715 ns/op
+# Warmup Iteration   5: 2.768 ns/op
+Iteration   1: 2.684 ns/op
+Iteration   2: 2.743 ns/op
+Iteration   3: 3.323 ns/op
+Iteration   4: 4.705 ns/op
+Iteration   5: 4.589 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.609 ±(99.9%) 3.777 ns/op [Average]
+  (min, avg, max) = (2.684, 3.609, 4.705), stdev = 0.981
+  CI (99.9%): [? 0, 7.386] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 8192, nKeys = 100000, nValues = 3)
+
+# Run progress: 89.39% complete, ETA 00:01:13
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.202 ns/op
+# Warmup Iteration   2: 3.988 ns/op
+# Warmup Iteration   3: 3.558 ns/op
+# Warmup Iteration   4: 3.324 ns/op
+# Warmup Iteration   5: 3.757 ns/op
+Iteration   1: 3.444 ns/op
+Iteration   2: 3.524 ns/op
+Iteration   3: 3.769 ns/op
+Iteration   4: 4.370 ns/op
+Iteration   5: 4.633 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.948 ±(99.9%) 2.031 ns/op [Average]
+  (min, avg, max) = (3.444, 3.948, 4.633), stdev = 0.528
+  CI (99.9%): [1.917, 5.979] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16384, nKeys = 32, nValues = 2)
+
+# Run progress: 90.91% complete, ETA 00:01:03
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.484 ns/op
+# Warmup Iteration   2: 3.530 ns/op
+# Warmup Iteration   3: 3.017 ns/op
+# Warmup Iteration   4: 2.805 ns/op
+# Warmup Iteration   5: 2.837 ns/op
+Iteration   1: 2.752 ns/op
+Iteration   2: 2.891 ns/op
+Iteration   3: 3.634 ns/op
+Iteration   4: 4.376 ns/op
+Iteration   5: 4.306 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.592 ±(99.9%) 2.935 ns/op [Average]
+  (min, avg, max) = (2.752, 3.592, 4.376), stdev = 0.762
+  CI (99.9%): [0.657, 6.526] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16384, nKeys = 32, nValues = 3)
+
+# Run progress: 92.42% complete, ETA 00:00:52
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.023 ns/op
+# Warmup Iteration   2: 3.070 ns/op
+# Warmup Iteration   3: 2.704 ns/op
+# Warmup Iteration   4: 2.698 ns/op
+# Warmup Iteration   5: 2.744 ns/op
+Iteration   1: 2.751 ns/op
+Iteration   2: 2.689 ns/op
+Iteration   3: 3.250 ns/op
+Iteration   4: 4.306 ns/op
+Iteration   5: 4.333 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.466 ±(99.9%) 3.116 ns/op [Average]
+  (min, avg, max) = (2.689, 3.466, 4.333), stdev = 0.809
+  CI (99.9%): [0.350, 6.582] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16384, nKeys = 1000, nValues = 2)
+
+# Run progress: 93.94% complete, ETA 00:00:42
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.070 ns/op
+# Warmup Iteration   2: 3.048 ns/op
+# Warmup Iteration   3: 2.700 ns/op
+# Warmup Iteration   4: 2.715 ns/op
+# Warmup Iteration   5: 2.688 ns/op
+Iteration   1: 2.850 ns/op
+Iteration   2: 2.674 ns/op
+Iteration   3: 3.080 ns/op
+Iteration   4: 4.538 ns/op
+Iteration   5: 4.211 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.470 ±(99.9%) 3.256 ns/op [Average]
+  (min, avg, max) = (2.674, 3.470, 4.538), stdev = 0.846
+  CI (99.9%): [0.215, 6.726] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16384, nKeys = 1000, nValues = 3)
+
+# Run progress: 95.45% complete, ETA 00:00:31
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.058 ns/op
+# Warmup Iteration   2: 3.020 ns/op
+# Warmup Iteration   3: 2.743 ns/op
+# Warmup Iteration   4: 2.706 ns/op
+# Warmup Iteration   5: 2.696 ns/op
+Iteration   1: 2.712 ns/op
+Iteration   2: 2.718 ns/op
+Iteration   3: 3.160 ns/op
+Iteration   4: 4.275 ns/op
+Iteration   5: 4.213 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  3.416 ±(99.9%) 2.996 ns/op [Average]
+  (min, avg, max) = (2.712, 3.416, 4.275), stdev = 0.778
+  CI (99.9%): [0.420, 6.412] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16384, nKeys = 100000, nValues = 2)
+
+# Run progress: 96.97% complete, ETA 00:00:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.192 ns/op
+# Warmup Iteration   2: 3.000 ns/op
+# Warmup Iteration   3: 2.680 ns/op
+# Warmup Iteration   4: 2.697 ns/op
+# Warmup Iteration   5: 2.701 ns/op
+Iteration   1: 2.720 ns/op
+Iteration   2: 2.706 ns/op
+Iteration   3: 3.265 ns/op
+Iteration   4: 3.472 ns/op
+Iteration   5: 2.733 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  2.979 ±(99.9%) 1.397 ns/op [Average]
+  (min, avg, max) = (2.706, 2.979, 3.472), stdev = 0.363
+  CI (99.9%): [1.582, 4.376] (assumes normal distribution)
+
+
+# JMH version: 1.33
+# VM version: JDK 17.0.2, OpenJDK 64-Bit Server VM, 17.0.2+8
+# VM invoker: C:\Program Files\Eclipse Adoptium\jdk-17.0.2.8-hotspot\bin\java.exe
+# VM options: -Dfile.encoding=windows-1252 -Duser.country=GB -Duser.language=en -Duser.variant
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark
+# Parameters: (nGet = 16384, nKeys = 100000, nValues = 3)
+
+# Run progress: 98.48% complete, ETA 00:00:10
+# Fork: 1 of 1
+# Warmup Iteration   1: 3.345 ns/op
+# Warmup Iteration   2: 3.145 ns/op
+# Warmup Iteration   3: 2.755 ns/op
+# Warmup Iteration   4: 2.797 ns/op
+# Warmup Iteration   5: 2.707 ns/op
+Iteration   1: 2.828 ns/op
+Iteration   2: 2.645 ns/op
+Iteration   3: 2.659 ns/op
+Iteration   4: 2.828 ns/op
+Iteration   5: 2.850 ns/op
+
+
+Result "tools.refinery.store.map.benchmarks.getall.ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark":
+  2.762 ±(99.9%) 0.388 ns/op [Average]
+  (min, avg, max) = (2.645, 2.762, 2.850), stdev = 0.101
+  CI (99.9%): [2.374, 3.150] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:11:35
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                                               (nGet)  (nKeys)  (nValues)  Mode  Cnt  Score   Error  Units
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      16       32          2  avgt    5  3.478 ± 2.517  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      16       32          3  avgt    5  3.547 ± 3.910  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      16     1000          2  avgt    5  3.436 ± 3.554  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      16     1000          3  avgt    5  3.319 ± 3.055  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      16   100000          2  avgt    5  3.388 ± 2.828  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      16   100000          3  avgt    5  3.379 ± 2.972  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      32       32          2  avgt    5  3.291 ± 2.339  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      32       32          3  avgt    5  3.324 ± 2.736  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      32     1000          2  avgt    5  3.418 ± 2.916  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      32     1000          3  avgt    5  3.598 ± 4.125  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      32   100000          2  avgt    5  3.705 ± 4.178  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      32   100000          3  avgt    5  3.529 ± 3.366  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      64       32          2  avgt    5  3.599 ± 3.489  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      64       32          3  avgt    5  3.459 ± 3.523  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      64     1000          2  avgt    5  3.520 ± 3.636  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      64     1000          3  avgt    5  3.453 ± 3.394  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      64   100000          2  avgt    5  3.708 ± 3.658  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark      64   100000          3  avgt    5  3.550 ± 3.221  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     128       32          2  avgt    5  3.385 ± 3.238  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     128       32          3  avgt    5  3.457 ± 3.329  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     128     1000          2  avgt    5  3.362 ± 2.909  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     128     1000          3  avgt    5  3.300 ± 2.443  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     128   100000          2  avgt    5  3.585 ± 3.532  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     128   100000          3  avgt    5  3.425 ± 2.876  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     256       32          2  avgt    5  3.345 ± 2.448  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     256       32          3  avgt    5  3.386 ± 2.844  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     256     1000          2  avgt    5  3.462 ± 2.995  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     256     1000          3  avgt    5  3.479 ± 3.199  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     256   100000          2  avgt    5  3.519 ± 3.427  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     256   100000          3  avgt    5  3.671 ± 4.080  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     512       32          2  avgt    5  3.595 ± 3.666  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     512       32          3  avgt    5  3.414 ± 3.317  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     512     1000          2  avgt    5  3.474 ± 3.158  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     512     1000          3  avgt    5  3.367 ± 2.897  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     512   100000          2  avgt    5  3.474 ± 3.374  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark     512   100000          3  avgt    5  3.460 ± 2.848  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    1024       32          2  avgt    5  3.326 ± 2.476  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    1024       32          3  avgt    5  3.331 ± 2.625  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    1024     1000          2  avgt    5  3.468 ± 3.505  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    1024     1000          3  avgt    5  3.336 ± 2.579  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    1024   100000          2  avgt    5  3.562 ± 3.204  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    1024   100000          3  avgt    5  3.501 ± 3.055  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    2048       32          2  avgt    5  3.475 ± 3.151  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    2048       32          3  avgt    5  3.562 ± 3.704  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    2048     1000          2  avgt    5  3.345 ± 2.456  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    2048     1000          3  avgt    5  3.448 ± 3.068  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    2048   100000          2  avgt    5  3.498 ± 3.146  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    2048   100000          3  avgt    5  3.472 ± 2.767  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    4096       32          2  avgt    5  3.524 ± 3.294  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    4096       32          3  avgt    5  3.414 ± 2.950  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    4096     1000          2  avgt    5  3.511 ± 3.322  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    4096     1000          3  avgt    5  3.579 ± 3.640  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    4096   100000          2  avgt    5  3.659 ± 3.857  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    4096   100000          3  avgt    5  2.756 ± 0.207  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    8192       32          2  avgt    5  2.820 ± 0.375  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    8192       32          3  avgt    5  2.756 ± 0.291  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    8192     1000          2  avgt    5  3.555 ± 3.831  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    8192     1000          3  avgt    5  3.515 ± 4.033  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    8192   100000          2  avgt    5  3.609 ± 3.777  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark    8192   100000          3  avgt    5  3.948 ± 2.031  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark   16384       32          2  avgt    5  3.592 ± 2.935  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark   16384       32          3  avgt    5  3.466 ± 3.116  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark   16384     1000          2  avgt    5  3.470 ± 3.256  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark   16384     1000          3  avgt    5  3.416 ± 2.996  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark   16384   100000          2  avgt    5  2.979 ± 1.397  ns/op
+ImmutableGetAllBenchmark.baselineGetAllValuesBenchmark   16384   100000          3  avgt    5  2.762 ± 0.388  ns/op
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/7.3.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 11m 37s
+13 actionable tasks: 2 executed, 11 up-to-date
