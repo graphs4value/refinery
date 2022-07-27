@@ -119,48 +119,48 @@ export const EditorParent = styled('div')(({ theme }) => {
       borderColor: theme.palette.text.disabled,
       color: theme.palette.text.secondary,
     },
-    '.cmt-comment': {
+    '.tok-comment': {
       fontStyle: 'italic',
       color: theme.palette.text.disabled,
     },
-    '.cmt-number': {
+    '.tok-number': {
       color: '#6188a6',
     },
-    '.cmt-string': {
+    '.tok-string': {
       color: theme.palette.secondary.dark,
     },
-    '.cmt-keyword': {
+    '.tok-keyword': {
       color: theme.palette.primary.main,
     },
-    '.cmt-typeName, .cmt-macroName, .cmt-atom': {
+    '.tok-typeName, .tok-macroName, .tok-atom': {
       color: theme.palette.text.primary,
     },
-    '.cmt-variableName': {
+    '.tok-variableName': {
       color: '#c8ae9d',
     },
-    '.cmt-problem-node': {
-      '&, & .cmt-variableName': {
+    '.tok-problem-node': {
+      '&, & .tok-variableName': {
         color: theme.palette.text.secondary,
       },
     },
-    '.cmt-problem-individual': {
-      '&, & .cmt-variableName': {
+    '.tok-problem-individual': {
+      '&, & .tok-variableName': {
         color: theme.palette.text.primary,
       },
     },
-    '.cmt-problem-abstract, .cmt-problem-new': {
+    '.tok-problem-abstract, .tok-problem-new': {
       fontStyle: 'italic',
     },
-    '.cmt-problem-containment': {
+    '.tok-problem-containment': {
       fontWeight: 700,
     },
-    '.cmt-problem-error': {
-      '&, & .cmt-typeName': {
+    '.tok-problem-error': {
+      '&, & .tok-typeName': {
         color: theme.palette.error.main,
       },
     },
-    '.cmt-problem-builtin': {
-      '&, & .cmt-typeName, & .cmt-atom, & .cmt-variableName': {
+    '.tok-problem-builtin': {
+      '&, & .tok-typeName, & .tok-atom, & .tok-variableName': {
         color: theme.palette.primary.main,
         fontWeight: 400,
         fontStyle: 'normal',

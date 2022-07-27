@@ -1,27 +1,32 @@
-import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/closebrackets';
-import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { commentKeymap } from '@codemirror/comment';
-import { foldGutter, foldKeymap } from '@codemirror/fold';
-import { highlightActiveLineGutter, lineNumbers } from '@codemirror/gutter';
-import { classHighlightStyle } from '@codemirror/highlight';
 import {
+  closeBrackets,
+  closeBracketsKeymap,
+  autocompletion,
+  completionKeymap,
+} from '@codemirror/autocomplete';
+import {
+  defaultKeymap,
   history,
   historyKeymap,
+  indentWithTab,
   redo,
   redoDepth,
   undo,
   undoDepth,
-} from '@codemirror/history';
-import { indentOnInput } from '@codemirror/language';
+} from '@codemirror/commands';
+import {
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  syntaxHighlighting,
+} from '@codemirror/language';
 import {
   Diagnostic,
   lintKeymap,
   setDiagnostics,
 } from '@codemirror/lint';
-import { bracketMatching } from '@codemirror/matchbrackets';
-import { rectangularSelection } from '@codemirror/rectangular-selection';
-import { searchConfig, searchKeymap } from '@codemirror/search';
+import { search, searchKeymap } from '@codemirror/search';
 import {
   EditorState,
   StateCommand,
@@ -33,9 +38,13 @@ import {
   drawSelection,
   EditorView,
   highlightActiveLine,
+  highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
+  lineNumbers,
+  rectangularSelection,
 } from '@codemirror/view';
+import { classHighlighter } from '@lezer/highlight';
 import {
   makeAutoObservable,
   observable,
@@ -91,7 +100,6 @@ export class EditorStore {
             (context) => this.client.contentAssist(context),
           ],
         }),
-        classHighlightStyle.extension,
         closeBrackets(),
         bracketMatching(),
         drawSelection(),
@@ -106,10 +114,11 @@ export class EditorStore {
         history(),
         indentOnInput(),
         rectangularSelection(),
-        searchConfig({
+        search({
           top: true,
-          matchCase: true,
+          caseSensitive: true,
         }),
+        syntaxHighlighting(classHighlighter),
         semanticHighlighting,
         // We add the gutters to `extensions` in the order we want them to appear.
         lineNumbers(),
@@ -117,7 +126,6 @@ export class EditorStore {
         keymap.of([
           { key: 'Mod-Shift-f', run: () => this.formatText() },
           ...closeBracketsKeymap,
-          ...commentKeymap,
           ...completionKeymap,
           ...foldKeymap,
           ...historyKeymap,

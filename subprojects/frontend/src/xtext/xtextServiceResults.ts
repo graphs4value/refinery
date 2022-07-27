@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 export const pongResult = z.object({
-  pong: z.string().nonempty(),
+  pong: z.string().min(1),
 });
 
 export type PongResult = z.infer<typeof pongResult>;
 
 export const documentStateResult = z.object({
-  stateId: z.string().nonempty(),
+  stateId: z.string().min(1),
 });
 
 export type DocumentStateResult = z.infer<typeof documentStateResult>;
@@ -32,7 +32,7 @@ export const severity = z.enum(['error', 'warning', 'info', 'ignore']);
 export type Severity = z.infer<typeof severity>;
 
 export const issue = z.object({
-  description: z.string().nonempty(),
+  description: z.string().min(1),
   severity,
   line: z.number().int(),
   column: z.number().int().nonnegative(),
@@ -65,14 +65,14 @@ export type TextRegion = z.infer<typeof textRegion>;
 
 export const contentAssistEntry = z.object({
   prefix: z.string(),
-  proposal: z.string().nonempty(),
+  proposal: z.string().min(1),
   label: z.string().optional(),
-  description: z.string().nonempty().optional(),
-  documentation: z.string().nonempty().optional(),
+  description: z.string().min(1).optional(),
+  documentation: z.string().min(1).optional(),
   escapePosition: z.number().int().nonnegative().optional(),
   textReplacements: replaceRegion.array(),
   editPositions: textRegion.array(),
-  kind: z.string().nonempty(),
+  kind: z.string().min(1),
 });
 
 export type ContentAssistEntry = z.infer<typeof contentAssistEntry>;
@@ -86,7 +86,7 @@ export type ContentAssistResult = z.infer<typeof contentAssistResult>;
 export const highlightingRegion = z.object({
   offset: z.number().int().nonnegative(),
   length: z.number().int().nonnegative(),
-  styleClasses: z.string().nonempty().array(),
+  styleClasses: z.string().min(1).array(),
 });
 
 export type HighlightingRegion = z.infer<typeof highlightingRegion>;

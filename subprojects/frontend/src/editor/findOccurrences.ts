@@ -1,5 +1,4 @@
-import { Range, RangeSet } from '@codemirror/rangeset';
-import type { TransactionSpec } from '@codemirror/state';
+import { Range, RangeSet, type TransactionSpec } from '@codemirror/state';
 import { Decoration } from '@codemirror/view';
 
 import { decorationSetExtension } from './decorationSetExtension';

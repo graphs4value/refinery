@@ -1,12 +1,15 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import { App } from './App';
 import { RootStore, RootStoreProvider } from './RootStore';
 import { ThemeProvider } from './theme/ThemeProvider';
+import { getLogger } from './utils/logger';
 
 import './index.scss';
+
+const log = getLogger('index');
 
 const initialValue = `class Family {
     contains Person[] members
@@ -66,4 +69,10 @@ const app = (
   </RootStoreProvider>
 );
 
-render(app, document.getElementById('app'));
+const rootElement = document.getElementById('app');
+if (rootElement === null) {
+  log.error('Root element not found');
+} else {
+  const root = createRoot(rootElement);
+  root.render(app);
+}

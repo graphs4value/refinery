@@ -46,7 +46,13 @@ def generateXtextLanguage = tasks.register('generateXtextLanguage', JavaExec) {
 	args += "rootPath=/${projectDir}/.."
 }
 
-for (taskName in ['compileJava', 'processResources', 'generateXtext', 'generateEclipseSourceFolders']) {
+for (taskName in [
+		'compileJava',
+		'processResources',
+		'processTestFixturesResources',
+		'generateXtext',
+		'generateEclipseSourceFolders'
+	]) {
 	tasks.named(taskName) {
 		dependsOn generateXtextLanguage
 	}

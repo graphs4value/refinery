@@ -169,7 +169,7 @@ export class ContentAssistService {
     this.lastCompletion = {
       ...range,
       options,
-      span: computeSpan(prefix, entries.length),
+      validFor: computeSpan(prefix, entries.length),
     };
     return this.lastCompletion;
   }
@@ -181,15 +181,15 @@ export class ContentAssistService {
       return false;
     }
     const { from, to, text } = token;
-    const { from: lastFrom, to: lastTo, span } = this.lastCompletion;
+    const { from: lastFrom, to: lastTo, validFor } = this.lastCompletion;
     if (!lastTo) {
       return true;
     }
     const [transformedFrom, transformedTo] = this.mapRangeInclusive(lastFrom, lastTo);
     return from >= transformedFrom
       && to <= transformedTo
-      && typeof span !== 'undefined'
-      && span.exec(text) !== null;
+      && validFor instanceof RegExp
+      && validFor.exec(text) !== null;
   }
 
   private shouldInvalidateCachedCompletion(transaction: Transaction): boolean {

@@ -23,7 +23,7 @@ function findAlignmentAfterOpening(context: TreeIndentContext): number | null {
   const lineEnd = simulatedBreak == null || simulatedBreak <= openingLine.from
     ? openingLine.to
     : Math.min(openingLine.to, simulatedBreak);
-  const { cursor } = openingToken;
+  const cursor = openingToken.cursor();
   while (cursor.next() && cursor.from < lineEnd) {
     if (!cursor.type.isSkipped) {
       return cursor.from;

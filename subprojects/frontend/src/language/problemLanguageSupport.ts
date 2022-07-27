@@ -1,4 +1,3 @@
-import { styleTags, tags as t } from '@codemirror/highlight';
 import {
   foldInside,
   foldNodeProp,
@@ -7,6 +6,7 @@ import {
   LanguageSupport,
   LRLanguage,
 } from '@codemirror/language';
+import { styleTags, tags as t } from '@lezer/highlight';
 import { LRParser } from '@lezer/lr';
 
 import { parser } from '../../build/generated/sources/lezer/problem';

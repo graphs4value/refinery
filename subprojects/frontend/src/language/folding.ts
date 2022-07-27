@@ -52,7 +52,7 @@ export function foldDeclaration(node: SyntaxNode, state: EditorState): FoldRange
   if (open === null || close === null) {
     return null;
   }
-  const { cursor } = open;
+  const cursor = open.cursor();
   const lineEnd = state.doc.lineAt(open.from).to;
   let foldFrom = open.to;
   while (cursor.next() && cursor.from < lineEnd) {
@@ -84,7 +84,7 @@ function foldWithSibling(node: SyntaxNode): FoldRange | null {
   if (firstChild === null) {
     return null;
   }
-  const { cursor } = firstChild;
+  const cursor = firstChild.cursor();
   let nSiblings = 0;
   while (cursor.nextSibling()) {
     if (cursor.type === node.type) {

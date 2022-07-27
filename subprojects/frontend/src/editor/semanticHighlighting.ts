@@ -1,5 +1,4 @@
-import { RangeSet } from '@codemirror/rangeset';
-import type { TransactionSpec } from '@codemirror/state';
+import { RangeSet, type TransactionSpec } from '@codemirror/state';
 import { Decoration } from '@codemirror/view';
 
 import { decorationSetExtension } from './decorationSetExtension';
@@ -16,7 +15,7 @@ const [setSemanticHighlightingInternal, semanticHighlighting] = decorationSetExt
 
 export function setSemanticHighlighting(ranges: IHighlightRange[]): TransactionSpec {
   const rangeSet = RangeSet.of(ranges.map(({ from, to, classes }) => Decoration.mark({
-    class: classes.map((c) => `cmt-problem-${c}`).join(' '),
+    class: classes.map((c) => `tok-problem-${c}`).join(' '),
   }).range(from, to)), true);
   return setSemanticHighlightingInternal(rangeSet);
 }

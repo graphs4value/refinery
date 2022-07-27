@@ -1,16 +1,16 @@
 [versions]
-jetty = "11.0.7"
-jmh = "1.33"
-junit = "5.8.2"
-mockito = "4.1.0"
-mwe2 = "2.12.2.M1"
-slf4j = "2.0.0-alpha5"
-xtext = "2.26.0.M2"
+jetty = "11.0.11"
+jmh = "1.35"
+junit = "5.9.0"
+mockito = "4.6.1"
+mwe2 = "2.13.0"
+slf4j = "2.0.0-alpha7"
+xtext = "2.28.0.M1"
 
 [libraries]
-ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.25.0" }
+ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.27.0" }
 ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.16.0" }
-ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.28.0" }
+ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.30.0" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "gradle.plugin.com.github.johnrengelman", name = "shadow", version = "7.1.0" }
 gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "3.3" }
@@ -27,13 +27,13 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.6.2.M1" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.7.0" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
-viatra = { group = "org.eclipse.viatra", name = "viatra-query-runtime", version = "2.6.0" }
+viatra = { group = "org.eclipse.viatra", name = "viatra-query-runtime", version = "2.7.0" }
 xtend-lib = { group = "org.eclipse.xtend", name = "org.eclipse.xtend.lib", version.ref = "xtext" }
 xtext-bom = { group = "org.eclipse.xtext", name = "xtext-dev-bom", version.ref = "xtext" }
 xtext-core = { group = "org.eclipse.xtext", name = "org.eclipse.xtext", version.ref = "xtext" }
@@ -46,4 +46,4 @@ xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", v
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.39.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.42.0" }

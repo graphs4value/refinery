@@ -7,6 +7,7 @@
 .pnp.*
 .project
 .settings
+.vscode/
 .yarn/*
 !.yarn/patches
 !.yarn/plugins

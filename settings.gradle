@@ -13,5 +13,3 @@ for (project in rootProject.children) {
 	project.name = "${rootProject.name}-${projectName}"
 	project.projectDir = file("subprojects/${projectName}")
 }
-
-enableFeaturePreview 'VERSION_CATALOGS'
