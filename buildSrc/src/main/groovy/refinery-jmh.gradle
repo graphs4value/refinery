@@ -29,23 +29,25 @@ tasks.register('jmh', JavaExec) {
     classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
 }
 
-eclipse.classpath {
-	plusConfigurations += [configurations.jmhCompileClasspath, configurations.jmhRuntimeClasspath]
-
-	file.whenMerged { classpath ->
-		for (entry in classpath.entries) {
+eclipse.classpath.file.whenMerged { classpath ->
+	for (entry in classpath.entries) {
+		if (entry in org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry) {
 			// Workaround from https://github.com/gradle/gradle/issues/4802#issuecomment-407902081
-			if (entry in org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry) {
-				def usedBy = (entry.entryAttributes['gradle_used_by_scope'] ?: '').split(',')
-				if (usedBy == ['jmh']) {
-					// Allow test helper classes to be used in benchmarks from Eclipse
-					// and do not expose JMH dependencies to the main source code.
-					entry.entryAttributes['test'] = true
-				} else if ((usedBy.contains('main') || usedBy.contains('test')) && !usedBy.contains('jmh')) {
+			if (entry.entryAttributes['gradle_scope'] == 'jmh') {
+				// Allow test helper classes to be used in benchmarks from Eclipse
+				// and do not expose JMH dependencies to the main source code.
+				entry.entryAttributes['test'] = true
+			} else {
+				// Workaround based on
+				// https://discuss.gradle.org/t/gradle-used-by-scope-not-correctly-generated-when-the-java-test-fixtures-plugin-is-used/39935/2
+				def usedBy = new LinkedHashSet(
+					Arrays.asList((entry.entryAttributes['gradle_used_by_scope'] ?: '').split(','))
+				)
+				if (['main', 'test', 'testFixtures'].any { e -> usedBy.contains(e) }) {
 					// main and test sources are also used by jmh sources.
 					usedBy += 'jmh'
-					entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
 				}
+				entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
 			}
 		}
 	}

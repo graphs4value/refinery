@@ -69,6 +69,13 @@ eclipse {
 			if (entry.path.endsWith('-gen')) {
 				entry.entryAttributes['ignore_optional_problems'] = true
 			}
+			// If a project has a main dependency on a project and an test dependency on the testFixtures of a project,
+			// it will be errorneously added as a test-only dependency to Eclipse.
+			// As a workaround, we add all project dependencies as main dependencies
+			// (we do not deliberately use test-only project dependencies).
+			if (entry in org.gradle.plugins.ide.eclipse.model.ProjectDependency) {
+				entry.entryAttributes.remove('test')
+			}
 		}
 	}
 

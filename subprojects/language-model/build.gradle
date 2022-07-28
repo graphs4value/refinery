@@ -1,6 +1,6 @@
 plugins {
-	id 'java-test-fixtures'
 	id 'refinery-java-library'
+	id 'refinery-java-test-fixtures'
 	id 'refinery-mwe2'
 	id 'refinery-sonarqube'
 }
