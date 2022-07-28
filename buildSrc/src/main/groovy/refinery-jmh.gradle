@@ -47,7 +47,9 @@ eclipse.classpath.file.whenMerged { classpath ->
 					// main and test sources are also used by jmh sources.
 					usedBy += 'jmh'
 				}
-				entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
+				if (!usedBy.empty) {
+					entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
+				}
 			}
 		}
 	}

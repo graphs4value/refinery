@@ -24,7 +24,9 @@ eclipse.classpath {
 				if (hasTest && usedBy.contains('testFixtures')) {
 					usedBy += 'test'
 				}
-				entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
+				if (!usedBy.empty) {
+					entry.entryAttributes['gradle_used_by_scope'] = usedBy.join(',')
+				}
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 plugins {
+	id 'refinery-eclipse'
 	id 'refinery-frontend-conventions'
 }
 
