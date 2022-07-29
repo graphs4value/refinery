@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-	api project(':refinery-language-model')
+	api project(':refinery-language')
 	api project(':refinery-store')
 	testImplementation testFixtures(project(':refinery-language'))
 }

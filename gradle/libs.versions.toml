@@ -14,7 +14,6 @@ ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.eco
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "gradle.plugin.com.github.johnrengelman", name = "shadow", version = "7.1.0" }
 gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "3.3" }
-gradlePlugin-xtend = { group = "org.xtext", name = "xtext-gradle-plugin", version = "3.0.0" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty", name = "jetty-servlet", version.ref = "jetty" }

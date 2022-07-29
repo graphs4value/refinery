@@ -24,7 +24,6 @@ dependencies {
 	implementation libs.slf4j.api
 	implementation libs.slf4j.simple
 	implementation libs.slf4j.log4j
-	implementation libs.xtend.lib
 	implementation libs.xtext.web
 	webapp project(path: ':refinery-frontend', configuration: 'productionAssets')
 	testImplementation testFixtures(project(':refinery-language'))

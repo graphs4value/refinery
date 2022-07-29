@@ -1,4 +1,4 @@
-package tools.refinery.language.model;
+package tools.refinery.language;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -34,15 +34,15 @@ public final class ProblemUtil {
 	public static boolean isSingletonVariable(Variable variable) {
 		return variable.eContainingFeature() == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__SINGLETON_VARIABLE;
 	}
-	
+
 	public static boolean isImplicitVariable(Variable variable) {
 		return variable instanceof ImplicitVariable;
 	}
-	
+
 	public static boolean isImplicitNode(Node node) {
 		return node.eContainingFeature() == ProblemPackage.Literals.PROBLEM__NODES;
 	}
-	
+
 	public static boolean isImplicit(EObject eObject) {
 		if (eObject instanceof Node node) {
 			return isImplicitNode(node);
@@ -115,7 +115,6 @@ public final class ProblemUtil {
 
 	private static URI getLibraryUri(String libraryName) {
 		return URI.createURI(ProblemUtil.class.getClassLoader()
-				.getResource("model/" + libraryName + "." + ProblemEMFSetup.XMI_RESOURCE_EXTENSION)
-				.toString());
+				.getResource("tools/refinery/language/%s.problem".formatted(libraryName)).toString());
 	}
 }

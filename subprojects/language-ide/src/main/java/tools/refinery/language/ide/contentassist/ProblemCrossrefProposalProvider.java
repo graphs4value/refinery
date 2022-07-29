@@ -14,7 +14,7 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 
 import com.google.inject.Inject;
 
-import tools.refinery.language.model.ProblemUtil;
+import tools.refinery.language.ProblemUtil;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.resource.ReferenceCounter;
 

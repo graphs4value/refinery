@@ -3,14 +3,11 @@
  */
 package tools.refinery.language;
 
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.resource.IResourceFactory;
-import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.emf.ecore.EPackage;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import tools.refinery.language.model.ProblemEMFSetup;
+import tools.refinery.language.model.problem.ProblemPackage;
 
 /**
  * Initialization support for running Xtext languages without Equinox extension
@@ -22,23 +19,16 @@ public class ProblemStandaloneSetup extends ProblemStandaloneSetupGenerated {
 		new ProblemStandaloneSetup().createInjectorAndDoEMFRegistration();
 	}
 
+	// Here we can't rely on java.util.HashMap#putIfAbsent, because
+	// org.eclipse.emf.ecore.impl.EPackageRegistryImpl#containsKey is overridden
+	// without also overriding putIfAbsent. We must make sure to call the
+	// overridden containsKey implementation.
+	@SuppressWarnings("squid:S3824")
 	@Override
 	public Injector createInjectorAndDoEMFRegistration() {
-		ProblemEMFSetup.doEMFRegistration();
-		var xmiInjector = createXmiInjector();
-		registerXmiInjector(xmiInjector);
+		if (!EPackage.Registry.INSTANCE.containsKey(ProblemPackage.eNS_URI)) {
+			EPackage.Registry.INSTANCE.put(ProblemPackage.eNS_URI, ProblemPackage.eINSTANCE);
+		}
 		return super.createInjectorAndDoEMFRegistration();
-	}
-	
-	protected Injector createXmiInjector() {
-		return Guice.createInjector(new ProblemXmiRuntimeModule());
-	}
-
-	protected void registerXmiInjector(Injector injector) {
-		IResourceFactory resourceFactory = injector.getInstance(IResourceFactory.class);
-		IResourceServiceProvider serviceProvider = injector.getInstance(IResourceServiceProvider.class);
-		
-		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put(ProblemEMFSetup.XMI_RESOURCE_EXTENSION, resourceFactory);
-		IResourceServiceProvider.Registry.INSTANCE.getExtensionToFactoryMap().put(ProblemEMFSetup.XMI_RESOURCE_EXTENSION, serviceProvider);
 	}
 }

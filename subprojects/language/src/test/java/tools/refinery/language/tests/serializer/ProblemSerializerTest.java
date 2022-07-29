@@ -22,7 +22,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.google.inject.Inject;
 
-import tools.refinery.language.model.ProblemUtil;
 import tools.refinery.language.model.problem.Atom;
 import tools.refinery.language.model.problem.LogicValue;
 import tools.refinery.language.model.problem.Node;
@@ -31,7 +30,7 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemFactory;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.VariableOrNode;
-import tools.refinery.language.model.tests.ProblemTestUtil;
+import tools.refinery.language.model.tests.utils.WrappedProblem;
 import tools.refinery.language.tests.ProblemInjectorProvider;
 
 @ExtendWith(InjectionExtension.class)
@@ -40,21 +39,19 @@ class ProblemSerializerTest {
 	@Inject
 	private ResourceSet resourceSet;
 
-	@Inject
-	private ProblemTestUtil testUtil;
-
 	private Resource resource;
 
 	private Problem problem;
 
-	private Problem builtin;
+	private WrappedProblem builtin;
 
 	@BeforeEach
 	void beforeEach() {
 		problem = ProblemFactory.eINSTANCE.createProblem();
 		resource = resourceSet.createResource(URI.createFileURI("test.problem"));
 		resource.getContents().add(problem);
-		builtin = ProblemUtil.getBuiltInLibrary(problem).get();
+		var wrappedProblem = new WrappedProblem(problem);
+		builtin = wrappedProblem.builtin();
 	}
 
 	@ParameterizedTest
@@ -99,8 +96,8 @@ class ProblemSerializerTest {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
 		pred.setName("foo");
 		var parameter = ProblemFactory.eINSTANCE.createParameter();
-		var nodeType = testUtil.findClass(builtin, "node");
-		parameter.setParameterType(nodeType);
+		var nodeType = builtin.findClass("node");
+		parameter.setParameterType(nodeType.get());
 		parameter.setName("p");
 		pred.getParameters().add(parameter);
 		problem.getStatements().add(pred);
@@ -142,20 +139,20 @@ class ProblemSerializerTest {
 	void implicitVariableTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
 		pred.setName("foo");
-		var nodeType = testUtil.findClass(builtin, "node");
+		var nodeType = builtin.findClass("node");
 		var parameter1 = ProblemFactory.eINSTANCE.createParameter();
-		parameter1.setParameterType(nodeType);
+		parameter1.setParameterType(nodeType.get());
 		parameter1.setName("p1");
 		pred.getParameters().add(parameter1);
 		var parameter2 = ProblemFactory.eINSTANCE.createParameter();
-		parameter2.setParameterType(nodeType);
+		parameter2.setParameterType(nodeType.get());
 		parameter2.setName("p2");
 		pred.getParameters().add(parameter2);
 		var conjunction = ProblemFactory.eINSTANCE.createConjunction();
 		var variable = ProblemFactory.eINSTANCE.createImplicitVariable();
 		variable.setName("q");
 		conjunction.getImplicitVariables().add(variable);
-		var equals = testUtil.reference(nodeType, "equals");
+		var equals = nodeType.reference("equals");
 		conjunction.getLiterals().add(createAtom(equals, parameter1, variable));
 		conjunction.getLiterals().add(createAtom(equals, variable, parameter2));
 		pred.getBodies().add(conjunction);
@@ -182,14 +179,14 @@ class ProblemSerializerTest {
 	void singletonVariableTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
 		pred.setName("foo");
-		var nodeType = testUtil.findClass(builtin, "node");
+		var nodeType = builtin.findClass("node");
 		var parameter = ProblemFactory.eINSTANCE.createParameter();
-		parameter.setParameterType(nodeType);
+		parameter.setParameterType(nodeType.get());
 		parameter.setName("p");
 		pred.getParameters().add(parameter);
 		var conjunction = ProblemFactory.eINSTANCE.createConjunction();
 		var atom = ProblemFactory.eINSTANCE.createAtom();
-		var equals = testUtil.reference(nodeType, "equals");
+		var equals = nodeType.reference("equals");
 		atom.setRelation(equals);
 		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeArgument();
 		arg1.setVariableOrNode(parameter);
@@ -224,6 +221,6 @@ class ProblemSerializerTest {
 		}
 		var problemString = outputStream.toString();
 
-		assertThat(problemString, equalTo(expected));
+		assertThat(problemString.replace("\r\n", "\n"), equalTo(expected.replace("\r\n", "\n")));
 	}
 }

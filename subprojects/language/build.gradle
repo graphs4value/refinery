@@ -3,7 +3,6 @@ plugins {
 	id 'refinery-java-test-fixtures'
 	id 'refinery-mwe2'
 	id 'refinery-sonarqube'
-	id 'refinery-xtend'
 	id 'refinery-xtext-conventions'
 }
 
@@ -14,7 +13,6 @@ dependencies {
 	api libs.xtext.xbase
 	api project(':refinery-language-model')
 	testFixturesApi libs.xtext.testing
-	testFixturesApi testFixtures(project(':refinery-language-model'))
 	mwe2 libs.xtext.generator
 	mwe2 libs.xtext.generator.antlr
 }
@@ -50,7 +48,6 @@ for (taskName in [
 		'compileJava',
 		'processResources',
 		'processTestFixturesResources',
-		'generateXtext',
 		'generateEclipseSourceFolders'
 	]) {
 	tasks.named(taskName) {
@@ -70,3 +67,7 @@ sonarqube.properties {
 		'src/testFixtures/xtext-gen/**',
 	]
 }
+
+eclipse.project.natures += [
+	'org.eclipse.xtext.ui.shared.xtextNature'
+]

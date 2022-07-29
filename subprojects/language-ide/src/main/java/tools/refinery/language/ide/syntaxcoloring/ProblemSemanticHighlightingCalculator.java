@@ -15,7 +15,7 @@ import org.eclipse.xtext.util.CancelIndicator;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
-import tools.refinery.language.model.ProblemUtil;
+import tools.refinery.language.ProblemUtil;
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.Node;

@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.eclipse.emf.common.util.EList;
 
-import tools.refinery.language.model.ProblemUtil;
+import tools.refinery.language.ProblemUtil;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.AssertionArgument;
 import tools.refinery.language.model.problem.ClassDeclaration;

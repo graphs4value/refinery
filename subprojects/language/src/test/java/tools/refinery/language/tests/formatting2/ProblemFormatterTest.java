@@ -230,6 +230,6 @@ class ProblemFormatterTest {
 		request.setTextRegionAccess(regionAccess);
 		List<ITextReplacement> replacements = formatter2.format(request);
 		var formattedString = regionAccess.getRewriter().renderToString(replacements);
-		assertThat(formattedString, equalTo(expected));
+		assertThat(formattedString.replace("\r\n", "\n"), equalTo(expected.replace("\r\n", "\n")));
 	}
 }
