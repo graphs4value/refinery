@@ -33,7 +33,6 @@ slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
 viatra = { group = "org.eclipse.viatra", name = "viatra-query-runtime", version = "2.7.0" }
-xtend-lib = { group = "org.eclipse.xtend", name = "org.eclipse.xtend.lib", version.ref = "xtext" }
 xtext-bom = { group = "org.eclipse.xtext", name = "xtext-dev-bom", version.ref = "xtext" }
 xtext-core = { group = "org.eclipse.xtext", name = "org.eclipse.xtext", version.ref = "xtext" }
 xtext-generator-antlr = { group = "org.eclipse.xtext", name = "xtext-antlr-generator", version = "2.1.1" }
