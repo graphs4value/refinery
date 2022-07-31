@@ -49,7 +49,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 			doc.format(argument);
 		}
 	}
-	
+
 	protected void format(ClassDeclaration classDeclaration, IFormattableDocument doc) {
 		surroundNewLines(doc, classDeclaration, this::twoNewLines);
 		var region = regionFor(classDeclaration);
@@ -69,7 +69,6 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	protected void format(PredicateDefinition predicateDefinition, IFormattableDocument doc) {
 		surroundNewLines(doc, predicateDefinition, this::twoNewLines);
 		var region = regionFor(predicateDefinition);
-		doc.append(region.feature(ProblemPackage.Literals.PREDICATE_DEFINITION__KIND), this::oneSpace);
 		doc.append(region.keyword("pred"), this::oneSpace);
 		doc.append(region.feature(ProblemPackage.Literals.NAMED_ELEMENT__NAME), this::noSpace);
 		formatParenthesizedList(region, doc);
@@ -98,12 +97,14 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 
 	protected void format(NegativeLiteral literal, IFormattableDocument doc) {
 		var region = regionFor(literal);
+		doc.append(region.feature(ProblemPackage.Literals.LITERAL__MODALITY), this::oneSpace);
 		doc.append(region.keyword("!"), this::noSpace);
 		doc.format(literal.getAtom());
 	}
 
 	protected void format(Atom atom, IFormattableDocument doc) {
 		var region = regionFor(atom);
+		doc.append(region.feature(ProblemPackage.Literals.LITERAL__MODALITY), this::oneSpace);
 		doc.append(region.feature(ProblemPackage.Literals.ATOM__RELATION), this::noSpace);
 		doc.append(region.feature(ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE), this::noSpace);
 		formatParenthesizedList(region, doc);

@@ -13,10 +13,10 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
 import tools.refinery.language.ProblemUtil;
-import tools.refinery.language.model.problem.Action;
 import tools.refinery.language.model.problem.ClassDeclaration;
+import tools.refinery.language.model.problem.Consequent;
 import tools.refinery.language.model.problem.ExistentialQuantifier;
-import tools.refinery.language.model.problem.NewActionLiteral;
+import tools.refinery.language.model.problem.NewAction;
 import tools.refinery.language.model.problem.ParametricDefinition;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemPackage;
@@ -41,7 +41,8 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 			return getNodesScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE
-				|| reference == ProblemPackage.Literals.DELETE_ACTION_LITERAL__VARIABLE_OR_NODE) {
+				|| reference == ProblemPackage.Literals.NEW_ACTION__PARENT
+				|| reference == ProblemPackage.Literals.DELETE_ACTION__VARIABLE_OR_NODE) {
 			return getVariableScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) {
@@ -60,32 +61,39 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 
 	protected IScope getVariableScope(EObject context, IScope delegateScope) {
 		List<Variable> variables = new ArrayList<>();
+		addSingletonVariableToScope(context, variables);
 		EObject currentContext = context;
+		while (currentContext != null && !(currentContext instanceof ParametricDefinition)) {
+			addExistentiallyQualifiedVariableToScope(currentContext, variables);
+			currentContext = currentContext.eContainer();
+		}
+		IScope parentScope = getNodesScope(context, delegateScope);
+		if (currentContext != null) {
+			ParametricDefinition definition = (ParametricDefinition) currentContext;
+			parentScope = Scopes.scopeFor(definition.getParameters(), parentScope);
+		}
+		return Scopes.scopeFor(variables, parentScope);
+	}
+
+	protected void addSingletonVariableToScope(EObject context, List<Variable> variables) {
 		if (context instanceof VariableOrNodeArgument argument) {
 			Variable singletonVariable = argument.getSingletonVariable();
 			if (singletonVariable != null) {
 				variables.add(singletonVariable);
 			}
 		}
-		while (currentContext != null && !(currentContext instanceof ParametricDefinition)) {
-			if (currentContext instanceof ExistentialQuantifier quantifier) {
-				variables.addAll(quantifier.getImplicitVariables());
-			} else
-			if(currentContext instanceof Action action) {
-				for (var literal : action.getActionLiterals()) {
-					if(literal instanceof NewActionLiteral newActionLiteral && newActionLiteral.getVariable() != null) {
-						variables.add(newActionLiteral.getVariable());
-					}
+	}
+
+	protected void addExistentiallyQualifiedVariableToScope(EObject currentContext, List<Variable> variables) {
+		if (currentContext instanceof ExistentialQuantifier quantifier) {
+			variables.addAll(quantifier.getImplicitVariables());
+		} else if (currentContext instanceof Consequent consequent) {
+			for (var literal : consequent.getActions()) {
+				if (literal instanceof NewAction newAction && newAction.getVariable() != null) {
+					variables.add(newAction.getVariable());
 				}
 			}
-			currentContext = currentContext.eContainer();
 		}
-		IScope parentScope = getNodesScope(context, delegateScope);
-		if (currentContext != null) {
-			ParametricDefinition definition = (ParametricDefinition) currentContext;
-			parentScope = Scopes.scopeFor(definition.getParameters(),parentScope);
-		}
-		return Scopes.scopeFor(variables,parentScope);
 	}
 
 	protected IScope getOppositeScope(EObject context, IScope delegateScope) {

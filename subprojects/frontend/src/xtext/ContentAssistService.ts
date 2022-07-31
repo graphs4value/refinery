@@ -16,7 +16,7 @@ const PROPOSALS_LIMIT = 1000;
 
 const IDENTIFIER_REGEXP_STR = '[a-zA-Z0-9_]*';
 
-const HIGH_PRIORITY_KEYWORDS = ['<->', '~>'];
+const HIGH_PRIORITY_KEYWORDS = ['<->', '==>'];
 
 const log = getLogger('xtext.ContentAssistService');
 

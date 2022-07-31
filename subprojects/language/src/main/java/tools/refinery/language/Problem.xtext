@@ -33,25 +33,19 @@ ReferenceDeclaration:
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
 
-enum PredicateKind:
-	DIRECT="direct";
-
 PredicateDefinition:
-	(error?="error" "pred"? | kind=PredicateKind? "pred")
+	(error?="error" "pred"? | "pred")
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
 	".";
 
-enum RuleKind:
-	DIRECT="direct";
-
 RuleDefinition:
-	kind=RuleKind "rule"
+	"rule"
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	(":" bodies+=Conjunction (";" bodies+=Conjunction)*
-	"~>" action=Action)?
+	"==>" consequents+=Consequent (";" consequents+=Consequent)*)?
 	".";
 
 Parameter:
@@ -60,44 +54,39 @@ Parameter:
 Conjunction:
 	literals+=Literal ("," literals+=Literal)*;
 
-Action:
-	actionLiterals+=ActionLiteral ("," actionLiterals+=ActionLiteral)*;
+Consequent:
+	actions+=Action ("," actions+=Action)*;
 
 Literal:
-	Atom | ValueLiteral | NegativeLiteral;
-
-ValueLiteral:
-	atom=Atom
-	(refinement?=":" | "=")
-	values+=LogicConstant ("|" values+=LogicConstant)*;
+	Atom | NegativeLiteral;
 
 NegativeLiteral:
-	"!" atom=Atom;
+	modality=Modality? "!" atom=Atom;
 
-ActionLiteral:
-	ValueActionLiteral | DeleteActionLiteral | NewActionLiteral;
+Action:
+	AssertionAction | DeleteAction | NewAction;
 
-ValueActionLiteral:
-	atom=Atom
-	(refinement?=":" | "=")
-	value=LogicValue;
+AssertionAction:
+	value=ShortLogicValue? atom=Atom |
+	atom=Atom (overwrite?="=" | ":") value=LogicValue;
 
-DeleteActionLiteral:
+DeleteAction:
 	"delete" variableOrNode=[VariableOrNode|QualifiedName];
 
-NewActionLiteral:
-	"new" variable=NewVariable;
+NewAction:
+	"new" variable=NewVariable (":" parent=[VariableOrNode|QualifiedName])?;
 
 NewVariable:
 	name=Identifier;
 
+enum Modality:
+	MAY="may" | MUST="must" | CURRENT="current";
+
 Atom:
+	modality=Modality?
 	relation=[Relation|QualifiedName]
 	transitiveClosure?="+"?
 	"(" (arguments+=Argument ("," arguments+=Argument)*)? ")";
-
-LogicConstant:
-	value=LogicValue;
 
 Argument:
 	VariableOrNodeArgument | ConstantArgument;
@@ -185,7 +174,7 @@ QualifiedName hidden():
 
 Identifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" |
-	"indiv" | "problem" | "new" | "delete" | "direct" | "rule";
+	"indiv" | "problem" | "new" | "delete" | "rule" | "may" | "must" | "current";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

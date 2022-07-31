@@ -18,14 +18,14 @@ statement {
     (EnumBody { "{" sep<",", IndividualNodeName> "}" } | ".")
   } |
   PredicateDefinition {
-    (ckw<"error"> ckw<"pred">? | ckw<"direct">? ckw<"pred">)
+    (ckw<"error"> ckw<"pred">? | ckw<"pred">)
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
   } |
   RuleDefinition {
-    ckw<"direct">? ckw<"rule">
+    ckw<"rule">
     RuleName ParameterList<Parameter>?
-    RuleBody { ":" sep<OrOp, Conjunction> "~>" sep<OrOp, Action> "." }
+    RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
   } |
   Assertion {
     kw<"default">? (NotOp | UnknownOp)? RelationName
@@ -57,14 +57,14 @@ Conjunction { ("," | Literal)+ }
 
 OrOp { ";" }
 
-Literal { NotOp? Atom (("=" | ":") sep1<"|", LogicValue>)? }
+Literal { Modality? NotOp? Modality? Atom ((":" | "=") LogicValue)? }
 
 Atom { RelationName "+"? ParameterList<Argument> }
 
-Action { ("," | ActionLiteral)+ }
+Consequent { ("," | Action)+ }
 
-ActionLiteral {
-   ckw<"new"> VariableName |
+Action {
+   ckw<"new"> VariableName (":" VariableName)? |
    ckw<"delete"> VariableName |
    Literal
 }
@@ -77,6 +77,10 @@ Constant { Real | String }
 
 LogicValue {
   ckw<"true"> | ckw<"false"> | ckw<"unknown"> | ckw<"error">
+}
+
+Modality {
+  ckw<"must"> | ckw<"may"> | ckw<"current">
 }
 
 ScopeElement { RelationName ("=" | "+=") Multiplicity }

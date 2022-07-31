@@ -19,20 +19,23 @@ import tools.refinery.language.tests.ProblemInjectorProvider;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemInjectorProvider.class)
-class DirectRuleParsingTest {
+class RuleParsingTest {
 	@Inject
 	private ProblemParseHelper parseHelper;
 
 	@ParameterizedTest
 	@ValueSource(strings = { """
 			pred Person(p).
-			direct rule r(p1): Person(p1) = true ~> Person(p1) = false.
+			rule r(p1): must Person(p1) ==> Person(p1) = false.
 			""", """
 			pred Person(p).
-			direct rule r(p1): Person(p1) = true ~> Person(p1): false.
+			rule r(p1): must Person(p1) ==> Person(p1): false.
 			""", """
 			pred Person(p).
-			direct rule r(p1): Person(p1): false ~> delete p1.
+			rule r(p1): must Person(p1) ==> !Person(p1).
+			""", """
+			pred Person(p).
+			rule r(p1): must Person(p1) ==> delete p1.
 			""" })
 	void simpleTest(String text) {
 		var problem = parseHelper.parse(text);
@@ -43,41 +46,41 @@ class DirectRuleParsingTest {
 	void newNodeTest() {
 		var problem = parseHelper.parse("""
 				pred Person(p).
-				direct rule r(p1): Person(p1) = true ~> new p2, Person(p2) = unknown.
+				rule r(p1): must Person(p1) ==> new p2, Person(p2) = unknown.
 				""");
 		assertThat(problem.errors(), empty());
-		assertThat(problem.rule("r").param(0), equalTo(problem.rule("r").conj(0).lit(0).valueAtom().arg(0).variable()));
-		assertThat(problem.rule("r").actionLit(0).newVar(),
-				equalTo(problem.rule("r").actionLit(1).valueAtom().arg(0).variable()));
+		assertThat(problem.rule("r").param(0), equalTo(problem.rule("r").conj(0).lit(0).arg(0).variable()));
+		assertThat(problem.rule("r").consequent(0).action(0).newVar(),
+				equalTo(problem.rule("r").consequent(0).action(1).assertedAtom().arg(0).variable()));
 	}
 
 	@Test
 	void differentScopeTest() {
 		var problem = parseHelper.parse("""
 				pred Friend(a, b).
-				direct rule r(p1): Friend(p1, p2) = false ~> new p2, Friend(p1, p2) = true.
+				rule r(p1): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) = true.
 				""");
 		assertThat(problem.errors(), empty());
-		assertThat(problem.rule("r").conj(0).lit(0).valueAtom().arg(1).variable(),
-				not(equalTo(problem.rule("r").actionLit(1).valueAtom().arg(1).variable())));
+		assertThat(problem.rule("r").conj(0).lit(0).negated().arg(1).variable(),
+				not(equalTo(problem.rule("r").consequent(0).action(1).assertedAtom().arg(1).variable())));
 	}
 
 	@Test
 	void parameterShadowingTest() {
 		var problem = parseHelper.parse("""
 				pred Friend(a, b).
-				direct rule r(p1, p2): Friend(p1, p2) = false ~> new p2, Friend(p1, p2) = true.
+				rule r(p1, p2): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) = true.
 				""");
 		assertThat(problem.errors(), empty());
 		assertThat(problem.rule("r").param(1),
-				not(equalTo(problem.rule("r").actionLit(1).valueAtom().arg(1).variable())));
+				not(equalTo(problem.rule("r").consequent(0).action(1).assertedAtom().arg(1).variable())));
 	}
 
 	@Test
 	void deleteDifferentScopeNodeTest() {
 		var problem = parseHelper.parse("""
 				pred Person(p).
-				direct rule r(p1): Friend(p1, p2) = true ~> delete p2.
+				rule r(p1): must Friend(p1, p2) ==> delete p2.
 				""");
 		assertThat(problem.errors(), not(empty()));
 	}

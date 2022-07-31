@@ -80,8 +80,8 @@ export function indentPredicateOrRule(context: TreeIndentContext): number {
   if (/^\s+[;.]/.exec(context.textAfter) !== null) {
     return clauseIndent - 2;
   }
-  if (/^\s+(~>)/.exec(context.textAfter) !== null) {
-    return clauseIndent - 3;
+  if (/^\s+(==>)/.exec(context.textAfter) !== null) {
+    return clauseIndent - 4;
   }
   return clauseIndent;
 }

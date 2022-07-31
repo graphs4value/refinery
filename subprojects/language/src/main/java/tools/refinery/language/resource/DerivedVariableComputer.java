@@ -29,7 +29,6 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemFactory;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.Statement;
-import tools.refinery.language.model.problem.ValueLiteral;
 import tools.refinery.language.model.problem.VariableOrNodeArgument;
 import tools.refinery.language.naming.NamingUtil;
 
@@ -72,9 +71,6 @@ public class DerivedVariableComputer {
 		for (Literal literal : conjunction.getLiterals()) {
 			if (literal instanceof Atom atom) {
 				createSigletonVariablesAndCollectVariables(atom, knownVariables, newVariables);
-			} else
-			if (literal instanceof ValueLiteral valueLiteral) {
-				createSigletonVariablesAndCollectVariables(valueLiteral.getAtom(), knownVariables, newVariables);
 			}
 		}
 		createVariables(conjunction, newVariables);

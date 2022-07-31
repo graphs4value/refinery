@@ -8,7 +8,7 @@ public record WrappedRuleDefinition(RuleDefinition ruleDefinition) implements Wr
 		return ruleDefinition;
 	}
 	
-	public WrappedActionLiteral actionLit(int i) {
-		return new WrappedActionLiteral(ruleDefinition.getAction().getActionLiterals().get(i));
+	public WrappedConsequent consequent(int i) {
+		return new WrappedConsequent(ruleDefinition.getConsequents().get(i));
 	}
 }
