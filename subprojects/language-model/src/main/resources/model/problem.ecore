@@ -48,7 +48,7 @@
         eType="#//Argument" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ImplicitVariable" eSuperTypes="#//Variable"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NegativeLiteral" eSuperTypes="#//ExistentialQuantifier #//Literal">
+  <eClassifiers xsi:type="ecore:EClass" name="CompoundLiteral" abstract="true" eSuperTypes="#//ExistentialQuantifier #//Literal">
     <eStructuralFeatures xsi:type="ecore:EReference" name="atom" eType="#//Atom" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ExistentialQuantifier" abstract="true"
@@ -176,5 +176,19 @@
     <eLiterals name="MAY" value="1"/>
     <eLiterals name="MUST" value="2"/>
     <eLiterals name="CURRENT" value="3"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NegativeLiteral" eSuperTypes="#//CompoundLiteral"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CountLiteral" eSuperTypes="#//CompoundLiteral">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//ComparisonOp"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="threshold" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="0"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ComparisonOp">
+    <eLiterals name="LESS"/>
+    <eLiterals name="LESS_EQ" value="1"/>
+    <eLiterals name="GREATER" value="2"/>
+    <eLiterals name="GREATER_EQ" value="3"/>
+    <eLiterals name="EQ" value="4"/>
+    <eLiterals name="NOT_EQ" value="5"/>
   </eClassifiers>
 </ecore:EPackage>

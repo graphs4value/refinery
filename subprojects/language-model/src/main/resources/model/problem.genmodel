@@ -22,6 +22,14 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MUST"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/CURRENT"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ComparisonOp">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/LESS"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/LESS_EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/GREATER"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/GREATER_EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NOT_EQ"/>
+    </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/statements"/>
@@ -61,8 +69,8 @@
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Atom/arguments"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//ImplicitVariable"/>
-    <genClasses ecoreClass="problem.ecore#//NegativeLiteral">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//NegativeLiteral/atom"/>
+    <genClasses ecoreClass="problem.ecore#//CompoundLiteral">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//CompoundLiteral/atom"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//ExistentialQuantifier">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ExistentialQuantifier/implicitVariables"/>
@@ -153,5 +161,10 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//NewAction/parent"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//NewVariable"/>
+    <genClasses ecoreClass="problem.ecore#//NegativeLiteral"/>
+    <genClasses ecoreClass="problem.ecore#//CountLiteral">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//CountLiteral/op"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//CountLiteral/threshold"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

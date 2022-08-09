@@ -57,7 +57,12 @@ Conjunction { ("," | Literal)+ }
 
 OrOp { ";" }
 
-Literal { Modality? NotOp? Modality? Atom ((":" | "=") LogicValue)? }
+Literal {
+  Modality? (
+    NotOp? Modality? Atom ((":" | "=") LogicValue)? |
+    ckw<"count"> "{" Modality? Atom "}" ComparisonOp int
+  )
+}
 
 Atom { RelationName "+"? ParameterList<Argument> }
 
@@ -140,6 +145,8 @@ sep1<separator, content> { content (separator content)* }
     "'" (![\\'\n] | "\\" ![\n] | "\\\n")+ "'" |
     "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
   }
+
+  ComparisonOp { ">" | ">=" | "<" | "<=" | "=:=" | "=!=" }
 
   NotOp { "!" }
 

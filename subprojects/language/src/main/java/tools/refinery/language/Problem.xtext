@@ -58,10 +58,16 @@ Consequent:
 	actions+=Action ("," actions+=Action)*;
 
 Literal:
-	Atom | NegativeLiteral;
+	Atom | NegativeLiteral | CountLiteral;
 
 NegativeLiteral:
 	modality=Modality? "!" atom=Atom;
+
+enum ComparisonOp:
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="=:=" | NOT_EQ="=!=" ;
+
+CountLiteral:
+	modality=Modality? "count" "{" atom=Atom "}" op=ComparisonOp threshold=INT;
 
 Action:
 	AssertionAction | DeleteAction | NewAction;
@@ -174,7 +180,7 @@ QualifiedName hidden():
 
 Identifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" |
-	"indiv" | "problem" | "new" | "delete" | "rule" | "may" | "must" | "current";
+	"indiv" | "problem" | "new" | "delete" | "rule" | "may" | "must" | "current" | "count";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

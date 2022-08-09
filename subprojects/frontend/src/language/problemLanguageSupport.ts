@@ -30,7 +30,7 @@ const parserWithMetadata = (parser as LRParser).configure({
       'problem class enum pred rule indiv scope': t.definitionKeyword,
       'abstract extends refers contains opposite error default': t.modifier,
       'true false unknown error': t.keyword,
-      'may must current': t.operatorKeyword,
+      'may must current count': t.operatorKeyword,
       'new delete': t.operatorKeyword,
       NotOp: t.operator,
       UnknownOp: t.operator,

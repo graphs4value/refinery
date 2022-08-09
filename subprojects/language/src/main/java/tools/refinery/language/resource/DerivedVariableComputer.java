@@ -18,11 +18,11 @@ import com.google.inject.name.Named;
 
 import tools.refinery.language.model.problem.Argument;
 import tools.refinery.language.model.problem.Atom;
+import tools.refinery.language.model.problem.CompoundLiteral;
 import tools.refinery.language.model.problem.Conjunction;
 import tools.refinery.language.model.problem.ExistentialQuantifier;
 import tools.refinery.language.model.problem.ImplicitVariable;
 import tools.refinery.language.model.problem.Literal;
-import tools.refinery.language.model.problem.NegativeLiteral;
 import tools.refinery.language.model.problem.Parameter;
 import tools.refinery.language.model.problem.ParametricDefinition;
 import tools.refinery.language.model.problem.Problem;
@@ -76,16 +76,16 @@ public class DerivedVariableComputer {
 		createVariables(conjunction, newVariables);
 		newVariables.addAll(knownVariables);
 		for (Literal literal : conjunction.getLiterals()) {
-			if (literal instanceof NegativeLiteral negativeLiteral) {
-				installDeriveNegativeLiteralState(negativeLiteral, newVariables);
+			if (literal instanceof CompoundLiteral compoundLiteral) {
+				installDerivedCompoundLiteralState(compoundLiteral, newVariables);
 			}
 		}
 	}
 
-	protected void installDeriveNegativeLiteralState(NegativeLiteral negativeLiteral, Set<String> knownVariables) {
+	protected void installDerivedCompoundLiteralState(CompoundLiteral compoundLiteral, Set<String> knownVariables) {
 		Set<String> newVariables = new HashSet<>();
-		createSigletonVariablesAndCollectVariables(negativeLiteral.getAtom(), knownVariables, newVariables);
-		createVariables(negativeLiteral, newVariables);
+		createSigletonVariablesAndCollectVariables(compoundLiteral.getAtom(), knownVariables, newVariables);
+		createVariables(compoundLiteral, newVariables);
 	}
 
 	protected void createSigletonVariablesAndCollectVariables(Atom atom, Set<String> knownVariables,
@@ -169,9 +169,9 @@ public class DerivedVariableComputer {
 				if (literal instanceof Atom atom) {
 					discardDerivedAtomState(atom);
 				}
-				if (literal instanceof NegativeLiteral negativeLiteral) {
-					negativeLiteral.getImplicitVariables().clear();
-					discardDerivedAtomState(negativeLiteral.getAtom());
+				if (literal instanceof CompoundLiteral compoundLiteral) {
+					compoundLiteral.getImplicitVariables().clear();
+					discardDerivedAtomState(compoundLiteral.getAtom());
 				}
 			}
 		}
