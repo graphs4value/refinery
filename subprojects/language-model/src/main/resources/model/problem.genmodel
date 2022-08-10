@@ -54,6 +54,7 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Parameter">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Parameter/parameterType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/modality"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Variable"/>
     <genClasses ecoreClass="problem.ecore#//Conjunction">

@@ -49,7 +49,7 @@ RuleDefinition:
 	".";
 
 Parameter:
-	parameterType=[Relation|QualifiedName]? name=Identifier;
+	(modality=Modality? parameterType=[Relation|QualifiedName])? name=Identifier;
 
 Conjunction:
 	literals+=Literal ("," literals+=Literal)*;

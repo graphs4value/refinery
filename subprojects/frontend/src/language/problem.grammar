@@ -51,7 +51,7 @@ ReferenceDeclaration {
   ";"?
 }
 
-Parameter { RelationName? VariableName }
+Parameter { Modality? RelationName? VariableName }
 
 Conjunction { ("," | Literal)+ }
 
