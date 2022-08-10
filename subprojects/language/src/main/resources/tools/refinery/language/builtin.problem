@@ -1,7 +1,7 @@
 problem builtin.
 
 abstract class node {
-	refers node[] equals opposite equals.
+	refers node[] equals opposite equals
 }
 
 pred exists(node node).

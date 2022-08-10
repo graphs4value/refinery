@@ -28,7 +28,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/GREATER"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/GREATER_EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/EQ"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NOT_EQ"/>
     </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>

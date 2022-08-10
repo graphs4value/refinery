@@ -64,23 +64,23 @@ NegativeLiteral:
 	modality=Modality? "!" atom=Atom;
 
 enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="=:=" | NOT_EQ="=!=" ;
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==";
 
 CountLiteral:
-	modality=Modality? "count" "{" atom=Atom "}" op=ComparisonOp threshold=INT;
+	modality=Modality? "count" atom=Atom op=ComparisonOp threshold=INT;
 
 Action:
 	AssertionAction | DeleteAction | NewAction;
 
 AssertionAction:
 	value=ShortLogicValue? atom=Atom |
-	atom=Atom (overwrite?="=" | ":") value=LogicValue;
+	atom=Atom (overwrite?=":=" | "<:") value=LogicValue;
 
 DeleteAction:
 	"delete" variableOrNode=[VariableOrNode|QualifiedName];
 
 NewAction:
-	"new" variable=NewVariable (":" parent=[VariableOrNode|QualifiedName])?;
+	"new" variable=NewVariable ("<:" parent=[VariableOrNode|QualifiedName])?;
 
 NewVariable:
 	name=Identifier;

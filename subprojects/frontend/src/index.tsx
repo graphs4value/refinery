@@ -37,7 +37,7 @@ pred invalidTaxStatus(Person p) <->
 rule createChild(p, newPerson):
     may children(p, newPerson),
     may !equals(newPerson, newPerson)
-==> new q: newPerson,
+==> new q <: newPerson,
     children(p, q),
     taxStatus(q, child).
 

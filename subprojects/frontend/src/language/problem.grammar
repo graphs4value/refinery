@@ -58,10 +58,8 @@ Conjunction { ("," | Literal)+ }
 OrOp { ";" }
 
 Literal {
-  Modality? (
-    NotOp? Modality? Atom ((":" | "=") LogicValue)? |
-    ckw<"count"> "{" Modality? Atom "}" ComparisonOp int
-  )
+  Modality? (NotOp | ckw<"count">)? Modality? Atom
+  ((":=" | "<:") LogicValue | ComparisonOp int)?
 }
 
 Atom { RelationName "+"? ParameterList<Argument> }
@@ -69,7 +67,7 @@ Atom { RelationName "+"? ParameterList<Argument> }
 Consequent { ("," | Action)+ }
 
 Action {
-   ckw<"new"> VariableName (":" VariableName)? |
+   ckw<"new"> VariableName ("<:" VariableName)? |
    ckw<"delete"> VariableName |
    Literal
 }
@@ -146,7 +144,7 @@ sep1<separator, content> { content (separator content)* }
     "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
   }
 
-  ComparisonOp { ">" | ">=" | "<" | "<=" | "=:=" | "=!=" }
+  ComparisonOp { ">" | ">=" | "<" | "<=" | "==" }
 
   NotOp { "!" }
 
