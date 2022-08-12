@@ -90,12 +90,12 @@ export default styled('div', {
       borderLeft: `2px solid ${theme.palette.primary.main}`,
     },
     '.cm-selectionBackground': {
-      background: '#3e4453',
+      background: theme.palette.selection.main,
     },
     '.cm-focused': {
       outline: 'none',
       '.cm-selectionBackground': {
-        background: '#3e4453',
+        background: theme.palette.selection.main,
       },
     },
     '.cm-panels-top': {
@@ -123,10 +123,11 @@ export default styled('div', {
         li: {
           borderBottom: `1px solid ${theme.palette.divider}`,
           cursor: 'pointer',
+          color: theme.palette.text.primary,
         },
         '[aria-selected]': {
-          background: '#3e4453',
-          color: theme.palette.text.primary,
+          background: theme.palette.selection.main,
+          color: theme.palette.selection.contrastText,
         },
         '&:focus [aria-selected]': {
           background: theme.palette.primary.main,
@@ -161,7 +162,7 @@ export default styled('div', {
       color: theme.palette.text.disabled,
     },
     '.tok-number': {
-      color: '#6188a6',
+      color: theme.palette.highlight.number,
     },
     '.tok-string': {
       color: theme.palette.secondary.dark,
@@ -173,7 +174,7 @@ export default styled('div', {
       color: theme.palette.text.primary,
     },
     '.tok-variableName': {
-      color: '#c8ae9d',
+      color: theme.palette.highlight.parameter,
     },
     '.tok-problem-node': {
       '&, & .tok-variableName': {
@@ -224,9 +225,9 @@ export default styled('div', {
         fontStyle: 'normal',
       },
       '[aria-selected]': {
-        background: `${theme.palette.primary.main} !important`,
+        background: `${theme.palette.selection.main} !important`,
         '.cm-completionIcon, .cm-completionLabel, .cm-completionDetail': {
-          color: theme.palette.primary.contrastText,
+          color: theme.palette.selection.contrastText,
         },
       },
     },
@@ -237,11 +238,11 @@ export default styled('div', {
       textAlign: 'center',
     },
     ...codeMirrorLintStyle,
-    '.cm-problem-write': {
-      background: 'rgba(255, 255, 128, 0.3)',
-    },
     '.cm-problem-read': {
-      background: 'rgba(255, 255, 255, 0.15)',
+      background: theme.palette.highlight.occurences.read,
+    },
+    '.cm-problem-write': {
+      background: theme.palette.highlight.occurences.write,
     },
   };
 });
