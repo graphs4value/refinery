@@ -4,8 +4,8 @@ jmh = "1.35"
 junit = "5.9.0"
 mockito = "4.6.1"
 mwe2 = "2.13.0"
-slf4j = "2.0.0-alpha7"
-xtext = "2.28.0.M1"
+slf4j = "2.0.0-beta1"
+xtext = "2.28.0.M2"
 
 [libraries]
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.27.0" }
