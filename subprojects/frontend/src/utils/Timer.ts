@@ -1,4 +1,4 @@
-export class Timer {
+export default class Timer {
   readonly callback: () => void;
 
   readonly defaultTimeout: number;

@@ -1,8 +1,8 @@
-import { getLogger } from './logger';
+import getLogger from './getLogger';
 
 const log = getLogger('utils.PendingTask');
 
-export class PendingTask<T> {
+export default class PendingTask<T> {
   private readonly resolveCallback: (value: T) => void;
 
   private readonly rejectCallback: (reason?: unknown) => void;

@@ -1,4 +1,4 @@
-import { TreeIndentContext } from '@codemirror/language';
+import type { TreeIndentContext } from '@codemirror/language';
 
 /**
  * Finds the `from` of first non-skipped token, if any,
@@ -11,18 +11,16 @@ import { TreeIndentContext } from '@codemirror/language';
  * @returns the alignment or `null` if there is no token after the opening keyword
  */
 function findAlignmentAfterOpening(context: TreeIndentContext): number | null {
-  const {
-    node: tree,
-    simulatedBreak,
-  } = context;
+  const { node: tree, simulatedBreak } = context;
   const openingToken = tree.childAfter(tree.from);
   if (openingToken === null) {
     return null;
   }
   const openingLine = context.state.doc.lineAt(openingToken.from);
-  const lineEnd = simulatedBreak == null || simulatedBreak <= openingLine.from
-    ? openingLine.to
-    : Math.min(openingLine.to, simulatedBreak);
+  const lineEnd =
+    simulatedBreak == null || simulatedBreak <= openingLine.from
+      ? openingLine.to
+      : Math.min(openingLine.to, simulatedBreak);
   const cursor = openingToken.cursor();
   while (cursor.next() && cursor.from < lineEnd) {
     if (!cursor.type.isSkipped) {
@@ -58,7 +56,10 @@ function findAlignmentAfterOpening(context: TreeIndentContext): number | null {
  * @param units the number of units to indent
  * @returns the desired indentation level
  */
-function indentDeclarationStrategy(context: TreeIndentContext, units: number): number {
+function indentDeclarationStrategy(
+  context: TreeIndentContext,
+  units: number,
+): number {
   const alignment = findAlignmentAfterOpening(context);
   if (alignment !== null) {
     return context.column(alignment);

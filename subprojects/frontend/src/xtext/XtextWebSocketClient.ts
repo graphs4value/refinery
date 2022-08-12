@@ -1,16 +1,17 @@
 import { nanoid } from 'nanoid';
 
-import { getLogger } from '../utils/logger';
-import { PendingTask } from '../utils/PendingTask';
-import { Timer } from '../utils/Timer';
+import PendingTask from '../utils/PendingTask';
+import Timer from '../utils/Timer';
+import getLogger from '../utils/getLogger';
+
 import {
-  xtextWebErrorResponse,
+  XtextWebErrorResponse,
   XtextWebRequest,
-  xtextWebOkResponse,
-  xtextWebPushMessage,
+  XtextWebOkResponse,
+  XtextWebPushMessage,
   XtextWebPushService,
 } from './xtextMessages';
-import { pongResult } from './xtextServiceResults';
+import { PongResult } from './xtextServiceResults';
 
 const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
@@ -18,7 +19,8 @@ const WEBSOCKET_CLOSE_OK = 1000;
 
 const RECONNECT_DELAY_MS = [200, 1000, 5000, 30_000];
 
-const MAX_RECONNECT_DELAY_MS = RECONNECT_DELAY_MS[RECONNECT_DELAY_MS.length - 1];
+const MAX_RECONNECT_DELAY_MS =
+  RECONNECT_DELAY_MS[RECONNECT_DELAY_MS.length - 1];
 
 const BACKGROUND_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
@@ -47,7 +49,7 @@ enum State {
   TimedOut,
 }
 
-export class XtextWebSocketClient {
+export default class XtextWebSocketClient {
   private nextMessageId = 0;
 
   private connection!: WebSocket;
@@ -88,9 +90,11 @@ export class XtextWebSocketClient {
   }
 
   get isOpen(): boolean {
-    return this.state === State.TabVisible
-      || this.state === State.TabHiddenIdle
-      || this.state === State.TabHiddenWaiting;
+    return (
+      this.state === State.TabVisible ||
+      this.state === State.TabHiddenIdle ||
+      this.state === State.TabHiddenWaiting
+    );
   }
 
   private reconnect() {
@@ -104,7 +108,11 @@ export class XtextWebSocketClient {
     this.connection = new WebSocket(webSocketUrl, XTEXT_SUBPROTOCOL_V1);
     this.connection.addEventListener('open', () => {
       if (this.connection.protocol !== XTEXT_SUBPROTOCOL_V1) {
-        log.error('Unknown subprotocol', this.connection.protocol, 'selected by server');
+        log.error(
+          'Unknown subprotocol',
+          this.connection.protocol,
+          'selected by server',
+        );
         this.forceReconnectOnError();
       }
       if (document.visibilityState === 'hidden') {
@@ -126,8 +134,11 @@ export class XtextWebSocketClient {
       this.handleMessage(event.data);
     });
     this.connection.addEventListener('close', (event) => {
-      if (this.isLogicallyClosed && event.code === WEBSOCKET_CLOSE_OK
-        && this.pendingRequests.size === 0) {
+      if (
+        this.isLogicallyClosed &&
+        event.code === WEBSOCKET_CLOSE_OK &&
+        this.pendingRequests.size === 0
+      ) {
         log.info('Websocket closed');
         return;
       }
@@ -144,7 +155,10 @@ export class XtextWebSocketClient {
       return;
     }
     this.idleTimer.cancel();
-    if (this.state === State.TabHiddenIdle || this.state === State.TabHiddenWaiting) {
+    if (
+      this.state === State.TabHiddenIdle ||
+      this.state === State.TabHiddenWaiting
+    ) {
       this.handleTabVisibleConnected();
       return;
     }
@@ -183,7 +197,11 @@ export class XtextWebSocketClient {
       this.closeConnection(1000, 'idle timeout');
       return;
     }
-    log.info('Waiting for', pending, 'pending requests before closing websocket');
+    log.info(
+      'Waiting for',
+      pending,
+      'pending requests before closing websocket',
+    );
   }
 
   private sendPing() {
@@ -192,19 +210,21 @@ export class XtextWebSocketClient {
     }
     const ping = nanoid();
     log.trace('Ping', ping);
-    this.send({ ping }).then((result) => {
-      const parsedPongResult = pongResult.safeParse(result);
-      if (parsedPongResult.success && parsedPongResult.data.pong === ping) {
-        log.trace('Pong', ping);
-        this.pingTimer.schedule();
-      } else {
-        log.error('Invalid pong:', parsedPongResult, 'expected:', ping);
+    this.send({ ping })
+      .then((result) => {
+        const parsedPongResult = PongResult.safeParse(result);
+        if (parsedPongResult.success && parsedPongResult.data.pong === ping) {
+          log.trace('Pong', ping);
+          this.pingTimer.schedule();
+        } else {
+          log.error('Invalid pong:', parsedPongResult, 'expected:', ping);
+          this.forceReconnectOnError();
+        }
+      })
+      .catch((error) => {
+        log.error('Error while waiting for ping', error);
         this.forceReconnectOnError();
-      }
-    }).catch((error) => {
-      log.error('Error while waiting for ping', error);
-      this.forceReconnectOnError();
-    });
+      });
   }
 
   send(request: unknown): Promise<unknown> {
@@ -250,13 +270,13 @@ export class XtextWebSocketClient {
       this.forceReconnectOnError();
       return;
     }
-    const okResponse = xtextWebOkResponse.safeParse(message);
+    const okResponse = XtextWebOkResponse.safeParse(message);
     if (okResponse.success) {
       const { id, response } = okResponse.data;
       this.resolveRequest(id, response);
       return;
     }
-    const errorResponse = xtextWebErrorResponse.safeParse(message);
+    const errorResponse = XtextWebErrorResponse.safeParse(message);
     if (errorResponse.success) {
       const { id, error, message: errorMessage } = errorResponse.data;
       this.rejectRequest(id, new Error(`${error} error: ${errorMessage}`));
@@ -266,14 +286,9 @@ export class XtextWebSocketClient {
       }
       return;
     }
-    const pushMessage = xtextWebPushMessage.safeParse(message);
+    const pushMessage = XtextWebPushMessage.safeParse(message);
     if (pushMessage.success) {
-      const {
-        resource,
-        stateId,
-        service,
-        push,
-      } = pushMessage.data;
+      const { resource, stateId, service, push } = pushMessage.data;
       this.onPush(resource, stateId, service, push);
     } else {
       log.error(
@@ -343,7 +358,8 @@ export class XtextWebSocketClient {
   private handleErrorState() {
     this.state = State.Error;
     this.reconnectTryCount += 1;
-    const delay = RECONNECT_DELAY_MS[this.reconnectTryCount - 1] || MAX_RECONNECT_DELAY_MS;
+    const delay =
+      RECONNECT_DELAY_MS[this.reconnectTryCount - 1] || MAX_RECONNECT_DELAY_MS;
     log.info('Reconnecting in', delay, 'ms');
     this.reconnectTimer.schedule(delay);
   }

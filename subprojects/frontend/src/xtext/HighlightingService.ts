@@ -1,9 +1,10 @@
-import type { EditorStore } from '../editor/EditorStore';
+import type EditorStore from '../editor/EditorStore';
 import type { IHighlightRange } from '../editor/semanticHighlighting';
-import type { UpdateService } from './UpdateService';
+
+import type UpdateService from './UpdateService';
 import { highlightingResult } from './xtextServiceResults';
 
-export class HighlightingService {
+export default class HighlightingService {
   private readonly store: EditorStore;
 
   private readonly updateService: UpdateService;

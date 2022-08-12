@@ -1,11 +1,11 @@
-import { getLogger } from './logger';
-import { PendingTask } from './PendingTask';
+import PendingTask from './PendingTask';
+import getLogger from './getLogger';
 
 const log = getLogger('utils.ConditionVariable');
 
 export type Condition = () => boolean;
 
-export class ConditionVariable {
+export default class ConditionVariable {
   condition: Condition;
 
   defaultTimeout: number;

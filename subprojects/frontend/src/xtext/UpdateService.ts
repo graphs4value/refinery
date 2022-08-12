@@ -1,22 +1,23 @@
 import {
-  ChangeDesc,
+  type ChangeDesc,
   ChangeSet,
-  ChangeSpec,
+  type ChangeSpec,
   StateEffect,
-  Transaction,
+  type Transaction,
 } from '@codemirror/state';
 import { nanoid } from 'nanoid';
 
-import type { EditorStore } from '../editor/EditorStore';
-import type { XtextWebSocketClient } from './XtextWebSocketClient';
-import { ConditionVariable } from '../utils/ConditionVariable';
-import { getLogger } from '../utils/logger';
-import { Timer } from '../utils/Timer';
+import type EditorStore from '../editor/EditorStore';
+import ConditionVariable from '../utils/ConditionVariable';
+import Timer from '../utils/Timer';
+import getLogger from '../utils/getLogger';
+
+import type XtextWebSocketClient from './XtextWebSocketClient';
 import {
-  ContentAssistEntry,
-  contentAssistResult,
-  documentStateResult,
-  formattingResult,
+  type ContentAssistEntry,
+  ContentAssistResult,
+  DocumentStateResult,
+  FormattingResult,
   isConflictResult,
 } from './xtextServiceResults';
 
@@ -32,7 +33,7 @@ export interface IAbortSignal {
   aborted: boolean;
 }
 
-export class UpdateService {
+export default class UpdateService {
   resourceName: string;
 
   xtextStateId: string | null = null;
@@ -76,8 +77,8 @@ export class UpdateService {
   }
 
   onTransaction(transaction: Transaction): void {
-    const setDirtyChangesEffect = transaction.effects.find(
-      (effect) => effect.is(setDirtyChanges),
+    const setDirtyChangesEffect = transaction.effects.find((effect) =>
+      effect.is(setDirtyChanges),
     ) as StateEffect<ChangeSet> | undefined;
     if (setDirtyChangesEffect) {
       const { value } = setDirtyChangesEffect;
@@ -102,7 +103,10 @@ export class UpdateService {
    * @return the summary of changes since the last update
    */
   computeChangesSinceLastUpdate(): ChangeDesc {
-    return this.pendingUpdate?.composeDesc(this.dirtyChanges.desc) || this.dirtyChanges.desc;
+    return (
+      this.pendingUpdate?.composeDesc(this.dirtyChanges.desc) ||
+      this.dirtyChanges.desc
+    );
   }
 
   private handleIdleUpdate() {
@@ -131,7 +135,7 @@ export class UpdateService {
       serviceType: 'update',
       fullText: this.store.state.doc.sliceString(0),
     });
-    const { stateId } = documentStateResult.parse(result);
+    const { stateId } = DocumentStateResult.parse(result);
     return [stateId, undefined];
   }
 
@@ -158,7 +162,7 @@ export class UpdateService {
         requiredStateId: this.xtextStateId,
         ...delta,
       });
-      const parsedDocumentStateResult = documentStateResult.safeParse(result);
+      const parsedDocumentStateResult = DocumentStateResult.safeParse(result);
       if (parsedDocumentStateResult.success) {
         return [parsedDocumentStateResult.data.stateId, undefined];
       }
@@ -197,9 +201,10 @@ export class UpdateService {
           requiredStateId: this.xtextStateId,
           ...delta,
         });
-        const parsedContentAssistResult = contentAssistResult.safeParse(result);
+        const parsedContentAssistResult = ContentAssistResult.safeParse(result);
         if (parsedContentAssistResult.success) {
-          const { stateId, entries: resultEntries } = parsedContentAssistResult.data;
+          const { stateId, entries: resultEntries } =
+            parsedContentAssistResult.data;
           return [stateId, resultEntries];
         }
         if (isConflictResult(result, 'invalidStateId')) {
@@ -223,14 +228,19 @@ export class UpdateService {
     return this.doFetchContentAssist(params, this.xtextStateId as string);
   }
 
-  private async doFetchContentAssist(params: Record<string, unknown>, expectedStateId: string) {
+  private async doFetchContentAssist(
+    params: Record<string, unknown>,
+    expectedStateId: string,
+  ) {
     const result = await this.webSocketClient.send({
       ...params,
       requiredStateId: expectedStateId,
     });
-    const { stateId, entries } = contentAssistResult.parse(result);
+    const { stateId, entries } = ContentAssistResult.parse(result);
     if (stateId !== expectedStateId) {
-      throw new Error(`Unexpected state id, expected: ${expectedStateId} got: ${stateId}`);
+      throw new Error(
+        `Unexpected state id, expected: ${expectedStateId} got: ${stateId}`,
+      );
     }
     return entries;
   }
@@ -250,7 +260,7 @@ export class UpdateService {
         selectionStart: from,
         selectionEnd: to,
       });
-      const { stateId, formattedText } = formattingResult.parse(result);
+      const { stateId, formattedText } = FormattingResult.parse(result);
       this.applyBeforeDirtyChanges({
         from,
         to,
@@ -282,16 +292,15 @@ export class UpdateService {
   }
 
   private applyBeforeDirtyChanges(changeSpec: ChangeSpec) {
-    const pendingChanges = this.pendingUpdate?.compose(this.dirtyChanges) || this.dirtyChanges;
+    const pendingChanges =
+      this.pendingUpdate?.compose(this.dirtyChanges) || this.dirtyChanges;
     const revertChanges = pendingChanges.invert(this.store.state.doc);
     const applyBefore = ChangeSet.of(changeSpec, revertChanges.newLength);
     const redoChanges = pendingChanges.map(applyBefore.desc);
     const changeSet = revertChanges.compose(applyBefore).compose(redoChanges);
     this.store.dispatch({
       changes: changeSet,
-      effects: [
-        setDirtyChanges.of(redoChanges),
-      ],
+      effects: [setDirtyChanges.of(redoChanges)],
     });
   }
 
@@ -316,7 +325,9 @@ export class UpdateService {
    * @param callback the asynchronous callback that updates the server state
    * @return a promise resolving to the second value returned by `callback`
    */
-  private async withUpdate<T>(callback: () => Promise<[string, T]>): Promise<T> {
+  private async withUpdate<T>(
+    callback: () => Promise<[string, T]>,
+  ): Promise<T> {
     if (this.pendingUpdate !== null) {
       throw new Error('Another update is pending, will not perform update');
     }

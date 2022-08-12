@@ -1,11 +1,16 @@
 import { StateEffect, StateField, TransactionSpec } from '@codemirror/state';
 import { EditorView, Decoration, DecorationSet } from '@codemirror/view';
 
-export type TransactionSpecFactory = (decorations: DecorationSet) => TransactionSpec;
+export type TransactionSpecFactory = (
+  decorations: DecorationSet,
+) => TransactionSpec;
 
-export function decorationSetExtension(): [TransactionSpecFactory, StateField<DecorationSet>] {
+export default function defineDecorationSetExtension(): [
+  TransactionSpecFactory,
+  StateField<DecorationSet>,
+] {
   const setEffect = StateEffect.define<DecorationSet>();
-  const field = StateField.define<DecorationSet>({
+  const stateField = StateField.define<DecorationSet>({
     create() {
       return Decoration.none;
     },
@@ -24,16 +29,14 @@ export function decorationSetExtension(): [TransactionSpecFactory, StateField<De
       }
       return newDecorations;
     },
-    provide: (f) => EditorView.decorations.from(f),
+    provide: (field) => EditorView.decorations.from(field),
   });
 
   function transactionSpecFactory(decorations: DecorationSet) {
     return {
-      effects: [
-        setEffect.of(decorations),
-      ],
+      effects: [setEffect.of(decorations)],
     };
   }
 
-  return [transactionSpecFactory, field];
+  return [transactionSpecFactory, stateField];
 }

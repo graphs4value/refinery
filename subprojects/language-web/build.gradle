@@ -8,7 +8,7 @@ configurations {
 		canBeConsumed = false
 		canBeResolved = true
 	}
-	
+
 	all {
 		// Use log4j-over-slf4j instead of log4j 1.x
 		exclude group: 'log4j', module: 'log4j'
@@ -60,7 +60,7 @@ tasks.named('shadowJar') {
 	}
 }
 
-def jettyRun = tasks.register('jettyRun', JavaExec) {
+tasks.register('serveBackend', JavaExec) {
 	dependsOn project.configurations.webapp
 	dependsOn sourceSets.main.runtimeClasspath
 	classpath = sourceSets.main.runtimeClasspath

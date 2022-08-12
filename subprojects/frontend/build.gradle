@@ -5,11 +5,11 @@ plugins {
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
 
-def webpackOutputDir = "${buildDir}/webpack"
-def productionResources = file("${webpackOutputDir}/production")
+def viteOutputDir = "${buildDir}/vite"
+def productionResources = file("${viteOutputDir}/production")
 
 frontend {
-	assembleScript = 'assemble:webpack'
+	assembleScript = 'run build'
 }
 
 configurations {
@@ -21,23 +21,10 @@ configurations {
 
 def installFrontend = tasks.named('installFrontend')
 
-def generateLezerGrammar = tasks.register('generateLezerGrammar', RunYarn) {
-	dependsOn installFrontend
-	inputs.file 'src/language/problem.grammar'
-	inputs.file 'package.json'
-	inputs.file rootProject.file('yarn.lock')
-	outputs.file "${buildDir}/generated/sources/lezer/problem.ts"
-	outputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
-	script = 'run assemble:lezer'
-}
-
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
-	dependsOn generateLezerGrammar
 	inputs.dir 'src'
-	inputs.file "${buildDir}/generated/sources/lezer/problem.ts"
-	inputs.file "${buildDir}/generated/sources/lezer/problem.terms.ts"
-	inputs.files('package.json', 'webpack.config.js')
+	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'vite.config.ts')
 	inputs.file rootProject.file('yarn.lock')
 	outputs.dir productionResources
 }
@@ -48,54 +35,62 @@ artifacts {
 	}
 }
 
-def eslint = tasks.register('eslint', RunYarn) {
+def typecheckFrontend = tasks.register('typecheckFrontend', RunYarn) {
 	dependsOn installFrontend
 	inputs.dir 'src'
-	inputs.files('.eslintrc.js', 'tsconfig.json')
+	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'tsconfig.node.json')
+	inputs.file rootProject.file('yarn.lock')
+	outputs.dir "${buildDir}/typescript"
+	script = 'run typecheck'
+	group = 'verification'
+	description = 'Check for TypeScript type errors.'
+}
+
+def lintFrontend = tasks.register('lintFrontend', RunYarn) {
+	dependsOn installFrontend
+	inputs.dir 'src'
+	inputs.files('.eslintrc.cjs', 'prettier.config.cjs')
+	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'tsconfig.node.json')
 	inputs.file rootProject.file('yarn.lock')
 	if (project.hasProperty('ci')) {
 		outputs.file "${buildDir}/eslint.json"
-		script = 'run check:eslint:ci'
+		script = 'run lint:ci'
 	} else {
-		script = 'run check:eslint'
+		script = 'run lint'
 	}
 	group = 'verification'
-	description = 'Check for TypeScript errors.'
+	description = 'Check for TypeScript lint errors and warnings.'
 }
 
-def stylelint = tasks.register('stylelint', RunYarn) {
+def prettier = tasks.register('fixFrontend', RunYarn) {
 	dependsOn installFrontend
 	inputs.dir 'src'
-	inputs.file '.stylelintrc.js'
+	inputs.files('.eslintrc.cjs', 'prettier.config.cjs')
+	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'tsconfig.node.json')
 	inputs.file rootProject.file('yarn.lock')
-	if (project.hasProperty('ci')) {
-		outputs.file "${buildDir}/stylelint.json"
-		script = 'run check:stylelint:ci'
-	} else {
-		script = 'run check:stylelint'
-	}
+	script = 'run lint:fix'
 	group = 'verification'
-	description = 'Check for Sass errors.'
+	description = 'Fix TypeScript lint errors and warnings.'
 }
 
 tasks.named('check') {
-	dependsOn(eslint, stylelint)
+	dependsOn(typecheckFrontend)
+	dependsOn(lintFrontend)
 }
 
-tasks.register('webpackServe', RunYarn) {
+tasks.register('serveFrontend', RunYarn) {
 	dependsOn installFrontend
-	dependsOn generateLezerGrammar
-	outputs.dir "${webpackOutputDir}/development"
+	inputs.dir 'src'
+	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'vite.config.ts')
+	inputs.file rootProject.file('yarn.lock')
+	outputs.dir "${viteOutputDir}/development"
 	script = 'run serve'
 	group = 'run'
-	description = 'Start a Webpack dev server with hot module replacement.'
+	description = 'Start a Vite dev server with hot module replacement.'
 }
 
 sonarqube.properties {
 	properties['sonar.sources'] += ['src']
 	property 'sonar.nodejs.executable', "${frontend.nodeInstallDirectory.get()}/bin/node"
 	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
-	property 'sonar.css.stylelint.reportPaths', "${buildDir}/stylelint.json"
-	// SonarJS does not pick up typescript files with `exactOptionalPropertyTypes`
-	property 'sonar.typescript.tsconfigPath', 'tsconfig.sonar.json'
 }

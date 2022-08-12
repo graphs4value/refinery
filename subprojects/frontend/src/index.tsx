@@ -1,13 +1,25 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
 import CssBaseline from '@mui/material/CssBaseline';
+import React, { Suspense, lazy } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/400-italic.css';
+import '@fontsource/jetbrains-mono/700.css';
+import '@fontsource/jetbrains-mono/700-italic.css';
+import '@fontsource/jetbrains-mono/variable.css';
+import '@fontsource/jetbrains-mono/variable-italic.css';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/300-italic.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/400-italic.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/500-italic.css';
+import '@fontsource/roboto/700.css';
+import '@fontsource/roboto/700-italic.css';
 
-import { App } from './App';
-import { RootStore, RootStoreProvider } from './RootStore';
-import { ThemeProvider } from './theme/ThemeProvider';
-import { getLogger } from './utils/logger';
-
-import './index.scss';
+import Loading from './Loading';
+import RootStore, { RootStoreProvider } from './RootStore';
+import ThemeProvider from './theme/ThemeProvider';
+import getLogger from './utils/getLogger';
 
 const log = getLogger('index');
 
@@ -60,13 +72,19 @@ scope Family = 1, Person += 5..10.
 
 const rootStore = new RootStore(initialValue);
 
+const App = lazy(() => import('./App.js'));
+
 const app = (
-  <RootStoreProvider rootStore={rootStore}>
-    <ThemeProvider>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
-  </RootStoreProvider>
+  <React.StrictMode>
+    <RootStoreProvider rootStore={rootStore}>
+      <ThemeProvider>
+        <CssBaseline enableColorScheme />
+        <Suspense fallback={<Loading />}>
+          <App />
+        </Suspense>
+      </ThemeProvider>
+    </RootStoreProvider>
+  </React.StrictMode>
 );
 
 const rootElement = document.getElementById('app');

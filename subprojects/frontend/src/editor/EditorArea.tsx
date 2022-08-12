@@ -1,17 +1,13 @@
-import { Command, EditorView } from '@codemirror/view';
-import { closeSearchPanel, openSearchPanel } from '@codemirror/search';
 import { closeLintPanel, openLintPanel } from '@codemirror/lint';
+import { closeSearchPanel, openSearchPanel } from '@codemirror/search';
+import { type Command, EditorView } from '@codemirror/view';
 import { observer } from 'mobx-react-lite';
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { EditorParent } from './EditorParent';
 import { useRootStore } from '../RootStore';
-import { getLogger } from '../utils/logger';
+import getLogger from '../utils/getLogger';
+
+import EditorParent from './EditorParent';
 
 const log = getLogger('editor.EditorArea');
 
@@ -70,10 +66,12 @@ function fixCodeMirrorAccessibility(editorView: EditorView) {
   contentDOM.setAttribute('aria-label', 'Code editor');
 }
 
-export const EditorArea = observer(() => {
+function EditorArea(): JSX.Element {
   const { editorStore } = useRootStore();
   const editorParentRef = useRef<HTMLDivElement | null>(null);
-  const [editorViewState, setEditorViewState] = useState<EditorView | null>(null);
+  const [editorViewState, setEditorViewState] = useState<EditorView | null>(
+    null,
+  );
 
   const setSearchPanelOpen = usePanel(
     'search',
@@ -131,22 +129,21 @@ export const EditorArea = observer(() => {
       editorView.destroy();
       log.info('Editor destroyed');
     };
-  }, [
-    editorParentRef,
-    editorStore,
-    setSearchPanelOpen,
-    setLintPanelOpen,
-  ]);
+  }, [editorStore, setSearchPanelOpen, setLintPanelOpen]);
 
   return (
     <EditorParent
       className="dark"
       sx={{
-        '.cm-lineNumbers': editorStore.showLineNumbers ? {} : {
-          display: 'none !important',
-        },
+        '.cm-lineNumbers': editorStore.showLineNumbers
+          ? {}
+          : {
+              display: 'none !important',
+            },
       }}
       ref={editorParentRef}
     />
   );
-});
+}
+
+export default observer(EditorArea);

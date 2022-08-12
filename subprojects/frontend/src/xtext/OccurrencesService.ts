@@ -1,15 +1,16 @@
 import { Transaction } from '@codemirror/state';
 
-import type { EditorStore } from '../editor/EditorStore';
+import type EditorStore from '../editor/EditorStore';
 import type { IOccurrence } from '../editor/findOccurrences';
-import type { UpdateService } from './UpdateService';
-import { getLogger } from '../utils/logger';
-import { Timer } from '../utils/Timer';
-import { XtextWebSocketClient } from './XtextWebSocketClient';
+import Timer from '../utils/Timer';
+import getLogger from '../utils/getLogger';
+
+import type UpdateService from './UpdateService';
+import type XtextWebSocketClient from './XtextWebSocketClient';
 import {
   isConflictResult,
-  occurrencesResult,
-  TextRegion,
+  OccurrencesResult,
+  type TextRegion,
 } from './xtextServiceResults';
 
 const FIND_OCCURRENCES_TIMEOUT_MS = 1000;
@@ -33,7 +34,7 @@ function transformOccurrences(regions: TextRegion[]): IOccurrence[] {
   return occurrences;
 }
 
-export class OccurrencesService {
+export default class OccurrencesService {
   private readonly store: EditorStore;
 
   private readonly webSocketClient: XtextWebSocketClient;
@@ -94,7 +95,7 @@ export class OccurrencesService {
       this.findOccurrencesTimer.schedule();
       return;
     }
-    const parsedOccurrencesResult = occurrencesResult.safeParse(result);
+    const parsedOccurrencesResult = OccurrencesResult.safeParse(result);
     if (!parsedOccurrencesResult.success) {
       log.error(
         'Unexpected occurences result',
@@ -107,14 +108,25 @@ export class OccurrencesService {
     }
     const { stateId, writeRegions, readRegions } = parsedOccurrencesResult.data;
     if (stateId !== this.updateService.xtextStateId) {
-      log.error('Unexpected state id, expected:', this.updateService.xtextStateId, 'got:', stateId);
+      log.error(
+        'Unexpected state id, expected:',
+        this.updateService.xtextStateId,
+        'got:',
+        stateId,
+      );
       this.clearOccurrences();
       return;
     }
     const write = transformOccurrences(writeRegions);
     const read = transformOccurrences(readRegions);
     this.hasOccurrences = write.length > 0 || read.length > 0;
-    log.debug('Found', write.length, 'write and', read.length, 'read occurrences');
+    log.debug(
+      'Found',
+      write.length,
+      'write and',
+      read.length,
+      'read occurrences',
+    );
     this.store.updateOccurrences(write, read);
   }
 

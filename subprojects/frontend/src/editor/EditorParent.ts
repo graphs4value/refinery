@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 
 /**
  * Returns a squiggly underline background image encoded as a CSS `url()` data URI with Base64.
@@ -17,7 +17,9 @@ function underline(color: string) {
   return `url('data:image/svg+xml;base64,${svgBase64}')`;
 }
 
-export const EditorParent = styled('div')(({ theme }) => {
+export default styled('div', {
+  name: 'EditorParent',
+})(({ theme }) => {
   const codeMirrorLintStyle: Record<string, unknown> = {};
   (['error', 'warning', 'info'] as const).forEach((severity) => {
     const color = theme.palette[severity].main;
@@ -37,19 +39,20 @@ export const EditorParent = styled('div')(({ theme }) => {
     '.cm-content': {
       padding: 0,
     },
-    '.cm-scroller, .cm-tooltip-autocomplete, .cm-completionLabel, .cm-completionDetail': {
-      fontSize: 16,
-      fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
-      fontFeatureSettings: '"liga", "calt"',
-      fontWeight: 400,
-      letterSpacing: 0,
-      textRendering: 'optimizeLegibility',
-    },
+    '.cm-scroller, .cm-tooltip-autocomplete, .cm-completionLabel, .cm-completionDetail':
+      {
+        fontSize: 16,
+        fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
+        fontFeatureSettings: '"liga", "calt"',
+        fontWeight: 400,
+        letterSpacing: 0,
+        textRendering: 'optimizeLegibility',
+      },
     '.cm-scroller': {
       color: theme.palette.text.secondary,
     },
     '.cm-gutters': {
-      background: 'rgba(255, 255, 255, 0.1)',
+      background: 'transparent',
       color: theme.palette.text.disabled,
       border: 'none',
     },
@@ -57,7 +60,19 @@ export const EditorParent = styled('div')(({ theme }) => {
       color: theme.palette.secondary.main,
     },
     '.cm-activeLine': {
-      background: 'rgba(0, 0, 0, 0.3)',
+      background: alpha(theme.palette.text.secondary, 0.06),
+    },
+    '.cm-foldGutter': {
+      color: alpha(theme.palette.text.primary, 0),
+      transition: theme.transitions.create('color', {
+        duration: theme.transitions.duration.short,
+      }),
+      '@media (hover: none)': {
+        color: theme.palette.text.primary,
+      },
+    },
+    '.cm-gutters:hover .cm-foldGutter': {
+      color: theme.palette.text.primary,
     },
     '.cm-activeLineGutter': {
       background: 'transparent',
@@ -66,8 +81,7 @@ export const EditorParent = styled('div')(({ theme }) => {
       color: theme.palette.text.primary,
     },
     '.cm-cursor, .cm-cursor-primary': {
-      borderColor: theme.palette.primary.main,
-      background: theme.palette.common.black,
+      borderLeft: `2px solid ${theme.palette.primary.main}`,
     },
     '.cm-selectionBackground': {
       background: '#3e4453',
@@ -115,9 +129,26 @@ export const EditorParent = styled('div')(({ theme }) => {
       },
     },
     '.cm-foldPlaceholder': {
-      background: theme.palette.background.paper,
-      borderColor: theme.palette.text.disabled,
       color: theme.palette.text.secondary,
+      backgroundColor: alpha(theme.palette.text.secondary, 0),
+      border: `1px solid ${alpha(theme.palette.text.secondary, 0.5)}`,
+      borderRadius: theme.shape.borderRadius,
+      transition: theme.transitions.create(
+        ['background-color', 'border-color', 'color'],
+        {
+          duration: theme.transitions.duration.short,
+        },
+      ),
+      '&:hover': {
+        backgroundColor: alpha(
+          theme.palette.text.secondary,
+          theme.palette.action.hoverOpacity,
+        ),
+        borderColor: theme.palette.text.secondary,
+        '@media (hover: none)': {
+          backgroundColor: 'transparent',
+        },
+      },
     },
     '.tok-comment': {
       fontStyle: 'italic',
@@ -168,9 +199,14 @@ export const EditorParent = styled('div')(({ theme }) => {
     },
     '.cm-tooltip-autocomplete': {
       background: theme.palette.background.paper,
-      boxShadow: `0px 2px 4px -1px rgb(0 0 0 / 20%),
-        0px 4px 5px 0px rgb(0 0 0 / 14%),
-        0px 1px 10px 0px rgb(0 0 0 / 12%)`,
+      ...(theme.palette.mode === 'dark' && {
+        overflow: 'hidden',
+        borderRadius: theme.shape.borderRadius,
+        // https://github.com/mui/material-ui/blob/10c72729c7d03bab8cdce6eb422642684c56dca2/packages/mui-material/src/Paper/Paper.js#L18
+        backgroundImage:
+          'linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))',
+      }),
+      boxShadow: theme.shadows[4],
       '.cm-completionIcon': {
         color: theme.palette.text.secondary,
       },

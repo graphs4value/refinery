@@ -1,7 +1,7 @@
-import { EditorState } from '@codemirror/state';
+import type { EditorState } from '@codemirror/state';
 import type { SyntaxNode } from '@lezer/common';
 
-export type FoldRange = { from: number, to: number };
+export type FoldRange = { from: number; to: number };
 
 /**
  * Folds a block comment between its delimiters.
@@ -47,7 +47,10 @@ export function foldBlockComment(node: SyntaxNode): FoldRange {
  * @param state the editor state
  * @returns the folding range or `null` is there is nothing to fold
  */
-export function foldDeclaration(node: SyntaxNode, state: EditorState): FoldRange | null {
+export function foldDeclaration(
+  node: SyntaxNode,
+  state: EditorState,
+): FoldRange | null {
   const { firstChild: open, lastChild: close } = node;
   if (open === null || close === null) {
     return null;

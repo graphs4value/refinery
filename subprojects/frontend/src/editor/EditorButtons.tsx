@@ -1,9 +1,4 @@
 import type { Diagnostic } from '@codemirror/lint';
-import { observer } from 'mobx-react-lite';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CheckIcon from '@mui/icons-material/Check';
 import ErrorIcon from '@mui/icons-material/Error';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
@@ -13,6 +8,11 @@ import RedoIcon from '@mui/icons-material/Redo';
 import SearchIcon from '@mui/icons-material/Search';
 import UndoIcon from '@mui/icons-material/Undo';
 import WarningIcon from '@mui/icons-material/Warning';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { useRootStore } from '../RootStore';
@@ -27,23 +27,17 @@ function getLintIcon(severity: Diagnostic['severity'] | null) {
       return <WarningIcon fontSize="small" />;
     case 'info':
       return <InfoOutlinedIcon fontSize="small" />;
-    case null:
+    default:
       return <CheckIcon fontSize="small" />;
   }
 }
 
-export const EditorButtons = observer(() => {
+function EditorButtons(): JSX.Element {
   const { editorStore } = useRootStore();
 
   return (
-    <Stack
-      direction="row"
-      spacing={1}
-    >
-      <Stack
-        direction="row"
-        alignItems="center"
-      >
+    <Stack direction="row" spacing={1}>
+      <Stack direction="row" alignItems="center">
         <IconButton
           disabled={!editorStore.canUndo}
           onClick={() => editorStore.undo()}
@@ -59,9 +53,7 @@ export const EditorButtons = observer(() => {
           <RedoIcon fontSize="small" />
         </IconButton>
       </Stack>
-      <ToggleButtonGroup
-        size="small"
-      >
+      <ToggleButtonGroup size="small">
         <ToggleButton
           selected={editorStore.showLineNumbers}
           onClick={() => editorStore.toggleLineNumbers()}
@@ -95,4 +87,6 @@ export const EditorButtons = observer(() => {
       </IconButton>
     </Stack>
   );
-});
+}
+
+export default observer(EditorButtons);

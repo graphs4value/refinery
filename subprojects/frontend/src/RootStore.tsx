@@ -1,9 +1,9 @@
 import React, { createContext, useContext } from 'react';
 
-import { EditorStore } from './editor/EditorStore';
-import { ThemeStore } from './theme/ThemeStore';
+import EditorStore from './editor/EditorStore';
+import ThemeStore from './theme/ThemeStore';
 
-export class RootStore {
+export default class RootStore {
   editorStore;
 
   themeStore;
@@ -22,11 +22,12 @@ export interface RootStoreProviderProps {
   rootStore: RootStore;
 }
 
-export function RootStoreProvider({ children, rootStore }: RootStoreProviderProps): JSX.Element {
+export function RootStoreProvider({
+  children,
+  rootStore,
+}: RootStoreProviderProps): JSX.Element {
   return (
-    <StoreContext.Provider value={rootStore}>
-      {children}
-    </StoreContext.Provider>
+    <StoreContext.Provider value={rootStore}>{children}</StoreContext.Provider>
   );
 }
 

@@ -8,8 +8,9 @@ import type { Transaction } from '@codemirror/state';
 import escapeStringRegexp from 'escape-string-regexp';
 
 import { implicitCompletion } from '../language/props';
-import type { UpdateService } from './UpdateService';
-import { getLogger } from '../utils/logger';
+import getLogger from '../utils/getLogger';
+
+import type UpdateService from './UpdateService';
 import type { ContentAssistEntry } from './xtextServiceResults';
 
 const PROPOSALS_LIMIT = 1000;
@@ -48,10 +49,13 @@ function findToken({ pos, state }: CompletionContext): IFoundToken | null {
   };
 }
 
-function shouldCompleteImplicitly(token: IFoundToken | null, context: CompletionContext): boolean {
-  return token !== null
-    && token.implicitCompletion
-    && context.pos - token.from >= 2;
+function shouldCompleteImplicitly(
+  token: IFoundToken | null,
+  context: CompletionContext,
+): boolean {
+  return (
+    token !== null && token.implicitCompletion && context.pos - token.from >= 2
+  );
 }
 
 function computeSpan(prefix: string, entryCount: number): RegExp {
@@ -78,23 +82,29 @@ function createCompletion(entry: ContentAssistEntry): Completion {
     case 'SNIPPET':
       boost = -90;
       break;
-    default: {
-      // Penalize qualified names (vs available unqualified names).
-      const extraSegments = entry.proposal.match(/::/g)?.length || 0;
-      boost = Math.max(-5 * extraSegments, -50);
-    }
+    default:
+      {
+        // Penalize qualified names (vs available unqualified names).
+        const extraSegments = entry.proposal.match(/::/g)?.length || 0;
+        boost = Math.max(-5 * extraSegments, -50);
+      }
       break;
   }
-  return {
+  const completion: Completion = {
     label: entry.proposal,
-    detail: entry.description,
-    info: entry.documentation,
     type: entry.kind?.toLowerCase(),
     boost,
   };
+  if (entry.documentation !== undefined) {
+    completion.info = entry.documentation;
+  }
+  if (entry.description !== undefined) {
+    completion.detail = entry.description;
+  }
+  return completion;
 }
 
-export class ContentAssistService {
+export default class ContentAssistService {
   private readonly updateService: UpdateService;
 
   private lastCompletion: CompletionResult | null = null;
@@ -117,7 +127,7 @@ export class ContentAssistService {
         options: [],
       };
     }
-    let range: { from: number, to: number };
+    let range: { from: number; to: number };
     let prefix = '';
     if (tokenBefore === null) {
       range = {
@@ -139,17 +149,20 @@ export class ContentAssistService {
       log.trace('Returning cached completion result');
       // Postcondition of `shouldReturnCachedCompletion`: `lastCompletion !== null`
       return {
-        ...this.lastCompletion as CompletionResult,
+        ...(this.lastCompletion as CompletionResult),
         ...range,
       };
     }
     this.lastCompletion = null;
-    const entries = await this.updateService.fetchContentAssist({
-      resource: this.updateService.resourceName,
-      serviceType: 'assist',
-      caretOffset: context.pos,
-      proposalsLimit: PROPOSALS_LIMIT,
-    }, context);
+    const entries = await this.updateService.fetchContentAssist(
+      {
+        resource: this.updateService.resourceName,
+        serviceType: 'assist',
+        caretOffset: context.pos,
+        proposalsLimit: PROPOSALS_LIMIT,
+      },
+      context,
+    );
     if (context.aborted) {
       return {
         ...range,
@@ -175,7 +188,7 @@ export class ContentAssistService {
   }
 
   private shouldReturnCachedCompletion(
-    token: { from: number, to: number, text: string } | null,
+    token: { from: number; to: number; text: string } | null,
   ): boolean {
     if (token === null || this.lastCompletion === null) {
       return false;
@@ -185,11 +198,16 @@ export class ContentAssistService {
     if (!lastTo) {
       return true;
     }
-    const [transformedFrom, transformedTo] = this.mapRangeInclusive(lastFrom, lastTo);
-    return from >= transformedFrom
-      && to <= transformedTo
-      && validFor instanceof RegExp
-      && validFor.exec(text) !== null;
+    const [transformedFrom, transformedTo] = this.mapRangeInclusive(
+      lastFrom,
+      lastTo,
+    );
+    return (
+      from >= transformedFrom &&
+      to <= transformedTo &&
+      validFor instanceof RegExp &&
+      validFor.exec(text) !== null
+    );
   }
 
   private shouldInvalidateCachedCompletion(transaction: Transaction): boolean {
@@ -200,7 +218,10 @@ export class ContentAssistService {
     if (!lastTo) {
       return true;
     }
-    const [transformedFrom, transformedTo] = this.mapRangeInclusive(lastFrom, lastTo);
+    const [transformedFrom, transformedTo] = this.mapRangeInclusive(
+      lastFrom,
+      lastTo,
+    );
     let invalidate = false;
     transaction.changes.iterChangedRanges((fromA, toA) => {
       if (fromA < transformedFrom || toA > transformedTo) {
@@ -210,7 +231,10 @@ export class ContentAssistService {
     return invalidate;
   }
 
-  private mapRangeInclusive(lastFrom: number, lastTo: number): [number, number] {
+  private mapRangeInclusive(
+    lastFrom: number,
+    lastTo: number,
+  ): [number, number] {
     const changes = this.updateService.computeChangesSinceLastUpdate();
     const transformedFrom = changes.mapPos(lastFrom);
     const transformedTo = changes.mapPos(lastTo, 1);

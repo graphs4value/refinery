@@ -1,10 +1,11 @@
 import type { Diagnostic } from '@codemirror/lint';
 
-import type { EditorStore } from '../editor/EditorStore';
-import type { UpdateService } from './UpdateService';
-import { validationResult } from './xtextServiceResults';
+import type EditorStore from '../editor/EditorStore';
 
-export class ValidationService {
+import type UpdateService from './UpdateService';
+import { ValidationResult } from './xtextServiceResults';
+
+export default class ValidationService {
   private readonly store: EditorStore;
 
   private readonly updateService: UpdateService;
@@ -15,15 +16,10 @@ export class ValidationService {
   }
 
   onPush(push: unknown): void {
-    const { issues } = validationResult.parse(push);
+    const { issues } = ValidationResult.parse(push);
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
     const diagnostics: Diagnostic[] = [];
-    issues.forEach(({
-      offset,
-      length,
-      severity,
-      description,
-    }) => {
+    issues.forEach(({ offset, length, severity, description }) => {
       if (severity === 'ignore') {
         return;
       }

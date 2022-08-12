@@ -1,7 +1,7 @@
-import { Range, RangeSet, type TransactionSpec } from '@codemirror/state';
+import { type Range, RangeSet, type TransactionSpec } from '@codemirror/state';
 import { Decoration } from '@codemirror/view';
 
-import { decorationSetExtension } from './decorationSetExtension';
+import defineDecorationSetExtension from './defineDecorationSetExtension';
 
 export interface IOccurrence {
   from: number;
@@ -9,7 +9,7 @@ export interface IOccurrence {
   to: number;
 }
 
-const [setOccurrencesInteral, findOccurrences] = decorationSetExtension();
+const [setOccurrencesInteral, findOccurrences] = defineDecorationSetExtension();
 
 const writeDecoration = Decoration.mark({
   class: 'cm-problem-write',
@@ -19,7 +19,10 @@ const readDecoration = Decoration.mark({
   class: 'cm-problem-read',
 });
 
-export function setOccurrences(write: IOccurrence[], read: IOccurrence[]): TransactionSpec {
+export function setOccurrences(
+  write: IOccurrence[],
+  read: IOccurrence[],
+): TransactionSpec {
   const decorations: Range<Decoration>[] = [];
   write.forEach(({ from, to }) => {
     decorations.push(writeDecoration.range(from, to));
@@ -31,4 +34,4 @@ export function setOccurrences(write: IOccurrence[], read: IOccurrence[]): Trans
   return setOccurrencesInteral(rangeSet);
 }
 
-export { findOccurrences };
+export default findOccurrences;

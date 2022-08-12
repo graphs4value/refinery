@@ -1,13 +1,13 @@
-import { observer } from 'mobx-react-lite';
-import Button from '@mui/material/Button';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import Button from '@mui/material/Button';
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { useRootStore } from '../RootStore';
 
 const GENERATE_LABEL = 'Generate';
 
-export const GenerateButton = observer(() => {
+function GenerateButton(): JSX.Element {
   const { editorStore } = useRootStore();
   const { errorCount, warningCount } = editorStore;
 
@@ -41,4 +41,6 @@ export const GenerateButton = observer(() => {
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}
     </Button>
   );
-});
+}
+
+export default observer(GenerateButton);

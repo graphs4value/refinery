@@ -21,18 +21,14 @@ import {
   indentOnInput,
   syntaxHighlighting,
 } from '@codemirror/language';
-import {
-  Diagnostic,
-  lintKeymap,
-  setDiagnostics,
-} from '@codemirror/lint';
+import { type Diagnostic, lintKeymap, setDiagnostics } from '@codemirror/lint';
 import { search, searchKeymap } from '@codemirror/search';
 import {
   EditorState,
-  StateCommand,
+  type StateCommand,
   StateEffect,
-  Transaction,
-  TransactionSpec,
+  type Transaction,
+  type TransactionSpec,
 } from '@codemirror/state';
 import {
   drawSelection,
@@ -45,26 +41,25 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { classHighlighter } from '@lezer/highlight';
-import {
-  makeAutoObservable,
-  observable,
-  reaction,
-} from 'mobx';
+import { makeAutoObservable, observable, reaction } from 'mobx';
 
-import { findOccurrences, IOccurrence, setOccurrences } from './findOccurrences';
-import { problemLanguageSupport } from '../language/problemLanguageSupport';
-import {
-  IHighlightRange,
-  semanticHighlighting,
+import problemLanguageSupport from '../language/problemLanguageSupport';
+import type ThemeStore from '../theme/ThemeStore';
+import getLogger from '../utils/getLogger';
+import XtextClient from '../xtext/XtextClient';
+
+import findOccurrences, {
+  type IOccurrence,
+  setOccurrences,
+} from './findOccurrences';
+import semanticHighlighting, {
+  type IHighlightRange,
   setSemanticHighlighting,
 } from './semanticHighlighting';
-import type { ThemeStore } from '../theme/ThemeStore';
-import { getLogger } from '../utils/logger';
-import { XtextClient } from '../xtext/XtextClient';
 
 const log = getLogger('editor.EditorStore');
 
-export class EditorStore {
+export default class EditorStore {
   private readonly themeStore;
 
   state: EditorState;
@@ -96,17 +91,18 @@ export class EditorStore {
       extensions: [
         autocompletion({
           activateOnTyping: true,
-          override: [
-            (context) => this.client.contentAssist(context),
-          ],
+          override: [(context) => this.client.contentAssist(context)],
         }),
         closeBrackets(),
         bracketMatching(),
         drawSelection(),
         EditorState.allowMultipleSelections.of(true),
-        EditorView.theme({}, {
-          dark: this.themeStore.darkMode,
-        }),
+        EditorView.theme(
+          {},
+          {
+            dark: this.themeStore.darkMode,
+          },
+        ),
         findOccurrences,
         highlightActiveLine(),
         highlightActiveLineGutter(),
@@ -134,8 +130,16 @@ export class EditorStore {
           { key: 'Mod-Shift-m', run: () => this.setLintPanelOpen(true) },
           ...lintKeymap,
           // Override keys in `searchKeymap` to go through the `EditorStore`.
-          { key: 'Mod-f', run: () => this.setSearchPanelOpen(true), scope: 'editor search-panel' },
-          { key: 'Escape', run: () => this.setSearchPanelOpen(false), scope: 'editor search-panel' },
+          {
+            key: 'Mod-f',
+            run: () => this.setSearchPanelOpen(true),
+            scope: 'editor search-panel',
+          },
+          {
+            key: 'Escape',
+            run: () => this.setSearchPanelOpen(false),
+            scope: 'editor search-panel',
+          },
           ...searchKeymap,
           ...defaultKeymap,
         ]),
@@ -149,9 +153,14 @@ export class EditorStore {
         log.debug('Update editor dark mode', darkMode);
         this.dispatch({
           effects: [
-            StateEffect.appendConfig.of(EditorView.theme({}, {
-              dark: darkMode,
-            })),
+            StateEffect.appendConfig.of(
+              EditorView.theme(
+                {},
+                {
+                  dark: darkMode,
+                },
+              ),
+            ),
           ],
         });
       },
@@ -198,6 +207,8 @@ export class EditorStore {
         case 'info':
           this.infoCount += 1;
           break;
+        default:
+          throw new Error('Unknown severity');
       }
     });
   }
@@ -261,7 +272,7 @@ export class EditorStore {
    * This matches the behavior of the `openSearchPanel` and `closeSearchPanel`
    * commands from `'@codemirror/search'`.
    *
-   * @param newShosSearchPanel whether we should show the search panel
+   * @param newShowSearchPanel whether we should show the search panel
    * @returns `true` if the state was changed, `false` otherwise
    */
   setSearchPanelOpen(newShowSearchPanel: boolean): boolean {

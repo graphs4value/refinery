@@ -7,9 +7,7 @@ import {
   LRLanguage,
 } from '@codemirror/language';
 import { styleTags, tags as t } from '@lezer/highlight';
-import { LRParser } from '@lezer/lr';
 
-import { parser } from '../../build/generated/sources/lezer/problem';
 import {
   foldBlockComment,
   foldConjunction,
@@ -21,8 +19,9 @@ import {
   indentDeclaration,
   indentPredicateOrRule,
 } from './indentation';
+import { parser } from './problem.grammar';
 
-const parserWithMetadata = (parser as LRParser).configure({
+const parserWithMetadata = parser.configure({
   props: [
     styleTags({
       LineComment: t.lineComment,
@@ -86,8 +85,6 @@ const problemLanguage = LRLanguage.define({
   },
 });
 
-export function problemLanguageSupport(): LanguageSupport {
-  return new LanguageSupport(problemLanguage, [
-    indentUnit.of('    '),
-  ]);
+export default function problemLanguageSupport(): LanguageSupport {
+  return new LanguageSupport(problemLanguage, [indentUnit.of('    ')]);
 }

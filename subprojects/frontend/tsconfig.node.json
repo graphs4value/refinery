@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "checkJs": true,
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "emitDeclarationOnly": true,
+    "outDir": "build/typescript"
+  },
+  "include": [
+    ".eslintrc.cjs",
+    "prettier.config.cjs",
+    "types/node",
+    "vite.config.ts"
+  ]
+}

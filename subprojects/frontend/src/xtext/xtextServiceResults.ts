@@ -1,112 +1,120 @@
+/* eslint-disable @typescript-eslint/no-redeclare -- Declare types with their companion objects */
+
 import { z } from 'zod';
 
-export const pongResult = z.object({
+export const PongResult = z.object({
   pong: z.string().min(1),
 });
 
-export type PongResult = z.infer<typeof pongResult>;
+export type PongResult = z.infer<typeof PongResult>;
 
-export const documentStateResult = z.object({
+export const DocumentStateResult = z.object({
   stateId: z.string().min(1),
 });
 
-export type DocumentStateResult = z.infer<typeof documentStateResult>;
+export type DocumentStateResult = z.infer<typeof DocumentStateResult>;
 
-export const conflict = z.enum(['invalidStateId', 'canceled']);
+export const Conflict = z.enum(['invalidStateId', 'canceled']);
 
-export type Conflict = z.infer<typeof conflict>;
+export type Conflict = z.infer<typeof Conflict>;
 
-export const serviceConflictResult = z.object({
-  conflict,
+export const ServiceConflictResult = z.object({
+  conflict: Conflict,
 });
 
-export type ServiceConflictResult = z.infer<typeof serviceConflictResult>;
+export type ServiceConflictResult = z.infer<typeof ServiceConflictResult>;
 
-export function isConflictResult(result: unknown, conflictType: Conflict): boolean {
-  const parsedConflictResult = serviceConflictResult.safeParse(result);
-  return parsedConflictResult.success && parsedConflictResult.data.conflict === conflictType;
+export function isConflictResult(
+  result: unknown,
+  conflictType: Conflict,
+): boolean {
+  const parsedConflictResult = ServiceConflictResult.safeParse(result);
+  return (
+    parsedConflictResult.success &&
+    parsedConflictResult.data.conflict === conflictType
+  );
 }
 
-export const severity = z.enum(['error', 'warning', 'info', 'ignore']);
+export const Severity = z.enum(['error', 'warning', 'info', 'ignore']);
 
-export type Severity = z.infer<typeof severity>;
+export type Severity = z.infer<typeof Severity>;
 
-export const issue = z.object({
+export const Issue = z.object({
   description: z.string().min(1),
-  severity,
+  severity: Severity,
   line: z.number().int(),
   column: z.number().int().nonnegative(),
   offset: z.number().int().nonnegative(),
   length: z.number().int().nonnegative(),
 });
 
-export type Issue = z.infer<typeof issue>;
+export type Issue = z.infer<typeof Issue>;
 
-export const validationResult = z.object({
-  issues: issue.array(),
+export const ValidationResult = z.object({
+  issues: Issue.array(),
 });
 
-export type ValidationResult = z.infer<typeof validationResult>;
+export type ValidationResult = z.infer<typeof ValidationResult>;
 
-export const replaceRegion = z.object({
+export const ReplaceRegion = z.object({
   offset: z.number().int().nonnegative(),
   length: z.number().int().nonnegative(),
   text: z.string(),
 });
 
-export type ReplaceRegion = z.infer<typeof replaceRegion>;
+export type ReplaceRegion = z.infer<typeof ReplaceRegion>;
 
-export const textRegion = z.object({
+export const TextRegion = z.object({
   offset: z.number().int().nonnegative(),
   length: z.number().int().nonnegative(),
 });
 
-export type TextRegion = z.infer<typeof textRegion>;
+export type TextRegion = z.infer<typeof TextRegion>;
 
-export const contentAssistEntry = z.object({
+export const ContentAssistEntry = z.object({
   prefix: z.string(),
   proposal: z.string().min(1),
   label: z.string().optional(),
   description: z.string().min(1).optional(),
   documentation: z.string().min(1).optional(),
   escapePosition: z.number().int().nonnegative().optional(),
-  textReplacements: replaceRegion.array(),
-  editPositions: textRegion.array(),
+  textReplacements: ReplaceRegion.array(),
+  editPositions: TextRegion.array(),
   kind: z.string().min(1),
 });
 
-export type ContentAssistEntry = z.infer<typeof contentAssistEntry>;
+export type ContentAssistEntry = z.infer<typeof ContentAssistEntry>;
 
-export const contentAssistResult = documentStateResult.extend({
-  entries: contentAssistEntry.array(),
+export const ContentAssistResult = DocumentStateResult.extend({
+  entries: ContentAssistEntry.array(),
 });
 
-export type ContentAssistResult = z.infer<typeof contentAssistResult>;
+export type ContentAssistResult = z.infer<typeof ContentAssistResult>;
 
-export const highlightingRegion = z.object({
+export const HighlightingRegion = z.object({
   offset: z.number().int().nonnegative(),
   length: z.number().int().nonnegative(),
   styleClasses: z.string().min(1).array(),
 });
 
-export type HighlightingRegion = z.infer<typeof highlightingRegion>;
+export type HighlightingRegion = z.infer<typeof HighlightingRegion>;
 
 export const highlightingResult = z.object({
-  regions: highlightingRegion.array(),
+  regions: HighlightingRegion.array(),
 });
 
 export type HighlightingResult = z.infer<typeof highlightingResult>;
 
-export const occurrencesResult = documentStateResult.extend({
-  writeRegions: textRegion.array(),
-  readRegions: textRegion.array(),
+export const OccurrencesResult = DocumentStateResult.extend({
+  writeRegions: TextRegion.array(),
+  readRegions: TextRegion.array(),
 });
 
-export type OccurrencesResult = z.infer<typeof occurrencesResult>;
+export type OccurrencesResult = z.infer<typeof OccurrencesResult>;
 
-export const formattingResult = documentStateResult.extend({
+export const FormattingResult = DocumentStateResult.extend({
   formattedText: z.string(),
-  replaceRegion: textRegion,
+  replaceRegion: TextRegion,
 });
 
-export type FormattingResult = z.infer<typeof formattingResult>;
+export type FormattingResult = z.infer<typeof FormattingResult>;

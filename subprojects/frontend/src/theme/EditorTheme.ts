@@ -1,47 +1,7 @@
-import type { PaletteMode } from '@mui/material';
-
-import cssVariables from '../themeVariables.module.scss';
-
-export enum EditorTheme {
+enum EditorTheme {
   Light,
   Dark,
+  Default = EditorTheme.Dark,
 }
 
-export class EditorThemeData {
-  className: string;
-
-  paletteMode: PaletteMode;
-
-  toggleDarkMode: EditorTheme;
-
-  foreground!: string;
-
-  foregroundHighlight!: string;
-
-  background!: string;
-
-  primary!: string;
-
-  secondary!: string;
-
-  constructor(className: string, paletteMode: PaletteMode, toggleDarkMode: EditorTheme) {
-    this.className = className;
-    this.paletteMode = paletteMode;
-    this.toggleDarkMode = toggleDarkMode;
-    Reflect.ownKeys(this).forEach((key) => {
-      if (!Reflect.get(this, key)) {
-        const cssKey = `${this.className}--${key.toString()}`;
-        if (cssKey in cssVariables) {
-          Reflect.set(this, key, cssVariables[cssKey]);
-        }
-      }
-    });
-  }
-}
-
-export const DEFAULT_THEME = EditorTheme.Dark;
-
-export const EDITOR_THEMES: { [key in EditorTheme]: EditorThemeData } = {
-  [EditorTheme.Light]: new EditorThemeData('light', 'light', EditorTheme.Dark),
-  [EditorTheme.Dark]: new EditorThemeData('dark', 'dark', EditorTheme.Light),
-};
+export default EditorTheme;

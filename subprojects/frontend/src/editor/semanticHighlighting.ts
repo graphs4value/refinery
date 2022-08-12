@@ -1,7 +1,7 @@
 import { RangeSet, type TransactionSpec } from '@codemirror/state';
 import { Decoration } from '@codemirror/view';
 
-import { decorationSetExtension } from './decorationSetExtension';
+import defineDecorationSetExtension from './defineDecorationSetExtension';
 
 export interface IHighlightRange {
   from: number;
@@ -11,13 +11,21 @@ export interface IHighlightRange {
   classes: string[];
 }
 
-const [setSemanticHighlightingInternal, semanticHighlighting] = decorationSetExtension();
+const [setSemanticHighlightingInternal, semanticHighlighting] =
+  defineDecorationSetExtension();
 
-export function setSemanticHighlighting(ranges: IHighlightRange[]): TransactionSpec {
-  const rangeSet = RangeSet.of(ranges.map(({ from, to, classes }) => Decoration.mark({
-    class: classes.map((c) => `tok-problem-${c}`).join(' '),
-  }).range(from, to)), true);
+export function setSemanticHighlighting(
+  ranges: IHighlightRange[],
+): TransactionSpec {
+  const rangeSet = RangeSet.of(
+    ranges.map(({ from, to, classes }) =>
+      Decoration.mark({
+        class: classes.map((c) => `tok-problem-${c}`).join(' '),
+      }).range(from, to),
+    ),
+    true,
+  );
   return setSemanticHighlightingInternal(rangeSet);
 }
 
-export { semanticHighlighting };
+export default semanticHighlighting;
