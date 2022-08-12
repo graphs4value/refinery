@@ -26,10 +26,10 @@ class RuleParsingTest {
 	@ParameterizedTest
 	@ValueSource(strings = { """
 			pred Person(p).
-			rule r(p1): must Person(p1) ==> Person(p1) = false.
+			rule r(p1): must Person(p1) ==> Person(p1) := false.
 			""", """
 			pred Person(p).
-			rule r(p1): must Person(p1) ==> Person(p1): false.
+			rule r(p1): must Person(p1) ==> Person(p1) <: false.
 			""", """
 			pred Person(p).
 			rule r(p1): must Person(p1) ==> !Person(p1).
@@ -46,7 +46,7 @@ class RuleParsingTest {
 	void newNodeTest() {
 		var problem = parseHelper.parse("""
 				pred Person(p).
-				rule r(p1): must Person(p1) ==> new p2, Person(p2) = unknown.
+				rule r(p1): must Person(p1) ==> new p2, Person(p2) := unknown.
 				""");
 		assertThat(problem.errors(), empty());
 		assertThat(problem.rule("r").param(0), equalTo(problem.rule("r").conj(0).lit(0).arg(0).variable()));
@@ -58,7 +58,7 @@ class RuleParsingTest {
 	void differentScopeTest() {
 		var problem = parseHelper.parse("""
 				pred Friend(a, b).
-				rule r(p1): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) = true.
+				rule r(p1): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) := true.
 				""");
 		assertThat(problem.errors(), empty());
 		assertThat(problem.rule("r").conj(0).lit(0).negated().arg(1).variable(),
@@ -69,7 +69,7 @@ class RuleParsingTest {
 	void parameterShadowingTest() {
 		var problem = parseHelper.parse("""
 				pred Friend(a, b).
-				rule r(p1, p2): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) = true.
+				rule r(p1, p2): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) := true.
 				""");
 		assertThat(problem.errors(), empty());
 		assertThat(problem.rule("r").param(1),
