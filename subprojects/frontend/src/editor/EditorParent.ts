@@ -19,7 +19,8 @@ function underline(color: string) {
 
 export default styled('div', {
   name: 'EditorParent',
-})(({ theme }) => {
+  shouldForwardProp: (propName) => propName !== 'showLineNumbers',
+})<{ showLineNumbers: boolean }>(({ theme, showLineNumbers }) => {
   const codeMirrorLintStyle: Record<string, unknown> = {};
   (['error', 'warning', 'info'] as const).forEach((severity) => {
     const color = theme.palette[severity].main;
@@ -77,8 +78,13 @@ export default styled('div', {
     '.cm-activeLineGutter': {
       background: 'transparent',
     },
-    '.cm-lineNumbers .cm-activeLineGutter': {
-      color: theme.palette.text.primary,
+    '.cm-lineNumbers': {
+      ...(!showLineNumbers && {
+        display: 'none !important',
+      }),
+      '.cm-activeLineGutter': {
+        color: theme.palette.text.primary,
+      },
     },
     '.cm-cursor, .cm-cursor-primary': {
       borderLeft: `2px solid ${theme.palette.primary.main}`,

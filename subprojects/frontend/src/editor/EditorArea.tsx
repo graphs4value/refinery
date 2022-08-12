@@ -134,13 +134,7 @@ function EditorArea(): JSX.Element {
   return (
     <EditorParent
       className="dark"
-      sx={{
-        '.cm-lineNumbers': editorStore.showLineNumbers
-          ? {}
-          : {
-              display: 'none !important',
-            },
-      }}
+      showLineNumbers={editorStore.showLineNumbers}
       ref={editorParentRef}
     />
   );
