@@ -50,7 +50,7 @@ export default defineConfig({
       files: [
         {
           match:
-            /(?:jetbrains-mono-latin-variable-wghtOnly-(?:italic|normal)|roboto-latin-(400|500)-normal).+\.woff2/,
+            /(?:jetbrains-mono-latin-variable-wghtOnly-(?:italic|normal)|roboto-latin-(?:400|500)-normal).+\.woff2/,
           attributes: {
             type: 'font/woff2',
             as: 'font',

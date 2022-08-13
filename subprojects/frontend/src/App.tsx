@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
 import React from 'react';
 
 import TopBar from './TopBar';
@@ -10,16 +11,11 @@ export default function App(): JSX.Element {
   return (
     <Box display="flex" flexDirection="column" sx={{ height: '100vh' }}>
       <TopBar />
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        p={1}
-      >
+      <Toolbar variant="dense">
         <EditorButtons />
         <GenerateButton />
-      </Box>
-      <Box flexGrow={1} flexShrink={1} sx={{ overflow: 'auto' }}>
+      </Toolbar>
+      <Box flexGrow={1} flexShrink={1} overflow="auto">
         <EditorArea />
       </Box>
     </Box>

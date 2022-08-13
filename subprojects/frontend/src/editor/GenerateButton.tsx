@@ -22,11 +22,7 @@ function GenerateButton(): JSX.Element {
 
   if (errorCount > 0) {
     return (
-      <Button
-        variant="outlined"
-        color="error"
-        onClick={() => editorStore.toggleLintPanel()}
-      >
+      <Button color="error" onClick={() => editorStore.toggleLintPanel()}>
         {summary}
       </Button>
     );
@@ -34,7 +30,6 @@ function GenerateButton(): JSX.Element {
 
   return (
     <Button
-      variant="outlined"
       color={warningCount > 0 ? 'warning' : 'primary'}
       startIcon={<PlayArrowIcon />}
     >

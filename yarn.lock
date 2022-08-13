@@ -585,6 +585,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/inter@npm:^4.5.12":
+  version: 4.5.12
+  resolution: "@fontsource/inter@npm:4.5.12"
+  checksum: 7637978d4355f52cf348bbe40a2e1bfa535c290057bef27c022343234b00c07b138c86a2b52260825c1ecc5cc9f59c68fd6ff08311111c70c04f82ace592920b
+  languageName: node
+  linkType: hard
+
 "@fontsource/jetbrains-mono@npm:^4.5.10":
   version: 4.5.10
   resolution: "@fontsource/jetbrains-mono@npm:4.5.10"
@@ -965,6 +972,7 @@ __metadata:
     "@codemirror/view": ^6.2.0
     "@emotion/react": ^11.10.0
     "@emotion/styled": ^11.10.0
+    "@fontsource/inter": ^4.5.12
     "@fontsource/jetbrains-mono": ^4.5.10
     "@fontsource/roboto": ^4.5.8
     "@lezer/common": ^1.0.0
@@ -974,7 +982,7 @@ __metadata:
     "@mui/icons-material": 5.8.4
     "@mui/material": 5.10.0
     "@types/eslint": ^8.4.5
-    "@types/node": ^18.7.2
+    "@types/node": ^18.7.3
     "@types/prettier": ^2.7.0
     "@types/react": ^18.0.17
     "@types/react-dom": ^18.0.6
@@ -988,7 +996,7 @@ __metadata:
     eslint-config-airbnb: ^19.0.4
     eslint-config-airbnb-typescript: ^17.0.0
     eslint-config-prettier: ^8.5.0
-    eslint-import-resolver-typescript: ^3.4.0
+    eslint-import-resolver-typescript: ^3.4.1
     eslint-plugin-import: ^2.26.0
     eslint-plugin-jsx-a11y: ^6.6.1
     eslint-plugin-prettier: ^4.2.1
@@ -1057,10 +1065,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.7.2":
-  version: 18.7.2
-  resolution: "@types/node@npm:18.7.2"
-  checksum: 422cf95dea09959d0e809d24280b76948f60ea805e20d38f07bf9eeafeb413513b9cc365404766f7752bef9cafb8301a882d9d097f780e13f2bedf507459ebc5
+"@types/node@npm:^18.7.3":
+  version: 18.7.3
+  resolution: "@types/node@npm:18.7.3"
+  checksum: f51ed436a112235ac068d739b4823090a37b869cc186b64dd5c250dd285139c286990fcbeff2fb3ecba5d605fa885de4275247d332e5b96eafdfbb1da62e3ced
   languageName: node
   linkType: hard
 
@@ -2267,9 +2275,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-import-resolver-typescript@npm:^3.4.0":
-  version: 3.4.0
-  resolution: "eslint-import-resolver-typescript@npm:3.4.0"
+"eslint-import-resolver-typescript@npm:^3.4.1":
+  version: 3.4.1
+  resolution: "eslint-import-resolver-typescript@npm:3.4.1"
   dependencies:
     debug: ^4.3.4
     enhanced-resolve: ^5.10.0
@@ -2281,7 +2289,7 @@ __metadata:
   peerDependencies:
     eslint: "*"
     eslint-plugin-import: "*"
-  checksum: 42fa7fbf7a2144d27152567a2f2a6e6847d964a87ef7da29f559d09be44d0328a1894ea5186cf0824cecf3c9aec95bbb481d8ecbc129a3dd21614fbf3eb9a3b6
+  checksum: 952aaa4f25435b009e6604bf8a81acee2db064de1cefcac0628fd5167711721829e911910534f8773fbfe6a12c21d60bb0d324351ad25cd092481d9f80f6105d
   languageName: node
   linkType: hard
 

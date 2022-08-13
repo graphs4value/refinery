@@ -36,24 +36,22 @@ function EditorButtons(): JSX.Element {
   const { editorStore } = useRootStore();
 
   return (
-    <Stack direction="row" spacing={1}>
-      <Stack direction="row" alignItems="center">
-        <IconButton
-          disabled={!editorStore.canUndo}
-          onClick={() => editorStore.undo()}
-          aria-label="Undo"
-        >
-          <UndoIcon fontSize="small" />
-        </IconButton>
-        <IconButton
-          disabled={!editorStore.canRedo}
-          onClick={() => editorStore.redo()}
-          aria-label="Redo"
-        >
-          <RedoIcon fontSize="small" />
-        </IconButton>
-      </Stack>
-      <ToggleButtonGroup size="small">
+    <Stack direction="row" flexGrow={1}>
+      <IconButton
+        disabled={!editorStore.canUndo}
+        onClick={() => editorStore.undo()}
+        aria-label="Undo"
+      >
+        <UndoIcon fontSize="small" />
+      </IconButton>
+      <IconButton
+        disabled={!editorStore.canRedo}
+        onClick={() => editorStore.redo()}
+        aria-label="Redo"
+      >
+        <RedoIcon fontSize="small" />
+      </IconButton>
+      <ToggleButtonGroup size="small" sx={{ mx: 1 }}>
         <ToggleButton
           selected={editorStore.showLineNumbers}
           onClick={() => editorStore.toggleLineNumbers()}

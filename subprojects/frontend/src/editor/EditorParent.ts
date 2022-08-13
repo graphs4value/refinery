@@ -1,22 +1,5 @@
 import { alpha, styled } from '@mui/material/styles';
 
-/**
- * Returns a squiggly underline background image encoded as a CSS `url()` data URI with Base64.
- *
- * Based on
- * https://github.com/codemirror/lint/blob/f524b4a53b0183bb343ac1e32b228d28030d17af/src/lint.ts#L501
- *
- * @param color the color of the underline
- * @returns the CSS `url()`
- */
-function underline(color: string) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="6" height="3">
-    <path d="m0 3 l2 -2 l1 0 l2 2 l1 0" stroke="${color}" fill="none" stroke-width=".7"/>
-  </svg>`;
-  const svgBase64 = window.btoa(svg);
-  return `url('data:image/svg+xml;base64,${svgBase64}')`;
-}
-
 export default styled('div', {
   name: 'EditorParent',
   shouldForwardProp: (propName) => propName !== 'showLineNumbers',
@@ -28,7 +11,9 @@ export default styled('div', {
       borderLeftColor: color,
     };
     codeMirrorLintStyle[`.cm-lintRange-${severity}`] = {
-      backgroundImage: underline(color),
+      backgroundImage: 'none',
+      textDecoration: `underline wavy ${color}`,
+      textDecorationSkipInk: 'none',
     };
   });
 
@@ -42,10 +27,9 @@ export default styled('div', {
     },
     '.cm-scroller, .cm-tooltip-autocomplete, .cm-completionLabel, .cm-completionDetail':
       {
-        fontSize: 16,
+        ...theme.typography.body1,
         fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
         fontFeatureSettings: '"liga", "calt"',
-        fontWeight: 400,
         letterSpacing: 0,
         textRendering: 'optimizeLegibility',
       },
@@ -61,7 +45,7 @@ export default styled('div', {
       color: theme.palette.secondary.main,
     },
     '.cm-activeLine': {
-      background: alpha(theme.palette.text.secondary, 0.06),
+      background: theme.palette.highlight.activeLine,
     },
     '.cm-foldGutter': {
       color: alpha(theme.palette.text.primary, 0),
@@ -103,10 +87,10 @@ export default styled('div', {
     },
     '.cm-panel': {
       '&, & button, & input': {
-        fontFamily: '"Roboto","Helvetica","Arial",sans-serif',
+        fontFamily: theme.typography.fontFamily,
       },
-      background: theme.palette.background.paper,
-      borderTop: `1px solid ${theme.palette.divider}`,
+      background: theme.palette.background.default,
+      borderTop: `1px solid ${theme.palette.divider2}`,
       'button[name="close"]': {
         background: 'transparent',
         color: theme.palette.text.secondary,
@@ -114,6 +98,7 @@ export default styled('div', {
       },
     },
     '.cm-panel.cm-panel-lint': {
+      boderBottom: 'none',
       'button[name="close"]': {
         // Close button interferes with scrollbar, so we better hide it.
         // The panel can still be closed from the toolbar.
@@ -121,17 +106,12 @@ export default styled('div', {
       },
       ul: {
         li: {
-          borderBottom: `1px solid ${theme.palette.divider}`,
           cursor: 'pointer',
           color: theme.palette.text.primary,
         },
-        '[aria-selected]': {
+        '[aria-selected], &:focus [aria-selected]': {
           background: theme.palette.selection.main,
           color: theme.palette.selection.contrastText,
-        },
-        '&:focus [aria-selected]': {
-          background: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
         },
       },
     },
@@ -159,7 +139,7 @@ export default styled('div', {
     },
     '.tok-comment': {
       fontStyle: 'italic',
-      color: theme.palette.text.disabled,
+      color: theme.palette.highlight.comment,
     },
     '.tok-number': {
       color: theme.palette.highlight.number,
@@ -225,9 +205,9 @@ export default styled('div', {
         fontStyle: 'normal',
       },
       '[aria-selected]': {
-        background: `${theme.palette.selection.main} !important`,
+        background: `${theme.palette.primary.main} !important`,
         '.cm-completionIcon, .cm-completionLabel, .cm-completionDetail': {
-          color: theme.palette.selection.contrastText,
+          color: theme.palette.primary.contrastText,
         },
       },
     },
