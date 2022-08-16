@@ -4,13 +4,13 @@ import EditorStore from './editor/EditorStore';
 import ThemeStore from './theme/ThemeStore';
 
 export default class RootStore {
-  editorStore;
+  readonly editorStore: EditorStore;
 
-  themeStore;
+  readonly themeStore: ThemeStore;
 
   constructor(initialValue: string) {
+    this.editorStore = new EditorStore(initialValue);
     this.themeStore = new ThemeStore();
-    this.editorStore = new EditorStore(initialValue, this.themeStore);
   }
 }
 

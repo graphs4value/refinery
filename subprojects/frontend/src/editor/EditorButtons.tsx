@@ -19,7 +19,7 @@ import { useRootStore } from '../RootStore';
 
 // Exhastive switch as proven by TypeScript.
 // eslint-disable-next-line consistent-return
-function getLintIcon(severity: Diagnostic['severity'] | null) {
+function getLintIcon(severity: Diagnostic['severity'] | undefined) {
   switch (severity) {
     case 'error':
       return <ErrorIcon fontSize="small" />;
@@ -61,16 +61,16 @@ function EditorButtons(): JSX.Element {
           <FormatListNumberedIcon fontSize="small" />
         </ToggleButton>
         <ToggleButton
-          selected={editorStore.showSearchPanel}
-          onClick={() => editorStore.toggleSearchPanel()}
+          selected={editorStore.searchPanel.state}
+          onClick={() => editorStore.searchPanel.toggle()}
           aria-label="Show find/replace"
           value="show-search-panel"
         >
           <SearchIcon fontSize="small" />
         </ToggleButton>
         <ToggleButton
-          selected={editorStore.showLintPanel}
-          onClick={() => editorStore.toggleLintPanel()}
+          selected={editorStore.lintPanel.state}
+          onClick={() => editorStore.lintPanel.toggle()}
           aria-label="Show diagnostics panel"
           value="show-lint-panel"
         >

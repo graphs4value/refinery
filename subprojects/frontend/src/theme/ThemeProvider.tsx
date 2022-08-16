@@ -11,13 +11,17 @@ import React, { type ReactNode } from 'react';
 
 import { useRootStore } from '../RootStore';
 
-import EditorTheme from './EditorTheme';
+interface OuterPalette {
+  background: string;
+  border: string;
+}
 
-interface HighlightStyles {
+interface HighlightPalette {
   number: string;
   parameter: string;
   comment: string;
   activeLine: string;
+  selection: string;
   occurences: {
     read: string;
     write: string;
@@ -26,19 +30,17 @@ interface HighlightStyles {
 
 declare module '@mui/material/styles' {
   interface Palette {
-    divider2: string;
-    selection: Palette['primary'];
-    highlight: HighlightStyles;
+    outer: OuterPalette;
+    highlight: HighlightPalette;
   }
 
   interface PaletteOptions {
-    divider2: string;
-    selection: PaletteOptions['primary'];
-    highlight: HighlightStyles;
+    outer: OuterPalette;
+    highlight: HighlightPalette;
   }
 }
 
-function getMUIThemeOptions(currentTheme: EditorTheme): ThemeOptions {
+function getMUIThemeOptions(darkMode: boolean): ThemeOptions {
   const components: Components = {
     MuiButton: {
       styleOverrides: {
@@ -67,32 +69,8 @@ function getMUIThemeOptions(currentTheme: EditorTheme): ThemeOptions {
     },
   };
 
-  switch (currentTheme) {
-    case EditorTheme.Light:
-      return {
-        components,
-        palette: {
-          mode: 'light',
-          primary: { main: '#0097a7' },
-          selection: {
-            main: '#c8e4fb',
-            contrastText: '#000',
-          },
-          divider2: '#d7d7d7',
-          highlight: {
-            number: '#1976d2',
-            parameter: '#6a3e3e',
-            comment: alpha('#000', 0.38),
-            activeLine: '#f5f5f5',
-            occurences: {
-              read: '#ceccf7',
-              write: '#f0d8a8',
-            },
-          },
-        },
-      };
-    case EditorTheme.Dark:
-      return {
+  return darkMode
+    ? {
         components,
         palette: {
           mode: 'dark',
@@ -111,34 +89,53 @@ function getMUIThemeOptions(currentTheme: EditorTheme): ThemeOptions {
             disabled: '#4b5263',
           },
           divider: alpha('#abb2bf', 0.16),
-          divider2: '#181a1f',
-          selection: {
-            main: '#3e4453',
-            contrastText: '#fff',
+          outer: {
+            background: '#21252b',
+            border: '#181a1f',
           },
           highlight: {
             number: '#6188a6',
             parameter: '#c8ae9d',
             comment: '#6b717d',
             activeLine: '#21252b',
+            selection: '#3e4453',
             occurences: {
               read: 'rgba(255, 255, 255, 0.15)',
               write: 'rgba(255, 255, 128, 0.4)',
             },
           },
         },
+      }
+    : {
+        components,
+        palette: {
+          mode: 'light',
+          primary: { main: '#0097a7' },
+          outer: {
+            background: '#f5f5f5',
+            border: '#d7d7d7',
+          },
+          highlight: {
+            number: '#1976d2',
+            parameter: '#6a3e3e',
+            comment: alpha('#000', 0.38),
+            activeLine: '#f5f5f5',
+            selection: '#c8e4fb',
+            occurences: {
+              read: '#ceccf7',
+              write: '#f0d8a8',
+            },
+          },
+        },
       };
-    default:
-      throw new Error(`Unknown theme: ${currentTheme}`);
-  }
 }
 
 function ThemeProvider({ children }: { children?: ReactNode }) {
   const {
-    themeStore: { currentTheme },
+    themeStore: { darkMode },
   } = useRootStore();
 
-  const themeOptions = getMUIThemeOptions(currentTheme);
+  const themeOptions = getMUIThemeOptions(darkMode);
   const theme = responsiveFontSizes(createTheme(themeOptions));
 
   return (

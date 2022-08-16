@@ -5,6 +5,7 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "useDefineForClassFields": true,
     "strict": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,

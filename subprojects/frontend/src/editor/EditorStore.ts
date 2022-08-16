@@ -1,58 +1,30 @@
+import { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands';
 import {
-  closeBrackets,
-  closeBracketsKeymap,
-  autocompletion,
-  completionKeymap,
-} from '@codemirror/autocomplete';
+  type Diagnostic,
+  setDiagnostics,
+  closeLintPanel,
+  openLintPanel,
+  nextDiagnostic,
+} from '@codemirror/lint';
+import { closeSearchPanel, openSearchPanel } from '@codemirror/search';
 import {
-  defaultKeymap,
-  history,
-  historyKeymap,
-  indentWithTab,
-  redo,
-  redoDepth,
-  undo,
-  undoDepth,
-} from '@codemirror/commands';
-import {
-  bracketMatching,
-  foldGutter,
-  foldKeymap,
-  indentOnInput,
-  syntaxHighlighting,
-} from '@codemirror/language';
-import { type Diagnostic, lintKeymap, setDiagnostics } from '@codemirror/lint';
-import { search, searchKeymap } from '@codemirror/search';
-import {
-  EditorState,
   type StateCommand,
   StateEffect,
   type Transaction,
   type TransactionSpec,
+  type EditorState,
 } from '@codemirror/state';
-import {
-  drawSelection,
-  EditorView,
-  highlightActiveLine,
-  highlightActiveLineGutter,
-  highlightSpecialChars,
-  keymap,
-  lineNumbers,
-  rectangularSelection,
-} from '@codemirror/view';
-import { classHighlighter } from '@lezer/highlight';
-import { makeAutoObservable, observable, reaction } from 'mobx';
+import { type Command, EditorView } from '@codemirror/view';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-import problemLanguageSupport from '../language/problemLanguageSupport';
-import type ThemeStore from '../theme/ThemeStore';
 import getLogger from '../utils/getLogger';
 import XtextClient from '../xtext/XtextClient';
 
-import findOccurrences, {
-  type IOccurrence,
-  setOccurrences,
-} from './findOccurrences';
-import semanticHighlighting, {
+import PanelStore from './PanelStore';
+import createEditorState from './createEditorState';
+import { type IOccurrence, setOccurrences } from './findOccurrences';
+import {
   type IHighlightRange,
   setSemanticHighlighting,
 } from './semanticHighlighting';
@@ -60,17 +32,17 @@ import semanticHighlighting, {
 const log = getLogger('editor.EditorStore');
 
 export default class EditorStore {
-  private readonly themeStore;
-
   state: EditorState;
 
   private readonly client: XtextClient;
 
+  view: EditorView | undefined;
+
+  readonly searchPanel: PanelStore;
+
+  readonly lintPanel: PanelStore;
+
   showLineNumbers = false;
-
-  showSearchPanel = false;
-
-  showLintPanel = false;
 
   errorCount = 0;
 
@@ -78,116 +50,124 @@ export default class EditorStore {
 
   infoCount = 0;
 
-  private readonly defaultDispatcher = (tr: Transaction): void => {
-    this.onTransaction(tr);
-  };
+  constructor(initialValue: string) {
+    this.state = createEditorState(initialValue, this);
+    this.client = new XtextClient(this);
+    this.searchPanel = new PanelStore(
+      'search',
+      openSearchPanel,
+      closeSearchPanel,
+      this,
+    );
+    this.lintPanel = new PanelStore(
+      'panel-lint',
+      openLintPanel,
+      closeLintPanel,
+      this,
+    );
+    makeObservable(this, {
+      state: observable.ref,
+      view: observable.ref,
+      showLineNumbers: observable,
+      errorCount: observable,
+      warningCount: observable,
+      infoCount: observable,
+      highestDiagnosticLevel: computed,
+      canUndo: computed,
+      canRedo: computed,
+      setDarkMode: action,
+      setEditorParent: action,
+      dispatch: action,
+      dispatchTransaction: action,
+      doCommand: action,
+      doStateCommand: action,
+      updateDiagnostics: action,
+      nextDiagnostic: action,
+      updateOccurrences: action,
+      updateSemanticHighlighting: action,
+      undo: action,
+      redo: action,
+      toggleLineNumbers: action,
+    });
+  }
 
-  private dispatcher = this.defaultDispatcher;
-
-  constructor(initialValue: string, themeStore: ThemeStore) {
-    this.themeStore = themeStore;
-    this.state = EditorState.create({
-      doc: initialValue,
-      extensions: [
-        autocompletion({
-          activateOnTyping: true,
-          override: [(context) => this.client.contentAssist(context)],
-        }),
-        closeBrackets(),
-        bracketMatching(),
-        drawSelection(),
-        EditorState.allowMultipleSelections.of(true),
-        EditorView.theme(
-          {},
-          {
-            dark: this.themeStore.darkMode,
-          },
-        ),
-        findOccurrences,
-        highlightActiveLine(),
-        highlightActiveLineGutter(),
-        highlightSpecialChars(),
-        history(),
-        indentOnInput(),
-        rectangularSelection(),
-        search({
-          top: true,
-          caseSensitive: true,
-        }),
-        syntaxHighlighting(classHighlighter),
-        semanticHighlighting,
-        // We add the gutters to `extensions` in the order we want them to appear.
-        lineNumbers(),
-        foldGutter(),
-        keymap.of([
-          { key: 'Mod-Shift-f', run: () => this.formatText() },
-          ...closeBracketsKeymap,
-          ...completionKeymap,
-          ...foldKeymap,
-          ...historyKeymap,
-          indentWithTab,
-          // Override keys in `lintKeymap` to go through the `EditorStore`.
-          { key: 'Mod-Shift-m', run: () => this.setLintPanelOpen(true) },
-          ...lintKeymap,
-          // Override keys in `searchKeymap` to go through the `EditorStore`.
-          {
-            key: 'Mod-f',
-            run: () => this.setSearchPanelOpen(true),
-            scope: 'editor search-panel',
-          },
-          {
-            key: 'Escape',
-            run: () => this.setSearchPanelOpen(false),
-            scope: 'editor search-panel',
-          },
-          ...searchKeymap,
-          ...defaultKeymap,
-        ]),
-        problemLanguageSupport(),
+  setDarkMode(darkMode: boolean): void {
+    log.debug('Update editor dark mode', darkMode);
+    this.dispatch({
+      effects: [
+        StateEffect.appendConfig.of([EditorView.darkTheme.of(darkMode)]),
       ],
     });
-    this.client = new XtextClient(this);
-    reaction(
-      () => this.themeStore.darkMode,
-      (darkMode) => {
-        log.debug('Update editor dark mode', darkMode);
-        this.dispatch({
-          effects: [
-            StateEffect.appendConfig.of(
-              EditorView.theme(
-                {},
-                {
-                  dark: darkMode,
-                },
-              ),
-            ),
-          ],
-        });
+  }
+
+  setEditorParent(editorParent: Element | null): void {
+    if (this.view !== undefined) {
+      this.view.destroy();
+    }
+    if (editorParent === null) {
+      this.view = undefined;
+      return;
+    }
+    const view = new EditorView({
+      state: this.state,
+      parent: editorParent,
+      dispatch: (transaction) => {
+        this.dispatchTransactionWithoutView(transaction);
+        view.update([transaction]);
+        if (view.state !== this.state) {
+          log.error(
+            'Failed to synchronize editor state - store state:',
+            this.state,
+            'view state:',
+            view.state,
+          );
+        }
       },
-    );
-    makeAutoObservable(this, {
-      state: observable.ref,
     });
-  }
+    this.view = view;
+    this.searchPanel.synchronizeStateToView();
+    this.lintPanel.synchronizeStateToView();
 
-  updateDispatcher(newDispatcher: ((tr: Transaction) => void) | null): void {
-    this.dispatcher = newDispatcher || this.defaultDispatcher;
-  }
+    // Reported by Lighthouse 8.3.0.
+    const { contentDOM } = view;
+    contentDOM.removeAttribute('aria-expanded');
+    contentDOM.setAttribute('aria-label', 'Code editor');
 
-  onTransaction(tr: Transaction): void {
-    log.trace('Editor transaction', tr);
-    this.state = tr.state;
-    this.client.onTransaction(tr);
+    log.info('Editor created');
   }
 
   dispatch(...specs: readonly TransactionSpec[]): void {
-    this.dispatcher(this.state.update(...specs));
+    const transaction = this.state.update(...specs);
+    this.dispatchTransaction(transaction);
+  }
+
+  dispatchTransaction(transaction: Transaction): void {
+    if (this.view === undefined) {
+      this.dispatchTransactionWithoutView(transaction);
+    } else {
+      this.view.dispatch(transaction);
+    }
+  }
+
+  private readonly dispatchTransactionWithoutView = action(
+    (tr: Transaction) => {
+      log.trace('Editor transaction', tr);
+      this.state = tr.state;
+      this.client.onTransaction(tr);
+    },
+  );
+
+  doCommand(command: Command): boolean {
+    if (this.view === undefined) {
+      return false;
+    }
+    return command(this.view);
   }
 
   doStateCommand(command: StateCommand): boolean {
     return command({
       state: this.state,
-      dispatch: this.dispatcher,
+      dispatch: (transaction) => this.dispatchTransaction(transaction),
     });
   }
 
@@ -213,7 +193,11 @@ export default class EditorStore {
     });
   }
 
-  get highestDiagnosticLevel(): Diagnostic['severity'] | null {
+  nextDiagnostic(): void {
+    this.doCommand(nextDiagnostic);
+  }
+
+  get highestDiagnosticLevel(): Diagnostic['severity'] | undefined {
     if (this.errorCount > 0) {
       return 'error';
     }
@@ -223,7 +207,7 @@ export default class EditorStore {
     if (this.infoCount > 0) {
       return 'info';
     }
-    return null;
+    return undefined;
   }
 
   updateSemanticHighlighting(ranges: IHighlightRange[]): void {
@@ -234,6 +218,10 @@ export default class EditorStore {
     this.dispatch(setOccurrences(write, read));
   }
 
+  contentAssist(context: CompletionContext): Promise<CompletionResult> {
+    return this.client.contentAssist(context);
+  }
+
   /**
    * @returns `true` if there is history to undo
    */
@@ -241,7 +229,6 @@ export default class EditorStore {
     return undoDepth(this.state) > 0;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   undo(): void {
     log.debug('Undo', this.doStateCommand(undo));
   }
@@ -253,7 +240,6 @@ export default class EditorStore {
     return redoDepth(this.state) > 0;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   redo(): void {
     log.debug('Redo', this.doStateCommand(redo));
   }
@@ -261,44 +247,6 @@ export default class EditorStore {
   toggleLineNumbers(): void {
     this.showLineNumbers = !this.showLineNumbers;
     log.debug('Show line numbers', this.showLineNumbers);
-  }
-
-  /**
-   * Sets whether the CodeMirror search panel should be open.
-   *
-   * This method can be used as a CodeMirror command,
-   * because it returns `false` if it didn't execute,
-   * allowing other commands for the same keybind to run instead.
-   * This matches the behavior of the `openSearchPanel` and `closeSearchPanel`
-   * commands from `'@codemirror/search'`.
-   *
-   * @param newShowSearchPanel whether we should show the search panel
-   * @returns `true` if the state was changed, `false` otherwise
-   */
-  setSearchPanelOpen(newShowSearchPanel: boolean): boolean {
-    if (this.showSearchPanel === newShowSearchPanel) {
-      return false;
-    }
-    this.showSearchPanel = newShowSearchPanel;
-    log.debug('Show search panel', this.showSearchPanel);
-    return true;
-  }
-
-  toggleSearchPanel(): void {
-    this.setSearchPanelOpen(!this.showSearchPanel);
-  }
-
-  setLintPanelOpen(newShowLintPanel: boolean): boolean {
-    if (this.showLintPanel === newShowLintPanel) {
-      return false;
-    }
-    this.showLintPanel = newShowLintPanel;
-    log.debug('Show lint panel', this.showLintPanel);
-    return true;
-  }
-
-  toggleLintPanel(): void {
-    this.setLintPanelOpen(!this.showLintPanel);
   }
 
   formatText(): boolean {

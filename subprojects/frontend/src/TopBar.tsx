@@ -12,8 +12,8 @@ export default function TopBar(): JSX.Element {
       elevation={0}
       color="transparent"
       sx={(theme) => ({
-        background: theme.palette.highlight.activeLine,
-        borderBottom: `1px solid ${theme.palette.divider2}`,
+        background: theme.palette.outer.background,
+        borderBottom: `1px solid ${theme.palette.outer.border}`,
       })}
     >
       <Toolbar>

@@ -22,7 +22,7 @@ function GenerateButton(): JSX.Element {
 
   if (errorCount > 0) {
     return (
-      <Button color="error" onClick={() => editorStore.toggleLintPanel()}>
+      <Button color="error" onClick={() => editorStore.nextDiagnostic()}>
         {summary}
       </Button>
     );
