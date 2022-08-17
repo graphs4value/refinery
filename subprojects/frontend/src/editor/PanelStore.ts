@@ -100,12 +100,6 @@ export default class PanelStore {
 
   protected doClose(): void {
     this.store.doCommand(this.closeCommand);
-    if (this.element === undefined) {
-      return;
-    }
-    if (this.store.view !== undefined) {
-      log.error('Failed to remove search panel from DOM');
-    }
     this.element = undefined;
   }
 }

@@ -32,7 +32,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
   );
 
   return (
-    <Toolbar variant="dense" sx={{ py: 0.5, alignItems: 'start' }}>
+    <Toolbar variant="dense" sx={{ py: 0.5, alignItems: 'flex-start' }}>
       <Stack
         direction="row"
         flexWrap="wrap"
@@ -188,7 +188,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
           </Stack>
         </Stack>
       </Stack>
-      <IconButton onClick={() => store.close()} sx={{ ml: 1 }}>
+      <IconButton onClick={() => store.close()} sx={{ mt: '2px', ml: 1 }}>
         <CloseIcon fontSize="small" />
       </IconButton>
     </Toolbar>
