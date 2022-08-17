@@ -53,6 +53,8 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    // Use prop spreading to conditionally add props with `exactOptionalPropertyTypes`.
+    'react/jsx-props-no-spreading': 'off',
   },
   overrides: [
     {

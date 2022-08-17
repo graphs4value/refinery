@@ -22,7 +22,11 @@ function GenerateButton(): JSX.Element {
 
   if (errorCount > 0) {
     return (
-      <Button color="error" onClick={() => editorStore.nextDiagnostic()}>
+      <Button
+        aria-label={`Select next diagnostic out of ${summary}`}
+        color="error"
+        onClick={() => editorStore.nextDiagnostic()}
+      >
         {summary}
       </Button>
     );

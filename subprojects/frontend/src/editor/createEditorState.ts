@@ -35,6 +35,7 @@ import { classHighlighter } from '@lezer/highlight';
 import problemLanguageSupport from '../language/problemLanguageSupport';
 
 import type EditorStore from './EditorStore';
+import SearchPanel from './SearchPanel';
 import editorClassNames from './editorClassNames';
 import findOccurrences from './findOccurrences';
 import semanticHighlighting from './semanticHighlighting';
@@ -61,7 +62,11 @@ export default function createEditorState(
       history(),
       indentOnInput(),
       rectangularSelection(),
-      search({ top: true }),
+      search({
+        createPanel(view) {
+          return new SearchPanel(view, store.searchPanel);
+        },
+      }),
       syntaxHighlighting(classHighlighter),
       semanticHighlighting,
       // We add the gutters to `extensions` in the order we want them to appear.
@@ -72,8 +77,10 @@ export default function createEditorState(
           const button = document.createElement('button');
           button.className = editorClassNames.foldPlaceholder;
           button.ariaLabel = 'Unfold lines';
-          button.innerText = '...';
-          button.onclick = onClick;
+          const span = document.createElement('span');
+          span.innerText = '...';
+          button.appendChild(span);
+          button.addEventListener('click', onClick);
           return button;
         },
       }),

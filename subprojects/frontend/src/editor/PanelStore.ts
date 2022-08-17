@@ -10,19 +10,26 @@ const log = getLogger('editor.PanelStore');
 export default class PanelStore {
   state = false;
 
+  element: Element | undefined;
+
   constructor(
-    private readonly panelId: string,
+    readonly panelClass: string,
     private readonly openCommand: Command,
     private readonly closeCommand: Command,
-    private readonly store: EditorStore,
+    protected readonly store: EditorStore,
   ) {
     makeObservable(this, {
       state: observable,
+      element: observable,
       open: action,
       close: action,
       toggle: action,
       synchronizeStateToView: action,
     });
+  }
+
+  get id(): string {
+    return `${this.store.id}-${this.panelClass}`;
   }
 
   open(): boolean {
@@ -41,7 +48,7 @@ export default class PanelStore {
     if (this.state === newState) {
       return false;
     }
-    log.debug('Show', this.panelId, 'panel', newState);
+    log.debug('Show', this.panelClass, 'panel', newState);
     if (newState) {
       this.doOpen();
     } else {
@@ -58,7 +65,7 @@ export default class PanelStore {
     }
   }
 
-  private doOpen(): void {
+  protected doOpen(): void {
     if (!this.store.doCommand(this.openCommand)) {
       return;
     }
@@ -66,10 +73,19 @@ export default class PanelStore {
     if (view === undefined) {
       return;
     }
-    const buttonQuery = `.cm-${this.panelId}.cm-panel button[name="close"]`;
-    const closeButton = view.dom.querySelector(buttonQuery);
+    // We always access the panel DOM element by class name, even for the search panel,
+    // where we control the creation of the element, so that we can have a uniform way to
+    // access panel created by both CodeMirror and us.
+    this.element =
+      view.dom.querySelector(`.${this.panelClass}.cm-panel`) ?? undefined;
+    if (this.element === undefined) {
+      log.error('Failed to add panel', this.panelClass, 'to DOM');
+      return;
+    }
+    this.element.id = this.id;
+    const closeButton = this.element.querySelector('button[name="close"]');
     if (closeButton !== null) {
-      log.debug('Addig close button callback to', this.panelId, 'panel');
+      log.debug('Addig close button callback to', this.panelClass, 'panel');
       // We must remove the event listener from the button that dispatches a transaction
       // without going through `EditorStore`. This listened is added by CodeMirror,
       // and we can only remove it by cloning the DOM node: https://stackoverflow.com/a/9251864
@@ -79,12 +95,17 @@ export default class PanelStore {
         event.preventDefault();
       });
       closeButton.replaceWith(closeButtonWithoutListeners);
-    } else {
-      log.error('Opened', this.panelId, 'panel has no close button');
     }
   }
 
-  private doClose(): void {
+  protected doClose(): void {
     this.store.doCommand(this.closeCommand);
+    if (this.element === undefined) {
+      return;
+    }
+    if (this.store.view !== undefined) {
+      log.error('Failed to remove search panel from DOM');
+    }
+    this.element = undefined;
   }
 }

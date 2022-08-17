@@ -1,3 +1,4 @@
+import Portal from '@mui/material/Portal';
 import { useTheme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect } from 'react';
@@ -5,9 +6,12 @@ import React, { useCallback, useEffect } from 'react';
 import { useRootStore } from '../RootStore';
 
 import EditorTheme from './EditorTheme';
+import SearchToolbar from './SearchToolbar';
 
 function EditorArea(): JSX.Element {
   const { editorStore } = useRootStore();
+  const { searchPanel: searchPanelStore } = editorStore;
+  const { element: searchPanelContainer } = searchPanelStore;
   const {
     palette: { mode: paletteMode },
   } = useTheme();
@@ -19,7 +23,7 @@ function EditorArea(): JSX.Element {
 
   const editorParentRef = useCallback(
     (editorParent: HTMLDivElement | null) => {
-      editorStore.setEditorParent(editorParent);
+      editorStore.setEditorParent(editorParent ?? undefined);
     },
     [editorStore],
   );
@@ -28,7 +32,13 @@ function EditorArea(): JSX.Element {
     <EditorTheme
       showLineNumbers={editorStore.showLineNumbers}
       ref={editorParentRef}
-    />
+    >
+      {searchPanelContainer !== undefined && (
+        <Portal container={searchPanelContainer}>
+          <SearchToolbar store={searchPanelStore} />
+        </Portal>
+      )}
+    </EditorTheme>
   );
 }
 

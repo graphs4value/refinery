@@ -2,9 +2,12 @@ import {
   alpha,
   createTheme,
   type Components,
+  type CSSObject,
   responsiveFontSizes,
   type ThemeOptions,
   ThemeProvider as MaterialUiThemeProvider,
+  type TypographyStyle,
+  type TypographyVariantsOptions,
 } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import React, { type ReactNode } from 'react';
@@ -22,13 +25,30 @@ interface HighlightPalette {
   comment: string;
   activeLine: string;
   selection: string;
+  lineNumber: string;
+  foldPlaceholder: string;
+  activeLintRange: string;
   occurences: {
     read: string;
     write: string;
   };
+  search: {
+    match: string;
+    selected: string;
+    contrastText: string;
+  };
 }
 
 declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    editor: TypographyStyle;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-shadow -- Augment imported interface.
+  interface TypographyVariantsOptions {
+    editor: TypographyStyle;
+  }
+
   interface Palette {
     outer: OuterPalette;
     highlight: HighlightPalette;
@@ -41,6 +61,18 @@ declare module '@mui/material/styles' {
 }
 
 function getMUIThemeOptions(darkMode: boolean): ThemeOptions {
+  const typography: TypographyVariantsOptions = {
+    editor: {
+      fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
+      fontFeatureSettings: '"liga", "calt"',
+      fontSize: '1rem',
+      fontWeight: 400,
+      lineHeight: 1.5,
+      letterSpacing: 0,
+      textRendering: 'optimizeLegibility',
+    },
+  };
+
   const components: Components = {
     MuiButton: {
       styleOverrides: {
@@ -67,11 +99,37 @@ function getMUIThemeOptions(darkMode: boolean): ThemeOptions {
         },
       },
     },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          background: alpha('#212121', 0.93),
+          color: '#fff',
+        },
+        arrow: {
+          color: alpha('#212121', 0.93),
+        },
+      },
+    },
   };
 
   return darkMode
     ? {
-        components,
+        typography,
+        components: {
+          ...components,
+          MuiTooltip: {
+            ...(components.MuiTooltip || {}),
+            styleOverrides: {
+              ...(components.MuiTooltip?.styleOverrides || {}),
+              tooltip: {
+                ...((components.MuiTooltip?.styleOverrides?.tooltip as
+                  | CSSObject
+                  | undefined) || {}),
+                color: '#ebebff',
+              },
+            },
+          },
+        },
         palette: {
           mode: 'dark',
           primary: { main: '#56b6c2' },
@@ -99,31 +157,57 @@ function getMUIThemeOptions(darkMode: boolean): ThemeOptions {
             comment: '#6b717d',
             activeLine: '#21252b',
             selection: '#3e4453',
+            lineNumber: '#4b5263',
+            foldPlaceholder: alpha('#ebebff', 0.12),
+            activeLintRange: alpha('#fbc346', 0.28),
             occurences: {
-              read: 'rgba(255, 255, 255, 0.15)',
-              write: 'rgba(255, 255, 128, 0.4)',
+              read: alpha('#ebebff', 0.24),
+              write: alpha('#ebebff', 0.24),
+            },
+            search: {
+              match: '#33eaff',
+              selected: '#dd33fa',
+              contrastText: '#21252b',
             },
           },
         },
       }
     : {
-        components,
+        typography,
+        components: {
+          ...components,
+          MuiToolbar: {
+            styleOverrides: {
+              root: {
+                color: 'rgba(0, 0, 0, 0.54)',
+              },
+            },
+          },
+        },
         palette: {
           mode: 'light',
-          primary: { main: '#0097a7' },
+          primary: { main: '#0398a8' },
           outer: {
             background: '#f5f5f5',
-            border: '#d7d7d7',
+            border: '#cacaca',
           },
           highlight: {
-            number: '#1976d2',
+            number: '#3d79a2',
             parameter: '#6a3e3e',
-            comment: alpha('#000', 0.38),
+            comment: 'rgba(0, 0, 0, 0.38)',
             activeLine: '#f5f5f5',
             selection: '#c8e4fb',
+            lineNumber: 'rgba(0, 0, 0, 0.38)',
+            foldPlaceholder: 'rgba(0, 0, 0, 0.12)',
+            activeLintRange: alpha('#ed6c02', 0.24),
             occurences: {
-              read: '#ceccf7',
-              write: '#f0d8a8',
+              read: 'rgba(0, 0, 0, 0.12)',
+              write: 'rgba(0, 0, 0, 0.12)',
+            },
+            search: {
+              match: '#00bcd4',
+              selected: '#d500f9',
+              contrastText: '#ffffff',
             },
           },
         },

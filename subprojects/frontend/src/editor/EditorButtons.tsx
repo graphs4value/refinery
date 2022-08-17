@@ -56,6 +56,7 @@ function EditorButtons(): JSX.Element {
           selected={editorStore.showLineNumbers}
           onClick={() => editorStore.toggleLineNumbers()}
           aria-label="Show line numbers"
+          aria-controls={editorStore.lineNumbersId}
           value="show-line-numbers"
         >
           <FormatListNumberedIcon fontSize="small" />
@@ -64,6 +65,9 @@ function EditorButtons(): JSX.Element {
           selected={editorStore.searchPanel.state}
           onClick={() => editorStore.searchPanel.toggle()}
           aria-label="Show find/replace"
+          {...(editorStore.searchPanel.state && {
+            'aria-controls': editorStore.searchPanel.id,
+          })}
           value="show-search-panel"
         >
           <SearchIcon fontSize="small" />
@@ -72,6 +76,9 @@ function EditorButtons(): JSX.Element {
           selected={editorStore.lintPanel.state}
           onClick={() => editorStore.lintPanel.toggle()}
           aria-label="Show diagnostics panel"
+          {...(editorStore.lintPanel.state && {
+            'aria-controls': editorStore.lintPanel.id,
+          })}
           value="show-lint-panel"
         >
           {getLintIcon(editorStore.highestDiagnosticLevel)}

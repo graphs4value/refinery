@@ -3,11 +3,8 @@ import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands';
 import {
   type Diagnostic,
   setDiagnostics,
-  closeLintPanel,
-  openLintPanel,
   nextDiagnostic,
 } from '@codemirror/lint';
-import { closeSearchPanel, openSearchPanel } from '@codemirror/search';
 import {
   type StateCommand,
   StateEffect,
@@ -17,11 +14,13 @@ import {
 } from '@codemirror/state';
 import { type Command, EditorView } from '@codemirror/view';
 import { action, computed, makeObservable, observable } from 'mobx';
+import { nanoid } from 'nanoid';
 
 import getLogger from '../utils/getLogger';
 import XtextClient from '../xtext/XtextClient';
 
-import PanelStore from './PanelStore';
+import LintPanelStore from './LintPanelStore';
+import SearchPanelStore from './SearchPanelStore';
 import createEditorState from './createEditorState';
 import { type IOccurrence, setOccurrences } from './findOccurrences';
 import {
@@ -32,15 +31,17 @@ import {
 const log = getLogger('editor.EditorStore');
 
 export default class EditorStore {
+  readonly id: string;
+
   state: EditorState;
 
   private readonly client: XtextClient;
 
   view: EditorView | undefined;
 
-  readonly searchPanel: PanelStore;
+  readonly searchPanel: SearchPanelStore;
 
-  readonly lintPanel: PanelStore;
+  readonly lintPanel: LintPanelStore;
 
   showLineNumbers = false;
 
@@ -51,20 +52,11 @@ export default class EditorStore {
   infoCount = 0;
 
   constructor(initialValue: string) {
+    this.id = nanoid();
     this.state = createEditorState(initialValue, this);
     this.client = new XtextClient(this);
-    this.searchPanel = new PanelStore(
-      'search',
-      openSearchPanel,
-      closeSearchPanel,
-      this,
-    );
-    this.lintPanel = new PanelStore(
-      'panel-lint',
-      openLintPanel,
-      closeLintPanel,
-      this,
-    );
+    this.searchPanel = new SearchPanelStore(this);
+    this.lintPanel = new LintPanelStore(this);
     makeObservable(this, {
       state: observable.ref,
       view: observable.ref,
@@ -100,11 +92,11 @@ export default class EditorStore {
     });
   }
 
-  setEditorParent(editorParent: Element | null): void {
+  setEditorParent(editorParent: Element | undefined): void {
     if (this.view !== undefined) {
       this.view.destroy();
     }
-    if (editorParent === null) {
+    if (editorParent === undefined) {
       this.view = undefined;
       return;
     }
@@ -129,9 +121,15 @@ export default class EditorStore {
     this.lintPanel.synchronizeStateToView();
 
     // Reported by Lighthouse 8.3.0.
-    const { contentDOM } = view;
+    const { contentDOM, dom: containerDOM } = view;
     contentDOM.removeAttribute('aria-expanded');
     contentDOM.setAttribute('aria-label', 'Code editor');
+    const lineNumbersGutter = containerDOM.querySelector('.cm-lineNumbers');
+    if (lineNumbersGutter === null) {
+      log.error('No line numbers in editor');
+    } else {
+      lineNumbersGutter.id = this.lineNumbersId;
+    }
 
     log.info('Editor created');
   }
@@ -242,6 +240,10 @@ export default class EditorStore {
 
   redo(): void {
     log.debug('Redo', this.doStateCommand(redo));
+  }
+
+  get lineNumbersId(): string {
+    return `${this.id}-lineNumbers`;
   }
 
   toggleLineNumbers(): void {

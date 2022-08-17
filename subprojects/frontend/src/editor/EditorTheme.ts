@@ -2,7 +2,7 @@ import errorSVG from '@material-icons/svg/svg/error/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
-import { alpha, styled } from '@mui/material/styles';
+import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
 import editorClassNames from './editorClassNames';
 
@@ -14,146 +14,27 @@ export default styled('div', {
   name: 'EditorTheme',
   shouldForwardProp: (propName) => propName !== 'showLineNumbers',
 })<{ showLineNumbers: boolean }>(({ theme, showLineNumbers }) => {
-  let codeMirrorLintStyle: Record<string, unknown> = {};
-  (
-    [
-      {
-        severity: 'error',
-        icon: errorSVG,
-      },
-      {
-        severity: 'warning',
-        icon: warningSVG,
-      },
-      {
-        severity: 'info',
-        icon: infoSVG,
-      },
-    ] as const
-  ).forEach(({ severity, icon }) => {
-    const palette = theme.palette[severity];
-    const color = palette.main;
-    const iconStyle = {
-      background: color,
-      maskImage: svgURL(icon),
-      maskSize: '16px 16px',
-      height: 16,
-      width: 16,
-    };
-    const tooltipColor =
-      theme.palette.mode === 'dark' ? palette.main : palette.light;
-    codeMirrorLintStyle = {
-      ...codeMirrorLintStyle,
-      [`.cm-lintRange-${severity}`]: {
-        backgroundImage: 'none',
-        textDecoration: `underline wavy ${color}`,
-        textDecorationSkipInk: 'none',
-      },
-      [`.cm-diagnostic-${severity}`]: {
-        marginLeft: 0,
-        padding: '4px 8px 4px 32px',
-        borderLeft: 'none',
-        position: 'relative',
-        '::before': {
-          ...iconStyle,
-          content: '" "',
-          position: 'absolute',
-          top: 6,
-          left: 8,
-        },
-      },
-      [`.cm-tooltip .cm-diagnostic-${severity}::before`]: {
-        background: tooltipColor,
-      },
-      [`.cm-lint-marker-${severity}`]: {
-        ...iconStyle,
-        display: 'block',
-        margin: '4px 0',
-        // Remove original CodeMirror icon.
-        content: '""',
-        '::before': {
-          // Remove original CodeMirror icon.
-          content: '""',
-          display: 'none',
-        },
-      },
-    };
-  });
-
-  return {
+  const generalStyle: CSSObject = {
     background: theme.palette.background.default,
     '&, .cm-editor': {
       height: '100%',
     },
-    '.cm-content': {
-      padding: 0,
-    },
     '.cm-scroller': {
+      ...theme.typography.editor,
       color: theme.palette.text.secondary,
     },
-    '.cm-scroller, .cm-tooltip-autocomplete, .cm-completionLabel, .cm-completionDetail':
-      {
-        ...theme.typography.body1,
-        fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
-        fontFeatureSettings: '"liga", "calt"',
-        letterSpacing: 0,
-        textRendering: 'optimizeLegibility',
-      },
     '.cm-gutters': {
       background: 'transparent',
-      color: theme.palette.text.disabled,
       border: 'none',
     },
-    '.cm-specialChar': {
-      color: theme.palette.secondary.main,
+    '.cm-content': {
+      padding: 0,
     },
     '.cm-activeLine': {
       background: theme.palette.highlight.activeLine,
     },
-    '.cm-gutter-lint': {
-      width: 16,
-      '.cm-gutterElement': {
-        padding: 0,
-      },
-    },
-    '.cm-foldGutter': {
-      opacity: 0,
-      width: 16,
-      transition: theme.transitions.create('opacity', {
-        duration: theme.transitions.duration.short,
-      }),
-      '@media (hover: none)': {
-        opacity: 1,
-      },
-    },
-    '.cm-gutters:hover .cm-foldGutter': {
-      opacity: 1,
-    },
-    [`.${editorClassNames.foldMarker}`]: {
-      display: 'block',
-      margin: '4px 0',
-      padding: 0,
-      maskImage: svgURL(expandMoreSVG),
-      maskSize: '16px 16px',
-      height: 16,
-      width: 16,
-      background: theme.palette.text.primary,
-      border: 'none',
-      cursor: 'pointer',
-    },
-    [`.${editorClassNames.foldMarkerClosed}`]: {
-      transform: 'rotate(-90deg)',
-    },
     '.cm-activeLineGutter': {
       background: 'transparent',
-    },
-    '.cm-lineNumbers': {
-      ...(!showLineNumbers && {
-        display: 'none !important',
-      }),
-      '.cm-activeLineGutter': {
-        color: theme.palette.text.primary,
-      },
     },
     '.cm-cursor, .cm-cursor-primary': {
       borderLeft: `2px solid ${theme.palette.primary.main}`,
@@ -167,77 +48,11 @@ export default styled('div', {
         background: theme.palette.highlight.selection,
       },
     },
-    '.cm-panels-top': {
-      color: theme.palette.text.secondary,
-      borderBottom: `1px solid ${theme.palette.outer.border}`,
-      marginBottom: theme.spacing(1),
-    },
-    '.cm-panel': {
-      position: 'relative',
-      overflow: 'hidden',
-      background: theme.palette.outer.background,
-      borderTop: `1px solid ${theme.palette.outer.border}`,
-      '&, & button, & input': {
-        fontFamily: theme.typography.fontFamily,
-      },
-      'button[name="close"]': {
-        background: 'transparent',
-        color: theme.palette.text.secondary,
-        cursor: 'pointer',
-      },
-    },
-    '.cm-panel.cm-panel-lint': {
-      borderTop: `1px solid ${theme.palette.outer.border}`,
-      borderBottom: 'none',
-      'button[name="close"]': {
-        // Close button interferes with scrollbar, so we better hide it.
-        // The panel can still be closed from the toolbar.
-        display: 'none',
-      },
-      ul: {
-        maxHeight: 'max(112px, 20vh)',
-        li: {
-          cursor: 'pointer',
-          color: theme.palette.text.primary,
-        },
-        '.cm-diagnostic': {
-          ...theme.typography.body2,
-          '&[aria-selected="true"]': {
-            color: theme.palette.text.primary,
-            background: 'transparent',
-            fontWeight: 700,
-          },
-          ':hover': {
-            background: alpha(
-              theme.palette.text.primary,
-              theme.palette.action.hoverOpacity,
-            ),
-          },
-        },
-      },
-    },
-    [`.${editorClassNames.foldPlaceholder}`]: {
-      ...theme.typography.body1,
-      padding: 0,
-      fontFamily: 'inherit',
-      fontFeatureSettings: '"liga", "calt"',
-      color: theme.palette.text.secondary,
-      backgroundColor: alpha(
-        theme.palette.text.secondary,
-        theme.palette.action.focusOpacity,
-      ),
-      border: 'none',
-      cursor: 'pointer',
-      transition: theme.transitions.create(['background-color', 'color'], {
-        duration: theme.transitions.duration.short,
-      }),
-      '&:hover': {
-        color: theme.palette.text.primary,
-        backgroundColor: alpha(
-          theme.palette.text.secondary,
-          theme.palette.action.focusOpacity + theme.palette.action.hoverOpacity,
-        ),
-      },
+  };
+
+  const highlightingStyle: CSSObject = {
+    '.cm-specialChar': {
+      color: theme.palette.secondary.main,
     },
     '.tok-comment': {
       fontStyle: 'italic',
@@ -286,7 +101,238 @@ export default styled('div', {
         fontStyle: 'normal',
       },
     },
+  };
+
+  const matchingStyle: CSSObject = {
+    '.cm-problem-read': {
+      background: theme.palette.highlight.occurences.read,
+    },
+    '.cm-problem-write': {
+      background: theme.palette.highlight.occurences.write,
+    },
+    '.cm-matchingBracket, .cm-nonmatchingBracket': {
+      background: 'transparent',
+    },
+    '.cm-focused .cm-matchingBracket': {
+      background: 'transparent',
+      outline: `1px solid ${alpha(theme.palette.text.primary, 0.5)}`,
+      outlineOffset: -1,
+    },
+    '.cm-focused .cm-nonmatchingBracket': {
+      background: theme.palette.error.main,
+      '&, span': {
+        color: theme.palette.error.contrastText,
+      },
+    },
+    '.cm-searchMatch': {
+      opacity: 1,
+      background: theme.palette.highlight.search.match,
+      '&, span': {
+        color: theme.palette.highlight.search.contrastText,
+      },
+    },
+    '.cm-searchMatch-selected': {
+      background: theme.palette.highlight.search.selected,
+    },
+  };
+
+  const lineNumberStyle: CSSObject = {
+    '.cm-lineNumbers': {
+      color: theme.palette.highlight.lineNumber,
+      ...(!showLineNumbers && {
+        display: 'none !important',
+      }),
+      '.cm-gutterElement': {
+        padding: '0 2px 0 6px',
+      },
+      '.cm-activeLineGutter': {
+        color: theme.palette.text.primary,
+      },
+    },
+  };
+
+  const panelStyle: CSSObject = {
+    '.cm-panels-top': {
+      color: theme.palette.text.primary,
+      borderBottom: `1px solid ${theme.palette.outer.border}`,
+      marginBottom: theme.spacing(1),
+    },
+    '.cm-panel, .cm-panel.cm-search': {
+      color: theme.palette.text.primary,
+      background: theme.palette.outer.background,
+      borderTop: `1px solid ${theme.palette.outer.border}`,
+      margin: 0,
+      padding: 0,
+      'button[name="close"]': {
+        background: 'transparent',
+        color: theme.palette.text.secondary,
+        cursor: 'pointer',
+      },
+    },
+  };
+
+  function lintSeverityStyle(
+    severity: 'error' | 'warning' | 'info',
+    icon: string,
+  ): CSSObject {
+    const palette = theme.palette[severity];
+    const color = palette.main;
+    const tooltipColor = theme.palette.mode === 'dark' ? color : palette.light;
+    const iconStyle: CSSObject = {
+      background: color,
+      maskImage: svgURL(icon),
+      maskSize: '16px 16px',
+      height: 16,
+      width: 16,
+    };
+    return {
+      [`.cm-lintRange-${severity}`]: {
+        backgroundImage: 'none',
+        textDecoration: `underline wavy ${color}`,
+        textDecorationSkipInk: 'none',
+      },
+      [`.cm-diagnostic-${severity}`]: {
+        marginLeft: 0,
+        padding: '4px 8px 4px 32px',
+        borderLeft: 'none',
+        position: 'relative',
+        '::before': {
+          ...iconStyle,
+          content: '" "',
+          position: 'absolute',
+          top: 6,
+          left: 8,
+        },
+      },
+      [`.cm-tooltip .cm-diagnostic-${severity}::before`]: {
+        background: tooltipColor,
+      },
+      [`.cm-lint-marker-${severity}`]: {
+        ...iconStyle,
+        display: 'block',
+        margin: '4px 0',
+        // Remove original CodeMirror icon.
+        content: '""',
+        '::before': {
+          // Remove original CodeMirror icon.
+          content: '""',
+          display: 'none',
+        },
+      },
+    };
+  }
+
+  const lintStyle: CSSObject = {
+    '.cm-gutter-lint': {
+      width: 16,
+      '.cm-gutterElement': {
+        padding: 0,
+      },
+    },
+    '.cm-tooltip.cm-tooltip-hover, .cm-tooltip.cm-tooltip-lint': {
+      ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
+        | CSSObject
+        | undefined) || {}),
+      ...theme.typography.body2,
+      borderRadius: theme.shape.borderRadius,
+      overflow: 'hidden',
+      maxWidth: 400,
+    },
+    '.cm-panel.cm-panel-lint': {
+      borderTop: `1px solid ${theme.palette.outer.border}`,
+      borderBottom: 'none',
+      'button[name="close"]': {
+        // Close button interferes with scrollbar, so we better hide it.
+        // The panel can still be closed from the toolbar.
+        display: 'none',
+      },
+      ul: {
+        maxHeight: `max(${28 * 4}px, 20vh)`,
+        li: {
+          cursor: 'pointer',
+          color: theme.palette.text.primary,
+        },
+        '.cm-diagnostic': {
+          ...theme.typography.body2,
+          '&[aria-selected="true"]': {
+            color: theme.palette.text.primary,
+            background: 'transparent',
+            fontWeight: 700,
+          },
+          ':hover': {
+            background: alpha(
+              theme.palette.text.primary,
+              theme.palette.action.hoverOpacity,
+            ),
+          },
+        },
+      },
+    },
+    '.cm-lintRange-active': {
+      background: theme.palette.highlight.activeLintRange,
+    },
+    ...lintSeverityStyle('error', errorSVG),
+    ...lintSeverityStyle('warning', warningSVG),
+    ...lintSeverityStyle('info', infoSVG),
+  };
+
+  const foldStyle = {
+    '.cm-foldGutter': {
+      opacity: 0,
+      width: 16,
+      transition: theme.transitions.create('opacity', {
+        duration: theme.transitions.duration.short,
+      }),
+      '@media (hover: none)': {
+        opacity: 1,
+      },
+    },
+    '.cm-gutters:hover .cm-foldGutter': {
+      opacity: 1,
+    },
+    [`.${editorClassNames.foldMarker}`]: {
+      display: 'block',
+      margin: '4px 0',
+      padding: 0,
+      maskImage: svgURL(expandMoreSVG),
+      maskSize: '16px 16px',
+      height: 16,
+      width: 16,
+      background: theme.palette.text.primary,
+      border: 'none',
+      cursor: 'pointer',
+    },
+    [`.${editorClassNames.foldMarkerClosed}`]: {
+      transform: 'rotate(-90deg)',
+    },
+    [`.${editorClassNames.foldPlaceholder}`]: {
+      ...theme.typography.editor,
+      padding: 0,
+      fontFamily: 'inherit',
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      // Use an inner `span` element to match the height of other text highlights.
+      span: {
+        color: theme.palette.text.secondary,
+        backgroundColor: 'transparent',
+        backgroundImage: `linear-gradient(${theme.palette.highlight.foldPlaceholder}, ${theme.palette.highlight.foldPlaceholder})`,
+        transition: theme.transitions.create('background-color', {
+          duration: theme.transitions.duration.short,
+        }),
+      },
+      '&:hover span': {
+        backgroundColor: alpha(
+          theme.palette.highlight.foldPlaceholder,
+          theme.palette.action.hoverOpacity,
+        ),
+      },
+    },
+  };
+
+  const completionStyle: CSSObject = {
     '.cm-tooltip.cm-tooltip-autocomplete': {
+      ...theme.typography.editor,
       background: theme.palette.background.paper,
       borderRadius: theme.shape.borderRadius,
       overflow: 'hidden',
@@ -300,9 +346,11 @@ export default styled('div', {
         color: theme.palette.text.secondary,
       },
       '.cm-completionLabel': {
+        ...theme.typography.editor,
         color: theme.palette.text.primary,
       },
       '.cm-completionDetail': {
+        ...theme.typography.editor,
         color: theme.palette.text.secondary,
         fontStyle: 'normal',
       },
@@ -316,27 +364,22 @@ export default styled('div', {
         },
       },
     },
-    '.cm-tooltip.cm-tooltip-hover, .cm-tooltip.cm-tooltip-lint': {
-      ...theme.typography.body2,
-      // https://github.com/mui/material-ui/blob/dee9529f7a298c54ae760761112c3ae9ba082137/packages/mui-material/src/Tooltip/Tooltip.js#L121-L125
-      background: alpha(theme.palette.grey[700], 0.92),
-      borderRadius: theme.shape.borderRadius,
-      color: theme.palette.common.white,
-      overflow: 'hidden',
-      maxWidth: 400,
-    },
     '.cm-completionIcon': {
       width: 16,
       padding: 0,
       marginRight: '0.5em',
       textAlign: 'center',
     },
-    ...codeMirrorLintStyle,
-    '.cm-problem-read': {
-      background: theme.palette.highlight.occurences.read,
-    },
-    '.cm-problem-write': {
-      background: theme.palette.highlight.occurences.write,
-    },
+  };
+
+  return {
+    ...generalStyle,
+    ...highlightingStyle,
+    ...matchingStyle,
+    ...lineNumberStyle,
+    ...panelStyle,
+    ...lintStyle,
+    ...foldStyle,
+    ...completionStyle,
   };
 });
