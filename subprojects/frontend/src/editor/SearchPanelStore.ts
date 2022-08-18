@@ -7,7 +7,6 @@ import {
   replaceAll,
   replaceNext,
   SearchQuery,
-  selectMatches,
   setSearchQuery,
 } from '@codemirror/search';
 import { action, computed, makeObservable, observable, override } from 'mobx';
@@ -31,7 +30,8 @@ export default class SearchPanelStore extends PanelStore {
       updateQuery: action,
       findNext: action,
       findPrevious: action,
-      selectMatches: action,
+      replaceNext: action,
+      replaceAll: action,
     });
   }
 
@@ -80,10 +80,6 @@ export default class SearchPanelStore extends PanelStore {
 
   findPrevious(): void {
     this.store.doCommand(findPrevious);
-  }
-
-  selectMatches(): void {
-    this.store.doCommand(selectMatches);
   }
 
   replaceNext(): void {

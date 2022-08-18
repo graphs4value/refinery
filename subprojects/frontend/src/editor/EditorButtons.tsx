@@ -41,6 +41,7 @@ function EditorButtons(): JSX.Element {
         disabled={!editorStore.canUndo}
         onClick={() => editorStore.undo()}
         aria-label="Undo"
+        color="inherit"
       >
         <UndoIcon fontSize="small" />
       </IconButton>
@@ -48,6 +49,7 @@ function EditorButtons(): JSX.Element {
         disabled={!editorStore.canRedo}
         onClick={() => editorStore.redo()}
         aria-label="Redo"
+        color="inherit"
       >
         <RedoIcon fontSize="small" />
       </IconButton>
@@ -87,6 +89,7 @@ function EditorButtons(): JSX.Element {
       <IconButton
         onClick={() => editorStore.formatText()}
         aria-label="Automatic format"
+        color="inherit"
       >
         <FormatPaint fontSize="small" />
       </IconButton>

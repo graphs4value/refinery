@@ -17,12 +17,7 @@ export default function TopBar(): JSX.Element {
       })}
     >
       <Toolbar>
-        <Typography
-          variant="h6"
-          component="h1"
-          flexGrow={1}
-          color={(theme) => theme.palette.text.primary}
-        >
+        <Typography variant="h6" component="h1" flexGrow={1}>
           Refinery
         </Typography>
         <ToggleDarkModeButton />

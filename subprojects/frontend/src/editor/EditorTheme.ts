@@ -14,20 +14,28 @@ export default styled('div', {
   name: 'EditorTheme',
   shouldForwardProp: (propName) => propName !== 'showLineNumbers',
 })<{ showLineNumbers: boolean }>(({ theme, showLineNumbers }) => {
+  const editorFontStyle = {
+    ...theme.typography.editor,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.875rem',
+      lineHeight: 1.43,
+    },
+  };
+
   const generalStyle: CSSObject = {
     background: theme.palette.background.default,
     '&, .cm-editor': {
       height: '100%',
     },
     '.cm-scroller': {
-      ...theme.typography.editor,
       color: theme.palette.text.secondary,
     },
     '.cm-gutters': {
-      background: 'transparent',
+      background: theme.palette.background.default,
       border: 'none',
     },
     '.cm-content': {
+      ...editorFontStyle,
       padding: 0,
     },
     '.cm-activeLine': {
@@ -138,6 +146,7 @@ export default styled('div', {
 
   const lineNumberStyle: CSSObject = {
     '.cm-lineNumbers': {
+      ...editorFontStyle,
       color: theme.palette.highlight.lineNumber,
       ...(!showLineNumbers && {
         display: 'none !important',
@@ -157,7 +166,7 @@ export default styled('div', {
       borderBottom: `1px solid ${theme.palette.outer.border}`,
       marginBottom: theme.spacing(1),
     },
-    '.cm-panel, .cm-panel.cm-search': {
+    '.cm-panel': {
       color: theme.palette.text.primary,
       background: theme.palette.outer.background,
       borderTop: `1px solid ${theme.palette.outer.border}`,
@@ -207,12 +216,21 @@ export default styled('div', {
       [`.cm-tooltip .cm-diagnostic-${severity}::before`]: {
         background: tooltipColor,
       },
+      [`.cm-panel.cm-panel-lint .cm-diagnostic-${severity}::before`]: {
+        top: 8,
+        [theme.breakpoints.down('sm')]: {
+          top: 6,
+        },
+      },
       [`.cm-lint-marker-${severity}`]: {
         ...iconStyle,
         display: 'block',
         margin: '4px 0',
         // Remove original CodeMirror icon.
         content: '""',
+        [theme.breakpoints.down('sm')]: {
+          margin: '2px 0',
+        },
         '::before': {
           // Remove original CodeMirror icon.
           content: '""',
@@ -247,13 +265,16 @@ export default styled('div', {
         display: 'none',
       },
       ul: {
-        maxHeight: `max(${28 * 4}px, 20vh)`,
+        maxHeight: `max(${32 * 4}px, 20vh)`,
         li: {
           cursor: 'pointer',
           color: theme.palette.text.primary,
         },
         '.cm-diagnostic': {
-          ...theme.typography.body2,
+          ...theme.typography.body1,
+          [theme.breakpoints.down('sm')]: {
+            ...theme.typography.body2,
+          },
           '&[aria-selected="true"]': {
             color: theme.palette.text.primary,
             background: 'transparent',
@@ -264,6 +285,9 @@ export default styled('div', {
               theme.palette.text.primary,
               theme.palette.action.hoverOpacity,
             ),
+            '@media (hover: none)': {
+              background: 'transparent',
+            },
           },
         },
       },
@@ -301,12 +325,15 @@ export default styled('div', {
       background: theme.palette.text.primary,
       border: 'none',
       cursor: 'pointer',
+      [theme.breakpoints.down('sm')]: {
+        margin: '2px 0',
+      },
     },
     [`.${editorClassNames.foldMarkerClosed}`]: {
       transform: 'rotate(-90deg)',
     },
     [`.${editorClassNames.foldPlaceholder}`]: {
-      ...theme.typography.editor,
+      ...editorFontStyle,
       padding: 0,
       fontFamily: 'inherit',
       background: 'transparent',
@@ -326,13 +353,16 @@ export default styled('div', {
           theme.palette.highlight.foldPlaceholder,
           theme.palette.action.hoverOpacity,
         ),
+        '@media (hover: none)': {
+          backgroundColor: 'transparent',
+        },
       },
     },
   };
 
   const completionStyle: CSSObject = {
     '.cm-tooltip.cm-tooltip-autocomplete': {
-      ...theme.typography.editor,
+      ...editorFontStyle,
       background: theme.palette.background.paper,
       borderRadius: theme.shape.borderRadius,
       overflow: 'hidden',
@@ -346,11 +376,11 @@ export default styled('div', {
         color: theme.palette.text.secondary,
       },
       '.cm-completionLabel': {
-        ...theme.typography.editor,
+        ...editorFontStyle,
         color: theme.palette.text.primary,
       },
       '.cm-completionDetail': {
-        ...theme.typography.editor,
+        ...editorFontStyle,
         color: theme.palette.text.secondary,
         fontStyle: 'normal',
       },

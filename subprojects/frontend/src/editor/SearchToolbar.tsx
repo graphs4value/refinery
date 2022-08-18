@@ -2,7 +2,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import FindReplaceIcon from '@mui/icons-material/FindReplace';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import SearchIcon from '@mui/icons-material/Search';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -10,11 +9,16 @@ import FormHelperText from '@mui/material/FormHelperText';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
 import Toolbar from '@mui/material/Toolbar';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type SearchPanelStore from './SearchPanelStore';
+
+const SPLIT_MEDIA_QUERY = '@media (max-width: 1200px)';
+const ABBREVIATE_MEDIA_QUERY = '@media (max-width: 720px)';
 
 function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
   const {
@@ -22,8 +26,14 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
     query: { search, valid, caseSensitive, literal, regexp, replace },
     invalidRegexp,
   } = store;
+  const split = useMediaQuery(SPLIT_MEDIA_QUERY);
+  const abbreviate = useMediaQuery(ABBREVIATE_MEDIA_QUERY);
+  const [showRepalceState, setShowReplaceState] = useState(false);
+
+  const showReplace = !split || showRepalceState || replace !== '';
 
   const searchHelperId = `${panelId}-search-helper`;
+  const replaceId = `${panelId}-replace`;
 
   const searchFieldRef = useCallback(
     (element: HTMLInputElement | null) =>
@@ -32,13 +42,20 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
   );
 
   return (
-    <Toolbar variant="dense" sx={{ py: 0.5, alignItems: 'flex-start' }}>
+    <Toolbar
+      variant="dense"
+      sx={{ py: 0.5, alignItems: 'center', minHeight: 'auto' }}
+    >
       <Stack
-        direction="row"
-        flexWrap="wrap"
-        alignItems="center"
-        rowGap={0.5}
-        flexGrow={1}
+        direction={split ? 'column' : 'row'}
+        sx={{
+          alignItems: 'center',
+          flexGrow: 1,
+          [SPLIT_MEDIA_QUERY]: {
+            alignItems: 'start',
+            gap: 0.5,
+          },
+        }}
       >
         <Stack direction="row" flexWrap="wrap" alignItems="center" rowGap={0.5}>
           <TextField
@@ -65,7 +82,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             }}
             variant="standard"
             size="small"
-            sx={{ my: 0.25, mr: 1 }}
+            sx={{ mt: '4px', mr: 1 }}
             inputRef={searchFieldRef}
           />
           {invalidRegexp && (
@@ -92,6 +109,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
               aria-label="Previous"
               disabled={!valid}
               onClick={() => store.findPrevious()}
+              color="inherit"
             >
               <KeyboardArrowUpIcon fontSize="small" />
             </IconButton>
@@ -99,19 +117,17 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
               aria-label="Next"
               disabled={!valid}
               onClick={() => store.findNext()}
+              color="inherit"
             >
               <KeyboardArrowDownIcon fontSize="small" />
             </IconButton>
-            <Button
-              disabled={!valid}
-              onClick={() => store.selectMatches()}
-              color="inherit"
-              startIcon={<SearchIcon fontSize="inherit" />}
-            >
-              Find all
-            </Button>
           </Stack>
-          <Stack direction="row" flexWrap="wrap" rowGap={0.5}>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            alignItems="center"
+            rowGap={0.5}
+          >
             <FormControlLabel
               control={
                 <Checkbox
@@ -122,7 +138,8 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                   size="small"
                 />
               }
-              label="Match case"
+              aria-label="Match case"
+              label={abbreviate ? 'Case' : 'Match case'}
             />
             <FormControlLabel
               control={
@@ -134,7 +151,8 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                   size="small"
                 />
               }
-              label="Literal"
+              aria-label="Literal"
+              label={abbreviate ? 'Lit' : 'Literal'}
             />
             <FormControlLabel
               control={
@@ -148,9 +166,36 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
               }
               label="Regexp"
             />
+            {split && (
+              <ToggleButton
+                value="show-replace"
+                selected={showReplace}
+                onClick={() => {
+                  if (showReplace) {
+                    store.updateQuery({ replace: '' });
+                    setShowReplaceState(false);
+                  } else {
+                    setShowReplaceState(true);
+                  }
+                }}
+                aria-label="Show replace options"
+                aria-controls={replaceId}
+                size="small"
+                sx={{ borderRadius: '100%' }}
+              >
+                <FindReplaceIcon fontSize="small" />
+              </ToggleButton>
+            )}
           </Stack>
         </Stack>
-        <Stack direction="row" flexWrap="wrap" alignItems="center" rowGap={0.5}>
+        <Stack
+          id={replaceId}
+          direction="row"
+          flexWrap="wrap"
+          alignItems="center"
+          rowGap={0.5}
+          display={showReplace ? 'flex' : 'none'}
+        >
           <TextField
             placeholder="Replace with"
             aria-label="Replace with"
@@ -166,9 +211,14 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             }}
             variant="standard"
             size="small"
-            sx={{ mr: 1 }}
+            sx={{ mt: '4px', mr: 1 }}
           />
-          <Stack direction="row" flexWrap="wrap" rowGap={0.5}>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            alignItems="center"
+            rowGap={0.5}
+          >
             <Button
               disabled={!valid}
               onClick={() => store.replaceNext()}
@@ -188,9 +238,15 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
           </Stack>
         </Stack>
       </Stack>
-      <IconButton onClick={() => store.close()} sx={{ mt: '2px', ml: 1 }}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
+      <Stack direction="row" alignSelf="stretch" alignItems="start" mt="1px">
+        <IconButton
+          aria-label="Close find/replace"
+          onClick={() => store.close()}
+          color="inherit"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Stack>
     </Toolbar>
   );
 }

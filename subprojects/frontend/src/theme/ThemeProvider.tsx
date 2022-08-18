@@ -174,16 +174,7 @@ function getMUIThemeOptions(darkMode: boolean): ThemeOptions {
       }
     : {
         typography,
-        components: {
-          ...components,
-          MuiToolbar: {
-            styleOverrides: {
-              root: {
-                color: 'rgba(0, 0, 0, 0.54)',
-              },
-            },
-          },
-        },
+        components,
         palette: {
           mode: 'light',
           primary: { main: '#0398a8' },
