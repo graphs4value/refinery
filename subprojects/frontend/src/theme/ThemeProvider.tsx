@@ -64,7 +64,8 @@ declare module '@mui/material/styles' {
 
 const typography: TypographyVariantsOptions = {
   editor: {
-    fontFamily: '"JetBrains MonoVariable", "JetBrains Mono", monospace',
+    fontFamily:
+      '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
     fontFeatureSettings: '"liga", "calt"',
     fontSize: '1rem',
     fontWeight: 400,

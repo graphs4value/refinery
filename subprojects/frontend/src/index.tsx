@@ -1,14 +1,4 @@
 import CssBaseline from '@mui/material/CssBaseline';
-import '@fontsource/jetbrains-mono/400.css';
-import '@fontsource/jetbrains-mono/400-italic.css';
-import '@fontsource/jetbrains-mono/700.css';
-import '@fontsource/jetbrains-mono/700-italic.css';
-import '@fontsource/jetbrains-mono/variable.css';
-import '@fontsource/jetbrains-mono/variable-italic.css';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
 import { SnackbarProvider } from 'notistack';
 import React, { Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';

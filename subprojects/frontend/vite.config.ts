@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import { lezer } from '@lezer/generator/rollup';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { minify } from 'html-minifier-terser';
+import { defineConfig, PluginOption } from 'vite';
 import injectPreload from 'vite-plugin-inject-preload';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -33,12 +34,32 @@ const { name: packageName, version: packageVersion } = JSON.parse(
 process.env.VITE_PACKAGE_NAME ??= packageName;
 process.env.VITE_PACKAGE_VERSION ??= packageVersion;
 
+const minifyPlugin: PluginOption = {
+  name: 'minify-html',
+  enforce: 'post',
+  async transformIndexHtml(html) {
+    if (isDevelopment) {
+      return html;
+    }
+    return minify(html, {
+      collapseWhitespace: true,
+      collapseBooleanAttributes: true,
+      minifyCSS: true,
+      removeComments: true,
+      removeAttributeQuotes: true,
+      removeRedundantAttributes: true,
+      sortAttributes: true,
+    });
+  },
+};
+
 export default defineConfig({
   logLevel: 'info',
   mode,
   root: thisDir,
   cacheDir: path.join(thisDir, 'build/vite/cache'),
   plugins: [
+    minifyPlugin,
     react({
       babel: {
         // Gets rid of deoptimization warnings for large chunks.
