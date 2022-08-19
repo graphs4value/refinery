@@ -53,7 +53,7 @@ function EditorButtons(): JSX.Element {
       >
         <RedoIcon fontSize="small" />
       </IconButton>
-      <ToggleButtonGroup size="small" sx={{ mx: 1 }}>
+      <ToggleButtonGroup size="small" className="rounded" sx={{ mx: 1 }}>
         <ToggleButton
           selected={editorStore.showLineNumbers}
           onClick={() => editorStore.toggleLineNumbers()}

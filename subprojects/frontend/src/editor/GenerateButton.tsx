@@ -24,8 +24,9 @@ function GenerateButton(): JSX.Element {
     return (
       <Button
         aria-label={`Select next diagnostic out of ${summary}`}
-        color="error"
         onClick={() => editorStore.nextDiagnostic()}
+        color="error"
+        className="rounded"
       >
         {summary}
       </Button>
@@ -35,6 +36,7 @@ function GenerateButton(): JSX.Element {
   return (
     <Button
       color={warningCount > 0 ? 'warning' : 'primary'}
+      className="rounded"
       startIcon={<PlayArrowIcon />}
     >
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}

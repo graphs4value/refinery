@@ -181,7 +181,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                 aria-label="Show replace options"
                 aria-controls={replaceId}
                 size="small"
-                sx={{ borderRadius: '100%' }}
+                className="iconOnly"
               >
                 <FindReplaceIcon fontSize="small" />
               </ToggleButton>

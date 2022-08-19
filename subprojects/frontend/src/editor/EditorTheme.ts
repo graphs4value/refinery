@@ -95,7 +95,8 @@ export default styled('div', {
       fontStyle: 'italic',
     },
     '.tok-problem-containment': {
-      fontWeight: 700,
+      fontWeight: theme.typography.fontWeightBold,
+      textDecorationSkipInk: 'none',
     },
     '.tok-problem-error': {
       '&, & .tok-typeName': {
@@ -278,7 +279,7 @@ export default styled('div', {
           '&[aria-selected="true"]': {
             color: theme.palette.text.primary,
             background: 'transparent',
-            fontWeight: 700,
+            fontWeight: theme.typography.fontWeightMedium,
           },
           ':hover': {
             background: alpha(
