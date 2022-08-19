@@ -66,6 +66,12 @@ export default defineConfig({
       strategies: 'generateSW',
       registerType: 'prompt',
       injectRegister: null,
+      devOptions: {
+        enabled: true,
+      },
+      // Unregister service worker installed in production mode
+      // if Vite is started in development mode on the same domain.
+      selfDestroying: isDevelopment,
       workbox: {
         globPatterns: [
           '**/*.{css,html,js}',
@@ -74,6 +80,7 @@ export default defineConfig({
         ],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
         navigateFallbackDenylist: [/^\/xtext-service/],
+        sourcemap: isDevelopment,
       },
       includeAssets: ['apple-touch-icon.png', 'favicon.svg', 'mask-icon.svg'],
       manifest: {

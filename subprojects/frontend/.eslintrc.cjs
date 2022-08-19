@@ -36,7 +36,7 @@ module.exports = {
   env: {
     browser: true,
   },
-  ignorePatterns: ['build/**/*'],
+  ignorePatterns: ['build/**/*', 'dev-dist/**/*'],
   rules: {
     // In typescript, some class methods implementing an inderface do not use `this`:
     // https://github.com/typescript-eslint/typescript-eslint/issues/1103

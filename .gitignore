@@ -15,6 +15,7 @@
 !.yarn/versions
 bin/
 build/
+dev-dist/
 emf-gen/
 xtend-gen/
 *.xtendbin

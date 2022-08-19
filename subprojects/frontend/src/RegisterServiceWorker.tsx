@@ -50,7 +50,8 @@ function UpdateSnackbarActions({
 export default function RegisterServiceWorker(): null {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   useEffect(() => {
-    if (import.meta.env.DEV) {
+    if (window.location.host === 'localhost') {
+      // Do not register service worker during local development.
       return;
     }
     if (!('serviceWorker' in navigator)) {
