@@ -58,7 +58,6 @@ function EditorButtons(): JSX.Element {
           selected={editorStore.showLineNumbers}
           onClick={() => editorStore.toggleLineNumbers()}
           aria-label="Show line numbers"
-          aria-controls={editorStore.lineNumbersId}
           value="show-line-numbers"
         >
           <FormatListNumberedIcon fontSize="small" />

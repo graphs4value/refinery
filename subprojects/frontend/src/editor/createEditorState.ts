@@ -86,16 +86,14 @@ export default function createEditorState(
       }),
       foldGutter({
         markerDOM(open) {
-          const button = document.createElement('button');
-          button.className = [
+          const div = document.createElement('div');
+          div.className = [
             editorClassNames.foldMarker,
             open
               ? editorClassNames.foldMarkerOpen
               : editorClassNames.foldMarkerClosed,
           ].join(' ');
-          button.ariaPressed = open ? 'true' : 'false';
-          button.ariaLabel = 'Fold lines';
-          return button;
+          return div;
         },
       }),
       keymap.of([

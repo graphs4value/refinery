@@ -121,15 +121,9 @@ export default class EditorStore {
     this.lintPanel.synchronizeStateToView();
 
     // Reported by Lighthouse 8.3.0.
-    const { contentDOM, dom: containerDOM } = view;
+    const { contentDOM } = view;
     contentDOM.removeAttribute('aria-expanded');
     contentDOM.setAttribute('aria-label', 'Code editor');
-    const lineNumbersGutter = containerDOM.querySelector('.cm-lineNumbers');
-    if (lineNumbersGutter === null) {
-      log.error('No line numbers in editor');
-    } else {
-      lineNumbersGutter.id = this.lineNumbersId;
-    }
 
     log.info('Editor created');
   }
@@ -240,10 +234,6 @@ export default class EditorStore {
 
   redo(): void {
     log.debug('Redo', this.doStateCommand(redo));
-  }
-
-  get lineNumbersId(): string {
-    return `${this.id}-lineNumbers`;
   }
 
   toggleLineNumbers(): void {
