@@ -6,11 +6,13 @@ import { lezer } from '@lezer/generator/rollup';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import injectPreload from 'vite-plugin-inject-preload';
+import { VitePWA } from 'vite-plugin-pwa';
 
 const thisDir = path.dirname(fileURLToPath(import.meta.url));
 
 const mode = process.env.MODE || 'development';
 const isDevelopment = mode === 'development';
+process.env.NODE_ENV ??= mode;
 
 function portNumberOrElse(envName: string, fallback: number): number {
   const value = process.env[envName];
@@ -29,7 +31,7 @@ const { name: packageName, version: packageVersion } = JSON.parse(
   readFileSync(path.join(thisDir, 'package.json'), 'utf8'),
 ) as { name: string; version: string };
 process.env.VITE_PACKAGE_NAME ??= packageName;
-process.env.VITE_PACKAGE_VERSIOn ??= packageVersion;
+process.env.VITE_PACKAGE_VERSION ??= packageVersion;
 
 export default defineConfig({
   logLevel: 'info',
@@ -50,7 +52,7 @@ export default defineConfig({
       files: [
         {
           match:
-            /(?:jetbrains-mono-latin-variable-wghtOnly-(?:italic|normal)|roboto-latin-(?:400|500)-normal).+\.woff2/,
+            /(?:jetbrains-mono-latin-variable-wghtOnly-(?:italic|normal)|roboto-latin-(?:400|500)-normal).+\.woff2$/,
           attributes: {
             type: 'font/woff2',
             as: 'font',
@@ -60,6 +62,56 @@ export default defineConfig({
       ],
     }),
     lezer(),
+    VitePWA({
+      strategies: 'generateSW',
+      registerType: 'prompt',
+      injectRegister: null,
+      workbox: {
+        globPatterns: [
+          '**/*.{css,html,js}',
+          'roboto-latin-{300,400,500,700}-normal.*.woff2',
+          'jetbrains-mono-latin-variable-wghtOnly-{normal,italic}.*.woff2',
+        ],
+        dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
+        navigateFallbackDenylist: [/^\/xtext-service/],
+      },
+      includeAssets: ['apple-touch-icon.png', 'favicon.svg', 'mask-icon.svg'],
+      manifest: {
+        lang: 'en-US',
+        name: 'Refinery',
+        short_name: 'Refinery',
+        description:
+          'An efficient graph sovler for generating well-formed models',
+        theme_color: '#21252b',
+        background_color: '#21252b',
+        icons: [
+          {
+            src: 'icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            src: 'icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            src: 'icon-any.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable',
+          },
+          {
+            src: 'mask-icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'monochrome',
+          },
+        ],
+      },
+    }),
   ],
   base: '',
   define: {
@@ -67,6 +119,9 @@ export default defineConfig({
   },
   build: {
     assetsDir: '.',
+    // If we don't control inlining manually,
+    // web fonts will randomly get inlined into the CSS, degrading performance.
+    assetsInlineLimit: 0,
     outDir: path.join('build/vite', mode),
     emptyOutDir: true,
     sourcemap: isDevelopment,

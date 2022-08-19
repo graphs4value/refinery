@@ -1,6 +1,4 @@
 import CssBaseline from '@mui/material/CssBaseline';
-import React, { Suspense, lazy } from 'react';
-import { createRoot } from 'react-dom/client';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/400-italic.css';
 import '@fontsource/jetbrains-mono/700.css';
@@ -8,15 +6,15 @@ import '@fontsource/jetbrains-mono/700-italic.css';
 import '@fontsource/jetbrains-mono/variable.css';
 import '@fontsource/jetbrains-mono/variable-italic.css';
 import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/300-italic.css';
 import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/400-italic.css';
 import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/500-italic.css';
 import '@fontsource/roboto/700.css';
-import '@fontsource/roboto/700-italic.css';
+import { SnackbarProvider } from 'notistack';
+import React, { Suspense, lazy } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import Loading from './Loading';
+import RegisterServiceWorker from './RegisterServiceWorker';
 import RootStore, { RootStoreProvider } from './RootStore';
 import ThemeProvider from './theme/ThemeProvider';
 import getLogger from './utils/getLogger';
@@ -79,9 +77,12 @@ const app = (
     <RootStoreProvider rootStore={rootStore}>
       <ThemeProvider>
         <CssBaseline enableColorScheme />
-        <Suspense fallback={<Loading />}>
-          <App />
-        </Suspense>
+        <SnackbarProvider>
+          <RegisterServiceWorker />
+          <Suspense fallback={<Loading />}>
+            <App />
+          </Suspense>
+        </SnackbarProvider>
       </ThemeProvider>
     </RootStoreProvider>
   </React.StrictMode>

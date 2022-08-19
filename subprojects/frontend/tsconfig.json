@@ -4,7 +4,7 @@
     "jsx": "react",
     "noEmit": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vite/client"]
+    "types": ["vite/client", "vite-plugin-pwa/client"]
   },
   "include": [
     "src",

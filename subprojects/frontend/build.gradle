@@ -23,7 +23,9 @@ def installFrontend = tasks.named('installFrontend')
 
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
+	inputs.dir 'public'
 	inputs.dir 'src'
+	inputs.file 'index.html'
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'vite.config.ts')
 	inputs.file rootProject.file('yarn.lock')
 	outputs.dir productionResources
@@ -80,7 +82,9 @@ tasks.named('check') {
 
 tasks.register('serveFrontend', RunYarn) {
 	dependsOn installFrontend
+	inputs.dir 'public'
 	inputs.dir 'src'
+	inputs.file 'index.html'
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'vite.config.ts')
 	inputs.file rootProject.file('yarn.lock')
 	outputs.dir "${viteOutputDir}/development"

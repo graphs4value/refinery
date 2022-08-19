@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="../apple-touch-icon.png"
+   inkscape:export-xdpi="33.75"
+   inkscape:export-ydpi="33.75"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.7971076"
+     inkscape:cx="194.45305"
+     inkscape:cy="286.03416"
+     inkscape:window-width="2560"
+     inkscape:window-height="1415"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer3" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Background">
+    <rect
+       style="fill:#21252b;fill-opacity:1;stroke:none;stroke-width:0.264582;stroke-linecap:square;stroke-linejoin:bevel;stroke-opacity:0.6;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect453"
+       width="512"
+       height="512"
+       x="0"
+       y="0"
+       inkscape:label="fill" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Icon">
+    <g
+       id="g1119-3"
+       transform="matrix(3.8719803,0,0,3.8954379,-6.2620826,-7.8510277)"
+       style="display:inline;opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none">
+      <path
+         style="font-size:114.487px;line-height:1.25;font-family:'XITS Math';-inkscape-font-specification:'XITS Math';letter-spacing:0px;word-spacing:0px;fill:#181a1f;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none"
+         d="M 101.82441,58.134836 C 76.975254,56.421602 48.331396,49.033281 33.642238,31.793864 v 8.244938 c 6.120483,9.208633 25.828436,17.88188 40.884823,21.629579 -15.056387,3.747699 -34.76434,12.420945 -40.884823,21.629578 v 8.244938 C 48.331396,74.30348 76.975254,66.915159 101.82441,65.201926 Z"
+         id="path1113-6" />
+      <path
+         style="font-size:114.487px;line-height:1.25;font-family:'XITS Math';-inkscape-font-specification:'XITS Math';letter-spacing:0px;word-spacing:0px;display:inline;fill:#181a1f;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none"
+         d="m 101.82441,79.121951 c -20.197589,0.74954 -51.044821,7.281244 -68.182172,24.413589 v 8.35201 C 50.53477,93.363208 83.340556,87.259812 101.82441,86.189041 Z"
+         id="path1061-7" />
+    </g>
+    <g
+       id="g1119-3-1"
+       transform="matrix(3.8719803,0,0,3.8954379,-6.2620826,-7.8510277)"
+       style="display:inline;stroke:none;stroke-width:0;stroke-dasharray:none">
+      <path
+         style="font-size:114.487px;line-height:1.25;font-family:'XITS Math';-inkscape-font-specification:'XITS Math';letter-spacing:0px;word-spacing:0px;fill:#ebebff;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none"
+         d="M 101.82441,54.027469 C 76.975254,52.314235 48.331396,44.925914 33.642238,27.686497 v 8.244938 c 6.120483,9.208633 25.828436,17.88188 40.884823,21.629579 -15.056387,3.747699 -34.76434,12.420945 -40.884823,21.629578 V 87.43553 C 48.331396,70.196113 76.975254,62.807792 101.82441,61.094559 Z"
+         id="path1113-6-8" />
+      <path
+         style="font-size:114.487px;line-height:1.25;font-family:'XITS Math';-inkscape-font-specification:'XITS Math';letter-spacing:0px;word-spacing:0px;display:inline;fill:#56b6c2;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none"
+         d="M 101.82441,75.014584 C 81.626821,75.764124 50.779589,82.295828 33.642238,99.42817 v 8.35201 C 50.53477,89.255841 83.340556,83.152445 101.82441,82.081674 Z"
+         id="path1061-7-7" />
+    </g>
+  </g>
+  <g
+     inkscape:label="Guides"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:none;stroke:#ff00ff">
+    <ellipse
+       style="opacity:1;fill:none;stroke:#ff00ff;stroke-width:0.264582;stroke-linecap:square;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:0.6;paint-order:stroke fill markers;stop-color:#000000"
+       id="path111"
+       cx="256"
+       cy="255.99997"
+       inkscape:label="safe_zone"
+       rx="204.14394"
+       ry="204.14391" />
+  </g>
+</svg>
