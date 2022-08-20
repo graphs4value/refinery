@@ -10,8 +10,8 @@
     <link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" type="image/png" sizes="180x180">
     <link rel="mask-icon" href="/mask-icon.svg" type="image/svg+xml" color="#038a99">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#21252b">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafafa">
+    <meta name="theme-color" media="(prefers-color-scheme:light)" content="#fafafa">
+    <meta name="theme-color" media="(prefers-color-scheme:dark)" content="#21252b">
     <style>
       @import '@fontsource/jetbrains-mono/variable.css';
       @import '@fontsource/jetbrains-mono/variable-italic.css';
@@ -270,8 +270,16 @@
       }
 
       body {
-        color: #ebebff;
-        background: #282c34;
+        color: #35373e;
+        background: #ffffff;
+        font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          color: #ebebff;
+          background: #282c34;
+        }
       }
     </style>
   </head>
