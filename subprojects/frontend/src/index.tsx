@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import Loading from './Loading';
 import RegisterServiceWorker from './RegisterServiceWorker';
 import RootStore, { RootStoreProvider } from './RootStore';
+import WindowControlsOverlayColor from './WindowControlsOverlayColor';
 import ThemeProvider from './theme/ThemeProvider';
 import getLogger from './utils/getLogger';
 
@@ -67,6 +68,7 @@ const app = (
     <RootStoreProvider rootStore={rootStore}>
       <ThemeProvider>
         <CssBaseline enableColorScheme />
+        <WindowControlsOverlayColor />
         <SnackbarProvider>
           <RegisterServiceWorker />
           <Suspense fallback={<Loading />}>

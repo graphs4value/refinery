@@ -111,6 +111,8 @@ export default defineConfig({
         description:
           'An efficient graph sovler for generating well-formed models',
         theme_color: '#21252b',
+        display_override: ['window-controls-overlay'],
+        display: 'standalone',
         background_color: '#21252b',
         icons: [
           {
