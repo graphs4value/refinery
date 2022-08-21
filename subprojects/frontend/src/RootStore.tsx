@@ -1,16 +1,31 @@
+import { getLogger } from 'loglevel';
+import { makeObservable, observable, runInAction } from 'mobx';
 import React, { createContext, useContext } from 'react';
 
-import EditorStore from './editor/EditorStore';
+import type EditorStore from './editor/EditorStore';
 import ThemeStore from './theme/ThemeStore';
 
+const log = getLogger('RootStore');
+
 export default class RootStore {
-  readonly editorStore: EditorStore;
+  editorStore: EditorStore | undefined;
 
   readonly themeStore: ThemeStore;
 
   constructor(initialValue: string) {
-    this.editorStore = new EditorStore(initialValue);
     this.themeStore = new ThemeStore();
+    makeObservable(this, {
+      editorStore: observable,
+    });
+    import('./editor/EditorStore')
+      .then(({ default: EditorStore }) => {
+        runInAction(() => {
+          this.editorStore = new EditorStore(initialValue);
+        });
+      })
+      .catch((error) => {
+        log.error('Failed to load EditorStore', error);
+      });
   }
 }
 

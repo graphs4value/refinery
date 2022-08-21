@@ -3,12 +3,23 @@ import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useRootStore } from '../RootStore';
+import type EditorStore from './EditorStore';
 
 const GENERATE_LABEL = 'Generate';
 
-function GenerateButton(): JSX.Element {
-  const { editorStore } = useRootStore();
+function GenerateButton({
+  editorStore,
+}: {
+  editorStore: EditorStore | undefined;
+}): JSX.Element {
+  if (editorStore === undefined) {
+    return (
+      <Button color="inherit" className="rounded" disabled>
+        Loading&hellip;
+      </Button>
+    );
+  }
+
   const { errorCount, warningCount } = editorStore;
 
   const diagnostics: string[] = [];

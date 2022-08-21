@@ -4,8 +4,6 @@ import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
-import editorClassNames from './editorClassNames';
-
 function svgURL(svg: string): string {
   return `url('data:image/svg+xml;utf8,${svg}')`;
 }
@@ -315,7 +313,7 @@ export default styled('div', {
     '.cm-gutters:hover .cm-foldGutter': {
       opacity: 1,
     },
-    [`.${editorClassNames.foldMarker}`]: {
+    '.problem-editor-foldMarker': {
       display: 'block',
       margin: '4px 0',
       padding: 0,
@@ -330,10 +328,10 @@ export default styled('div', {
         margin: '2px 0',
       },
     },
-    [`.${editorClassNames.foldMarkerClosed}`]: {
+    '.problem-editor-foldMarker-closed': {
       transform: 'rotate(-90deg)',
     },
-    [`.${editorClassNames.foldPlaceholder}`]: {
+    '.problem-editor-foldPlaceholder': {
       ...editorFontStyle,
       padding: 0,
       fontFamily: 'inherit',

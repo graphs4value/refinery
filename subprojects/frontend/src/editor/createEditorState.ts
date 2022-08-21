@@ -36,7 +36,6 @@ import problemLanguageSupport from '../language/problemLanguageSupport';
 
 import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
-import editorClassNames from './editorClassNames';
 import findOccurrences from './findOccurrences';
 import semanticHighlighting from './semanticHighlighting';
 
@@ -75,7 +74,7 @@ export default function createEditorState(
       codeFolding({
         placeholderDOM(_view, onClick) {
           const button = document.createElement('button');
-          button.className = editorClassNames.foldPlaceholder;
+          button.className = 'problem-editor-foldPlaceholder';
           button.ariaLabel = 'Unfold lines';
           const span = document.createElement('span');
           span.innerText = '...';
@@ -88,10 +87,8 @@ export default function createEditorState(
         markerDOM(open) {
           const div = document.createElement('div');
           div.className = [
-            editorClassNames.foldMarker,
-            open
-              ? editorClassNames.foldMarkerOpen
-              : editorClassNames.foldMarkerClosed,
+            'problem-editor-foldMarker',
+            `problem-editor-foldMarker-${open ? 'open' : 'closed'}`,
           ].join(' ');
           return div;
         },

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 import React, { Suspense, lazy } from 'react';
@@ -71,9 +72,11 @@ const app = (
         <WindowControlsOverlayColor />
         <SnackbarProvider>
           <RegisterServiceWorker />
-          <Suspense fallback={<Loading />}>
-            <App />
-          </Suspense>
+          <Box height="100vh" overflow="auto">
+            <Suspense fallback={<Loading />}>
+              <App />
+            </Suspense>
+          </Box>
         </SnackbarProvider>
       </ThemeProvider>
     </RootStoreProvider>

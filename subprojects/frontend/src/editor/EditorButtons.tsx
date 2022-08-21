@@ -15,7 +15,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useRootStore } from '../RootStore';
+import type EditorStore from './EditorStore';
 
 // Exhastive switch as proven by TypeScript.
 // eslint-disable-next-line consistent-return
@@ -32,22 +32,24 @@ function getLintIcon(severity: Diagnostic['severity'] | undefined) {
   }
 }
 
-function EditorButtons(): JSX.Element {
-  const { editorStore } = useRootStore();
-
+function EditorButtons({
+  editorStore,
+}: {
+  editorStore: EditorStore | undefined;
+}): JSX.Element {
   return (
     <Stack direction="row" flexGrow={1}>
       <IconButton
-        disabled={!editorStore.canUndo}
-        onClick={() => editorStore.undo()}
+        disabled={editorStore === undefined || !editorStore.canUndo}
+        onClick={() => editorStore?.undo()}
         aria-label="Undo"
         color="inherit"
       >
         <UndoIcon fontSize="small" />
       </IconButton>
       <IconButton
-        disabled={!editorStore.canRedo}
-        onClick={() => editorStore.redo()}
+        disabled={editorStore === undefined || !editorStore.canRedo}
+        onClick={() => editorStore?.redo()}
         aria-label="Redo"
         color="inherit"
       >
@@ -55,38 +57,44 @@ function EditorButtons(): JSX.Element {
       </IconButton>
       <ToggleButtonGroup size="small" className="rounded" sx={{ mx: 1 }}>
         <ToggleButton
-          selected={editorStore.showLineNumbers}
-          onClick={() => editorStore.toggleLineNumbers()}
+          selected={editorStore?.showLineNumbers ?? false}
+          disabled={editorStore === undefined}
+          onClick={() => editorStore?.toggleLineNumbers()}
           aria-label="Show line numbers"
           value="show-line-numbers"
         >
           <FormatListNumberedIcon fontSize="small" />
         </ToggleButton>
         <ToggleButton
-          selected={editorStore.searchPanel.state}
-          onClick={() => editorStore.searchPanel.toggle()}
+          selected={editorStore?.searchPanel?.state ?? false}
+          disabled={editorStore === undefined}
+          onClick={() => editorStore?.searchPanel?.toggle()}
           aria-label="Show find/replace"
-          {...(editorStore.searchPanel.state && {
-            'aria-controls': editorStore.searchPanel.id,
-          })}
+          {...(editorStore !== undefined &&
+            editorStore.searchPanel.state && {
+              'aria-controls': editorStore.searchPanel.id,
+            })}
           value="show-search-panel"
         >
           <SearchIcon fontSize="small" />
         </ToggleButton>
         <ToggleButton
-          selected={editorStore.lintPanel.state}
-          onClick={() => editorStore.lintPanel.toggle()}
+          selected={editorStore?.lintPanel?.state ?? false}
+          disabled={editorStore === undefined}
+          onClick={() => editorStore?.lintPanel.toggle()}
           aria-label="Show diagnostics panel"
-          {...(editorStore.lintPanel.state && {
-            'aria-controls': editorStore.lintPanel.id,
-          })}
+          {...(editorStore !== undefined &&
+            editorStore.lintPanel.state && {
+              'aria-controls': editorStore.lintPanel.id,
+            })}
           value="show-lint-panel"
         >
-          {getLintIcon(editorStore.highestDiagnosticLevel)}
+          {getLintIcon(editorStore?.highestDiagnosticLevel)}
         </ToggleButton>
       </ToggleButtonGroup>
       <IconButton
-        onClick={() => editorStore.formatText()}
+        disabled={editorStore === undefined}
+        onClick={() => editorStore?.formatText()}
         aria-label="Automatic format"
         color="inherit"
       >

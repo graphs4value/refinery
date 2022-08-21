@@ -20,12 +20,16 @@ import type SearchPanelStore from './SearchPanelStore';
 const SPLIT_MEDIA_QUERY = '@media (max-width: 1200px)';
 const ABBREVIATE_MEDIA_QUERY = '@media (max-width: 720px)';
 
-function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
+function SearchToolbar({
+  searchPanelStore,
+}: {
+  searchPanelStore: SearchPanelStore;
+}): JSX.Element {
   const {
     id: panelId,
     query: { search, valid, caseSensitive, literal, regexp, replace },
     invalidRegexp,
-  } = store;
+  } = searchPanelStore;
   const split = useMediaQuery(SPLIT_MEDIA_QUERY);
   const abbreviate = useMediaQuery(ABBREVIATE_MEDIA_QUERY);
   const [showRepalceState, setShowReplaceState] = useState(false);
@@ -37,8 +41,8 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
 
   const searchFieldRef = useCallback(
     (element: HTMLInputElement | null) =>
-      store.setSearchField(element ?? undefined),
-    [store],
+      searchPanelStore.setSearchField(element ?? undefined),
+    [searchPanelStore],
   );
 
   return (
@@ -68,15 +72,15 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             value={search}
             error={invalidRegexp}
             onChange={(event) =>
-              store.updateQuery({ search: event.target.value })
+              searchPanelStore.updateQuery({ search: event.target.value })
             }
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
                 if (event.shiftKey) {
-                  store.findPrevious();
+                  searchPanelStore.findPrevious();
                 } else {
-                  store.findNext();
+                  searchPanelStore.findNext();
                 }
               }
             }}
@@ -108,7 +112,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             <IconButton
               aria-label="Previous"
               disabled={!valid}
-              onClick={() => store.findPrevious()}
+              onClick={() => searchPanelStore.findPrevious()}
               color="inherit"
             >
               <KeyboardArrowUpIcon fontSize="small" />
@@ -116,7 +120,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             <IconButton
               aria-label="Next"
               disabled={!valid}
-              onClick={() => store.findNext()}
+              onClick={() => searchPanelStore.findNext()}
               color="inherit"
             >
               <KeyboardArrowDownIcon fontSize="small" />
@@ -133,7 +137,9 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                 <Checkbox
                   checked={caseSensitive}
                   onChange={(event) =>
-                    store.updateQuery({ caseSensitive: event.target.checked })
+                    searchPanelStore.updateQuery({
+                      caseSensitive: event.target.checked,
+                    })
                   }
                   size="small"
                 />
@@ -146,7 +152,9 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                 <Checkbox
                   checked={literal}
                   onChange={(event) =>
-                    store.updateQuery({ literal: event.target.checked })
+                    searchPanelStore.updateQuery({
+                      literal: event.target.checked,
+                    })
                   }
                   size="small"
                 />
@@ -159,7 +167,9 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                 <Checkbox
                   checked={regexp}
                   onChange={(event) =>
-                    store.updateQuery({ regexp: event.target.checked })
+                    searchPanelStore.updateQuery({
+                      regexp: event.target.checked,
+                    })
                   }
                   size="small"
                 />
@@ -172,7 +182,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
                 selected={showReplace}
                 onClick={() => {
                   if (showReplace) {
-                    store.updateQuery({ replace: '' });
+                    searchPanelStore.updateQuery({ replace: '' });
                     setShowReplaceState(false);
                   } else {
                     setShowReplaceState(true);
@@ -201,12 +211,12 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             aria-label="Replace with"
             value={replace}
             onChange={(event) =>
-              store.updateQuery({ replace: event.target.value })
+              searchPanelStore.updateQuery({ replace: event.target.value })
             }
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
-                store.replaceNext();
+                searchPanelStore.replaceNext();
               }
             }}
             variant="standard"
@@ -221,7 +231,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
           >
             <Button
               disabled={!valid}
-              onClick={() => store.replaceNext()}
+              onClick={() => searchPanelStore.replaceNext()}
               color="inherit"
               startIcon={<FindReplaceIcon fontSize="inherit" />}
             >
@@ -229,7 +239,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
             </Button>
             <Button
               disabled={!valid}
-              onClick={() => store.replaceAll()}
+              onClick={() => searchPanelStore.replaceAll()}
               color="inherit"
               startIcon={<FindReplaceIcon fontSize="inherit" />}
             >
@@ -241,7 +251,7 @@ function SearchToolbar({ store }: { store: SearchPanelStore }): JSX.Element {
       <Stack direction="row" alignSelf="stretch" alignItems="start" mt="1px">
         <IconButton
           aria-label="Close find/replace"
-          onClick={() => store.close()}
+          onClick={() => searchPanelStore.close()}
           color="inherit"
         >
           <CloseIcon fontSize="small" />
