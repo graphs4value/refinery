@@ -110,7 +110,7 @@ export default defineConfig({
         short_name: 'Refinery',
         description:
           'An efficient graph sovler for generating well-formed models',
-        theme_color: '#21252b',
+        theme_color: '#f5f5f5',
         display_override: ['window-controls-overlay'],
         display: 'standalone',
         background_color: '#21252b',

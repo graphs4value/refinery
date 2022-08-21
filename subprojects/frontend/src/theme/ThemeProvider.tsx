@@ -43,11 +43,15 @@ interface HighlightPalette {
 
 declare module '@mui/material/styles' {
   interface TypographyVariants {
+    fontWeightEditorNormal: number;
+    fontWeightEditorBold: number;
     editor: TypographyStyle;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-shadow -- Augment imported interface.
   interface TypographyVariantsOptions {
+    fontWeightEditorNormal: number;
+    fontWeightEditorBold: number;
     editor: TypographyStyle;
   }
 
@@ -63,11 +67,14 @@ declare module '@mui/material/styles' {
 }
 
 const typography: TypographyVariantsOptions = {
+  fontWeightEditorNormal: 400,
+  fontWeightEditorBold: 600,
   editor: {
     fontFamily:
       '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
     fontFeatureSettings: '"liga", "calt"',
-    fontSize: '1rem',
+    // `rem` for JetBrains MonoVariable make the text too large in Safari.
+    fontSize: '16px',
     fontWeight: 400,
     lineHeight: 1.5,
     letterSpacing: 0,
@@ -78,10 +85,20 @@ const typography: TypographyVariantsOptions = {
 const components: Components = {
   MuiButton: {
     styleOverrides: {
-      root: { '&.rounded': { borderRadius: '50em' } },
-      text: { '&.rounded': { padding: '6px 16px' } },
-      textSizeSmall: { '&.rounded': { padding: '4px 10px' } },
-      textSizeLarge: { '&.rounded': { padding: '8px 22px' } },
+      root: {
+        '&.rounded': { borderRadius: '50em' },
+        '.MuiButton-startIcon': { marginRight: 6 },
+        '.MuiButton-endIcon': { marginLeft: 6 },
+      },
+      text: { '&.rounded': { padding: '6px 14px' } },
+      textSizeSmall: {
+        fontSize: '0.875rem',
+        '&.rounded': { padding: '4px 8px' },
+      },
+      textSizeLarge: {
+        fontSize: '1rem',
+        '&.rounded': { padding: '8px 20px' },
+      },
     },
   },
   MuiToggleButton: {
@@ -142,31 +159,31 @@ const lightTheme = createResponsiveTheme({
     success: { main: '#50a14f' },
     info: { main: '#4078f2' },
     background: {
-      default: '#ffffff',
-      paper: '#ffffff',
+      default: '#fff',
+      paper: '#fff',
     },
     text: {
-      primary: '#35373e',
+      primary: '#19202b',
       secondary: '#696c77',
-      disabled: '#8e8f97',
+      disabled: '#a0a1a7',
     },
-    divider: alpha('#35373e', 0.21),
+    divider: alpha('#19202b', 0.16),
     outer: {
-      background: '#fafafa',
-      border: '#d4d4d6',
+      background: '#f5f5f5',
+      border: '#d6d7d9',
     },
     highlight: {
       number: '#0084bc',
       parameter: '#6a3e3e',
-      comment: '#8e8f97',
-      activeLine: '#fafafa',
+      comment: '#a0a1a7',
+      activeLine: '#f5f5f5',
       selection: '#c8e4fb',
-      lineNumber: '#8e8f97',
-      foldPlaceholder: alpha('#35373e', 0.08),
+      lineNumber: '#a0a1a7',
+      foldPlaceholder: alpha('#19202b', 0.08),
       activeLintRange: alpha('#f2a60d', 0.28),
       occurences: {
-        read: alpha('#35373e', 0.16),
-        write: alpha('#35373e', 0.16),
+        read: alpha('#19202b', 0.16),
+        write: alpha('#19202b', 0.16),
       },
       search: {
         match: '#00bcd4',
@@ -178,7 +195,11 @@ const lightTheme = createResponsiveTheme({
 });
 
 const darkTheme = createResponsiveTheme({
-  typography,
+  typography: {
+    ...typography,
+    fontWeightEditorNormal: 350,
+    fontWeightEditorBold: 550,
+  },
   components: {
     ...components,
     MuiSnackbarContent: {
@@ -218,7 +239,7 @@ const darkTheme = createResponsiveTheme({
     text: {
       primary: '#ebebff',
       secondary: '#abb2bf',
-      disabled: '#828997',
+      disabled: '#5c6370',
     },
     divider: alpha('#abb2bf', 0.24),
     outer: {
@@ -228,10 +249,10 @@ const darkTheme = createResponsiveTheme({
     highlight: {
       number: '#6188a6',
       parameter: '#c8ae9d',
-      comment: '#828997',
+      comment: '#5c6370',
       activeLine: '#21252b',
       selection: '#3e4453',
-      lineNumber: '#828997',
+      lineNumber: '#5c6370',
       foldPlaceholder: alpha('#ebebff', 0.12),
       activeLintRange: alpha('#fbc346', 0.28),
       occurences: {

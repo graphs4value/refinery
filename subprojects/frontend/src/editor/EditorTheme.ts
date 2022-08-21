@@ -14,8 +14,10 @@ export default styled('div', {
 })<{ showLineNumbers: boolean }>(({ theme, showLineNumbers }) => {
   const editorFontStyle = {
     ...theme.typography.editor,
+    fontWeight: theme.typography.fontWeightEditorNormal,
     [theme.breakpoints.down('sm')]: {
-      fontSize: '0.875rem',
+      // `rem` for JetBrains MonoVariable make the text too large in Safari.
+      fontSize: '14px',
       lineHeight: 1.43,
     },
   };
@@ -29,7 +31,12 @@ export default styled('div', {
       color: theme.palette.text.secondary,
     },
     '.cm-gutters': {
-      background: theme.palette.background.default,
+      background: `linear-gradient(
+        to right,
+        ${theme.palette.background.default} 0%,
+        ${theme.palette.background.default} calc(100% - 12px),
+        transparent 100%
+      )`,
       border: 'none',
     },
     '.cm-content': {
@@ -93,7 +100,7 @@ export default styled('div', {
       fontStyle: 'italic',
     },
     '.tok-problem-containment': {
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: theme.typography.fontWeightEditorBold,
       textDecorationSkipInk: 'none',
     },
     '.tok-problem-error': {

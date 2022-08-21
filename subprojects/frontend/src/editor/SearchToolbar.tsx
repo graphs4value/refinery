@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import Toolbar from '@mui/material/Toolbar';
+import { styled } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useState } from 'react';
@@ -18,7 +19,13 @@ import React, { useCallback, useState } from 'react';
 import type SearchPanelStore from './SearchPanelStore';
 
 const SPLIT_MEDIA_QUERY = '@media (max-width: 1200px)';
-const ABBREVIATE_MEDIA_QUERY = '@media (max-width: 720px)';
+
+const DimLabel = styled(FormControlLabel)(({ theme }) => ({
+  '.MuiFormControlLabel-label': {
+    ...theme.typography.body2,
+    color: theme.palette.text.secondary,
+  },
+}));
 
 function SearchToolbar({
   searchPanelStore,
@@ -31,7 +38,6 @@ function SearchToolbar({
     invalidRegexp,
   } = searchPanelStore;
   const split = useMediaQuery(SPLIT_MEDIA_QUERY);
-  const abbreviate = useMediaQuery(ABBREVIATE_MEDIA_QUERY);
   const [showRepalceState, setShowReplaceState] = useState(false);
 
   const showReplace = !split || showRepalceState || replace !== '';
@@ -132,7 +138,7 @@ function SearchToolbar({
             alignItems="center"
             rowGap={0.5}
           >
-            <FormControlLabel
+            <DimLabel
               control={
                 <Checkbox
                   checked={caseSensitive}
@@ -144,10 +150,9 @@ function SearchToolbar({
                   size="small"
                 />
               }
-              aria-label="Match case"
-              label={abbreviate ? 'Case' : 'Match case'}
+              label="Match case"
             />
-            <FormControlLabel
+            <DimLabel
               control={
                 <Checkbox
                   checked={literal}
@@ -159,10 +164,9 @@ function SearchToolbar({
                   size="small"
                 />
               }
-              aria-label="Literal"
-              label={abbreviate ? 'Lit' : 'Literal'}
+              label="Literal"
             />
-            <FormControlLabel
+            <DimLabel
               control={
                 <Checkbox
                   checked={regexp}
@@ -248,7 +252,15 @@ function SearchToolbar({
           </Stack>
         </Stack>
       </Stack>
-      <Stack direction="row" alignSelf="stretch" alignItems="start" mt="1px">
+      <Stack
+        direction="row"
+        alignSelf="stretch"
+        alignItems="start"
+        mt="1px"
+        sx={{
+          [SPLIT_MEDIA_QUERY]: { display: 'none' },
+        }}
+      >
         <IconButton
           aria-label="Close find/replace"
           onClick={() => searchPanelStore.close()}
