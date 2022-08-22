@@ -67,8 +67,8 @@ declare module '@mui/material/styles' {
 }
 
 const typography: TypographyVariantsOptions = {
-  fontWeightEditorNormal: 400,
-  fontWeightEditorBold: 600,
+  fontWeightEditorNormal: 450,
+  fontWeightEditorBold: 650,
   editor: {
     fontFamily:
       '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
@@ -197,8 +197,8 @@ const lightTheme = createResponsiveTheme({
 const darkTheme = createResponsiveTheme({
   typography: {
     ...typography,
-    fontWeightEditorNormal: 350,
-    fontWeightEditorBold: 550,
+    fontWeightEditorNormal: 400,
+    fontWeightEditorBold: 600,
   },
   components: {
     ...components,
