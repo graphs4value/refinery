@@ -1,7 +1,10 @@
 import { Transaction } from '@codemirror/state';
 
 import type EditorStore from '../editor/EditorStore';
-import type { IOccurrence } from '../editor/findOccurrences';
+import {
+  type IOccurrence,
+  isCursorWithinOccurence,
+} from '../editor/findOccurrences';
 import Timer from '../utils/Timer';
 import getLogger from '../utils/getLogger';
 
@@ -14,10 +17,6 @@ import {
 } from './xtextServiceResults';
 
 const FIND_OCCURRENCES_TIMEOUT_MS = 1000;
-
-// Must clear occurrences asynchronously from `onTransaction`,
-// because we must not emit a conflicting transaction when handling the pending transaction.
-const CLEAR_OCCURRENCES_TIMEOUT_MS = 10;
 
 const log = getLogger('xtext.OccurrencesService');
 
@@ -49,7 +48,7 @@ export default class OccurrencesService {
 
   private readonly clearOccurrencesTimer = new Timer(() => {
     this.clearOccurrences();
-  }, CLEAR_OCCURRENCES_TIMEOUT_MS);
+  });
 
   constructor(
     store: EditorStore,
@@ -63,12 +62,27 @@ export default class OccurrencesService {
 
   onTransaction(transaction: Transaction): void {
     if (transaction.docChanged) {
+      // Must clear occurrences asynchronously from `onTransaction`,
+      // because we must not emit a conflicting transaction when handling the pending transaction.
       this.clearOccurrencesTimer.schedule();
       this.findOccurrencesTimer.reschedule();
+      return;
     }
-    if (transaction.isUserEvent('select')) {
-      this.findOccurrencesTimer.reschedule();
+    if (!transaction.isUserEvent('select')) {
+      return;
     }
+    if (this.needsOccurrences) {
+      if (!isCursorWithinOccurence(this.store.state)) {
+        this.clearOccurrencesTimer.schedule();
+        this.findOccurrencesTimer.reschedule();
+      }
+    } else {
+      this.clearOccurrencesTimer.schedule();
+    }
+  }
+
+  private get needsOccurrences(): boolean {
+    return this.store.state.selection.main.empty;
   }
 
   private handleFindOccurrences() {
@@ -80,6 +94,10 @@ export default class OccurrencesService {
   }
 
   private async updateOccurrences() {
+    if (!this.needsOccurrences) {
+      this.clearOccurrences();
+      return;
+    }
     await this.updateService.update();
     const result = await this.webSocketClient.send({
       resource: this.updateService.resourceName,

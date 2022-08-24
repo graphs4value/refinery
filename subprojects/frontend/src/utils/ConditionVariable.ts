@@ -6,22 +6,22 @@ const log = getLogger('utils.ConditionVariable');
 export type Condition = () => boolean;
 
 export default class ConditionVariable {
-  condition: Condition;
+  private readonly condition: Condition;
 
-  defaultTimeout: number;
+  private readonly defaultTimeout: number;
 
-  listeners: PendingTask<void>[] = [];
+  private listeners: PendingTask<void>[] = [];
 
   constructor(condition: Condition, defaultTimeout = 0) {
     this.condition = condition;
     this.defaultTimeout = defaultTimeout;
   }
 
-  async waitFor(timeoutMs: number | null = null): Promise<void> {
+  async waitFor(timeoutMs?: number | undefined): Promise<void> {
     if (this.condition()) {
       return;
     }
-    const timeoutOrDefault = timeoutMs || this.defaultTimeout;
+    const timeoutOrDefault = timeoutMs ?? this.defaultTimeout;
     let nowMs = Date.now();
     const endMs = nowMs + timeoutOrDefault;
     while (!this.condition() && nowMs < endMs) {

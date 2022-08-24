@@ -27,24 +27,47 @@ const WAIT_FOR_UPDATE_TIMEOUT_MS = 1000;
 
 const log = getLogger('xtext.UpdateService');
 
+/**
+ * State effect used to override the dirty changes after a transaction.
+ *
+ * If this state effect is _not_ present in a transaction,
+ * the transaction will be appended to the current dirty changes.
+ *
+ * If this state effect is present, the current dirty changes will be replaced
+ * by the value of this effect.
+ */
 const setDirtyChanges = StateEffect.define<ChangeSet>();
 
 export interface IAbortSignal {
   aborted: boolean;
 }
 
+interface StateUpdateResult<T> {
+  newStateId: string;
+
+  data: T;
+}
+
+interface Delta {
+  deltaOffset: number;
+
+  deltaReplaceLength: number;
+
+  deltaText: string;
+}
+
 export default class UpdateService {
   resourceName: string;
 
-  xtextStateId: string | null = null;
+  xtextStateId: string | undefined;
 
   private readonly store: EditorStore;
 
   /**
    * The changes being synchronized to the server if a full or delta text update is running,
-   * `null` otherwise.
+   * `undefined` otherwise.
    */
-  private pendingUpdate: ChangeSet | null = null;
+  private pendingUpdate: ChangeSet | undefined;
 
   /**
    * Local changes not yet sychronized to the server and not part of the running update, if any.
@@ -54,7 +77,7 @@ export default class UpdateService {
   private readonly webSocketClient: XtextWebSocketClient;
 
   private readonly updatedCondition = new ConditionVariable(
-    () => this.pendingUpdate === null && this.xtextStateId !== null,
+    () => this.pendingUpdate === undefined && this.xtextStateId !== undefined,
     WAIT_FOR_UPDATE_TIMEOUT_MS,
   );
 
@@ -70,7 +93,7 @@ export default class UpdateService {
   }
 
   onReconnect(): void {
-    this.xtextStateId = null;
+    this.xtextStateId = undefined;
     this.updateFullText().catch((error) => {
       log.error('Unexpected error during initial update', error);
     });
@@ -82,7 +105,7 @@ export default class UpdateService {
     ) as StateEffect<ChangeSet> | undefined;
     if (setDirtyChangesEffect) {
       const { value } = setDirtyChangesEffect;
-      if (this.pendingUpdate !== null) {
+      if (this.pendingUpdate !== undefined) {
         this.pendingUpdate = ChangeSet.empty(value.length);
       }
       this.dirtyChanges = value;
@@ -100,20 +123,20 @@ export default class UpdateService {
    * The result reflects any changes that happened since the `xtextStateId`
    * version was uploaded to the server.
    *
-   * @return the summary of changes since the last update
+   * @returns the summary of changes since the last update
    */
   computeChangesSinceLastUpdate(): ChangeDesc {
     return (
-      this.pendingUpdate?.composeDesc(this.dirtyChanges.desc) ||
+      this.pendingUpdate?.composeDesc(this.dirtyChanges.desc) ??
       this.dirtyChanges.desc
     );
   }
 
-  private handleIdleUpdate() {
+  private handleIdleUpdate(): void {
     if (!this.webSocketClient.isOpen || this.dirtyChanges.empty) {
       return;
     }
-    if (this.pendingUpdate === null) {
+    if (this.pendingUpdate === undefined) {
       this.update().catch((error) => {
         log.error('Unexpected error during scheduled update', error);
       });
@@ -121,7 +144,7 @@ export default class UpdateService {
     this.idleUpdateTimer.reschedule();
   }
 
-  private newEmptyChangeSet() {
+  private newEmptyChangeSet(): ChangeSet {
     return ChangeSet.of([], this.store.state.doc.length);
   }
 
@@ -129,14 +152,14 @@ export default class UpdateService {
     await this.withUpdate(() => this.doUpdateFullText());
   }
 
-  private async doUpdateFullText(): Promise<[string, void]> {
+  private async doUpdateFullText(): Promise<StateUpdateResult<void>> {
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'update',
       fullText: this.store.state.doc.sliceString(0),
     });
     const { stateId } = DocumentStateResult.parse(result);
-    return [stateId, undefined];
+    return { newStateId: stateId, data: undefined };
   }
 
   /**
@@ -146,12 +169,12 @@ export default class UpdateService {
    * Performs either an update with delta text or a full text update if needed.
    * If there are not local dirty changes, the promise resolves immediately.
    *
-   * @return a promise resolving when the update is completed
+   * @returns a promise resolving when the update is completed
    */
   async update(): Promise<void> {
     await this.prepareForDeltaUpdate();
     const delta = this.computeDelta();
-    if (delta === null) {
+    if (delta === undefined) {
       return;
     }
     log.trace('Editor delta', delta);
@@ -164,7 +187,10 @@ export default class UpdateService {
       });
       const parsedDocumentStateResult = DocumentStateResult.safeParse(result);
       if (parsedDocumentStateResult.success) {
-        return [parsedDocumentStateResult.data.stateId, undefined];
+        return {
+          newStateId: parsedDocumentStateResult.data.stateId,
+          data: undefined,
+        };
       }
       if (isConflictResult(result, 'invalidStateId')) {
         return this.doFallbackToUpdateFullText();
@@ -173,12 +199,12 @@ export default class UpdateService {
     });
   }
 
-  private doFallbackToUpdateFullText() {
-    if (this.pendingUpdate === null) {
+  private doFallbackToUpdateFullText(): Promise<StateUpdateResult<void>> {
+    if (this.pendingUpdate === undefined) {
       throw new Error('Only a pending update can be extended');
     }
     log.warn('Delta update failed, performing full text update');
-    this.xtextStateId = null;
+    this.xtextStateId = undefined;
     this.pendingUpdate = this.pendingUpdate.compose(this.dirtyChanges);
     this.dirtyChanges = this.newEmptyChangeSet();
     return this.doUpdateFullText();
@@ -193,56 +219,69 @@ export default class UpdateService {
       return [];
     }
     const delta = this.computeDelta();
-    if (delta !== null) {
+    if (delta !== undefined) {
       log.trace('Editor delta', delta);
-      const entries = await this.withUpdate(async () => {
-        const result = await this.webSocketClient.send({
-          ...params,
-          requiredStateId: this.xtextStateId,
-          ...delta,
-        });
-        const parsedContentAssistResult = ContentAssistResult.safeParse(result);
-        if (parsedContentAssistResult.success) {
-          const { stateId, entries: resultEntries } =
-            parsedContentAssistResult.data;
-          return [stateId, resultEntries];
-        }
-        if (isConflictResult(result, 'invalidStateId')) {
-          log.warn('Server state invalid during content assist');
-          const [newStateId] = await this.doFallbackToUpdateFullText();
-          // We must finish this state update transaction to prepare for any push events
-          // before querying for content assist, so we just return `null` and will query
-          // the content assist service later.
-          return [newStateId, null];
-        }
-        throw parsedContentAssistResult.error;
-      });
-      if (entries !== null) {
-        return entries;
+      // Try to fetch while also performing a delta update.
+      const fetchUpdateEntries = await this.withUpdate(() =>
+        this.doFetchContentAssistWithDelta(params, delta),
+      );
+      if (fetchUpdateEntries !== undefined) {
+        return fetchUpdateEntries;
       }
       if (signal.aborted) {
         return [];
       }
     }
-    // Poscondition of `prepareForDeltaUpdate`: `xtextStateId !== null`
-    return this.doFetchContentAssist(params, this.xtextStateId as string);
+    if (this.xtextStateId === undefined) {
+      throw new Error('failed to obtain Xtext state id');
+    }
+    return this.doFetchContentAssistFetchOnly(params, this.xtextStateId);
   }
 
-  private async doFetchContentAssist(
+  private async doFetchContentAssistWithDelta(
     params: Record<string, unknown>,
-    expectedStateId: string,
-  ) {
-    const result = await this.webSocketClient.send({
+    delta: Delta,
+  ): Promise<StateUpdateResult<ContentAssistEntry[] | undefined>> {
+    const fetchUpdateResult = await this.webSocketClient.send({
       ...params,
-      requiredStateId: expectedStateId,
+      requiredStateId: this.xtextStateId,
+      ...delta,
     });
-    const { stateId, entries } = ContentAssistResult.parse(result);
-    if (stateId !== expectedStateId) {
+    const parsedContentAssistResult =
+      ContentAssistResult.safeParse(fetchUpdateResult);
+    if (parsedContentAssistResult.success) {
+      const { stateId, entries: resultEntries } =
+        parsedContentAssistResult.data;
+      return { newStateId: stateId, data: resultEntries };
+    }
+    if (isConflictResult(fetchUpdateResult, 'invalidStateId')) {
+      log.warn('Server state invalid during content assist');
+      const { newStateId } = await this.doFallbackToUpdateFullText();
+      // We must finish this state update transaction to prepare for any push events
+      // before querying for content assist, so we just return `undefined` and will query
+      // the content assist service later.
+      return { newStateId, data: undefined };
+    }
+    throw parsedContentAssistResult.error;
+  }
+
+  private async doFetchContentAssistFetchOnly(
+    params: Record<string, unknown>,
+    requiredStateId: string,
+  ): Promise<ContentAssistEntry[]> {
+    // Fallback to fetching without a delta update.
+    const fetchOnlyResult = await this.webSocketClient.send({
+      ...params,
+      requiredStateId: this.xtextStateId,
+    });
+    const { stateId, entries: fetchOnlyEntries } =
+      ContentAssistResult.parse(fetchOnlyResult);
+    if (stateId !== requiredStateId) {
       throw new Error(
-        `Unexpected state id, expected: ${expectedStateId} got: ${stateId}`,
+        `Unexpected state id, expected: ${requiredStateId} got: ${stateId}`,
       );
     }
-    return entries;
+    return fetchOnlyEntries;
   }
 
   async formatText(): Promise<void> {
@@ -253,7 +292,7 @@ export default class UpdateService {
       to = this.store.state.doc.length;
     }
     log.debug('Formatting from', from, 'to', to);
-    await this.withUpdate(async () => {
+    await this.withUpdate<void>(async () => {
       const result = await this.webSocketClient.send({
         resource: this.resourceName,
         serviceType: 'format',
@@ -266,13 +305,13 @@ export default class UpdateService {
         to,
         insert: formattedText,
       });
-      return [stateId, null];
+      return { newStateId: stateId, data: undefined };
     });
   }
 
-  private computeDelta() {
+  private computeDelta(): Delta | undefined {
     if (this.dirtyChanges.empty) {
-      return null;
+      return undefined;
     }
     let minFromA = Number.MAX_SAFE_INTEGER;
     let maxToA = 0;
@@ -291,15 +330,17 @@ export default class UpdateService {
     };
   }
 
-  private applyBeforeDirtyChanges(changeSpec: ChangeSpec) {
+  private applyBeforeDirtyChanges(changeSpec: ChangeSpec): void {
     const pendingChanges =
-      this.pendingUpdate?.compose(this.dirtyChanges) || this.dirtyChanges;
+      this.pendingUpdate?.compose(this.dirtyChanges) ?? this.dirtyChanges;
     const revertChanges = pendingChanges.invert(this.store.state.doc);
     const applyBefore = ChangeSet.of(changeSpec, revertChanges.newLength);
     const redoChanges = pendingChanges.map(applyBefore.desc);
     const changeSet = revertChanges.compose(applyBefore).compose(redoChanges);
     this.store.dispatch({
       changes: changeSet,
+      // Keep the current set of dirty changes (but update them according the re-formatting)
+      // and to not add the formatting the dirty changes.
       effects: [setDirtyChanges.of(redoChanges)],
     });
   }
@@ -318,37 +359,35 @@ export default class UpdateService {
    * to ensure that the local `stateId` is updated likewise to be able to handle
    * push messages referring to the new `stateId` from the server.
    * If additional work is needed to compute the second value in some cases,
-   * use `T | null` instead of `T` as a return type and signal the need for additional
-   * computations by returning `null`. Thus additional computations can be performed
+   * use `T | undefined` instead of `T` as a return type and signal the need for additional
+   * computations by returning `undefined`. Thus additional computations can be performed
    * outside of the critical section.
    *
    * @param callback the asynchronous callback that updates the server state
-   * @return a promise resolving to the second value returned by `callback`
+   * @returns a promise resolving to the second value returned by `callback`
    */
   private async withUpdate<T>(
-    callback: () => Promise<[string, T]>,
+    callback: () => Promise<StateUpdateResult<T>>,
   ): Promise<T> {
-    if (this.pendingUpdate !== null) {
+    if (this.pendingUpdate !== undefined) {
       throw new Error('Another update is pending, will not perform update');
     }
     this.pendingUpdate = this.dirtyChanges;
     this.dirtyChanges = this.newEmptyChangeSet();
-    let newStateId: string | null = null;
     try {
-      let result: T;
-      [newStateId, result] = await callback();
+      const { newStateId, data } = await callback();
       this.xtextStateId = newStateId;
-      this.pendingUpdate = null;
+      this.pendingUpdate = undefined;
       this.updatedCondition.notifyAll();
-      return result;
+      return data;
     } catch (e) {
       log.error('Error while update', e);
-      if (this.pendingUpdate === null) {
+      if (this.pendingUpdate === undefined) {
         log.error('pendingUpdate was cleared during update');
       } else {
         this.dirtyChanges = this.pendingUpdate.compose(this.dirtyChanges);
       }
-      this.pendingUpdate = null;
+      this.pendingUpdate = undefined;
       this.webSocketClient.forceReconnectOnError();
       this.updatedCondition.rejectAll(e);
       throw e;
@@ -357,16 +396,16 @@ export default class UpdateService {
 
   /**
    * Ensures that there is some state available on the server (`xtextStateId`)
-   * and that there is not pending update.
+   * and that there is no pending update.
    *
    * After this function resolves, a delta text update is possible.
    *
-   * @return a promise resolving when there is a valid state id but no pending update
+   * @returns a promise resolving when there is a valid state id but no pending update
    */
-  private async prepareForDeltaUpdate() {
+  private async prepareForDeltaUpdate(): Promise<void> {
     // If no update is pending, but the full text hasn't been uploaded to the server yet,
     // we must start a full text upload.
-    if (this.pendingUpdate === null && this.xtextStateId === null) {
+    if (this.pendingUpdate === undefined && this.xtextStateId === undefined) {
       await this.updateFullText();
     }
     await this.updatedCondition.waitFor();

@@ -17,6 +17,8 @@ const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
 const WEBSOCKET_CLOSE_OK = 1000;
 
+const WEBSOCKET_CLOSE_GOING_AWAY = 1001;
+
 const RECONNECT_DELAY_MS = [200, 1000, 5000, 30_000];
 
 const MAX_RECONNECT_DELAY_MS =
@@ -44,9 +46,9 @@ enum State {
   Opening,
   TabVisible,
   TabHiddenIdle,
-  TabHiddenWaiting,
+  TabHiddenWaitingToClose,
   Error,
-  TimedOut,
+  ClosedDueToInactivity,
 }
 
 export default class XtextWebSocketClient {
@@ -86,14 +88,16 @@ export default class XtextWebSocketClient {
   }
 
   private get isLogicallyClosed(): boolean {
-    return this.state === State.Error || this.state === State.TimedOut;
+    return (
+      this.state === State.Error || this.state === State.ClosedDueToInactivity
+    );
   }
 
   get isOpen(): boolean {
     return (
       this.state === State.TabVisible ||
       this.state === State.TabHiddenIdle ||
-      this.state === State.TabHiddenWaiting
+      this.state === State.TabHiddenWaitingToClose
     );
   }
 
@@ -134,11 +138,15 @@ export default class XtextWebSocketClient {
       this.handleMessage(event.data);
     });
     this.connection.addEventListener('close', (event) => {
-      if (
+      const closedOnRequest =
         this.isLogicallyClosed &&
         event.code === WEBSOCKET_CLOSE_OK &&
-        this.pendingRequests.size === 0
-      ) {
+        this.pendingRequests.size === 0;
+      const closedOnNavigation = event.code === WEBSOCKET_CLOSE_GOING_AWAY;
+      if (closedOnNavigation) {
+        this.state = State.ClosedDueToInactivity;
+      }
+      if (closedOnRequest || closedOnNavigation) {
         log.info('Websocket closed');
         return;
       }
@@ -157,12 +165,12 @@ export default class XtextWebSocketClient {
     this.idleTimer.cancel();
     if (
       this.state === State.TabHiddenIdle ||
-      this.state === State.TabHiddenWaiting
+      this.state === State.TabHiddenWaitingToClose
     ) {
       this.handleTabVisibleConnected();
       return;
     }
-    if (this.state === State.TimedOut) {
+    if (this.state === State.ClosedDueToInactivity) {
       this.reconnect();
     }
   }
@@ -181,19 +189,19 @@ export default class XtextWebSocketClient {
   private handleIdleTimeout() {
     log.trace('Waiting for pending tasks before disconnect');
     if (this.state === State.TabHiddenIdle) {
-      this.state = State.TabHiddenWaiting;
+      this.state = State.TabHiddenWaitingToClose;
       this.handleWaitingForDisconnect();
     }
   }
 
   private handleWaitingForDisconnect() {
-    if (this.state !== State.TabHiddenWaiting) {
+    if (this.state !== State.TabHiddenWaitingToClose) {
       return;
     }
     const pending = this.pendingRequests.size;
     if (pending === 0) {
       log.info('Closing idle websocket');
-      this.state = State.TimedOut;
+      this.state = State.ClosedDueToInactivity;
       this.closeConnection(1000, 'idle timeout');
       return;
     }
@@ -334,17 +342,31 @@ export default class XtextWebSocketClient {
     if (this.isLogicallyClosed) {
       return;
     }
-    this.abortPendingRequests();
-    this.closeConnection(1000, 'reconnecting due to error');
-    log.error('Reconnecting after delay due to error');
-    this.handleErrorState();
-  }
-
-  private abortPendingRequests() {
     this.pendingRequests.forEach((request) => {
       request.reject(new Error('Websocket disconnect'));
     });
     this.pendingRequests.clear();
+    this.closeConnection(1000, 'reconnecting due to error');
+    if (this.state === State.Error) {
+      // We are already handling this error condition.
+      return;
+    }
+    if (
+      this.state === State.TabHiddenIdle ||
+      this.state === State.TabHiddenWaitingToClose
+    ) {
+      log.error('Will reconned due to error once the tab becomes visible');
+      this.idleTimer.cancel();
+      this.state = State.ClosedDueToInactivity;
+      return;
+    }
+    log.error('Reconnecting after delay due to error');
+    this.state = State.Error;
+    this.reconnectTryCount += 1;
+    const delay =
+      RECONNECT_DELAY_MS[this.reconnectTryCount - 1] ?? MAX_RECONNECT_DELAY_MS;
+    log.info('Reconnecting in', delay, 'ms');
+    this.reconnectTimer.schedule(delay);
   }
 
   private closeConnection(code: number, reason: string) {
@@ -355,22 +377,13 @@ export default class XtextWebSocketClient {
     }
   }
 
-  private handleErrorState() {
-    this.state = State.Error;
-    this.reconnectTryCount += 1;
-    const delay =
-      RECONNECT_DELAY_MS[this.reconnectTryCount - 1] || MAX_RECONNECT_DELAY_MS;
-    log.info('Reconnecting in', delay, 'ms');
-    this.reconnectTimer.schedule(delay);
-  }
-
   private handleReconnect() {
     if (this.state !== State.Error) {
       log.error('Unexpected reconnect in', this.state);
       return;
     }
     if (document.visibilityState === 'hidden') {
-      this.state = State.TimedOut;
+      this.state = State.ClosedDueToInactivity;
     } else {
       this.reconnect();
     }

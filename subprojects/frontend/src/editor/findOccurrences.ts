@@ -1,4 +1,9 @@
-import { type Range, RangeSet, type TransactionSpec } from '@codemirror/state';
+import {
+  type Range,
+  RangeSet,
+  type TransactionSpec,
+  type EditorState,
+} from '@codemirror/state';
 import { Decoration } from '@codemirror/view';
 
 import defineDecorationSetExtension from './defineDecorationSetExtension';
@@ -32,6 +37,27 @@ export function setOccurrences(
   });
   const rangeSet = RangeSet.of(decorations, true);
   return setOccurrencesInteral(rangeSet);
+}
+
+export function isCursorWithinOccurence(state: EditorState): boolean {
+  const occurrences = state.field(findOccurrences, false);
+  if (occurrences === undefined) {
+    return false;
+  }
+  const {
+    selection: {
+      main: { from, to },
+    },
+  } = state;
+  let found = false;
+  occurrences.between(from, to, (decorationFrom, decorationTo) => {
+    if (decorationFrom <= from && to <= decorationTo) {
+      found = true;
+      return false;
+    }
+    return undefined;
+  });
+  return found;
 }
 
 export default findOccurrences;

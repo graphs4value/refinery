@@ -31,15 +31,12 @@ interface IFoundToken {
   text: string;
 }
 
-function findToken({ pos, state }: CompletionContext): IFoundToken | null {
+function findToken({ pos, state }: CompletionContext): IFoundToken | undefined {
   const token = syntaxTree(state).resolveInner(pos, -1);
-  if (token === null) {
-    return null;
-  }
   if (token.firstChild !== null) {
     // We only autocomplete terminal nodes. If the current node is nonterminal,
-    // returning `null` makes us autocomplete with the empty prefix instead.
-    return null;
+    // returning `undefined` makes us autocomplete with the empty prefix instead.
+    return undefined;
   }
   return {
     from: token.from,
@@ -50,11 +47,13 @@ function findToken({ pos, state }: CompletionContext): IFoundToken | null {
 }
 
 function shouldCompleteImplicitly(
-  token: IFoundToken | null,
+  token: IFoundToken | undefined,
   context: CompletionContext,
 ): boolean {
   return (
-    token !== null && token.implicitCompletion && context.pos - token.from >= 2
+    token !== undefined &&
+    token.implicitCompletion &&
+    context.pos - token.from >= 2
   );
 }
 
@@ -107,7 +106,7 @@ function createCompletion(entry: ContentAssistEntry): Completion {
 export default class ContentAssistService {
   private readonly updateService: UpdateService;
 
-  private lastCompletion: CompletionResult | null = null;
+  private lastCompletion: CompletionResult | undefined;
 
   constructor(updateService: UpdateService) {
     this.updateService = updateService;
@@ -115,7 +114,7 @@ export default class ContentAssistService {
 
   onTransaction(transaction: Transaction): void {
     if (this.shouldInvalidateCachedCompletion(transaction)) {
-      this.lastCompletion = null;
+      this.lastCompletion = undefined;
     }
   }
 
@@ -129,7 +128,7 @@ export default class ContentAssistService {
     }
     let range: { from: number; to: number };
     let prefix = '';
-    if (tokenBefore === null) {
+    if (tokenBefore === undefined) {
       range = {
         from: context.pos,
         to: context.pos,
@@ -146,14 +145,18 @@ export default class ContentAssistService {
       }
     }
     if (!context.explicit && this.shouldReturnCachedCompletion(tokenBefore)) {
+      if (this.lastCompletion === undefined) {
+        throw new Error(
+          'There is no cached completion, but we want to return it',
+        );
+      }
       log.trace('Returning cached completion result');
-      // Postcondition of `shouldReturnCachedCompletion`: `lastCompletion !== null`
       return {
-        ...(this.lastCompletion as CompletionResult),
+        ...this.lastCompletion,
         ...range,
       };
     }
-    this.lastCompletion = null;
+    this.lastCompletion = undefined;
     const entries = await this.updateService.fetchContentAssist(
       {
         resource: this.updateService.resourceName,
@@ -188,9 +191,9 @@ export default class ContentAssistService {
   }
 
   private shouldReturnCachedCompletion(
-    token: { from: number; to: number; text: string } | null,
+    token: { from: number; to: number; text: string } | undefined,
   ): boolean {
-    if (token === null || this.lastCompletion === null) {
+    if (token === undefined || this.lastCompletion === undefined) {
       return false;
     }
     const { from, to, text } = token;
@@ -211,11 +214,11 @@ export default class ContentAssistService {
   }
 
   private shouldInvalidateCachedCompletion(transaction: Transaction): boolean {
-    if (!transaction.docChanged || this.lastCompletion === null) {
+    if (!transaction.docChanged || this.lastCompletion === undefined) {
       return false;
     }
     const { from: lastFrom, to: lastTo } = this.lastCompletion;
-    if (!lastTo) {
+    if (lastTo === undefined) {
       return true;
     }
     const [transformedFrom, transformedTo] = this.mapRangeInclusive(

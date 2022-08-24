@@ -9,13 +9,13 @@ export default class PendingTask<T> {
 
   private resolved = false;
 
-  private timeout: number | null;
+  private timeout: number | undefined;
 
   constructor(
     resolveCallback: (value: T) => void,
     rejectCallback: (reason?: unknown) => void,
-    timeoutMs?: number,
-    timeoutCallback?: () => void,
+    timeoutMs?: number | undefined,
+    timeoutCallback?: () => void | undefined,
   ) {
     this.resolveCallback = resolveCallback;
     this.rejectCallback = rejectCallback;
@@ -28,8 +28,6 @@ export default class PendingTask<T> {
           }
         }
       }, timeoutMs);
-    } else {
-      this.timeout = null;
     }
   }
 
@@ -53,8 +51,9 @@ export default class PendingTask<T> {
 
   private markResolved() {
     this.resolved = true;
-    if (this.timeout !== null) {
+    if (this.timeout !== undefined) {
       clearTimeout(this.timeout);
+      this.timeout = undefined;
     }
   }
 }
