@@ -1,20 +1,15 @@
 import { Transaction } from '@codemirror/state';
+import { debounce } from 'lodash-es';
 
 import type EditorStore from '../editor/EditorStore';
 import {
   type IOccurrence,
   isCursorWithinOccurence,
 } from '../editor/findOccurrences';
-import Timer from '../utils/Timer';
 import getLogger from '../utils/getLogger';
 
 import type UpdateService from './UpdateService';
-import type XtextWebSocketClient from './XtextWebSocketClient';
-import {
-  isConflictResult,
-  OccurrencesResult,
-  type TextRegion,
-} from './xtextServiceResults';
+import type { TextRegion } from './xtextServiceResults';
 
 const FIND_OCCURRENCES_TIMEOUT_MS = 1000;
 
@@ -34,38 +29,23 @@ function transformOccurrences(regions: TextRegion[]): IOccurrence[] {
 }
 
 export default class OccurrencesService {
-  private readonly store: EditorStore;
-
-  private readonly webSocketClient: XtextWebSocketClient;
-
-  private readonly updateService: UpdateService;
-
   private hasOccurrences = false;
 
-  private readonly findOccurrencesTimer = new Timer(() => {
-    this.handleFindOccurrences();
-  }, FIND_OCCURRENCES_TIMEOUT_MS);
-
-  private readonly clearOccurrencesTimer = new Timer(() => {
-    this.clearOccurrences();
-  });
+  private readonly findOccurrencesLater = debounce(
+    () => this.findOccurrences(),
+    FIND_OCCURRENCES_TIMEOUT_MS,
+  );
 
   constructor(
-    store: EditorStore,
-    webSocketClient: XtextWebSocketClient,
-    updateService: UpdateService,
-  ) {
-    this.store = store;
-    this.webSocketClient = webSocketClient;
-    this.updateService = updateService;
-  }
+    private readonly store: EditorStore,
+    private readonly updateService: UpdateService,
+  ) {}
 
   onTransaction(transaction: Transaction): void {
     if (transaction.docChanged) {
       // Must clear occurrences asynchronously from `onTransaction`,
       // because we must not emit a conflicting transaction when handling the pending transaction.
-      this.clearOccurrencesTimer.schedule();
-      this.findOccurrencesTimer.reschedule();
+      this.clearAndFindOccurrencesLater();
       return;
     }
     if (!transaction.isUserEvent('select')) {
@@ -73,11 +53,10 @@ export default class OccurrencesService {
     }
     if (this.needsOccurrences) {
       if (!isCursorWithinOccurence(this.store.state)) {
-        this.clearOccurrencesTimer.schedule();
-        this.findOccurrencesTimer.reschedule();
+        this.clearAndFindOccurrencesLater();
       }
     } else {
-      this.clearOccurrencesTimer.schedule();
+      this.clearOccurrencesLater();
     }
   }
 
@@ -85,8 +64,26 @@ export default class OccurrencesService {
     return this.store.state.selection.main.empty;
   }
 
-  private handleFindOccurrences() {
-    this.clearOccurrencesTimer.cancel();
+  private clearAndFindOccurrencesLater(): void {
+    this.clearOccurrencesLater();
+    this.findOccurrencesLater();
+  }
+
+  /**
+   * Clears the occurences from a new immediate task to let the current editor transaction finish.
+   */
+  private clearOccurrencesLater() {
+    setTimeout(() => this.clearOccurrences(), 0);
+  }
+
+  private clearOccurrences() {
+    if (this.hasOccurrences) {
+      this.store.updateOccurrences([], []);
+      this.hasOccurrences = false;
+    }
+  }
+
+  private findOccurrences() {
     this.updateOccurrences().catch((error) => {
       log.error('Unexpected error while updating occurrences', error);
       this.clearOccurrences();
@@ -98,43 +95,26 @@ export default class OccurrencesService {
       this.clearOccurrences();
       return;
     }
-    await this.updateService.update();
-    const result = await this.webSocketClient.send({
-      resource: this.updateService.resourceName,
-      serviceType: 'occurrences',
-      expectedStateId: this.updateService.xtextStateId,
-      caretOffset: this.store.state.selection.main.head,
+    const fetchResult = await this.updateService.fetchOccurrences(() => {
+      return this.needsOccurrences
+        ? {
+            cancelled: false,
+            data: this.store.state.selection.main.head,
+          }
+        : { cancelled: true };
     });
-    const allChanges = this.updateService.computeChangesSinceLastUpdate();
-    if (!allChanges.empty || isConflictResult(result, 'canceled')) {
+    if (fetchResult.cancelled) {
       // Stale occurrences result, the user already made some changes.
       // We can safely ignore the occurrences and schedule a new find occurrences call.
       this.clearOccurrences();
-      this.findOccurrencesTimer.schedule();
+      if (this.needsOccurrences) {
+        this.findOccurrencesLater();
+      }
       return;
     }
-    const parsedOccurrencesResult = OccurrencesResult.safeParse(result);
-    if (!parsedOccurrencesResult.success) {
-      log.error(
-        'Unexpected occurences result',
-        result,
-        'not an OccurrencesResult: ',
-        parsedOccurrencesResult.error,
-      );
-      this.clearOccurrences();
-      return;
-    }
-    const { stateId, writeRegions, readRegions } = parsedOccurrencesResult.data;
-    if (stateId !== this.updateService.xtextStateId) {
-      log.error(
-        'Unexpected state id, expected:',
-        this.updateService.xtextStateId,
-        'got:',
-        stateId,
-      );
-      this.clearOccurrences();
-      return;
-    }
+    const {
+      data: { writeRegions, readRegions },
+    } = fetchResult;
     const write = transformOccurrences(writeRegions);
     const read = transformOccurrences(readRegions);
     this.hasOccurrences = write.length > 0 || read.length > 0;
@@ -146,12 +126,5 @@ export default class OccurrencesService {
       'read occurrences',
     );
     this.store.updateOccurrences(write, read);
-  }
-
-  private clearOccurrences() {
-    if (this.hasOccurrences) {
-      this.store.updateOccurrences([], []);
-      this.hasOccurrences = false;
-    }
   }
 }

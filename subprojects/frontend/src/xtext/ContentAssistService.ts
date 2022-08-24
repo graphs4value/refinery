@@ -104,13 +104,9 @@ function createCompletion(entry: ContentAssistEntry): Completion {
 }
 
 export default class ContentAssistService {
-  private readonly updateService: UpdateService;
-
   private lastCompletion: CompletionResult | undefined;
 
-  constructor(updateService: UpdateService) {
-    this.updateService = updateService;
-  }
+  constructor(private readonly updateService: UpdateService) {}
 
   onTransaction(transaction: Transaction): void {
     if (this.shouldInvalidateCachedCompletion(transaction)) {
@@ -159,8 +155,6 @@ export default class ContentAssistService {
     this.lastCompletion = undefined;
     const entries = await this.updateService.fetchContentAssist(
       {
-        resource: this.updateService.resourceName,
-        serviceType: 'assist',
         caretOffset: context.pos,
         proposalsLimit: PROPOSALS_LIMIT,
       },

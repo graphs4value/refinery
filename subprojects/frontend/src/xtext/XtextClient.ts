@@ -43,11 +43,7 @@ export default class XtextClient {
       this.updateService,
     );
     this.validationService = new ValidationService(store, this.updateService);
-    this.occurrencesService = new OccurrencesService(
-      store,
-      this.webSocketClient,
-      this.updateService,
-    );
+    this.occurrencesService = new OccurrencesService(store, this.updateService);
   }
 
   onTransaction(transaction: Transaction): void {

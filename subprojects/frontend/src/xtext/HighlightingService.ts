@@ -5,14 +5,10 @@ import type UpdateService from './UpdateService';
 import { highlightingResult } from './xtextServiceResults';
 
 export default class HighlightingService {
-  private readonly store: EditorStore;
-
-  private readonly updateService: UpdateService;
-
-  constructor(store: EditorStore, updateService: UpdateService) {
-    this.store = store;
-    this.updateService = updateService;
-  }
+  constructor(
+    private readonly store: EditorStore,
+    private readonly updateService: UpdateService,
+  ) {}
 
   onPush(push: unknown): void {
     const { regions } = highlightingResult.parse(push);

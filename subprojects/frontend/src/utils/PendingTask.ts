@@ -14,21 +14,19 @@ export default class PendingTask<T> {
   constructor(
     resolveCallback: (value: T) => void,
     rejectCallback: (reason?: unknown) => void,
-    timeoutMs?: number | undefined,
-    timeoutCallback?: () => void | undefined,
+    timeoutMs: number | undefined,
+    timeoutCallback: () => void | undefined,
   ) {
     this.resolveCallback = resolveCallback;
     this.rejectCallback = rejectCallback;
-    if (timeoutMs) {
-      this.timeout = setTimeout(() => {
-        if (!this.resolved) {
-          this.reject(new Error('Request timed out'));
-          if (timeoutCallback) {
-            timeoutCallback();
-          }
+    this.timeout = setTimeout(() => {
+      if (!this.resolved) {
+        this.reject(new Error('Request timed out'));
+        if (timeoutCallback) {
+          timeoutCallback();
         }
-      }, timeoutMs);
-    }
+      }
+    }, timeoutMs);
   }
 
   resolve(value: T): void {
