@@ -1389,14 +1389,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/search@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "@codemirror/search@npm:6.1.0"
+"@codemirror/search@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "@codemirror/search@npm:6.2.0"
   dependencies:
     "@codemirror/state": ^6.0.0
     "@codemirror/view": ^6.0.0
     crelt: ^1.0.5
-  checksum: 3cf85eec96236f856ba947241a0587e46bbfd3c88f5a90bd4c5f0bbb867055732b8cf6dc146e5e0c3f4dfd87540e97908fdae033f991c55f6fa9179059cb80fc
+  checksum: 1d25a847d3ebde3b3e8ee796c9a874c5e77622cebf361887f4ce7c9b9c1de196c9e74b488602032b5a3eeff31d3c983ea67e7fdba8b0b4775b40abb066e58d63
   languageName: node
   linkType: hard
 
@@ -1407,14 +1407,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/view@npm:^6.0.0, @codemirror/view@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "@codemirror/view@npm:6.2.0"
+"@codemirror/view@npm:^6.0.0, @codemirror/view@npm:^6.2.1":
+  version: 6.2.1
+  resolution: "@codemirror/view@npm:6.2.1"
   dependencies:
     "@codemirror/state": ^6.0.0
     style-mod: ^4.0.0
     w3c-keyname: ^2.2.4
-  checksum: 984ef8b6f41055ce221d322263726e95185c22eca23284c3612b449b5a2d2e63ff091b8e4bbc80ae9e980889d3d8929929076528fa9d1125c67a41c4af3a5193
+  checksum: efa67b8b1cc921179e4e1f51bd0f5191b920e79be87a952bb2c90b933a79307adc15c4adcf8001d7e3b79fefafb2c822ddbce5bcafc6f82f359e7b7690b61673
   languageName: node
   linkType: hard
 
@@ -1986,9 +1986,9 @@ __metadata:
     "@codemirror/commands": ^6.1.0
     "@codemirror/language": ^6.2.1
     "@codemirror/lint": ^6.0.0
-    "@codemirror/search": ^6.1.0
+    "@codemirror/search": ^6.2.0
     "@codemirror/state": ^6.1.1
-    "@codemirror/view": ^6.2.0
+    "@codemirror/view": ^6.2.1
     "@emotion/react": ^11.10.0
     "@emotion/styled": ^11.10.0
     "@fontsource/jetbrains-mono": ^4.5.10
@@ -2022,7 +2022,7 @@ __metadata:
     eslint-plugin-import: ^2.26.0
     eslint-plugin-jsx-a11y: ^6.6.1
     eslint-plugin-prettier: ^4.2.1
-    eslint-plugin-react: ^7.30.1
+    eslint-plugin-react: ^7.31.0
     eslint-plugin-react-hooks: ^4.6.0
     html-minifier-terser: ^7.0.0
     lodash-es: ^4.17.21
@@ -2035,7 +2035,7 @@ __metadata:
     prettier: ^2.7.1
     react: ^18.2.0
     react-dom: ^18.2.0
-    typescript: ~4.7.4
+    typescript: ~4.8.2
     vite: ^3.0.9
     vite-plugin-inject-preload: ^1.1.0
     vite-plugin-pwa: ^0.12.3
@@ -2049,7 +2049,7 @@ __metadata:
   resolution: "@refinery/root@workspace:."
   dependencies:
     eslint: ^8.22.0
-    typescript: ~4.7.4
+    typescript: ~4.8.2
   languageName: unknown
   linkType: soft
 
@@ -3710,9 +3710,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:^7.30.1":
-  version: 7.30.1
-  resolution: "eslint-plugin-react@npm:7.30.1"
+"eslint-plugin-react@npm:^7.31.0":
+  version: 7.31.0
+  resolution: "eslint-plugin-react@npm:7.31.0"
   dependencies:
     array-includes: ^3.1.5
     array.prototype.flatmap: ^1.3.0
@@ -3730,7 +3730,7 @@ __metadata:
     string.prototype.matchall: ^4.0.7
   peerDependencies:
     eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
-  checksum: 553fb9ece6beb7c14cf6f84670c786c8ac978c2918421994dcc4edd2385302022e5d5ac4a39fafdb35954e29cecddefed61758040c3c530cafcf651f674a9d51
+  checksum: 465829bb477f3adf0ce96294c2b9c97147414a449d14f4dde21711f38213924a4facd567f7263be67958f284edf5ea25cf9f996bc95240d74cfa2ee95b1c81a6
   languageName: node
   linkType: hard
 
@@ -6453,23 +6453,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:~4.7.4":
-  version: 4.7.4
-  resolution: "typescript@npm:4.7.4"
+"typescript@npm:~4.8.2":
+  version: 4.8.2
+  resolution: "typescript@npm:4.8.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 5750181b1cd7e6482c4195825547e70f944114fb47e58e4aa7553e62f11b3f3173766aef9c281783edfd881f7b8299cf35e3ca8caebe73d8464528c907a164df
+  checksum: 7f5b81d0d558c9067f952c7af52ab7f19c2e70a916817929e4a5b256c93990bf3178eccb1ac8a850bc75df35f6781b6f4cb3370ce20d8b1ded92ed462348f628
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@~4.7.4#~builtin<compat/typescript>":
-  version: 4.7.4
-  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"
+"typescript@patch:typescript@~4.8.2#~builtin<compat/typescript>":
+  version: 4.8.2
+  resolution: "typescript@patch:typescript@npm%3A4.8.2#~builtin<compat/typescript>::version=4.8.2&hash=a1c5e5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
+  checksum: 5cb0f02f414f5405f4b0e7ee1fd7fa9177b6a8783c9017b6cad85f56ce4c4f93e0e6f2ce37e863cb597d44227cd009474c9fbd85bf7a50004e5557426cb58079
   languageName: node
   linkType: hard
 
