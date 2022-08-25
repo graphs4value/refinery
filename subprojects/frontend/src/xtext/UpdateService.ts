@@ -6,11 +6,7 @@ import { nanoid } from 'nanoid';
 import type EditorStore from '../editor/EditorStore';
 import getLogger from '../utils/getLogger';
 
-import UpdateStateTracker, {
-  type LockedState,
-  type PendingUpdate,
-} from './UpdateStateTracker';
-import type { StateUpdateResult, Delta } from './UpdateStateTracker';
+import UpdateStateTracker from './UpdateStateTracker';
 import type XtextWebSocketClient from './XtextWebSocketClient';
 import {
   type ContentAssistEntry,
@@ -86,10 +82,10 @@ export default class UpdateService {
   }
 
   private idleUpdate(): void {
-    if (!this.webSocketClient.isOpen || !this.tracker.hasDirtyChanges) {
+    if (!this.webSocketClient.isOpen || !this.tracker.needsUpdate) {
       return;
     }
-    if (!this.tracker.locekdForUpdate) {
+    if (!this.tracker.lockedForUpdate) {
       this.updateOrThrow().catch((error) => {
         if (error === E_CANCELED || error === E_TIMEOUT) {
           log.debug('Idle update cancelled');
@@ -111,88 +107,64 @@ export default class UpdateService {
    * @returns a promise resolving when the update is completed
    */
   private async updateOrThrow(): Promise<void> {
-    // We may check here for the delta to avoid locking,
-    // but we'll need to recompute the delta in the critical section,
-    // because it may have changed by the time we can acquire the lock.
-    if (
-      !this.tracker.hasDirtyChanges &&
-      this.tracker.xtextStateId !== undefined
-    ) {
+    if (!this.tracker.needsUpdate) {
       return;
     }
-    await this.tracker.runExclusive((lockedState) =>
-      this.updateExclusive(lockedState),
-    );
+    await this.tracker.runExclusive(() => this.updateExclusive());
   }
 
-  private async updateExclusive(lockedState: LockedState): Promise<void> {
+  private async updateExclusive(): Promise<void> {
     if (this.xtextStateId === undefined) {
-      await this.updateFullTextExclusive(lockedState);
+      await this.updateFullTextExclusive();
     }
-    if (!this.tracker.hasDirtyChanges) {
+    const delta = this.tracker.prepareDeltaUpdateExclusive();
+    if (delta === undefined) {
       return;
     }
-    await lockedState.updateExclusive(async (pendingUpdate) => {
-      const delta = pendingUpdate.prepareDeltaUpdateExclusive();
-      if (delta === undefined) {
-        return undefined;
-      }
-      log.trace('Editor delta', delta);
-      const result = await this.webSocketClient.send({
-        resource: this.resourceName,
-        serviceType: 'update',
-        requiredStateId: this.xtextStateId,
-        ...delta,
-      });
-      const parsedDocumentStateResult = DocumentStateResult.safeParse(result);
-      if (parsedDocumentStateResult.success) {
-        return parsedDocumentStateResult.data.stateId;
-      }
-      if (isConflictResult(result, 'invalidStateId')) {
-        return this.doUpdateFullTextExclusive(pendingUpdate);
-      }
-      throw parsedDocumentStateResult.error;
+    log.trace('Editor delta', delta);
+    const result = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'update',
+      requiredStateId: this.xtextStateId,
+      ...delta,
     });
+    const parsedDocumentStateResult = DocumentStateResult.safeParse(result);
+    if (parsedDocumentStateResult.success) {
+      this.tracker.setStateIdExclusive(parsedDocumentStateResult.data.stateId);
+      return;
+    }
+    if (isConflictResult(result, 'invalidStateId')) {
+      await this.updateFullTextExclusive();
+    }
+    throw parsedDocumentStateResult.error;
   }
 
   private updateFullTextOrThrow(): Promise<void> {
-    return this.tracker.runExclusive((lockedState) =>
-      this.updateFullTextExclusive(lockedState),
-    );
+    return this.tracker.runExclusive(() => this.updateFullTextExclusive());
   }
 
-  private async updateFullTextExclusive(
-    lockedState: LockedState,
-  ): Promise<void> {
-    await lockedState.updateExclusive((pendingUpdate) =>
-      this.doUpdateFullTextExclusive(pendingUpdate),
-    );
-  }
-
-  private async doUpdateFullTextExclusive(
-    pendingUpdate: PendingUpdate,
-  ): Promise<string> {
+  private async updateFullTextExclusive(): Promise<void> {
     log.debug('Performing full text update');
-    pendingUpdate.extendPendingUpdateExclusive();
+    this.tracker.prepareFullTextUpdateExclusive();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'update',
       fullText: this.store.state.doc.sliceString(0),
     });
     const { stateId } = DocumentStateResult.parse(result);
-    return stateId;
+    this.tracker.setStateIdExclusive(stateId);
   }
 
   async fetchContentAssist(
     params: ContentAssistParams,
     signal: AbortSignal,
   ): Promise<ContentAssistEntry[]> {
-    if (this.tracker.upToDate && this.xtextStateId !== undefined) {
+    if (!this.tracker.hasPendingChanges && this.xtextStateId !== undefined) {
       return this.fetchContentAssistFetchOnly(params, this.xtextStateId);
     }
     try {
-      return await this.tracker.runExclusiveHighPriority((lockedState) =>
-        this.fetchContentAssistExclusive(params, lockedState, signal),
+      return await this.tracker.runExclusiveHighPriority(() =>
+        this.fetchContentAssistExclusive(params, signal),
       );
     } catch (error) {
       if ((error === E_CANCELED || error === E_TIMEOUT) && signal.aborted) {
@@ -204,37 +176,29 @@ export default class UpdateService {
 
   private async fetchContentAssistExclusive(
     params: ContentAssistParams,
-    lockedState: LockedState,
     signal: AbortSignal,
   ): Promise<ContentAssistEntry[]> {
     if (this.xtextStateId === undefined) {
-      await this.updateFullTextExclusive(lockedState);
+      await this.updateFullTextExclusive();
+      if (this.xtextStateId === undefined) {
+        throw new Error('failed to obtain Xtext state id');
+      }
     }
     if (signal.aborted) {
       return [];
     }
-    if (this.tracker.hasDirtyChanges) {
-      // Try to fetch while also performing a delta update.
-      const fetchUpdateEntries = await lockedState.withUpdateExclusive(
-        async (pendingUpdate) => {
-          const delta = pendingUpdate.prepareDeltaUpdateExclusive();
-          if (delta === undefined) {
-            return { newStateId: undefined, data: undefined };
-          }
-          log.trace('Editor delta', delta);
-          return this.doFetchContentAssistWithDeltaExclusive(
-            params,
-            pendingUpdate,
-            delta,
-          );
-        },
+    let entries: ContentAssistEntry[] | undefined;
+    if (this.tracker.needsUpdate) {
+      entries = await this.fetchContentAssistWithDeltaExclusive(
+        params,
+        this.xtextStateId,
       );
-      if (fetchUpdateEntries !== undefined) {
-        return fetchUpdateEntries;
-      }
-      if (signal.aborted) {
-        return [];
-      }
+    }
+    if (entries !== undefined) {
+      return entries;
+    }
+    if (signal.aborted) {
+      return [];
     }
     if (this.xtextStateId === undefined) {
       throw new Error('failed to obtain Xtext state id');
@@ -242,32 +206,35 @@ export default class UpdateService {
     return this.fetchContentAssistFetchOnly(params, this.xtextStateId);
   }
 
-  private async doFetchContentAssistWithDeltaExclusive(
+  private async fetchContentAssistWithDeltaExclusive(
     params: ContentAssistParams,
-    pendingUpdate: PendingUpdate,
-    delta: Delta,
-  ): Promise<StateUpdateResult<ContentAssistEntry[] | undefined>> {
+    requiredStateId: string,
+  ): Promise<ContentAssistEntry[] | undefined> {
+    const delta = this.tracker.prepareDeltaUpdateExclusive();
+    if (delta === undefined) {
+      return undefined;
+    }
+    log.trace('Editor delta for content assist', delta);
     const fetchUpdateResult = await this.webSocketClient.send({
       ...params,
       resource: this.resourceName,
       serviceType: 'assist',
-      requiredStateId: this.xtextStateId,
+      requiredStateId,
       ...delta,
     });
     const parsedContentAssistResult =
       ContentAssistResult.safeParse(fetchUpdateResult);
     if (parsedContentAssistResult.success) {
-      const { stateId, entries: resultEntries } =
-        parsedContentAssistResult.data;
-      return { newStateId: stateId, data: resultEntries };
+      const {
+        data: { stateId, entries },
+      } = parsedContentAssistResult;
+      this.tracker.setStateIdExclusive(stateId);
+      return entries;
     }
     if (isConflictResult(fetchUpdateResult, 'invalidStateId')) {
       log.warn('Server state invalid during content assist');
-      const newStateId = await this.doUpdateFullTextExclusive(pendingUpdate);
-      // We must finish this state update transaction to prepare for any push events
-      // before querying for content assist, so we just return `undefined` and will query
-      // the content assist service later.
-      return { newStateId, data: undefined };
+      await this.updateFullTextExclusive();
+      return undefined;
     }
     throw parsedContentAssistResult.error;
   }
@@ -294,33 +261,30 @@ export default class UpdateService {
   }
 
   formatText(): Promise<void> {
-    return this.tracker.runExclusiveWithRetries((lockedState) =>
-      this.formatTextExclusive(lockedState),
+    return this.tracker.runExclusiveWithRetries(() =>
+      this.formatTextExclusive(),
     );
   }
 
-  private async formatTextExclusive(lockedState: LockedState): Promise<void> {
-    await this.updateExclusive(lockedState);
+  private async formatTextExclusive(): Promise<void> {
+    await this.updateExclusive();
     let { from, to } = this.store.state.selection.main;
     if (to <= from) {
       from = 0;
       to = this.store.state.doc.length;
     }
     log.debug('Formatting from', from, 'to', to);
-    await lockedState.updateExclusive(async (pendingUpdate) => {
-      const result = await this.webSocketClient.send({
-        resource: this.resourceName,
-        serviceType: 'format',
-        selectionStart: from,
-        selectionEnd: to,
-      });
-      const { stateId, formattedText } = FormattingResult.parse(result);
-      pendingUpdate.applyBeforeDirtyChangesExclusive({
-        from,
-        to,
-        insert: formattedText,
-      });
-      return stateId;
+    const result = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'format',
+      selectionStart: from,
+      selectionEnd: to,
+    });
+    const { stateId, formattedText } = FormattingResult.parse(result);
+    this.tracker.setStateIdExclusive(stateId, {
+      from,
+      to,
+      insert: formattedText,
     });
   }
 
@@ -335,17 +299,13 @@ export default class UpdateService {
       }
       throw error;
     }
-    if (!this.tracker.upToDate) {
+    const expectedStateId = this.xtextStateId;
+    if (expectedStateId === undefined || this.tracker.hasPendingChanges) {
       // Just give up if another update is in progress.
       return { cancelled: true };
     }
     const caretOffsetResult = getCaretOffset();
     if (caretOffsetResult.cancelled) {
-      return { cancelled: true };
-    }
-    const expectedStateId = this.xtextStateId;
-    if (expectedStateId === undefined) {
-      // If there is no state on the server, don't bother with finding occurrences.
       return { cancelled: true };
     }
     const data = await this.webSocketClient.send({
