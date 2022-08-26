@@ -5,9 +5,9 @@ import {
   StateEffect,
   type Transaction,
 } from '@codemirror/state';
-import { E_CANCELED, Mutex, withTimeout } from 'async-mutex';
 
 import type EditorStore from '../editor/EditorStore';
+import PriorityMutex from '../utils/PriorityMutex';
 
 const WAIT_FOR_UPDATE_TIMEOUT_MS = 1000;
 
@@ -31,7 +31,7 @@ export interface Delta {
 }
 
 export default class UpdateStateTracker {
-  xtextStateId: string | undefined;
+  private _xtextStateId: string | undefined;
 
   /**
    * The changes marked for synchronization to the server if a full or delta text update
@@ -54,10 +54,14 @@ export default class UpdateStateTracker {
   /**
    * Locked when we try to modify the state on the server.
    */
-  private readonly mutex = withTimeout(new Mutex(), WAIT_FOR_UPDATE_TIMEOUT_MS);
+  private readonly mutex = new PriorityMutex(WAIT_FOR_UPDATE_TIMEOUT_MS);
 
   constructor(private readonly store: EditorStore) {
     this.dirtyChanges = this.newEmptyChangeSet();
+  }
+
+  get xtextStateId(): string | undefined {
+    return this._xtextStateId;
   }
 
   private get hasDirtyChanges(): boolean {
@@ -69,7 +73,7 @@ export default class UpdateStateTracker {
   }
 
   get lockedForUpdate(): boolean {
-    return this.mutex.isLocked();
+    return this.mutex.locked;
   }
 
   get hasPendingChanges(): boolean {
@@ -111,7 +115,7 @@ export default class UpdateStateTracker {
   }
 
   invalidateStateId(): void {
-    this.xtextStateId = undefined;
+    this._xtextStateId = undefined;
   }
 
   /**
@@ -180,7 +184,7 @@ export default class UpdateStateTracker {
     if (remoteChanges !== undefined) {
       this.applyRemoteChangesExclusive(remoteChanges);
     }
-    this.xtextStateId = newStateId;
+    this._xtextStateId = newStateId;
     this.pendingChanges = undefined;
   }
 
@@ -205,7 +209,10 @@ export default class UpdateStateTracker {
     }
   }
 
-  runExclusive<T>(callback: () => Promise<T>): Promise<T> {
+  runExclusive<T>(
+    callback: () => Promise<T>,
+    highPriority = false,
+  ): Promise<T> {
     return this.mutex.runExclusive(async () => {
       try {
         return await callback();
@@ -215,31 +222,6 @@ export default class UpdateStateTracker {
           this.pendingChanges = undefined;
         }
       }
-    });
-  }
-
-  runExclusiveHighPriority<T>(callback: () => Promise<T>): Promise<T> {
-    this.mutex.cancel();
-    return this.runExclusive(callback);
-  }
-
-  async runExclusiveWithRetries<T>(
-    callback: () => Promise<T>,
-    maxRetries = 5,
-  ): Promise<T> {
-    let retries = 0;
-    while (retries < maxRetries) {
-      try {
-        // eslint-disable-next-line no-await-in-loop -- Use a loop for sequential retries.
-        return await this.runExclusive(callback);
-      } catch (error) {
-        // Let timeout errors propagate to give up retrying on a flaky connection.
-        if (error !== E_CANCELED) {
-          throw error;
-        }
-        retries += 1;
-      }
-    }
-    throw E_CANCELED;
+    }, highPriority);
   }
 }

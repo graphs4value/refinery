@@ -53,6 +53,15 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    // A dangling underscore, while not neccessary for all private fields,
+    // is useful for backing fields of properties that should be read-only from outside the class.
+    'no-underscore-dangle': [
+      'error',
+      {
+        allowAfterThis: true,
+        allowFunctionParams: true,
+      },
+    ],
     // Use prop spreading to conditionally add props with `exactOptionalPropertyTypes`.
     'react/jsx-props-no-spreading': 'off',
   },

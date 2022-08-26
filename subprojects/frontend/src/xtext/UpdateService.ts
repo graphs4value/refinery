@@ -1,9 +1,10 @@
 import type { ChangeDesc, Transaction } from '@codemirror/state';
-import { E_CANCELED, E_TIMEOUT } from 'async-mutex';
 import { debounce } from 'lodash-es';
 import { nanoid } from 'nanoid';
 
 import type EditorStore from '../editor/EditorStore';
+import CancelledError from '../utils/CancelledError';
+import TimeoutError from '../utils/TimeoutError';
 import getLogger from '../utils/getLogger';
 
 import UpdateStateTracker from './UpdateStateTracker';
@@ -66,7 +67,7 @@ export default class UpdateService {
     this.updateFullTextOrThrow().catch((error) => {
       // Let E_TIMEOUT errors propagate, since if the first update times out,
       // we can't use the connection.
-      if (error === E_CANCELED) {
+      if (error instanceof CancelledError) {
         // Content assist will perform a full-text update anyways.
         log.debug('Full text update cancelled');
         return;
@@ -87,7 +88,7 @@ export default class UpdateService {
     }
     if (!this.tracker.lockedForUpdate) {
       this.updateOrThrow().catch((error) => {
-        if (error === E_CANCELED || error === E_TIMEOUT) {
+        if (error instanceof CancelledError || error instanceof TimeoutError) {
           log.debug('Idle update cancelled');
           return;
         }
@@ -163,11 +164,15 @@ export default class UpdateService {
       return this.fetchContentAssistFetchOnly(params, this.xtextStateId);
     }
     try {
-      return await this.tracker.runExclusiveHighPriority(() =>
-        this.fetchContentAssistExclusive(params, signal),
+      return await this.tracker.runExclusive(
+        () => this.fetchContentAssistExclusive(params, signal),
+        true,
       );
     } catch (error) {
-      if ((error === E_CANCELED || error === E_TIMEOUT) && signal.aborted) {
+      if (
+        (error instanceof CancelledError || error instanceof TimeoutError) &&
+        signal.aborted
+      ) {
         return [];
       }
       throw error;
@@ -261,9 +266,7 @@ export default class UpdateService {
   }
 
   formatText(): Promise<void> {
-    return this.tracker.runExclusiveWithRetries(() =>
-      this.formatTextExclusive(),
-    );
+    return this.tracker.runExclusive(() => this.formatTextExclusive());
   }
 
   private async formatTextExclusive(): Promise<void> {
@@ -294,7 +297,7 @@ export default class UpdateService {
     try {
       await this.updateOrThrow();
     } catch (error) {
-      if (error === E_CANCELED || error === E_TIMEOUT) {
+      if (error instanceof CancelledError || error instanceof TimeoutError) {
         return { cancelled: true };
       }
       throw error;

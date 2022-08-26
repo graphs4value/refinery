@@ -1,3 +1,4 @@
+import TimeoutError from './TimeoutError';
 import getLogger from './getLogger';
 
 const log = getLogger('utils.PendingTask');
@@ -15,16 +16,14 @@ export default class PendingTask<T> {
     resolveCallback: (value: T) => void,
     rejectCallback: (reason?: unknown) => void,
     timeoutMs: number | undefined,
-    timeoutCallback: () => void | undefined,
+    timeoutCallback?: (() => void) | undefined,
   ) {
     this.resolveCallback = resolveCallback;
     this.rejectCallback = rejectCallback;
     this.timeout = setTimeout(() => {
       if (!this.resolved) {
-        this.reject(new Error('Request timed out'));
-        if (timeoutCallback) {
-          timeoutCallback();
-        }
+        this.reject(new TimeoutError());
+        timeoutCallback?.();
       }
     }, timeoutMs);
   }
