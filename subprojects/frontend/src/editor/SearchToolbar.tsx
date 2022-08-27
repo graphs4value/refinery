@@ -27,7 +27,7 @@ const DimLabel = styled(FormControlLabel)(({ theme }) => ({
   },
 }));
 
-function SearchToolbar({
+export default observer(function SearchToolbar({
   searchPanelStore,
 }: {
   searchPanelStore: SearchPanelStore;
@@ -271,6 +271,4 @@ function SearchToolbar({
       </Stack>
     </Toolbar>
   );
-}
-
-export default observer(SearchToolbar);
+});

@@ -313,7 +313,11 @@ ContrastThemeProvider.defaultProps = {
   children: undefined,
 };
 
-function ThemeProvider({ children }: { children?: ReactNode }): JSX.Element {
+const ThemeProvider = observer(function ThemeProvider({
+  children,
+}: {
+  children?: ReactNode;
+}): JSX.Element {
   const {
     themeStore: { darkMode },
   } = useRootStore();
@@ -326,10 +330,10 @@ function ThemeProvider({ children }: { children?: ReactNode }): JSX.Element {
       {children}
     </ThemeAndContrastThemeProvider>
   );
-}
+});
 
 ThemeProvider.defaultProps = {
   children: undefined,
 };
 
-export default observer(ThemeProvider);
+export default ThemeProvider;

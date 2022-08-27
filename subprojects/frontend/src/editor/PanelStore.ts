@@ -18,13 +18,29 @@ export default class PanelStore {
     private readonly closeCommand: Command,
     protected readonly store: EditorStore,
   ) {
-    makeObservable(this, {
+    makeObservable<
+      PanelStore,
+      | 'openCommand'
+      | 'closeCommand'
+      | 'store'
+      | 'setState'
+      | 'doOpen'
+      | 'doClose'
+    >(this, {
+      panelClass: false,
+      openCommand: false,
+      closeCommand: false,
+      store: false,
       state: observable,
       element: observable,
+      id: false,
       open: action,
       close: action,
       toggle: action,
+      setState: false,
       synchronizeStateToView: action,
+      doOpen: false,
+      doClose: false,
     });
   }
 

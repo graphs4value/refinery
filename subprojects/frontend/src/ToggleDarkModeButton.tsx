@@ -6,7 +6,7 @@ import React from 'react';
 
 import { useRootStore } from './RootStore';
 
-function ToggleDarkModeButton(): JSX.Element {
+export default observer(function ToggleDarkModeButton(): JSX.Element {
   const { themeStore } = useRootStore();
   const { darkMode } = themeStore;
 
@@ -19,6 +19,4 @@ function ToggleDarkModeButton(): JSX.Element {
       {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
     </IconButton>
   );
-}
-
-export default observer(ToggleDarkModeButton);
+});

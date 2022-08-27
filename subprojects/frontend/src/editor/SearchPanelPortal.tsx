@@ -5,7 +5,7 @@ import React from 'react';
 import type EditorStore from './EditorStore';
 import SearchToolbar from './SearchToolbar';
 
-function SearchPanelPortal({
+export default observer(function SearchPanelPortal({
   editorStore: { searchPanel: searchPanelStore },
 }: {
   editorStore: EditorStore;
@@ -20,6 +20,4 @@ function SearchPanelPortal({
       <SearchToolbar searchPanelStore={searchPanelStore} />
     </Portal>
   );
-}
-
-export default observer(SearchPanelPortal);
+});

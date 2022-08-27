@@ -13,7 +13,7 @@ import {
   type EditorState,
 } from '@codemirror/state';
 import { type Command, EditorView } from '@codemirror/view';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { makeAutoObservable, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 
 import getLogger from '../utils/getLogger';
@@ -57,29 +57,15 @@ export default class EditorStore {
     this.client = new XtextClient(this);
     this.searchPanel = new SearchPanelStore(this);
     this.lintPanel = new LintPanelStore(this);
-    makeObservable(this, {
+    makeAutoObservable<EditorStore, 'client'>(this, {
+      id: false,
       state: observable.ref,
+      client: false,
       view: observable.ref,
-      showLineNumbers: observable,
-      errorCount: observable,
-      warningCount: observable,
-      infoCount: observable,
-      highestDiagnosticLevel: computed,
-      canUndo: computed,
-      canRedo: computed,
-      setDarkMode: action,
-      setEditorParent: action,
-      dispatch: action,
-      dispatchTransaction: action,
-      doCommand: action,
-      doStateCommand: action,
-      updateDiagnostics: action,
-      nextDiagnostic: action,
-      updateOccurrences: action,
-      updateSemanticHighlighting: action,
-      undo: action,
-      redo: action,
-      toggleLineNumbers: action,
+      searchPanel: false,
+      lintPanel: false,
+      contentAssist: false,
+      formatText: false,
     });
   }
 
@@ -141,13 +127,11 @@ export default class EditorStore {
     }
   }
 
-  private readonly dispatchTransactionWithoutView = action(
-    (tr: Transaction) => {
-      log.trace('Editor transaction', tr);
-      this.state = tr.state;
-      this.client.onTransaction(tr);
-    },
-  );
+  private dispatchTransactionWithoutView(tr: Transaction): void {
+    log.trace('Editor transaction', tr);
+    this.state = tr.state;
+    this.client.onTransaction(tr);
+  }
 
   doCommand(command: Command): boolean {
     if (this.view === undefined) {

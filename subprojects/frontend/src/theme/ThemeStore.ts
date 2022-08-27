@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 
 export enum ThemePreference {
   System,
@@ -17,12 +17,7 @@ export default class ThemeStore {
     mediaQuery.addEventListener('change', (event) => {
       this.systemDarkMode = event.matches;
     });
-    makeObservable(this, {
-      preference: observable,
-      systemDarkMode: observable,
-      darkMode: computed,
-      toggleDarkMode: action,
-    });
+    makeAutoObservable(this);
   }
 
   get darkMode(): boolean {

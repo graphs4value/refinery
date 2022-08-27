@@ -7,7 +7,7 @@ import type EditorStore from './EditorStore';
 
 const GENERATE_LABEL = 'Generate';
 
-function GenerateButton({
+export default observer(function GenerateButton({
   editorStore,
 }: {
   editorStore: EditorStore | undefined;
@@ -53,6 +53,4 @@ function GenerateButton({
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}
     </Button>
   );
-}
-
-export default observer(GenerateButton);
+});

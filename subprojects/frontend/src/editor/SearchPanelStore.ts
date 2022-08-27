@@ -21,7 +21,7 @@ export default class SearchPanelStore extends PanelStore {
     // Use a custom class name to avoid specificity issues with
     // CodeMirror `.cm-search.cm-panel` CSS styles.
     super('refinery-cm-search', openSearchPanel, closeSearchPanel, store);
-    makeObservable(this, {
+    makeObservable<SearchPanelStore, 'selectSearchField'>(this, {
       searchField: observable.ref,
       query: computed,
       invalidRegexp: computed,
@@ -32,6 +32,7 @@ export default class SearchPanelStore extends PanelStore {
       findPrevious: action,
       replaceNext: action,
       replaceAll: action,
+      selectSearchField: false,
     });
   }
 

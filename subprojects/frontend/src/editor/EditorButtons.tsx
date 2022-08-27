@@ -32,7 +32,7 @@ function getLintIcon(severity: Diagnostic['severity'] | undefined) {
   }
 }
 
-function EditorButtons({
+export default observer(function EditorButtons({
   editorStore,
 }: {
   editorStore: EditorStore | undefined;
@@ -102,6 +102,4 @@ function EditorButtons({
       </IconButton>
     </Stack>
   );
-}
-
-export default observer(EditorButtons);
+});

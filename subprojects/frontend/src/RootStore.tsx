@@ -1,5 +1,5 @@
 import { getLogger } from 'loglevel';
-import { makeObservable, observable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import React, { createContext, useContext } from 'react';
 
 import type EditorStore from './editor/EditorStore';
@@ -14,8 +14,8 @@ export default class RootStore {
 
   constructor(initialValue: string) {
     this.themeStore = new ThemeStore();
-    makeObservable(this, {
-      editorStore: observable,
+    makeAutoObservable(this, {
+      themeStore: false,
     });
     import('./editor/EditorStore')
       .then(({ default: EditorStore }) => {

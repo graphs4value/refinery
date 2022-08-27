@@ -5,7 +5,7 @@ import React, { useCallback, useEffect } from 'react';
 import type EditorStore from './EditorStore';
 import EditorTheme from './EditorTheme';
 
-function EditorArea({
+export default observer(function EditorArea({
   editorStore,
 }: {
   editorStore: EditorStore;
@@ -32,6 +32,4 @@ function EditorArea({
       ref={editorParentRef}
     />
   );
-}
-
-export default observer(EditorArea);
+});

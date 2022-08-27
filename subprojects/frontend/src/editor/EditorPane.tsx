@@ -29,7 +29,7 @@ function EditorLoading(): JSX.Element {
   );
 }
 
-function EditorPane(): JSX.Element {
+export default observer(function EditorPane(): JSX.Element {
   const { editorStore } = useRootStore();
 
   return (
@@ -50,6 +50,4 @@ function EditorPane(): JSX.Element {
       </Box>
     </Stack>
   );
-}
-
-export default observer(EditorPane);
+});

@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
+import { configure } from 'mobx';
 import { SnackbarProvider } from 'notistack';
 import React, { Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -59,6 +60,11 @@ age(bob, bobAge).
 
 scope Family = 1, Person += 5..10.
 `;
+
+configure({
+  enforceActions: 'always',
+  reactionRequiresObservable: true,
+});
 
 const rootStore = new RootStore(initialValue);
 

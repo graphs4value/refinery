@@ -8,13 +8,14 @@ const project = [
 
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'mobx'],
   extends: [
     'airbnb',
     'airbnb-typescript',
     'airbnb/hooks',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:mobx/recommended',
     'plugin:prettier/recommended',
   ],
   parserOptions: {
@@ -53,6 +54,8 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    // Not all components depend on observable state.
+    'mobx/missing-observer': 'off',
     // A dangling underscore, while not neccessary for all private fields,
     // is useful for backing fields of properties that should be read-only from outside the class.
     'no-underscore-dangle': [
