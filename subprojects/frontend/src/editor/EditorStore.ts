@@ -69,6 +69,26 @@ export default class EditorStore {
     });
   }
 
+  get opened(): boolean {
+    return this.client.webSocketClient.opened;
+  }
+
+  get opening(): boolean {
+    return this.client.webSocketClient.opening;
+  }
+
+  get connectionErrors(): string[] {
+    return this.client.webSocketClient.errors;
+  }
+
+  connect(): void {
+    this.client.webSocketClient.connect();
+  }
+
+  disconnect(): void {
+    this.client.webSocketClient.disconnect();
+  }
+
   setDarkMode(darkMode: boolean): void {
     log.debug('Update editor dark mode', darkMode);
     this.dispatch({

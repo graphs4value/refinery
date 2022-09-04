@@ -31,4 +31,8 @@ export default class HighlightingService {
     });
     this.store.updateSemanticHighlighting(ranges);
   }
+
+  onDisconnect(): void {
+    this.store.updateSemanticHighlighting([]);
+  }
 }

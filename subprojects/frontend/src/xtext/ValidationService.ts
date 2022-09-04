@@ -28,4 +28,8 @@ export default class ValidationService {
     });
     this.store.updateDiagnostics(diagnostics);
   }
+
+  onDisconnect(): void {
+    this.store.updateDiagnostics([]);
+  }
 }

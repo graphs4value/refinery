@@ -82,6 +82,10 @@ export default class UpdateService {
     }
   }
 
+  get opened(): boolean {
+    return this.webSocketClient.opened;
+  }
+
   private idleUpdate(): void {
     if (!this.webSocketClient.opened || !this.tracker.needsUpdate) {
       return;

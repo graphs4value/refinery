@@ -22,6 +22,8 @@ const log = getLogger('xtext.XtextWebSocketClient');
 
 export type ReconnectHandler = () => void;
 
+export type DisconnectHandler = () => void;
+
 export type PushHandler = (
   resourceId: string,
   stateId: string,
@@ -136,6 +138,7 @@ export default class XtextWebSocketClient {
 
   constructor(
     private readonly onReconnect: ReconnectHandler,
+    private readonly onDisconnect: DisconnectHandler,
     private readonly onPush: PushHandler,
   ) {
     this.interpreter
@@ -179,8 +182,16 @@ export default class XtextWebSocketClient {
     return this.interpreter.state;
   }
 
+  get opening(): boolean {
+    return this.state.matches('connection.socketCreated.open.opening');
+  }
+
   get opened(): boolean {
     return this.state.matches('connection.socketCreated.open.opened');
+  }
+
+  get errors(): string[] {
+    return this.state.context.errors;
   }
 
   connect(): void {
@@ -261,6 +272,7 @@ export default class XtextWebSocketClient {
   }
 
   private cancelPendingRequests(): void {
+    this.onDisconnect();
     this.pendingRequests.forEach((task) =>
       task.reject(new CancelledError('Closing connection')),
     );

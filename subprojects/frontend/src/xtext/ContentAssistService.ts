@@ -115,6 +115,13 @@ export default class ContentAssistService {
   }
 
   async contentAssist(context: CompletionContext): Promise<CompletionResult> {
+    if (!this.updateService.opened) {
+      this.lastCompletion = undefined;
+      return {
+        from: context.pos,
+        options: [],
+      };
+    }
     const tokenBefore = findToken(context);
     if (!context.explicit && !shouldCompleteImplicitly(tokenBefore, context)) {
       return {

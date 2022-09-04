@@ -46,6 +46,7 @@ export default observer(function GenerateButton({
 
   return (
     <Button
+      disabled={!editorStore.opened}
       color={warningCount > 0 ? 'warning' : 'primary'}
       className="rounded"
       startIcon={<PlayArrowIcon />}

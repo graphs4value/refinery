@@ -15,6 +15,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
+import ConnectButton from './ConnectButton';
 import type EditorStore from './EditorStore';
 
 // Exhastive switch as proven by TypeScript.
@@ -93,13 +94,14 @@ export default observer(function EditorButtons({
         </ToggleButton>
       </ToggleButtonGroup>
       <IconButton
-        disabled={editorStore === undefined}
+        disabled={editorStore === undefined || !editorStore.opened}
         onClick={() => editorStore?.formatText()}
         aria-label="Automatic format"
         color="inherit"
       >
         <FormatPaint fontSize="small" />
       </IconButton>
+      <ConnectButton editorStore={editorStore} />
     </Stack>
   );
 });

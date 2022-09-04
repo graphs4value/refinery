@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
+import Grow from '@mui/material/Grow';
 import { configure } from 'mobx';
 import { SnackbarProvider } from 'notistack';
 import React, { Suspense, lazy } from 'react';
@@ -77,7 +78,8 @@ const app = (
       <ThemeProvider>
         <CssBaseline enableColorScheme />
         <WindowControlsOverlayColor />
-        <SnackbarProvider>
+        {/* @ts-expect-error -- notistack has problems with `exactOptionalPropertyTypes` */}
+        <SnackbarProvider TransitionComponent={Grow}>
           <RegisterServiceWorker />
           <Box height="100vh" overflow="auto">
             <Suspense fallback={<Loading />}>

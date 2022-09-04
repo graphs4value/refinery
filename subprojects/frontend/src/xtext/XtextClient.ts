@@ -18,7 +18,7 @@ import type { XtextWebPushService } from './xtextMessages';
 const log = getLogger('xtext.XtextClient');
 
 export default class XtextClient {
-  private readonly webSocketClient: XtextWebSocketClient;
+  readonly webSocketClient: XtextWebSocketClient;
 
   private readonly updateService: UpdateService;
 
@@ -32,7 +32,8 @@ export default class XtextClient {
 
   constructor(store: EditorStore) {
     this.webSocketClient = new XtextWebSocketClient(
-      () => this.updateService.onReconnect(),
+      () => this.onReconnect(),
+      () => this.onDisconnect(),
       (resource, stateId, service, push) =>
         this.onPush(resource, stateId, service, push),
     );
@@ -44,6 +45,17 @@ export default class XtextClient {
     );
     this.validationService = new ValidationService(store, this.updateService);
     this.occurrencesService = new OccurrencesService(store, this.updateService);
+  }
+
+  private onReconnect(): void {
+    this.updateService.onReconnect();
+    this.occurrencesService.onReconnect();
+  }
+
+  private onDisconnect(): void {
+    this.highlightingService.onDisconnect();
+    this.validationService.onDisconnect();
+    this.occurrencesService.onDisconnect();
   }
 
   onTransaction(transaction: Transaction): void {

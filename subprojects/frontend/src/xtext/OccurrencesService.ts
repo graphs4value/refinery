@@ -41,6 +41,15 @@ export default class OccurrencesService {
     private readonly updateService: UpdateService,
   ) {}
 
+  onReconnect(): void {
+    this.clearOccurrences();
+    this.findOccurrencesLater();
+  }
+
+  onDisconnect(): void {
+    this.clearOccurrences();
+  }
+
   onTransaction(transaction: Transaction): void {
     if (transaction.docChanged) {
       // Must clear occurrences asynchronously from `onTransaction`,
@@ -91,7 +100,7 @@ export default class OccurrencesService {
   }
 
   private async updateOccurrences() {
-    if (!this.needsOccurrences) {
+    if (!this.needsOccurrences || !this.updateService.opened) {
       this.clearOccurrences();
       return;
     }
