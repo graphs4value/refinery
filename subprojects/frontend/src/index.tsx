@@ -33,14 +33,16 @@ enum TaxStatus {
 pred invalidTaxStatus(Person p) <->
     taxStatus(p, child),
     children(p, _q)
-  ; taxStatus(p, retired),
+;
+    taxStatus(p, retired),
     parent(p, q),
     !taxStatus(q, retired).
 
 rule createChild(may Person p, must Person newPerson):
     may children(p, newPerson),
     may !equals(newPerson, newPerson)
-==> new q <: newPerson,
+==>
+    new q <: newPerson,
     children(p, q),
     taxStatus(q, child).
 

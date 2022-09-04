@@ -38,11 +38,11 @@ function findAlignmentAfterOpening(context: TreeIndentContext): number | null {
  * https://github.com/codemirror/language/blob/cd7f7e66fa51ddbce96cf9396b1b6127d0ca4c94/src/indent.ts#L275
  *
  * @example
- * Result with no hanging indent (indent unit = 2 spaces, units = 1):
+ * Result with no hanging indent (indent unit = 4 spaces, units = 1):
  * ```
  * scope
- *   Family = 1,
- *   Person += 5..10.
+ *     Family = 1,
+ *     Person += 5..10.
  * ```
  *
  * @example
@@ -78,11 +78,8 @@ export function indentDeclaration(context: TreeIndentContext): number {
 
 export function indentPredicateOrRule(context: TreeIndentContext): number {
   const clauseIndent = indentDeclarationStrategy(context, 1);
-  if (/^\s+[;.]/.exec(context.textAfter) !== null) {
-    return clauseIndent - 2;
-  }
-  if (/^\s+(==>)/.exec(context.textAfter) !== null) {
-    return clauseIndent - 4;
+  if (/^\s+(?:==>|[;.])/.exec(context.textAfter) !== null) {
+    return clauseIndent - context.unit;
   }
   return clauseIndent;
 }
