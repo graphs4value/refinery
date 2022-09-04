@@ -83,7 +83,7 @@ export default class UpdateService {
   }
 
   private idleUpdate(): void {
-    if (!this.webSocketClient.isOpen || !this.tracker.needsUpdate) {
+    if (!this.webSocketClient.opened || !this.tracker.needsUpdate) {
       return;
     }
     if (!this.tracker.lockedForUpdate) {

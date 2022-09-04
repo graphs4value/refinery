@@ -21,10 +21,15 @@ configurations {
 
 def installFrontend = tasks.named('installFrontend')
 
+def sourcesWithoutTypegen = fileTree('src') {
+	exclude '**/*.typegen.ts'
+}
+
 def assembleFrontend = tasks.named('assembleFrontend')
 assembleFrontend.configure {
+	dependsOn generateXStateTypes
 	inputs.dir 'public'
-	inputs.dir 'src'
+	inputs.files sourcesWithoutTypegen
 	inputs.file 'index.html'
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'vite.config.ts')
 	inputs.file rootProject.file('yarn.lock')
@@ -37,9 +42,21 @@ artifacts {
 	}
 }
 
+def generateXStateTypes = tasks.register('generateXStateTypes', RunYarn) {
+	dependsOn installFrontend
+	inputs.files sourcesWithoutTypegen
+	inputs.file 'package.json'
+	inputs.file rootProject.file('yarn.lock')
+	outputs.dir 'src'
+	script = 'run typegen'
+	description = 'Generate TypeScript typings for XState state machines.'
+}
+
 def typecheckFrontend = tasks.register('typecheckFrontend', RunYarn) {
 	dependsOn installFrontend
+	dependsOn generateXStateTypes
 	inputs.dir 'src'
+	inputs.dir 'types'
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'tsconfig.node.json')
 	inputs.file rootProject.file('yarn.lock')
 	outputs.dir "${buildDir}/typescript"
@@ -50,7 +67,9 @@ def typecheckFrontend = tasks.register('typecheckFrontend', RunYarn) {
 
 def lintFrontend = tasks.register('lintFrontend', RunYarn) {
 	dependsOn installFrontend
+	dependsOn generateXStateTypes
 	inputs.dir 'src'
+	inputs.dir 'types'
 	inputs.files('.eslintrc.cjs', 'prettier.config.cjs')
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'tsconfig.node.json')
 	inputs.file rootProject.file('yarn.lock')
@@ -66,7 +85,9 @@ def lintFrontend = tasks.register('lintFrontend', RunYarn) {
 
 def prettier = tasks.register('fixFrontend', RunYarn) {
 	dependsOn installFrontend
+	dependsOn generateXStateTypes
 	inputs.dir 'src'
+	inputs.dir 'types'
 	inputs.files('.eslintrc.cjs', 'prettier.config.cjs')
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'tsconfig.node.json')
 	inputs.file rootProject.file('yarn.lock')
@@ -82,8 +103,9 @@ tasks.named('check') {
 
 tasks.register('serveFrontend', RunYarn) {
 	dependsOn installFrontend
+	dependsOn generateXStateTypes
 	inputs.dir 'public'
-	inputs.dir 'src'
+	inputs.files sourcesWithoutTypegen
 	inputs.file 'index.html'
 	inputs.files('package.json', 'tsconfig.json', 'tsconfig.base.json', 'vite.config.ts')
 	inputs.file rootProject.file('yarn.lock')
@@ -95,6 +117,9 @@ tasks.register('serveFrontend', RunYarn) {
 
 tasks.named('clean') {
 	delete 'dev-dist'
+	delete fileTree('src') {
+		include '**/*.typegen.ts'
+	}
 }
 
 sonarqube.properties {

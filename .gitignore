@@ -17,6 +17,7 @@ bin/
 build/
 dev-dist/
 emf-gen/
+*.typegen.ts
 xtend-gen/
 *.xtendbin
 xtext-gen/

@@ -63,7 +63,6 @@ scope Family = 1, Person += 5..10.
 
 configure({
   enforceActions: 'always',
-  reactionRequiresObservable: true,
 });
 
 const rootStore = new RootStore(initialValue);

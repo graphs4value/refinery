@@ -1,5 +1,5 @@
 export default class CancelledError extends Error {
-  constructor() {
-    super('Operation cancelled');
+  constructor(message = 'Operation cancelled') {
+    super(message);
   }
 }

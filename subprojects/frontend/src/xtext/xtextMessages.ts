@@ -40,3 +40,11 @@ export const XtextWebPushMessage = z.object({
 });
 
 export type XtextWebPushMessage = z.infer<typeof XtextWebPushMessage>;
+
+export const XtextResponse = z.union([
+  XtextWebOkResponse,
+  XtextWebErrorResponse,
+  XtextWebPushMessage,
+]);
+
+export type XtextResponse = z.infer<typeof XtextResponse>;
