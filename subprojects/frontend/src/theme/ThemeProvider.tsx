@@ -67,6 +67,9 @@ declare module '@mui/material/styles' {
 }
 
 const typography: TypographyVariantsOptions = {
+  fontFamily:
+    '"InterVariable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+  fontWeightMedium: 600,
   fontWeightEditorNormal: 450,
   fontWeightEditorBold: 650,
   editor: {

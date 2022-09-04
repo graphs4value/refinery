@@ -73,7 +73,7 @@ export default defineConfig({
       files: [
         {
           match:
-            /(?:jetbrains-mono-latin-variable-wghtOnly-(?:italic|normal)|roboto-latin-(?:400|500)-normal).+\.woff2$/,
+            /(?:inter-latin-variable-wghtOnly-normal|jetbrains-mono-latin-variable-wghtOnly-(?:italic|normal)).+\.woff2$/,
           attributes: {
             type: 'font/woff2',
             as: 'font',
@@ -96,7 +96,7 @@ export default defineConfig({
       workbox: {
         globPatterns: [
           '**/*.{css,html,js}',
-          'roboto-latin-{300,400,500,700}-normal.*.woff2',
+          'inter-latin-variable-wghtOnly-normal.*.woff2',
           'jetbrains-mono-latin-variable-wghtOnly-{normal,italic}.*.woff2',
         ],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,

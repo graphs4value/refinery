@@ -1597,17 +1597,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/inter@npm:^4.5.12":
+  version: 4.5.12
+  resolution: "@fontsource/inter@npm:4.5.12"
+  checksum: 7637978d4355f52cf348bbe40a2e1bfa535c290057bef27c022343234b00c07b138c86a2b52260825c1ecc5cc9f59c68fd6ff08311111c70c04f82ace592920b
+  languageName: node
+  linkType: hard
+
 "@fontsource/jetbrains-mono@npm:^4.5.10":
   version: 4.5.10
   resolution: "@fontsource/jetbrains-mono@npm:4.5.10"
   checksum: 712be535b21708208f1f2e86b60467afd2699900bab04bb761456b62d3b52eea4e843aaf9016f8141017524e7988fbe640fb8af6259c7044fb8721b0f6976f9a
-  languageName: node
-  linkType: hard
-
-"@fontsource/roboto@npm:^4.5.8":
-  version: 4.5.8
-  resolution: "@fontsource/roboto@npm:4.5.8"
-  checksum: 460b6de2c9f7a172192c3f5bdd3aa11f78f0b6660dca9dc2b9d8207272b50c55b5a8f2da68e11e7fbaf44c7d3cf4191030eecce9def79fab75d4cc1de39754e2
   languageName: node
   linkType: hard
 
@@ -2009,8 +2009,8 @@ __metadata:
     "@codemirror/view": ^6.2.2
     "@emotion/react": ^11.10.4
     "@emotion/styled": ^11.10.4
+    "@fontsource/inter": ^4.5.12
     "@fontsource/jetbrains-mono": ^4.5.10
-    "@fontsource/roboto": ^4.5.8
     "@lezer/common": ^1.0.1
     "@lezer/generator": ^1.1.1
     "@lezer/highlight": ^1.0.0
