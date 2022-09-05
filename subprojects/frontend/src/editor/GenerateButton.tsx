@@ -7,10 +7,12 @@ import type EditorStore from './EditorStore';
 
 const GENERATE_LABEL = 'Generate';
 
-export default observer(function GenerateButton({
+const GenerateButton = observer(function GenerateButton({
   editorStore,
+  hideWarnings,
 }: {
   editorStore: EditorStore | undefined;
+  hideWarnings?: boolean | undefined;
 }): JSX.Element {
   if (editorStore === undefined) {
     return (
@@ -26,7 +28,7 @@ export default observer(function GenerateButton({
   if (errorCount > 0) {
     diagnostics.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
   }
-  if (warningCount > 0) {
+  if (!(hideWarnings ?? false) && warningCount > 0) {
     diagnostics.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
   }
   const summary = diagnostics.join(' and ');
@@ -55,3 +57,9 @@ export default observer(function GenerateButton({
     </Button>
   );
 });
+
+GenerateButton.defaultProps = {
+  hideWarnings: false,
+};
+
+export default GenerateButton;

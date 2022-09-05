@@ -2,6 +2,8 @@ import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 
@@ -32,12 +34,14 @@ function EditorLoading(): JSX.Element {
 
 export default observer(function EditorPane(): JSX.Element {
   const { editorStore } = useRootStore();
+  const { breakpoints } = useTheme();
+  const showGenerateButton = useMediaQuery(breakpoints.up('sm'));
 
   return (
     <Stack direction="column" flexGrow={1} flexShrink={1} overflow="auto">
       <Toolbar variant="dense">
         <EditorButtons editorStore={editorStore} />
-        <GenerateButton editorStore={editorStore} />
+        {showGenerateButton && <GenerateButton editorStore={editorStore} />}
       </Toolbar>
       <Box flexGrow={1} flexShrink={1} overflow="auto">
         {editorStore === undefined ? (

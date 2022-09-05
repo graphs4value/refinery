@@ -1,10 +1,15 @@
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { throttle } from 'lodash-es';
+import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useRootStore } from './RootStore';
 import ToggleDarkModeButton from './ToggleDarkModeButton';
+import GenerateButton from './editor/GenerateButton';
 
 function useWindowControlsOverlayVisible(): boolean {
   const [windowControlsOverlayVisible, setWindowControlsOverlayVisible] =
@@ -39,8 +44,11 @@ function useWindowControlsOverlayVisible(): boolean {
   return windowControlsOverlayVisible;
 }
 
-export default function TopBar(): JSX.Element {
+export default observer(function TopBar(): JSX.Element {
+  const { editorStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
+  const { breakpoints } = useTheme();
+  const showGenerateButton = useMediaQuery(breakpoints.down('sm'));
 
   return (
     <AppBar
@@ -74,8 +82,11 @@ export default function TopBar(): JSX.Element {
         <Typography variant="h6" component="h1" flexGrow={1}>
           Refinery
         </Typography>
+        {showGenerateButton && (
+          <GenerateButton editorStore={editorStore} hideWarnings />
+        )}
         <ToggleDarkModeButton />
       </Toolbar>
     </AppBar>
   );
-}
+});
