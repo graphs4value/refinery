@@ -45,8 +45,8 @@ statement {
 ReferenceDeclaration {
   (kw<"refers"> | kw<"contains">)?
   RelationName
+  ("[" Multiplicity? "]")?
   RelationName
-  ( "[" Multiplicity? "]" )?
   (kw<"opposite"> RelationName)?
   ";"?
 }
@@ -154,5 +154,3 @@ sep1<separator, content> { content (separator content)* }
 
   "{" "}" "(" ")" "[" "]" "." ".." "," ":" "<->" "~>"
 }
-
-@detectDelim
