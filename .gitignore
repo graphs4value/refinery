@@ -17,6 +17,7 @@ bin/
 build/
 dev-dist/
 emf-gen/
+node_modules/
 *.typegen.ts
 xtend-gen/
 *.xtendbin
