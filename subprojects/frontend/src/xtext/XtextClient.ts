@@ -47,6 +47,10 @@ export default class XtextClient {
     this.occurrencesService = new OccurrencesService(store, this.updateService);
   }
 
+  start(): void {
+    this.webSocketClient.start();
+  }
+
   private onReconnect(): void {
     this.updateService.onReconnect();
     this.occurrencesService.onReconnect();

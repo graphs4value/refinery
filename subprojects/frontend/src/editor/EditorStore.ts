@@ -67,6 +67,7 @@ export default class EditorStore {
       contentAssist: false,
       formatText: false,
     });
+    this.client.start();
   }
 
   get opened(): boolean {
@@ -75,6 +76,14 @@ export default class EditorStore {
 
   get opening(): boolean {
     return this.client.webSocketClient.opening;
+  }
+
+  get disconnectedByUser(): boolean {
+    return this.client.webSocketClient.disconnectedByUser;
+  }
+
+  get networkMissing(): boolean {
+    return this.client.webSocketClient.networkMissing;
   }
 
   get connectionErrors(): string[] {

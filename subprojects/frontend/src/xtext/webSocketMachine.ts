@@ -7,7 +7,6 @@ const ERROR_WAIT_TIMES = [200, 1000, 5000, 30_000];
 export interface WebSocketContext {
   webSocketURL: string | undefined;
   errors: string[];
-  retryCount: number;
 }
 
 export type WebSocketEvent =
@@ -17,7 +16,32 @@ export type WebSocketEvent =
   | { type: 'OPENED' }
   | { type: 'TAB_VISIBLE' }
   | { type: 'TAB_HIDDEN' }
+  | { type: 'PAGE_HIDE' }
+  | { type: 'PAGE_SHOW' }
+  | { type: 'PAGE_FREEZE' }
+  | { type: 'PAGE_RESUME' }
+  | { type: 'ONLINE' }
+  | { type: 'OFFLINE' }
   | { type: 'ERROR'; message: string };
+
+export function isWebSocketURLLocal(webSocketURL: string | undefined): boolean {
+  if (webSocketURL === undefined) {
+    return false;
+  }
+  let hostname: string;
+  try {
+    ({ hostname } = new URL(webSocketURL));
+  } catch {
+    return false;
+  }
+  // https://stackoverflow.com/a/57949518
+  return (
+    hostname === 'localhost' ||
+    hostname === '[::1]' ||
+    hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/) !==
+      null
+  );
+}
 
 export default createMachine(
   {
@@ -31,32 +55,65 @@ export default createMachine(
     context: {
       webSocketURL: undefined,
       errors: [],
-      retryCount: 0,
     },
     type: 'parallel',
     states: {
       connection: {
         initial: 'disconnected',
+        entry: 'clearErrors',
         states: {
           disconnected: {
             id: 'disconnected',
+            entry: ['clearErrors', 'notifyDisconnect'],
             on: {
               CONFIGURE: { actions: 'configure' },
             },
           },
           timedOut: {
             id: 'timedOut',
+            always: [
+              {
+                target: 'temporarilyOffline',
+                cond: 'needsNetwork',
+                in: '#offline',
+              },
+              { target: 'socketCreated', in: '#tabVisible' },
+            ],
             on: {
-              TAB_VISIBLE: 'socketCreated',
+              PAGE_HIDE: 'pageHidden',
+              PAGE_FREEZE: 'pageHidden',
             },
           },
           errorWait: {
             id: 'errorWait',
+            always: [
+              {
+                target: 'temporarilyOffline',
+                cond: 'needsNetwork',
+                in: '#offline',
+              },
+            ],
             after: {
-              ERROR_WAIT_TIME: [
-                { target: 'timedOut', in: '#tabHidden' },
-                { target: 'socketCreated' },
-              ],
+              ERROR_WAIT_TIME: 'timedOut',
+            },
+            on: {
+              PAGE_HIDE: 'pageHidden',
+              PAGE_FREEZE: 'pageHidden',
+            },
+          },
+          temporarilyOffline: {
+            entry: ['clearErrors', 'notifyDisconnect'],
+            always: [{ target: 'timedOut', in: '#online' }],
+            on: {
+              PAGE_HIDE: 'pageHidden',
+              PAGE_FREEZE: 'pageHidden',
+            },
+          },
+          pageHidden: {
+            entry: 'clearErrors',
+            on: {
+              PAGE_SHOW: 'timedOut',
+              PAGE_RESUME: 'timedOut',
             },
           },
           socketCreated: {
@@ -68,6 +125,7 @@ export default createMachine(
                 initial: 'opening',
                 states: {
                   opening: {
+                    always: [{ target: '#timedOut', in: '#tabHidden' }],
                     after: {
                       OPEN_TIMEOUT: {
                         actions: 'raiseTimeoutError',
@@ -76,7 +134,7 @@ export default createMachine(
                     on: {
                       OPENED: {
                         target: 'opened',
-                        actions: ['clearError', 'notifyReconnect'],
+                        actions: ['clearErrors', 'notifyReconnect'],
                       },
                     },
                   },
@@ -102,25 +160,15 @@ export default createMachine(
                 },
               },
               idle: {
-                initial: 'getTabState',
+                initial: 'active',
                 states: {
-                  getTabState: {
-                    always: [
-                      { target: 'inactive', in: '#tabHidden' },
-                      'active',
-                    ],
-                  },
                   active: {
-                    on: {
-                      TAB_HIDDEN: 'inactive',
-                    },
+                    always: [{ target: 'inactive', in: '#tabHidden' }],
                   },
                   inactive: {
+                    always: [{ target: 'active', in: '#tabVisible' }],
                     after: {
                       IDLE_TIMEOUT: '#timedOut',
-                    },
-                    on: {
-                      TAB_VISIBLE: 'active',
                     },
                   },
                 },
@@ -128,22 +176,22 @@ export default createMachine(
             },
             on: {
               CONNECT: undefined,
-              ERROR: {
-                target: '#errorWait',
-                actions: 'increaseRetryCount',
-              },
+              ERROR: { target: '#errorWait', actions: 'pushError' },
+              PAGE_HIDE: 'pageHidden',
+              PAGE_FREEZE: 'pageHidden',
             },
           },
         },
         on: {
-          CONNECT: { target: '.socketCreated', cond: 'hasWebSocketURL' },
-          DISCONNECT: { target: '.disconnected', actions: 'clearError' },
+          CONNECT: { target: '.timedOut', cond: 'hasWebSocketURL' },
+          DISCONNECT: '.disconnected',
         },
       },
       tab: {
         initial: 'visibleOrUnknown',
         states: {
           visibleOrUnknown: {
+            id: 'tabVisible',
             on: {
               TAB_HIDDEN: 'hidden',
             },
@@ -156,12 +204,19 @@ export default createMachine(
           },
         },
       },
-      error: {
-        initial: 'init',
+      network: {
+        initial: 'onlineOrUnknown',
         states: {
-          init: {
+          onlineOrUnknown: {
+            id: 'online',
             on: {
-              ERROR: { actions: 'pushError' },
+              OFFLINE: 'offline',
+            },
+          },
+          offline: {
+            id: 'offline',
+            on: {
+              ONLINE: 'onlineOrUnknown',
             },
           },
         },
@@ -171,12 +226,13 @@ export default createMachine(
   {
     guards: {
       hasWebSocketURL: ({ webSocketURL }) => webSocketURL !== undefined,
+      needsNetwork: ({ webSocketURL }) => !isWebSocketURLLocal(webSocketURL),
     },
     delays: {
       IDLE_TIMEOUT: 300_000,
-      OPEN_TIMEOUT: 5000,
+      OPEN_TIMEOUT: 10_000,
       PING_PERIOD: 10_000,
-      ERROR_WAIT_TIME: ({ retryCount }) => {
+      ERROR_WAIT_TIME: ({ errors: { length: retryCount } }) => {
         const { length } = ERROR_WAIT_TIMES;
         const index = retryCount < length ? retryCount : length - 1;
         return ERROR_WAIT_TIMES[index];
@@ -191,14 +247,9 @@ export default createMachine(
         ...context,
         errors: [...context.errors, message],
       })),
-      increaseRetryCount: assign((context) => ({
-        ...context,
-        retryCount: context.retryCount + 1,
-      })),
-      clearError: assign((context) => ({
+      clearErrors: assign((context) => ({
         ...context,
         errors: [],
-        retryCount: 0,
       })),
       // Workaround from https://github.com/statelyai/xstate/issues/1414#issuecomment-699972485
       raiseTimeoutError: raise({

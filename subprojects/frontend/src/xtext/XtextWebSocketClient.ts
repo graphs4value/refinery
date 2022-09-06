@@ -6,7 +6,7 @@ import CancelledError from '../utils/CancelledError';
 import PendingTask from '../utils/PendingTask';
 import getLogger from '../utils/getLogger';
 
-import webSocketMachine from './webSocketMachine';
+import webSocketMachine, { isWebSocketURLLocal } from './webSocketMachine';
 import {
   type XtextWebPushService,
   XtextResponse,
@@ -16,7 +16,9 @@ import { PongResult } from './xtextServiceResults';
 
 const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
-const REQUEST_TIMEOUT = 1000;
+// Use a large enough timeout so that a request can complete successfully
+// even if the browser has throttled the background tab.
+const REQUEST_TIMEOUT = 5000;
 
 const log = getLogger('xtext.XtextWebSocketClient');
 
@@ -52,6 +54,7 @@ export default class XtextWebSocketClient {
           openWebSocket: ({ webSocketURL }) => this.openWebSocket(webSocketURL),
           closeWebSocket: () => this.closeWebSocket(),
           notifyReconnect: () => this.onReconnect(),
+          notifyDisconnect: () => this.onDisconnect(),
           cancelPendingRequests: () => this.cancelPendingRequests(),
         },
         services: {
@@ -141,20 +144,6 @@ export default class XtextWebSocketClient {
     private readonly onDisconnect: DisconnectHandler,
     private readonly onPush: PushHandler,
   ) {
-    this.interpreter
-      .onTransition((state, event) => {
-        log.trace('WebSocke state transition', state.value, 'on event', event);
-        this.stateAtom.reportChanged();
-      })
-      .start();
-
-    this.updateVisibility();
-    document.addEventListener('visibilitychange', () =>
-      this.updateVisibility(),
-    );
-
-    this.interpreter.send('CONNECT');
-
     makeAutoObservable<
       XtextWebSocketClient,
       | 'stateAtom'
@@ -177,6 +166,40 @@ export default class XtextWebSocketClient {
     });
   }
 
+  start(): void {
+    this.interpreter
+      .onTransition((state, event) => {
+        log.trace('WebSocke state transition', state.value, 'on event', event);
+        this.stateAtom.reportChanged();
+      })
+      .start();
+
+    this.interpreter.send(window.navigator.onLine ? 'ONLINE' : 'OFFLINE');
+    window.addEventListener('offline', () => this.interpreter.send('OFFLINE'));
+    window.addEventListener('online', () => this.interpreter.send('ONLINE'));
+    this.updateVisibility();
+    document.addEventListener('visibilitychange', () =>
+      this.updateVisibility(),
+    );
+    window.addEventListener('pagehide', () =>
+      this.interpreter.send('PAGE_HIDE'),
+    );
+    window.addEventListener('pageshow', () => {
+      this.updateVisibility();
+      this.interpreter.send('PAGE_SHOW');
+    });
+    // https://developer.chrome.com/blog/page-lifecycle-api/#new-features-added-in-chrome-68
+    if ('wasDiscarded' in document) {
+      document.addEventListener('freeze', () =>
+        this.interpreter.send('PAGE_FREEZE'),
+      );
+      document.addEventListener('resume', () =>
+        this.interpreter.send('PAGE_RESUME'),
+      );
+    }
+    this.interpreter.send('CONNECT');
+  }
+
   get state() {
     this.stateAtom.reportObserved();
     return this.interpreter.state;
@@ -188,6 +211,19 @@ export default class XtextWebSocketClient {
 
   get opened(): boolean {
     return this.state.matches('connection.socketCreated.open.opened');
+  }
+
+  get disconnectedByUser(): boolean {
+    return this.state.matches('connection.disconnected');
+  }
+
+  get networkMissing(): boolean {
+    return (
+      this.state.matches('connection.temporarilyOffline') ||
+      (this.disconnectedByUser &&
+        this.state.matches('network.offline') &&
+        !isWebSocketURLLocal(this.state.context.webSocketURL))
+    );
   }
 
   get errors(): string[] {
@@ -217,9 +253,13 @@ export default class XtextWebSocketClient {
     const id = nanoid();
 
     const promise = new Promise((resolve, reject) => {
-      const task = new PendingTask(resolve, reject, REQUEST_TIMEOUT, () =>
-        this.removeTask(id),
-      );
+      const task = new PendingTask(resolve, reject, REQUEST_TIMEOUT, () => {
+        this.interpreter.send({
+          type: 'ERROR',
+          message: 'Connection timed out',
+        });
+        this.removeTask(id);
+      });
       this.pendingRequests.set(id, task);
     });
 
@@ -272,7 +312,6 @@ export default class XtextWebSocketClient {
   }
 
   private cancelPendingRequests(): void {
-    this.onDisconnect();
     this.pendingRequests.forEach((task) =>
       task.reject(new CancelledError('Closing connection')),
     );
