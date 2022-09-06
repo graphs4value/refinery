@@ -1,5 +1,6 @@
 import { Transaction } from '@codemirror/state';
 import { debounce } from 'lodash-es';
+import ms from 'ms';
 
 import type EditorStore from '../editor/EditorStore';
 import {
@@ -11,7 +12,7 @@ import getLogger from '../utils/getLogger';
 import type UpdateService from './UpdateService';
 import type { TextRegion } from './xtextServiceResults';
 
-const FIND_OCCURRENCES_TIMEOUT_MS = 1000;
+const FIND_OCCURRENCES_TIMEOUT = ms('1s');
 
 const log = getLogger('xtext.OccurrencesService');
 
@@ -33,7 +34,7 @@ export default class OccurrencesService {
 
   private readonly findOccurrencesLater = debounce(
     () => this.findOccurrences(),
-    FIND_OCCURRENCES_TIMEOUT_MS,
+    FIND_OCCURRENCES_TIMEOUT,
   );
 
   constructor(

@@ -1,4 +1,5 @@
 import { createAtom, makeAutoObservable, observable } from 'mobx';
+import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { interpret } from 'xstate';
 
@@ -18,7 +19,7 @@ const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
 
 // Use a large enough timeout so that a request can complete successfully
 // even if the browser has throttled the background tab.
-const REQUEST_TIMEOUT = 5000;
+const REQUEST_TIMEOUT = ms('5s');
 
 const log = getLogger('xtext.XtextWebSocketClient');
 

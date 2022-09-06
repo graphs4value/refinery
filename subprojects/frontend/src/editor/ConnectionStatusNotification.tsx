@@ -1,43 +1,11 @@
 import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
-import {
-  useSnackbar,
-  type SnackbarKey,
-  type SnackbarMessage,
-  type OptionsObject,
-} from 'notistack';
 import React, { useEffect } from 'react';
 
 import { ContrastThemeProvider } from '../theme/ThemeProvider';
+import useDelayedSnackbar from '../utils/useDelayedSnackbar';
 
 import type EditorStore from './EditorStore';
-
-const DEBOUNCE_TIMEOUT = 350;
-
-function enqueueLater(
-  enqueueSnackbar: (
-    message: SnackbarMessage,
-    options: OptionsObject | undefined,
-  ) => SnackbarKey,
-  closeSnackbar: (key: SnackbarKey) => void,
-  message: SnackbarMessage,
-  options?: OptionsObject | undefined,
-  debounceTimeout = DEBOUNCE_TIMEOUT,
-): () => void {
-  let key: SnackbarKey | undefined;
-  let timeout: number | undefined = setTimeout(() => {
-    timeout = undefined;
-    key = enqueueSnackbar(message, options);
-  }, debounceTimeout);
-  return () => {
-    if (timeout !== undefined) {
-      clearTimeout(timeout);
-    }
-    if (key !== undefined) {
-      closeSnackbar(key);
-    }
-  };
-}
 
 export default observer(function ConnectionStatusNotification({
   editorStore,
@@ -51,13 +19,11 @@ export default observer(function ConnectionStatusNotification({
     disconnectedByUser,
     networkMissing,
   } = editorStore;
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const enqueueLater = useDelayedSnackbar(350);
 
   useEffect(() => {
     if (opening) {
       return enqueueLater(
-        enqueueSnackbar,
-        closeSnackbar,
         'Connecting to Refinery',
         {
           persist: true,
@@ -73,8 +39,6 @@ export default observer(function ConnectionStatusNotification({
 
     if (connectionErrors.length >= 1 && !opening) {
       return enqueueLater(
-        enqueueSnackbar,
-        closeSnackbar,
         <div>
           Connection error:{' '}
           <b>{connectionErrors[connectionErrors.length - 1]}</b>
@@ -110,8 +74,6 @@ export default observer(function ConnectionStatusNotification({
     if (networkMissing) {
       if (disconnectedByUser) {
         return enqueueLater(
-          enqueueSnackbar,
-          closeSnackbar,
           <div>
             <b>No network connection:</b> Some editing features might be
             degraded
@@ -130,8 +92,6 @@ export default observer(function ConnectionStatusNotification({
       }
 
       return enqueueLater(
-        enqueueSnackbar,
-        closeSnackbar,
         <div>
           <b>No network connection:</b> Refinery will try to reconnect when the
           connection is restored
@@ -154,8 +114,6 @@ export default observer(function ConnectionStatusNotification({
 
     if (disconnectedByUser) {
       return enqueueLater(
-        enqueueSnackbar,
-        closeSnackbar,
         <div>
           <b>Not connected to Refinery:</b> Some editing features might be
           degraded
@@ -181,8 +139,7 @@ export default observer(function ConnectionStatusNotification({
     connectionErrors,
     disconnectedByUser,
     networkMissing,
-    closeSnackbar,
-    enqueueSnackbar,
+    enqueueLater,
   ]);
 
   return null;

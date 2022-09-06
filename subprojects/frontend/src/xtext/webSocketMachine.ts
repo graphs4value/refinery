@@ -1,8 +1,9 @@
+import ms from 'ms';
 import { actions, assign, createMachine, RaiseAction } from 'xstate';
 
 const { raise } = actions;
 
-const ERROR_WAIT_TIMES = [200, 1000, 5000, 30_000];
+const ERROR_WAIT_TIMES = ['200', '1s', '5s', '30s'].map(ms);
 
 export interface WebSocketContext {
   webSocketURL: string | undefined;
@@ -229,9 +230,9 @@ export default createMachine(
       needsNetwork: ({ webSocketURL }) => !isWebSocketURLLocal(webSocketURL),
     },
     delays: {
-      IDLE_TIMEOUT: 300_000,
-      OPEN_TIMEOUT: 10_000,
-      PING_PERIOD: 10_000,
+      IDLE_TIMEOUT: ms('5m'),
+      OPEN_TIMEOUT: ms('10s'),
+      PING_PERIOD: ms('10s'),
       ERROR_WAIT_TIME: ({ errors: { length: retryCount } }) => {
         const { length } = ERROR_WAIT_TIMES;
         const index = retryCount < length ? retryCount : length - 1;

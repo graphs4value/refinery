@@ -16,6 +16,7 @@ import { type Command, EditorView } from '@codemirror/view';
 import { makeAutoObservable, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 
+import type PWAStore from '../PWAStore';
 import getLogger from '../utils/getLogger';
 import XtextClient from '../xtext/XtextClient';
 
@@ -51,10 +52,10 @@ export default class EditorStore {
 
   infoCount = 0;
 
-  constructor(initialValue: string) {
+  constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
     this.state = createEditorState(initialValue, this);
-    this.client = new XtextClient(this);
+    this.client = new XtextClient(this, pwaStore);
     this.searchPanel = new SearchPanelStore(this);
     this.lintPanel = new LintPanelStore(this);
     makeAutoObservable<EditorStore, 'client'>(this, {

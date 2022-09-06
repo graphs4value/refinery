@@ -1,13 +1,10 @@
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import Grow from '@mui/material/Grow';
 import { configure } from 'mobx';
-import { SnackbarProvider } from 'notistack';
 import React, { Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import Loading from './Loading';
-import RegisterServiceWorker from './RegisterServiceWorker';
 import RootStore, { RootStoreProvider } from './RootStore';
 import WindowControlsOverlayColor from './WindowControlsOverlayColor';
 import ThemeProvider from './theme/ThemeProvider';
@@ -78,15 +75,11 @@ const app = (
       <ThemeProvider>
         <CssBaseline enableColorScheme />
         <WindowControlsOverlayColor />
-        {/* @ts-expect-error -- notistack has problems with `exactOptionalPropertyTypes` */}
-        <SnackbarProvider TransitionComponent={Grow}>
-          <RegisterServiceWorker />
-          <Box height="100vh" overflow="auto">
-            <Suspense fallback={<Loading />}>
-              <App />
-            </Suspense>
-          </Box>
-        </SnackbarProvider>
+        <Box height="100vh" overflow="auto">
+          <Suspense fallback={<Loading />}>
+            <App />
+          </Suspense>
+        </Box>
       </ThemeProvider>
     </RootStoreProvider>
   </React.StrictMode>

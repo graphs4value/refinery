@@ -2,6 +2,7 @@ import { getLogger } from 'loglevel';
 import { makeAutoObservable, runInAction } from 'mobx';
 import React, { createContext, useContext } from 'react';
 
+import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
 import ThemeStore from './theme/ThemeStore';
 
@@ -10,17 +11,21 @@ const log = getLogger('RootStore');
 export default class RootStore {
   editorStore: EditorStore | undefined;
 
+  readonly pwaStore: PWAStore;
+
   readonly themeStore: ThemeStore;
 
   constructor(initialValue: string) {
+    this.pwaStore = new PWAStore();
     this.themeStore = new ThemeStore();
     makeAutoObservable(this, {
+      pwaStore: false,
       themeStore: false,
     });
     import('./editor/EditorStore')
       .then(({ default: EditorStore }) => {
         runInAction(() => {
-          this.editorStore = new EditorStore(initialValue);
+          this.editorStore = new EditorStore(initialValue, this.pwaStore);
         });
       })
       .catch((error) => {

@@ -4,6 +4,7 @@ import type {
 } from '@codemirror/autocomplete';
 import type { Transaction } from '@codemirror/state';
 
+import type PWAStore from '../PWAStore';
 import type EditorStore from '../editor/EditorStore';
 import getLogger from '../utils/getLogger';
 
@@ -30,7 +31,7 @@ export default class XtextClient {
 
   private readonly occurrencesService: OccurrencesService;
 
-  constructor(store: EditorStore) {
+  constructor(store: EditorStore, private readonly pwaStore: PWAStore) {
     this.webSocketClient = new XtextWebSocketClient(
       () => this.onReconnect(),
       () => this.onDisconnect(),
@@ -54,6 +55,7 @@ export default class XtextClient {
   private onReconnect(): void {
     this.updateService.onReconnect();
     this.occurrencesService.onReconnect();
+    this.pwaStore.checkForUpdates();
   }
 
   private onDisconnect(): void {
