@@ -1335,9 +1335,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/autocomplete@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "@codemirror/autocomplete@npm:6.1.0"
+"@codemirror/autocomplete@npm:^6.1.1":
+  version: 6.1.1
+  resolution: "@codemirror/autocomplete@npm:6.1.1"
   dependencies:
     "@codemirror/language": ^6.0.0
     "@codemirror/state": ^6.0.0
@@ -1348,7 +1348,7 @@ __metadata:
     "@codemirror/state": ^6.0.0
     "@codemirror/view": ^6.0.0
     "@lezer/common": ^1.0.0
-  checksum: f29b521935c46d233f35afacb968b789a22984032999e905c74f4dfc6225125c787538725f7a7b5be194253cbb79ea0d76c0b0c7163489d31cdbba33156ab540
+  checksum: d5dc9f0394d52ed891845f077e3ab5f0b337b1dd6e9735d18dddaafef634ceb4fa0f272b7bcf824a720666af0bc721a0c7b5a3c7cefcd18f1235753f27d4b86c
   languageName: node
   linkType: hard
 
@@ -1407,14 +1407,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/view@npm:^6.0.0, @codemirror/view@npm:^6.2.2":
-  version: 6.2.2
-  resolution: "@codemirror/view@npm:6.2.2"
+"@codemirror/view@npm:^6.0.0, @codemirror/view@npm:^6.2.3":
+  version: 6.2.3
+  resolution: "@codemirror/view@npm:6.2.3"
   dependencies:
     "@codemirror/state": ^6.0.0
     style-mod: ^4.0.0
     w3c-keyname: ^2.2.4
-  checksum: 6983c51362367d3885961fa233d302e75dfb103cd83ec78e6a044c2420e61466b5e94cfb73a9e840b04765577e8bbb269eb1ad45fa21abd28efda4ae780791db
+  checksum: 93d6f159c49ffd9276e9b6ba28cef2c41934be7eb68aa49acf1971dede97ee2684bde6daeb7494da8e15f2ef937933c3fa076253127b230c6996db0fe7a79ef2
   languageName: node
   linkType: hard
 
@@ -2000,13 +2000,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@refinery/frontend@workspace:subprojects/frontend"
   dependencies:
-    "@codemirror/autocomplete": ^6.1.0
+    "@codemirror/autocomplete": ^6.1.1
     "@codemirror/commands": ^6.1.0
     "@codemirror/language": ^6.2.1
     "@codemirror/lint": ^6.0.0
     "@codemirror/search": ^6.2.0
     "@codemirror/state": ^6.1.1
-    "@codemirror/view": ^6.2.2
+    "@codemirror/view": ^6.2.3
     "@emotion/react": ^11.10.4
     "@emotion/styled": ^11.10.4
     "@fontsource/inter": ^4.5.12

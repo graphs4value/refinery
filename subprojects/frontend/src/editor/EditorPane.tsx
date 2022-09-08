@@ -43,7 +43,7 @@ export default observer(function EditorPane(): JSX.Element {
         <EditorButtons editorStore={editorStore} />
         {showGenerateButton && <GenerateButton editorStore={editorStore} />}
       </Toolbar>
-      <Box flexGrow={1} flexShrink={1} overflow="auto">
+      <Box display="flex" flexGrow={1} flexShrink={1} overflow="auto">
         {editorStore === undefined ? (
           <EditorLoading />
         ) : (

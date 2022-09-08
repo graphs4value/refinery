@@ -31,12 +31,7 @@ export default styled('div', {
       color: theme.palette.text.secondary,
     },
     '.cm-gutters': {
-      background: `linear-gradient(
-        to right,
-        ${theme.palette.background.default} 0%,
-        ${theme.palette.background.default} calc(100% - 12px),
-        transparent 100%
-      )`,
+      background: theme.palette.background.default,
       border: 'none',
     },
     '.cm-content': {
@@ -170,7 +165,9 @@ export default styled('div', {
     '.cm-panels-top': {
       color: theme.palette.text.primary,
       borderBottom: `1px solid ${theme.palette.outer.border}`,
-      marginBottom: theme.spacing(1),
+    },
+    '.cm-panels-top + div + .cm-scroller': {
+      paddingTop: theme.spacing(0.5),
     },
     '.cm-panel': {
       color: theme.palette.text.primary,
