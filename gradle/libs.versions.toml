@@ -2,15 +2,15 @@
 jetty = "11.0.11"
 jmh = "1.35"
 junit = "5.9.0"
-mockito = "4.7.0"
+mockito = "4.8.0"
 mwe2 = "2.13.0"
 slf4j = "2.0.0"
-xtext = "2.28.0.M3"
+xtext = "2.28.0"
 
 [libraries]
-ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.27.0" }
-ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.16.0" }
-ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.30.0" }
+ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.28.0" }
+ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.17.0" }
+ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.31.0" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "gradle.plugin.com.github.johnrengelman", name = "shadow", version = "7.1.0" }
 gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "3.3" }
