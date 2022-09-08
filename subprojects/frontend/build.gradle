@@ -123,7 +123,7 @@ tasks.named('clean') {
 }
 
 sonarqube.properties {
-	properties['sonar.sources'] += ['src']
+	properties['sonar.sources'] = 'src'
 	property 'sonar.nodejs.executable', "${frontend.nodeInstallDirectory.get()}/bin/node"
 	property 'sonar.eslint.reportPaths', "${buildDir}/eslint.json"
 }
