@@ -20,6 +20,7 @@ import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.PredicateDefinition;
+import tools.refinery.language.model.problem.PredicateKind;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
 
@@ -99,10 +100,12 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (eObject instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			classesBuilder.add(ABSTRACT_CLASS);
 		}
-		if (eObject instanceof ReferenceDeclaration referenceDeclaration && referenceDeclaration.isContainment()) {
+		if (eObject instanceof ReferenceDeclaration referenceDeclaration
+				&& ProblemUtil.isContainmentReference(referenceDeclaration)) {
 			classesBuilder.add(CONTAINMENT_CLASS);
 		}
-		if (eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError()) {
+		if (eObject instanceof PredicateDefinition predicateDefinition
+				&& predicateDefinition.getKind() == PredicateKind.ERROR) {
 			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {

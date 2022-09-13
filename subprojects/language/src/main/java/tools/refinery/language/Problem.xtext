@@ -26,15 +26,23 @@ EnumDeclaration:
 EnumLiteral returns Node:
 	name=Identifier;
 
+enum ReferenceKind:
+	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
+
 ReferenceDeclaration:
-	(containment?="contains" | "refers")?
-	referenceType=[Relation|QualifiedName]
+	(
+		kind=ReferenceKind referenceType=[Relation|QualifiedName] |
+		referenceType=[Relation|NonRelationKindQualifiedName]
+	)
 	("[" multiplicity=Multiplicity "]")?
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
 
+enum PredicateKind:
+	ERROR="error" | CONTAINED="contained" | CONTAINMENT="containment";
+
 PredicateDefinition:
-	(error?="error" "pred"? | "pred")
+	(kind=PredicateKind "pred"? | "pred")
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
@@ -150,7 +158,7 @@ ScopeDeclaration:
 	"scope" typeScopes+=TypeScope ("," typeScopes+=TypeScope)* ".";
 
 TypeScope:
-	targetType=[ClassDeclaration|QualifiedName]
+	targetType=[Relation|QualifiedName]
 	(increment?="+=" | "=")
 	multiplicity=DefiniteMultiplicity;
 
@@ -175,12 +183,19 @@ IndividualDeclaration:
 UpperBound returns ecore::EInt:
 	INT | "*";
 
+NonRelationKindQualifiedName hidden():
+	NonRelationKindIdentifier ("::" Identifier)*;
+
 QualifiedName hidden():
 	Identifier ("::" Identifier)*;
 
+NonRelationKindIdentifier:
+	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" |
+	"pred" | "indiv" | "problem" | "new" | "delete" | "rule" | "may" | "must" | "current" |
+	"count" | "default" | "scope" | "contained" | "containment";
+
 Identifier:
-	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" | "pred" |
-	"indiv" | "problem" | "new" | "delete" | "rule" | "may" | "must" | "current" | "count";
+	NonRelationKindIdentifier | "refers" | "contains" | "container";
 
 Integer returns ecore::EInt hidden():
 	"-"? INT;

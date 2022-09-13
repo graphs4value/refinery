@@ -27,6 +27,10 @@ public final class ProblemUtil {
 
 	public static final String NODE_CLASS_NAME = "node";
 
+	public static final String DOMAIN_CLASS_NAME = "domain";
+
+	public static final String DATA_CLASS_NAME = "data";
+
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
@@ -80,15 +84,15 @@ public final class ProblemUtil {
 		return false;
 	}
 
-	public static Optional<ClassDeclaration> getNodeClassDeclaration(EObject context) {
+	public static Optional<ClassDeclaration> getBuiltinClassDeclaration(EObject context, String name) {
 		return getBuiltInLibrary(context).flatMap(problem -> problem.getStatements().stream()
 				.filter(ClassDeclaration.class::isInstance).map(ClassDeclaration.class::cast)
-				.filter(declaration -> NODE_CLASS_NAME.equals(declaration.getName())).findFirst());
+				.filter(declaration -> name.equals(declaration.getName())).findFirst());
 	}
 
 	public static Collection<ClassDeclaration> getSuperclassesAndSelf(ClassDeclaration classDeclaration) {
 		Set<ClassDeclaration> found = new HashSet<>();
-		getNodeClassDeclaration(classDeclaration).ifPresent(found::add);
+		getBuiltinClassDeclaration(classDeclaration, NODE_CLASS_NAME).ifPresent(found::add);
 		Deque<ClassDeclaration> queue = new ArrayDeque<>();
 		queue.addLast(classDeclaration);
 		while (!queue.isEmpty()) {
@@ -102,6 +106,11 @@ public final class ProblemUtil {
 				}
 			}
 		}
+		getBuiltinClassDeclaration(classDeclaration, DATA_CLASS_NAME).ifPresent((dataClassDelcaration) -> {
+			if (!found.contains(dataClassDelcaration)) {
+				getBuiltinClassDeclaration(classDeclaration, DOMAIN_CLASS_NAME).ifPresent(found::add);
+			}
+		});
 		return found;
 	}
 
@@ -111,6 +120,28 @@ public final class ProblemUtil {
 			referenceDeclarations.addAll(superclass.getReferenceDeclarations());
 		}
 		return referenceDeclarations;
+	}
+
+	public static boolean isDataClass(Relation relation) {
+		if (relation instanceof ClassDeclaration classDeclaration) {
+			var supertypes = getSuperclassesAndSelf(classDeclaration);
+			return getBuiltinClassDeclaration(classDeclaration, DATA_CLASS_NAME).map(supertypes::contains)
+					.orElse(false);
+		}
+		return false;
+	}
+
+	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
+		switch (referenceDeclaration.getKind()) {
+		case REFERENCE, CONTAINER:
+			return false;
+		case CONTAINMENT:
+			return true;
+		case DEFAULT:
+			return isDataClass(referenceDeclaration.getReferenceType());
+		default:
+			throw new IllegalArgumentException("Unknown reference kind " + referenceDeclaration.getKind());
+		}
 	}
 
 	private static URI getLibraryUri(String libraryName) {

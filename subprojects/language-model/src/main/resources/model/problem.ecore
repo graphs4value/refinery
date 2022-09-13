@@ -20,15 +20,15 @@
   <eClassifiers xsi:type="ecore:EClass" name="ReferenceDeclaration" eSuperTypes="#//Relation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="referenceType" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="opposite" eType="#//ReferenceDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="containment" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ReferenceKind"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PredicateDefinition" eSuperTypes="#//Relation #//ParametricDefinition">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="error" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//PredicateKind"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>
@@ -78,7 +78,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true" interface="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeScope">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="targetType" eType="#//ClassDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetType" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="increment" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
         containment="true"/>
@@ -190,5 +190,17 @@
     <eLiterals name="GREATER" value="2"/>
     <eLiterals name="GREATER_EQ" value="3"/>
     <eLiterals name="EQ" value="4"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
+    <eLiterals name="DEFAULT"/>
+    <eLiterals name="REFERENCE" value="1"/>
+    <eLiterals name="CONTAINMENT" value="2"/>
+    <eLiterals name="CONTAINER" value="3"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="PredicateKind">
+    <eLiterals name="DEFAULT"/>
+    <eLiterals name="ERROR" value="1"/>
+    <eLiterals name="CONTAINED" value="2"/>
+    <eLiterals name="CONTAINMENT" value="3"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -70,8 +70,8 @@ const typography: TypographyVariantsOptions = {
   fontFamily:
     '"InterVariable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   fontWeightMedium: 600,
-  fontWeightEditorNormal: 450,
-  fontWeightEditorBold: 650,
+  fontWeightEditorNormal: 400,
+  fontWeightEditorBold: 700,
   editor: {
     fontFamily:
       '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
@@ -173,7 +173,7 @@ const lightTheme = createResponsiveTheme({
     divider: alpha('#19202b', 0.16),
     outer: {
       background: '#f5f5f5',
-      border: '#d6d7d9',
+      border: '#c8c8c8',
     },
     highlight: {
       number: '#0084bc',
@@ -200,8 +200,8 @@ const lightTheme = createResponsiveTheme({
 const darkTheme = createResponsiveTheme({
   typography: {
     ...typography,
-    fontWeightEditorNormal: 400,
-    fontWeightEditorBold: 600,
+    fontWeightEditorNormal: 350,
+    fontWeightEditorBold: 650,
   },
   components: {
     ...components,

@@ -18,7 +18,10 @@ statement {
     (EnumBody { "{" sep<",", IndividualNodeName> "}" } | ".")
   } |
   PredicateDefinition {
-    (ckw<"error"> ckw<"pred">? | ckw<"pred">)
+    (
+      (ckw<"error"> | ckw<"contained"> | ckw<"containment">) ckw<"pred">? |
+      ckw<"pred">
+    )
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
   } |
@@ -28,23 +31,29 @@ statement {
     RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
   } |
   Assertion {
-    kw<"default">? (NotOp | UnknownOp)? RelationName
+    ckw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument> (":" LogicValue)? "."
   } |
   NodeValueAssertion {
-    IndividualNodeName ":" Constant "."
+    QualifiedName ":" Constant "."
   } |
   IndividualDeclaration {
     ckw<"indiv"> sep<",", IndividualNodeName> "."
   } |
   ScopeDeclaration {
-    kw<"scope"> sep<",", ScopeElement> "."
+    ckw<"scope"> sep<",", ScopeElement> "."
   }
 }
 
 ReferenceDeclaration {
-  (kw<"refers"> | kw<"contains">)?
-  RelationName
+  (
+    ExplicitContainmentReference[@dynamicPrecedence=1] {
+      (ckw<"refers"> | ckw<"contains"> | ckw<"container">) RelationName ~containment
+    } |
+    ImplicitContainmentReference {
+      RelationName ~containment
+    }
+  )
   ("[" Multiplicity? "]")?
   RelationName
   (kw<"opposite"> RelationName)?

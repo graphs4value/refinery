@@ -19,3 +19,22 @@ class real extends data.
 class int extends data.
 
 class string extends data.
+
+pred contained(node node).
+
+pred contains(node container, node contained).
+
+pred root(node node).
+
+% error missingContainer(contained node) <->
+%     !contains(node, _), !root(node).
+%
+% error tooManyContainers(contained node) <->
+%     count contains(_, node) > 1
+% ;
+%     contains(_, node), root(node)
+% ;
+% 	  contains(_, node), !contained(node).
+%
+% error containmentCycle(node node) <->
+%     contains+(node, node).
