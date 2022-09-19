@@ -5,10 +5,16 @@ charset = utf-8
 end_of_line = lf
 trim_trailing_whitespace = true
 insert_final_newline = true
+max_line_length = 80
+ij_wrap_on_typing = true
 
 [*.{gradle,java,mwe2,xtend,xtext}]
 indent_style = tab
 indent_size = 4
+# Mimic Eclipse continuation indent style in IntelliJ
+max_line_length = 120
+ij_continuation_indent_size = 8
+ij_any_indent_case_from_switch = false
 
 [*.{grammar,html,js,json,jsx,scss,ts,tsx,yml}]
 indent_style = space

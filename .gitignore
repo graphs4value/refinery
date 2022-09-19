@@ -1,5 +1,6 @@
 *._trace
 .classpath
+.idea/
 .gradle/
 .launch
 .log/
