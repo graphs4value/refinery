@@ -12,7 +12,8 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import tools.refinery.language.ProblemUtil;
+import com.google.inject.Inject;
+
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.Consequent;
 import tools.refinery.language.model.problem.ExistentialQuantifier;
@@ -23,15 +24,18 @@ import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.model.problem.Variable;
 import tools.refinery.language.model.problem.VariableOrNodeArgument;
+import tools.refinery.language.utils.ProblemDesugarer;
 
 /**
  * This class contains custom scoping description.
- * 
+ *
  * See
  * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
  * on how and when to use it.
  */
 public class ProblemScopeProvider extends AbstractProblemScopeProvider {
+	@Inject
+	private ProblemDesugarer desugarer;
 
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
@@ -106,7 +110,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 			return delegateScope;
 		}
 		var classDeclaration = (ClassDeclaration) relation;
-		var referenceDeclarations = ProblemUtil.getAllReferenceDeclarations(classDeclaration);
+		var referenceDeclarations = desugarer.getAllReferenceDeclarations(classDeclaration);
 		return Scopes.scopeFor(referenceDeclarations, delegateScope);
 	}
 }

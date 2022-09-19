@@ -140,6 +140,7 @@
     <genClasses ecoreClass="problem.ecore#//AssertionArgument"/>
     <genClasses ecoreClass="problem.ecore#//ConstantAssertionArgument">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ConstantAssertionArgument/constant"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ConstantAssertionArgument/node"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//NodeValueAssertion">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//NodeValueAssertion/node"/>

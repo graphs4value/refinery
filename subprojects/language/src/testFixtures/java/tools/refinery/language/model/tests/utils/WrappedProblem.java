@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import tools.refinery.language.ProblemUtil;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.EnumDeclaration;
@@ -18,6 +17,8 @@ import tools.refinery.language.model.problem.PredicateDefinition;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.RuleDefinition;
 import tools.refinery.language.model.problem.Statement;
+import tools.refinery.language.utils.BuiltinSymbols;
+import tools.refinery.language.utils.ProblemDesugarer;
 
 public record WrappedProblem(Problem problem) {
 	public Problem get() {
@@ -30,11 +31,15 @@ public record WrappedProblem(Problem problem) {
 	}
 
 	public WrappedProblem builtin() {
-		return new WrappedProblem(ProblemUtil.getBuiltInLibrary(problem).get());
+		return new WrappedProblem(new ProblemDesugarer().getBuiltinProblem(problem).orElseThrow());
+	}
+
+	public BuiltinSymbols builtinSymbols() {
+		return new ProblemDesugarer().getBuiltinSymbols(problem).orElseThrow();
 	}
 
 	public List<String> nodeNames() {
-		return problem.getNodes().stream().map(node -> node.getName()).toList();
+		return problem.getNodes().stream().map(Node::getName).toList();
 	}
 
 	public WrappedPredicateDefinition pred(String name) {
@@ -80,6 +85,6 @@ public record WrappedProblem(Problem problem) {
 	}
 
 	private <T extends Statement> T nthStatementOfType(Class<? extends T> type, int n) {
-		return statementsOfType(type).skip(n).findFirst().get();
+		return statementsOfType(type).skip(n).findFirst().orElseThrow();
 	}
 }

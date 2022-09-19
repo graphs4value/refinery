@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.IResourceScopeCache;
+import org.eclipse.xtext.util.Tuples;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -14,7 +15,7 @@ import tools.refinery.language.model.problem.Problem;
 @Singleton
 public class ReferenceCounter {
 	@Inject
-	private IResourceScopeCache cache;
+	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
 
 	public int countReferences(Problem problem, EObject eObject) {
 		var count = getReferenceCounts(problem).get(eObject);
@@ -29,7 +30,7 @@ public class ReferenceCounter {
 		if (resource == null) {
 			return doGetReferenceCounts(problem);
 		}
-		return cache.get(problem, resource, () -> doGetReferenceCounts(problem));
+		return cache.get(Tuples.create(problem, "referenceCounts"), resource, () -> doGetReferenceCounts(problem));
 	}
 
 	protected Map<EObject, Integer> doGetReferenceCounts(Problem problem) {

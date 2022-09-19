@@ -24,7 +24,9 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.ClassDeclaration;
+import tools.refinery.language.model.problem.ConstantAssertionArgument;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemFactory;
@@ -33,6 +35,8 @@ import tools.refinery.language.model.problem.Statement;
 @Singleton
 public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	public static final String NEW_NODE = "new";
+
+	public static final String CONSTANT_NODE = "constant";
 
 	@Inject
 	@Named(Constants.LANGUAGE_NAME)
@@ -82,8 +86,17 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		for (Statement statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration declaration && !declaration.isAbstract()
 					&& declaration.getNewNode() == null) {
-				var newNode = adapter.createNodeIfAbsent(declaration, key -> createNode(NEW_NODE));
+				var newNode = adapter.createNewNodeIfAbsent(declaration, key -> createNode(NEW_NODE));
 				declaration.setNewNode(newNode);
+			} else if (statement instanceof Assertion assertion) {
+				for (var argument : assertion.getArguments()) {
+					if (argument instanceof ConstantAssertionArgument constantAssertionArgument
+							&& constantAssertionArgument.getNode() == null) {
+						var constantNode = adapter.createConstantNodeIfAbsent(constantAssertionArgument,
+								key -> createNode(CONSTANT_NODE));
+						constantAssertionArgument.setNode(constantNode);
+					}
+				}
 			}
 		}
 	}
@@ -117,14 +130,22 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 
 	protected void discardDerivedProblemState(Problem problem, Adapter adapter) {
 		Set<ClassDeclaration> classDeclarations = new HashSet<>();
+		Set<ConstantAssertionArgument> constantAssertionArguments = new HashSet<>();
 		problem.getNodes().clear();
-		for (Statement statement : problem.getStatements()) {
+		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
 				classDeclaration.setNewNode(null);
 				classDeclarations.add(classDeclaration);
+			} else if (statement instanceof Assertion assertion) {
+				for (var argument : assertion.getArguments()) {
+					if (argument instanceof ConstantAssertionArgument constantAssertionArgument) {
+						constantAssertionArgument.setNode(null);
+						constantAssertionArguments.add(constantAssertionArgument);
+					}
+				}
 			}
 		}
-		adapter.retainAll(classDeclarations);
+		adapter.retainAll(classDeclarations, constantAssertionArguments);
 		derivedVariableComputer.discardDerivedVariables(problem);
 	}
 
@@ -147,12 +168,22 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	protected static class Adapter extends AdapterImpl {
 		private Map<ClassDeclaration, Node> newNodes = new HashMap<>();
 
-		public Node createNodeIfAbsent(ClassDeclaration classDeclaration, Function<ClassDeclaration, Node> createNode) {
+		private Map<ConstantAssertionArgument, Node> constantNodes = new HashMap<>();
+
+		public Node createNewNodeIfAbsent(ClassDeclaration classDeclaration,
+				Function<ClassDeclaration, Node> createNode) {
 			return newNodes.computeIfAbsent(classDeclaration, createNode);
 		}
 
-		public void retainAll(Collection<ClassDeclaration> classDeclarations) {
+		public Node createConstantNodeIfAbsent(ConstantAssertionArgument constantAssertionArgument,
+				Function<ConstantAssertionArgument, Node> createNode) {
+			return constantNodes.computeIfAbsent(constantAssertionArgument, createNode);
+		}
+
+		public void retainAll(Collection<ClassDeclaration> classDeclarations,
+				Collection<ConstantAssertionArgument> constantAssertionArguments) {
 			newNodes.keySet().retainAll(classDeclarations);
+			constantNodes.keySet().retainAll(constantAssertionArguments);
 		}
 
 		@Override

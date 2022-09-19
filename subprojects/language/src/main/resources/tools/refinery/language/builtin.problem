@@ -14,9 +14,9 @@ enum bool {
 	true, false
 }
 
-class real extends data.
-
 class int extends data.
+
+class real extends data.
 
 class string extends data.
 

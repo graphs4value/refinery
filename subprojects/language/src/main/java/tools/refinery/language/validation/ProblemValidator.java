@@ -8,13 +8,13 @@ import org.eclipse.xtext.validation.Check;
 
 import com.google.inject.Inject;
 
-import tools.refinery.language.ProblemUtil;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.Variable;
 import tools.refinery.language.model.problem.VariableOrNodeArgument;
 import tools.refinery.language.resource.ReferenceCounter;
+import tools.refinery.language.utils.ProblemUtil;
 
 /**
  * This class contains custom validation rules.

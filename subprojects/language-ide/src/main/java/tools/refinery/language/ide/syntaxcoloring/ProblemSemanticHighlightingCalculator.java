@@ -15,7 +15,6 @@ import org.eclipse.xtext.util.CancelIndicator;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
-import tools.refinery.language.ProblemUtil;
 import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.NamedElement;
 import tools.refinery.language.model.problem.Node;
@@ -23,6 +22,8 @@ import tools.refinery.language.model.problem.PredicateDefinition;
 import tools.refinery.language.model.problem.PredicateKind;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ReferenceDeclaration;
+import tools.refinery.language.utils.ProblemDesugarer;
+import tools.refinery.language.utils.ProblemUtil;
 
 public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighlightingCalculator {
 	private static final String BUILTIN_CLASS = "builtin";
@@ -35,6 +36,9 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	@Inject
 	private OperationCanceledManager operationCanceledManager;
+
+	@Inject
+	private ProblemDesugarer desugarer;
 
 	@Override
 	protected boolean highlightElement(EObject object, IHighlightedPositionAcceptor acceptor,
@@ -101,7 +105,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			classesBuilder.add(ABSTRACT_CLASS);
 		}
 		if (eObject instanceof ReferenceDeclaration referenceDeclaration
-				&& ProblemUtil.isContainmentReference(referenceDeclaration)) {
+				&& desugarer.isContainmentReference(referenceDeclaration)) {
 			classesBuilder.add(CONTAINMENT_CLASS);
 		}
 		if (eObject instanceof PredicateDefinition predicateDefinition

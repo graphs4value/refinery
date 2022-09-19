@@ -6,7 +6,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
 
-import tools.refinery.language.ProblemUtil;
+import tools.refinery.language.utils.ProblemUtil;
 
 public class ProblemGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	@Override

@@ -129,6 +129,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ConstantAssertionArgument" eSuperTypes="#//AssertionArgument">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constant" eType="#//Constant"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="node" eType="#//Node" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NodeValueAssertion" eSuperTypes="#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="node" eType="#//Node"/>
