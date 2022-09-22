@@ -4,7 +4,7 @@ include 'frontend'
 include 'language'
 include 'language-ide'
 include 'language-model'
-include 'language-to-store'
+include 'language-semantics'
 include 'language-web'
 include 'store'
 

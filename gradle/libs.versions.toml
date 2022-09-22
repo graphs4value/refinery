@@ -1,4 +1,5 @@
 [versions]
+eclipseCollections = "11.1.0"
 jetty = "11.0.12"
 jmh = "1.35"
 junit = "5.9.1"
@@ -8,6 +9,8 @@ slf4j = "2.0.3"
 xtext = "2.29.0.M1"
 
 [libraries]
+eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
+eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.28.0" }
 ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.17.0" }
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.31.0" }

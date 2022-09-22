@@ -1,9 +1,10 @@
 plugins {
 	id 'refinery-java-library'
-	id 'refinery-xtext-conventions'
 }
 
 dependencies {
+	implementation libs.eclipseCollections
+	implementation libs.eclipseCollections.api
 	api project(':refinery-language')
 	api project(':refinery-store')
 	testImplementation testFixtures(project(':refinery-language'))
