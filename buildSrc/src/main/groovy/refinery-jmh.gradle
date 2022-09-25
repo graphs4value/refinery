@@ -1,3 +1,5 @@
+import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
+
 plugins {
 	id 'refinery-java-conventions'
 	id 'refinery-sonarqube'
@@ -12,9 +14,9 @@ configurations {
 sourceSets {
 	jmh {
 		java.srcDirs = ['src/jmh/java']
-        resources.srcDirs = ['src/jmh/resources']
-        compileClasspath += sourceSets.main.runtimeClasspath
-        compileClasspath += sourceSets.test.runtimeClasspath
+		resources.srcDirs = ['src/jmh/resources']
+		compileClasspath += sourceSets.main.runtimeClasspath
+		compileClasspath += sourceSets.test.runtimeClasspath
 	}
 }
 
@@ -25,13 +27,13 @@ dependencies {
 
 tasks.register('jmh', JavaExec) {
 	dependsOn tasks.named('jmhClasses')
-    mainClass = 'org.openjdk.jmh.Main'
-    classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
+	mainClass = 'org.openjdk.jmh.Main'
+	classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
 }
 
 eclipse.classpath.file.whenMerged { classpath ->
 	for (entry in classpath.entries) {
-		if (entry in org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry) {
+		if (entry in AbstractClasspathEntry) {
 			// Workaround from https://github.com/gradle/gradle/issues/4802#issuecomment-407902081
 			if (entry.entryAttributes['gradle_scope'] == 'jmh') {
 				// Allow test helper classes to be used in benchmarks from Eclipse
@@ -41,7 +43,7 @@ eclipse.classpath.file.whenMerged { classpath ->
 				// Workaround based on
 				// https://discuss.gradle.org/t/gradle-used-by-scope-not-correctly-generated-when-the-java-test-fixtures-plugin-is-used/39935/2
 				def usedBy = new LinkedHashSet(
-					Arrays.asList((entry.entryAttributes['gradle_used_by_scope'] ?: '').split(','))
+						Arrays.asList((entry.entryAttributes['gradle_used_by_scope'] ?: '').split(','))
 				)
 				if (['main', 'test', 'testFixtures'].any { e -> usedBy.contains(e) }) {
 					// main and test sources are also used by jmh sources.
@@ -57,6 +59,6 @@ eclipse.classpath.file.whenMerged { classpath ->
 
 sonarqube.properties {
 	properties['sonar.tests'] += [
-		'src/jmh/java',
+			'src/jmh/java',
 	]
 }

@@ -20,8 +20,9 @@ dependencies {
 	testImplementation libs.mockito.junit
 }
 
-sourceCompatibility = '17'
-targetCompatibility = '17'
+java.toolchain {
+	languageVersion = JavaLanguageVersion.of(17)
+}
 
 def jacocoTestReport = tasks.named('jacocoTestReport')
 jacocoTestReport.configure {
@@ -46,8 +47,8 @@ tasks.register('slowTest', Test) {
 tasks.named('jar') {
 	manifest {
 		attributes(
-			'Bundle-SymbolicName': "${project.group}.${project.name}",
-			'Bundle-Version': project.version
+				'Bundle-SymbolicName': "${project.group}.${project.name}",
+				'Bundle-Version': project.version
 		)
 	}
 }
@@ -70,7 +71,7 @@ eclipse {
 				entry.entryAttributes['ignore_optional_problems'] = true
 			}
 			// If a project has a main dependency on a project and an test dependency on the testFixtures of a project,
-			// it will be errorneously added as a test-only dependency to Eclipse.
+			// it will be erroneously added as a test-only dependency to Eclipse.
 			// As a workaround, we add all project dependencies as main dependencies
 			// (we do not deliberately use test-only project dependencies).
 			if (entry in org.gradle.plugins.ide.eclipse.model.ProjectDependency) {
@@ -80,7 +81,7 @@ eclipse {
 	}
 
 	jdt.file.withProperties { properties ->
-		// Allow @SupperessWarnings to suppress SonarLint warnings
+		// Allow @SuppressWarnings to suppress SonarLint warnings
 		properties['org.eclipse.jdt.core.compiler.problem.unhandledWarningToken'] = 'ignore'
 	}
 }
