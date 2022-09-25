@@ -3,8 +3,7 @@ package tools.refinery.store.query.viatra.internal.viewupdate;
 import java.util.Arrays;
 import java.util.Objects;
 
-record ViewUpdate (Object[] tuple, boolean isInsertion) {
-
+record ViewUpdate(Object[] tuple, boolean isInsertion) {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -28,7 +27,6 @@ record ViewUpdate (Object[] tuple, boolean isInsertion) {
 
 	@Override
 	public String toString() {
-		return "ViewUpdate [" + Arrays.toString(tuple) + "insertion= "+this.isInsertion+"]";
+		return "ViewUpdate [" + Arrays.toString(tuple) + "insertion= " + this.isInsertion + "]";
 	}
-
 }

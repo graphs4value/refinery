@@ -1,66 +1,51 @@
 package tools.refinery.store.query.view;
 
-import java.util.Objects;
-
-import org.eclipse.viatra.query.runtime.matchers.context.common.BaseInputKeyWrapper;
-
 import tools.refinery.store.map.CursorAsIterator;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.Tuple;
 import tools.refinery.store.model.representation.Relation;
 
+import java.util.Objects;
+import java.util.UUID;
+
 /**
  * Represents a view of a {@link Relation} that can be queried.
- * 
- * @author Oszkar Semerath
  *
  * @param <D>
+ * @author Oszkar Semerath
  */
-public abstract class RelationView<D> extends BaseInputKeyWrapper<RelationView<D>> {
-	protected final Relation<D> representation;
+public abstract class RelationView<D> {
+	private final Relation<D> representation;
+
+	private final String name;
+
+	protected RelationView(Relation<D> representation, String name) {
+		this.representation = representation;
+		this.name = name;
+	}
 
 	protected RelationView(Relation<D> representation) {
-		super(null);
-		this.wrappedKey = this;
-		this.representation = representation;
+		this(representation, UUID.randomUUID().toString());
 	}
 
-	@Override
-	public String getPrettyPrintableName() {
-		return representation.getName();
-	}
-
-	@Override
-	public String getStringID() {
-		return representation.getName() + this.getClass().getName();
-	}
+	public abstract int getArity();
 
 	public Relation<D> getRepresentation() {
 		return representation;
 	}
 
-	@Override
-	public boolean isEnumerable() {
-		return true;
+	public String getName() {
+		return representation.getName() + "#" + name;
 	}
 
-	protected abstract boolean filter(Tuple key, D value);
+	public abstract boolean filter(Tuple key, D value);
 
-	protected abstract Object[] forwardMap(Tuple key, D value);
+	public abstract Object[] forwardMap(Tuple key, D value);
 
 	public abstract boolean get(Model model, Object[] tuple);
-	
-	@SuppressWarnings("squid:S1168")
-	public Object[] transform(Tuple tuple, D value) {
-		if (filter(tuple, value)) {
-			return forwardMap(tuple, value);
-		} else
-			return null;
-	}
 
 	public Iterable<Object[]> getAll(Model model) {
-		return (() -> new CursorAsIterator<>(model.getAll(representation), (k, v) -> forwardMap(k, v),
-				(k, v) -> filter(k, v)));
+		return (() -> new CursorAsIterator<>(model.getAll(representation), this::forwardMap, this::filter));
 	}
 
 	@Override
@@ -81,5 +66,4 @@ public abstract class RelationView<D> extends BaseInputKeyWrapper<RelationView<D
 		RelationView<D> other = ((RelationView<D>) obj);
 		return Objects.equals(representation, other.representation);
 	}
-
 }

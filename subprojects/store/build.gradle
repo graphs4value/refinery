@@ -2,8 +2,3 @@ plugins {
 	id 'refinery-java-library'
 	id 'refinery-jmh'
 }
-
-dependencies {
-	implementation libs.ecore
-	implementation libs.viatra
-}

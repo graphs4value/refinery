@@ -7,6 +7,7 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
 import tools.refinery.store.query.viatra.internal.viewupdate.ModelUpdateListener;
 import tools.refinery.store.query.view.RelationView;
 
@@ -67,7 +68,8 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@SuppressWarnings("squid:S1452")
 	RelationView<?> checkKey(IInputKey key) {
-		if (key instanceof RelationView<?> relationViewKey) {
+		if (key instanceof RelationViewWrapper wrappedKey) {
+			var relationViewKey = wrappedKey.getWrappedKey();
 			if (modelUpdateListener.containsRelationalView(relationViewKey)) {
 				return relationViewKey;
 			} else {
@@ -117,7 +119,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	}
 
 	@Override
-	public Iterable<? extends Object> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
+	public Iterable<?> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
 		return enumerateTuples(key, seedMask, seed);
 	}
 
@@ -130,14 +132,14 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public void addUpdateListener(IInputKey key, Tuple seed, IQueryRuntimeContextListener listener) {
 		RelationView<?> relationalKey = checkKey(key);
-		this.modelUpdateListener.addListener(relationalKey, seed, listener);
+		this.modelUpdateListener.addListener(key, relationalKey, seed, listener);
 
 	}
 
 	@Override
 	public void removeUpdateListener(IInputKey key, Tuple seed, IQueryRuntimeContextListener listener) {
 		RelationView<?> relationalKey = checkKey(key);
-		this.modelUpdateListener.removeListener(relationalKey, seed, listener);
+		this.modelUpdateListener.removeListener(key, relationalKey, seed, listener);
 	}
 
 	@Override

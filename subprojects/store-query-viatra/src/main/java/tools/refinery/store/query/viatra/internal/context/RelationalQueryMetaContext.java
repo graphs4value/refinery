@@ -3,9 +3,11 @@ package tools.refinery.store.query.viatra.internal.context;
 import org.eclipse.viatra.query.runtime.matchers.context.AbstractQueryMetaContext;
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.InputKeyImplication;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The meta context information for String scopes.
@@ -36,9 +38,8 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 	}
 
 	public void ensureValidKey(IInputKey key) {
-		if (key instanceof RelationView<?>) {
-			return;
+		if (!(key instanceof RelationViewWrapper)) {
+			throw new IllegalArgumentException("The input key %s is not a valid input key.".formatted(key));
 		}
-		throw new IllegalArgumentException("The input key %s is not a valid input key.".formatted(key));
 	}
 }

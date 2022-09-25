@@ -1,5 +1,6 @@
 package tools.refinery.store.query.viatra.internal.viewupdate;
 
+import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
 import tools.refinery.store.model.Tuple;
@@ -46,20 +47,23 @@ public class ModelUpdateListener {
 		return view2Buffers.containsKey(relationalKey);
 	}
 
-	public <D> void addListener(RelationView<D> relationView, ITuple seed, IQueryRuntimeContextListener listener) {
+	public <D> void addListener(IInputKey key, RelationView<D> relationView, ITuple seed,
+								IQueryRuntimeContextListener listener) {
 		if (view2Buffers.containsKey(relationView)) {
-			ViewUpdateTranslator<D> updateListener = new ViewUpdateTranslator<>(relationView, seed, listener);
+			ViewUpdateTranslator<D> updateListener = new ViewUpdateTranslator<>(key, relationView, seed, listener);
 			ViewUpdateBuffer<D> updateBuffer = new ViewUpdateBuffer<>(updateListener);
 			view2Buffers.get(relationView).add(updateBuffer);
-		} else
+		} else {
 			throw new IllegalArgumentException();
+		}
 	}
 
-	public void removeListener(RelationView<?> relationView, ITuple seed, IQueryRuntimeContextListener listener) {
+	public void removeListener(IInputKey key, RelationView<?> relationView, ITuple seed,
+							   IQueryRuntimeContextListener listener) {
 		if (view2Buffers.containsKey(relationView)) {
 			Set<ViewUpdateBuffer<?>> buffers = this.view2Buffers.get(relationView);
 			for (var buffer : buffers) {
-				if (buffer.getUpdateListener().equals(relationView, seed, listener)) {
+				if (buffer.getUpdateListener().equals(key, relationView, seed, listener)) {
 					// remove buffer and terminate immediately, or it will break iterator.
 					buffers.remove(buffer);
 					return;

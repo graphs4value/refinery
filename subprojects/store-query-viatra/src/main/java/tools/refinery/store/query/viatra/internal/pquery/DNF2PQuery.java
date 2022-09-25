@@ -12,28 +12,53 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeCo
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.building.*;
+import tools.refinery.store.query.view.RelationView;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DNF2PQuery {
-	private DNF2PQuery() {
-		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
+	private final Set<DNFPredicate> translating = new LinkedHashSet<>();
+
+	private final Map<DNFPredicate, SimplePQuery> dnf2PQueryMap = new HashMap<>();
+
+	private final Map<RelationView<?>, RelationViewWrapper> view2WrapperMap = new HashMap<>();
+
+	public SimplePQuery translate(DNFPredicate predicate) {
+		if (translating.contains(predicate)) {
+			var path = translating.stream().map(DNFPredicate::getName).collect(Collectors.joining(" -> "));
+			throw new IllegalStateException("Circular reference %s -> %s detected".formatted(path,
+					predicate.getName()));
+		}
+		// We can't use computeIfAbsent here, because translating referenced queries calls this method in a reentrant
+		// way, which would cause a ConcurrentModificationException with computeIfAbsent.
+		var pQuery = dnf2PQueryMap.get(predicate);
+		if (pQuery == null) {
+			translating.add(predicate);
+			try {
+				pQuery = doTranslate(predicate);
+				dnf2PQueryMap.put(predicate, pQuery);
+			} finally {
+				translating.remove(predicate);
+			}
+		}
+		return pQuery;
 	}
 
-	public static SimplePQuery translate(DNFPredicate predicate, Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
-		SimplePQuery query = dnf2PQueryMap.get(predicate);
-		if (query != null) {
-			return query;
-		}
-		query = new SimplePQuery(predicate.getName());
-		Map<Variable, PParameter> parameters = new HashMap<>();
+	private SimplePQuery doTranslate(DNFPredicate predicate) {
+		var query = new SimplePQuery(predicate.getName());
 
-		predicate.getVariables().forEach(variable -> parameters.put(variable, new PParameter(variable.getName())));
+		Map<Variable, PParameter> parameters = new HashMap<>();
+		for (Variable variable : predicate.getVariables()) {
+			parameters.put(variable, new PParameter(variable.getName()));
+		}
+
 		List<PParameter> parameterList = new ArrayList<>();
 		for (var param : predicate.getVariables()) {
 			parameterList.add(parameters.get(param));
 		}
 		query.setParameters(parameterList);
+
 		for (DNFAnd clause : predicate.getClauses()) {
 			PBody body = new PBody(query);
 			List<ExportedParameter> symbolicParameters = new ArrayList<>();
@@ -44,15 +69,14 @@ public class DNF2PQuery {
 			body.setSymbolicParameters(symbolicParameters);
 			query.addBody(body);
 			for (DNFAtom constraint : clause.getConstraints()) {
-				translateDNFAtom(constraint, body, dnf2PQueryMap);
+				translateDNFAtom(constraint, body);
 			}
 		}
-		dnf2PQueryMap.put(predicate, query);
+
 		return query;
 	}
 
-	private static void translateDNFAtom(DNFAtom constraint, PBody body,
-										 Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
+	private void translateDNFAtom(DNFAtom constraint, PBody body) {
 		if (constraint instanceof EquivalenceAtom equivalence) {
 			translateEquivalenceAtom(equivalence, body);
 		}
@@ -60,11 +84,11 @@ public class DNF2PQuery {
 			translateRelationAtom(relation, body);
 		}
 		if (constraint instanceof PredicateAtom predicate) {
-			translatePredicateAtom(predicate, body, dnf2PQueryMap);
+			translatePredicateAtom(predicate, body);
 		}
 	}
 
-	private static void translateEquivalenceAtom(EquivalenceAtom equivalence, PBody body) {
+	private void translateEquivalenceAtom(EquivalenceAtom equivalence, PBody body) {
 		PVariable varSource = body.getOrCreateVariableByName(equivalence.getLeft().getName());
 		PVariable varTarget = body.getOrCreateVariableByName(equivalence.getRight().getName());
 		if (equivalence.isPositive())
@@ -73,7 +97,7 @@ public class DNF2PQuery {
 			new Inequality(body, varSource, varTarget);
 	}
 
-	private static void translateRelationAtom(RelationAtom relation, PBody body) {
+	private void translateRelationAtom(RelationAtom relation, PBody body) {
 		if (relation.substitution().size() != relation.view().getArity()) {
 			throw new IllegalArgumentException("Arity (%d) does not match parameter numbers (%d)".formatted(
 					relation.view().getArity(), relation.substitution().size()));
@@ -82,32 +106,34 @@ public class DNF2PQuery {
 		for (int i = 0; i < relation.substitution().size(); i++) {
 			variables[i] = body.getOrCreateVariableByName(relation.substitution().get(i).getName());
 		}
-		new TypeConstraint(body, Tuples.flatTupleOf(variables), relation.view());
+		new TypeConstraint(body, Tuples.flatTupleOf(variables), wrapView(relation.view()));
 	}
 
-	private static void translatePredicateAtom(PredicateAtom predicate, PBody body,
-											   Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
+	private RelationViewWrapper wrapView(RelationView<?> relationView) {
+		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
+	}
+
+	private void translatePredicateAtom(PredicateAtom predicate, PBody body) {
 		Object[] variables = new Object[predicate.getSubstitution().size()];
 		for (int i = 0; i < predicate.getSubstitution().size(); i++) {
 			variables[i] = body.getOrCreateVariableByName(predicate.getSubstitution().get(i).getName());
 		}
+		var variablesTuple = Tuples.flatTupleOf(variables);
+		var translatedReferred = translate(predicate.getReferred());
 		if (predicate.isPositive()) {
 			if (predicate.isTransitive()) {
 				if (predicate.getSubstitution().size() != 2) {
 					throw new IllegalArgumentException("Transitive Predicate Atoms must be binary.");
 				}
-				new BinaryTransitiveClosure(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred(), dnf2PQueryMap));
+				new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
 			} else {
-				new PositivePatternCall(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred(), dnf2PQueryMap));
+				new PositivePatternCall(body, variablesTuple, translatedReferred);
 			}
 		} else {
 			if (predicate.isTransitive()) {
-				throw new InputMismatchException("Transitive Predicate Atoms cannot be negative.");
+				throw new IllegalArgumentException("Transitive Predicate Atoms cannot be negative.");
 			} else {
-				new NegativePatternCall(body, Tuples.flatTupleOf(variables),
-						DNF2PQuery.translate(predicate.getReferred(), dnf2PQueryMap));
+				new NegativePatternCall(body, variablesTuple, translatedReferred);
 			}
 		}
 	}

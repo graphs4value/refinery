@@ -29,5 +29,4 @@ public class RelationalEngineContext implements IEngineContext {
 	public IQueryRuntimeContext getQueryRuntimeContext() {
 		return runtimeContext;
 	}
-
 }

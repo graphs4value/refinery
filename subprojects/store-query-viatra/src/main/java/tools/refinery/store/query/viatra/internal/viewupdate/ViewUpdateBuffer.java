@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ViewUpdateBuffer<D> {
 	protected final ViewUpdateTranslator<D> updateListener;
+
 	protected final List<ViewUpdate> buffer = new ArrayList<>();
 
 	public ViewUpdateBuffer(ViewUpdateTranslator<D> updateListener) {
