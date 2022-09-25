@@ -1,18 +1,17 @@
-package tools.refinery.store.query.internal;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Callable;
+package tools.refinery.store.query.viatra.internal.context;
 
 import org.eclipse.viatra.query.runtime.api.scope.IBaseIndex;
 import org.eclipse.viatra.query.runtime.api.scope.IIndexingErrorListener;
 import org.eclipse.viatra.query.runtime.api.scope.IInstanceObserver;
 import org.eclipse.viatra.query.runtime.api.scope.ViatraBaseIndexChangeListener;
 
-/**
- * copied from org.eclipse.viatra.query.runtime.tabular.TabularEngineContext;
- */
-public class DummyBaseIndexer implements IBaseIndex{
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
 
+/**
+ * Copied from <code>org.eclipse.viatra.query.runtime.tabular.TabularEngineContext</code>
+ */
+public class DummyBaseIndexer implements IBaseIndex {
 	@Override
 	public <V> V coalesceTraversals(Callable<V> callable) throws InvocationTargetException {
 		try {

@@ -1,15 +1,17 @@
 package tools.refinery.store.query;
 
+import tools.refinery.store.model.Model;
+import tools.refinery.store.query.building.DNFPredicate;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import tools.refinery.store.model.Model;
-import tools.refinery.store.query.building.DNFPredicate;
-
-public interface QueriableModel extends Model{
+public interface QueryableModel extends Model{
 	Set<DNFPredicate> getPredicates();
-	
+
+	boolean hasChanges();
+
 	void flushChanges();
 
 	boolean hasResult(DNFPredicate predicate);

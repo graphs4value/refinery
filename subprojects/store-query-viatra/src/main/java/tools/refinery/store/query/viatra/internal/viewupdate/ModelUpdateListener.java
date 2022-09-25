@@ -1,22 +1,22 @@
-package tools.refinery.store.query.internal;
+package tools.refinery.store.query.viatra.internal.viewupdate;
+
+import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
+import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
+import tools.refinery.store.model.Tuple;
+import tools.refinery.store.model.representation.Relation;
+import tools.refinery.store.query.view.RelationView;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
-
-import tools.refinery.store.model.Tuple;
-import tools.refinery.store.model.representation.Relation;
-import tools.refinery.store.query.view.RelationView;
-
 public class ModelUpdateListener {
 	/**
 	 * Collections of Relations and their Views.
 	 */
 	private final Map<Relation<?>, Set<RelationView<?>>> relation2View;
+
 	/**
 	 * Collection of Views and their buffers.
 	 */
@@ -35,18 +35,18 @@ public class ModelUpdateListener {
 		Relation<?> relation = view.getRepresentation();
 
 		// 1. register views to relations, if necessary
-		var views = relation2View.computeIfAbsent(relation, x->new HashSet<>());
+		var views = relation2View.computeIfAbsent(relation, x -> new HashSet<>());
 		views.add(view);
 
 		// 2. register notifier map to views, if necessary
-		view2Buffers.computeIfAbsent(view, x->new HashSet<>());
+		view2Buffers.computeIfAbsent(view, x -> new HashSet<>());
 	}
 
-	boolean containsRelationalView(RelationView<?> relationalKey) {
+	public boolean containsRelationalView(RelationView<?> relationalKey) {
 		return view2Buffers.containsKey(relationalKey);
 	}
 
-	<D> void addListener(RelationView<D> relationView, ITuple seed, IQueryRuntimeContextListener listener) {
+	public <D> void addListener(RelationView<D> relationView, ITuple seed, IQueryRuntimeContextListener listener) {
 		if (view2Buffers.containsKey(relationView)) {
 			ViewUpdateTranslator<D> updateListener = new ViewUpdateTranslator<>(relationView, seed, listener);
 			ViewUpdateBuffer<D> updateBuffer = new ViewUpdateBuffer<>(updateListener);
@@ -55,38 +55,40 @@ public class ModelUpdateListener {
 			throw new IllegalArgumentException();
 	}
 
-	void removeListener(RelationView<?> relationView, ITuple seed, IQueryRuntimeContextListener listener) {
+	public void removeListener(RelationView<?> relationView, ITuple seed, IQueryRuntimeContextListener listener) {
 		if (view2Buffers.containsKey(relationView)) {
 			Set<ViewUpdateBuffer<?>> buffers = this.view2Buffers.get(relationView);
-			for(var buffer : buffers) {
-				if(buffer.getUpdateListener().key == seed && buffer.getUpdateListener().listener == listener) {
+			for (var buffer : buffers) {
+				if (buffer.getUpdateListener().equals(relationView, seed, listener)) {
 					// remove buffer and terminate immediately, or it will break iterator.
 					buffers.remove(buffer);
 					return;
 				}
 			}
-		} else
-			throw new IllegalArgumentException();
+		} else {
+			throw new IllegalArgumentException("Relation view is not registered for updates");
+		}
 	}
 
 	public <D> void addUpdate(Relation<D> relation, Tuple key, D oldValue, D newValue) {
 		var views = this.relation2View.get(relation);
-		if (views != null) {
-			for (var view : views) {
-				var buffers = this.view2Buffers.get(view);
-				for (var buffer : buffers) {
-					@SuppressWarnings("unchecked")
-					var typedBuffer = (ViewUpdateBuffer<D>) buffer;
-					typedBuffer.addChange(key, oldValue, newValue);
-				}
+		if (views == null) {
+			return;
+		}
+		for (var view : views) {
+			var buffers = this.view2Buffers.get(view);
+			for (var buffer : buffers) {
+				@SuppressWarnings("unchecked")
+				var typedBuffer = (ViewUpdateBuffer<D>) buffer;
+				typedBuffer.addChange(key, oldValue, newValue);
 			}
 		}
 	}
 
-	public boolean hasChange() {
+	public boolean hasChanges() {
 		for (var bufferCollection : this.view2Buffers.values()) {
 			for (ViewUpdateBuffer<?> buffer : bufferCollection) {
-				if (buffer.hasChange())
+				if (buffer.hasChanges())
 					return true;
 			}
 		}

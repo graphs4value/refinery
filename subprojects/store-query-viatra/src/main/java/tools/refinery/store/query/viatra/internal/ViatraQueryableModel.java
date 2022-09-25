@@ -1,16 +1,9 @@
-package tools.refinery.store.query.internal;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
+package tools.refinery.store.query.viatra.internal;
 
 import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine;
 import org.eclipse.viatra.query.runtime.api.GenericQueryGroup;
 import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.IQueryGroup;
-
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.model.Model;
@@ -18,21 +11,31 @@ import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.Tuple;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
-import tools.refinery.store.query.QueriableModel;
-import tools.refinery.store.query.QueriableModelStore;
+import tools.refinery.store.query.QueryableModel;
+import tools.refinery.store.query.QueryableModelStore;
 import tools.refinery.store.query.building.DNFPredicate;
 
-public class QueriableModelImpl implements QueriableModel {
-	protected final QueriableModelStore store;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+public class ViatraQueryableModel implements QueryableModel {
+	protected final QueryableModelStore store;
+
 	protected final Model model;
+
 	protected final Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery;
-	
+
 	protected RelationalScope scope;
+
 	protected AdvancedViatraQueryEngine engine;
+
 	protected Map<DNFPredicate, RawPatternMatcher> predicate2Matcher;
 
-	public QueriableModelImpl(QueriableModelStore store, Model model,
-			Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery) {
+	public ViatraQueryableModel(QueryableModelStore store, Model model,
+								Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery) {
 		this.store = store;
 		this.model = model;
 		this.predicates2PQuery = predicates2PQuery;
@@ -45,7 +48,8 @@ public class QueriableModelImpl implements QueriableModel {
 		this.predicate2Matcher = initMatchers(this.engine, this.predicates2PQuery);
 	}
 
-	private Map<DNFPredicate, RawPatternMatcher> initMatchers(AdvancedViatraQueryEngine engine,
+	private Map<DNFPredicate, RawPatternMatcher> initMatchers(
+			AdvancedViatraQueryEngine engine,
 			Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2pQuery) {
 		// 1. prepare group
 		IQueryGroup queryGroup = GenericQueryGroup.of(Set.copyOf(predicates2pQuery.values()));
@@ -84,18 +88,19 @@ public class QueriableModelImpl implements QueriableModel {
 	@Override
 	public <K, V> V put(DataRepresentation<K, V> representation, K key, V value) {
 		V oldValue = this.model.put(representation, key, value);
-		if(representation instanceof Relation<?> relation) {
-			this.scope.processUpdate((Relation<V>)relation, (Tuple)key, oldValue, value);
+		if (representation instanceof Relation<?> relation) {
+			this.scope.processUpdate((Relation<V>) relation, (Tuple) key, oldValue, value);
 		}
 		return oldValue;
 	}
 
 	@Override
 	public <K, V> void putAll(DataRepresentation<K, V> representation, Cursor<K, V> cursor) {
-		if(representation instanceof Relation<?>) {
+		if (representation instanceof Relation<?>) {
+			//noinspection RedundantSuppression
 			@SuppressWarnings("unchecked")
 			Relation<V> relation = (Relation<V>) representation;
-			while(cursor.move()) {
+			while (cursor.move()) {
 				Tuple key = (Tuple) cursor.getKey();
 				V newValue = cursor.getValue();
 				V oldValue = this.model.put(relation, key, newValue);
@@ -111,10 +116,10 @@ public class QueriableModelImpl implements QueriableModel {
 		return model.getSize(representation);
 	}
 
-	protected PredicateResult getPredicateResult(DNFPredicate predicate) {
+	protected RawPatternMatcher getMatcher(DNFPredicate predicate) {
 		var result = this.predicate2Matcher.get(predicate);
 		if (result == null) {
-			throw new IllegalArgumentException("Model does not contain predicate " + predicate.getName() + "!");
+			throw new IllegalArgumentException("Model does not contain predicate %s".formatted(predicate.getName()));
 		} else
 			return result;
 	}
@@ -123,55 +128,62 @@ public class QueriableModelImpl implements QueriableModel {
 		int predicateArity = predicate.getVariables().size();
 		int parameterArity = parameters.length;
 		if (parameterArity != predicateArity) {
-			throw new IllegalArgumentException("Predicate " + predicate.getName() + " with " + predicateArity
-					+ " arity called with different number of parameters (" + parameterArity + ")!");
+			throw new IllegalArgumentException(
+					"Predicate %s with %d arity called with different number of parameters (%d)"
+							.formatted(predicate.getName(), predicateArity, parameterArity));
 		}
 	}
 
 	@Override
 	public boolean hasResult(DNFPredicate predicate) {
-		return getPredicateResult(predicate).hasResult();
+		return getMatcher(predicate).hasResult();
 	}
 
 	@Override
 	public boolean hasResult(DNFPredicate predicate, Object[] parameters) {
 		validateParameters(predicate, parameters);
-		return getPredicateResult(predicate).hasResult(parameters);
-	}
-	
-	@Override
-	public Optional<Object[]> oneResult(DNFPredicate predicate){
-		return getPredicateResult(predicate).oneResult();
+		return getMatcher(predicate).hasResult(parameters);
 	}
 
 	@Override
-	public Optional<Object[]> oneResult(DNFPredicate predicate, Object[] parameters){
+	public Optional<Object[]> oneResult(DNFPredicate predicate) {
+		return getMatcher(predicate).oneResult();
+	}
+
+	@Override
+	public Optional<Object[]> oneResult(DNFPredicate predicate, Object[] parameters) {
 		validateParameters(predicate, parameters);
-		return getPredicateResult(predicate).oneResult(parameters);
+		return getMatcher(predicate).oneResult(parameters);
 	}
 
 	@Override
-	public Stream<Object[]> allResults(DNFPredicate predicate){
-		return getPredicateResult(predicate).allResults();
+	public Stream<Object[]> allResults(DNFPredicate predicate) {
+		return getMatcher(predicate).allResults();
 	}
 
 	@Override
-	public Stream<Object[]> allResults(DNFPredicate predicate, Object[] parameters){
+	public Stream<Object[]> allResults(DNFPredicate predicate, Object[] parameters) {
 		validateParameters(predicate, parameters);
-		return getPredicateResult(predicate).allResults(parameters);
+		return getMatcher(predicate).allResults(parameters);
 	}
 
 	@Override
-	public int countResults(DNFPredicate predicate){
-		return getPredicateResult(predicate).countResults();
+	public int countResults(DNFPredicate predicate) {
+		return getMatcher(predicate).countResults();
 	}
 
 	@Override
-	public int countResults(DNFPredicate predicate, Object[] parameters){
+	public int countResults(DNFPredicate predicate, Object[] parameters) {
 		validateParameters(predicate, parameters);
-		return getPredicateResult(predicate).countResults(parameters);
-		
+		return getMatcher(predicate).countResults(parameters);
+
 	}
+
+	@Override
+	public boolean hasChanges() {
+		return scope.hasChanges();
+	}
+
 	@Override
 	public void flushChanges() {
 		this.scope.flush();
@@ -192,21 +204,16 @@ public class QueriableModelImpl implements QueriableModel {
 		restoreWithDiffReplay(state);
 	}
 
-	public void restoreWithDiffReplay(long state) {
+	private void restoreWithDiffReplay(long state) {
 		var modelDiffCursor = getDiffCursor(state);
-		for(DataRepresentation<?,?> dataRepresentation : this.getDataRepresentations()) {
+		for (DataRepresentation<?, ?> dataRepresentation : this.getDataRepresentations()) {
 			restoreRepresentationWithDiffReplay(modelDiffCursor, dataRepresentation);
 		}
 	}
 
-	private <K,V> void restoreRepresentationWithDiffReplay(ModelDiffCursor modelDiffCursor,
-			DataRepresentation<K, V> dataRepresentation) {
-		DiffCursor<K,V> diffCursor = modelDiffCursor.getCursor(dataRepresentation);
+	private <K, V> void restoreRepresentationWithDiffReplay(ModelDiffCursor modelDiffCursor,
+															DataRepresentation<K, V> dataRepresentation) {
+		DiffCursor<K, V> diffCursor = modelDiffCursor.getCursor(dataRepresentation);
 		this.putAll(dataRepresentation, diffCursor);
-	}
-	
-	public void restoreWithReinit(long state) {
-		model.restore(state);
-		this.initEngine();
 	}
 }

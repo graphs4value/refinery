@@ -1,53 +1,47 @@
-package tools.refinery.store.query.internal;
+package tools.refinery.store.query.viatra.internal.context;
 
-import static tools.refinery.store.util.CollectionsUtil.filter;
-import static tools.refinery.store.util.CollectionsUtil.map;
+import org.eclipse.viatra.query.runtime.matchers.context.*;
+import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
+import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
+import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
+import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
+import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
+import tools.refinery.store.model.Model;
+import tools.refinery.store.query.viatra.internal.viewupdate.ModelUpdateListener;
+import tools.refinery.store.query.view.RelationView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-import org.eclipse.viatra.query.runtime.base.core.NavigationHelperImpl;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryMetaContext;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContext;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
-import org.eclipse.viatra.query.runtime.matchers.context.IndexingService;
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
-
-import tools.refinery.store.model.Model;
-import tools.refinery.store.query.view.RelationView;
+import static tools.refinery.store.util.CollectionsUtil.filter;
+import static tools.refinery.store.util.CollectionsUtil.map;
 
 public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	private final RelationalQueryMetaContext metaContext = new RelationalQueryMetaContext();
+
 	private final ModelUpdateListener modelUpdateListener;
+
 	private final Model model;
-	
+
 	public RelationalRuntimeContext(Model model, ModelUpdateListener relationUpdateListener) {
 		this.model = model;
 		this.modelUpdateListener = relationUpdateListener;
 	}
-	
+
 	@Override
 	public IQueryMetaContext getMetaContext() {
 		return metaContext;
 	}
 
-	/**
-	 * TODO: check {@link NavigationHelperImpl#coalesceTraversals(Callable)}
-	 */
 	@Override
 	public <V> V coalesceTraversals(Callable<V> callable) throws InvocationTargetException {
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            throw new InvocationTargetException(e);
-        }
+		try {
+			return callable.call();
+		} catch (Exception e) {
+			throw new InvocationTargetException(e);
+		}
 	}
 
 	@Override
@@ -57,7 +51,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
-		if(key instanceof RelationView<?> relationalKey) {
+		if (key instanceof RelationView<?> relationalKey) {
 			return this.modelUpdateListener.containsRelationalView(relationalKey);
 		} else {
 			return false;
@@ -66,15 +60,15 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public void ensureIndexed(IInputKey key, IndexingService service) {
-		if(!isIndexed(key, service)) {
-			throw new IllegalStateException("Engine tries to index a new key " +key);
+		if (!isIndexed(key, service)) {
+			throw new IllegalStateException("Engine tries to index a new key " + key);
 		}
 	}
+
 	@SuppressWarnings("squid:S1452")
 	RelationView<?> checkKey(IInputKey key) {
-		if(key instanceof RelationView) {
-			RelationView<?> relationViewKey = (RelationView<?>) key;
-			if(modelUpdateListener.containsRelationalView(relationViewKey)) {
+		if (key instanceof RelationView<?> relationViewKey) {
+			if (modelUpdateListener.containsRelationalView(relationViewKey)) {
 				return relationViewKey;
 			} else {
 				throw new IllegalStateException("Query is asking for non-indexed key");
@@ -83,15 +77,15 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 			throw new IllegalStateException("Query is asking for non-relational key");
 		}
 	}
-	
+
 	@Override
 	public int countTuples(IInputKey key, TupleMask seedMask, ITuple seed) {
 		RelationView<?> relationalViewKey = checkKey(key);
 		Iterable<Object[]> allObjects = relationalViewKey.getAll(model);
-		Iterable<Object[]> filteredBySeed = filter(allObjects,objectArray -> isMatching(objectArray,seedMask,seed));
+		Iterable<Object[]> filteredBySeed = filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
 		Iterator<Object[]> iterator = filteredBySeed.iterator();
 		int result = 0;
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			iterator.next();
 			result++;
 		}
@@ -107,15 +101,15 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	public Iterable<Tuple> enumerateTuples(IInputKey key, TupleMask seedMask, ITuple seed) {
 		RelationView<?> relationalViewKey = checkKey(key);
 		Iterable<Object[]> allObjects = relationalViewKey.getAll(model);
-		Iterable<Object[]> filteredBySeed = filter(allObjects,objectArray -> isMatching(objectArray,seedMask,seed));
-		return map(filteredBySeed,Tuples::flatTupleOf);
+		Iterable<Object[]> filteredBySeed = filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+		return map(filteredBySeed, Tuples::flatTupleOf);
 	}
-	
+
 	private boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
-		for(int i=0; i<seedMask.indices.length; i++) {
+		for (int i = 0; i < seedMask.indices.length; i++) {
 			final Object seedElement = seed.get(i);
 			final Object tupleElement = tuple[seedMask.indices[i]];
-			if(!tupleElement.equals(seedElement)) {
+			if (!tupleElement.equals(seedElement)) {
 				return false;
 			}
 		}
@@ -130,14 +124,14 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public boolean containsTuple(IInputKey key, ITuple seed) {
 		RelationView<?> relationalViewKey = checkKey(key);
-		return relationalViewKey.get(model,seed.getElements());
+		return relationalViewKey.get(model, seed.getElements());
 	}
 
 	@Override
 	public void addUpdateListener(IInputKey key, Tuple seed, IQueryRuntimeContextListener listener) {
 		RelationView<?> relationalKey = checkKey(key);
 		this.modelUpdateListener.addListener(relationalKey, seed, listener);
-		
+
 	}
 
 	@Override

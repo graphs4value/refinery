@@ -1,4 +1,4 @@
-package tools.refinery.store.query.internal;
+package tools.refinery.store.query.viatra.internal.viewupdate;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -30,5 +30,5 @@ record ViewUpdate (Object[] tuple, boolean isInsertion) {
 	public String toString() {
 		return "ViewUpdate [" + Arrays.toString(tuple) + "insertion= "+this.isInsertion+"]";
 	}
-	
+
 }

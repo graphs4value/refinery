@@ -1,35 +1,17 @@
 package tools.refinery.store.query.building;
 
+import tools.refinery.store.query.view.RelationView;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import tools.refinery.store.query.view.FilteredRelationView;
-import tools.refinery.store.query.view.RelationView;
-
-public class RelationAtom implements DNFAtom {
-	RelationView<?> view;
-	List<Variable> substitution;
-
+public record RelationAtom(RelationView<?> view, List<Variable> substitution) implements DNFAtom {
 	public RelationAtom(RelationView<?> view, List<Variable> substitution) {
 		this.view = view;
-		this.substitution = substitution;
-	}
-
-	public RelationView<?> getView() {
-		return view;
-	}
-
-	public void setView(FilteredRelationView<?> view) {
-		this.view = view;
-	}
-
-	public List<Variable> getSubstitution() {
-		return substitution;
-	}
-
-	public void setSubstitution(List<Variable> substitution) {
-		this.substitution = substitution;
+		// Create a mutable copy of substitution so that unifyVariables can change it.
+		this.substitution = new ArrayList<>(substitution);
 	}
 
 	@Override

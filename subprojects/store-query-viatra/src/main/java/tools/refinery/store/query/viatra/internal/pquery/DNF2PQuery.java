@@ -1,17 +1,5 @@
-package tools.refinery.store.query.internal;
+package tools.refinery.store.query.viatra.internal.pquery;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
-import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Equality;
@@ -21,39 +9,35 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.NegativeP
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.BinaryTransitiveClosure;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.BasePQuery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
+import tools.refinery.store.query.building.*;
 
-import tools.refinery.store.query.building.DNFAnd;
-import tools.refinery.store.query.building.DNFAtom;
-import tools.refinery.store.query.building.DNFPredicate;
-import tools.refinery.store.query.building.EquivalenceAtom;
-import tools.refinery.store.query.building.PredicateAtom;
-import tools.refinery.store.query.building.RelationAtom;
-import tools.refinery.store.query.building.Variable;
+import java.util.*;
 
 public class DNF2PQuery {
+	private DNF2PQuery() {
+		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
+	}
 
 	public static SimplePQuery translate(DNFPredicate predicate, Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
 		SimplePQuery query = dnf2PQueryMap.get(predicate);
 		if (query != null) {
 			return query;
 		}
-		query = new DNF2PQuery().new SimplePQuery(predicate.getName());
+		query = new SimplePQuery(predicate.getName());
 		Map<Variable, PParameter> parameters = new HashMap<>();
 
 		predicate.getVariables().forEach(variable -> parameters.put(variable, new PParameter(variable.getName())));
 		List<PParameter> parameterList = new ArrayList<>();
-		for(var param : predicate.getVariables()) {
+		for (var param : predicate.getVariables()) {
 			parameterList.add(parameters.get(param));
 		}
-		query.setParameter(parameterList);
+		query.setParameters(parameterList);
 		for (DNFAnd clause : predicate.getClauses()) {
 			PBody body = new PBody(query);
 			List<ExportedParameter> symbolicParameters = new ArrayList<>();
-			for(var param : predicate.getVariables()) {
+			for (var param : predicate.getVariables()) {
 				PVariable pVar = body.getOrCreateVariableByName(param.getName());
 				symbolicParameters.add(new ExportedParameter(body, pVar, parameters.get(param)));
 			}
@@ -67,7 +51,8 @@ public class DNF2PQuery {
 		return query;
 	}
 
-	private static void translateDNFAtom(DNFAtom constraint, PBody body, Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
+	private static void translateDNFAtom(DNFAtom constraint, PBody body,
+										 Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
 		if (constraint instanceof EquivalenceAtom equivalence) {
 			translateEquivalenceAtom(equivalence, body);
 		}
@@ -89,18 +74,19 @@ public class DNF2PQuery {
 	}
 
 	private static void translateRelationAtom(RelationAtom relation, PBody body) {
-		if (relation.getSubstitution().size() != relation.getView().getArity()) {
-			throw new IllegalArgumentException("Arity (" + relation.getView().getArity()
-					+ ") does not match parameter numbers (" + relation.getSubstitution().size() + ")");
+		if (relation.substitution().size() != relation.view().getArity()) {
+			throw new IllegalArgumentException("Arity (%d) does not match parameter numbers (%d)".formatted(
+					relation.view().getArity(), relation.substitution().size()));
 		}
-		Object[] variables = new Object[relation.getSubstitution().size()];
-		for (int i = 0; i < relation.getSubstitution().size(); i++) {
-			variables[i] = body.getOrCreateVariableByName(relation.getSubstitution().get(i).getName());
+		Object[] variables = new Object[relation.substitution().size()];
+		for (int i = 0; i < relation.substitution().size(); i++) {
+			variables[i] = body.getOrCreateVariableByName(relation.substitution().get(i).getName());
 		}
-		new TypeConstraint(body, Tuples.flatTupleOf(variables), relation.getView());
+		new TypeConstraint(body, Tuples.flatTupleOf(variables), relation.view());
 	}
 
-	private static void translatePredicateAtom(PredicateAtom predicate, PBody body, Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
+	private static void translatePredicateAtom(PredicateAtom predicate, PBody body,
+											   Map<DNFPredicate, SimplePQuery> dnf2PQueryMap) {
 		Object[] variables = new Object[predicate.getSubstitution().size()];
 		for (int i = 0; i < predicate.getSubstitution().size(); i++) {
 			variables[i] = body.getOrCreateVariableByName(predicate.getSubstitution().get(i).getName());
@@ -123,67 +109,6 @@ public class DNF2PQuery {
 				new NegativePatternCall(body, Tuples.flatTupleOf(variables),
 						DNF2PQuery.translate(predicate.getReferred(), dnf2PQueryMap));
 			}
-		}
-	}
-
-	public class SimplePQuery extends BasePQuery {
-
-		private String fullyQualifiedName;
-		private List<PParameter> parameters;
-		private LinkedHashSet<PBody> bodies = new LinkedHashSet<>();
-
-		public SimplePQuery(String name) {
-			super(PVisibility.PUBLIC);
-			fullyQualifiedName = name;
-		}
-
-		@Override
-		public String getFullyQualifiedName() {
-			return fullyQualifiedName;
-		}
-
-		public void setParameter(List<PParameter> parameters) {
-			this.parameters = parameters;
-		}
-
-		@Override
-		public List<PParameter> getParameters() {
-			return parameters;
-		}
-
-		public void addBody(PBody body) {
-			bodies.add(body);
-		}
-
-		@Override
-		protected Set<PBody> doGetContainedBodies() {
-			setEvaluationHints(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.UNSPECIFIED));
-			return bodies;
-		}
-
-		public GenericQuerySpecification<RawPatternMatcher> build() {
-			return new GenericQuerySpecification<RawPatternMatcher>(this) {
-
-				@Override
-				public Class<? extends QueryScope> getPreferredScopeClass() {
-					return RelationalScope.class;
-				}
-
-				@Override
-				protected RawPatternMatcher instantiate(ViatraQueryEngine engine) {
-					RawPatternMatcher matcher = engine.getExistingMatcher(this);
-			        if (matcher == null) {
-			            matcher = engine.getMatcher(this);
-			        } 	
-			        return matcher;
-				}
-
-				@Override
-				public RawPatternMatcher instantiate() {
-					return new RawPatternMatcher(this);
-				}
-
-			};
 		}
 	}
 }
