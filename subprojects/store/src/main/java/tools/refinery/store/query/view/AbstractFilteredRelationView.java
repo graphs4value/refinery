@@ -1,8 +1,8 @@
 package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.model.Tuple;
-import tools.refinery.store.model.Tuple.Tuple1;
+import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.tuple.Tuple1;
 import tools.refinery.store.model.representation.Relation;
 
 public abstract class AbstractFilteredRelationView<D> extends RelationView<D> {
@@ -23,7 +23,7 @@ public abstract class AbstractFilteredRelationView<D> extends RelationView<D> {
 	public boolean get(Model model, Object[] tuple) {
 		int[] content = new int[tuple.length];
 		for (int i = 0; i < tuple.length; i++) {
-			content[i] = ((Tuple1) tuple[i]).get(0);
+			content[i] = ((Tuple1) tuple[i]).value0();
 		}
 		Tuple key = Tuple.of(content);
 		D value = model.get(getRepresentation(), key);

@@ -3,7 +3,7 @@ package tools.refinery.store.model.internal;
 import java.util.Objects;
 
 import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 
 public class SimilarRelationEquivalenceClass {
@@ -29,5 +29,5 @@ public class SimilarRelationEquivalenceClass {
 		return arity == other.arity && Objects.equals(defaultValue, other.defaultValue)
 				&& Objects.equals(hashProvider, other.hashProvider);
 	}
-	
+
 }

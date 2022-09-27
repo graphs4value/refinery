@@ -4,7 +4,7 @@ import org.eclipse.collections.api.LazyIntIterable;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntObjectPair;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.TruthValue;
 
 class TerminalNode extends DecisionTreeNode {

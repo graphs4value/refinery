@@ -10,7 +10,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.TupleHashProvider;
 import tools.refinery.store.model.TupleHashProviderBitMagic;
 
@@ -39,7 +39,7 @@ class HashEfficiencyTest {
 			return result;
 		} else throw new IllegalArgumentException();
 	}
-	
+
 	private static int amountToRange(int arity, int n) {
 		int range = 1;
 		while(Math.pow(range,arity)<n+0.1) {
@@ -47,7 +47,7 @@ class HashEfficiencyTest {
 		}
 		return 1024;
 	}
-	
+
 	public static List<Tuple> nPermutations(int arity, int n) {
 		int range = amountToRange(arity, n);
 		List<Tuple> permutations = permutations(range, arity);
@@ -67,7 +67,7 @@ class HashEfficiencyTest {
 		}
 		return permutations;
 	}
-	
+
 	@Test
 	void permutationTest() {
 		List<Tuple> p = permutations(10, 2);
@@ -92,7 +92,7 @@ class HashEfficiencyTest {
 	}
 	private static double calculateHashClashes(List<Tuple> tuples, ContinousHashProvider<Tuple> chp) {
 		int sumClashes = 0;
-		
+
 		for(int i = 0; i<tuples.size(); i++) {
 			int height = 0;
 			for(int j=0; j<tuples.size(); j++) {
@@ -131,22 +131,22 @@ class HashEfficiencyTest {
 		hashes.add(new TupleHashProvider());
 		hashNames.add("BitMagic");
 		hashes.add(new TupleHashProviderBitMagic());
-		
+
 		int[] arities = new int[] {2,3,4,5};
 		int[] sizes = new int[] {32*32,32*32*8};
-		
+
 		System.out.println("Size,Arity,DataSource,Hash,Chashes,Optimal,Badness");
 		for(int size : sizes) {
 			double optimalClashes = caclulateOptimalHashClash(size);
 			for(int arity : arities) {
 				List<String> dataSourceNames = new LinkedList<>();
 				List<List<Tuple>> dataSources = new LinkedList<>();
-				
+
 //				dataSourceNames.add("Permutation");
 //				dataSources.add(nPermutations(arity, size));
 				dataSourceNames.add("Random");
 				dataSources.add(nRandoms(arity, size, 0));
-				
+
 				for(int dataSourceIndex = 0; dataSourceIndex<dataSourceNames.size(); dataSourceIndex++) {
 					for(int hashIndex = 0; hashIndex<hashNames.size(); hashIndex++) {
 						double clashes = calculateHashClashes(dataSources.get(dataSourceIndex),hashes.get(hashIndex));

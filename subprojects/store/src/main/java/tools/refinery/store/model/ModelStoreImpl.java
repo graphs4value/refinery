@@ -16,6 +16,7 @@ import tools.refinery.store.model.internal.SimilarRelationEquivalenceClass;
 import tools.refinery.store.model.representation.AuxilaryData;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.Set;
 

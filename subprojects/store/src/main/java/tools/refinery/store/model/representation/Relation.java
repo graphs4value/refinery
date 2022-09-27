@@ -1,6 +1,6 @@
 package tools.refinery.store.model.representation;
 
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.TupleHashProvider;
 
 public class Relation<D> extends DataRepresentation<Tuple, D> {

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 
 class ModelTest {

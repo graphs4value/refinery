@@ -4,7 +4,7 @@ import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.query.view.RelationView;
 
 import java.util.Objects;

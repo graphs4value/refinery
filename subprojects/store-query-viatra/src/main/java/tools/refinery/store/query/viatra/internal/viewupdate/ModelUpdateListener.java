@@ -3,7 +3,7 @@ package tools.refinery.store.query.viatra.internal.viewupdate;
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.view.RelationView;
 

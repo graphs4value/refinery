@@ -1,7 +1,6 @@
 package tools.refinery.store.query.viatra.tests;
 
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.model.Tuple;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
 import tools.refinery.store.query.QueryableModel;
@@ -11,6 +10,8 @@ import tools.refinery.store.query.viatra.ViatraQueryableModelStore;
 import tools.refinery.store.query.view.FilteredRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.tuple.TupleLike;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -40,15 +41,16 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(2, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate), Set.of(List.of(Tuple.of(0)), List.of(Tuple.of(1))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0), Tuple.of(1)));
 	}
 
 	@Test
 	void relationConstraintTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -78,16 +80,16 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(3, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate), Set.of(List.of(Tuple.of(0), Tuple.of(1)),
-				List.of(Tuple.of(1), Tuple.of(0)), List.of(Tuple.of(1), Tuple.of(2))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0, 1), Tuple.of(1, 0), Tuple.of(1, 2)));
 	}
 
 	@Test
 	void andTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -120,23 +122,22 @@ class QueryTest {
 		model.put(friend, Tuple.of(1, 0), TruthValue.TRUE);
 		model.flushChanges();
 		assertEquals(2, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate),
-				Set.of(List.of(Tuple.of(0), Tuple.of(1)), List.of(Tuple.of(1), Tuple.of(0))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0, 1), Tuple.of(1, 0)));
 
 		model.put(friend, Tuple.of(2, 0), TruthValue.TRUE);
 		model.flushChanges();
 		assertEquals(4, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate),
-				Set.of(List.of(Tuple.of(0), Tuple.of(1)), List.of(Tuple.of(1), Tuple.of(0)),
-						List.of(Tuple.of(0), Tuple.of(2)), List.of(Tuple.of(2), Tuple.of(0))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0, 1), Tuple.of(1, 0), Tuple.of(0, 2),
+				Tuple.of(2, 0)));
 	}
 
 	@Test
 	void existTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -166,7 +167,7 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(2, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate), Set.of(List.of(Tuple.of(0)), List.of(Tuple.of(1))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0), Tuple.of(1)));
 	}
 
 	@Test
@@ -176,7 +177,8 @@ class QueryTest {
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<Boolean> animalView = new KeyOnlyRelationView(animal);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -196,8 +198,7 @@ class QueryTest {
 		DNFAnd clause2 = new DNFAnd(Collections.emptySet(),
 				Arrays.asList(animalRelationAtom1, animalRelationAtom2, friendRelationAtom2));
 
-		// No inter-species friendship
-
+		// No friendship between species
 		DNFPredicate predicate = new DNFPredicate("Or", parameters, Arrays.asList(clause1, clause2));
 
 		QueryableModelStore store = new ViatraQueryableModelStore(Set.of(person, animal, friend),
@@ -215,13 +216,12 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(2, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate),
-				Set.of(List.of(Tuple.of(0), Tuple.of(1)), List.of(Tuple.of(2), Tuple.of(3))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0, 1), Tuple.of(2, 3)));
 	}
 
 	@Test
 	void equalityTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 
 		Variable p1 = new Variable("p1");
@@ -244,16 +244,16 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(3, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate), Set.of(List.of(Tuple.of(0), Tuple.of(0)),
-				List.of(Tuple.of(1), Tuple.of(1)), List.of(Tuple.of(2), Tuple.of(2))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0, 0), Tuple.of(1, 1), Tuple.of(2, 2)));
 	}
 
 	@Test
 	void inequalityTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -281,16 +281,16 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(2, model.countResults(predicate));
-		compareMatchSets(model.allResults(predicate),
-				Set.of(List.of(Tuple.of(0), Tuple.of(1), Tuple.of(2)), List.of(Tuple.of(1), Tuple.of(0), Tuple.of(2))));
+		compareMatchSets(model.allResults(predicate), Set.of(Tuple.of(0, 1, 2), Tuple.of(1, 0, 2)));
 	}
 
 	@Test
 	void patternCallTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -331,10 +331,11 @@ class QueryTest {
 
 	@Test
 	void negativePatternCallTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -375,10 +376,11 @@ class QueryTest {
 
 	@Test
 	void transitivePatternCallTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
 		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
-		RelationView<TruthValue> friendMustView = new FilteredRelationView<TruthValue>(friend, (k, v) -> v.must());
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
 
 		Variable p1 = new Variable("p1");
 		Variable p2 = new Variable("p2");
@@ -415,18 +417,14 @@ class QueryTest {
 		model.flushChanges();
 		assertEquals(3, model.countResults(predicate));
 	}
-	static void compareMatchSets(Stream<Object[]> matchSet, Set<List<Tuple>> expected) {
-		Set<List<Tuple>> translatedMatchSet = new HashSet<>();
+
+	static void compareMatchSets(Stream<TupleLike> matchSet, Set<Tuple> expected) {
+		Set<Tuple> translatedMatchSet = new HashSet<>();
 		var iterator = matchSet.iterator();
 		while (iterator.hasNext()) {
 			var element = iterator.next();
-			List<Tuple> elementToTranslatedMatchSet = new ArrayList<>();
-			for (Object o : element) {
-				elementToTranslatedMatchSet.add((Tuple) o);
-			}
-			translatedMatchSet.add(elementToTranslatedMatchSet);
+			translatedMatchSet.add(element.toTuple());
 		}
-
 		assertEquals(expected, translatedMatchSet);
 	}
 }

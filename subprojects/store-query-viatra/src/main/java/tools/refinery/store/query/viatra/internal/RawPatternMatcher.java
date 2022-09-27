@@ -2,8 +2,9 @@ package tools.refinery.store.query.viatra.internal;
 
 import org.eclipse.viatra.query.runtime.api.GenericPatternMatcher;
 import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
-import org.eclipse.viatra.query.runtime.matchers.tuple.AbstractTuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
+import tools.refinery.store.query.viatra.ViatraTupleLike;
+import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.tuple.TupleLike;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -13,39 +14,50 @@ public class RawPatternMatcher extends GenericPatternMatcher {
 
 	public RawPatternMatcher(GenericQuerySpecification<? extends GenericPatternMatcher> specification) {
 		super(specification);
-		this.empty = new Object[specification.getParameterNames().size()];
+		empty = new Object[specification.getParameterNames().size()];
 	}
 
 	public boolean hasResult() {
-		return hasResult(empty);
+		return backend.hasMatch(empty);
 	}
 
-	public boolean hasResult(Object[] parameters) {
-		return this.backend.hasMatch(parameters);
+	public boolean hasResult(Tuple parameters) {
+		return backend.hasMatch(toParametersArray(parameters));
 	}
 
-	public Optional<Object[]> oneResult() {
-		return oneResult(empty);
+	public Optional<TupleLike> oneResult() {
+		return backend.getOneArbitraryMatch(empty).map(ViatraTupleLike::new);
 	}
 
-	public Optional<Object[]> oneResult(Object[] parameters) {
-		Optional<Tuple> tuple = this.backend.getOneArbitraryMatch(parameters);
-		return tuple.map(AbstractTuple::getElements);
+	public Optional<TupleLike> oneResult(Tuple parameters) {
+		return backend.getOneArbitraryMatch(toParametersArray(parameters)).map(ViatraTupleLike::new);
 	}
 
-	public Stream<Object[]> allResults() {
-		return allResults(empty);
+	public Stream<TupleLike> allResults() {
+		return backend.getAllMatches(empty).map(ViatraTupleLike::new);
 	}
 
-	public Stream<Object[]> allResults(Object[] parameters) {
-		return this.backend.getAllMatches(parameters).map(AbstractTuple::getElements);
+	public Stream<TupleLike> allResults(Tuple parameters) {
+		return backend.getAllMatches(toParametersArray(parameters)).map(ViatraTupleLike::new);
 	}
 
 	public int countResults() {
-		return countResults(empty);
+		return backend.countMatches(empty);
 	}
 
-	public int countResults(Object[] parameters) {
-		return backend.countMatches(parameters);
+	public int countResults(Tuple parameters) {
+		return backend.countMatches(toParametersArray(parameters));
+	}
+
+	private Object[] toParametersArray(Tuple tuple) {
+		int size = tuple.getSize();
+		var array = new Object[tuple.getSize()];
+		for (int i = 0; i < size; i++) {
+			var value = tuple.get(i);
+			if (value >= 0) {
+				array[i] = Tuple.of(value);
+			}
+		}
+		return array;
 	}
 }

@@ -1,7 +1,7 @@
 package tools.refinery.store.query.viatra.tests;
 
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.QueryableModel;
 import tools.refinery.store.query.QueryableModelStore;

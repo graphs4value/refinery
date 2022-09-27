@@ -1,7 +1,7 @@
 package tools.refinery.language.semantics.model.internal;
 
 import org.eclipse.collections.api.LazyIntIterable;
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.TruthValue;
 
 abstract class DecisionTreeNode {

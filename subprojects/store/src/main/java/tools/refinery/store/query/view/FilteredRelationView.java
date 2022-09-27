@@ -1,6 +1,6 @@
 package tools.refinery.store.query.view;
 
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 
 import java.util.function.BiPredicate;

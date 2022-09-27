@@ -1,6 +1,6 @@
 package tools.refinery.store.query.viatra.internal.viewupdate;
 
-import tools.refinery.store.model.Tuple;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
 import java.util.Arrays;

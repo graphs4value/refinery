@@ -8,12 +8,13 @@ import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelDiffCursor;
-import tools.refinery.store.model.Tuple;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.QueryableModel;
 import tools.refinery.store.query.QueryableModelStore;
 import tools.refinery.store.query.building.DNFPredicate;
+import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.tuple.TupleLike;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -124,9 +125,9 @@ public class ViatraQueryableModel implements QueryableModel {
 			return result;
 	}
 
-	protected void validateParameters(DNFPredicate predicate, Object[] parameters) {
+	protected void validateParameters(DNFPredicate predicate, Tuple parameters) {
 		int predicateArity = predicate.getVariables().size();
-		int parameterArity = parameters.length;
+		int parameterArity = parameters.getSize();
 		if (parameterArity != predicateArity) {
 			throw new IllegalArgumentException(
 					"Predicate %s with %d arity called with different number of parameters (%d)"
@@ -140,29 +141,29 @@ public class ViatraQueryableModel implements QueryableModel {
 	}
 
 	@Override
-	public boolean hasResult(DNFPredicate predicate, Object[] parameters) {
+	public boolean hasResult(DNFPredicate predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).hasResult(parameters);
 	}
 
 	@Override
-	public Optional<Object[]> oneResult(DNFPredicate predicate) {
+	public Optional<TupleLike> oneResult(DNFPredicate predicate) {
 		return getMatcher(predicate).oneResult();
 	}
 
 	@Override
-	public Optional<Object[]> oneResult(DNFPredicate predicate, Object[] parameters) {
+	public Optional<TupleLike> oneResult(DNFPredicate predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).oneResult(parameters);
 	}
 
 	@Override
-	public Stream<Object[]> allResults(DNFPredicate predicate) {
+	public Stream<TupleLike> allResults(DNFPredicate predicate) {
 		return getMatcher(predicate).allResults();
 	}
 
 	@Override
-	public Stream<Object[]> allResults(DNFPredicate predicate, Object[] parameters) {
+	public Stream<TupleLike> allResults(DNFPredicate predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).allResults(parameters);
 	}
@@ -173,7 +174,7 @@ public class ViatraQueryableModel implements QueryableModel {
 	}
 
 	@Override
-	public int countResults(DNFPredicate predicate, Object[] parameters) {
+	public int countResults(DNFPredicate predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).countResults(parameters);
 

@@ -1,6 +1,7 @@
 package tools.refinery.store.model;
 
 import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.tuple.Tuple;
 
 public class TupleHashProvider implements ContinousHashProvider<Tuple> {
 	protected static TupleHashProvider instance;
@@ -39,7 +40,7 @@ public class TupleHashProvider implements ContinousHashProvider<Tuple> {
 			3527, 3529, 3533, 3539, 3541, 3547, 3557, 3559, 3571, 3581, 3583, 3593, 3607, 3613, 3617, 3623, 3631, 3637,
 			3643, 3659, 3671, 3673, 3677, 3691, 3697, 3701, 3709, 3719, 3727, 3733, 3739, 3761, 3767, 3769, 3779, 3793,
 			3797, 3803, 3821, 3823, 3833, 3847, 3851, 3853, 3863, 3877, 3881, 3889, 3907, 3911 };
-	
+
 	protected static final long LARGESTPRIME30BITS = 1073741789;
 
 	public TupleHashProvider() {
