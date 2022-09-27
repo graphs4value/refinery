@@ -41,7 +41,9 @@ public class TupleHashProvider implements ContinousHashProvider<Tuple> {
 			3643, 3659, 3671, 3673, 3677, 3691, 3697, 3701, 3709, 3719, 3727, 3733, 3739, 3761, 3767, 3769, 3779, 3793,
 			3797, 3803, 3821, 3823, 3833, 3847, 3851, 3853, 3863, 3877, 3881, 3889, 3907, 3911 };
 
-	protected static final long LARGESTPRIME30BITS = 1073741789;
+	public static final long LARGEST_PRIME_30_BITS = 1073741789;
+
+	public static final int MAX_MODEL_SIZE = (int) LARGEST_PRIME_30_BITS;
 
 	public TupleHashProvider() {
 		if (primes.length < MAX_PRACTICAL_DEPTH) {
@@ -58,7 +60,7 @@ public class TupleHashProvider implements ContinousHashProvider<Tuple> {
 		long accumulator = 0;
 		final int prime = primes[index];
 		for (int i = 0; i < key.getSize(); i++) {
-			accumulator = (prime * accumulator + key.get(i)) % LARGESTPRIME30BITS;
+			accumulator = (prime * accumulator + key.get(i)) % MAX_MODEL_SIZE;
 		}
 
 		return (int) accumulator;
