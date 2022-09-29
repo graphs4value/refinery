@@ -19,12 +19,16 @@ public enum DecisionTreeValue {
 		return truthValue;
 	}
 
-	public DecisionTreeValue merge(TruthValue other) {
-		return truthValue == null ? fromTruthValue(other) : fromTruthValue(truthValue.merge(other));
+	public TruthValue merge(TruthValue other) {
+		return truthValue == null ? other : truthValue.merge(other);
 	}
 
 	public DecisionTreeValue overwrite(DecisionTreeValue other) {
 		return other == UNSET ? this : other;
+	}
+
+	public TruthValue getTruthValueOrElse(TruthValue other) {
+		return this == UNSET ? other : truthValue;
 	}
 
 	public static DecisionTreeValue fromTruthValue(TruthValue truthValue) {

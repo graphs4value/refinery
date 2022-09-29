@@ -33,6 +33,24 @@ abstract class DecisionTreeNode {
 		return copy;
 	}
 
+	public void setIfMissing(int level, Tuple tuple, TruthValue value) {
+		var key = tuple.get(level);
+		if (key < 0) {
+			throw new IllegalArgumentException("Not allowed set a missing wildcard");
+		}
+		doSetIfMissing(key, level - 1, tuple, value);
+	}
+
+	protected abstract void doSetIfMissing(int key, int nextLevel, Tuple tuple, TruthValue value);
+
+	public DecisionTreeNode withValueSetIfMissing(int level, Tuple tuple, TruthValue value) {
+		var copy = deepCopy();
+		copy.setIfMissing(level, tuple, value);
+		return copy;
+	}
+
+	public abstract void setAllMissing(TruthValue value);
+
 	public abstract void overwriteValues(DecisionTreeNode values);
 
 	public DecisionTreeNode withOverwrittenValues(DecisionTreeNode values) {

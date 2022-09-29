@@ -62,19 +62,43 @@ final class IntermediateNode extends DecisionTreeNode {
 	}
 
 	@Override
+	protected void doSetIfMissing(int key, int nextLevel, Tuple tuple, TruthValue value) {
+		var child = children.get(key);
+		if (child == null) {
+			var otherwiseReducedValue = getOtherwiseReducedValue();
+			if (otherwiseReducedValue != null && otherwiseReducedValue != DecisionTreeValue.UNSET) {
+				// Value already set.
+				return;
+			}
+			var newChild = otherwise.withValueSetIfMissing(nextLevel, tuple, value);
+			children.put(key, newChild);
+			return;
+		}
+		child.setIfMissing(nextLevel, tuple, value);
+	}
+
+	@Override
+	public void setAllMissing(TruthValue value) {
+		otherwise.setAllMissing(value);
+		for (var child : children) {
+			child.setAllMissing(value);
+		}
+		reduceChildren();
+	}
+
+	@Override
 	public void overwriteValues(DecisionTreeNode values) {
-		if (values instanceof IntermediateNode intermediateValues) {
-			otherwise.overwriteValues(intermediateValues.otherwise);
-			for (var pair : children.keyValuesView()) {
-				pair.getTwo().overwriteValues(intermediateValues.getChild(pair.getOne()));
-			}
-			for (var pair : intermediateValues.children.keyValuesView()) {
-				children.getIfAbsentPut(pair.getOne(), () -> otherwise.withOverwrittenValues(pair.getTwo()));
-			}
-			reduceChildren();
-		} else {
+		if (!(values instanceof IntermediateNode intermediateValues)) {
 			throw new IllegalArgumentException("Level mismatch");
 		}
+		otherwise.overwriteValues(intermediateValues.otherwise);
+		for (var pair : children.keyValuesView()) {
+			pair.getTwo().overwriteValues(intermediateValues.getChild(pair.getOne()));
+		}
+		for (var pair : intermediateValues.children.keyValuesView()) {
+			children.getIfAbsentPut(pair.getOne(), () -> otherwise.withOverwrittenValues(pair.getTwo()));
+		}
+		reduceChildren();
 	}
 
 	private void reduceChildren() {

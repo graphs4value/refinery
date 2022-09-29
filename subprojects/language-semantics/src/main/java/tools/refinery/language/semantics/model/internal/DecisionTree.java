@@ -20,19 +20,39 @@ public class DecisionTree {
 		root = node;
 	}
 
+	public DecisionTree(int levels) {
+		this(levels, null);
+	}
+
 	public TruthValue get(Tuple tuple) {
 		return root.getValue(levels - 1, tuple).getTruthValue();
 	}
 
 	public void mergeValue(Tuple tuple, TruthValue truthValue) {
-		if (truthValue == null) {
-			return;
+		if (truthValue != null) {
+			root.mergeValue(levels - 1, tuple, truthValue);
 		}
-		root.mergeValue(levels - 1, tuple, truthValue);
+	}
+
+	public void setIfMissing(Tuple tuple, TruthValue truthValue) {
+		if (truthValue != null) {
+			root.setIfMissing(levels - 1, tuple, truthValue);
+		}
+	}
+
+	public void setAllMissing(TruthValue truthValue) {
+		if (truthValue != null) {
+			root.setAllMissing(truthValue);
+		}
 	}
 
 	public void overwriteValues(DecisionTree values) {
 		root.overwriteValues(values.root);
+	}
+
+	public TruthValue getReducedValue() {
+		var reducedValue = root.getReducedValue();
+		return reducedValue == null ? null : reducedValue.getTruthValue();
 	}
 
 	public Cursor<Tuple, TruthValue> getCursor(TruthValue defaultValue, int nodeCount) {
