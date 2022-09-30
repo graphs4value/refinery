@@ -255,6 +255,10 @@ export default class EditorStore {
     log.debug('Show line numbers', this.showLineNumbers);
   }
 
+  get hasSelection(): boolean {
+    return this.state.selection.ranges.some(({ from, to }) => from !== to);
+  }
+
   formatText(): boolean {
     this.client.formatText();
     return true;

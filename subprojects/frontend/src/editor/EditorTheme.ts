@@ -10,8 +10,12 @@ function svgURL(svg: string): string {
 
 export default styled('div', {
   name: 'EditorTheme',
-  shouldForwardProp: (propName) => propName !== 'showLineNumbers',
-})<{ showLineNumbers: boolean }>(({ theme, showLineNumbers }) => {
+  shouldForwardProp: (propName) =>
+    propName !== 'showLineNumbers' && propName !== 'showActiveLine',
+})<{
+  showLineNumbers: boolean;
+  showActiveLine: boolean;
+}>(({ theme, showLineNumbers, showActiveLine }) => {
   const editorFontStyle = {
     ...theme.typography.editor,
     fontWeight: theme.typography.fontWeightEditorNormal,
@@ -39,7 +43,9 @@ export default styled('div', {
       padding: 0,
     },
     '.cm-activeLine': {
-      background: theme.palette.highlight.activeLine,
+      background: showActiveLine
+        ? theme.palette.highlight.activeLine
+        : 'transparent',
     },
     '.cm-activeLineGutter': {
       background: 'transparent',
@@ -367,6 +373,7 @@ export default styled('div', {
     '.cm-tooltip.cm-tooltip-autocomplete': {
       ...editorFontStyle,
       background: theme.palette.background.paper,
+      border: 'none',
       borderRadius: theme.shape.borderRadius,
       overflow: 'hidden',
       ...(theme.palette.mode === 'dark' && {

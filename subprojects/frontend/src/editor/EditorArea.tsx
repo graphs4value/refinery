@@ -46,6 +46,7 @@ export default observer(function EditorArea({
     >
       <EditorTheme
         showLineNumbers={editorStore.showLineNumbers}
+        showActiveLine={!editorStore.hasSelection}
         ref={editorParentRef}
       />
       <EditorAreaDecorations parent={parent} scroller={scroller} />

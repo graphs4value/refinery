@@ -247,20 +247,20 @@ const darkTheme = createResponsiveTheme({
     divider: alpha('#abb2bf', 0.24),
     outer: {
       background: '#21252b',
-      border: '#181a1f',
+      border: '#333841',
     },
     highlight: {
       number: '#6188a6',
       parameter: '#c8ae9d',
-      comment: '#5c6370',
-      activeLine: '#21252b',
-      selection: '#3e4453',
+      comment: '#7f848e',
+      activeLine: '#2c313c',
+      selection: '#404859',
       lineNumber: '#5c6370',
       foldPlaceholder: alpha('#ebebff', 0.12),
       activeLintRange: alpha('#fbc346', 0.28),
       occurences: {
-        read: alpha('#ebebff', 0.24),
-        write: alpha('#ebebff', 0.24),
+        read: alpha('#ebebff', 0.14),
+        write: alpha('#ebebff', 0.14),
       },
       search: {
         match: '#33eaff',

@@ -21,7 +21,7 @@ function EditorLoading(): JSX.Element {
   );
 
   return (
-    <Box mx={2}>
+    <Box mx={2} width="100%">
       {skeletonSizes.map((length, i) => (
         /* eslint-disable-next-line react/no-array-index-key --
           Random placeholders have no identity.
