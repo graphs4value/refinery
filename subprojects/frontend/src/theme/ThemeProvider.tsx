@@ -93,15 +93,14 @@ const components: Components = {
         '.MuiButton-startIcon': { marginRight: 6 },
         '.MuiButton-endIcon': { marginLeft: 6 },
       },
+      sizeSmall: { fontSize: '0.75rem' },
+      sizeLarge: { fontSize: '1rem' },
       text: { '&.rounded': { padding: '6px 14px' } },
-      textSizeSmall: {
-        fontSize: '0.875rem',
-        '&.rounded': { padding: '4px 8px' },
-      },
-      textSizeLarge: {
-        fontSize: '1rem',
-        '&.rounded': { padding: '8px 20px' },
-      },
+      textSizeSmall: { '&.rounded': { padding: '4px 8px' } },
+      textSizeLarge: { '&.rounded': { padding: '8px 20px' } },
+      outlined: { '&.rounded': { padding: '5px 13px' } },
+      outlinedSizeSmall: { '&.rounded': { padding: '3px 9px' } },
+      outlinedSizeLarge: { '&.rounded': { padding: '7px 19px' } },
     },
   },
   MuiToggleButton: {

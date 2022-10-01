@@ -1,8 +1,10 @@
+import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
+import AnimatedButton from './AnimatedButton';
 import type EditorStore from './EditorStore';
 
 const GENERATE_LABEL = 'Generate';
@@ -16,7 +18,7 @@ const GenerateButton = observer(function GenerateButton({
 }): JSX.Element {
   if (editorStore === undefined) {
     return (
-      <Button color="inherit" className="rounded" disabled>
+      <Button color="inherit" variant="outlined" className="rounded" disabled>
         Loading&hellip;
       </Button>
     );
@@ -35,26 +37,25 @@ const GenerateButton = observer(function GenerateButton({
 
   if (errorCount > 0) {
     return (
-      <Button
+      <AnimatedButton
         aria-label={`Select next diagnostic out of ${summary}`}
         onClick={() => editorStore.nextDiagnostic()}
         color="error"
-        className="rounded"
+        startIcon={<DangerousOutlinedIcon />}
       >
         {summary}
-      </Button>
+      </AnimatedButton>
     );
   }
 
   return (
-    <Button
+    <AnimatedButton
       disabled={!editorStore.opened}
       color={warningCount > 0 ? 'warning' : 'primary'}
-      className="rounded"
       startIcon={<PlayArrowIcon />}
     >
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}
-    </Button>
+    </AnimatedButton>
   );
 });
 
