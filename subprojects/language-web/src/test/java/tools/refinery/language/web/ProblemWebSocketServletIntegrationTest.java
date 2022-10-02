@@ -1,18 +1,5 @@
 package tools.refinery.language.web;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
@@ -32,15 +19,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import tools.refinery.language.web.tests.WebSocketIntegrationTestClient;
 import tools.refinery.language.web.xtext.servlet.XtextStatusCode;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
-class ProblemWebSocketServletIntegrationTest {
-	private static int SERVER_PORT = 28080;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
-	private static String SERVLET_URI = "/xtext-service";
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ProblemWebSocketServletIntegrationTest {
+	private static final int SERVER_PORT = 28080;
+
+	private static final String SERVLET_URI = "/xtext-service";
 
 	private GlobalStateMemento stateBeforeInjectorCreation;
 
@@ -151,7 +147,7 @@ class ProblemWebSocketServletIntegrationTest {
 	@ParameterizedTest(name = "Origin: {0}")
 	@ValueSource(strings = { "https://refinery.example", "https://refinery.example:443", "HTTPS://REFINERY.EXAMPLE" })
 	void validOriginTest(String origin) {
-		startServer("https://refinery.example;https://refinery.example:443");
+		startServer("https://refinery.example,https://refinery.example:443");
 		var clientSocket = new CloseImmediatelyTestClient();
 		connect(clientSocket, origin, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
 		clientSocket.waitForTestResult();
@@ -160,7 +156,7 @@ class ProblemWebSocketServletIntegrationTest {
 
 	@Test
 	void invalidOriginTest() {
-		startServer("https://refinery.example;https://refinery.example:443");
+		startServer("https://refinery.example,https://refinery.example:443");
 		var clientSocket = new CloseImmediatelyTestClient();
 		var exception = assertThrows(CompletionException.class,
 				() -> connect(clientSocket, "https://invalid.example", XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));

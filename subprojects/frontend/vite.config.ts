@@ -161,6 +161,13 @@ export default defineConfig({
     host: listenHost,
     port: listenPort,
     strictPort: true,
+    headers: {
+      // Enable strict origin isolation, see e.g.,
+      // https://github.com/vitejs/vite/issues/3909#issuecomment-1065893956
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
     proxy: {
       '/xtext-service': {
         target: `${apiSecure ? 'https' : 'http'}://${apiHost}:${apiPort}`,

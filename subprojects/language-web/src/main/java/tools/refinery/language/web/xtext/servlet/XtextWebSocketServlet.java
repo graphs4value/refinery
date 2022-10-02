@@ -1,28 +1,25 @@
 package tools.refinery.language.web.xtext.servlet;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Set;
-
-import org.eclipse.jetty.websocket.server.JettyServerUpgradeRequest;
-import org.eclipse.jetty.websocket.server.JettyServerUpgradeResponse;
-import org.eclipse.jetty.websocket.server.JettyWebSocketCreator;
-import org.eclipse.jetty.websocket.server.JettyWebSocketServlet;
-import org.eclipse.jetty.websocket.server.JettyWebSocketServletFactory;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import org.eclipse.jetty.websocket.server.*;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
+import java.io.IOException;
+import java.io.Serial;
+import java.time.Duration;
+import java.util.Set;
 
 public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implements JettyWebSocketCreator {
-
+	@Serial
 	private static final long serialVersionUID = -3772740838165122685L;
 
-	public static final String ALLOWED_ORIGINS_SEPARATOR = ";";
+	public static final String ALLOWED_ORIGINS_SEPARATOR = ",";
 
-	public static final String ALLOWED_ORIGINS_INIT_PARAM = "tools.refinery.language.web.xtext.XtextWebSocketServlet.allowedOrigin";
+	public static final String ALLOWED_ORIGINS_INIT_PARAM =
+			"tools.refinery.language.web.xtext.XtextWebSocketServlet.allowedOrigin";
 
 	public static final String XTEXT_SUBPROTOCOL_V1 = "tools.refinery.language.web.xtext.v1";
 
@@ -33,7 +30,7 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 
 	private static final Duration IDLE_TIMEOUT = Duration.ofSeconds(30);
 
-	private transient Logger log = LoggerFactory.getLogger(getClass());
+	private final transient Logger log = LoggerFactory.getLogger(getClass());
 
 	private transient Set<String> allowedOrigins = null;
 

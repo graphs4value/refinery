@@ -3,15 +3,8 @@
  */
 package tools.refinery.language.web;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.EnumSet;
-import java.util.Optional;
-import java.util.Set;
-
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.SessionTrackingMode;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -21,10 +14,15 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.SessionTrackingMode;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class ServerLauncher {
 	public static final String DEFAULT_LISTEN_ADDRESS = "localhost";
@@ -36,24 +34,25 @@ public class ServerLauncher {
 	public static final int HTTP_DEFAULT_PORT = 80;
 
 	public static final int HTTPS_DEFAULT_PORT = 443;
-	
-	public static final String ALLOWED_ORIGINS_SEPARATOR = ";";
+
+	public static final String ALLOWED_ORIGINS_SEPARATOR = ",";
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServerLauncher.class);
 
 	private final Server server;
 
-	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource, Optional<String[]> allowedOrigins) {
+	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource, String[] allowedOrigins) {
 		server = new Server(bindAddress);
 		var handler = new ServletContextHandler();
 		addSessionHandler(handler);
 		addProblemServlet(handler, allowedOrigins);
 		if (baseResource != null) {
 			handler.setBaseResource(baseResource);
-			handler.setWelcomeFiles(new String[] { "index.html" });
+			handler.setWelcomeFiles(new String[]{"index.html"});
 			addDefaultServlet(handler);
 		}
 		handler.addFilter(CacheControlFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+		handler.addFilter(SecurityHeadersFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 		server.setHandler(handler);
 	}
 
@@ -63,13 +62,13 @@ public class ServerLauncher {
 		handler.setSessionHandler(sessionHandler);
 	}
 
-	private void addProblemServlet(ServletContextHandler handler, Optional<String[]> allowedOrigins) {
+	private void addProblemServlet(ServletContextHandler handler, String[] allowedOrigins) {
 		var problemServletHolder = new ServletHolder(ProblemWebSocketServlet.class);
-		if (allowedOrigins.isEmpty()) {
+		if (allowedOrigins == null) {
 			LOG.warn("All WebSocket origins are allowed! This setting should not be used in production!");
 		} else {
 			var allowedOriginsString = String.join(XtextWebSocketServlet.ALLOWED_ORIGINS_SEPARATOR,
-					allowedOrigins.get());
+					allowedOrigins);
 			problemServletHolder.setInitParameter(XtextWebSocketServlet.ALLOWED_ORIGINS_INIT_PARAM,
 					allowedOriginsString);
 		}
@@ -141,8 +140,8 @@ public class ServerLauncher {
 			return Resource.newResource(webRootUri);
 		}
 		// Look for unpacked production artifacts (convenience for running from IDE).
-		var unpackedResourcePathComponents = new String[] { System.getProperty("user.dir"), "build", "webpack",
-				"production" };
+		var unpackedResourcePathComponents = new String[]{System.getProperty("user.dir"), "build", "webpack",
+				"production"};
 		var unpackedResourceDir = new File(String.join(File.separator, unpackedResourcePathComponents));
 		if (unpackedResourceDir.isDirectory()) {
 			return Resource.newResource(unpackedResourceDir);
@@ -164,29 +163,31 @@ public class ServerLauncher {
 		if (portStr != null) {
 			return Integer.parseInt(portStr);
 		}
-		return DEFAULT_LISTEN_PORT;
+		return DEFAULT_PUBLIC_PORT;
 	}
 
-	private static Optional<String[]> getAllowedOrigins() {
+	private static String[] getAllowedOrigins() {
 		var allowedOrigins = System.getenv("ALLOWED_ORIGINS");
 		if (allowedOrigins != null) {
-			return Optional.of(allowedOrigins.split(ALLOWED_ORIGINS_SEPARATOR));
+			return allowedOrigins.split(ALLOWED_ORIGINS_SEPARATOR);
 		}
 		return getAllowedOriginsFromPublicHostAndPort();
 	}
 
-	private static Optional<String[]> getAllowedOriginsFromPublicHostAndPort() {
+	// This method returns <code>null</code> to indicate that all origins are allowed.
+	@SuppressWarnings("squid:S1168")
+	private static String[] getAllowedOriginsFromPublicHostAndPort() {
 		var publicHost = getPublicHost();
 		if (publicHost == null) {
-			return Optional.empty();
+			return null;
 		}
 		int publicPort = getPublicPort();
 		var scheme = publicPort == HTTPS_DEFAULT_PORT ? "https" : "http";
 		var urlWithPort = String.format("%s://%s:%d", scheme, publicHost, publicPort);
 		if (publicPort == HTTPS_DEFAULT_PORT || publicPort == HTTP_DEFAULT_PORT) {
 			var urlWithoutPort = String.format("%s://%s", scheme, publicHost);
-			return Optional.of(new String[] { urlWithPort, urlWithoutPort });
+			return new String[]{urlWithPort, urlWithoutPort};
 		}
-		return Optional.of(new String[] { urlWithPort });
+		return new String[]{urlWithPort};
 	}
 }
