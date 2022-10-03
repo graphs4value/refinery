@@ -103,7 +103,7 @@ function foldWithSibling(node: SyntaxNode): FoldRange | null {
   return null;
 }
 
-export function foldWholeNode(node: SyntaxNode): FoldRange {
+function foldWholeNode(node: SyntaxNode): FoldRange {
   return {
     from: node.from,
     to: node.to,

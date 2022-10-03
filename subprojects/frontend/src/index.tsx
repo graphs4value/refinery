@@ -36,14 +36,6 @@ pred invalidTaxStatus(Person p) <->
     parent(p, q),
     !taxStatus(q, retired).
 
-rule createChild(may Person p, must Person newPerson):
-    may children(p, newPerson),
-    may !equals(newPerson, newPerson)
-==>
-    new q <: newPerson,
-    children(p, q),
-    taxStatus(q, child).
-
 indiv family.
 Family(family).
 members(family, anne).

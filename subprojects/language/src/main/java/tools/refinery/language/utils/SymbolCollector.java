@@ -1,32 +1,15 @@
 package tools.refinery.language.utils;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import tools.refinery.language.model.problem.*;
 
-import com.google.inject.Inject;
-
-import tools.refinery.language.model.problem.Assertion;
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.ConstantAssertionArgument;
-import tools.refinery.language.model.problem.EnumDeclaration;
-import tools.refinery.language.model.problem.IndividualDeclaration;
-import tools.refinery.language.model.problem.IntConstant;
-import tools.refinery.language.model.problem.LogicValue;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.NodeValueAssertion;
-import tools.refinery.language.model.problem.PredicateDefinition;
-import tools.refinery.language.model.problem.PredicateKind;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemFactory;
-import tools.refinery.language.model.problem.RealConstant;
-import tools.refinery.language.model.problem.Relation;
-import tools.refinery.language.model.problem.StringConstant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 class SymbolCollector {
 	@Inject
@@ -64,6 +47,8 @@ class SymbolCollector {
 				collectClass(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
 				collectEnum(enumDeclaration);
+			} else if (statement instanceof RuleDefinition) {
+				throw new UnsupportedOperationException("Rules are not currently supported");
 			}
 		}
 	}

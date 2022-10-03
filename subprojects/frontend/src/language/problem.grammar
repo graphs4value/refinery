@@ -25,11 +25,11 @@ statement {
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
   } |
-  RuleDefinition {
-    ckw<"rule">
-    RuleName ParameterList<Parameter>?
-    RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
-  } |
+  //RuleDefinition {
+  //  ckw<"rule">
+  //  RuleName ParameterList<Parameter>?
+  //  RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
+  //} |
   Assertion {
     ckw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument> (":" LogicValue)? "."
@@ -73,13 +73,13 @@ Literal {
 
 Atom { RelationName "+"? ParameterList<Argument> }
 
-Consequent { ("," | Action)+ }
+//Consequent { ("," | Action)+ }
 
-Action {
-   ckw<"new"> VariableName ("<:" VariableName)? |
-   ckw<"delete"> VariableName |
-   Literal
-}
+//Action {
+//   ckw<"new"> VariableName ("<:" VariableName)? |
+//   ckw<"delete"> VariableName |
+//   Literal
+//}
 
 Argument { VariableName | Constant }
 
@@ -101,7 +101,7 @@ Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 
 RelationName { QualifiedName }
 
-RuleName { QualifiedName }
+//RuleName { QualifiedName }
 
 IndividualNodeName { QualifiedName }
 

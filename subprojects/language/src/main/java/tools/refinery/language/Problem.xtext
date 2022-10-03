@@ -8,7 +8,7 @@ Problem:
 	statements+=Statement*;
 
 Statement:
-	ClassDeclaration | EnumDeclaration | PredicateDefinition | RuleDefinition | Assertion | NodeValueAssertion |
+	ClassDeclaration | EnumDeclaration | PredicateDefinition | /* RuleDefinition | */ Assertion | NodeValueAssertion |
 	ScopeDeclaration |
 	IndividualDeclaration;
 
@@ -48,13 +48,13 @@ PredicateDefinition:
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
 	".";
 
-RuleDefinition:
-	"rule"
-	name=Identifier
-	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-	(":" bodies+=Conjunction (";" bodies+=Conjunction)*
-	"==>" consequents+=Consequent (";" consequents+=Consequent)*)?
-	".";
+//RuleDefinition:
+//	"rule"
+//	name=Identifier
+//	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+//	(":" bodies+=Conjunction (";" bodies+=Conjunction)*
+//	"==>" consequents+=Consequent (";" consequents+=Consequent)*)?
+//	".";
 
 Parameter:
 	(modality=Modality? parameterType=[Relation|QualifiedName])? name=Identifier;
@@ -62,8 +62,8 @@ Parameter:
 Conjunction:
 	literals+=Literal ("," literals+=Literal)*;
 
-Consequent:
-	actions+=Action ("," actions+=Action)*;
+//Consequent:
+//	actions+=Action ("," actions+=Action)*;
 
 Literal:
 	Atom | NegativeLiteral | CountLiteral;
@@ -77,21 +77,21 @@ enum ComparisonOp:
 CountLiteral:
 	modality=Modality? "count" atom=Atom op=ComparisonOp threshold=INT;
 
-Action:
-	AssertionAction | DeleteAction | NewAction;
-
-AssertionAction:
-	value=ShortLogicValue? atom=Atom |
-	atom=Atom (overwrite?=":=" | "<:") value=LogicValue;
-
-DeleteAction:
-	"delete" variableOrNode=[VariableOrNode|QualifiedName];
-
-NewAction:
-	"new" variable=NewVariable ("<:" parent=[VariableOrNode|QualifiedName])?;
-
-NewVariable:
-	name=Identifier;
+//Action:
+//	AssertionAction | DeleteAction | NewAction;
+//
+//AssertionAction:
+//	value=ShortLogicValue? atom=Atom |
+//	atom=Atom (overwrite?=":=" | "<:") value=LogicValue;
+//
+//DeleteAction:
+//	"delete" variableOrNode=[VariableOrNode|QualifiedName];
+//
+//NewAction:
+//	"new" variable=NewVariable ("<:" parent=[VariableOrNode|QualifiedName])?;
+//
+//NewVariable:
+//	name=Identifier;
 
 enum Modality:
 	MAY="may" | MUST="must" | CURRENT="current";
@@ -191,7 +191,7 @@ QualifiedName hidden():
 
 NonRelationKindIdentifier:
 	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" |
-	"pred" | "indiv" | "problem" | "new" | "delete" | "rule" | "may" | "must" | "current" |
+	"pred" | "indiv" | "problem" | /* "new" | "delete" | "rule" | */ "may" | "must" | "current" |
 	"count" | "default" | "scope" | "contained" | "containment";
 
 Identifier:
