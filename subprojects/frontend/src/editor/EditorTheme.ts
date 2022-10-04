@@ -16,7 +16,7 @@ export default styled('div', {
   showLineNumbers: boolean;
   showActiveLine: boolean;
 }>(({ theme, showLineNumbers, showActiveLine }) => {
-  const editorFontStyle = {
+  const editorFontStyle: CSSObject = {
     ...theme.typography.editor,
     fontWeight: theme.typography.fontWeightEditorNormal,
     [theme.breakpoints.down('sm')]: {

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.not;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,6 +18,7 @@ import com.google.inject.Inject;
 import tools.refinery.language.model.tests.utils.ProblemParseHelper;
 import tools.refinery.language.tests.ProblemInjectorProvider;
 
+@Disabled
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemInjectorProvider.class)
 class RuleParsingTest {
