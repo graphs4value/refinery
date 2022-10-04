@@ -1,5 +1,6 @@
 .yarn/releases/** binary
 .yarn/plugins/** binary
+*.cjs eol=lf
 *.css eol=lf
 *.js eol=lf
 *.json eol=lf
