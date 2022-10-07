@@ -1,16 +1,9 @@
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
 import { configure } from 'mobx';
-import React, { Suspense, lazy } from 'react';
-import { createRoot } from 'react-dom/client';
+import React from 'react';
+import { type Root, createRoot } from 'react-dom/client';
 
-import Loading from './Loading';
-import RootStore, { RootStoreProvider } from './RootStore';
-import WindowControlsOverlayColor from './WindowControlsOverlayColor';
-import ThemeProvider from './theme/ThemeProvider';
-import getLogger from './utils/getLogger';
-
-const log = getLogger('index');
+import App from './App';
+import RootStore from './RootStore';
 
 const initialValue = `class Family {
     contains Person[] members
@@ -57,30 +50,45 @@ configure({
   enforceActions: 'always',
 });
 
-const rootStore = new RootStore(initialValue);
+let HotRootStore = RootStore;
+let HotApp = App;
 
-const App = lazy(() => import('./App.js'));
-
-const app = (
-  <React.StrictMode>
-    <RootStoreProvider rootStore={rootStore}>
-      <ThemeProvider>
-        <CssBaseline enableColorScheme />
-        <WindowControlsOverlayColor />
-        <Box height="100vh" overflow="auto">
-          <Suspense fallback={<Loading />}>
-            <App />
-          </Suspense>
-        </Box>
-      </ThemeProvider>
-    </RootStoreProvider>
-  </React.StrictMode>
-);
-
-const rootElement = document.getElementById('app');
-if (rootElement === null) {
-  log.error('Root element not found');
-} else {
-  const root = createRoot(rootElement);
-  root.render(app);
+function createStore(): RootStore {
+  return new HotRootStore(initialValue);
 }
+
+let rootStore = createStore();
+
+let root: Root | undefined;
+
+function render(): void {
+  root?.render(<HotApp rootStore={rootStore} />);
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept('./App', (module) => {
+    if (module === undefined) {
+      return;
+    }
+    ({ default: HotApp } = module as unknown as typeof import('./App'));
+    render();
+  });
+  import.meta.hot.accept('./RootStore', (module) => {
+    if (module === undefined) {
+      return;
+    }
+    ({ default: HotRootStore } =
+      module as unknown as typeof import('./RootStore'));
+    rootStore.dispose();
+    rootStore = createStore();
+    render();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const rootElement = document.getElementById('app');
+  if (rootElement !== null) {
+    root = createRoot(rootElement);
+    render();
+  }
+});

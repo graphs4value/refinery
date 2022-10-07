@@ -14,7 +14,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import React, { type ReactNode, createContext, useContext } from 'react';
 
-import { useRootStore } from '../RootStore';
+import { useRootStore } from '../RootStoreProvider';
 
 interface OuterPalette {
   background: string;

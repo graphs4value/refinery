@@ -3,10 +3,10 @@ eclipseCollections = "11.1.0"
 jetty = "11.0.12"
 jmh = "1.35"
 junit = "5.9.1"
-mockito = "4.8.0"
-mwe2 = "2.13.0"
+mockito = "4.8.1"
+mwe2 = "2.14.0.M1"
 slf4j = "2.0.3"
-xtext = "2.29.0.M1"
+xtext = "2.29.0.M2"
 
 [libraries]
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
@@ -29,7 +29,7 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.7.0" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.8.0.M1" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
@@ -47,4 +47,4 @@ xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", v
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.42.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.43.0" }

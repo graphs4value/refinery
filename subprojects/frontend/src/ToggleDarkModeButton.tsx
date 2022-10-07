@@ -4,7 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useRootStore } from './RootStore';
+import { useRootStore } from './RootStoreProvider';
 
 export default observer(function ToggleDarkModeButton(): JSX.Element {
   const { themeStore } = useRootStore();

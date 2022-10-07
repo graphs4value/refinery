@@ -120,4 +120,8 @@ export default class XtextClient {
       log.error('Error while formatting text', e);
     });
   }
+
+  dispose(): void {
+    this.webSocketClient.disconnect();
+  }
 }

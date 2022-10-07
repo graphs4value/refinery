@@ -1,21 +1,33 @@
-import Grow from '@mui/material/Grow';
-import Stack from '@mui/material/Stack';
-import { SnackbarProvider } from 'notistack';
-import React from 'react';
+import Box from '@mui/material/Box';
+import CssBaseline from '@mui/material/CssBaseline';
+import React, { StrictMode, Suspense, lazy } from 'react';
 
-import TopBar from './TopBar';
-import UpdateNotification from './UpdateNotification';
-import EditorPane from './editor/EditorPane';
+import Loading from './Loading';
+import type RootStore from './RootStore';
+import RootStoreProvider from './RootStoreProvider';
+import WindowControlsOverlayColor from './WindowControlsOverlayColor';
+import ThemeProvider from './theme/ThemeProvider';
 
-export default function App(): JSX.Element {
+const Refinery = lazy(() => import('./Refinery.js'));
+
+export default function App({
+  rootStore,
+}: {
+  rootStore: RootStore;
+}): JSX.Element {
   return (
-    // @ts-expect-error -- notistack has problems with `exactOptionalPropertyTypes
-    <SnackbarProvider TransitionComponent={Grow}>
-      <UpdateNotification />
-      <Stack direction="column" height="100vh" overflow="auto">
-        <TopBar />
-        <EditorPane />
-      </Stack>
-    </SnackbarProvider>
+    <StrictMode>
+      <RootStoreProvider rootStore={rootStore}>
+        <ThemeProvider>
+          <CssBaseline enableColorScheme />
+          <WindowControlsOverlayColor />
+          <Box height="100vh" overflow="auto">
+            <Suspense fallback={<Loading />}>
+              <Refinery />
+            </Suspense>
+          </Box>
+        </ThemeProvider>
+      </RootStoreProvider>
+    </StrictMode>
   );
 }

@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 
-import { useRootStore } from './RootStore';
+import { useRootStore } from './RootStoreProvider';
 import { ContrastThemeProvider } from './theme/ThemeProvider';
 import useDelayedSnackbar from './utils/useDelayedSnackbar';
 

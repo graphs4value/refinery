@@ -7,7 +7,7 @@ import { throttle } from 'lodash-es';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { useRootStore } from './RootStore';
+import { useRootStore } from './RootStoreProvider';
 import ToggleDarkModeButton from './ToggleDarkModeButton';
 import GenerateButton from './editor/GenerateButton';
 

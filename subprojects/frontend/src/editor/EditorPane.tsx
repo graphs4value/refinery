@@ -7,7 +7,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 
-import { useRootStore } from '../RootStore';
+import { useRootStore } from '../RootStoreProvider';
 
 import ConnectionStatusNotification from './ConnectionStatusNotification';
 import EditorArea from './EditorArea';

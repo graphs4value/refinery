@@ -263,4 +263,8 @@ export default class EditorStore {
     this.client.formatText();
     return true;
   }
+
+  dispose(): void {
+    this.client.dispose();
+  }
 }

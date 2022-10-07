@@ -1,3 +1,4 @@
+import { setDefaultResultOrder } from 'node:dns';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +9,8 @@ import { minify } from 'html-minifier-terser';
 import { defineConfig, PluginOption } from 'vite';
 import injectPreload from 'vite-plugin-inject-preload';
 import { VitePWA } from 'vite-plugin-pwa';
+
+setDefaultResultOrder('verbatim');
 
 const thisDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,7 +25,7 @@ function portNumberOrElse(envName: string, fallback: number): number {
 
 const listenHost = process.env.LISTEN_HOST || 'localhost';
 const listenPort = portNumberOrElse('LISTEN_PORT', 1313);
-const apiHost = process.env.API_HOST || listenHost;
+const apiHost = process.env.API_HOST || '127.0.0.1';
 const apiPort = portNumberOrElse('API_PORT', 1312);
 const apiSecure = apiPort === 443;
 const publicHost = process.env.PUBLIC_HOST || listenHost;
@@ -60,15 +63,7 @@ export default defineConfig({
   cacheDir: path.join(thisDir, 'build/vite/cache'),
   plugins: [
     minifyPlugin,
-    react({
-      babel: {
-        // Gets rid of deoptimization warnings for large chunks.
-        // We don't need to minify here, because the output of Babel
-        // will get passed to esbuild anyways.
-        compact: false,
-        minified: false,
-      },
-    }),
+    react(),
     injectPreload({
       files: [
         {
@@ -87,12 +82,6 @@ export default defineConfig({
       strategies: 'generateSW',
       registerType: 'prompt',
       injectRegister: null,
-      devOptions: {
-        enabled: true,
-      },
-      // Unregister service worker installed in production mode
-      // if Vite is started in development mode on the same domain.
-      selfDestroying: isDevelopment,
       workbox: {
         globPatterns: [
           '**/*.{css,html,js}',
@@ -101,7 +90,6 @@ export default defineConfig({
         ],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
         navigateFallbackDenylist: [/^\/xtext-service/],
-        sourcemap: isDevelopment,
       },
       includeAssets: ['apple-touch-icon.png', 'favicon.svg', 'mask-icon.svg'],
       manifest: {
