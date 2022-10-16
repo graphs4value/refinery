@@ -43,7 +43,6 @@ function animateSize(
     [direction]: opacity * SHADOW_SIZE,
     transition: theme.transitions.create(direction, {
       duration: theme.transitions.duration.shortest,
-      easing: theme.transitions.easing.sharp,
     }),
   };
 }

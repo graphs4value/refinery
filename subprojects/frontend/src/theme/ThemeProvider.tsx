@@ -246,7 +246,7 @@ const darkTheme = createResponsiveTheme({
     divider: alpha('#abb2bf', 0.24),
     outer: {
       background: '#21252b',
-      border: '#333841',
+      border: '#181a1f',
     },
     highlight: {
       number: '#6188a6',
