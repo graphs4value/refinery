@@ -2,6 +2,7 @@ package tools.refinery.store.query.view;
 
 import tools.refinery.store.map.CursorAsIterator;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.model.RelationLike;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
  * @param <D>
  * @author Oszkar Semerath
  */
-public abstract class RelationView<D> {
+public abstract class RelationView<D> implements RelationLike {
 	private final Relation<D> representation;
 
 	private final String name;
@@ -28,12 +29,11 @@ public abstract class RelationView<D> {
 		this(representation, UUID.randomUUID().toString());
 	}
 
-	public abstract int getArity();
-
 	public Relation<D> getRepresentation() {
 		return representation;
 	}
 
+	@Override
 	public String getName() {
 		return representation.getName() + "#" + name;
 	}

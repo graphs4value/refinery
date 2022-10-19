@@ -12,7 +12,7 @@ import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.QueryableModel;
 import tools.refinery.store.query.QueryableModelStore;
-import tools.refinery.store.query.building.DNFPredicate;
+import tools.refinery.store.query.DNF;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.TupleLike;
 
@@ -27,16 +27,16 @@ public class ViatraQueryableModel implements QueryableModel {
 
 	protected final Model model;
 
-	protected final Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery;
+	protected final Map<DNF, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery;
 
 	protected RelationalScope scope;
 
 	protected AdvancedViatraQueryEngine engine;
 
-	protected Map<DNFPredicate, RawPatternMatcher> predicate2Matcher;
+	protected Map<DNF, RawPatternMatcher> predicate2Matcher;
 
 	public ViatraQueryableModel(QueryableModelStore store, Model model,
-								Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery) {
+								Map<DNF, GenericQuerySpecification<RawPatternMatcher>> predicates2PQuery) {
 		this.store = store;
 		this.model = model;
 		this.predicates2PQuery = predicates2PQuery;
@@ -49,15 +49,15 @@ public class ViatraQueryableModel implements QueryableModel {
 		this.predicate2Matcher = initMatchers(this.engine, this.predicates2PQuery);
 	}
 
-	private Map<DNFPredicate, RawPatternMatcher> initMatchers(
+	private Map<DNF, RawPatternMatcher> initMatchers(
 			AdvancedViatraQueryEngine engine,
-			Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates2pQuery) {
+			Map<DNF, GenericQuerySpecification<RawPatternMatcher>> predicates2pQuery) {
 		// 1. prepare group
 		IQueryGroup queryGroup = GenericQueryGroup.of(Set.copyOf(predicates2pQuery.values()));
 		engine.prepareGroup(queryGroup, null);
 
 		// 2. then get all matchers
-		Map<DNFPredicate, RawPatternMatcher> result = new HashMap<>();
+		Map<DNF, RawPatternMatcher> result = new HashMap<>();
 		for (var entry : predicates2pQuery.entrySet()) {
 			var matcher = engine.getMatcher(entry.getValue());
 			result.put(entry.getKey(), matcher);
@@ -71,7 +71,7 @@ public class ViatraQueryableModel implements QueryableModel {
 	}
 
 	@Override
-	public Set<DNFPredicate> getPredicates() {
+	public Set<DNF> getPredicates() {
 		return store.getPredicates();
 	}
 
@@ -117,7 +117,7 @@ public class ViatraQueryableModel implements QueryableModel {
 		return model.getSize(representation);
 	}
 
-	protected RawPatternMatcher getMatcher(DNFPredicate predicate) {
+	protected RawPatternMatcher getMatcher(DNF predicate) {
 		var result = this.predicate2Matcher.get(predicate);
 		if (result == null) {
 			throw new IllegalArgumentException("Model does not contain predicate %s".formatted(predicate.getName()));
@@ -125,8 +125,8 @@ public class ViatraQueryableModel implements QueryableModel {
 			return result;
 	}
 
-	protected void validateParameters(DNFPredicate predicate, Tuple parameters) {
-		int predicateArity = predicate.getVariables().size();
+	protected void validateParameters(DNF predicate, Tuple parameters) {
+		int predicateArity = predicate.getParameters().size();
 		int parameterArity = parameters.getSize();
 		if (parameterArity != predicateArity) {
 			throw new IllegalArgumentException(
@@ -136,45 +136,45 @@ public class ViatraQueryableModel implements QueryableModel {
 	}
 
 	@Override
-	public boolean hasResult(DNFPredicate predicate) {
+	public boolean hasResult(DNF predicate) {
 		return getMatcher(predicate).hasResult();
 	}
 
 	@Override
-	public boolean hasResult(DNFPredicate predicate, Tuple parameters) {
+	public boolean hasResult(DNF predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).hasResult(parameters);
 	}
 
 	@Override
-	public Optional<TupleLike> oneResult(DNFPredicate predicate) {
+	public Optional<TupleLike> oneResult(DNF predicate) {
 		return getMatcher(predicate).oneResult();
 	}
 
 	@Override
-	public Optional<TupleLike> oneResult(DNFPredicate predicate, Tuple parameters) {
+	public Optional<TupleLike> oneResult(DNF predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).oneResult(parameters);
 	}
 
 	@Override
-	public Stream<TupleLike> allResults(DNFPredicate predicate) {
+	public Stream<TupleLike> allResults(DNF predicate) {
 		return getMatcher(predicate).allResults();
 	}
 
 	@Override
-	public Stream<TupleLike> allResults(DNFPredicate predicate, Tuple parameters) {
+	public Stream<TupleLike> allResults(DNF predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).allResults(parameters);
 	}
 
 	@Override
-	public int countResults(DNFPredicate predicate) {
+	public int countResults(DNF predicate) {
 		return getMatcher(predicate).countResults();
 	}
 
 	@Override
-	public int countResults(DNFPredicate predicate, Tuple parameters) {
+	public int countResults(DNF predicate, Tuple parameters) {
 		validateParameters(predicate, parameters);
 		return getMatcher(predicate).countResults(parameters);
 

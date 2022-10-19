@@ -1,24 +1,15 @@
 package tools.refinery.store.model;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
+import tools.refinery.store.map.*;
 import tools.refinery.store.model.internal.ModelImpl;
 import tools.refinery.store.model.internal.SimilarRelationEquivalenceClass;
-import tools.refinery.store.model.representation.AuxilaryData;
+import tools.refinery.store.model.representation.AuxiliaryData;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.Set;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class ModelStoreImpl implements ModelStore {
 
@@ -38,7 +29,7 @@ public class ModelStoreImpl implements ModelStore {
 			if (dataRepresentation instanceof Relation<?> symbolRepresentation) {
 				addOrCreate(symbolRepresentationsPerHashPerArity,
 						new SimilarRelationEquivalenceClass(symbolRepresentation), symbolRepresentation);
-			} else if (dataRepresentation instanceof AuxilaryData<?, ?>) {
+			} else if (dataRepresentation instanceof AuxiliaryData<?, ?>) {
 				VersionedMapStoreImpl<?, ?> store = new VersionedMapStoreImpl<>(dataRepresentation.getHashProvider(),
 						dataRepresentation.getDefaultValue());
 				result.put(dataRepresentation, store);

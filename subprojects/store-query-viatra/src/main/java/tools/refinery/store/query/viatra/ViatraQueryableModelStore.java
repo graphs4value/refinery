@@ -5,9 +5,11 @@ import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
 import tools.refinery.store.model.representation.DataRepresentation;
-import tools.refinery.store.query.QueryableModel;
-import tools.refinery.store.query.QueryableModelStore;
-import tools.refinery.store.query.building.*;
+import tools.refinery.store.query.*;
+import tools.refinery.store.query.atom.DNFAtom;
+import tools.refinery.store.query.atom.DNFCallAtom;
+import tools.refinery.store.query.atom.EquivalenceAtom;
+import tools.refinery.store.query.atom.RelationViewAtom;
 import tools.refinery.store.query.viatra.internal.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.ViatraQueryableModel;
 import tools.refinery.store.query.viatra.internal.pquery.DNF2PQuery;
@@ -23,10 +25,10 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 
 	protected final Set<RelationView<?>> relationViews;
 
-	protected final Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> predicates;
+	protected final Map<DNF, GenericQuerySpecification<RawPatternMatcher>> predicates;
 
 	public ViatraQueryableModelStore(ModelStore store, Set<RelationView<?>> relationViews,
-									 Set<DNFPredicate> predicates) {
+									 Set<DNF> predicates) {
 		this.store = store;
 		validateViews(store.getDataRepresentations(), relationViews);
 		this.relationViews = Collections.unmodifiableSet(relationViews);
@@ -35,7 +37,7 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 	}
 
 	public ViatraQueryableModelStore(Set<DataRepresentation<?, ?>> dataRepresentations,
-									 Set<RelationView<?>> relationViews, Set<DNFPredicate> predicates) {
+									 Set<RelationView<?>> relationViews, Set<DNF> predicates) {
 		this(new ModelStoreImpl(dataRepresentations), relationViews, predicates);
 	}
 
@@ -49,44 +51,46 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 		}
 	}
 
-	private void validatePredicates(Set<RelationView<?>> relationViews, Set<DNFPredicate> predicates) {
-		for (DNFPredicate dnfPredicate : predicates) {
+	private void validatePredicates(Set<RelationView<?>> relationViews, Set<DNF> predicates) {
+		for (DNF dnfPredicate : predicates) {
 			for (DNFAnd clause : dnfPredicate.getClauses()) {
-				for (DNFAtom atom : clause.getConstraints()) {
-					if (atom instanceof RelationAtom relationAtom) {
-						validateRelationAtom(relationViews, dnfPredicate, relationAtom);
-					} else if (atom instanceof PredicateAtom predicateAtom) {
-						validatePredicateAtom(predicates, dnfPredicate, predicateAtom);
+				for (DNFAtom atom : clause.constraints()) {
+					if (atom instanceof RelationViewAtom relationViewAtom) {
+						validateRelationAtom(relationViews, dnfPredicate, relationViewAtom);
+					} else if (atom instanceof DNFCallAtom queryCallAtom) {
+						validatePredicateAtom(predicates, dnfPredicate, queryCallAtom);
+					} else if (!(atom instanceof EquivalenceAtom)) {
+						throw new IllegalArgumentException("Unknown constraint: " + atom.toString());
 					}
 				}
 			}
 		}
 	}
 
-	private void validateRelationAtom(Set<RelationView<?>> relationViews, DNFPredicate dnfPredicate,
-									  RelationAtom relationAtom) {
-		if (!relationViews.contains(relationAtom.view())) {
+	private void validateRelationAtom(Set<RelationView<?>> relationViews, DNF dnfPredicate,
+									  RelationViewAtom relationViewAtom) {
+		if (!relationViews.contains(relationViewAtom.getTarget())) {
 			throw new IllegalArgumentException(
 					"%s %s contains reference to a view %s that is not in the model.".formatted(
-							DNFPredicate.class.getSimpleName(), dnfPredicate.getUniqueName(),
-							relationAtom.view().getName()));
+							DNF.class.getSimpleName(), dnfPredicate.getUniqueName(),
+							relationViewAtom.getTarget().getName()));
 		}
 	}
 
-	private void validatePredicateAtom(Set<DNFPredicate> predicates, DNFPredicate dnfPredicate,
-									   PredicateAtom predicateAtom) {
-		if (!predicates.contains(predicateAtom.getReferred())) {
+	private void validatePredicateAtom(Set<DNF> predicates, DNF dnfPredicate,
+									   DNFCallAtom queryCallAtom) {
+		if (!predicates.contains(queryCallAtom.getTarget())) {
 			throw new IllegalArgumentException(
 					"%s %s contains reference to a predicate %s that is not in the model.".formatted(
-							DNFPredicate.class.getSimpleName(), dnfPredicate.getUniqueName(),
-							predicateAtom.getReferred().getName()));
+							DNF.class.getSimpleName(), dnfPredicate.getUniqueName(),
+							queryCallAtom.getTarget().getName()));
 		}
 	}
 
-	private Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> initPredicates(Set<DNFPredicate> predicates) {
-		Map<DNFPredicate, GenericQuerySpecification<RawPatternMatcher>> result = new HashMap<>();
+	private Map<DNF, GenericQuerySpecification<RawPatternMatcher>> initPredicates(Set<DNF> predicates) {
+		Map<DNF, GenericQuerySpecification<RawPatternMatcher>> result = new HashMap<>();
 		var dnf2PQuery = new DNF2PQuery();
-		for (DNFPredicate dnfPredicate : predicates) {
+		for (DNF dnfPredicate : predicates) {
 			GenericQuerySpecification<RawPatternMatcher> query = dnf2PQuery.translate(dnfPredicate).build();
 			result.put(dnfPredicate, query);
 		}
@@ -105,7 +109,7 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 	}
 
 	@Override
-	public Set<DNFPredicate> getPredicates() {
+	public Set<DNF> getPredicates() {
 		return predicates.keySet();
 	}
 
