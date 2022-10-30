@@ -35,7 +35,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 
 	/**
 	 * Constructor that copies a mutable node to an immutable.
-	 * 
+	 *
 	 * @param node  A mutable node.
 	 * @param cache A cache of existing immutable nodes. It can be used to search
 	 *              and place reference immutable nodes. It can be null, if no cache
@@ -151,7 +151,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 					oldValue.setOldValue(value);
 					return this;
 				} else {
-					// update existing value
+					// update existing nodeId
 					MutableNode<K, V> mutable = this.toMutable();
 					return mutable.updateValue(value, oldValue, selectedHashFragment);
 				}
@@ -161,7 +161,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 					oldValue.setOldValue(defaultValue);
 					return this;
 				} else {
-					// add new key + value
+					// add new key + nodeId
 					MutableNode<K, V> mutable = this.toMutable();
 					return mutable.putValue(key, value, oldValue, hashProvider, defaultValue, hash, depth);
 				}
@@ -182,7 +182,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				return mutable.updateWithSubNode(selectedHashFragment, newsubNode, value.equals(defaultValue));
 			}
 		} else {
-			// add new key + value
+			// add new key + nodeId
 			MutableNode<K, V> mutable = this.toMutable();
 			return mutable.putValue(key, value, oldValue, hashProvider, defaultValue, hash, depth);
 		}

@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.model.tests.utils.ProblemParseHelper;
 import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.utils.ContainmentRole;
 import tools.refinery.language.utils.ProblemDesugarer;
 
 import java.util.stream.Stream;
@@ -61,7 +62,7 @@ class SymbolCollectorTest {
 		assertThat(collectedSymbols.relations(), hasKey(classDeclaration));
 		var classInfo = collectedSymbols.relations().get(classDeclaration);
 		assertThat(classInfo.parameters(), hasSize(1));
-		assertThat(classInfo.kind(), is(PredicateKind.CONTAINED));
+		assertThat(classInfo.containmentRole(), is(ContainmentRole.CONTAINED));
 		assertThat(classInfo.hasDefinition(), is(false));
 		var newNode = classDeclaration.getNewNode();
 		assertThat(collectedSymbols.nodes(), hasKey(newNode));
@@ -96,11 +97,11 @@ class SymbolCollectorTest {
 		var barInfo = collectedSymbols.relations().get(barReference);
 		var quuxReference = fooClass.reference("quux");
 		var quuxInfo = collectedSymbols.relations().get(quuxReference);
-		assertThat(barInfo.kind(), is(PredicateKind.DEFAULT));
+		assertThat(barInfo.containmentRole(), is(ContainmentRole.NONE));
 		assertThat(barInfo.opposite(), is(quuxReference));
 		assertThat(barInfo.multiplicity(), is(instanceOf(UnboundedMultiplicity.class)));
 		assertThat(barInfo.hasDefinition(), is(false));
-		assertThat(quuxInfo.kind(), is(PredicateKind.DEFAULT));
+		assertThat(quuxInfo.containmentRole(), is(ContainmentRole.NONE));
 		assertThat(quuxInfo.opposite(), is(barReference));
 		assertThat(quuxInfo.multiplicity(), is(instanceOf(ExactMultiplicity.class)));
 		assertThat(quuxInfo.multiplicity(), hasProperty("exactValue", is(1)));
@@ -115,8 +116,8 @@ class SymbolCollectorTest {
 				}
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").reference("bar")).kind(),
-				is(PredicateKind.CONTAINMENT));
+		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").reference("bar")).containmentRole(),
+				is(ContainmentRole.CONTAINMENT));
 	}
 
 	@Test
@@ -127,8 +128,8 @@ class SymbolCollectorTest {
 				}
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").reference("bar")).kind(),
-				is(PredicateKind.CONTAINMENT));
+		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").reference("bar")).containmentRole(),
+				is(ContainmentRole.CONTAINMENT));
 	}
 
 	@Test
@@ -141,27 +142,27 @@ class SymbolCollectorTest {
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
 		var enumDeclaration = problem.findEnum("Foo");
 		var enumInfo = collectedSymbols.relations().get(enumDeclaration.get());
-		assertThat(enumInfo.kind(), is(PredicateKind.DEFAULT));
+		assertThat(enumInfo.containmentRole(), is(ContainmentRole.NONE));
 		assertThat(enumInfo.assertions(), assertsNode(enumDeclaration.literal("bar"), LogicValue.TRUE));
 		assertThat(enumInfo.assertions(), assertsNode(enumDeclaration.literal("quux"), LogicValue.TRUE));
 	}
 
 	@ParameterizedTest
 	@MethodSource
-	void predicateTest(String keyword, PredicateKind kind) {
+	void predicateTest(String keyword, ContainmentRole containmentRole) {
 		var problem = parseHelper.parse(keyword + " foo(node x) <-> domain(x); data(x).");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
 		var predicateInfo = collectedSymbols.relations().get(problem.pred("foo").get());
-		assertThat(predicateInfo.kind(), is(kind));
+		assertThat(predicateInfo.containmentRole(), is(containmentRole));
 		assertThat(predicateInfo.parameters(), hasSize(1));
 		assertThat(predicateInfo.bodies(), hasSize(2));
 		assertThat(predicateInfo.hasDefinition(), is(true));
 	}
 
 	static Stream<Arguments> predicateTest() {
-		return Stream.of(Arguments.of("pred", PredicateKind.DEFAULT), Arguments.of("error", PredicateKind.ERROR),
-				Arguments.of("contained", PredicateKind.CONTAINED), Arguments.of("containment",
-						PredicateKind.CONTAINMENT));
+		return Stream.of(Arguments.of("pred", ContainmentRole.NONE), Arguments.of("error", ContainmentRole.NONE),
+				Arguments.of("contained", ContainmentRole.CONTAINED), Arguments.of("containment",
+						ContainmentRole.CONTAINMENT));
 	}
 
 	@ParameterizedTest
@@ -184,7 +185,7 @@ class SymbolCollectorTest {
 				default foo(a): %s.
 				""".formatted(keyword));
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		assertThat(collectedSymbols.relations().get(problem.pred("foo").get()).defaultAssertions(),
+		assertThat(collectedSymbols.relations().get(problem.pred("foo").get()).assertions(),
 				assertsNode(problem.node("a"), value));
 	}
 
@@ -254,6 +255,10 @@ class SymbolCollectorTest {
 				LogicValue.UNKNOWN));
 	}
 
+	static Stream<Arguments> valueTypes() {
+		return Stream.of(Arguments.of("3", "int"), Arguments.of("3.14", "real"), Arguments.of("\"foo\"", "string"));
+	}
+
 	@Test
 	void invalidProblemTest() {
 		var problem = parseHelper.parse("""
@@ -265,8 +270,18 @@ class SymbolCollectorTest {
 		assertDoesNotThrow(() -> desugarer.collectSymbols(problem));
 	}
 
-	static Stream<Arguments> valueTypes() {
-		return Stream.of(Arguments.of("3", "int"), Arguments.of("3.14", "real"), Arguments.of("\"foo\"", "string"));
+	@Test
+	void errorAssertionTest() {
+		var problem = parseHelper.parse("""
+				error foo(node a, node b) <-> equals(a, b).
+				""");
+		var collectedSymbols = desugarer.collectSymbols(problem.get());
+		var fooInfo = collectedSymbols.relations().get(problem.pred("foo").get());
+		assertThat(fooInfo.assertions(), hasSize(1));
+		var assertion = fooInfo.assertions().stream().findFirst().orElseThrow();
+		assertThat(assertion.getValue(), is(LogicValue.FALSE));
+		assertThat(assertion.getArguments(), hasSize(2));
+		assertThat(assertion.getArguments(), everyItem(instanceOf(WildcardAssertionArgument.class)));
 	}
 
 	private static Matcher<Iterable<? super Assertion>> assertsNode(Node node, LogicValue value) {

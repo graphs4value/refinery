@@ -4,12 +4,10 @@ import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
+import tools.refinery.store.model.RelationLike;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.query.*;
-import tools.refinery.store.query.atom.DNFAtom;
-import tools.refinery.store.query.atom.DNFCallAtom;
-import tools.refinery.store.query.atom.EquivalenceAtom;
-import tools.refinery.store.query.atom.RelationViewAtom;
+import tools.refinery.store.query.atom.*;
 import tools.refinery.store.query.viatra.internal.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.ViatraQueryableModel;
 import tools.refinery.store.query.viatra.internal.pquery.DNF2PQuery;
@@ -57,9 +55,11 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 				for (DNFAtom atom : clause.constraints()) {
 					if (atom instanceof RelationViewAtom relationViewAtom) {
 						validateRelationAtom(relationViews, dnfPredicate, relationViewAtom);
-					} else if (atom instanceof DNFCallAtom queryCallAtom) {
+					} else if (atom instanceof CallAtom<?> queryCallAtom) {
 						validatePredicateAtom(predicates, dnfPredicate, queryCallAtom);
-					} else if (!(atom instanceof EquivalenceAtom)) {
+					} else if (atom instanceof CountNotEqualsAtom<?> countNotEqualsAtom) {
+						validateCountNotEqualsAtom(predicates, dnfPredicate, countNotEqualsAtom);
+					} else if (!(atom instanceof EquivalenceAtom || atom instanceof ConstantAtom)) {
 						throw new IllegalArgumentException("Unknown constraint: " + atom.toString());
 					}
 				}
@@ -77,14 +77,22 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 		}
 	}
 
-	private void validatePredicateAtom(Set<DNF> predicates, DNF dnfPredicate,
-									   DNFCallAtom queryCallAtom) {
-		if (!predicates.contains(queryCallAtom.getTarget())) {
+	private void validatePredicateReference(Set<DNF> predicates, DNF dnfPredicate, RelationLike target) {
+		if (!(target instanceof DNF dnfTarget) || !predicates.contains(dnfTarget)) {
 			throw new IllegalArgumentException(
 					"%s %s contains reference to a predicate %s that is not in the model.".formatted(
-							DNF.class.getSimpleName(), dnfPredicate.getUniqueName(),
-							queryCallAtom.getTarget().getName()));
+							DNF.class.getSimpleName(), dnfPredicate.getUniqueName(), target.getName()));
 		}
+	}
+
+	private void validatePredicateAtom(Set<DNF> predicates, DNF dnfPredicate, CallAtom<?> queryCallAtom) {
+		validatePredicateReference(predicates, dnfPredicate, queryCallAtom.getTarget());
+	}
+
+	private void validateCountNotEqualsAtom(Set<DNF> predicates, DNF dnfPredicate,
+											CountNotEqualsAtom<?> countNotEqualsAtom) {
+		validatePredicateReference(predicates, dnfPredicate, countNotEqualsAtom.mayTarget());
+		validatePredicateReference(predicates, dnfPredicate, countNotEqualsAtom.mustTarget());
 	}
 
 	private Map<DNF, GenericQuerySpecification<RawPatternMatcher>> initPredicates(Set<DNF> predicates) {

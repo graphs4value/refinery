@@ -2,20 +2,16 @@ package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Equality;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.ExportedParameter;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Inequality;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.NegativePatternCall;
+import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.*;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.BinaryTransitiveClosure;
+import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.ConstantValue;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
+import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.*;
-import tools.refinery.store.query.atom.DNFAtom;
-import tools.refinery.store.query.atom.EquivalenceAtom;
-import tools.refinery.store.query.atom.DNFCallAtom;
-import tools.refinery.store.query.atom.RelationViewAtom;
+import tools.refinery.store.query.atom.*;
 import tools.refinery.store.query.view.RelationView;
 
 import java.util.*;
@@ -85,8 +81,12 @@ public class DNF2PQuery {
 			translateEquivalenceAtom(equivalenceAtom, body);
 		} else if (constraint instanceof RelationViewAtom relationViewAtom) {
 			translateRelationViewAtom(relationViewAtom, body);
-		} else if (constraint instanceof DNFCallAtom dnfCallAtom) {
-			translateDNFCallAtom(dnfCallAtom, body);
+		} else if (constraint instanceof CallAtom<?> callAtom) {
+			translateCallAtom(callAtom, body);
+		} else if (constraint instanceof ConstantAtom constantAtom) {
+			translateConstantAtom(constantAtom, body);
+		} else if (constraint instanceof CountNotEqualsAtom<?> countNotEqualsAtom) {
+			translateCountNotEqualsAtom(countNotEqualsAtom, body);
 		} else {
 			throw new IllegalArgumentException("Unknown constraint: " + constraint.toString());
 		}
@@ -103,32 +103,66 @@ public class DNF2PQuery {
 	}
 
 	private void translateRelationViewAtom(RelationViewAtom relationViewAtom, PBody body) {
-		int arity = relationViewAtom.getSubstitution().size();
+		new TypeConstraint(body, translateSubstitution(relationViewAtom.getSubstitution(), body),
+				wrapView(relationViewAtom.getTarget()));
+	}
+
+	private static Tuple translateSubstitution(List<Variable> substitution, PBody body) {
+		int arity = substitution.size();
 		Object[] variables = new Object[arity];
 		for (int i = 0; i < arity; i++) {
-			var variable = relationViewAtom.getSubstitution().get(i);
+			var variable = substitution.get(i);
 			variables[i] = body.getOrCreateVariableByName(variable.getUniqueName());
 		}
-		new TypeConstraint(body, Tuples.flatTupleOf(variables), wrapView(relationViewAtom.getTarget()));
+		return Tuples.flatTupleOf(variables);
 	}
 
 	private RelationViewWrapper wrapView(RelationView<?> relationView) {
 		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
 	}
 
-	private void translateDNFCallAtom(DNFCallAtom queryCallAtom, PBody body) {
-		int arity = queryCallAtom.getSubstitution().size();
-		Object[] variables = new Object[arity];
-		for (int i = 0; i < arity; i++) {
-			var variable = queryCallAtom.getSubstitution().get(i);
-			variables[i] = body.getOrCreateVariableByName(variable.getUniqueName());
+	private void translateCallAtom(CallAtom<?> callAtom, PBody body) {
+		if (!(callAtom.getTarget() instanceof DNF target)) {
+			throw new IllegalArgumentException("Only calls to DNF are supported");
 		}
-		var variablesTuple = Tuples.flatTupleOf(variables);
-		var translatedReferred = translate(queryCallAtom.getTarget());
-		switch (queryCallAtom.getKind()) {
-		case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
-		case TRANSITIVE -> new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
-		case NEGATIVE -> new NegativePatternCall(body, variablesTuple, translatedReferred);
+		var variablesTuple = translateSubstitution(callAtom.getSubstitution(), body);
+		var translatedReferred = translate(target);
+		var callKind = callAtom.getKind();
+		if (callKind instanceof BasicCallKind basicCallKind) {
+			switch (basicCallKind) {
+			case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
+			case TRANSITIVE -> new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
+			case NEGATIVE -> new NegativePatternCall(body, variablesTuple, translatedReferred);
+			default -> throw new IllegalArgumentException("Unknown BasicCallKind: " + basicCallKind);
+			}
+		} else if (callKind instanceof CountCallKind countCallKind) {
+			var countVariableName = DNFUtils.generateUniqueName("count");
+			var countPVariable = body.getOrCreateVariableByName(countVariableName);
+			new PatternMatchCounter(body, variablesTuple, translatedReferred, countPVariable);
+			new ExpressionEvaluation(body, new CountExpressionEvaluator(countVariableName, countCallKind), null);
+		} else {
+			throw new IllegalArgumentException("Unknown CallKind: " + callKind);
 		}
+	}
+
+	private void translateConstantAtom(ConstantAtom constantAtom, PBody body) {
+		var variable = body.getOrCreateVariableByName(constantAtom.variable().getUniqueName());
+		new ConstantValue(body, variable, constantAtom.nodeId());
+	}
+
+	private void translateCountNotEqualsAtom(CountNotEqualsAtom<?> countNotEqualsAtom, PBody body) {
+		if (!(countNotEqualsAtom.mayTarget() instanceof DNF mayTarget) ||
+				!(countNotEqualsAtom.mustTarget() instanceof DNF mustTarget)) {
+			throw new IllegalArgumentException("Only calls to DNF are supported");
+		}
+		var variablesTuple = translateSubstitution(countNotEqualsAtom.substitution(), body);
+		var mayCountName = DNFUtils.generateUniqueName("countMay");
+		var mayCountVariable = body.getOrCreateVariableByName(mayCountName);
+		new PatternMatchCounter(body, variablesTuple, translate(mayTarget), mayCountVariable);
+		var mustCountName = DNFUtils.generateUniqueName("countMust");
+		var mustCountVariable = body.getOrCreateVariableByName(mustCountName);
+		new PatternMatchCounter(body, variablesTuple, translate(mustTarget), mustCountVariable);
+		new ExpressionEvaluation(body, new CountNotEqualsExpressionEvaluator(countNotEqualsAtom.must(),
+				countNotEqualsAtom.threshold(), mayCountName, mustCountName), null);
 	}
 }

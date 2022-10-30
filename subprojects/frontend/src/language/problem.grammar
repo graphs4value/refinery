@@ -153,7 +153,7 @@ sep1<separator, content> { content (separator content)* }
     "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
   }
 
-  ComparisonOp { ">" | ">=" | "<" | "<=" | "==" }
+  ComparisonOp { ">" | ">=" | "<" | "<=" | "==" | "!=" }
 
   NotOp { "!" }
 

@@ -10,13 +10,13 @@ import tools.refinery.store.map.VersionedMap;
 
 /**
  * A cursor representing the difference between two states of a map.
- * 
+ *
  * @author Oszkar Semerath
  *
  */
 public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 	/**
-	 * Default value representing missing elements.
+	 * Default nodeId representing missing elements.
 	 */
 	private V defaultValue;
 	private MapCursor<K, V> cursor1;

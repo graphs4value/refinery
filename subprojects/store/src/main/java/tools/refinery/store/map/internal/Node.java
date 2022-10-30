@@ -10,7 +10,7 @@ public abstract class Node<K,V>{
 	protected static final int NUMBER_OF_FACTORS = Integer.SIZE / BRANCHING_FACTOR_BITS;
 	protected static final int FACTOR_MASK = FACTOR-1;
 	public static final int EFFECTIVE_BITS = BRANCHING_FACTOR_BITS * NUMBER_OF_FACTORS;
-	
+
 	/**
 	 * Calculates the index for the continuous hash.
 	 * @param depth The depth of the node in the tree.
@@ -19,10 +19,10 @@ public abstract class Node<K,V>{
 	protected static int hashDepth(int depth) {
 		return depth/NUMBER_OF_FACTORS;
 	}
-	
+
 	/**
 	 * Calculates the which segment of a single hash should be used.
-	 * @param depth The depth of the node in the tree. 
+	 * @param depth The depth of the node in the tree.
 	 * @return The segment of a hash code.
 	 */
 	protected static int shiftDepth(int depth) {
@@ -38,7 +38,7 @@ public abstract class Node<K,V>{
 		if(shiftDepth<0 || Node.NUMBER_OF_FACTORS<shiftDepth) throw new IllegalArgumentException("Invalid shift depth! valid intervall=[0;5], input="+shiftDepth);
 		return (hash >>> shiftDepth*BRANCHING_FACTOR_BITS) & FACTOR_MASK;
 	}
-	
+
 	/**
 	 * Returns the hash code for a given depth. It may calculate new hash code, or reuse a hash code calculated for depth-1.
 	 * @param key The key.
@@ -55,12 +55,12 @@ public abstract class Node<K,V>{
 				hashProvider.getHash(key, hashDepth) :
 				hash;
 	}
-	
-	
+
+
 	public abstract V getValue(K key, ContinousHashProvider<? super K> hashProvider, V defaultValue,  int hash, int depth);
 	public abstract Node<K,V> putValue(K key, V value, OldValueBox<V> old, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth);
 	public abstract long getSize();
-	
+
 	abstract MutableNode<K, V> toMutable();
 	public abstract ImmutableNode<K, V> toImmutable(
 			Map<Node<K, V>,ImmutableNode<K, V>> cache);
@@ -68,10 +68,10 @@ public abstract class Node<K,V>{
 	/**
 	 * Moves a {@link MapCursor} to its next position.
 	 * @param cursor the cursor
-	 * @return Whether there was a next value to move on.
+	 * @return Whether there was a next nodeId to move on.
 	 */
 	abstract boolean moveToNext(MapCursor<K,V> cursor);
-	
+
 	///////// FOR printing
 	public abstract void prettyPrint(StringBuilder builder, int depth, int code);
 	@Override
@@ -81,5 +81,5 @@ public abstract class Node<K,V>{
 		return stringBuilder.toString();
 	}
 	public void checkIntegrity(ContinousHashProvider<? super K> hashProvider, V defaultValue, int depth) {}
-	
+
 }

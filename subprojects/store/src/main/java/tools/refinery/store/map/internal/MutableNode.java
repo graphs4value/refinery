@@ -31,7 +31,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 
 	/**
 	 * Constructs a {@link MutableNode} as a copy of an {@link ImmutableNode}
-	 * 
+	 *
 	 * @param node
 	 */
 	protected MutableNode(ImmutableNode<K, V> node) {
@@ -107,18 +107,18 @@ public class MutableNode<K, V> extends Node<K, V> {
 				}
 			}
 		} else {
-			// If it does not have key, check for value
+			// If it does not have key, check for nodeId
 			@SuppressWarnings("unchecked")
 			var nodeCandidate = (Node<K, V>) content[2 * selectedHashFragment + 1];
 			if (nodeCandidate != null) {
-				// If it has value, it is a subnode -> upate that
+				// If it has nodeId, it is a subnode -> upate that
 				var newNode = nodeCandidate.putValue(key, value, oldValueBox, hashProvider, defaultValue,
 						newHash(hashProvider, key, hash, depth + 1), depth + 1);
 				return updateWithSubNode(selectedHashFragment, newNode, value.equals(defaultValue));
 			} else {
-				// If it does not have value, put it in the empty place
+				// If it does not have nodeId, put it in the empty place
 				if (value == defaultValue) {
-					// dont need to add new key-value pair
+					// dont need to add new key-nodeId pair
 					oldValueBox.setOldValue(defaultValue);
 					return this;
 				} else {
@@ -138,8 +138,8 @@ public class MutableNode<K, V> extends Node<K, V> {
 	}
 
 	/**
-	 * Updates an entry in a selected hash-fragment to a non-default value.
-	 * 
+	 * Updates an entry in a selected hash-fragment to a non-default nodeId.
+	 *
 	 * @param value
 	 * @param selectedHashFragment
 	 * @return
@@ -153,7 +153,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param selectedHashFragment
 	 * @param newNode
 	 * @return
@@ -400,7 +400,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 				V value = (V) this.content[2 * i + 1];
 
 				if (value == defaultValue) {
-					throw new IllegalStateException("Node contains default value!");
+					throw new IllegalStateException("Node contains default nodeId!");
 				}
 				int hashCode = hashProvider.getHash(key, hashDepth(depth));
 				int shiftDepth = shiftDepth(depth);

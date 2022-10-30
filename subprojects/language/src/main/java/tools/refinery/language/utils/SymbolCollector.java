@@ -19,10 +19,12 @@ class SymbolCollector {
 	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
-	ProblemDesugarer desugarer;
+	private ProblemDesugarer desugarer;
 
 	private BuiltinSymbols builtinSymbols;
+
 	private final Map<Node, NodeInfo> nodes = new LinkedHashMap<>();
+
 	private final Map<Relation, RelationInfo> relations = new LinkedHashMap<>();
 
 	public CollectedSymbols collectSymbols(Problem problem) {
@@ -54,9 +56,10 @@ class SymbolCollector {
 	}
 
 	private void collectPredicate(PredicateDefinition predicateDefinition) {
+		var predicateKind = predicateDefinition.getKind();
 		var info = new RelationInfo(getQualifiedNameString(predicateDefinition),
-				predicateDefinition.getKind(),
-				predicateDefinition.getParameters(), null, null, predicateDefinition.getBodies());
+				ContainmentRole.fromPredicateKind(predicateKind), predicateDefinition.getParameters(), null, null,
+				predicateDefinition.getBodies());
 		relations.put(predicateDefinition, info);
 	}
 
@@ -65,10 +68,10 @@ class SymbolCollector {
 		// contained, including data types.
 		var contained =
 				classDeclaration != builtinSymbols.node() && classDeclaration != builtinSymbols.domain();
-		var classKind = contained ? PredicateKind.CONTAINED : PredicateKind.DEFAULT;
+		var containmentRole = contained ? ContainmentRole.CONTAINED : ContainmentRole.NONE;
 		var instanceParameter = ProblemFactory.eINSTANCE.createParameter();
 		instanceParameter.setName("instance");
-		var classInfo = new RelationInfo(getQualifiedNameString(classDeclaration), classKind,
+		var classInfo = new RelationInfo(getQualifiedNameString(classDeclaration), containmentRole,
 				List.of(instanceParameter), null, null, List.of());
 		relations.put(classDeclaration, classInfo);
 		collectReferences(classDeclaration);
@@ -76,9 +79,9 @@ class SymbolCollector {
 
 	private void collectReferences(ClassDeclaration classDeclaration) {
 		for (var referenceDeclaration : classDeclaration.getReferenceDeclarations()) {
-			var referenceKind = desugarer.isContainmentReference(referenceDeclaration) ?
-					PredicateKind.CONTAINMENT :
-					PredicateKind.DEFAULT;
+			var referenceRole = desugarer.isContainmentReference(referenceDeclaration) ?
+					ContainmentRole.CONTAINMENT :
+					ContainmentRole.NONE;
 			var sourceParameter = ProblemFactory.eINSTANCE.createParameter();
 			sourceParameter.setName("source");
 			sourceParameter.setParameterType(classDeclaration);
@@ -91,7 +94,7 @@ class SymbolCollector {
 				multiplicity = exactMultiplicity;
 			}
 			targetParameter.setParameterType(referenceDeclaration.getReferenceType());
-			var referenceInfo = new RelationInfo(getQualifiedNameString(referenceDeclaration), referenceKind,
+			var referenceInfo = new RelationInfo(getQualifiedNameString(referenceDeclaration), referenceRole,
 					List.of(sourceParameter, targetParameter), multiplicity, referenceDeclaration.getOpposite(),
 					List.of());
 			this.relations.put(referenceDeclaration, referenceInfo);
@@ -101,7 +104,7 @@ class SymbolCollector {
 	private void collectEnum(EnumDeclaration enumDeclaration) {
 		var instanceParameter = ProblemFactory.eINSTANCE.createParameter();
 		instanceParameter.setName("instance");
-		var info = new RelationInfo(getQualifiedNameString(enumDeclaration), PredicateKind.DEFAULT,
+		var info = new RelationInfo(getQualifiedNameString(enumDeclaration), ContainmentRole.NONE,
 				List.of(instanceParameter), null, null, List.of());
 		this.relations.put(enumDeclaration, info);
 	}
@@ -172,6 +175,8 @@ class SymbolCollector {
 				collectAssertion(assertion);
 			} else if (statement instanceof NodeValueAssertion nodeValueAssertion) {
 				collectNodeValueAssertion(nodeValueAssertion);
+			} else if (statement instanceof PredicateDefinition predicateDefinition) {
+				collectPredicateAssertion(predicateDefinition);
 			} else if (statement instanceof ClassDeclaration classDeclaration) {
 				collectClassAssertion(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
@@ -190,11 +195,7 @@ class SymbolCollector {
 			// Problem during editing. The errors can still be detected by the Problem validator.
 			return;
 		}
-		if (assertion.isDefault()) {
-			relationInfo.defaultAssertions().add(assertion);
-		} else {
-			relationInfo.assertions().add(assertion);
-		}
+		relationInfo.assertions().add(assertion);
 		for (var argument : assertion.getArguments()) {
 			if (argument instanceof ConstantAssertionArgument constantAssertionArgument) {
 				var constantNode = constantAssertionArgument.getNode();
@@ -239,6 +240,14 @@ class SymbolCollector {
 		addAssertion(dataType, LogicValue.TRUE, node);
 	}
 
+	private void collectPredicateAssertion(PredicateDefinition predicateDefinition) {
+		if (predicateDefinition.getKind() != PredicateKind.ERROR) {
+			return;
+		}
+		int arity = predicateDefinition.getParameters().size();
+		addAssertion(predicateDefinition, LogicValue.FALSE, new Node[arity]);
+	}
+
 	private void collectClassAssertion(ClassDeclaration classDeclaration) {
 		var node = classDeclaration.getNewNode();
 		if (node == null) {
@@ -259,8 +268,14 @@ class SymbolCollector {
 		var assertion = ProblemFactory.eINSTANCE.createAssertion();
 		assertion.setRelation(relation);
 		for (var node : nodes) {
-			var argument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
-			argument.setNode(node);
+			AssertionArgument argument;
+			if (node == null) {
+				argument = ProblemFactory.eINSTANCE.createWildcardAssertionArgument();
+			} else {
+				var nodeArgument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
+				nodeArgument.setNode(node);
+				argument = nodeArgument;
+			}
 			assertion.getArguments().add(argument);
 		}
 		assertion.setValue(logicValue);

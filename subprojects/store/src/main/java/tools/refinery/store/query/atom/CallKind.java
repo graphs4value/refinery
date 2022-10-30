@@ -1,24 +1,11 @@
 package tools.refinery.store.query.atom;
 
-public enum CallKind {
-	POSITIVE(true, false),
-	NEGATIVE(false, false),
-	TRANSITIVE(true, true);
+public sealed interface CallKind permits BasicCallKind, CountCallKind {
+	boolean isPositive();
 
-	private final boolean positive;
+	boolean isTransitive();
 
-	private final boolean transitive;
-
-	CallKind(boolean positive, boolean transitive) {
-		this.positive = positive;
-		this.transitive = transitive;
-	}
-
-	public boolean isPositive() {
-		return positive;
-	}
-
-	public boolean isTransitive() {
-		return transitive;
+	static CallKind fromBoolean(boolean positive) {
+		return positive ? BasicCallKind.POSITIVE : BasicCallKind.NEGATIVE;
 	}
 }

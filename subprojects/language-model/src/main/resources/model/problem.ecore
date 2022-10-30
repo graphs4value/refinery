@@ -191,6 +191,7 @@
     <eLiterals name="GREATER" value="2"/>
     <eLiterals name="GREATER_EQ" value="3"/>
     <eLiterals name="EQ" value="4"/>
+    <eLiterals name="NOT_EQ" value="5"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
     <eLiterals name="DEFAULT"/>

@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.model.representation.TruthValue;
 import tools.refinery.store.query.*;
-import tools.refinery.store.query.atom.CallKind;
-import tools.refinery.store.query.atom.EquivalenceAtom;
-import tools.refinery.store.query.atom.DNFCallAtom;
-import tools.refinery.store.query.atom.RelationViewAtom;
+import tools.refinery.store.query.atom.*;
 import tools.refinery.store.query.viatra.ViatraQueryableModelStore;
 import tools.refinery.store.query.view.FilteredRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
@@ -61,7 +58,7 @@ class QueryTest {
 				.parameters(p1, p2)
 				.clause(
 						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p1),
+						new RelationViewAtom(personView, p2),
 						new RelationViewAtom(friendMustView, p1, p2)
 				)
 				.build();
@@ -308,7 +305,7 @@ class QueryTest {
 				.clause(
 						new RelationViewAtom(personView, p3),
 						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(friendPredicate, p3, p4)
+						new CallAtom<>(friendPredicate, p3, p4)
 				)
 				.build();
 
@@ -354,7 +351,7 @@ class QueryTest {
 				.clause(
 						new RelationViewAtom(personView, p3),
 						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(CallKind.NEGATIVE, friendPredicate, p3, p4)
+						new CallAtom<>(false, friendPredicate, p3, p4)
 				)
 				.build();
 
@@ -371,6 +368,48 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(6, model.countResults(predicate));
+	}
+
+	@Test
+	void negativeWithQuantificationTest() {
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
+
+		Variable p1 = new Variable("p1");
+		Variable p2 = new Variable("p2");
+
+		DNF called = DNF.builder("Called")
+				.parameters(p1, p2)
+				.clause(
+						new RelationViewAtom(personView, p1),
+						new RelationViewAtom(personView, p2),
+						new RelationViewAtom(friendMustView, p1, p2)
+				)
+				.build();
+
+		DNF predicate = DNF.builder("Count")
+				.parameters(p1)
+				.clause(
+						new RelationViewAtom(personView, p1),
+						new CallAtom<>(false, called, p1, p2)
+				)
+				.build();
+
+		QueryableModelStore store = new ViatraQueryableModelStore(Set.of(person, friend),
+				Set.of(personView, friendMustView), Set.of(called, predicate));
+		QueryableModel model = store.createModel();
+
+		model.put(person, Tuple.of(0), true);
+		model.put(person, Tuple.of(1), true);
+		model.put(person, Tuple.of(2), true);
+		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
+		model.put(friend, Tuple.of(0, 2), TruthValue.TRUE);
+
+		model.flushChanges();
+		assertEquals(2, model.countResults(predicate));
 	}
 
 	@Test
@@ -399,7 +438,7 @@ class QueryTest {
 				.clause(
 						new RelationViewAtom(personView, p3),
 						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(CallKind.TRANSITIVE, friendPredicate, p3, p4)
+						new CallAtom<>(BasicCallKind.TRANSITIVE, friendPredicate, p3, p4)
 				)
 				.build();
 
@@ -415,6 +454,48 @@ class QueryTest {
 
 		model.flushChanges();
 		assertEquals(3, model.countResults(predicate));
+	}
+
+	@Test
+	void countMatchTest() {
+		Relation<Boolean> person = new Relation<>("Person", 1, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
+		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
+				TruthValue::must);
+
+		Variable p1 = new Variable("p1");
+		Variable p2 = new Variable("p2");
+
+		DNF called = DNF.builder("Called")
+				.parameters(p1, p2)
+				.clause(
+						new RelationViewAtom(personView, p1),
+						new RelationViewAtom(personView, p2),
+						new RelationViewAtom(friendMustView, p1, p2)
+				)
+				.build();
+
+		DNF predicate = DNF.builder("Count")
+				.parameters(p1)
+				.clause(
+						new RelationViewAtom(personView, p1),
+						new CallAtom<>(new CountCallKind(ComparisonOperator.EQUALS, 2), called, p1, p2)
+				)
+				.build();
+
+		QueryableModelStore store = new ViatraQueryableModelStore(Set.of(person, friend),
+				Set.of(personView, friendMustView), Set.of(called, predicate));
+		QueryableModel model = store.createModel();
+
+		model.put(person, Tuple.of(0), true);
+		model.put(person, Tuple.of(1), true);
+		model.put(person, Tuple.of(2), true);
+		model.put(friend, Tuple.of(0, 1), TruthValue.TRUE);
+		model.put(friend, Tuple.of(0, 2), TruthValue.TRUE);
+
+		model.flushChanges();
+		assertEquals(1, model.countResults(predicate));
 	}
 
 	static void compareMatchSets(Stream<TupleLike> matchSet, Set<Tuple> expected) {

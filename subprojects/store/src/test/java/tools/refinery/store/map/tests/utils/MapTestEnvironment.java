@@ -56,7 +56,7 @@ public class MapTestEnvironment<K, V> {
 		}
 
 	}
-	
+
 	public static <K, V> void compareTwoMaps(String title, VersionedMapImpl<K, V> map1,
 			VersionedMapImpl<K, V> map2) {
 		compareTwoMaps(title, map1, map2, null);
@@ -112,7 +112,7 @@ public class MapTestEnvironment<K, V> {
 			oldOracleValue = oracle.remove(key);
 		}
 		if(oldSutValue == sut.getDefaultValue() && oldOracleValue != null) {
-			fail("After put, SUT old value was default, but oracle old walue was " + oldOracleValue);
+			fail("After put, SUT old nodeId was default, but oracle old walue was " + oldOracleValue);
 		}
 		if(oldSutValue != sut.getDefaultValue()) {
 			assertEquals(oldOracleValue, oldSutValue);
@@ -127,8 +127,8 @@ public class MapTestEnvironment<K, V> {
 			fail(title + ":  " + e.getMessage());
 		}
 
-		// 1. Checking: if Reference contains <key,value> pair, then SUT contains
-		// <key,value> pair.
+		// 1. Checking: if Reference contains <key,nodeId> pair, then SUT contains
+		// <key,nodeId> pair.
 		// Tests get functions
 		for (Entry<K, V> entry : oracle.entrySet()) {
 			V sutValue = sut.get(entry.getKey());
@@ -140,8 +140,8 @@ public class MapTestEnvironment<K, V> {
 			}
 		}
 
-		// 2. Checking: if SUT contains <key,value> pair, then Reference contains
-		// <key,value> pair.
+		// 2. Checking: if SUT contains <key,nodeId> pair, then Reference contains
+		// <key,nodeId> pair.
 		// Tests iterators
 		int elementsInSutEntrySet = 0;
 		Cursor<K, V> cursor = sut.getAll();
@@ -160,7 +160,7 @@ public class MapTestEnvironment<K, V> {
 		}
 
 		// 3. Checking sizes
-		// Counting of non-default value pairs.
+		// Counting of non-default nodeId pairs.
 		int oracleSize = oracle.entrySet().size();
 		long sutSize = sut.getSize();
 		if (oracleSize != sutSize || oracleSize != elementsInSutEntrySet) {
