@@ -37,6 +37,7 @@ import problemLanguageSupport from '../language/problemLanguageSupport';
 import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
 import findOccurrences from './findOccurrences';
+import indentationMarkerViewPlugin from './indentationMarkerViewPlugin';
 import semanticHighlighting from './semanticHighlighting';
 
 export default function createEditorState(
@@ -60,6 +61,7 @@ export default function createEditorState(
       highlightSpecialChars(),
       history(),
       indentOnInput(),
+      indentationMarkerViewPlugin(),
       rectangularSelection(),
       search({
         createPanel(view) {

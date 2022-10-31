@@ -4,6 +4,11 @@ import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
+import {
+  INDENTATION_MARKER_ACTIVE_CLASS,
+  INDENTATION_MARKER_CLASS,
+} from './indentationMarkerViewPlugin';
+
 function svgURL(svg: string): string {
   return `url('data:image/svg+xml;utf8,${svg}')`;
 }
@@ -61,6 +66,9 @@ export default styled('div', {
       '.cm-selectionBackground': {
         background: theme.palette.highlight.selection,
       },
+    },
+    '.cm-line': {
+      position: 'relative', // For indentation highlights
     },
   };
 
@@ -148,6 +156,13 @@ export default styled('div', {
     },
     '.cm-searchMatch-selected': {
       background: theme.palette.highlight.search.selected,
+    },
+    [`.${INDENTATION_MARKER_CLASS}`]: {
+      display: 'inline-block',
+      boxShadow: `1px 0 0 ${theme.palette.highlight.lineNumber} inset`,
+    },
+    [`.${INDENTATION_MARKER_CLASS}.${INDENTATION_MARKER_ACTIVE_CLASS}`]: {
+      boxShadow: `1px 0 0 ${theme.palette.text.primary} inset`,
     },
   };
 
@@ -311,17 +326,7 @@ export default styled('div', {
 
   const foldStyle = {
     '.cm-foldGutter': {
-      opacity: 0,
       width: 16,
-      transition: theme.transitions.create('opacity', {
-        duration: theme.transitions.duration.short,
-      }),
-      '@media (hover: none)': {
-        opacity: 1,
-      },
-    },
-    '.cm-gutters:hover .cm-foldGutter': {
-      opacity: 1,
     },
     '.problem-editor-foldMarker': {
       display: 'block',
@@ -337,6 +342,18 @@ export default styled('div', {
       [theme.breakpoints.down('sm')]: {
         margin: '2px 0',
       },
+    },
+    '.problem-editor-foldMarker-open': {
+      opacity: 0,
+      transition: theme.transitions.create('opacity', {
+        duration: theme.transitions.duration.short,
+      }),
+      '@media (hover: none)': {
+        opacity: 1,
+      },
+    },
+    '.cm-gutters:hover .problem-editor-foldMarker-open': {
+      opacity: 1,
     },
     '.problem-editor-foldMarker-closed': {
       transform: 'rotate(-90deg)',
