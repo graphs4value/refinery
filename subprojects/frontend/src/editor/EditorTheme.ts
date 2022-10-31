@@ -4,13 +4,34 @@ import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
-import {
-  INDENTATION_MARKER_ACTIVE_CLASS,
-  INDENTATION_MARKER_CLASS,
-} from './indentationMarkerViewPlugin';
-
 function svgURL(svg: string): string {
   return `url('data:image/svg+xml;utf8,${svg}')`;
+}
+
+function radialShadowTheme(
+  origin: string,
+  scaleX: boolean,
+  scaleY: boolean,
+): CSSObject {
+  function radialGradient(opacity: number, scale: string): string {
+    return `radial-gradient(
+        farthest-side at ${origin},
+        rgba(0, 0, 0, ${opacity}),
+        rgba(0, 0, 0, 0)
+      )
+      ${origin} /
+      ${scaleX ? scale : '100%'}
+      ${scaleY ? scale : '100%'}
+      no-repeat`;
+  }
+
+  return {
+    background: `
+      ${radialGradient(0.2, '40%')},
+      ${radialGradient(0.14, '50%')},
+      ${radialGradient(0.12, '100%')}
+    `,
+  };
 }
 
 export default styled('div', {
@@ -36,8 +57,68 @@ export default styled('div', {
     '&, .cm-editor': {
       height: '100%',
     },
+    '.cm-scroller-holder': {
+      display: 'flex',
+      position: 'relative',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      flex: '1 1',
+    },
     '.cm-scroller': {
       color: theme.palette.text.secondary,
+      scrollbarWidth: 'none',
+      MsOverflowStyle: 'none',
+      '&::-webkit-scrollbar': {
+        width: 0,
+        height: 0,
+        background: 'transparent',
+      },
+    },
+    '.cm-scroller-thumb': {
+      position: 'absolute',
+      background: theme.palette.text.secondary,
+      opacity: theme.palette.mode === 'dark' ? 0.16 : 0.28,
+      transition: theme.transitions.create('opacity', {
+        duration: theme.transitions.duration.shortest,
+      }),
+      '&:hover': {
+        opacity: 0.75,
+      },
+      '&.active': {
+        opacity: 1,
+        pointerEvents: 'none',
+        userSelect: 'none',
+      },
+    },
+    '.cm-scroller-thumb-y': {
+      top: 0,
+      right: 0,
+    },
+    '.cm-scroller-thumb-x': {
+      left: 0,
+      bottom: 0,
+    },
+    '.cm-scroller-gutter-decoration': {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      width: 0,
+      transition: theme.transitions.create('width', {
+        duration: theme.transitions.duration.shortest,
+      }),
+      ...radialShadowTheme('0 50%', true, false),
+    },
+    '.cm-scroller-top-decoration': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 0,
+      transition: theme.transitions.create('height', {
+        duration: theme.transitions.duration.shortest,
+      }),
+      ...radialShadowTheme('50% 0', false, true),
     },
     '.cm-gutters': {
       background: theme.palette.background.default,
@@ -157,12 +238,12 @@ export default styled('div', {
     '.cm-searchMatch-selected': {
       background: theme.palette.highlight.search.selected,
     },
-    [`.${INDENTATION_MARKER_CLASS}`]: {
+    '.cm-indentation-marker': {
       display: 'inline-block',
       boxShadow: `1px 0 0 ${theme.palette.highlight.lineNumber} inset`,
-    },
-    [`.${INDENTATION_MARKER_CLASS}.${INDENTATION_MARKER_ACTIVE_CLASS}`]: {
-      boxShadow: `1px 0 0 ${theme.palette.text.primary} inset`,
+      '&.active': {
+        boxShadow: `1px 0 0 ${theme.palette.text.primary} inset`,
+      },
     },
   };
 

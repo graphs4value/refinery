@@ -38,6 +38,7 @@ import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
 import findOccurrences from './findOccurrences';
 import indentationMarkerViewPlugin from './indentationMarkerViewPlugin';
+import scrollbarViewPlugin from './scrollbarViewPlugin';
 import semanticHighlighting from './semanticHighlighting';
 
 export default function createEditorState(
@@ -120,6 +121,7 @@ export default function createEditorState(
         ...defaultKeymap,
       ]),
       problemLanguageSupport(),
+      scrollbarViewPlugin(store),
     ],
   });
 }
