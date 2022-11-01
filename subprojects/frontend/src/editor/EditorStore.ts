@@ -11,6 +11,7 @@ import {
   type Transaction,
   type TransactionSpec,
   type EditorState,
+  RangeSet,
 } from '@codemirror/state';
 import { type Command, EditorView } from '@codemirror/view';
 import { makeAutoObservable, observable } from 'mobx';
@@ -20,6 +21,7 @@ import type PWAStore from '../PWAStore';
 import getLogger from '../utils/getLogger';
 import XtextClient from '../xtext/XtextClient';
 
+import DiagnosticValue from './DiagnosticValue';
 import LintPanelStore from './LintPanelStore';
 import SearchPanelStore from './SearchPanelStore';
 import createEditorState from './createEditorState';
@@ -46,11 +48,7 @@ export default class EditorStore {
 
   showLineNumbers = false;
 
-  errorCount = 0;
-
-  warningCount = 0;
-
-  infoCount = 0;
+  diagnostics: RangeSet<DiagnosticValue> = RangeSet.of([]);
 
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
@@ -161,6 +159,9 @@ export default class EditorStore {
     log.trace('Editor transaction', tr);
     this.state = tr.state;
     this.client.onTransaction(tr);
+    if (tr.docChanged) {
+      this.diagnostics = this.diagnostics.map(tr.changes);
+    }
   }
 
   doCommand(command: Command): boolean {
@@ -178,25 +179,31 @@ export default class EditorStore {
   }
 
   updateDiagnostics(diagnostics: Diagnostic[]): void {
+    diagnostics.sort((a, b) => a.from - b.from);
     this.dispatch(setDiagnostics(this.state, diagnostics));
-    this.errorCount = 0;
-    this.warningCount = 0;
-    this.infoCount = 0;
-    diagnostics.forEach(({ severity }) => {
-      switch (severity) {
-        case 'error':
-          this.errorCount += 1;
-          break;
-        case 'warning':
-          this.warningCount += 1;
-          break;
-        case 'info':
-          this.infoCount += 1;
-          break;
-        default:
-          throw new Error('Unknown severity');
-      }
-    });
+    this.diagnostics = RangeSet.of(
+      diagnostics.map(({ severity, from, to }) =>
+        DiagnosticValue.VALUES[severity].range(from, to),
+      ),
+    );
+  }
+
+  countDiagnostics(severity: Diagnostic['severity']): number {
+    return this.diagnostics.update({
+      filter: (_from, _to, value) => value.eq(DiagnosticValue.VALUES[severity]),
+    }).size;
+  }
+
+  get errorCount(): number {
+    return this.countDiagnostics('error');
+  }
+
+  get warningCount(): number {
+    return this.countDiagnostics('warning');
+  }
+
+  get infoCount(): number {
+    return this.countDiagnostics('info');
   }
 
   nextDiagnostic(): void {

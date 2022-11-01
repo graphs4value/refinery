@@ -137,7 +137,7 @@ export default styled('div', {
       background: 'transparent',
     },
     '.cm-cursor, .cm-cursor-primary': {
-      borderLeft: `2px solid ${theme.palette.primary.main}`,
+      borderLeft: `2px solid ${theme.palette.highlight.cursor}`,
     },
     '.cm-selectionBackground': {
       background: theme.palette.highlight.selection,
@@ -245,6 +245,17 @@ export default styled('div', {
         boxShadow: `1px 0 0 ${theme.palette.text.primary} inset`,
       },
     },
+    '.cm-scroller-selection': {
+      position: 'absolute',
+      right: 0,
+      boxShadow: `0 2px 0 ${theme.palette.highlight.cursor} inset`,
+      zIndex: 200,
+    },
+    '.cm-scroller-occurrence': {
+      position: 'absolute',
+      background: theme.palette.text.secondary,
+      zIndex: 150,
+    },
   };
 
   const lineNumberStyle: CSSObject = {
@@ -288,6 +299,7 @@ export default styled('div', {
   function lintSeverityStyle(
     severity: 'error' | 'warning' | 'info',
     icon: string,
+    zIndex: number,
   ): CSSObject {
     const palette = theme.palette[severity];
     const color = palette.main;
@@ -341,6 +353,12 @@ export default styled('div', {
           content: '""',
           display: 'none',
         },
+      },
+      [`.cm-scroller-diagnostic-${severity}`]: {
+        position: 'absolute',
+        right: 0,
+        background: color,
+        zIndex,
       },
     };
   }
@@ -400,9 +418,9 @@ export default styled('div', {
     '.cm-lintRange-active': {
       background: theme.palette.highlight.activeLintRange,
     },
-    ...lintSeverityStyle('error', errorSVG),
-    ...lintSeverityStyle('warning', warningSVG),
-    ...lintSeverityStyle('info', infoSVG),
+    ...lintSeverityStyle('error', errorSVG, 120),
+    ...lintSeverityStyle('warning', warningSVG, 110),
+    ...lintSeverityStyle('info', infoSVG, 100),
   };
 
   const foldStyle = {

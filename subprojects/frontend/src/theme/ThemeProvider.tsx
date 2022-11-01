@@ -22,6 +22,7 @@ interface OuterPalette {
 }
 
 interface HighlightPalette {
+  cursor: string;
   number: string;
   parameter: string;
   comment: string;
@@ -175,6 +176,7 @@ const lightTheme = createResponsiveTheme({
       border: '#c8c8c8',
     },
     highlight: {
+      cursor: '#4078f2',
       number: '#0084bc',
       parameter: '#6a3e3e',
       comment: '#a0a1a7',
@@ -249,6 +251,7 @@ const darkTheme = createResponsiveTheme({
       border: '#181a1f',
     },
     highlight: {
+      cursor: '#61afef',
       number: '#6188a6',
       parameter: '#c8ae9d',
       comment: '#7f848e',
