@@ -3,14 +3,14 @@ package tools.refinery.store.query.viatra.internal.pquery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.IExpressionEvaluator;
 import org.eclipse.viatra.query.runtime.matchers.psystem.IValueProvider;
 import tools.refinery.store.query.atom.ComparisonOperator;
-import tools.refinery.store.query.atom.CountCallKind;
+import tools.refinery.store.query.atom.CountingPolarity;
 
 import java.util.List;
 
 public record CountExpressionEvaluator(String variableName, ComparisonOperator operator,
 									   int threshold) implements IExpressionEvaluator {
-	public CountExpressionEvaluator(String variableName, CountCallKind callKind) {
-		this(variableName, callKind.operator(), callKind.threshold());
+	public CountExpressionEvaluator(String variableName, CountingPolarity polarity) {
+		this(variableName, polarity.operator(), polarity.threshold());
 	}
 
 	@Override

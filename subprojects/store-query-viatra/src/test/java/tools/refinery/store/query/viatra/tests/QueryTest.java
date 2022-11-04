@@ -438,7 +438,7 @@ class QueryTest {
 				.clause(
 						new RelationViewAtom(personView, p3),
 						new RelationViewAtom(personView, p4),
-						new CallAtom<>(BasicCallKind.TRANSITIVE, friendPredicate, p3, p4)
+						new CallAtom<>(SimplePolarity.TRANSITIVE, friendPredicate, p3, p4)
 				)
 				.build();
 
@@ -480,7 +480,7 @@ class QueryTest {
 				.parameters(p1)
 				.clause(
 						new RelationViewAtom(personView, p1),
-						new CallAtom<>(new CountCallKind(ComparisonOperator.EQUALS, 2), called, p1, p2)
+						new CallAtom<>(new CountingPolarity(ComparisonOperator.EQUALS, 2), called, p1, p2)
 				)
 				.build();
 

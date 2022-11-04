@@ -8,22 +8,22 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class CallAtom<T extends RelationLike> extends AbstractSubstitutionAtom<T> {
-	private final CallKind kind;
+	private final CallPolarity polarity;
 
-	public CallAtom(CallKind kind, T target, List<Variable> substitution) {
+	public CallAtom(CallPolarity polarity, T target, List<Variable> substitution) {
 		super(target, substitution);
-		if (kind.isTransitive() && target.getArity() != 2) {
+		if (polarity.isTransitive() && target.getArity() != 2) {
 			throw new IllegalArgumentException("Transitive closures can only take binary relations");
 		}
-		this.kind = kind;
+		this.polarity = polarity;
 	}
 
-	public CallAtom(CallKind kind, T target, Variable... substitution) {
-		this(kind, target, List.of(substitution));
+	public CallAtom(CallPolarity polarity, T target, Variable... substitution) {
+		this(polarity, target, List.of(substitution));
 	}
 
 	public CallAtom(boolean positive, T target, List<Variable> substitution) {
-		this(CallKind.fromBoolean(positive), target, substitution);
+		this(CallPolarity.fromBoolean(positive), target, substitution);
 	}
 
 	public CallAtom(boolean positive, T target, Variable... substitution) {
@@ -38,13 +38,13 @@ public final class CallAtom<T extends RelationLike> extends AbstractSubstitution
 		this(target, List.of(substitution));
 	}
 
-	public CallKind getKind() {
-		return kind;
+	public CallPolarity getPolarity() {
+		return polarity;
 	}
 
 	@Override
 	public void collectAllVariables(Set<Variable> variables) {
-		if (kind.isPositive()) {
+		if (polarity.isPositive()) {
 			super.collectAllVariables(variables);
 		}
 	}
@@ -54,13 +54,13 @@ public final class CallAtom<T extends RelationLike> extends AbstractSubstitution
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CallAtom<?> that = (CallAtom<?>) o;
-		return Objects.equals(kind, that.kind)
+		return Objects.equals(polarity, that.polarity)
 				&& Objects.equals(getTarget(), that.getTarget())
 				&& Objects.equals(getSubstitution(), that.getSubstitution());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(kind, getTarget(), getSubstitution());
+		return Objects.hash(polarity, getTarget(), getSubstitution());
 	}
 }

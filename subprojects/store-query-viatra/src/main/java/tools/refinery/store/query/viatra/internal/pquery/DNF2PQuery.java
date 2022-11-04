@@ -127,21 +127,21 @@ public class DNF2PQuery {
 		}
 		var variablesTuple = translateSubstitution(callAtom.getSubstitution(), body);
 		var translatedReferred = translate(target);
-		var callKind = callAtom.getKind();
-		if (callKind instanceof BasicCallKind basicCallKind) {
-			switch (basicCallKind) {
+		var polarity = callAtom.getPolarity();
+		if (polarity instanceof SimplePolarity simplePolarity) {
+			switch (simplePolarity) {
 			case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
 			case TRANSITIVE -> new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
 			case NEGATIVE -> new NegativePatternCall(body, variablesTuple, translatedReferred);
-			default -> throw new IllegalArgumentException("Unknown BasicCallKind: " + basicCallKind);
+			default -> throw new IllegalArgumentException("Unknown BasicCallKind: " + simplePolarity);
 			}
-		} else if (callKind instanceof CountCallKind countCallKind) {
+		} else if (polarity instanceof CountingPolarity countingPolarity) {
 			var countVariableName = DNFUtils.generateUniqueName("count");
 			var countPVariable = body.getOrCreateVariableByName(countVariableName);
 			new PatternMatchCounter(body, variablesTuple, translatedReferred, countPVariable);
-			new ExpressionEvaluation(body, new CountExpressionEvaluator(countVariableName, countCallKind), null);
+			new ExpressionEvaluation(body, new CountExpressionEvaluator(countVariableName, countingPolarity), null);
 		} else {
-			throw new IllegalArgumentException("Unknown CallKind: " + callKind);
+			throw new IllegalArgumentException("Unknown CallKind: " + polarity);
 		}
 	}
 

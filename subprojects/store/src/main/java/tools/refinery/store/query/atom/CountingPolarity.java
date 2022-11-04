@@ -1,6 +1,6 @@
 package tools.refinery.store.query.atom;
 
-public record CountCallKind(ComparisonOperator operator, int threshold) implements CallKind {
+public record CountingPolarity(ComparisonOperator operator, int threshold) implements CallPolarity {
 	@Override
 	public boolean isPositive() {
 		return false;

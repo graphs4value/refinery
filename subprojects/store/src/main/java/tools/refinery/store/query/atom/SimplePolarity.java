@@ -1,6 +1,6 @@
 package tools.refinery.store.query.atom;
 
-public enum BasicCallKind implements CallKind {
+public enum SimplePolarity implements CallPolarity {
 	POSITIVE(true, false),
 	NEGATIVE(false, false),
 	TRANSITIVE(true, true);
@@ -9,7 +9,7 @@ public enum BasicCallKind implements CallKind {
 
 	private final boolean transitive;
 
-	BasicCallKind(boolean positive, boolean transitive) {
+	SimplePolarity(boolean positive, boolean transitive) {
 		this.positive = positive;
 		this.transitive = transitive;
 	}
