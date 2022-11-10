@@ -19,8 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class QueryTransactionTest {
 	@Test
 	void flushTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<Boolean> asset = new Relation<>("Asset", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<Boolean> asset = new Relation<>("Asset", 1, Boolean.class, false);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 
 		var p1 = new Variable("p1");

@@ -39,7 +39,8 @@ public class ModelInitializer {
 			var isEqualsRelation = relation == builtinSymbols.equals();
 			var decisionTree = mergeAssertions(relationInfo, isEqualsRelation);
 			var defaultValue = isEqualsRelation ? TruthValue.FALSE : TruthValue.UNKNOWN;
-			relationTrace.put(relation, new Relation<>(relationInfo.name(), relationInfo.arity(), defaultValue));
+			relationTrace.put(relation, new Relation<>(relationInfo.name(), relationInfo.arity(), TruthValue.class, defaultValue
+			));
 		}
 	}
 

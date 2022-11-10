@@ -7,9 +7,15 @@ public abstract sealed class DataRepresentation<K, V> permits Relation, Auxiliar
 
 	private final V defaultValue;
 
-	protected DataRepresentation(String name, V defaultValue) {
+	private final Class<K> keyType;
+
+	private final Class<V> valueType;
+
+	protected DataRepresentation(String name, Class<K> keyType, Class<V> valueType, V defaultValue) {
 		this.name = name;
 		this.defaultValue = defaultValue;
+		this.keyType = keyType;
+		this.valueType = valueType;
 	}
 
 	public String getName() {
@@ -22,5 +28,13 @@ public abstract sealed class DataRepresentation<K, V> permits Relation, Auxiliar
 
 	public V getDefaultValue() {
 		return defaultValue;
+	}
+
+	public Class<K> getKeyType() {
+		return keyType;
+	}
+
+	public Class<V> getValueType() {
+		return valueType;
 	}
 }

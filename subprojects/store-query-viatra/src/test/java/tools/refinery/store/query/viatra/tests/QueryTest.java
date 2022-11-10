@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class QueryTest {
 	@Test
 	void typeConstraintTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<Boolean> asset = new Relation<>("Asset", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<Boolean> asset = new Relation<>("Asset", 1, Boolean.class, false);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 
 		var p1 = new Variable("p1");
@@ -46,8 +46,8 @@ class QueryTest {
 
 	@Test
 	void relationConstraintTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -85,8 +85,8 @@ class QueryTest {
 
 	@Test
 	void andTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -133,8 +133,8 @@ class QueryTest {
 
 	@Test
 	void existTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -172,9 +172,9 @@ class QueryTest {
 
 	@Test
 	void orTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<Boolean> animal = new Relation<>("Animal", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<Boolean> animal = new Relation<>("Animal", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<Boolean> animalView = new KeyOnlyRelationView(animal);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
@@ -216,7 +216,7 @@ class QueryTest {
 
 	@Test
 	void equalityTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 
 		Variable p1 = new Variable("p1");
@@ -244,8 +244,8 @@ class QueryTest {
 
 	@Test
 	void inequalityTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -281,8 +281,8 @@ class QueryTest {
 
 	@Test
 	void patternCallTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -327,8 +327,8 @@ class QueryTest {
 
 	@Test
 	void negativePatternCallTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -372,8 +372,8 @@ class QueryTest {
 
 	@Test
 	void negativeWithQuantificationTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -414,8 +414,8 @@ class QueryTest {
 
 	@Test
 	void transitivePatternCallTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
@@ -458,8 +458,8 @@ class QueryTest {
 
 	@Test
 	void countMatchTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, false);
-		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.FALSE);
+		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		Relation<TruthValue> friend = new Relation<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
 		RelationView<TruthValue> friendMustView = new FilteredRelationView<>(friend, "must",
 				TruthValue::must);
