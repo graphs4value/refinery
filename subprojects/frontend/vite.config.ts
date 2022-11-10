@@ -30,6 +30,7 @@ const apiPort = portNumberOrElse('API_PORT', 1312);
 const apiSecure = apiPort === 443;
 const publicHost = process.env.PUBLIC_HOST || listenHost;
 const publicPort = portNumberOrElse('PUBLIC_PORT', listenPort);
+const publicSecure = publicPort === 443;
 
 const { name: packageName, version: packageVersion } = JSON.parse(
   readFileSync(path.join(thisDir, 'package.json'), 'utf8'),
@@ -56,6 +57,23 @@ const minifyPlugin: PluginOption = {
   },
 };
 
+const backendConfigPlugin: PluginOption = {
+  name: 'backend-config',
+  configureServer(server) {
+    const protocol = publicSecure ? 'wss' : 'ws';
+    const webSocketURL = `${protocol}://${publicHost}:${publicPort}/xtext-service`;
+    const config = JSON.stringify({ webSocketURL });
+    server.middlewares.use((req, res, next) => {
+      if (req.url === '/config.json') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(config);
+      } else {
+        next();
+      }
+    });
+  },
+};
+
 export default defineConfig({
   logLevel: 'info',
   mode,
@@ -63,6 +81,7 @@ export default defineConfig({
   cacheDir: path.join(thisDir, 'build/vite/cache'),
   plugins: [
     minifyPlugin,
+    backendConfigPlugin,
     react(),
     injectPreload({
       files: [
@@ -90,6 +109,12 @@ export default defineConfig({
         ],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
         navigateFallbackDenylist: [/^\/xtext-service/],
+        runtimeCaching: [
+          {
+            urlPattern: 'config.json',
+            handler: 'StaleWhileRevalidate',
+          },
+        ],
       },
       includeAssets: ['apple-touch-icon.png', 'favicon.svg', 'mask-icon.svg'],
       manifest: {

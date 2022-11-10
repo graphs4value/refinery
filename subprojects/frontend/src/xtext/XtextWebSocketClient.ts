@@ -7,7 +7,8 @@ import CancelledError from '../utils/CancelledError';
 import PendingTask from '../utils/PendingTask';
 import getLogger from '../utils/getLogger';
 
-import webSocketMachine, { isWebSocketURLLocal } from './webSocketMachine';
+import fetchBackendConfig from './fetchBackendConfig';
+import webSocketMachine from './webSocketMachine';
 import {
   type XtextWebPushService,
   XtextResponse,
@@ -42,26 +43,18 @@ export default class XtextWebSocketClient {
   private readonly pendingRequests = new Map<string, PendingTask<unknown>>();
 
   private readonly interpreter = interpret(
-    webSocketMachine
-      .withContext({
-        ...webSocketMachine.context,
-        webSocketURL: `${window.location.origin.replace(
-          /^http/,
-          'ws',
-        )}/xtext-service`,
-      })
-      .withConfig({
-        actions: {
-          openWebSocket: ({ webSocketURL }) => this.openWebSocket(webSocketURL),
-          closeWebSocket: () => this.closeWebSocket(),
-          notifyReconnect: () => this.onReconnect(),
-          notifyDisconnect: () => this.onDisconnect(),
-          cancelPendingRequests: () => this.cancelPendingRequests(),
-        },
-        services: {
-          pingService: () => this.sendPing(),
-        },
-      }),
+    webSocketMachine.withConfig({
+      actions: {
+        openWebSocket: () => this.openWebSocket(),
+        closeWebSocket: () => this.closeWebSocket(),
+        notifyReconnect: () => this.onReconnect(),
+        notifyDisconnect: () => this.onDisconnect(),
+        cancelPendingRequests: () => this.cancelPendingRequests(),
+      },
+      services: {
+        pingService: () => this.sendPing(),
+      },
+    }),
     {
       logger: log.log.bind(log),
     },
@@ -151,6 +144,7 @@ export default class XtextWebSocketClient {
       | 'webSocket'
       | 'interpreter'
       | 'openListener'
+      | 'openWebSocket'
       | 'errorListener'
       | 'closeListener'
       | 'messageListener'
@@ -160,6 +154,7 @@ export default class XtextWebSocketClient {
       webSocket: observable.ref,
       interpreter: false,
       openListener: false,
+      openWebSocket: false,
       errorListener: false,
       closeListener: false,
       messageListener: false,
@@ -221,9 +216,7 @@ export default class XtextWebSocketClient {
   get networkMissing(): boolean {
     return (
       this.state.matches('connection.temporarilyOffline') ||
-      (this.disconnectedByUser &&
-        this.state.matches('network.offline') &&
-        !isWebSocketURLLocal(this.state.context.webSocketURL))
+      (this.disconnectedByUser && this.state.matches('network.offline'))
     );
   }
 
@@ -275,17 +268,27 @@ export default class XtextWebSocketClient {
     this.interpreter.send(document.hidden ? 'TAB_HIDDEN' : 'TAB_VISIBLE');
   }
 
-  private openWebSocket(webSocketURL: string | undefined): void {
+  private openWebSocket(): void {
     if (this.webSocket !== undefined) {
       throw new Error('WebSocket already open');
     }
 
-    if (webSocketURL === undefined) {
-      throw new Error('URL not configured');
-    }
-
     log.debug('Creating WebSocket');
 
+    (async () => {
+      const { webSocketURL } = await fetchBackendConfig();
+      this.openWebSocketWithURL(webSocketURL);
+    })().catch((error) => {
+      log.error('Error while initializing connection', error);
+      const message = error instanceof Error ? error.message : String(error);
+      this.interpreter.send({
+        type: 'ERROR',
+        message,
+      });
+    });
+  }
+
+  private openWebSocketWithURL(webSocketURL: string): void {
     this.webSocket = new WebSocket(webSocketURL, XTEXT_SUBPROTOCOL_V1);
     this.webSocket.addEventListener('open', this.openListener);
     this.webSocket.addEventListener('close', this.closeListener);
@@ -295,7 +298,9 @@ export default class XtextWebSocketClient {
 
   private closeWebSocket() {
     if (this.webSocket === undefined) {
-      throw new Error('WebSocket already closed');
+      // We might get here when there is a network error before the socket is initialized
+      // and we don't have to do anything to close it.
+      return;
     }
 
     log.debug('Closing WebSocket');

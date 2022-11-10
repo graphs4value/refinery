@@ -1,34 +1,24 @@
 package tools.refinery.language.web.xtext.server;
 
+import com.google.common.base.Strings;
+import com.google.inject.Injector;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.util.IDisposable;
+import org.eclipse.xtext.web.server.*;
+import org.eclipse.xtext.web.server.InvalidRequestException.UnknownLanguageException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.refinery.language.web.xtext.server.message.*;
+import tools.refinery.language.web.xtext.server.push.PrecomputationListener;
+import tools.refinery.language.web.xtext.server.push.PushWebDocument;
+import tools.refinery.language.web.xtext.servlet.SimpleServiceContext;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.xtext.resource.IResourceServiceProvider;
-import org.eclipse.xtext.util.IDisposable;
-import org.eclipse.xtext.web.server.IServiceContext;
-import org.eclipse.xtext.web.server.IServiceResult;
-import org.eclipse.xtext.web.server.ISession;
-import org.eclipse.xtext.web.server.InvalidRequestException;
-import org.eclipse.xtext.web.server.InvalidRequestException.UnknownLanguageException;
-import org.eclipse.xtext.web.server.XtextServiceDispatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
-import com.google.inject.Injector;
-
-import tools.refinery.language.web.xtext.server.message.XtextWebErrorKind;
-import tools.refinery.language.web.xtext.server.message.XtextWebErrorResponse;
-import tools.refinery.language.web.xtext.server.message.XtextWebOkResponse;
-import tools.refinery.language.web.xtext.server.message.XtextWebPushMessage;
-import tools.refinery.language.web.xtext.server.message.XtextWebRequest;
-import tools.refinery.language.web.xtext.server.push.PrecomputationListener;
-import tools.refinery.language.web.xtext.server.push.PushWebDocument;
-import tools.refinery.language.web.xtext.servlet.SimpleServiceContext;
 
 public class TransactionExecutor implements IDisposable, PrecomputationListener {
 	private static final Logger LOG = LoggerFactory.getLogger(TransactionExecutor.class);
@@ -41,11 +31,11 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 
 	private ResponseHandler responseHandler;
 
-	private Object callPendingLock = new Object();
+	private final Object callPendingLock = new Object();
 
 	private boolean callPending;
 
-	private List<XtextWebPushMessage> pendingPushMessages = new ArrayList<>();
+	private final List<XtextWebPushMessage> pendingPushMessages = new ArrayList<>();
 
 	public TransactionExecutor(ISession session, IResourceServiceProvider.Registry resourceServiceProviderRegistry) {
 		this.session = session;
@@ -132,10 +122,9 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 
 	/**
 	 * Get the injector to satisfy the request in the {@code serviceContext}.
-	 * 
 	 * Based on {@link org.eclipse.xtext.web.servlet.XtextServlet#getInjector}.
-	 * 
-	 * @param serviceContext the Xtext service context of the request
+	 *
+	 * @param context the Xtext service context of the request
 	 * @return the injector for the Xtext language in the request
 	 * @throws UnknownLanguageException if the Xtext language cannot be determined
 	 */

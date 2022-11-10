@@ -23,18 +23,17 @@ export default class RootStore {
       pwaStore: false,
       themeStore: false,
     });
-    import('./editor/EditorStore')
-      .then(({ default: EditorStore }) => {
-        runInAction(() => {
-          if (this.disposed) {
-            return;
-          }
-          this.editorStore = new EditorStore(initialValue, this.pwaStore);
-        });
-      })
-      .catch((error) => {
-        log.error('Failed to load EditorStore', error);
+    (async () => {
+      const { default: EditorStore } = await import('./editor/EditorStore');
+      runInAction(() => {
+        if (this.disposed) {
+          return;
+        }
+        this.editorStore = new EditorStore(initialValue, this.pwaStore);
       });
+    })().catch((error) => {
+      log.error('Failed to load EditorStore', error);
+    });
   }
 
   dispose(): void {

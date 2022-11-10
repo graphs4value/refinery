@@ -35,8 +35,7 @@ export default class XtextClient {
     this.webSocketClient = new XtextWebSocketClient(
       () => this.onReconnect(),
       () => this.onDisconnect(),
-      (resource, stateId, service, push) =>
-        this.onPush(resource, stateId, service, push),
+      this.onPush.bind(this),
     );
     this.updateService = new UpdateService(store, this.webSocketClient);
     this.contentAssistService = new ContentAssistService(this.updateService);

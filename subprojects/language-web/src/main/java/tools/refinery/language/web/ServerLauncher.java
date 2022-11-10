@@ -14,6 +14,7 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.refinery.language.web.config.BackendConfigServlet;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 import java.io.File;
@@ -41,11 +42,13 @@ public class ServerLauncher {
 
 	private final Server server;
 
-	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource, String[] allowedOrigins) {
+	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource, String[] allowedOrigins,
+						  String webSocketUrl) {
 		server = new Server(bindAddress);
 		var handler = new ServletContextHandler();
 		addSessionHandler(handler);
 		addProblemServlet(handler, allowedOrigins);
+		addBackendConfigServlet(handler, webSocketUrl);
 		if (baseResource != null) {
 			handler.setBaseResource(baseResource);
 			handler.setWelcomeFiles(new String[]{"index.html"});
@@ -76,6 +79,12 @@ public class ServerLauncher {
 		JettyWebSocketServletContainerInitializer.configure(handler, null);
 	}
 
+	private void addBackendConfigServlet(ServletContextHandler handler, String webSocketUrl) {
+		var backendConfigServletHolder = new ServletHolder(BackendConfigServlet.class);
+		backendConfigServletHolder.setInitParameter(BackendConfigServlet.WEBSOCKET_URL_INIT_PARAM, webSocketUrl);
+		handler.addServlet(backendConfigServletHolder, "/config.json");
+	}
+
 	private void addDefaultServlet(ServletContextHandler handler) {
 		var defaultServletHolder = new ServletHolder(DefaultServlet.class);
 		var isWindows = System.getProperty("os.name").toLowerCase().contains("win");
@@ -97,7 +106,8 @@ public class ServerLauncher {
 			var bindAddress = getBindAddress();
 			var baseResource = getBaseResource();
 			var allowedOrigins = getAllowedOrigins();
-			var serverLauncher = new ServerLauncher(bindAddress, baseResource, allowedOrigins);
+			var webSocketUrl = getWebSocketUrl();
+			var serverLauncher = new ServerLauncher(bindAddress, baseResource, allowedOrigins, webSocketUrl);
 			serverLauncher.start();
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
@@ -189,5 +199,20 @@ public class ServerLauncher {
 			return new String[]{urlWithPort, urlWithoutPort};
 		}
 		return new String[]{urlWithPort};
+	}
+
+	private static String getWebSocketUrl() {
+		String host;
+		int port;
+		var publicHost = getPublicHost();
+		if (publicHost == null) {
+			host = getListenAddress();
+			port = getListenPort();
+		} else {
+			host = publicHost;
+			port = getPublicPort();
+		}
+		var scheme = port == HTTPS_DEFAULT_PORT ? "wss" : "ws";
+		return String.format("%s://%s:%d/xtext-service", scheme, host, port);
 	}
 }

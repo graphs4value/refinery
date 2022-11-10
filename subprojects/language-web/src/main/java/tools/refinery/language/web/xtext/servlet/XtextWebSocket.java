@@ -1,30 +1,24 @@
 package tools.refinery.language.web.xtext.servlet;
 
-import java.io.IOException;
-import java.io.Reader;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonParseException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.StatusCode;
 import org.eclipse.jetty.websocket.api.WriteCallback;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.annotations.*;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonParseException;
-
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;
 import tools.refinery.language.web.xtext.server.message.XtextWebRequest;
 import tools.refinery.language.web.xtext.server.message.XtextWebResponse;
+
+import java.io.IOException;
+import java.io.Reader;
 
 @WebSocket
 public class XtextWebSocket implements WriteCallback, ResponseHandler {
@@ -118,7 +112,7 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 			webSocketSession.getRemote().sendPartialString(responseString, true, this);
 		} catch (IOException e) {
 			throw new ResponseHandlerException(
-					"Cannot initiaite async write to websocket " + webSocketSession.getRemoteAddress(), e);
+					"Cannot initiate async write to websocket " + webSocketSession.getRemoteAddress(), e);
 		}
 	}
 

@@ -6,12 +6,10 @@ const { raise } = actions;
 const ERROR_WAIT_TIMES = ['200', '1s', '5s', '30s'].map(ms);
 
 export interface WebSocketContext {
-  webSocketURL: string | undefined;
   errors: string[];
 }
 
 export type WebSocketEvent =
-  | { type: 'CONFIGURE'; webSocketURL: string }
   | { type: 'CONNECT' }
   | { type: 'DISCONNECT' }
   | { type: 'OPENED' }
@@ -25,24 +23,6 @@ export type WebSocketEvent =
   | { type: 'OFFLINE' }
   | { type: 'ERROR'; message: string };
 
-export function isWebSocketURLLocal(webSocketURL: string | undefined): boolean {
-  if (webSocketURL === undefined) {
-    return false;
-  }
-  let hostname: string;
-  try {
-    ({ hostname } = new URL(webSocketURL));
-  } catch {
-    return false;
-  }
-  // https://stackoverflow.com/a/57949518
-  return (
-    hostname === 'localhost' ||
-    hostname === '[::1]' ||
-    hostname.match(/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)){3}$/) !== null
-  );
-}
-
 export default createMachine(
   {
     id: 'webSocket',
@@ -53,7 +33,6 @@ export default createMachine(
     },
     tsTypes: {} as import('./webSocketMachine.typegen').Typegen0,
     context: {
-      webSocketURL: undefined,
       errors: [],
     },
     type: 'parallel',
@@ -65,16 +44,12 @@ export default createMachine(
           disconnected: {
             id: 'disconnected',
             entry: ['clearErrors', 'notifyDisconnect'],
-            on: {
-              CONFIGURE: { actions: 'configure' },
-            },
           },
           timedOut: {
             id: 'timedOut',
             always: [
               {
                 target: 'temporarilyOffline',
-                cond: 'needsNetwork',
                 in: '#offline',
               },
               { target: 'socketCreated', in: '#tabVisible' },
@@ -89,7 +64,6 @@ export default createMachine(
             always: [
               {
                 target: 'temporarilyOffline',
-                cond: 'needsNetwork',
                 in: '#offline',
               },
             ],
@@ -183,7 +157,7 @@ export default createMachine(
           },
         },
         on: {
-          CONNECT: { target: '.timedOut', cond: 'hasWebSocketURL' },
+          CONNECT: '.timedOut',
           DISCONNECT: '.disconnected',
         },
       },
@@ -224,10 +198,6 @@ export default createMachine(
     },
   },
   {
-    guards: {
-      hasWebSocketURL: ({ webSocketURL }) => webSocketURL !== undefined,
-      needsNetwork: ({ webSocketURL }) => !isWebSocketURLLocal(webSocketURL),
-    },
     delays: {
       IDLE_TIMEOUT: ms('5m'),
       OPEN_TIMEOUT: ms('10s'),
@@ -239,10 +209,6 @@ export default createMachine(
       },
     },
     actions: {
-      configure: assign((context, { webSocketURL }) => ({
-        ...context,
-        webSocketURL,
-      })),
       pushError: assign((context, { message }) => ({
         ...context,
         errors: [...context.errors, message],
