@@ -30,7 +30,7 @@ pred root(node node).
 %     !contains(node, _), !root(node).
 %
 % error tooManyContainers(contained node) <->
-%     count contains(_, node) > 1
+%     #contains(_, node) > 1
 % ;
 %     contains(_, node), root(node)
 % ;

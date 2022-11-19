@@ -1,35 +1,35 @@
 package tools.refinery.language.web.tests;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.fail;
+
 public abstract class WebSocketIntegrationTestClient {
-	private static long TIMEOUT_MILLIS = Duration.ofSeconds(1).toMillis();
-	
+	private static final long TIMEOUT_MILLIS = Duration.ofSeconds(1).toMillis();
+
 	private boolean finished = false;
 
-	private Object lock = new Object();
+	private final Object lock = new Object();
 
 	private Throwable error;
 
 	private int closeStatusCode;
 
-	private List<String> responses = new ArrayList<>();
-	
+	private final List<String> responses = new ArrayList<>();
+
 	public int getCloseStatusCode() {
 		return closeStatusCode;
 	}
-	
+
 	public List<String> getResponses() {
 		return responses;
 	}
@@ -38,7 +38,7 @@ public abstract class WebSocketIntegrationTestClient {
 	public void onConnect(Session session) {
 		arrangeAndCatchErrors(session);
 	}
-	
+
 	private void arrangeAndCatchErrors(Session session) {
 		try {
 			arrange(session, responses.size());
@@ -46,8 +46,8 @@ public abstract class WebSocketIntegrationTestClient {
 			finishedWithError(e);
 		}
 	}
-	
-	protected abstract void arrange(Session session, int responsesReceived) throws IOException; 
+
+	protected abstract void arrange(Session session, int responsesReceived) throws IOException;
 
 	@OnWebSocketClose
 	public void onClose(int statusCode, String reason) {

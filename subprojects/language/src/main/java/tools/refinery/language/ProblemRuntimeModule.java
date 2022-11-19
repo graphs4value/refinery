@@ -5,6 +5,7 @@ package tools.refinery.language;
 
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.DerivedStateAwareResourceDescriptionManager;
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
@@ -23,6 +24,7 @@ import com.google.inject.name.Names;
 
 import tools.refinery.language.conversion.ProblemValueConverterService;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
+import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
 import tools.refinery.language.resource.ProblemDerivedStateComputer;
 import tools.refinery.language.resource.ProblemLocationInFileProvider;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
@@ -34,6 +36,11 @@ import tools.refinery.language.scoping.ProblemLocalScopeProvider;
  * Equinox extension registry.
  */
 public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
+	@Override
+	public Class<? extends IParser> bindIParser() {
+		return TokenSourceInjectingProblemParser.class;
+	}
+
 	public Class<? extends IQualifiedNameConverter> bindIQualifiedNameConverter() {
 		return ProblemQualifiedNameConverter.class;
 	}

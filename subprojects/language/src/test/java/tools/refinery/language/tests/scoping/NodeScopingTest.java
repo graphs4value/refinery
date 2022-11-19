@@ -1,13 +1,6 @@
 package tools.refinery.language.tests.scoping;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.not;
-
-import java.util.stream.Stream;
-
+import com.google.inject.Inject;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -16,12 +9,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import com.google.inject.Inject;
-
 import tools.refinery.language.model.tests.utils.ProblemParseHelper;
 import tools.refinery.language.model.tests.utils.WrappedProblem;
 import tools.refinery.language.tests.ProblemInjectorProvider;
+
+import java.util.stream.Stream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemInjectorProvider.class)
@@ -85,7 +80,7 @@ class NodeScopingTest {
 	@MethodSource("individualNodeReferenceSource")
 	void individualNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				indiv a, b.
+				individual a, b.
 				pred predicate(node x, node y) <-> node(x).
 				predicate({PARAM}a, {PARAM}a).
 				?predicate({PARAM}a, {PARAM}b).
@@ -102,7 +97,7 @@ class NodeScopingTest {
 	@MethodSource("individualNodeReferenceSource")
 	void individualNodeInNodeValueAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				indiv a.
+				individual a.
 				{PARAM}a: 16.
 				""", qualifiedNamePrefix, namedProblem);
 		assertThat(problem.errors(), empty());
@@ -114,7 +109,7 @@ class NodeScopingTest {
 	@MethodSource("individualNodeReferenceSource")
 	void individualNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				indiv b.
+				individual b.
 				pred predicate(node a) <-> node({PARAM}b).
 				""");
 		assertThat(problem.errors(), empty());

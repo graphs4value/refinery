@@ -44,7 +44,7 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isSingletonVariable(Variable variable) {
-		return variable.eContainingFeature() == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__SINGLETON_VARIABLE;
+		return variable.eContainingFeature() == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__SINGLETON_VARIABLE;
 	}
 
 	public static boolean isImplicitVariable(Variable variable) {

@@ -3,34 +3,23 @@
  */
 package tools.refinery.language.scoping;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
-
-import com.google.inject.Inject;
-
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.Consequent;
-import tools.refinery.language.model.problem.ExistentialQuantifier;
-import tools.refinery.language.model.problem.NewAction;
-import tools.refinery.language.model.problem.ParametricDefinition;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemPackage;
-import tools.refinery.language.model.problem.ReferenceDeclaration;
-import tools.refinery.language.model.problem.Variable;
-import tools.refinery.language.model.problem.VariableOrNodeArgument;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemDesugarer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class contains custom scoping description.
- *
+ * <p>
  * See
- * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
+ * <a href="https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping">...</a>
  * on how and when to use it.
  */
 public class ProblemScopeProvider extends AbstractProblemScopeProvider {
@@ -44,7 +33,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 				|| reference == ProblemPackage.Literals.NODE_VALUE_ASSERTION__NODE) {
 			return getNodesScope(context, scope);
 		}
-		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE
+		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE
 				|| reference == ProblemPackage.Literals.NEW_ACTION__PARENT
 				|| reference == ProblemPackage.Literals.DELETE_ACTION__VARIABLE_OR_NODE) {
 			return getVariableScope(context, scope);
@@ -80,8 +69,8 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	}
 
 	protected void addSingletonVariableToScope(EObject context, List<Variable> variables) {
-		if (context instanceof VariableOrNodeArgument argument) {
-			Variable singletonVariable = argument.getSingletonVariable();
+		if (context instanceof VariableOrNodeExpr expr) {
+			Variable singletonVariable = expr.getSingletonVariable();
 			if (singletonVariable != null) {
 				variables.add(singletonVariable);
 			}
@@ -91,6 +80,8 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	protected void addExistentiallyQualifiedVariableToScope(EObject currentContext, List<Variable> variables) {
 		if (currentContext instanceof ExistentialQuantifier quantifier) {
 			variables.addAll(quantifier.getImplicitVariables());
+		} else if (currentContext instanceof Match match) {
+			variables.addAll(match.getCondition().getImplicitVariables());
 		} else if (currentContext instanceof Consequent consequent) {
 			for (var literal : consequent.getActions()) {
 				if (literal instanceof NewAction newAction && newAction.getVariable() != null) {
@@ -106,10 +97,9 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 			return delegateScope;
 		}
 		var relation = referenceDeclaration.getReferenceType();
-		if (!(relation instanceof ClassDeclaration)) {
+		if (!(relation instanceof ClassDeclaration classDeclaration)) {
 			return delegateScope;
 		}
-		var classDeclaration = (ClassDeclaration) relation;
 		var referenceDeclarations = desugarer.getAllReferenceDeclarations(classDeclaration);
 		return Scopes.scopeFor(referenceDeclarations, delegateScope);
 	}

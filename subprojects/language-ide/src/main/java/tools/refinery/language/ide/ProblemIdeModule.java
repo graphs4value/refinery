@@ -5,16 +5,28 @@ package tools.refinery.language.ide;
 
 import org.eclipse.xtext.ide.editor.contentassist.IPrefixMatcher;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
+import org.eclipse.xtext.ide.editor.contentassist.antlr.IContentAssistParser;
+import org.eclipse.xtext.ide.editor.partialEditing.IPartialEditingContentAssistParser;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
-
 import tools.refinery.language.ide.contentassist.FuzzyMatcher;
 import tools.refinery.language.ide.contentassist.ProblemCrossrefProposalProvider;
+import tools.refinery.language.ide.contentassist.TokenSourceInjectingPartialProblemContentAssistParser;
+import tools.refinery.language.ide.contentassist.TokenSourceInjectingProblemParser;
 import tools.refinery.language.ide.syntaxcoloring.ProblemSemanticHighlightingCalculator;
 
 /**
  * Use this class to register ide components.
  */
 public class ProblemIdeModule extends AbstractProblemIdeModule {
+	@Override
+	public Class<? extends IContentAssistParser> bindIContentAssistParser() {
+		return TokenSourceInjectingProblemParser.class;
+	}
+
+	public Class<? extends IPartialEditingContentAssistParser> bindIPartialEditingContentAssistParser() {
+		return TokenSourceInjectingPartialProblemContentAssistParser.class;
+	}
+
 	public Class<? extends ISemanticHighlightingCalculator> bindISemanticHighlightingCalculator() {
 		return ProblemSemanticHighlightingCalculator.class;
 	}

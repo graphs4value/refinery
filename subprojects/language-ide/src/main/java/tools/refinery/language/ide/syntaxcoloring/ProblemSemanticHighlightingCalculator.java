@@ -1,7 +1,7 @@
 package tools.refinery.language.ide.syntaxcoloring;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import com.google.inject.Inject;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -11,19 +11,11 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
-
-import com.google.common.collect.ImmutableList;
-import com.google.inject.Inject;
-
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.NamedElement;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.PredicateDefinition;
-import tools.refinery.language.model.problem.PredicateKind;
-import tools.refinery.language.model.problem.ProblemPackage;
-import tools.refinery.language.model.problem.ReferenceDeclaration;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
+
+import java.util.List;
 
 public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighlightingCalculator {
 	private static final String BUILTIN_CLASS = "builtin";
@@ -113,7 +105,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {
-			if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE) {
+			if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
 				classesBuilder.add(NODE_CLASS);
 			}
 			if (ProblemUtil.isIndividualNode(node)) {

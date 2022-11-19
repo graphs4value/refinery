@@ -1,10 +1,7 @@
 package tools.refinery.language.tests.formatting2;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.formatting2.IFormatter2;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
@@ -16,12 +13,13 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.util.ParseHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.tests.ProblemInjectorProvider;
+
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemInjectorProvider.class)
@@ -181,7 +179,7 @@ class ProblemFormatterTest {
 
 	@Test
 	void individualDeclarationTest() {
-		testFormatter("  indiv  a  ,  b  .  ", "indiv a, b.\n");
+		testFormatter("  individual  a  ,  b  .  ", "individual a, b.\n");
 	}
 
 	@Test

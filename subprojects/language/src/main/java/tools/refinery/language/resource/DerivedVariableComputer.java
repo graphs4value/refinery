@@ -1,36 +1,15 @@
 package tools.refinery.language.resource;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.eclipse.xtext.linking.impl.LinkingHelper;
-import org.eclipse.xtext.naming.IQualifiedNameConverter;
-import org.eclipse.xtext.nodemodel.INode;
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
-import org.eclipse.xtext.scoping.IScope;
-import org.eclipse.xtext.scoping.IScopeProvider;
-import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import org.eclipse.xtext.linking.impl.LinkingHelper;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
+import tools.refinery.language.model.problem.*;
 
-import tools.refinery.language.model.problem.Argument;
-import tools.refinery.language.model.problem.Atom;
-import tools.refinery.language.model.problem.CompoundLiteral;
-import tools.refinery.language.model.problem.Conjunction;
-import tools.refinery.language.model.problem.ExistentialQuantifier;
-import tools.refinery.language.model.problem.ImplicitVariable;
-import tools.refinery.language.model.problem.Literal;
-import tools.refinery.language.model.problem.Parameter;
-import tools.refinery.language.model.problem.ParametricDefinition;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemFactory;
-import tools.refinery.language.model.problem.ProblemPackage;
-import tools.refinery.language.model.problem.Statement;
-import tools.refinery.language.model.problem.VariableOrNodeArgument;
-import tools.refinery.language.naming.NamingUtil;
+import java.util.*;
 
 @Singleton
 public class DerivedVariableComputer {
@@ -53,105 +32,58 @@ public class DerivedVariableComputer {
 	}
 
 	protected void installDerivedParametricDefinitionState(ParametricDefinition definition, Set<String> nodeNames) {
-		Set<String> knownVariables = new HashSet<>();
-		knownVariables.addAll(nodeNames);
+		Set<String> knownVariables = new HashSet<>(nodeNames);
 		for (Parameter parameter : definition.getParameters()) {
 			String name = parameter.getName();
 			if (name != null) {
 				knownVariables.add(name);
 			}
 		}
+		if (definition instanceof PredicateDefinition predicateDefinition) {
+			installDerivedPredicateDefinitionState(predicateDefinition, knownVariables);
+		} else if (definition instanceof FunctionDefinition functionDefinition) {
+			installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
+		} else if (definition instanceof RuleDefinition ruleDefinition) {
+			installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
+		} else {
+			throw new IllegalArgumentException("Unknown ParametricDefinition: " + definition);
+		}
+	}
+
+	protected void installDerivedPredicateDefinitionState(PredicateDefinition definition, Set<String> knownVariables) {
 		for (Conjunction body : definition.getBodies()) {
-			installDeriveConjunctionState(body, knownVariables);
+			createVariablesForScope(new ImplicitVariableScope(body, knownVariables));
 		}
 	}
 
-	protected void installDeriveConjunctionState(Conjunction conjunction, Set<String> knownVariables) {
-		Set<String> newVariables = new HashSet<>();
-		for (Literal literal : conjunction.getLiterals()) {
-			if (literal instanceof Atom atom) {
-				createSigletonVariablesAndCollectVariables(atom, knownVariables, newVariables);
-			}
-		}
-		createVariables(conjunction, newVariables);
-		newVariables.addAll(knownVariables);
-		for (Literal literal : conjunction.getLiterals()) {
-			if (literal instanceof CompoundLiteral compoundLiteral) {
-				installDerivedCompoundLiteralState(compoundLiteral, newVariables);
-			}
-		}
-	}
-
-	protected void installDerivedCompoundLiteralState(CompoundLiteral compoundLiteral, Set<String> knownVariables) {
-		Set<String> newVariables = new HashSet<>();
-		createSigletonVariablesAndCollectVariables(compoundLiteral.getAtom(), knownVariables, newVariables);
-		createVariables(compoundLiteral, newVariables);
-	}
-
-	protected void createSigletonVariablesAndCollectVariables(Atom atom, Set<String> knownVariables,
-			Set<String> newVariables) {
-		for (Argument argument : atom.getArguments()) {
-			if (argument instanceof VariableOrNodeArgument variableOrNodeArgument) {
-				IScope scope = scopeProvider.getScope(variableOrNodeArgument,
-						ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE);
-				List<INode> nodes = NodeModelUtils.findNodesForFeature(variableOrNodeArgument,
-						ProblemPackage.Literals.VARIABLE_OR_NODE_ARGUMENT__VARIABLE_OR_NODE);
-				for (INode node : nodes) {
-					var variableName = linkingHelper.getCrossRefNodeAsString(node, true);
-					var created = tryCreateVariableForArgument(variableOrNodeArgument, variableName, scope,
-							knownVariables, newVariables);
-					if (created) {
-						break;
-					}
+	protected void installDerivedFunctionDefinitionState(FunctionDefinition definition, Set<String> knownVariables) {
+		for (Case body : definition.getCases()) {
+			if (body instanceof Conjunction conjunction) {
+				createVariablesForScope(new ImplicitVariableScope(conjunction, knownVariables));
+			} else if (body instanceof Match match) {
+				var condition = match.getCondition();
+				if (condition != null) {
+					createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables));
 				}
+			} else {
+				throw new IllegalArgumentException("Unknown Case: " + body);
 			}
 		}
 	}
 
-	protected boolean tryCreateVariableForArgument(VariableOrNodeArgument variableOrNodeArgument, String variableName,
-			IScope scope, Set<String> knownVariables, Set<String> newVariables) {
-		if (!NamingUtil.isValidId(variableName)) {
-			return false;
-		}
-		var qualifiedName = qualifiedNameConverter.toQualifiedName(variableName);
-		if (scope.getSingleElement(qualifiedName) != null) {
-			return false;
-		}
-		if (NamingUtil.isSingletonVariableName(variableName)) {
-			createSingletonVariable(variableOrNodeArgument, variableName);
-			return true;
-		}
-		if (!knownVariables.contains(variableName)) {
-			newVariables.add(variableName);
-			return true;
-		}
-		return false;
-	}
-
-	protected void createVariables(ExistentialQuantifier quantifier, Set<String> newVariables) {
-		for (String variableName : newVariables) {
-			createVariable(quantifier, variableName);
+	protected void installDerivedRuleDefinitionState(RuleDefinition definition, Set<String> knownVariables) {
+		for (Conjunction precondition : definition.getPreconditions()) {
+			createVariablesForScope(new ImplicitVariableScope(precondition, knownVariables));
 		}
 	}
 
-	protected void createVariable(ExistentialQuantifier quantifier, String variableName) {
-		if (NamingUtil.isValidId(variableName)) {
-			ImplicitVariable variable = createNamedVariable(variableName);
-			quantifier.getImplicitVariables().add(variable);
+	protected void createVariablesForScope(ImplicitVariableScope scope) {
+		var queue = new ArrayDeque<ImplicitVariableScope>();
+		queue.addLast(scope);
+		while (!queue.isEmpty()) {
+			var nextScope = queue.removeFirst();
+			nextScope.createVariables(scopeProvider, linkingHelper, qualifiedNameConverter, queue);
 		}
-	}
-
-	protected void createSingletonVariable(VariableOrNodeArgument argument, String variableName) {
-		if (NamingUtil.isValidId(variableName)) {
-			ImplicitVariable variable = createNamedVariable(variableName);
-			argument.setSingletonVariable(variable);
-		}
-	}
-
-	protected ImplicitVariable createNamedVariable(String variableName) {
-		var variable = ProblemFactory.eINSTANCE.createImplicitVariable();
-		variable.setName(variableName);
-		return variable;
 	}
 
 	public void discardDerivedVariables(Problem problem) {
@@ -163,28 +95,31 @@ public class DerivedVariableComputer {
 	}
 
 	protected void discardParametricDefinitionState(ParametricDefinition definition) {
-		for (Conjunction body : definition.getBodies()) {
-			body.getImplicitVariables().clear();
-			for (Literal literal : body.getLiterals()) {
-				if (literal instanceof Atom atom) {
-					discardDerivedAtomState(atom);
-				}
-				if (literal instanceof CompoundLiteral compoundLiteral) {
-					compoundLiteral.getImplicitVariables().clear();
-					discardDerivedAtomState(compoundLiteral.getAtom());
-				}
+		List<ExistentialQuantifier> existentialQuantifiers = new ArrayList<>();
+		List<VariableOrNodeExpr> variableOrNodeExprs = new ArrayList<>();
+		var treeIterator = definition.eAllContents();
+		// We must collect the nodes where we are discarding derived state and only discard them after the iteration,
+		// because modifying the containment hierarchy during iteration causes the TreeIterator to fail with
+		// IndexOutOfBoundsException.
+		while (treeIterator.hasNext()) {
+			var child = treeIterator.next();
+			var containingFeature = child.eContainingFeature();
+			if (containingFeature == ProblemPackage.Literals.EXISTENTIAL_QUANTIFIER__IMPLICIT_VARIABLES ||
+					containingFeature == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__SINGLETON_VARIABLE) {
+				treeIterator.prune();
+			} else if (child instanceof ExistentialQuantifier existentialQuantifier &&
+					!existentialQuantifier.getImplicitVariables().isEmpty()) {
+				existentialQuantifiers.add(existentialQuantifier);
+			} else if (child instanceof VariableOrNodeExpr variableOrNodeExpr &&
+					variableOrNodeExpr.getSingletonVariable() != null) {
+				variableOrNodeExprs.add(variableOrNodeExpr);
 			}
 		}
-	}
-
-	protected void discardDerivedAtomState(Atom atom) {
-		if (atom == null) {
-			return;
+		for (var existentialQuantifier : existentialQuantifiers) {
+			existentialQuantifier.getImplicitVariables().clear();
 		}
-		for (Argument argument : atom.getArguments()) {
-			if (argument instanceof VariableOrNodeArgument variableOrNodeArgument) {
-				variableOrNodeArgument.setSingletonVariable(null);
-			}
+		for (var variableOrNodeExpr : variableOrNodeExprs) {
+			variableOrNodeExpr.setSingletonVariable(null);
 		}
 	}
 }

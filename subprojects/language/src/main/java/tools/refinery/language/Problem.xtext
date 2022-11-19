@@ -8,9 +8,10 @@ Problem:
 	statements+=Statement*;
 
 Statement:
-	ClassDeclaration | EnumDeclaration | PredicateDefinition | /* RuleDefinition | */ Assertion | NodeValueAssertion |
-	ScopeDeclaration |
-	IndividualDeclaration;
+	ClassDeclaration | EnumDeclaration |
+	PredicateDefinition | FunctionDefinition | /* RuleDefinition | */
+	Assertion | NodeValueAssertion |
+	ScopeDeclaration | IndividualDeclaration;
 
 ClassDeclaration:
 	abstract?="abstract"? "class"
@@ -30,53 +31,51 @@ enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
 
 ReferenceDeclaration:
-	(
-		kind=ReferenceKind referenceType=[Relation|QualifiedName] |
-		referenceType=[Relation|NonRelationKindQualifiedName]
-	)
+	(kind=ReferenceKind referenceType=[Relation|QualifiedName] |
+	referenceType=[Relation|NonRelationKindQualifiedName])
 	("[" multiplicity=Multiplicity "]")?
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
+
+enum ErrorKind returns PredicateKind:
+	ERROR="error";
 
 enum PredicateKind:
 	ERROR="error" | CONTAINED="contained" | CONTAINMENT="containment";
 
 PredicateDefinition:
-	(kind=PredicateKind "pred"? | "pred")
+	(kind=ErrorKind | kind=PredicateKind? "pred")
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
 	".";
 
+Conjunction:
+	literals+=Expr ("," literals+=Expr)*;
+
+FunctionDefinition:
+	functionType=[Relation|QualifiedName] name=Identifier
+	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+	("=" cases+=Case (";" cases+=Case)*)?
+	".";
+
+Case:
+	Conjunction ({Match.condition=current} "->" value=Expr)?;
+
 //RuleDefinition:
 //	"rule"
 //	name=Identifier
 //	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-//	(":" bodies+=Conjunction (";" bodies+=Conjunction)*
+//	(":" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
 //	"==>" consequents+=Consequent (";" consequents+=Consequent)*)?
 //	".";
 
 Parameter:
 	(modality=Modality? parameterType=[Relation|QualifiedName])? name=Identifier;
 
-Conjunction:
-	literals+=Literal ("," literals+=Literal)*;
-
 //Consequent:
 //	actions+=Action ("," actions+=Action)*;
-
-Literal:
-	Atom | NegativeLiteral | CountLiteral;
-
-NegativeLiteral:
-	modality=Modality? "!" atom=Atom;
-
-enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=";
-
-CountLiteral:
-	modality=Modality? "count" atom=Atom op=ComparisonOp threshold=INT;
-
+//
 //Action:
 //	AssertionAction | DeleteAction | NewAction;
 //
@@ -93,22 +92,74 @@ CountLiteral:
 //NewVariable:
 //	name=Identifier;
 
+Expr:
+	ComparisonExpr;
+
+enum ComparisonOp:
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=";
+
+ComparisonExpr returns Expr:
+	AdditiveExpr ({ComparisonExpr.left=current}
+	op=ComparisonOp right=AdditiveExpr)*;
+
+enum AdditiveOp returns BinaryOp:
+	ADD="+" | SUB="-";
+
+AdditiveExpr returns Expr:
+	MultiplicativeExpr ({ArithmeticBinaryExpr.left=current}
+	op=AdditiveOp right=MultiplicativeExpr)*;
+
+enum MultiplicativeOp returns BinaryOp:
+	MUL="*" | DIV="/";
+
+MultiplicativeExpr returns Expr:
+	ExponentialExpr ({ArithmeticBinaryExpr.left=current}
+	op=MultiplicativeOp right=ExponentialExpr)*;
+
+enum ExponentialOp returns BinaryOp:
+	POW="**";
+
+ExponentialExpr returns Expr:
+	UnaryExpr ({ArithmeticBinaryExpr.left=current}
+	op=ExponentialOp right=ExponentialExpr)?;
+
+UnaryExpr returns Expr:
+	ArithmeticUnaryExpr | ModalExpr | NegationExpr | CountExpr | AggregationExpr |
+	Atom | VariableOrNodeExpr | ConstantExpr | "(" Expr ")";
+
+enum UnaryOp:
+	PLUS="+" | MINUS="-";
+
+ArithmeticUnaryExpr:
+	op=UnaryOp body=UnaryExpr;
+
 enum Modality:
 	MAY="may" | MUST="must" | CURRENT="current";
 
+ModalExpr:
+	modality=Modality body=UnaryExpr;
+
+NegationExpr:
+	"!" body=UnaryExpr;
+
+CountExpr:
+	"#" body=UnaryExpr;
+
+enum AggregationOp:
+	SUM="sum" | PROD="prod" | MIN="min" | MAX="max";
+
+AggregationExpr:
+	op=AggregationOp "{" value=Expr "|" condition=Expr "}";
+
 Atom:
-	modality=Modality?
 	relation=[Relation|QualifiedName]
-	transitiveClosure?="+"?
-	"(" (arguments+=Argument ("," arguments+=Argument)*)? ")";
+	transitiveClosure?=TRANSITIVE_CLOSURE?
+	"(" (arguments+=Expr ("," arguments+=Expr)*)? ")";
 
-Argument:
-	VariableOrNodeArgument | ConstantArgument;
-
-VariableOrNodeArgument:
+VariableOrNodeExpr:
 	variableOrNode=[VariableOrNode|QualifiedName];
 
-ConstantArgument:
+ConstantExpr:
 	constant=Constant;
 
 Assertion:
@@ -131,7 +182,7 @@ WildcardAssertionArgument:
 	{WildcardAssertionArgument} "*";
 
 ConstantAssertionArgument:
-	constant=Constant;
+	negative?="-"? constant=Constant;
 
 enum LogicValue:
 	TRUE="true" | FALSE="false" | UNKNOWN="unknown" | ERROR="error";
@@ -146,7 +197,7 @@ Constant:
 	RealConstant | IntConstant | StringConstant;
 
 IntConstant:
-	intValue=Integer;
+	intValue=INT;
 
 RealConstant:
 	realValue=Real;
@@ -178,7 +229,7 @@ ExactMultiplicity:
 	exactValue=INT;
 
 IndividualDeclaration:
-	"indiv" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+	"individual" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
 
 UpperBound returns ecore::EInt:
 	INT | "*";
@@ -190,18 +241,16 @@ QualifiedName hidden():
 	Identifier ("::" Identifier)*;
 
 NonRelationKindIdentifier:
-	ID | "true" | "false" | "unknown" | "error" | "class" | "abstract" | "extends" | "enum" |
-	"pred" | "indiv" | "problem" | /* "new" | "delete" | "rule" | */ "may" | "must" | "current" |
-	"count" | "default" | "scope" | "contained" | "containment";
+	ID | "true" | "false" | "contained" | "sum" | "prod" | "min" | "max";
 
 Identifier:
-	NonRelationKindIdentifier | "refers" | "contains" | "container";
-
-Integer returns ecore::EInt hidden():
-	"-"? INT;
+	NonRelationKindIdentifier | "contains";
 
 Real returns ecore::EDouble:
-	"-"? (EXPONENTIAL | INT "." (INT | EXPONENTIAL));
+	EXPONENTIAL | INT "." (INT | EXPONENTIAL);
+
+terminal TRANSITIVE_CLOSURE:
+	"synthetic:TRANSITIVE_CLOSURE";
 
 @Override
 terminal ID:

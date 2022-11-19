@@ -20,6 +20,12 @@ enum TaxStatus {
     child, student, adult, retired
 }
 
+int ageDifference(Person p, Person q) =
+    children(p, q), age(p, pAge), age(q, qAge) -> qAge - pAge.
+
+error invalidAgeDifference(Person p, Person q) <->
+    children(p, q), ageDifference(p, q) <= 0.
+
 % A child cannot have any dependents.
 pred invalidTaxStatus(Person p) <->
     taxStatus(p, child),
@@ -29,7 +35,7 @@ pred invalidTaxStatus(Person p) <->
     parent(p, q),
     !taxStatus(q, retired).
 
-indiv family.
+individual family.
 Family(family).
 members(family, anne).
 members(family, bob).

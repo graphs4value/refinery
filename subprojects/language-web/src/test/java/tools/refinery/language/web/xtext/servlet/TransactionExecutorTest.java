@@ -1,16 +1,6 @@
 package tools.refinery.language.web.xtext.servlet;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.util.List;
-import java.util.Map;
-
+import com.google.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.testing.InjectWith;
@@ -23,9 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.google.inject.Inject;
-
 import tools.refinery.language.web.tests.AwaitTerminationExecutorServiceProvider;
 import tools.refinery.language.web.tests.ProblemWebInjectorProvider;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
@@ -34,6 +21,13 @@ import tools.refinery.language.web.xtext.server.TransactionExecutor;
 import tools.refinery.language.web.xtext.server.message.XtextWebOkResponse;
 import tools.refinery.language.web.xtext.server.message.XtextWebRequest;
 import tools.refinery.language.web.xtext.server.message.XtextWebResponse;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(InjectionExtension.class)
@@ -92,7 +86,8 @@ class TransactionExecutorTest {
 		var stateId = updateFullText();
 		var responseHandler = sendRequestAndWaitForAllResponses(
 				new XtextWebRequest("bar", Map.of("resource", RESOURCE_NAME, "serviceType", "update", "requiredStateId",
-						stateId, "deltaText", "indiv q.\nnode(q).\n", "deltaOffset", "0", "deltaReplaceLength", "0")));
+						stateId, "deltaText", "individual q.\nnode(q).\n", "deltaOffset", "0", "deltaReplaceLength",
+						"0")));
 
 		var captor = newCaptor();
 		verify(responseHandler, times(2)).onResponse(captor.capture());

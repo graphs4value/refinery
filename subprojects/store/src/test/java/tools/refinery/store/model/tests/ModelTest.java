@@ -61,6 +61,7 @@ class ModelTest {
 	@Test
 	void modelBuildingArityFailTest() {
 		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+
 		ModelStore store = new ModelStoreImpl(Set.of(person));
 		Model model = store.createModel();
 

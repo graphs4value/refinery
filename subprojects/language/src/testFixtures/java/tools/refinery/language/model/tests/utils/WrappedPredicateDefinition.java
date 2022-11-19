@@ -8,4 +8,8 @@ public record WrappedPredicateDefinition(PredicateDefinition predicateDefinition
 	public PredicateDefinition get() {
 		return predicateDefinition;
 	}
+
+	public WrappedConjunction conj(int i) {
+		return new WrappedConjunction(predicateDefinition.getBodies().get(i));
+	}
 }

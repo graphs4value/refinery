@@ -44,7 +44,7 @@ class SymbolCollectorTest {
 	@Test
 	void individualNodeTest() {
 		var problem = parseHelper.parse("""
-				indiv a.
+				individual a.
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
 		var node = problem.individualNode("a");
@@ -161,7 +161,7 @@ class SymbolCollectorTest {
 
 	static Stream<Arguments> predicateTest() {
 		return Stream.of(Arguments.of("pred", ContainmentRole.NONE), Arguments.of("error", ContainmentRole.NONE),
-				Arguments.of("contained", ContainmentRole.CONTAINED), Arguments.of("containment",
+				Arguments.of("contained pred", ContainmentRole.CONTAINED), Arguments.of("containment pred",
 						ContainmentRole.CONTAINMENT));
 	}
 

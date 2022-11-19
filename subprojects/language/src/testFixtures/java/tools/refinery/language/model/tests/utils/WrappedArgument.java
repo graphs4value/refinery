@@ -2,13 +2,13 @@ package tools.refinery.language.model.tests.utils;
 
 import tools.refinery.language.model.problem.*;
 
-public record WrappedArgument(Argument argument) {
-	public Argument get() {
-		return argument;
+public record WrappedArgument(Expr expr) {
+	public Expr get() {
+		return expr;
 	}
 
 	public VariableOrNode variableOrNode() {
-		return ((VariableOrNodeArgument) argument).getVariableOrNode();
+		return ((VariableOrNodeExpr) expr).getVariableOrNode();
 	}
 
 	public Variable variable() {

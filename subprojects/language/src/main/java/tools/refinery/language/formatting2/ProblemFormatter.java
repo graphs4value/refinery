@@ -11,17 +11,9 @@ import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegionsFinder;
 import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
-import tools.refinery.language.model.problem.Assertion;
-import tools.refinery.language.model.problem.Atom;
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.Conjunction;
-import tools.refinery.language.model.problem.IndividualDeclaration;
-import tools.refinery.language.model.problem.NegativeLiteral;
-import tools.refinery.language.model.problem.Parameter;
-import tools.refinery.language.model.problem.PredicateDefinition;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemPackage;
+import tools.refinery.language.model.problem.*;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ProblemFormatter extends AbstractJavaFormatter {
 
 	protected void format(Problem problem, IFormattableDocument doc) {
@@ -95,16 +87,14 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		}
 	}
 
-	protected void format(NegativeLiteral literal, IFormattableDocument doc) {
+	protected void format(NegationExpr literal, IFormattableDocument doc) {
 		var region = regionFor(literal);
-		doc.append(region.feature(ProblemPackage.Literals.LITERAL__MODALITY), this::oneSpace);
 		doc.append(region.keyword("!"), this::noSpace);
-		doc.format(literal.getAtom());
+		doc.format(literal.getBody());
 	}
 
 	protected void format(Atom atom, IFormattableDocument doc) {
 		var region = regionFor(atom);
-		doc.append(region.feature(ProblemPackage.Literals.LITERAL__MODALITY), this::oneSpace);
 		doc.append(region.feature(ProblemPackage.Literals.ATOM__RELATION), this::noSpace);
 		doc.append(region.feature(ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE), this::noSpace);
 		formatParenthesizedList(region, doc);
@@ -116,7 +106,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	protected void format(IndividualDeclaration individualDeclaration, IFormattableDocument doc) {
 		surroundNewLines(doc, individualDeclaration, this::singleNewLine);
 		var region = regionFor(individualDeclaration);
-		doc.append(region.keyword("indiv"), this::oneSpace);
+		doc.append(region.keyword("individual"), this::oneSpace);
 		formatList(region, ",", doc);
 		doc.prepend(region.keyword("."), this::noSpace);
 	}

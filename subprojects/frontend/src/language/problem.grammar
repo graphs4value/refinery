@@ -2,56 +2,69 @@
 
 @external prop implicitCompletion from './props'
 
+@precedence {
+  containment @cut,
+  prefix,
+  exponential @right,
+  multiplicative @left,
+  additive @left,
+  comparison @left
+}
+
 @top Problem { statement* }
 
 statement {
   ProblemDeclaration {
-    ckw<"problem"> QualifiedName "."
+    kw<"problem"> QualifiedName "."
   } |
   ClassDefinition {
-    ckw<"abstract">? ckw<"class"> RelationName
-    (ckw<"extends"> sep<",", RelationName>)?
+    kw<"abstract">? kw<"class"> RelationName
+    (kw<"extends"> sep<",", RelationName>)?
     (ClassBody {  "{" ReferenceDeclaration* "}" } | ".")
   } |
   EnumDefinition {
-    ckw<"enum"> RelationName
+    kw<"enum"> RelationName
     (EnumBody { "{" sep<",", IndividualNodeName> "}" } | ".")
   } |
   PredicateDefinition {
     (
-      (ckw<"error"> | ckw<"contained"> | ckw<"containment">) ckw<"pred">? |
-      ckw<"pred">
+      (kw<"error"> | ckw<"contained"> | kw<"containment">)? kw<"pred"> |
+      kw<"error">
     )
     RelationName ParameterList<Parameter>?
-    PredicateBody { ("<->" sep<OrOp, Conjunction>)?  "." }
+    PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
+  } |
+  FunctionDefinition {
+    RelationName RelationName ParameterList<Parameter>?
+    FunctionBody { ("=" sep<OrOp, Case>)? "." }
   } |
   //RuleDefinition {
-  //  ckw<"rule">
+  //  kw<"rule">
   //  RuleName ParameterList<Parameter>?
   //  RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
   //} |
   Assertion {
-    ckw<"default">? (NotOp | UnknownOp)? RelationName
+    kw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument> (":" LogicValue)? "."
   } |
   NodeValueAssertion {
     QualifiedName ":" Constant "."
   } |
   IndividualDeclaration {
-    ckw<"indiv"> sep<",", IndividualNodeName> "."
+    kw<"individual"> sep<",", IndividualNodeName> "."
   } |
   ScopeDeclaration {
-    ckw<"scope"> sep<",", ScopeElement> "."
+    kw<"scope"> sep<",", ScopeElement> "."
   }
 }
 
 ReferenceDeclaration {
   (
-    ExplicitContainmentReference[@dynamicPrecedence=1] {
-      (ckw<"refers"> | ckw<"contains"> | ckw<"container">) RelationName ~containment
+    ExplicitContainmentReference {
+      !containment (kw<"refers"> | ckw<"contains"> | kw<"container">) RelationName
     } |
     ImplicitContainmentReference {
-      RelationName ~containment
+      RelationName
     }
   )
   ("[" Multiplicity? "]")?
@@ -62,50 +75,68 @@ ReferenceDeclaration {
 
 Parameter { Modality? RelationName? VariableName }
 
-Conjunction { ("," | Literal)+ }
+Conjunction { ("," | Expr)+ }
+
+Case { Conjunction ("->" Expr)? }
 
 OrOp { ";" }
 
-Literal {
-  Modality? (NotOp | ckw<"count">)? Modality? Atom
-  ((":=" | "<:") LogicValue | ComparisonOp int)?
+Expr {
+  UnaryExpr | BinaryExpr | Aggregation | VariableName | Atom | Constant | "(" Expr ")"
 }
 
-Atom { RelationName "+"? ParameterList<Argument> }
+BinaryExpr[@dynamicPrecedence=1] {
+  Expr !comparison ComparisonOp Expr |
+  Expr !additive ("+" | "-") Expr |
+  Expr !multiplicative (StarMult | Divide) Expr |
+  Expr !exponential "**" Expr
+}
+
+UnaryExpr {
+  !prefix ("+" | "-" | "!" | "#" | Modality) Expr
+}
+
+Aggregation {
+  AggregationOp "{" Expr "|" Expr "}"
+}
+
+Atom { RelationName "+"? ParameterList<Expr> }
 
 //Consequent { ("," | Action)+ }
 
 //Action {
 //   ckw<"new"> VariableName ("<:" VariableName)? |
-//   ckw<"delete"> VariableName |
+//   kw<"delete"> VariableName |
 //   Literal
 //}
-
-Argument { VariableName | Constant }
 
 AssertionArgument { NodeName | StarArgument | Constant }
 
 Constant { Real | String }
 
 LogicValue {
-  ckw<"true"> | ckw<"false"> | ckw<"unknown"> | ckw<"error">
+  ckw<"true"> | ckw<"false"> | kw<"unknown"> | kw<"error">
 }
 
 Modality {
-  ckw<"must"> | ckw<"may"> | ckw<"current">
+  kw<"must"> | kw<"may"> | kw<"current">
+}
+
+AggregationOp {
+  ckw<"sum"> | ckw<"prod"> | ckw<"min"> | ckw<"max">
 }
 
 ScopeElement { RelationName ("=" | "+=") Multiplicity }
 
 Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 
-RelationName { QualifiedName }
+RelationName { QualifiedName ~name }
 
 //RuleName { QualifiedName }
 
 IndividualNodeName { QualifiedName }
 
-VariableName { QualifiedName }
+VariableName[@dynamicPrecedence=10] { QualifiedName ~name }
 
 NodeName { QualifiedName }
 
@@ -134,7 +165,9 @@ sep1<separator, content> { content (separator content)* }
 
   blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
 
-  @precedence { BlockComment, LineComment }
+  Divide { "/" }
+
+  @precedence { BlockComment, LineComment, Divide }
 
   identifier { $[A-Za-z_] $[a-zA-Z0-9_]* }
 
@@ -144,7 +177,7 @@ sep1<separator, content> { content (separator content)* }
 
   StarMult { "*" }
 
-  Real { "-"? (exponential | int ("." (int | exponential))?) }
+  Real { (exponential | int ("." (int | exponential))?) }
 
   exponential { int ("e" | "E") ("+" | "-")? int }
 
@@ -161,5 +194,5 @@ sep1<separator, content> { content (separator content)* }
 
   StarArgument { "*" }
 
-  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "<->" "~>"
+  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "->" "<->" "+" "-" "**" "=" "+="
 }

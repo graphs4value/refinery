@@ -1,13 +1,6 @@
 package tools.refinery.language.tests.serializer;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Stream;
-
+import com.google.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -19,19 +12,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.google.inject.Inject;
-
-import tools.refinery.language.model.problem.Atom;
-import tools.refinery.language.model.problem.LogicValue;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.PredicateDefinition;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemFactory;
-import tools.refinery.language.model.problem.Relation;
-import tools.refinery.language.model.problem.VariableOrNode;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.model.tests.utils.WrappedProblem;
 import tools.refinery.language.tests.ProblemInjectorProvider;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(ProblemInjectorProvider.class)
@@ -68,7 +59,7 @@ class ProblemSerializerTest {
 		assertSerializedResult("""
 				pred foo(node p).
 
-				indiv a.
+				individual a.
 				""" + serializedAssertion + "\n");
 	}
 
@@ -166,10 +157,10 @@ class ProblemSerializerTest {
 	private Atom createAtom(Relation relation, VariableOrNode variable1, VariableOrNode variable2) {
 		var atom = ProblemFactory.eINSTANCE.createAtom();
 		atom.setRelation(relation);
-		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeArgument();
+		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
 		arg1.setVariableOrNode(variable1);
 		atom.getArguments().add(arg1);
-		var arg2 = ProblemFactory.eINSTANCE.createVariableOrNodeArgument();
+		var arg2 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
 		arg2.setVariableOrNode(variable2);
 		atom.getArguments().add(arg2);
 		return atom;
@@ -188,10 +179,10 @@ class ProblemSerializerTest {
 		var atom = ProblemFactory.eINSTANCE.createAtom();
 		var equals = nodeType.reference("equals");
 		atom.setRelation(equals);
-		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeArgument();
+		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
 		arg1.setVariableOrNode(parameter);
 		atom.getArguments().add(arg1);
-		var arg2 = ProblemFactory.eINSTANCE.createVariableOrNodeArgument();
+		var arg2 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
 		var variable = ProblemFactory.eINSTANCE.createImplicitVariable();
 		variable.setName("_q");
 		arg2.setSingletonVariable(variable);
