@@ -10,14 +10,13 @@ Problem:
 Statement:
 	ClassDeclaration | EnumDeclaration |
 	PredicateDefinition | FunctionDefinition | /* RuleDefinition | */
-	Assertion | NodeValueAssertion |
-	ScopeDeclaration | IndividualDeclaration;
+	Assertion | ScopeDeclaration | IndividualDeclaration;
 
 ClassDeclaration:
 	abstract?="abstract"? "class"
 	name=Identifier
 	("extends" superTypes+=[Relation|QualifiedName] ("," superTypes+=[Relation|QualifiedName])*)?
-	("{" (referenceDeclarations+=ReferenceDeclaration ";"?)* "}" | ".");
+	("{" (featureDeclarations+=FeatureDeclaration ";"?)* "}" | ".");
 
 EnumDeclaration:
 	"enum"
@@ -27,15 +26,26 @@ EnumDeclaration:
 EnumLiteral returns Node:
 	name=Identifier;
 
+FeatureDeclaration:
+	ReferenceDeclaration | AttributeDeclaration | FlagDeclaration;
+
 enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
 
 ReferenceDeclaration:
-	(kind=ReferenceKind referenceType=[Relation|QualifiedName] |
-	referenceType=[Relation|NonRelationKindQualifiedName])
+	kind=ReferenceKind referenceType=[Relation|QualifiedName]
 	("[" multiplicity=Multiplicity "]")?
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
+
+enum PrimitiveType:
+	INT="int" | REAL="real" | STRING="string";
+
+AttributeDeclaration:
+	attributeType=PrimitiveType name=Identifier;
+
+FlagDeclaration:
+	"bool" name=Identifier;
 
 enum ErrorKind returns PredicateKind:
 	ERROR="error";
@@ -54,7 +64,7 @@ Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
 FunctionDefinition:
-	functionType=[Relation|QualifiedName] name=Identifier
+	functionType=PrimitiveType name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("=" cases+=Case (";" cases+=Case)*)?
 	".";
@@ -96,11 +106,21 @@ Expr:
 	ComparisonExpr;
 
 enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=";
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=" | IN="in";
 
 ComparisonExpr returns Expr:
-	AdditiveExpr ({ComparisonExpr.left=current}
-	op=ComparisonOp right=AdditiveExpr)*;
+	LatticeExpr ({ComparisonExpr.left=current}
+	op=ComparisonOp right=LatticeExpr)*;
+
+enum LatticeOp returns BinaryOp:
+	MEET="/\\" | JOIN="\\/";
+
+LatticeExpr returns Expr:
+	RangeExpr ({ArithmeticBinaryExpr.left=current}
+	op=LatticeOp right=RangeExpr)*;
+
+RangeExpr returns Expr:
+	AdditiveExpr ({RangeExpr.left=current} ".." right=AdditiveExpr)*;
 
 enum AdditiveOp returns BinaryOp:
 	ADD="+" | SUB="-";
@@ -125,7 +145,7 @@ ExponentialExpr returns Expr:
 
 UnaryExpr returns Expr:
 	ArithmeticUnaryExpr | ModalExpr | NegationExpr | CountExpr | AggregationExpr |
-	Atom | VariableOrNodeExpr | ConstantExpr | "(" Expr ")";
+	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -159,42 +179,8 @@ Atom:
 VariableOrNodeExpr:
 	variableOrNode=[VariableOrNode|QualifiedName];
 
-ConstantExpr:
-	constant=Constant;
-
-Assertion:
-	default?="default"?
-	(value=ShortLogicValue?
-	relation=[Relation|QualifiedName]
-	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
-	| relation=[Relation|QualifiedName]
-	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
-	":" value=LogicValue)
-	".";
-
-AssertionArgument:
-	NodeAssertionArgument | WildcardAssertionArgument | ConstantAssertionArgument;
-
-NodeAssertionArgument:
-	node=[Node|QualifiedName];
-
-WildcardAssertionArgument:
-	{WildcardAssertionArgument} "*";
-
-ConstantAssertionArgument:
-	negative?="-"? constant=Constant;
-
-enum LogicValue:
-	TRUE="true" | FALSE="false" | UNKNOWN="unknown" | ERROR="error";
-
-enum ShortLogicValue returns LogicValue:
-	FALSE="!" | UNKNOWN="?";
-
-NodeValueAssertion:
-	node=[Node|QualifiedName] ":" value=Constant ".";
-
 Constant:
-	RealConstant | IntConstant | StringConstant;
+	RealConstant | IntConstant | InfConstant | StringConstant;
 
 IntConstant:
 	intValue=INT;
@@ -202,8 +188,48 @@ IntConstant:
 RealConstant:
 	realValue=Real;
 
+InfConstant:
+	{InfConstant} "*";
+
 StringConstant:
 	stringValue=STRING;
+
+Assertion:
+	default?="default"?
+	(relation=[Relation|QualifiedName]
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
+	value=AssertionValue |
+	value=ShortLogicAssertionValue
+	relation=[Relation|QualifiedName]
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")")
+	".";
+
+AssertionArgument:
+	NodeAssertionArgument | WildcardAssertionArgument;
+
+NodeAssertionArgument:
+	node=[Node|QualifiedName];
+
+WildcardAssertionArgument:
+	{WildcardAssertionArgument} "*";
+
+AssertionValue:
+	LogicAssertionValue | ExprAssertionValue;
+
+enum LogicValue:
+	TRUE="true" | FALSE="false" | UNKNOWN="unknown" | ERROR="error";
+
+LogicAssertionValue:
+	":" logicValue=LogicValue;
+
+ExprAssertionValue:
+	(range?="in" | "=") body=Expr;
+
+enum ShortLogicValue returns LogicValue:
+	FALSE="!" | UNKNOWN="?";
+
+ShortLogicAssertionValue returns LogicAssertionValue:
+	{LogicAssertionValue} logicValue=ShortLogicValue?;
 
 ScopeDeclaration:
 	"scope" typeScopes+=TypeScope ("," typeScopes+=TypeScope)* ".";
@@ -234,17 +260,11 @@ IndividualDeclaration:
 UpperBound returns ecore::EInt:
 	INT | "*";
 
-NonRelationKindQualifiedName hidden():
-	NonRelationKindIdentifier ("::" Identifier)*;
-
 QualifiedName hidden():
 	Identifier ("::" Identifier)*;
 
-NonRelationKindIdentifier:
-	ID | "true" | "false" | "contained" | "sum" | "prod" | "min" | "max";
-
 Identifier:
-	NonRelationKindIdentifier | "contains";
+	ID | "contains" | "contained" | "sum" | "prod" | "min" | "max";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

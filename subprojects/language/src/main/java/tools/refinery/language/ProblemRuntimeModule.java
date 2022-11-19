@@ -3,25 +3,18 @@
  */
 package tools.refinery.language;
 
+import com.google.inject.Binder;
+import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.parser.IParser;
-import org.eclipse.xtext.resource.DerivedStateAwareResource;
-import org.eclipse.xtext.resource.DerivedStateAwareResourceDescriptionManager;
-import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
-import org.eclipse.xtext.resource.IDerivedStateComputer;
-import org.eclipse.xtext.resource.ILocationInFileProvider;
-import org.eclipse.xtext.resource.IResourceDescription;
-import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.*;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
+import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
-
-import com.google.inject.Binder;
-import com.google.inject.name.Names;
-
 import tools.refinery.language.conversion.ProblemValueConverterService;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
@@ -30,6 +23,7 @@ import tools.refinery.language.resource.ProblemLocationInFileProvider;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
+import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;
 
 /**
  * Use this class to register components to be used at runtime / without the
@@ -87,5 +81,10 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends ILocationInFileProvider> bindILocationInFileProvider() {
 		return ProblemLocationInFileProvider.class;
+	}
+
+	@Override
+	public Class<? extends ISemanticSequencer> bindISemanticSequencer() {
+		return PreferShortAssertionsProblemSemanticSequencer.class;
 	}
 }

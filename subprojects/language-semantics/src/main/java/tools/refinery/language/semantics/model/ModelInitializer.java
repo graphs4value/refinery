@@ -75,8 +75,6 @@ public class ModelInitializer {
 			var argument = arguments.get(i);
 			if (argument instanceof NodeAssertionArgument nodeArgument) {
 				nodes[i] = nodeTrace.getOrThrow(nodeArgument.getNode());
-			} else if (argument instanceof ConstantAssertionArgument constantArgument) {
-				nodes[i] = nodeTrace.getOrThrow(constantArgument.getNode());
 			} else if (argument instanceof WildcardAssertionArgument) {
 				nodes[i] = -1;
 			} else {
@@ -86,8 +84,11 @@ public class ModelInitializer {
 		return Tuple.of(nodes);
 	}
 
-	private static TruthValue getTruthValue(LogicValue value) {
-		return switch (value) {
+	private static TruthValue getTruthValue(AssertionValue value) {
+		if (!(value instanceof LogicAssertionValue logicAssertionValue)) {
+			return TruthValue.ERROR;
+		}
+		return switch (logicAssertionValue.getLogicValue()) {
 			case TRUE -> TruthValue.TRUE;
 			case FALSE -> TruthValue.FALSE;
 			case UNKNOWN -> TruthValue.UNKNOWN;

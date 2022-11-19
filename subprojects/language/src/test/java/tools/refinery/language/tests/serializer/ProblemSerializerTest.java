@@ -68,6 +68,29 @@ class ProblemSerializerTest {
 				Arguments.of(LogicValue.UNKNOWN, "?foo(a)."), Arguments.of(LogicValue.ERROR, "foo(a): error."));
 	}
 
+	@ParameterizedTest
+	@MethodSource
+	void defaultAssertionTest(LogicValue value, String valueAsString) {
+		var pred = createPred();
+		var node = ProblemFactory.eINSTANCE.createNode();
+		node.setName("a");
+		var individualDeclaration = ProblemFactory.eINSTANCE.createIndividualDeclaration();
+		individualDeclaration.getNodes().add(node);
+		problem.getStatements().add(individualDeclaration);
+		createAssertion(pred, node, value, true);
+
+		assertSerializedResult("""
+				pred foo(node p).
+
+				individual a.
+				default foo(a):\040""" + valueAsString + ".\n");
+	}
+
+	static Stream<Arguments> defaultAssertionTest() {
+		return Stream.of(Arguments.of(LogicValue.TRUE, "true"), Arguments.of(LogicValue.FALSE, "false"),
+				Arguments.of(LogicValue.UNKNOWN, "unknown"), Arguments.of(LogicValue.ERROR, "error"));
+	}
+
 	@Test
 	void implicitNodeTest() {
 		var pred = createPred();
@@ -116,13 +139,20 @@ class ProblemSerializerTest {
 		createAssertion(relation, node, LogicValue.TRUE);
 	}
 
-	private void createAssertion(Relation relation, Node node, LogicValue value) {
+	private void createAssertion(Relation relation, Node node, LogicValue logicValue) {
+		createAssertion(relation, node, logicValue, false);
+	}
+
+	private void createAssertion(Relation relation, Node node, LogicValue logicValue, boolean isDefault) {
 		var assertion = ProblemFactory.eINSTANCE.createAssertion();
 		assertion.setRelation(relation);
 		var argument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
 		argument.setNode(node);
 		assertion.getArguments().add(argument);
+		var value = ProblemFactory.eINSTANCE.createLogicAssertionValue();
+		value.setLogicValue(logicValue);
 		assertion.setValue(value);
+		assertion.setDefault(isDefault);
 		problem.getStatements().add(assertion);
 	}
 
@@ -143,7 +173,7 @@ class ProblemSerializerTest {
 		var variable = ProblemFactory.eINSTANCE.createImplicitVariable();
 		variable.setName("q");
 		conjunction.getImplicitVariables().add(variable);
-		var equals = nodeType.reference("equals");
+		var equals = nodeType.feature("equals");
 		conjunction.getLiterals().add(createAtom(equals, parameter1, variable));
 		conjunction.getLiterals().add(createAtom(equals, variable, parameter2));
 		pred.getBodies().add(conjunction);
@@ -177,7 +207,7 @@ class ProblemSerializerTest {
 		pred.getParameters().add(parameter);
 		var conjunction = ProblemFactory.eINSTANCE.createConjunction();
 		var atom = ProblemFactory.eINSTANCE.createAtom();
-		var equals = nodeType.reference("equals");
+		var equals = nodeType.feature("equals");
 		atom.setRelation(equals);
 		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
 		arg1.setVariableOrNode(parameter);

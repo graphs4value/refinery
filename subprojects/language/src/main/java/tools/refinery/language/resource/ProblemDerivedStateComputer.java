@@ -1,13 +1,9 @@
 package tools.refinery.language.resource;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -16,35 +12,18 @@ import org.eclipse.xtext.Constants;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
 import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.scoping.IScopeProvider;
-import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
+import tools.refinery.language.model.problem.*;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
-import tools.refinery.language.model.problem.Assertion;
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.ConstantAssertionArgument;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemFactory;
-import tools.refinery.language.model.problem.Statement;
+import java.util.*;
+import java.util.function.Function;
 
 @Singleton
 public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	public static final String NEW_NODE = "new";
 
-	public static final String CONSTANT_NODE = "constant";
-
 	@Inject
 	@Named(Constants.LANGUAGE_NAME)
 	private String languageName;
-
-	@Inject
-	@Named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE)
-	private IScopeProvider scopeProvider;
 
 	@Inject
 	private Provider<NodeNameCollector> nodeNameCollectorProvider;
@@ -88,15 +67,6 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 					&& declaration.getNewNode() == null) {
 				var newNode = adapter.createNewNodeIfAbsent(declaration, key -> createNode(NEW_NODE));
 				declaration.setNewNode(newNode);
-			} else if (statement instanceof Assertion assertion) {
-				for (var argument : assertion.getArguments()) {
-					if (argument instanceof ConstantAssertionArgument constantAssertionArgument
-							&& constantAssertionArgument.getNode() == null) {
-						var constantNode = adapter.createConstantNodeIfAbsent(constantAssertionArgument,
-								key -> createNode(CONSTANT_NODE));
-						constantAssertionArgument.setNode(constantNode);
-					}
-				}
 			}
 		}
 	}
@@ -130,22 +100,14 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 
 	protected void discardDerivedProblemState(Problem problem, Adapter adapter) {
 		Set<ClassDeclaration> classDeclarations = new HashSet<>();
-		Set<ConstantAssertionArgument> constantAssertionArguments = new HashSet<>();
 		problem.getNodes().clear();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
 				classDeclaration.setNewNode(null);
 				classDeclarations.add(classDeclaration);
-			} else if (statement instanceof Assertion assertion) {
-				for (var argument : assertion.getArguments()) {
-					if (argument instanceof ConstantAssertionArgument constantAssertionArgument) {
-						constantAssertionArgument.setNode(null);
-						constantAssertionArguments.add(constantAssertionArgument);
-					}
-				}
 			}
 		}
-		adapter.retainAll(classDeclarations, constantAssertionArguments);
+		adapter.retainAll(classDeclarations);
 		derivedVariableComputer.discardDerivedVariables(problem);
 	}
 
@@ -166,24 +128,15 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	}
 
 	protected static class Adapter extends AdapterImpl {
-		private Map<ClassDeclaration, Node> newNodes = new HashMap<>();
-
-		private Map<ConstantAssertionArgument, Node> constantNodes = new HashMap<>();
+		private final Map<ClassDeclaration, Node> newNodes = new HashMap<>();
 
 		public Node createNewNodeIfAbsent(ClassDeclaration classDeclaration,
 				Function<ClassDeclaration, Node> createNode) {
 			return newNodes.computeIfAbsent(classDeclaration, createNode);
 		}
 
-		public Node createConstantNodeIfAbsent(ConstantAssertionArgument constantAssertionArgument,
-				Function<ConstantAssertionArgument, Node> createNode) {
-			return constantNodes.computeIfAbsent(constantAssertionArgument, createNode);
-		}
-
-		public void retainAll(Collection<ClassDeclaration> classDeclarations,
-				Collection<ConstantAssertionArgument> constantAssertionArguments) {
+		public void retainAll(Collection<ClassDeclaration> classDeclarations) {
 			newNodes.keySet().retainAll(classDeclarations);
-			constantNodes.keySet().retainAll(constantAssertionArguments);
 		}
 
 		@Override

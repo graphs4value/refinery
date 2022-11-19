@@ -3,6 +3,7 @@ package tools.refinery.language.tests.scoping;
 import com.google.inject.Inject;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,15 +29,11 @@ class NodeScopingTest {
 	@ValueSource(strings = { "", "builtin::" })
 	void builtInArgumentTypeTest(String qualifiedNamePrefix) {
 		var problem = parse("""
-				pred predicate({PARAM}node a, {PARAM}data b, {PARAM}int c).
+				pred predicate({PARAM}node a).
 				""", qualifiedNamePrefix);
 		assertThat(problem.errors(), empty());
 		assertThat(problem.pred("predicate").param(0).getParameterType(),
 				equalTo(problem.builtin().findClass("node").get()));
-		assertThat(problem.pred("predicate").param(1).getParameterType(),
-				equalTo(problem.builtin().findClass("data").get()));
-		assertThat(problem.pred("predicate").param(2).getParameterType(),
-				equalTo(problem.builtin().findClass("int").get()));
 	}
 
 	@Test
@@ -52,16 +49,6 @@ class NodeScopingTest {
 		assertThat(problem.assertion(0).arg(1).node(), equalTo(problem.node("a")));
 		assertThat(problem.assertion(1).arg(0).node(), equalTo(problem.node("a")));
 		assertThat(problem.assertion(1).arg(1).node(), equalTo(problem.node("b")));
-	}
-
-	@Test
-	void implicitNodeInNodeValueAssertionTest() {
-		var problem = parseHelper.parse("""
-				a: 16.
-				""");
-		assertThat(problem.errors(), empty());
-		assertThat(problem.nodeNames(), hasItems("a"));
-		assertThat(problem.nodeValueAssertion(0).getNode(), equalTo(problem.node("a")));
 	}
 
 	@Test
@@ -95,18 +82,6 @@ class NodeScopingTest {
 
 	@ParameterizedTest
 	@MethodSource("individualNodeReferenceSource")
-	void individualNodeInNodeValueAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
-		var problem = parse("""
-				individual a.
-				{PARAM}a: 16.
-				""", qualifiedNamePrefix, namedProblem);
-		assertThat(problem.errors(), empty());
-		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.nodeValueAssertion(0).getNode(), equalTo(problem.individualNode("a")));
-	}
-
-	@ParameterizedTest
-	@MethodSource("individualNodeReferenceSource")
 	void individualNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
 				individual b.
@@ -121,6 +96,7 @@ class NodeScopingTest {
 		return Stream.of(Arguments.of("", false), Arguments.of("", true), Arguments.of("test::", true));
 	}
 
+	@Disabled("No nodes are present in builtin.problem currently")
 	@ParameterizedTest
 	@MethodSource("builtInNodeReferencesSource")
 	void builtInNodeTest(String qualifiedName) {
@@ -133,18 +109,7 @@ class NodeScopingTest {
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.builtin().findClass("int").get().getNewNode()));
 	}
 
-	@ParameterizedTest
-	@MethodSource("builtInNodeReferencesSource")
-	void builtInNodeInNodeValueAssertionTest(String qualifiedName) {
-		var problem = parse("""
-				{PARAM}: 16.
-				""", qualifiedName);
-		assertThat(problem.errors(), empty());
-		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.nodeValueAssertion(0).getNode(),
-				equalTo(problem.builtin().findClass("int").get().getNewNode()));
-	}
-
+	@Disabled("No nodes are present in builtin.problem currently")
 	@ParameterizedTest
 	@MethodSource("builtInNodeReferencesSource")
 	void builtInNodeInPredicateTest(String qualifiedName) {
@@ -172,18 +137,6 @@ class NodeScopingTest {
 		assertThat(problem.errors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.findClass("Foo").get().getNewNode()));
-	}
-
-	@ParameterizedTest
-	@MethodSource("classNewNodeReferencesSource")
-	void classNewNodeInNodeValueAssertionTest(String qualifiedName, boolean namedProblem) {
-		var problem = parse("""
-				class Foo.
-				{PARAM}: 16.
-				""", qualifiedName, namedProblem);
-		assertThat(problem.errors(), empty());
-		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.nodeValueAssertion(0).getNode(), equalTo(problem.findClass("Foo").get().getNewNode()));
 	}
 
 	@ParameterizedTest
@@ -231,18 +184,6 @@ class NodeScopingTest {
 
 	@ParameterizedTest
 	@MethodSource("enumLiteralReferencesSource")
-	void enumLiteralInNodeValueAssertionTest(String qualifiedName, boolean namedProblem) {
-		var problem = parse("""
-				enum Foo { alpha, beta }
-				{PARAM}: 16.
-				""", qualifiedName, namedProblem);
-		assertThat(problem.errors(), empty());
-		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.nodeValueAssertion(0).getNode(), equalTo(problem.findEnum("Foo").literal("alpha")));
-	}
-
-	@ParameterizedTest
-	@MethodSource("enumLiteralReferencesSource")
 	void enumLiteralInPredicateTest(String qualifiedName, boolean namedProblem) {
 		var problem = parse("""
 				enum Foo { alpha, beta }
@@ -260,6 +201,7 @@ class NodeScopingTest {
 				Arguments.of("test::Foo::alpha", true));
 	}
 
+	@Disabled("No enum literals are present in builtin.problem currently")
 	@ParameterizedTest
 	@MethodSource("builtInEnumLiteralReferencesSource")
 	void builtInEnumLiteralTest(String qualifiedName) {
@@ -272,18 +214,7 @@ class NodeScopingTest {
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.builtin().findEnum("bool").literal("true")));
 	}
 
-	@ParameterizedTest
-	@MethodSource("builtInEnumLiteralReferencesSource")
-	void builtInEnumLiteralInNodeValueAssertionTest(String qualifiedName) {
-		var problem = parse("""
-				{PARAM}: 16.
-				""", qualifiedName);
-		assertThat(problem.errors(), empty());
-		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.nodeValueAssertion(0).getNode(),
-				equalTo(problem.builtin().findEnum("bool").literal("true")));
-	}
-
+	@Disabled("No enum literals are present in builtin.problem currently")
 	@ParameterizedTest
 	@MethodSource("builtInEnumLiteralReferencesSource")
 	void bultInEnumLiteralInPredicateTest(String qualifiedName) {

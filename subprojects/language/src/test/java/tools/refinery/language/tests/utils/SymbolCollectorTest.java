@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -87,15 +88,15 @@ class SymbolCollectorTest {
 	void referenceTest() {
 		var problem = parseHelper.parse("""
 				class Foo {
-					Foo[] bar opposite quux
-					Foo quux opposite bar
+					refers Foo[] bar opposite quux
+					refers Foo quux opposite bar
 				}
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
 		var fooClass = problem.findClass("Foo");
-		var barReference = fooClass.reference("bar");
+		var barReference = fooClass.feature("bar");
 		var barInfo = collectedSymbols.relations().get(barReference);
-		var quuxReference = fooClass.reference("quux");
+		var quuxReference = fooClass.feature("quux");
 		var quuxInfo = collectedSymbols.relations().get(quuxReference);
 		assertThat(barInfo.containmentRole(), is(ContainmentRole.NONE));
 		assertThat(barInfo.opposite(), is(quuxReference));
@@ -116,10 +117,11 @@ class SymbolCollectorTest {
 				}
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").reference("bar")).containmentRole(),
+		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").feature("bar")).containmentRole(),
 				is(ContainmentRole.CONTAINMENT));
 	}
 
+	@Disabled("TODO: Rework numerical references")
 	@Test
 	void dataReferenceTest() {
 		var problem = parseHelper.parse("""
@@ -128,7 +130,7 @@ class SymbolCollectorTest {
 				}
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").reference("bar")).containmentRole(),
+		assertThat(collectedSymbols.relations().get(problem.findClass("Foo").feature("bar")).containmentRole(),
 				is(ContainmentRole.CONTAINMENT));
 	}
 
@@ -204,61 +206,6 @@ class SymbolCollectorTest {
 		assertThat(collectedSymbols.relations().get(problem.pred("foo").get()).assertions(), hasSize(0));
 	}
 
-	@ParameterizedTest
-	@MethodSource("valueTypes")
-	void nodeValueAssertionTest(String value, String typeName) {
-		var problem = parseHelper.parse("a: %s.".formatted(value));
-		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		var node = problem.node("a");
-		var nodeInfo = collectedSymbols.nodes().get(node);
-		assertThat(nodeInfo.individual(), is(false));
-		assertThat(nodeInfo.valueAssertions(), hasSize(1));
-		assertThat(collectedSymbols.relations().get(problem.builtin().findClass(typeName).get()).assertions(),
-				assertsNode(node, LogicValue.TRUE));
-	}
-
-	@ParameterizedTest
-	@MethodSource("valueTypes")
-	void constantInAssertionTest(String value, String typeName) {
-		var problem = parseHelper.parse("""
-				containment pred foo(node x, data y).
-				foo(a, %s).
-				""".formatted(value));
-		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		var node = problem.assertion(0).arg(1).constantNode();
-		var nodeInfo = collectedSymbols.nodes().get(node);
-		assertThat(nodeInfo.individual(), is(false));
-		assertThat(nodeInfo.valueAssertions(), hasSize(1));
-		assertThat(collectedSymbols.relations().get(problem.pred("foo").get()).assertions(), assertsNode(node,
-				LogicValue.TRUE));
-		assertThat(collectedSymbols.relations().get(problem.builtin().findClass(typeName).get()).assertions(),
-				assertsNode(node, LogicValue.TRUE));
-	}
-
-	@ParameterizedTest
-	@MethodSource("valueTypes")
-	void constantInUnknownAssertionTest(String value, String typeName) {
-		var problem = parseHelper.parse("""
-				containment pred foo(node x, data y).
-				foo(a, %s): unknown.
-				""".formatted(value));
-		var collectedSymbols = desugarer.collectSymbols(problem.get());
-		var node = problem.assertion(0).arg(1).constantNode();
-		var nodeInfo = collectedSymbols.nodes().get(node);
-		assertThat(nodeInfo.individual(), is(false));
-		assertThat(nodeInfo.valueAssertions(), hasSize(1));
-		assertThat(collectedSymbols.relations().get(problem.pred("foo").get()).assertions(), assertsNode(node,
-				LogicValue.UNKNOWN));
-		assertThat(collectedSymbols.relations().get(problem.builtin().findClass(typeName).get()).assertions(),
-				assertsNode(node, LogicValue.TRUE));
-		assertThat(collectedSymbols.relations().get(problem.builtinSymbols().exists()).assertions(), assertsNode(node,
-				LogicValue.UNKNOWN));
-	}
-
-	static Stream<Arguments> valueTypes() {
-		return Stream.of(Arguments.of("3", "int"), Arguments.of("3.14", "real"), Arguments.of("\"foo\"", "string"));
-	}
-
 	@Test
 	void invalidProblemTest() {
 		var problem = parseHelper.parse("""
@@ -279,13 +226,13 @@ class SymbolCollectorTest {
 		var fooInfo = collectedSymbols.relations().get(problem.pred("foo").get());
 		assertThat(fooInfo.assertions(), hasSize(1));
 		var assertion = fooInfo.assertions().stream().findFirst().orElseThrow();
-		assertThat(assertion.getValue(), is(LogicValue.FALSE));
+		assertThat(assertion.getValue(), hasProperty("logicValue", is(LogicValue.FALSE)));
 		assertThat(assertion.getArguments(), hasSize(2));
 		assertThat(assertion.getArguments(), everyItem(instanceOf(WildcardAssertionArgument.class)));
 	}
 
 	private static Matcher<Iterable<? super Assertion>> assertsNode(Node node, LogicValue value) {
 		return hasItem(allOf(hasProperty("arguments", hasItem(hasProperty("node", is(node)))), hasProperty("value",
-				is(value))));
+				hasProperty("logicValue", is(value)))));
 	}
 }

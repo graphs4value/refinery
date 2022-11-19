@@ -29,8 +29,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
 		var scope = super.getScope(context, reference);
-		if (reference == ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE
-				|| reference == ProblemPackage.Literals.NODE_VALUE_ASSERTION__NODE) {
+		if (reference == ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE) {
 			return getNodesScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE

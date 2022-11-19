@@ -10,26 +10,23 @@ const initialValue = `class Family {
 }
 
 class Person {
-    Person[] children opposite parent
-    Person[0..1] parent opposite children
+    refers Person[] children opposite parent
+    refers Person[0..1] parent opposite children
     int age
-    TaxStatus taxStatus
+    refers TaxStatus taxStatus
 }
 
 enum TaxStatus {
     child, student, adult, retired
 }
 
-int ageDifference(Person p, Person q) =
-    children(p, q), age(p, pAge), age(q, qAge) -> qAge - pAge.
-
-error invalidAgeDifference(Person p, Person q) <->
-    children(p, q), ageDifference(p, q) <= 0.
-
 % A child cannot have any dependents.
 pred invalidTaxStatus(Person p) <->
     taxStatus(p, child),
     children(p, _q)
+;
+    parent(p, q),
+    age(q) < age(p)
 ;
     taxStatus(p, retired),
     parent(p, q),
@@ -44,10 +41,8 @@ children(anne, ciri).
 ?children(bob, ciri).
 default children(ciri, *): false.
 taxStatus(anne, adult).
-age(anne, 35).
-bobAge: 27.
-age(bob, bobAge).
-!age(ciri, bobAge).
+age(bob) in 21..35.
+age(ciri) = 10.
 
 scope Family = 1, Person += 5..10.
 `;

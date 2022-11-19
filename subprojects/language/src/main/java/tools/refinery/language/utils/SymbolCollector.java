@@ -2,7 +2,6 @@ package tools.refinery.language.utils;
 
 import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import tools.refinery.language.model.problem.*;
@@ -64,41 +63,63 @@ class SymbolCollector {
 	}
 
 	private void collectClass(ClassDeclaration classDeclaration) {
-		// node and domain classes are not contained by default, but every other type is
-		// contained, including data types.
-		var contained =
-				classDeclaration != builtinSymbols.node() && classDeclaration != builtinSymbols.domain();
+		var contained = classDeclaration != builtinSymbols.node();
 		var containmentRole = contained ? ContainmentRole.CONTAINED : ContainmentRole.NONE;
 		var instanceParameter = ProblemFactory.eINSTANCE.createParameter();
 		instanceParameter.setName("instance");
 		var classInfo = new RelationInfo(getQualifiedNameString(classDeclaration), containmentRole,
 				List.of(instanceParameter), null, null, List.of());
 		relations.put(classDeclaration, classInfo);
-		collectReferences(classDeclaration);
+		collectFeatures(classDeclaration);
 	}
 
-	private void collectReferences(ClassDeclaration classDeclaration) {
-		for (var referenceDeclaration : classDeclaration.getReferenceDeclarations()) {
-			var referenceRole = desugarer.isContainmentReference(referenceDeclaration) ?
-					ContainmentRole.CONTAINMENT :
-					ContainmentRole.NONE;
-			var sourceParameter = ProblemFactory.eINSTANCE.createParameter();
-			sourceParameter.setName("source");
-			sourceParameter.setParameterType(classDeclaration);
-			var targetParameter = ProblemFactory.eINSTANCE.createParameter();
-			targetParameter.setName("target");
-			var multiplicity = referenceDeclaration.getMultiplicity();
-			if (multiplicity == null) {
-				var exactMultiplicity = ProblemFactory.eINSTANCE.createExactMultiplicity();
-				exactMultiplicity.setExactValue(1);
-				multiplicity = exactMultiplicity;
+	private void collectFeatures(ClassDeclaration classDeclaration) {
+		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
+			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
+				collectReference(classDeclaration, referenceDeclaration);
+			} else if (featureDeclaration instanceof AttributeDeclaration attributeDeclaration) {
+				collectAttribute(classDeclaration, attributeDeclaration);
+			} else if (featureDeclaration instanceof FlagDeclaration flagDeclaration) {
+				collectFlag(classDeclaration, flagDeclaration);
+			} else {
+				throw new IllegalArgumentException("Unknown FeatureDeclaration: " + featureDeclaration);
 			}
-			targetParameter.setParameterType(referenceDeclaration.getReferenceType());
-			var referenceInfo = new RelationInfo(getQualifiedNameString(referenceDeclaration), referenceRole,
-					List.of(sourceParameter, targetParameter), multiplicity, referenceDeclaration.getOpposite(),
-					List.of());
-			this.relations.put(referenceDeclaration, referenceInfo);
 		}
+	}
+
+	private void collectReference(ClassDeclaration classDeclaration, ReferenceDeclaration referenceDeclaration) {
+		var referenceRole = desugarer.isContainmentReference(referenceDeclaration) ?
+				ContainmentRole.CONTAINMENT :
+				ContainmentRole.NONE;
+		var sourceParameter = ProblemFactory.eINSTANCE.createParameter();
+		sourceParameter.setName("source");
+		sourceParameter.setParameterType(classDeclaration);
+		var targetParameter = ProblemFactory.eINSTANCE.createParameter();
+		targetParameter.setName("target");
+		var multiplicity = referenceDeclaration.getMultiplicity();
+		if (multiplicity == null) {
+			var exactMultiplicity = ProblemFactory.eINSTANCE.createExactMultiplicity();
+			exactMultiplicity.setExactValue(1);
+			multiplicity = exactMultiplicity;
+		}
+		targetParameter.setParameterType(referenceDeclaration.getReferenceType());
+		var referenceInfo = new RelationInfo(getQualifiedNameString(referenceDeclaration), referenceRole,
+				List.of(sourceParameter, targetParameter), multiplicity, referenceDeclaration.getOpposite(),
+				List.of());
+		this.relations.put(referenceDeclaration, referenceInfo);
+	}
+
+	private void collectAttribute(ClassDeclaration classDeclaration, AttributeDeclaration attributeDeclaration) {
+		// TODO Implement attribute handling.
+	}
+
+	private void collectFlag(ClassDeclaration classDeclaration, FlagDeclaration flagDeclaration) {
+		var parameter = ProblemFactory.eINSTANCE.createParameter();
+		parameter.setName("object");
+		parameter.setParameterType(classDeclaration);
+		var referenceInfo = new RelationInfo(getQualifiedNameString(flagDeclaration), ContainmentRole.NONE,
+				List.of(parameter), null, null, List.of());
+		this.relations.put(flagDeclaration, referenceInfo);
 	}
 
 	private void collectEnum(EnumDeclaration enumDeclaration) {
@@ -117,8 +138,6 @@ class SymbolCollector {
 				collectNewNode(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
 				collectEnumLiterals(enumDeclaration);
-			} else if (statement instanceof Assertion assertion) {
-				collectConstantNodes(assertion);
 			}
 		}
 		for (var node : problem.getNodes()) {
@@ -145,17 +164,6 @@ class SymbolCollector {
 		}
 	}
 
-	private void collectConstantNodes(Assertion assertion) {
-		for (var argument : assertion.getArguments()) {
-			if (argument instanceof ConstantAssertionArgument constantAssertionArgument) {
-				var constantNode = constantAssertionArgument.getNode();
-				if (constantNode != null) {
-					addNode(constantNode, false);
-				}
-			}
-		}
-	}
-
 	private void addNode(Node node, boolean individual) {
 		var info = new NodeInfo(getQualifiedNameString(node), individual);
 		this.nodes.put(node, info);
@@ -173,8 +181,6 @@ class SymbolCollector {
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof Assertion assertion) {
 				collectAssertion(assertion);
-			} else if (statement instanceof NodeValueAssertion nodeValueAssertion) {
-				collectNodeValueAssertion(nodeValueAssertion);
 			} else if (statement instanceof PredicateDefinition predicateDefinition) {
 				collectPredicateAssertion(predicateDefinition);
 			} else if (statement instanceof ClassDeclaration classDeclaration) {
@@ -196,48 +202,6 @@ class SymbolCollector {
 			return;
 		}
 		relationInfo.assertions().add(assertion);
-		for (var argument : assertion.getArguments()) {
-			if (argument instanceof ConstantAssertionArgument constantAssertionArgument) {
-				var constantNode = constantAssertionArgument.getNode();
-				if (constantNode != null) {
-					var valueAssertion = ProblemFactory.eINSTANCE.createNodeValueAssertion();
-					valueAssertion.setNode(constantNode);
-					valueAssertion.setValue(EcoreUtil.copy(constantAssertionArgument.getConstant()));
-					collectNodeValueAssertion(valueAssertion);
-					var logicValue = assertion.getValue();
-					if (logicValue != LogicValue.TRUE) {
-						addAssertion(builtinSymbols.exists(), logicValue, constantNode);
-					}
-				}
-			}
-		}
-	}
-
-	private void collectNodeValueAssertion(NodeValueAssertion nodeValueAssertion) {
-		var node = nodeValueAssertion.getNode();
-		if (node == null) {
-			return;
-		}
-		var nodeInfo = this.nodes.get(node);
-		if (nodeInfo == null) {
-			throw new IllegalStateException("Node value assertion refers to unknown node");
-		}
-		nodeInfo.valueAssertions().add(nodeValueAssertion);
-		var constant = nodeValueAssertion.getValue();
-		if (constant == null) {
-			return;
-		}
-		Relation dataType;
-		if (constant instanceof IntConstant) {
-			dataType = builtinSymbols.intClass();
-		} else if (constant instanceof RealConstant) {
-			dataType = builtinSymbols.real();
-		} else if (constant instanceof StringConstant) {
-			dataType = builtinSymbols.string();
-		} else {
-			throw new IllegalArgumentException("Unknown constant type");
-		}
-		addAssertion(dataType, LogicValue.TRUE, node);
 	}
 
 	private void collectPredicateAssertion(PredicateDefinition predicateDefinition) {
@@ -278,7 +242,9 @@ class SymbolCollector {
 			}
 			assertion.getArguments().add(argument);
 		}
-		assertion.setValue(logicValue);
+		var value = ProblemFactory.eINSTANCE.createLogicAssertionValue();
+		value.setLogicValue(logicValue);
+		assertion.setValue(value);
 		collectAssertion(assertion);
 	}
 }

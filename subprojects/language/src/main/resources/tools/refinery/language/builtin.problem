@@ -6,19 +6,21 @@ abstract class node {
 
 pred exists(node node).
 
-abstract class domain extends node.
-
-abstract class data extends node.
-
-enum bool {
-	true, false
-}
-
-class int extends data.
-
-class real extends data.
-
-class string extends data.
+% class Integer {
+%     int intValue
+% }
+%
+% class Real {
+%     real realValue
+% }
+%
+% class String {
+%     string stringValue
+% }
+%
+% enum Boolean {
+%     TRUE, FALSE
+% }
 
 pred contained(node node).
 

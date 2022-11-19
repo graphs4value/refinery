@@ -3,11 +3,12 @@
 @external prop implicitCompletion from './props'
 
 @precedence {
-  containment @cut,
   prefix,
   exponential @right,
   multiplicative @left,
   additive @left,
+  range @left,
+  lattice @left,
   comparison @left
 }
 
@@ -20,7 +21,7 @@ statement {
   ClassDefinition {
     kw<"abstract">? kw<"class"> RelationName
     (kw<"extends"> sep<",", RelationName>)?
-    (ClassBody {  "{" ReferenceDeclaration* "}" } | ".")
+    (ClassBody {  "{" FeatureDeclaration* "}" } | ".")
   } |
   EnumDefinition {
     kw<"enum"> RelationName
@@ -35,7 +36,7 @@ statement {
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
   FunctionDefinition {
-    RelationName RelationName ParameterList<Parameter>?
+    PrimitiveType RelationName ParameterList<Parameter>?
     FunctionBody { ("=" sep<OrOp, Case>)? "." }
   } |
   //RuleDefinition {
@@ -45,10 +46,8 @@ statement {
   //} |
   Assertion {
     kw<"default">? (NotOp | UnknownOp)? RelationName
-    ParameterList<AssertionArgument> (":" LogicValue)? "."
-  } |
-  NodeValueAssertion {
-    QualifiedName ":" Constant "."
+    ParameterList<AssertionArgument>
+    (":" LogicValue | ("=" | kw<"in">) Expr)? "."
   } |
   IndividualDeclaration {
     kw<"individual"> sep<",", IndividualNodeName> "."
@@ -58,15 +57,8 @@ statement {
   }
 }
 
-ReferenceDeclaration {
-  (
-    ExplicitContainmentReference {
-      !containment (kw<"refers"> | ckw<"contains"> | kw<"container">) RelationName
-    } |
-    ImplicitContainmentReference {
-      RelationName
-    }
-  )
+FeatureDeclaration {
+  (ReferenceKind | PrimitiveType | kw<"bool">) RelationName
   ("[" Multiplicity? "]")?
   RelationName
   (kw<"opposite"> RelationName)?
@@ -75,7 +67,10 @@ ReferenceDeclaration {
 
 Parameter { Modality? RelationName? VariableName }
 
-Conjunction { ("," | Expr)+ }
+// Use @dynamicPrecedence to prevent a(b) from being parsed as Expr { a } Expr { b }
+// instead of Atom { a(b) }
+// Being looser with token sequencing enables more consistent syntactic highlighting.
+Conjunction { ("," | NextConjunction[@dynamicPrecedence=-10] { Expr })+ }
 
 Case { Conjunction ("->" Expr)? }
 
@@ -85,8 +80,10 @@ Expr {
   UnaryExpr | BinaryExpr | Aggregation | VariableName | Atom | Constant | "(" Expr ")"
 }
 
-BinaryExpr[@dynamicPrecedence=1] {
+BinaryExpr {
   Expr !comparison ComparisonOp Expr |
+  Expr !lattice (LatticeMeet | "\\/") Expr |
+  Expr !range ".." Expr |
   Expr !additive ("+" | "-") Expr |
   Expr !multiplicative (StarMult | Divide) Expr |
   Expr !exponential "**" Expr
@@ -110,12 +107,20 @@ Atom { RelationName "+"? ParameterList<Expr> }
 //   Literal
 //}
 
-AssertionArgument { NodeName | StarArgument | Constant }
+AssertionArgument { NodeName | StarArgument }
 
-Constant { Real | String }
+Constant { Real | String | StarMult }
+
+ReferenceKind {
+  kw<"refers"> | ckw<"contains"> | kw<"container">
+}
+
+PrimitiveType {
+  kw<"int"> | kw<"real"> | kw<"string">
+}
 
 LogicValue {
-  ckw<"true"> | ckw<"false"> | kw<"unknown"> | kw<"error">
+  kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
 }
 
 Modality {
@@ -126,10 +131,16 @@ AggregationOp {
   ckw<"sum"> | ckw<"prod"> | ckw<"min"> | ckw<"max">
 }
 
+ComparisonOp { SymbolicComparisonOp | kw<"in"> }
+
 ScopeElement { RelationName ("=" | "+=") Multiplicity }
 
 Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 
+// The ~name handles the ambiguity between transitve closure a+(b, c) and addition a+(b)
+// in the grammar. We prefer the addition interpretation by applying @dynamicPrecedence=1
+// to the VariableName rule,
+// but will go with the transtive closure (and highlight `a` as a relation) if forced.
 RelationName { QualifiedName ~name }
 
 //RuleName { QualifiedName }
@@ -167,7 +178,9 @@ sep1<separator, content> { content (separator content)* }
 
   Divide { "/" }
 
-  @precedence { BlockComment, LineComment, Divide }
+  LatticeMeet { "/\\" }
+
+  @precedence { BlockComment, LineComment, LatticeMeet, Divide }
 
   identifier { $[A-Za-z_] $[a-zA-Z0-9_]* }
 
@@ -186,7 +199,7 @@ sep1<separator, content> { content (separator content)* }
     "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
   }
 
-  ComparisonOp { ">" | ">=" | "<" | "<=" | "==" | "!=" }
+  SymbolicComparisonOp { ">" | ">=" | "<" | "<=" | "==" | "!=" }
 
   NotOp { "!" }
 

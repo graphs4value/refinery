@@ -3,6 +3,7 @@
  */
 package tools.refinery.language.formatting2;
 
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.formatting2.AbstractJavaFormatter;
 import org.eclipse.xtext.formatting2.IFormattableDocument;
@@ -12,9 +13,12 @@ import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.services.ProblemGrammarAccess;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ProblemFormatter extends AbstractJavaFormatter {
+	@Inject
+	private ProblemGrammarAccess problemGrammarAccess;
 
 	protected void format(Problem problem, IFormattableDocument doc) {
 		doc.prepend(problem, this::noSpace);
@@ -31,14 +35,32 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		surroundNewLines(doc, assertion, this::singleNewLine);
 		var region = regionFor(assertion);
 		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__DEFAULT), this::oneSpace);
-		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__VALUE), this::noSpace);
 		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__RELATION), this::noSpace);
 		formatParenthesizedList(region, doc);
-		doc.prepend(region.keyword(":"), this::noSpace);
-		doc.append(region.keyword(":"), this::oneSpace);
+		var value = assertion.getValue();
+		if (value != null) {
+			doc.append(value, this::noSpace);
+			doc.format(value);
+		}
 		doc.prepend(region.keyword("."), this::noSpace);
 		for (var argument : assertion.getArguments()) {
 			doc.format(argument);
+		}
+	}
+
+	protected void format(LogicAssertionValue assertionValue, IFormattableDocument doc) {
+		var region = regionFor(assertionValue);
+		doc.prepend(region.keyword(":"), this::noSpace);
+		doc.append(region.keyword(":"), this::oneSpace);
+	}
+
+	protected void format(ExprAssertionValue assertionValue, IFormattableDocument doc) {
+		var region = regionFor(assertionValue);
+		doc.surround(region.keyword("="), this::oneSpace);
+		doc.surround(region.keyword("in"), this::oneSpace);
+		var body = assertionValue.getBody();
+		if (body != null) {
+			doc.format(body);
 		}
 	}
 
@@ -53,8 +75,8 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		doc.append(region.keyword("{"), it -> it.setNewLines(1, 1, 2));
 		doc.prepend(region.keyword("}"), it -> it.setNewLines(1, 1, 2));
 		doc.prepend(region.keyword("."), this::noSpace);
-		for (var referenceDeclaration : classDeclaration.getReferenceDeclarations()) {
-			doc.format(referenceDeclaration);
+		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
+			doc.format(featureDeclaration);
 		}
 	}
 

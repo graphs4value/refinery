@@ -1,24 +1,13 @@
 package tools.refinery.language.model.tests.utils;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-
-import tools.refinery.language.model.problem.Assertion;
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.EnumDeclaration;
-import tools.refinery.language.model.problem.IndividualDeclaration;
-import tools.refinery.language.model.problem.NamedElement;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.NodeValueAssertion;
-import tools.refinery.language.model.problem.PredicateDefinition;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.RuleDefinition;
-import tools.refinery.language.model.problem.Statement;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 public record WrappedProblem(Problem problem) {
 	public Problem get() {
@@ -70,10 +59,6 @@ public record WrappedProblem(Problem problem) {
 		var uniqueNodes = statementsOfType(IndividualDeclaration.class)
 				.flatMap(declaration -> declaration.getNodes().stream());
 		return ProblemNavigationUtil.named(uniqueNodes, name);
-	}
-
-	public NodeValueAssertion nodeValueAssertion(int i) {
-		return nthStatementOfType(NodeValueAssertion.class, i);
 	}
 
 	private <T extends Statement> Stream<T> statementsOfType(Class<? extends T> type) {

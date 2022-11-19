@@ -24,10 +24,10 @@ class ProblemParsingTest {
 				}
 
 				class Person {
-					Person[0..*] children opposite parent
-					Person[0..1] parent opposite children
+					refers Person[0..*] children opposite parent
+					refers Person[0..1] parent opposite children
 					int age
-					TaxStatus taxStatus
+					refers TaxStatus taxStatus
 				}
 
 				enum TaxStatus {
@@ -46,10 +46,8 @@ class ProblemParsingTest {
 				children(anne, ciri).
 				?children(bob, ciri).
 				taxStatus(anne, adult).
-				age(anne, 35).
-				bobAge: 27.
-				age(bob, bobAge).
-				!age(ciri, bobAge).
+				age(bob) in 21..35.
+				age(ciri) = 10.
 				""");
 		assertThat(problem.errors(), empty());
 	}
