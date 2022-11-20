@@ -3,7 +3,6 @@
  */
 package tools.refinery.language.formatting2;
 
-import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.formatting2.AbstractJavaFormatter;
 import org.eclipse.xtext.formatting2.IFormattableDocument;
@@ -11,15 +10,10 @@ import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegionsFinder;
 import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.services.ProblemGrammarAccess;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ProblemFormatter extends AbstractJavaFormatter {
-	@Inject
-	private ProblemGrammarAccess problemGrammarAccess;
-
 	protected void format(Problem problem, IFormattableDocument doc) {
 		doc.prepend(problem, this::noSpace);
 		var region = regionFor(problem);
@@ -37,31 +31,26 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__DEFAULT), this::oneSpace);
 		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__RELATION), this::noSpace);
 		formatParenthesizedList(region, doc);
-		var value = assertion.getValue();
-		if (value != null) {
-			doc.append(value, this::noSpace);
-			doc.format(value);
-		}
-		doc.prepend(region.keyword("."), this::noSpace);
 		for (var argument : assertion.getArguments()) {
 			doc.format(argument);
 		}
-	}
-
-	protected void format(LogicAssertionValue assertionValue, IFormattableDocument doc) {
-		var region = regionFor(assertionValue);
-		doc.prepend(region.keyword(":"), this::noSpace);
-		doc.append(region.keyword(":"), this::oneSpace);
-	}
-
-	protected void format(ExprAssertionValue assertionValue, IFormattableDocument doc) {
-		var region = regionFor(assertionValue);
-		doc.surround(region.keyword("="), this::oneSpace);
-		doc.surround(region.keyword("in"), this::oneSpace);
-		var body = assertionValue.getBody();
-		if (body != null) {
-			doc.format(body);
+		var colon = region.keyword(":");
+		boolean abbreviated = colon == null;
+		if (!abbreviated) {
+			doc.prepend(colon, this::noSpace);
+			doc.append(colon, this::oneSpace);
 		}
+		var value = assertion.getValue();
+		if (value != null) {
+			var valueRegion = regionForEObject(value);
+			// Avoid clash between noSpace after ASSERTION_DEFAULT and noSpace after the 0-length region
+			// for a true LogicAssertionValue if the abbreviated form of assertion (no : operator) is used.
+			if (abbreviated && valueRegion != null && valueRegion.getLength() > 0) {
+				doc.append(value, this::noSpace);
+			}
+			doc.format(value);
+		}
+		doc.prepend(region.keyword("."), this::noSpace);
 	}
 
 	protected void format(ClassDeclaration classDeclaration, IFormattableDocument doc) {
@@ -128,7 +117,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	protected void format(IndividualDeclaration individualDeclaration, IFormattableDocument doc) {
 		surroundNewLines(doc, individualDeclaration, this::singleNewLine);
 		var region = regionFor(individualDeclaration);
-		doc.append(region.keyword("individual"), this::oneSpace);
+		doc.append(region.keyword("indiv"), this::oneSpace);
 		formatList(region, ",", doc);
 		doc.prepend(region.keyword("."), this::noSpace);
 	}

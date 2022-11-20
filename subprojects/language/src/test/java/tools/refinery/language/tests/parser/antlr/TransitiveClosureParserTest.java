@@ -24,8 +24,8 @@ class TransitiveClosureParserTest {
 	@Test
 	void binaryAddOperatorTest() {
 		var problem = parseHelper.parse("""
-					int a().
-					int b().
+					fn int a().
+					fn int b().
 					pred foo() <-> a() + (b()) > 10.
 				""");
 		assertThat(problem.errors(), empty());

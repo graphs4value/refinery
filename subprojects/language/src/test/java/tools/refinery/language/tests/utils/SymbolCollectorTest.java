@@ -45,7 +45,7 @@ class SymbolCollectorTest {
 	@Test
 	void individualNodeTest() {
 		var problem = parseHelper.parse("""
-				individual a.
+				indiv a.
 				""");
 		var collectedSymbols = desugarer.collectSymbols(problem.get());
 		var node = problem.individualNode("a");

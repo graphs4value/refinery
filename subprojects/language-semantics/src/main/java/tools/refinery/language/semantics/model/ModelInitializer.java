@@ -84,8 +84,8 @@ public class ModelInitializer {
 		return Tuple.of(nodes);
 	}
 
-	private static TruthValue getTruthValue(AssertionValue value) {
-		if (!(value instanceof LogicAssertionValue logicAssertionValue)) {
+	private static TruthValue getTruthValue(Expr expr) {
+		if (!(expr instanceof LogicConstant logicAssertionValue)) {
 			return TruthValue.ERROR;
 		}
 		return switch (logicAssertionValue.getLogicValue()) {

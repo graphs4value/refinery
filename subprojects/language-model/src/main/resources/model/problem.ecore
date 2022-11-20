@@ -54,7 +54,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="default" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
         defaultValueLiteral="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//AssertionValue"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Node" eSuperTypes="#//VariableOrNode"/>
@@ -159,6 +159,10 @@
     <eLiterals name="EQ" value="4"/>
     <eLiterals name="NOT_EQ" value="5"/>
     <eLiterals name="IN" value="6"/>
+    <eLiterals name="SUBSUMES" value="7"/>
+    <eLiterals name="SUBSUMED_BY" value="8"/>
+    <eLiterals name="ABS_EQ" value="9"/>
+    <eLiterals name="ABS_NOT_EQ" value="10"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
     <eLiterals name="REFERENCE" value="1"/>
@@ -257,12 +261,7 @@
     <eLiterals name="REAL" value="1"/>
     <eLiterals name="STRING" value="2"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AssertionValue" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="LogicAssertionValue" eSuperTypes="#//AssertionValue">
+  <eClassifiers xsi:type="ecore:EClass" name="LogicConstant" eSuperTypes="#//Constant">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="logicValue" eType="#//LogicValue"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ExprAssertionValue" eSuperTypes="#//AssertionValue">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//Expr" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="range" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
 </ecore:EPackage>

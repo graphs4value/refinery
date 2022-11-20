@@ -67,7 +67,7 @@ class NodeScopingTest {
 	@MethodSource("individualNodeReferenceSource")
 	void individualNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				individual a, b.
+				indiv a, b.
 				pred predicate(node x, node y) <-> node(x).
 				predicate({PARAM}a, {PARAM}a).
 				?predicate({PARAM}a, {PARAM}b).
@@ -84,7 +84,7 @@ class NodeScopingTest {
 	@MethodSource("individualNodeReferenceSource")
 	void individualNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				individual b.
+				indiv b.
 				pred predicate(node a) <-> node({PARAM}b).
 				""");
 		assertThat(problem.errors(), empty());

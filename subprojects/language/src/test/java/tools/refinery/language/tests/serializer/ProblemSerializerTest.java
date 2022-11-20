@@ -59,7 +59,7 @@ class ProblemSerializerTest {
 		assertSerializedResult("""
 				pred foo(node p).
 
-				individual a.
+				indiv a.
 				""" + serializedAssertion + "\n");
 	}
 
@@ -82,7 +82,7 @@ class ProblemSerializerTest {
 		assertSerializedResult("""
 				pred foo(node p).
 
-				individual a.
+				indiv a.
 				default foo(a):\040""" + valueAsString + ".\n");
 	}
 
@@ -149,7 +149,7 @@ class ProblemSerializerTest {
 		var argument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
 		argument.setNode(node);
 		assertion.getArguments().add(argument);
-		var value = ProblemFactory.eINSTANCE.createLogicAssertionValue();
+		var value = ProblemFactory.eINSTANCE.createLogicConstant();
 		value.setLogicValue(logicValue);
 		assertion.setValue(value);
 		assertion.setDefault(isDefault);

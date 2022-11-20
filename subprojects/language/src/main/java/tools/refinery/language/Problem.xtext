@@ -33,7 +33,8 @@ enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
 
 ReferenceDeclaration:
-	kind=ReferenceKind referenceType=[Relation|QualifiedName]
+	(referenceType=[Relation|NonContainmentQualifiedName] |
+	kind=ReferenceKind referenceType=[Relation|QualifiedName])
 	("[" multiplicity=Multiplicity "]")?
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
@@ -64,7 +65,7 @@ Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
 FunctionDefinition:
-	functionType=PrimitiveType name=Identifier
+	"fn" functionType=PrimitiveType name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("=" cases+=Case (";" cases+=Case)*)?
 	".";
@@ -106,7 +107,8 @@ Expr:
 	ComparisonExpr;
 
 enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=" | IN="in";
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=" |
+	IN="in" | SUBSUMES=":>" | SUBSUMED_BY="<:" | ABS_EQ="===" | ABS_NOT_EQ="!==";
 
 ComparisonExpr returns Expr:
 	LatticeExpr ({ComparisonExpr.left=current}
@@ -163,7 +165,7 @@ NegationExpr:
 	"!" body=UnaryExpr;
 
 CountExpr:
-	"#" body=UnaryExpr;
+	"count" body=UnaryExpr;
 
 enum AggregationOp:
 	SUM="sum" | PROD="prod" | MIN="min" | MAX="max";
@@ -180,7 +182,7 @@ VariableOrNodeExpr:
 	variableOrNode=[VariableOrNode|QualifiedName];
 
 Constant:
-	RealConstant | IntConstant | InfConstant | StringConstant;
+	RealConstant | IntConstant | InfConstant | StringConstant | LogicConstant;
 
 IntConstant:
 	intValue=INT;
@@ -194,12 +196,18 @@ InfConstant:
 StringConstant:
 	stringValue=STRING;
 
+enum LogicValue:
+	TRUE="true" | FALSE="false" | UNKNOWN="unknown" | ERROR="error";
+
+LogicConstant:
+	logicValue=LogicValue;
+
 Assertion:
 	default?="default"?
 	(relation=[Relation|QualifiedName]
 	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
-	value=AssertionValue |
-	value=ShortLogicAssertionValue
+	":" value=Expr |
+	value=ShortLogicConstant
 	relation=[Relation|QualifiedName]
 	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")")
 	".";
@@ -213,23 +221,11 @@ NodeAssertionArgument:
 WildcardAssertionArgument:
 	{WildcardAssertionArgument} "*";
 
-AssertionValue:
-	LogicAssertionValue | ExprAssertionValue;
-
-enum LogicValue:
-	TRUE="true" | FALSE="false" | UNKNOWN="unknown" | ERROR="error";
-
-LogicAssertionValue:
-	":" logicValue=LogicValue;
-
-ExprAssertionValue:
-	(range?="in" | "=") body=Expr;
-
 enum ShortLogicValue returns LogicValue:
 	FALSE="!" | UNKNOWN="?";
 
-ShortLogicAssertionValue returns LogicAssertionValue:
-	{LogicAssertionValue} logicValue=ShortLogicValue?;
+ShortLogicConstant returns LogicConstant:
+	{LogicConstant} logicValue=ShortLogicValue?;
 
 ScopeDeclaration:
 	"scope" typeScopes+=TypeScope ("," typeScopes+=TypeScope)* ".";
@@ -255,7 +251,7 @@ ExactMultiplicity:
 	exactValue=INT;
 
 IndividualDeclaration:
-	"individual" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+	"indiv" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
 
 UpperBound returns ecore::EInt:
 	INT | "*";
@@ -263,8 +259,14 @@ UpperBound returns ecore::EInt:
 QualifiedName hidden():
 	Identifier ("::" Identifier)*;
 
+NonContainmentQualifiedName hidden():
+	NonContainmentIdentifier ("::" Identifier)*;
+
 Identifier:
-	ID | "contains" | "contained" | "sum" | "prod" | "min" | "max";
+	NonContainmentIdentifier | "contains";
+
+NonContainmentIdentifier:
+	ID | "contained" | "sum" | "prod" | "min" | "max";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

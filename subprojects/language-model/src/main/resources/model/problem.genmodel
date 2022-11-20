@@ -30,6 +30,10 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NOT_EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/IN"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/SUBSUMES"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/SUBSUMED_BY"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/ABS_EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/ABS_NOT_EQ"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ReferenceKind">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/REFERENCE"/>
@@ -226,13 +230,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//AttributeDeclaration/attributeType"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//FlagDeclaration"/>
-    <genClasses ecoreClass="problem.ecore#//AssertionValue"/>
-    <genClasses ecoreClass="problem.ecore#//LogicAssertionValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LogicAssertionValue/logicValue"/>
-    </genClasses>
-    <genClasses ecoreClass="problem.ecore#//ExprAssertionValue">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ExprAssertionValue/body"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ExprAssertionValue/range"/>
+    <genClasses ecoreClass="problem.ecore#//LogicConstant">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LogicConstant/logicValue"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

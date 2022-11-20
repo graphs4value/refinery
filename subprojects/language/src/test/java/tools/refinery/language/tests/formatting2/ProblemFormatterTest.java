@@ -179,7 +179,7 @@ class ProblemFormatterTest {
 
 	@Test
 	void individualDeclarationTest() {
-		testFormatter("  individual  a  ,  b  .  ", "individual a, b.\n");
+		testFormatter("  indiv  a  ,  b  .  ", "indiv a, b.\n");
 	}
 
 	@Test

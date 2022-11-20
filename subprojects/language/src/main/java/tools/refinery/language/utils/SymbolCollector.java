@@ -242,7 +242,7 @@ class SymbolCollector {
 			}
 			assertion.getArguments().add(argument);
 		}
-		var value = ProblemFactory.eINSTANCE.createLogicAssertionValue();
+		var value = ProblemFactory.eINSTANCE.createLogicConstant();
 		value.setLogicValue(logicValue);
 		assertion.setValue(value);
 		collectAssertion(assertion);

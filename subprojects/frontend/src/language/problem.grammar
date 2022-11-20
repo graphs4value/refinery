@@ -3,6 +3,7 @@
 @external prop implicitCompletion from './props'
 
 @precedence {
+  reference @cut,
   prefix,
   exponential @right,
   multiplicative @left,
@@ -47,10 +48,10 @@ statement {
   Assertion {
     kw<"default">? (NotOp | UnknownOp)? RelationName
     ParameterList<AssertionArgument>
-    (":" LogicValue | ("=" | kw<"in">) Expr)? "."
+    (":" Expr)? "."
   } |
   IndividualDeclaration {
-    kw<"individual"> sep<",", IndividualNodeName> "."
+    kw<"indiv"> sep<",", IndividualNodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
@@ -58,7 +59,8 @@ statement {
 }
 
 FeatureDeclaration {
-  (ReferenceKind | PrimitiveType | kw<"bool">) RelationName
+  // The @cut helps disambiguate silly cases like `contains contains`
+  (ReferenceKind !reference | PrimitiveType | kw<"bool">)? RelationName
   ("[" Multiplicity? "]")?
   RelationName
   (kw<"opposite"> RelationName)?
@@ -90,7 +92,7 @@ BinaryExpr {
 }
 
 UnaryExpr {
-  !prefix ("+" | "-" | "!" | "#" | Modality) Expr
+  !prefix ("+" | "-" | "!" | kw<"count"> | Modality) Expr
 }
 
 Aggregation {
@@ -109,7 +111,7 @@ Atom { RelationName "+"? ParameterList<Expr> }
 
 AssertionArgument { NodeName | StarArgument }
 
-Constant { Real | String | StarMult }
+Constant { Real | String | StarMult | LogicValue }
 
 ReferenceKind {
   kw<"refers"> | ckw<"contains"> | kw<"container">
@@ -199,7 +201,10 @@ sep1<separator, content> { content (separator content)* }
     "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
   }
 
-  SymbolicComparisonOp { ">" | ">=" | "<" | "<=" | "==" | "!=" }
+  SymbolicComparisonOp {
+    ">" | ">=" | "<" | "<=" | "==" | "!=" |
+    "<:" | ":>" | "===" | "!=="
+  }
 
   NotOp { "!" }
 

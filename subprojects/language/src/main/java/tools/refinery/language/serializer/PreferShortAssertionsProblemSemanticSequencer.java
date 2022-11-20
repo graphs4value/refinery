@@ -5,7 +5,7 @@ import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ListTransient;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
 import tools.refinery.language.model.problem.Assertion;
-import tools.refinery.language.model.problem.LogicAssertionValue;
+import tools.refinery.language.model.problem.LogicConstant;
 import tools.refinery.language.model.problem.LogicValue;
 import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.services.ProblemGrammarAccess;
@@ -17,8 +17,8 @@ public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemant
 	@Override
 	protected void sequence_Assertion(ISerializationContext context, Assertion semanticObject) {
 		if (semanticObject.isDefault() ||
-				!(semanticObject.getValue() instanceof LogicAssertionValue logicAssertionValue) ||
-				logicAssertionValue.getLogicValue() == LogicValue.ERROR) {
+				!(semanticObject.getValue() instanceof LogicConstant logicConstant) ||
+				logicConstant.getLogicValue() == LogicValue.ERROR) {
 			super.sequence_Assertion(context, semanticObject);
 			return;
 		}
@@ -34,7 +34,7 @@ public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemant
 		}
 		var feeder = createSequencerFeeder(context, semanticObject);
 		var access = grammarAccess.getAssertionAccess();
-		feeder.accept(access.getValueShortLogicAssertionValueParserRuleCall_1_1_0_0(), logicAssertionValue);
+		feeder.accept(access.getValueShortLogicConstantParserRuleCall_1_1_0_0(), logicConstant);
 		feeder.accept(access.getRelationRelationQualifiedNameParserRuleCall_1_1_1_0_1(), semanticObject.getRelation());
 		var iterator = semanticObject.getArguments().iterator();
 		if (iterator.hasNext()) {

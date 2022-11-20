@@ -10,29 +10,29 @@ const initialValue = `class Family {
 }
 
 class Person {
-    refers Person[] children opposite parent
-    refers Person[0..1] parent opposite children
+    Person[] children opposite parent
+    Person[0..1] parent opposite children
     int age
-    refers TaxStatus taxStatus
+    TaxStatus taxStatus
 }
 
 enum TaxStatus {
-    child, student, adult, retired
+    CHILD, STUDENT, ADULT, RETIRED
 }
 
 % A child cannot have any dependents.
 pred invalidTaxStatus(Person p) <->
-    taxStatus(p, child),
+    taxStatus(p, CHILD),
     children(p, _q)
 ;
     parent(p, q),
     age(q) < age(p)
 ;
-    taxStatus(p, retired),
+    taxStatus(p, RETIRED),
     parent(p, q),
-    !taxStatus(q, retired).
+    !taxStatus(q, RETIRED).
 
-individual family.
+indiv family.
 Family(family).
 members(family, anne).
 members(family, bob).
@@ -40,9 +40,9 @@ members(family, ciri).
 children(anne, ciri).
 ?children(bob, ciri).
 default children(ciri, *): false.
-taxStatus(anne, adult).
-age(bob) in 21..35.
-age(ciri) = 10.
+taxStatus(anne, ADULT).
+age(bob): 21..35.
+age(ciri): 10.
 
 scope Family = 1, Person += 5..10.
 `;

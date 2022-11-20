@@ -24,30 +24,30 @@ class ProblemParsingTest {
 				}
 
 				class Person {
-					refers Person[0..*] children opposite parent
-					refers Person[0..1] parent opposite children
+					Person[0..*] children opposite parent
+					Person[0..1] parent opposite children
 					int age
-					refers TaxStatus taxStatus
+					TaxStatus taxStatus
 				}
 
 				enum TaxStatus {
-					child, student, adult, retired
+					CHILD, STUDENT, ADULT, RETIRED
 				}
 
 				% A child cannot have any dependents.
 				error invalidTaxStatus(Person p) <->
-					taxStatus(p, child), children(p, _q).
+					taxStatus(p, CHILD), children(p, _q).
 
-				individual family.
+				indiv family.
 				Family(family).
 				members(family, anne): true.
 				members(family, bob).
 				members(family, ciri).
 				children(anne, ciri).
 				?children(bob, ciri).
-				taxStatus(anne, adult).
-				age(bob) in 21..35.
-				age(ciri) = 10.
+				taxStatus(anne, ADULT).
+				age(bob): 21..35.
+				age(ciri): 10.
 				""");
 		assertThat(problem.errors(), empty());
 	}
