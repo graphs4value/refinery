@@ -111,7 +111,7 @@ class ProblemWebSocketServletIntegrationTest {
 	@WebSocket
 	public static class CloseImmediatelyTestClient extends WebSocketIntegrationTestClient {
 		@Override
-		protected void arrange(Session session, int responsesReceived) throws IOException {
+		protected void arrange(Session session, int responsesReceived) {
 			session.close();
 		}
 	}
@@ -120,20 +120,23 @@ class ProblemWebSocketServletIntegrationTest {
 	void subProtocolNegotiationTest() {
 		startServer(null);
 		var clientSocket = new CloseImmediatelyTestClient();
-		var session = connect(clientSocket, null, "<invalid sub-protocol>", XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
-		assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(),
-				equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
-		clientSocket.waitForTestResult();
-		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+		try (var session = connect(clientSocket, null, "<invalid sub-protocol>",
+				XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1)) {
+			assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(),
+					equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
+			clientSocket.waitForTestResult();
+			assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+		}
 	}
 
 	@Test
 	void invalidJsonTest() {
 		startServer(null);
 		var clientSocket = new InvalidJsonTestClient();
-		connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
-		clientSocket.waitForTestResult();
-		assertThat(clientSocket.getCloseStatusCode(), equalTo(XtextStatusCode.INVALID_JSON));
+		try (var ignored = connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1)) {
+			clientSocket.waitForTestResult();
+			assertThat(clientSocket.getCloseStatusCode(), equalTo(XtextStatusCode.INVALID_JSON));
+		}
 	}
 
 	@WebSocket
@@ -149,17 +152,24 @@ class ProblemWebSocketServletIntegrationTest {
 	void validOriginTest(String origin) {
 		startServer("https://refinery.example,https://refinery.example:443");
 		var clientSocket = new CloseImmediatelyTestClient();
-		connect(clientSocket, origin, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
-		clientSocket.waitForTestResult();
-		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+		try (var ignored = connect(clientSocket, origin, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1)) {
+			clientSocket.waitForTestResult();
+			assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
+		}
 	}
 
 	@Test
 	void invalidOriginTest() {
 		startServer("https://refinery.example,https://refinery.example:443");
 		var clientSocket = new CloseImmediatelyTestClient();
+		// We have to put the close statement also into the lambda to ensure that the session is always closed.
+		@SuppressWarnings("squid:S5778")
 		var exception = assertThrows(CompletionException.class,
-				() -> connect(clientSocket, "https://invalid.example", XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
+				() -> {
+					var session = connect(clientSocket, "https://invalid.example",
+							XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
+					session.close();
+				});
 		var innerException = exception.getCause();
 		assertThat(innerException, instanceOf(UpgradeException.class));
 		assertThat(((UpgradeException) innerException).getResponseStatusCode(), equalTo(HttpStatus.FORBIDDEN_403));
