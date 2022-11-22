@@ -1,45 +1,44 @@
 package tools.refinery.language.web.tests;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.*;
+
+@SuppressWarnings("NullableProblems")
 public class RestartableCachedThreadPool implements ExecutorService {
 	private static final Logger LOG = LoggerFactory.getLogger(RestartableCachedThreadPool.class);
-	
+
 	private ExecutorService delegate;
 
 	public RestartableCachedThreadPool() {
 		delegate = createExecutorService();
 	}
-	
+
 	public void waitForAllTasksToFinish() {
 		delegate.shutdown();
 		waitForTermination();
 		delegate = createExecutorService();
 	}
-	
+
 	public void waitForTermination() {
+		boolean result = false;
 		try {
-			delegate.awaitTermination(1, TimeUnit.SECONDS);
+			result = delegate.awaitTermination(1, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			LOG.warn("Interrupted while waiting for delegate executor to stop", e);
 		}
+		if (!result) {
+			throw new IllegalStateException("Failed to shut down Xtext thread pool");
+		}
 	}
-	
+
 	protected ExecutorService createExecutorService() {
 		return Executors.newCachedThreadPool();
 	}
-	
+
 	@Override
 	public boolean awaitTermination(long arg0, TimeUnit arg1) throws InterruptedException {
 		return delegate.awaitTermination(arg0, arg1);

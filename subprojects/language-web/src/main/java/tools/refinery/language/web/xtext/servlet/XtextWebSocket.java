@@ -3,10 +3,10 @@ package tools.refinery.language.web.xtext.servlet;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.StatusCode;
-import org.eclipse.jetty.websocket.api.WriteCallback;
-import org.eclipse.jetty.websocket.api.annotations.*;
+import org.eclipse.jetty.ee10.websocket.api.Session;
+import org.eclipse.jetty.ee10.websocket.api.StatusCode;
+import org.eclipse.jetty.ee10.websocket.api.WriteCallback;
+import org.eclipse.jetty.ee10.websocket.api.annotations.*;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
@@ -17,7 +17,6 @@ import tools.refinery.language.web.xtext.server.TransactionExecutor;
 import tools.refinery.language.web.xtext.server.message.XtextWebRequest;
 import tools.refinery.language.web.xtext.server.message.XtextWebResponse;
 
-import java.io.IOException;
 import java.io.Reader;
 
 @WebSocket
@@ -108,12 +107,7 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 			throw new ResponseHandlerException("Trying to send message when websocket is disconnected");
 		}
 		var responseString = gson.toJson(response);
-		try {
-			webSocketSession.getRemote().sendPartialString(responseString, true, this);
-		} catch (IOException e) {
-			throw new ResponseHandlerException(
-					"Cannot initiate async write to websocket " + webSocketSession.getRemoteAddress(), e);
-		}
+		webSocketSession.getRemote().sendPartialString(responseString, true, this);
 	}
 
 	@Override

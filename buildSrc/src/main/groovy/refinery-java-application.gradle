@@ -4,6 +4,10 @@ plugins {
 	id 'refinery-java-conventions'
 }
 
+application {
+	applicationDefaultJvmArgs += '--enable-preview'
+}
+
 for (taskName in ['distTar', 'distZip', 'shadowDistTar', 'shadowDistZip']) {
 	tasks.named(taskName) {
 		enabled = false

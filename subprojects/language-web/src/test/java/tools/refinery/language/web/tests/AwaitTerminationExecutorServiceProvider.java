@@ -1,16 +1,15 @@
 package tools.refinery.language.web.tests;
 
+import com.google.inject.Singleton;
+import org.eclipse.xtext.ide.ExecutorServiceProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.eclipse.xtext.ide.ExecutorServiceProvider;
-
-import com.google.inject.Singleton;
-
 @Singleton
 public class AwaitTerminationExecutorServiceProvider extends ExecutorServiceProvider {
-	private List<RestartableCachedThreadPool> servicesToShutDown = new ArrayList<>();
+	private final List<RestartableCachedThreadPool> servicesToShutDown = new ArrayList<>();
 
 	@Override
 	protected ExecutorService createInstance(String key) {

@@ -2,7 +2,7 @@ package tools.refinery.language.web.xtext.servlet;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
-import org.eclipse.jetty.websocket.server.*;
+import org.eclipse.jetty.ee10.websocket.server.*;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

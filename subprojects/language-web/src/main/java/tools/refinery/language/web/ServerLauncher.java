@@ -5,20 +5,21 @@ package tools.refinery.language.web;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.SessionTrackingMode;
+import org.eclipse.jetty.ee10.servlet.DefaultServlet;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.SessionHandler;
+import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.VirtualThreads;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.refinery.language.web.config.BackendConfigServlet;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,13 +43,18 @@ public class ServerLauncher {
 
 	private final Server server;
 
-	public ServerLauncher(InetSocketAddress bindAddress, Resource baseResource, String[] allowedOrigins,
-						  String webSocketUrl) {
+	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String webSocketUrl) {
 		server = new Server(bindAddress);
+		if (server.getThreadPool() instanceof VirtualThreads.Configurable virtualThreadsConfigurable) {
+			// Change this to setVirtualThreadsExecutor once
+			// https://github.com/eclipse/jetty.project/commit/83154b4ffe4767ef44981598d6c26e6a5d32e57c gets released.
+			virtualThreadsConfigurable.setUseVirtualThreads(VirtualThreads.areSupported());
+		}
 		var handler = new ServletContextHandler();
 		addSessionHandler(handler);
 		addProblemServlet(handler, allowedOrigins);
 		addBackendConfigServlet(handler, webSocketUrl);
+		var baseResource = getBaseResource();
 		if (baseResource != null) {
 			handler.setBaseResource(baseResource);
 			handler.setWelcomeFiles(new String[]{"index.html"});
@@ -95,6 +101,35 @@ public class ServerLauncher {
 		handler.addServlet(defaultServletHolder, "/");
 	}
 
+	private Resource getBaseResource() {
+		var factory = ResourceFactory.of(server);
+		var baseResourceOverride = System.getenv("BASE_RESOURCE");
+		if (baseResourceOverride != null) {
+			// If a user override is provided, use it.
+			return factory.newResource(baseResourceOverride);
+		}
+		var indexUrlInJar = ServerLauncher.class.getResource("/webapp/index.html");
+		if (indexUrlInJar != null) {
+			// If the app is packaged in the jar, serve it.
+			URI webRootUri = null;
+			try {
+				webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString().replaceFirst("/index.html$", "/"));
+			} catch (URISyntaxException e) {
+				throw new IllegalStateException("Jar has invalid base resource URI", e);
+			}
+			return factory.newResource(webRootUri);
+		}
+		// Look for unpacked production artifacts (convenience for running from IDE).
+		var unpackedResourcePathComponents = new String[]{System.getProperty("user.dir"), "build", "webpack",
+				"production"};
+		var unpackedResourceDir = new File(String.join(File.separator, unpackedResourcePathComponents));
+		if (unpackedResourceDir.isDirectory()) {
+			return factory.newResource(unpackedResourceDir.toPath());
+		}
+		// Fall back to just serving a 404.
+		return null;
+	}
+
 	public void start() throws Exception {
 		server.start();
 		LOG.info("Server started on {}", server.getURI());
@@ -104,10 +139,9 @@ public class ServerLauncher {
 	public static void main(String[] args) {
 		try {
 			var bindAddress = getBindAddress();
-			var baseResource = getBaseResource();
 			var allowedOrigins = getAllowedOrigins();
 			var webSocketUrl = getWebSocketUrl();
-			var serverLauncher = new ServerLauncher(bindAddress, baseResource, allowedOrigins, webSocketUrl);
+			var serverLauncher = new ServerLauncher(bindAddress, allowedOrigins, webSocketUrl);
 			serverLauncher.start();
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
@@ -135,29 +169,6 @@ public class ServerLauncher {
 		var listenAddress = getListenAddress();
 		var listenPort = getListenPort();
 		return new InetSocketAddress(listenAddress, listenPort);
-	}
-
-	private static Resource getBaseResource() throws IOException, URISyntaxException {
-		var baseResourceOverride = System.getenv("BASE_RESOURCE");
-		if (baseResourceOverride != null) {
-			// If a user override is provided, use it.
-			return Resource.newResource(baseResourceOverride);
-		}
-		var indexUrlInJar = ServerLauncher.class.getResource("/webapp/index.html");
-		if (indexUrlInJar != null) {
-			// If the app is packaged in the jar, serve it.
-			var webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString().replaceFirst("/index.html$", "/"));
-			return Resource.newResource(webRootUri);
-		}
-		// Look for unpacked production artifacts (convenience for running from IDE).
-		var unpackedResourcePathComponents = new String[]{System.getProperty("user.dir"), "build", "webpack",
-				"production"};
-		var unpackedResourceDir = new File(String.join(File.separator, unpackedResourcePathComponents));
-		if (unpackedResourceDir.isDirectory()) {
-			return Resource.newResource(unpackedResourceDir);
-		}
-		// Fall back to just serving a 404.
-		return null;
 	}
 
 	private static String getPublicHost() {

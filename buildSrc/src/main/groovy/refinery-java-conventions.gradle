@@ -21,7 +21,7 @@ dependencies {
 }
 
 java.toolchain {
-	languageVersion = JavaLanguageVersion.of(17)
+	languageVersion = JavaLanguageVersion.of(19)
 }
 
 def jacocoTestReport = tasks.named('jacocoTestReport')
@@ -51,6 +51,18 @@ tasks.named('jar') {
 				'Bundle-Version': project.version
 		)
 	}
+}
+
+tasks.withType(JavaCompile) {
+	options.compilerArgs += '--enable-preview'
+}
+
+tasks.withType(Test) {
+	jvmArgs += '--enable-preview'
+}
+
+tasks.withType(JavaExec) {
+	jvmArgs += '--enable-preview'
 }
 
 def generateEclipseSourceFolders = tasks.register('generateEclipseSourceFolders')
