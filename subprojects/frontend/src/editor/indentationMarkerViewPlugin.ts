@@ -91,7 +91,7 @@ function getNumIndentMarkersForNonEmptyLine(
 ) {
   let numIndents = 0;
   let numConsecutiveSpaces = 0;
-  let prevChar: string | null = null;
+  let prevChar: string | undefined;
 
   for (let char = 0; char < text.length; char += 1) {
     // Bail if we encounter a non-whitespace character

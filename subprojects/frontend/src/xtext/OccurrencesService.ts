@@ -1,4 +1,4 @@
-import { Transaction } from '@codemirror/state';
+import type { Transaction } from '@codemirror/state';
 import { debounce } from 'lodash-es';
 import ms from 'ms';
 

@@ -5,7 +5,6 @@ import SyncProblemIcon from '@mui/icons-material/SyncProblem';
 import IconButton from '@mui/material/IconButton';
 import { keyframes, styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 
 import type EditorStore from './EditorStore';
 

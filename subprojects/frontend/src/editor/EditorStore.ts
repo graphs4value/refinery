@@ -1,4 +1,7 @@
-import { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import type {
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands';
 import {
   type Diagnostic,

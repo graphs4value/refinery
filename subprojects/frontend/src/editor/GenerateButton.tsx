@@ -2,7 +2,6 @@ import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 
 import AnimatedButton from './AnimatedButton';
 import type EditorStore from './EditorStore';

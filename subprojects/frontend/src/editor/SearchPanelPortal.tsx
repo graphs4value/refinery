@@ -1,6 +1,5 @@
 import Portal from '@mui/material/Portal';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 
 import type EditorStore from './EditorStore';
 import SearchToolbar from './SearchToolbar';

@@ -20,6 +20,7 @@ export default class PendingTask<T> {
   ) {
     this.resolveCallback = resolveCallback;
     this.rejectCallback = rejectCallback;
+    // @ts-expect-error See https://github.com/mobxjs/mobx/issues/3582 on `@types/node` pollution
     this.timeout = setTimeout(() => {
       if (!this.resolved) {
         this.reject(new TimeoutError());

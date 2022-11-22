@@ -21,7 +21,7 @@ const parserWithMetadata = parser.configure({
     styleTags({
       LineComment: t.lineComment,
       BlockComment: t.blockComment,
-      'problem class enum pred indiv scope': t.definitionKeyword,
+      'problem class enum pred fn indiv scope': t.definitionKeyword,
       'abstract extends refers contains container opposite': t.modifier,
       'default error contained containment': t.modifier,
       'true false unknown error': t.keyword,

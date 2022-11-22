@@ -14,7 +14,7 @@ import Toolbar from '@mui/material/Toolbar';
 import { styled } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type SearchPanelStore from './SearchPanelStore';
 

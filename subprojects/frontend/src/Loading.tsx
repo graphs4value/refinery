@@ -1,6 +1,5 @@
 import CircularProgress from '@mui/material/CircularProgress';
 import { styled } from '@mui/material/styles';
-import React from 'react';
 
 const LoadingRoot = styled('div')(({ theme }) => ({
   width: '100%',

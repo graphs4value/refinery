@@ -128,10 +128,11 @@ export default function scrollbarViewPlugin(
           Math.max(1, endLine - startLine) * lineHeight,
         );
 
-        let annotation: HTMLDivElement;
+        let annotation: HTMLDivElement | undefined;
         if (i < annotations.length) {
           annotation = annotations[i];
-        } else {
+        }
+        if (annotation === undefined) {
           annotation = ownerDocument.createElement('div');
           annotations.push(annotation);
           holder.appendChild(annotation);

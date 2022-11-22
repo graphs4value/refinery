@@ -1,7 +1,6 @@
 import Grow from '@mui/material/Grow';
 import Stack from '@mui/material/Stack';
 import { SnackbarProvider } from 'notistack';
-import React from 'react';
 
 import TopBar from './TopBar';
 import UpdateNotification from './UpdateNotification';

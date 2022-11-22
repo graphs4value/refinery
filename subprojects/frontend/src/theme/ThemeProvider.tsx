@@ -12,7 +12,7 @@ import {
   useTheme,
 } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
-import React, { type ReactNode, createContext, useContext } from 'react';
+import { type ReactNode, createContext, useContext } from 'react';
 
 import { useRootStore } from '../RootStoreProvider';
 

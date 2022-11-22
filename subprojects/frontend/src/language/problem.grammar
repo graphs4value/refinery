@@ -37,7 +37,7 @@ statement {
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
   FunctionDefinition {
-    PrimitiveType RelationName ParameterList<Parameter>?
+    kw<"fn"> PrimitiveType RelationName ParameterList<Parameter>?
     FunctionBody { ("=" sep<OrOp, Case>)? "." }
   } |
   //RuleDefinition {

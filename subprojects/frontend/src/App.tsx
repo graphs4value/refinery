@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import React, { StrictMode, Suspense, lazy } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 
 import Loading from './Loading';
 import type RootStore from './RootStore';

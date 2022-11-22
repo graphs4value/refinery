@@ -1,5 +1,4 @@
 import { configure } from 'mobx';
-import React from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import App from './App';

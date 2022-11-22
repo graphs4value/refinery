@@ -67,6 +67,8 @@ module.exports = {
     ],
     // Use prop spreading to conditionally add props with `exactOptionalPropertyTypes`.
     'react/jsx-props-no-spreading': 'off',
+    // We use the `react-jsx` runtime, so there is no need to import `React`.
+    'react/react-in-jsx-scope': 'off',
   },
   overrides: [
     {

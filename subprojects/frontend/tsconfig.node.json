@@ -2,8 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "checkJs": true,
-    "lib": ["ESNext"],
+    "lib": ["ES2022"],
     "types": ["node"],
     "emitDeclarationOnly": true,
     "outDir": "build/typescript"

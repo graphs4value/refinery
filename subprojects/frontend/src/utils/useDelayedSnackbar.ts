@@ -21,6 +21,7 @@ export default function useDelayedSnackbar(
       delay = defaultDelay,
     ) => {
       let key: SnackbarKey | undefined;
+      // @ts-expect-error See https://github.com/mobxjs/mobx/issues/3582 on `@types/node` pollution
       let timeout: number | undefined = setTimeout(() => {
         timeout = undefined;
         key = enqueueSnackbar(message, options);

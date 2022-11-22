@@ -205,7 +205,7 @@ export default createMachine(
       ERROR_WAIT_TIME: ({ errors: { length: retryCount } }) => {
         const { length } = ERROR_WAIT_TIMES;
         const index = retryCount < length ? retryCount : length - 1;
-        return ERROR_WAIT_TIMES[index];
+        return ERROR_WAIT_TIMES[index] ?? 0;
       },
     },
     actions: {

@@ -13,7 +13,6 @@ import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 
 import ConnectButton from './ConnectButton';
 import type EditorStore from './EditorStore';
