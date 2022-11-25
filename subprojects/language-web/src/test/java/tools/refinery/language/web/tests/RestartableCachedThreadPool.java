@@ -1,5 +1,6 @@
 package tools.refinery.language.web.tests;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 
-@SuppressWarnings("NullableProblems")
 public class RestartableCachedThreadPool implements ExecutorService {
 	private static final Logger LOG = LoggerFactory.getLogger(RestartableCachedThreadPool.class);
 
@@ -40,34 +40,36 @@ public class RestartableCachedThreadPool implements ExecutorService {
 	}
 
 	@Override
-	public boolean awaitTermination(long arg0, TimeUnit arg1) throws InterruptedException {
+	public boolean awaitTermination(long arg0, @NotNull TimeUnit arg1) throws InterruptedException {
 		return delegate.awaitTermination(arg0, arg1);
 	}
 
 	@Override
-	public void execute(Runnable arg0) {
+	public void execute(@NotNull Runnable arg0) {
 		delegate.execute(arg0);
 	}
 
 	@Override
-	public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> arg0, long arg1, TimeUnit arg2)
+	public <T> List<Future<T>> invokeAll(@NotNull Collection<? extends Callable<T>> arg0, long arg1,
+										 @NotNull TimeUnit arg2)
 			throws InterruptedException {
 		return delegate.invokeAll(arg0, arg1, arg2);
 	}
 
 	@Override
-	public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> arg0) throws InterruptedException {
+	public <T> List<Future<T>> invokeAll(@NotNull Collection<? extends Callable<T>> arg0) throws InterruptedException {
 		return delegate.invokeAll(arg0);
 	}
 
 	@Override
-	public <T> T invokeAny(Collection<? extends Callable<T>> arg0, long arg1, TimeUnit arg2)
+	public <T> T invokeAny(@NotNull Collection<? extends Callable<T>> arg0, long arg1, @NotNull TimeUnit arg2)
 			throws InterruptedException, ExecutionException, TimeoutException {
 		return delegate.invokeAny(arg0, arg1, arg2);
 	}
 
 	@Override
-	public <T> T invokeAny(Collection<? extends Callable<T>> arg0) throws InterruptedException, ExecutionException {
+	public <T> T invokeAny(@NotNull Collection<? extends Callable<T>> arg0) throws InterruptedException,
+			ExecutionException {
 		return delegate.invokeAny(arg0);
 	}
 
@@ -92,17 +94,17 @@ public class RestartableCachedThreadPool implements ExecutorService {
 	}
 
 	@Override
-	public <T> Future<T> submit(Callable<T> arg0) {
+	public <T> Future<T> submit(@NotNull Callable<T> arg0) {
 		return delegate.submit(arg0);
 	}
 
 	@Override
-	public <T> Future<T> submit(Runnable arg0, T arg1) {
+	public <T> Future<T> submit(@NotNull Runnable arg0, T arg1) {
 		return delegate.submit(arg0, arg1);
 	}
 
 	@Override
-	public Future<?> submit(Runnable arg0) {
+	public Future<?> submit(@NotNull Runnable arg0) {
 		return delegate.submit(arg0);
 	}
 }

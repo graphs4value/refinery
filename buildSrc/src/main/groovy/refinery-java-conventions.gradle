@@ -12,6 +12,8 @@ repositories {
 }
 
 dependencies {
+	compileOnly libs.jetbrainsAnnotations
+	testCompileOnly libs.jetbrainsAnnotations
 	testImplementation libs.hamcrest
 	testImplementation libs.junit.api
 	testRuntimeOnly libs.junit.engine
