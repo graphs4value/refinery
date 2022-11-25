@@ -36,6 +36,7 @@ import problemLanguageSupport from '../language/problemLanguageSupport';
 
 import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
+import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
 import indentationMarkerViewPlugin from './indentationMarkerViewPlugin';
 import scrollbarViewPlugin from './scrollbarViewPlugin';
@@ -56,6 +57,7 @@ export default function createEditorState(
       bracketMatching(),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),
+      exposeDiagnostics,
       findOccurrences,
       highlightActiveLine(),
       highlightActiveLineGutter(),

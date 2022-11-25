@@ -2,6 +2,7 @@ import { type PluginValue, ViewPlugin } from '@codemirror/view';
 import { reaction } from 'mobx';
 
 import type EditorStore from './EditorStore';
+import { getDiagnostics } from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
 
 export const HOLDER_CLASS = 'cm-scroller-holder';
@@ -105,11 +106,12 @@ export default function scrollbarViewPlugin(
     const annotations: HTMLDivElement[] = [];
 
     function rebuildAnnotations(trackYHeight: number) {
+      const { state } = view;
       const annotationOverlayHeight = Math.min(
         view.contentHeight,
         trackYHeight,
       );
-      const lineHeight = annotationOverlayHeight / editorStore.state.doc.lines;
+      const lineHeight = annotationOverlayHeight / state.doc.lines;
 
       let i = 0;
 
@@ -117,11 +119,9 @@ export default function scrollbarViewPlugin(
         from: number,
         to?: number,
       ): HTMLDivElement {
-        const startLine = editorStore.state.doc.lineAt(from).number;
+        const startLine = state.doc.lineAt(from).number;
         const endLine =
-          to === undefined
-            ? startLine
-            : editorStore.state.doc.lineAt(to).number;
+          to === undefined ? startLine : state.doc.lineAt(to).number;
         const top = (startLine - 1) * lineHeight;
         const height = Math.max(
           MIN_ANNOTATION_HEIGHT,
@@ -145,13 +145,13 @@ export default function scrollbarViewPlugin(
         return annotation;
       }
 
-      editorStore.state.selection.ranges.forEach(({ head }) => {
+      state.selection.ranges.forEach(({ head }) => {
         const selectionAnnotation = getOrCreateAnnotation(head);
         selectionAnnotation.className = ANNOTATION_SELECTION_CLASS;
         selectionAnnotation.style.width = `${SCROLLBAR_WIDTH}px`;
       });
 
-      const diagnosticsIter = editorStore.diagnostics.iter();
+      const diagnosticsIter = getDiagnostics(state).iter();
       while (diagnosticsIter.value !== null) {
         const diagnosticAnnotation = getOrCreateAnnotation(
           diagnosticsIter.from,
@@ -162,7 +162,7 @@ export default function scrollbarViewPlugin(
         diagnosticsIter.next();
       }
 
-      const occurrences = editorStore.state.field(findOccurrences);
+      const occurrences = view.state.field(findOccurrences);
       const occurrencesIter = occurrences.iter();
       while (occurrencesIter.value !== null) {
         const occurrenceAnnotation = getOrCreateAnnotation(
@@ -259,15 +259,9 @@ export default function scrollbarViewPlugin(
 
     requestRebuild();
 
-    const disposeRebuildReaction = reaction(
-      () => editorStore.diagnostics,
-      requestRebuild,
-    );
-
     return {
       update: requestRebuild,
       destroy() {
-        disposeRebuildReaction();
         disposePanelReaction();
         observer?.disconnect();
         scrollDOM.removeEventListener('scroll', requestUpdate);
