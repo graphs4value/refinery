@@ -45,6 +45,7 @@ public class ServerLauncher {
 
 	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String webSocketUrl) {
 		server = new Server(bindAddress);
+		enableVirtualThreads(server);
 		if (server.getThreadPool() instanceof VirtualThreads.Configurable virtualThreadsConfigurable) {
 			// Change this to setVirtualThreadsExecutor once
 			// https://github.com/eclipse/jetty.project/commit/83154b4ffe4767ef44981598d6c26e6a5d32e57c gets released.
@@ -146,6 +147,14 @@ public class ServerLauncher {
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
 			System.exit(1);
+		}
+	}
+
+	public static void enableVirtualThreads(Server server) {
+		if (server.getThreadPool() instanceof VirtualThreads.Configurable virtualThreadsConfigurable) {
+			// Change this to setVirtualThreadsExecutor once
+			// https://github.com/eclipse/jetty.project/commit/83154b4ffe4767ef44981598d6c26e6a5d32e57c gets released.
+			virtualThreadsConfigurable.setUseVirtualThreads(VirtualThreads.areSupported());
 		}
 	}
 

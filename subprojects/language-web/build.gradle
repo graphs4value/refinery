@@ -40,6 +40,18 @@ for (taskName in ['compileJava', 'processResources']) {
 
 mainClassName = 'tools.refinery.language.web.ServerLauncher'
 
+// Enable JDK 19 preview features for virtual thread support.
+application {
+	applicationDefaultJvmArgs += '--enable-preview'
+}
+tasks.withType(JavaCompile) {
+	options.release = 19
+	options.compilerArgs += '--enable-preview'
+}
+tasks.withType(Test) {
+	jvmArgs += '--enable-preview'
+}
+
 tasks.named('jar') {
 	dependsOn project.configurations.webapp
 	from(project.configurations.webapp) {
@@ -65,6 +77,8 @@ tasks.register('serveBackend', JavaExec) {
 	dependsOn sourceSets.main.runtimeClasspath
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = mainClassName
+	// Enable JDK 19 preview features for virtual thread support.
+	jvmArgs += '--enable-preview'
 	standardInput = System.in
 	def baseResource = project.configurations.webapp.incoming.artifacts.artifactFiles.first()
 	environment BASE_RESOURCE: baseResource

@@ -177,6 +177,7 @@ class ProblemWebSocketServletIntegrationTest {
 
 	private void startServer(String allowedOrigins) {
 		server = new Server(new InetSocketAddress(SERVER_PORT));
+		ServerLauncher.enableVirtualThreads(server);
 		var handler = new ServletContextHandler();
 		var holder = new ServletHolder(ProblemWebSocketServlet.class);
 		if (allowedOrigins != null) {
