@@ -1,4 +1,4 @@
-package tools.refinery.store.query.viatra.tests;
+package tools.refinery.store.query.viatra;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.representation.Relation;
