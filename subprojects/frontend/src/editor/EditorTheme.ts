@@ -64,6 +64,13 @@ export default styled('div', {
       overflow: 'hidden',
       flex: '1 1',
     },
+    '.cm-scroller-spacer': {
+      position: 'sticky',
+      flexShrink: 0,
+      zIndex: 300,
+      width: 1,
+      marginRight: -1,
+    },
     '.cm-scroller': {
       color: theme.palette.text.secondary,
       scrollbarWidth: 'none',
@@ -126,7 +133,7 @@ export default styled('div', {
     },
     '.cm-content': {
       ...editorFontStyle,
-      padding: 0,
+      padding: '0 12px 0 0',
     },
     '.cm-activeLine': {
       background: showActiveLine

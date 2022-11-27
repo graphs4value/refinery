@@ -1,3 +1,4 @@
+import { EditorSelection } from '@codemirror/state';
 import { type PluginValue, ViewPlugin } from '@codemirror/view';
 import { reaction } from 'mobx';
 
@@ -6,6 +7,7 @@ import { getDiagnostics } from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
 
 export const HOLDER_CLASS = 'cm-scroller-holder';
+export const SPACER_CLASS = 'cm-scroller-spacer';
 export const THUMB_CLASS = 'cm-scroller-thumb';
 export const THUMB_Y_CLASS = 'cm-scroller-thumb-y';
 export const THUMB_X_CLASS = 'cm-scroller-thumb-x';
@@ -34,6 +36,27 @@ export default function scrollbarViewPlugin(
     holder.className = HOLDER_CLASS;
     parentDOM.replaceChild(holder, scrollDOM);
     holder.appendChild(scrollDOM);
+
+    const spacer = ownerDocument.createElement('div');
+    spacer.className = SPACER_CLASS;
+    scrollDOM.insertBefore(spacer, scrollDOM.firstChild);
+
+    let gutterWidth = 0;
+
+    scrollDOM.addEventListener('click', (event) => {
+      const scrollX = scrollDOM.scrollLeft + event.offsetX;
+      const scrollY = scrollDOM.scrollTop + event.offsetY;
+      if (scrollX > gutterWidth && scrollY > view.contentHeight) {
+        event.preventDefault();
+        view.focus();
+        editorStore.dispatch({
+          scrollIntoView: true,
+          selection: EditorSelection.create([
+            EditorSelection.cursor(view.state.doc.length),
+          ]),
+        });
+      }
+    });
 
     let factorY = 1;
     let factorX = 1;
@@ -97,7 +120,6 @@ export default function scrollbarViewPlugin(
       { fireImmediately: true },
     );
 
-    let observer: ResizeObserver | undefined;
     let gutters: Element | undefined;
 
     let requested = false;
@@ -105,13 +127,11 @@ export default function scrollbarViewPlugin(
 
     const annotations: HTMLDivElement[] = [];
 
-    function rebuildAnnotations(trackYHeight: number) {
+    function rebuildAnnotations(scrollHeight: number, trackYHeight: number) {
       const { state } = view;
-      const annotationOverlayHeight = Math.min(
-        view.contentHeight,
-        trackYHeight,
-      );
-      const lineHeight = annotationOverlayHeight / state.doc.lines;
+      const overlayAnnotationsHeight =
+        (view.contentHeight / scrollHeight) * trackYHeight;
+      const lineHeight = overlayAnnotationsHeight / state.doc.lines;
 
       let i = 0;
 
@@ -180,6 +200,8 @@ export default function scrollbarViewPlugin(
         .forEach((staleAnnotation) => holder.removeChild(staleAnnotation));
     }
 
+    let observer: ResizeObserver | undefined;
+
     function update() {
       requested = false;
 
@@ -192,11 +214,15 @@ export default function scrollbarViewPlugin(
 
       const { height: scrollerHeight, width: scrollerWidth } =
         scrollDOM.getBoundingClientRect();
-      const { scrollTop, scrollHeight, scrollLeft, scrollWidth } = scrollDOM;
-      const gutterWidth = gutters?.clientWidth ?? 0;
+      const { scrollTop, scrollLeft, scrollWidth } = scrollDOM;
+      const scrollHeight =
+        view.contentHeight + scrollerHeight - view.defaultLineHeight;
+      spacer.style.minHeight = `${scrollHeight}px`;
+      gutterWidth = gutters?.clientWidth ?? 0;
       let trackYHeight = scrollerHeight;
 
-      if (scrollWidth > scrollerWidth) {
+      // Prevent spurious horizontal scrollbar by rounding up to the nearest pixel.
+      if (scrollWidth > Math.ceil(scrollerWidth)) {
         // Leave space for horizontal scrollbar.
         trackYHeight -= SCROLLBAR_WIDTH;
         // Alwalys leave space for annotation in the vertical scrollbar.
@@ -207,21 +233,18 @@ export default function scrollbarViewPlugin(
         thumbX.style.height = `${SCROLLBAR_WIDTH}px`;
         thumbX.style.width = `${thumbWidth}px`;
         thumbX.style.left = `${gutterWidth + scrollLeft * factorX}px`;
+        scrollDOM.style.overflowX = 'scroll';
       } else {
         thumbX.style.display = 'none';
+        scrollDOM.style.overflowX = 'hidden';
       }
 
-      if (scrollHeight > scrollerHeight) {
-        const thumbHeight = trackYHeight * (scrollerHeight / scrollHeight);
-        factorY =
-          (trackYHeight - thumbHeight) / (scrollHeight - scrollerHeight);
-        thumbY.style.display = 'block';
-        thumbY.style.height = `${thumbHeight}px`;
-        thumbY.style.width = `${SCROLLBAR_WIDTH}px`;
-        thumbY.style.top = `${scrollTop * factorY}px`;
-      } else {
-        thumbY.style.display = 'none';
-      }
+      const thumbHeight = trackYHeight * (scrollerHeight / scrollHeight);
+      factorY = (trackYHeight - thumbHeight) / (scrollHeight - scrollerHeight);
+      thumbY.style.display = 'block';
+      thumbY.style.height = `${thumbHeight}px`;
+      thumbY.style.width = `${SCROLLBAR_WIDTH}px`;
+      thumbY.style.top = `${scrollTop * factorY}px`;
 
       gutterDecoration.style.left = `${gutterWidth}px`;
       gutterDecoration.style.width = `${Math.max(
@@ -235,7 +258,7 @@ export default function scrollbarViewPlugin(
       )}px`;
 
       if (rebuildRequested) {
-        rebuildAnnotations(trackYHeight);
+        rebuildAnnotations(scrollHeight, trackYHeight);
         rebuildRequested = false;
       }
     }
@@ -253,7 +276,7 @@ export default function scrollbarViewPlugin(
     }
 
     observer = new ResizeObserver(requestRebuild);
-    observer.observe(scrollDOM);
+    observer.observe(holder);
 
     scrollDOM.addEventListener('scroll', requestUpdate);
 
@@ -265,7 +288,7 @@ export default function scrollbarViewPlugin(
         disposePanelReaction();
         observer?.disconnect();
         scrollDOM.removeEventListener('scroll', requestUpdate);
-        parentDOM.replaceChild(scrollDOM, holder);
+        parentDOM.replaceChild(holder, holder);
       },
     };
   });
