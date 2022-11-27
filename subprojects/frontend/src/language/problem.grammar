@@ -16,6 +16,11 @@
 @top Problem { statement* }
 
 statement {
+  Assertion {
+    kw<"default">? (NotOp | UnknownOp)? RelationName
+    ParameterList<AssertionArgument>
+    (":" Expr)? "."
+  } |
   ProblemDeclaration {
     kw<"problem"> QualifiedName "."
   } |
@@ -45,11 +50,6 @@ statement {
   //  RuleName ParameterList<Parameter>?
   //  RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
   //} |
-  Assertion {
-    kw<"default">? (NotOp | UnknownOp)? RelationName
-    ParameterList<AssertionArgument>
-    (":" Expr)? "."
-  } |
   IndividualDeclaration {
     kw<"indiv"> sep<",", IndividualNodeName> "."
   } |

@@ -8,9 +8,9 @@ Problem:
 	statements+=Statement*;
 
 Statement:
-	ClassDeclaration | EnumDeclaration |
+	Assertion | ClassDeclaration | EnumDeclaration |
 	PredicateDefinition | FunctionDefinition | /* RuleDefinition | */
-	Assertion | ScopeDeclaration | IndividualDeclaration;
+	ScopeDeclaration | IndividualDeclaration;
 
 ClassDeclaration:
 	abstract?="abstract"? "class"

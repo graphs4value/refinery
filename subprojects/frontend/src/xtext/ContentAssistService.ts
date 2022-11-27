@@ -33,16 +33,36 @@ interface IFoundToken {
 
 function findToken({ pos, state }: CompletionContext): IFoundToken | undefined {
   const token = syntaxTree(state).resolveInner(pos, -1);
-  if (token.firstChild !== null) {
-    // We only autocomplete terminal nodes. If the current node is nonterminal,
-    // returning `undefined` makes us autocomplete with the empty prefix instead.
+  const { from } = token;
+  if (from > pos) {
+    // We haven't found the token we want to complete.
+    // Complete with an empty prefix from `pos` instead.
+    // The other `return undefined;` lines also handle this condition.
+    return undefined;
+  }
+  // We look at the text at the beginning of the token.
+  // For QualifiedName tokens right before a comment, this may be a comment token.
+  const endIndex = token.firstChild?.from ?? token.to;
+  if (pos > endIndex) {
+    return undefined;
+  }
+  const text = state.sliceDoc(from, endIndex).trimEnd();
+  // Due to parser error recovery, we may get spurious whitespace
+  // at the end of the token.
+  const to = from + text.length;
+  if (to > endIndex) {
+    return undefined;
+  }
+  if (from > pos || endIndex < pos) {
+    // We haven't found the token we want to complete.
+    // Complete with an empty prefix from `pos` instead.
     return undefined;
   }
   return {
-    from: token.from,
-    to: token.to,
+    from,
+    to,
     implicitCompletion: token.type.prop(implicitCompletion) || false,
-    text: state.sliceDoc(token.from, token.to),
+    text,
   };
 }
 
