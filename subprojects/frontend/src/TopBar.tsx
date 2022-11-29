@@ -1,7 +1,7 @@
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { throttle } from 'lodash-es';
 import { observer } from 'mobx-react-lite';
@@ -45,6 +45,15 @@ function useWindowControlsOverlayVisible(): boolean {
   return windowControlsOverlayVisible;
 }
 
+const DevModeBadge = styled('div')(({ theme }) => ({
+  ...theme.typography.button,
+  display: 'inline-block',
+  padding: `0 ${theme.shape.borderRadius}px`,
+  background: theme.palette.text.primary,
+  color: theme.palette.outer.background,
+  borderRadius: theme.shape.borderRadius,
+}));
+
 export default observer(function TopBar(): JSX.Element {
   const { editorStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
@@ -82,6 +91,12 @@ export default observer(function TopBar(): JSX.Element {
       >
         <Typography variant="h6" component="h1" flexGrow={1}>
           Refinery
+          {import.meta.env.DEV && (
+            <>
+              {' '}
+              <DevModeBadge>Dev</DevModeBadge>
+            </>
+          )}
         </Typography>
         {showGenerateButton && (
           <GenerateButton editorStore={editorStore} hideWarnings />
