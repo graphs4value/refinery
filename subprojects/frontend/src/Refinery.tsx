@@ -11,7 +11,7 @@ export default function Refinery(): JSX.Element {
     // @ts-expect-error -- notistack has problems with `exactOptionalPropertyTypes
     <SnackbarProvider TransitionComponent={Grow}>
       <UpdateNotification />
-      <Stack direction="column" height="100vh" overflow="auto">
+      <Stack direction="column" height="100%" overflow="auto">
         <TopBar />
         <EditorPane />
       </Stack>

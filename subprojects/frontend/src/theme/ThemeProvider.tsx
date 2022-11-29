@@ -73,6 +73,11 @@ const typography: TypographyVariantsOptions = {
   fontWeightMedium: 600,
   fontWeightEditorNormal: 400,
   fontWeightEditorBold: 700,
+  button: {
+    // 24px line height for 14px button text means 36px high buttons.
+    // Making sure the button has whole pixel height reduces redering errors on Android.
+    lineHeight: 1.7143,
+  },
   editor: {
     fontFamily:
       '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',

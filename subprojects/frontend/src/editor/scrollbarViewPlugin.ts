@@ -22,6 +22,43 @@ export const SCROLLBAR_WIDTH = 12;
 export const ANNOTATION_WIDTH = SCROLLBAR_WIDTH / 2;
 export const MIN_ANNOTATION_HEIGHT = 1;
 
+function handleDrag(
+  element: HTMLElement,
+  callback: (movementX: number, movementY: number) => void,
+) {
+  let pointerId: number | undefined;
+  element.addEventListener('pointerdown', (event) => {
+    if (pointerId === undefined) {
+      ({ pointerId } = event);
+      element.setPointerCapture(pointerId);
+      element.classList.add(THUMB_ACTIVE_CLASS);
+    } else {
+      event.preventDefault();
+      // Avoid implicit pointer capture, see https://w3c.github.io/pointerevents/#dfn-implicit-pointer-capture
+      element.releasePointerCapture(event.pointerId);
+    }
+  });
+
+  element.addEventListener('pointermove', (event) => {
+    if (event.pointerId !== pointerId) {
+      return;
+    }
+    callback(event.movementX, event.movementY);
+    event.preventDefault();
+  });
+
+  function scrollEnd(event: PointerEvent) {
+    if (event.pointerId !== pointerId) {
+      return;
+    }
+    pointerId = undefined;
+    element.classList.remove(THUMB_ACTIVE_CLASS);
+  }
+
+  element.addEventListener('pointerup', scrollEnd, { passive: true });
+  element.addEventListener('pointercancel', scrollEnd, { passive: true });
+}
+
 export default function scrollbarViewPlugin(
   editorStore: EditorStore,
 ): ViewPlugin<PluginValue> {
@@ -63,44 +100,15 @@ export default function scrollbarViewPlugin(
 
     const thumbY = ownerDocument.createElement('div');
     thumbY.className = `${THUMB_CLASS} ${THUMB_Y_CLASS}`;
-    const scrollY = (event: MouseEvent) => {
-      scrollDOM.scrollBy({ top: event.movementY / factorY });
-      event.preventDefault();
-    };
-    const stopScrollY = () => {
-      thumbY.classList.remove(THUMB_ACTIVE_CLASS);
-      window.removeEventListener('mousemove', scrollY);
-      window.removeEventListener('mouseup', stopScrollY);
-    };
-    thumbY.addEventListener(
-      'mousedown',
-      () => {
-        thumbY.classList.add(THUMB_ACTIVE_CLASS);
-        window.addEventListener('mousemove', scrollY);
-        window.addEventListener('mouseup', stopScrollY, { passive: true });
-      },
-      { passive: true },
+    handleDrag(thumbY, (_movementX, movementY) =>
+      scrollDOM.scrollBy({ top: movementY / factorY }),
     );
     holder.appendChild(thumbY);
 
     const thumbX = ownerDocument.createElement('div');
     thumbX.className = `${THUMB_CLASS} ${THUMB_X_CLASS}`;
-    const scrollX = (event: MouseEvent) => {
-      scrollDOM.scrollBy({ left: event.movementX / factorX });
-    };
-    const stopScrollX = () => {
-      thumbX.classList.remove(THUMB_ACTIVE_CLASS);
-      window.removeEventListener('mousemove', scrollX);
-      window.removeEventListener('mouseup', stopScrollX);
-    };
-    thumbX.addEventListener(
-      'mousedown',
-      () => {
-        thumbX.classList.add(THUMB_ACTIVE_CLASS);
-        window.addEventListener('mousemove', scrollX);
-        window.addEventListener('mouseup', stopScrollX, { passive: true });
-      },
-      { passive: true },
+    handleDrag(thumbX, (movementX) =>
+      scrollDOM.scrollBy({ left: movementX / factorX }),
     );
     holder.appendChild(thumbX);
 

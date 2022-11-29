@@ -52,6 +52,8 @@ export default styled('div', {
     },
   };
 
+  const scrollerThumbOpacity = theme.palette.mode === 'dark' ? 0.16 : 0.28;
+
   const generalStyle: CSSObject = {
     background: theme.palette.background.default,
     '&, .cm-editor': {
@@ -70,6 +72,7 @@ export default styled('div', {
       zIndex: 300,
       width: 1,
       marginRight: -1,
+      pointerEvents: 'none',
     },
     '.cm-scroller': {
       color: theme.palette.text.secondary,
@@ -84,12 +87,17 @@ export default styled('div', {
     '.cm-scroller-thumb': {
       position: 'absolute',
       background: theme.palette.text.secondary,
-      opacity: theme.palette.mode === 'dark' ? 0.16 : 0.28,
+      opacity: scrollerThumbOpacity,
       transition: theme.transitions.create('opacity', {
         duration: theme.transitions.duration.shortest,
       }),
+      touchAction: 'none',
+      WebkitTapHighlightColor: 'transparent',
       '&:hover': {
         opacity: 0.75,
+        '@media (hover: none)': {
+          opacity: scrollerThumbOpacity,
+        },
       },
       '&.active': {
         opacity: 1,
@@ -445,6 +453,7 @@ export default styled('div', {
       background: theme.palette.text.primary,
       border: 'none',
       cursor: 'pointer',
+      WebkitTapHighlightColor: 'transparent',
       [theme.breakpoints.down('sm')]: {
         margin: '2px 0',
       },
@@ -471,6 +480,7 @@ export default styled('div', {
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
+      WebkitTapHighlightColor: 'transparent',
       // Use an inner `span` element to match the height of other text highlights.
       span: {
         color: theme.palette.text.secondary,

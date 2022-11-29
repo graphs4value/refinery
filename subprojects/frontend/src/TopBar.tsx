@@ -36,6 +36,7 @@ function useWindowControlsOverlayVisible(): boolean {
           'geometrychange',
           updateWindowControlsOverlayVisible,
         );
+        updateWindowControlsOverlayVisible.cancel();
       };
     }
     // Nothing to clean up if `windowControlsOverlay` is unsupported.
