@@ -84,6 +84,11 @@ export default styled('div', {
         background: 'transparent',
       },
     },
+    '.cm-scroller-track': {
+      position: 'absolute',
+      zIndex: 300,
+      touchAction: 'none',
+    },
     '.cm-scroller-thumb': {
       position: 'absolute',
       background: theme.palette.text.secondary,
@@ -105,13 +110,18 @@ export default styled('div', {
         userSelect: 'none',
       },
     },
-    '.cm-scroller-thumb-y': {
+    '.cm-scroller-track-y, .cm-scroller-thumb-y': {
       top: 0,
       right: 0,
+      width: 12,
     },
-    '.cm-scroller-thumb-x': {
+    '.cm-scroller-track-x, .cm-scroller-thumb-x': {
       left: 0,
       bottom: 0,
+      height: 12,
+    },
+    '.cm-scroller-track-x': {
+      right: 12,
     },
     '.cm-scroller-gutter-decoration': {
       position: 'absolute',
@@ -141,7 +151,6 @@ export default styled('div', {
     },
     '.cm-content': {
       ...editorFontStyle,
-      padding: '0 12px 0 0',
     },
     '.cm-activeLine': {
       background: showActiveLine
@@ -165,6 +174,7 @@ export default styled('div', {
     },
     '.cm-line': {
       position: 'relative', // For indentation highlights
+      padding: '0 12px 0 0px',
     },
   };
 
@@ -440,11 +450,11 @@ export default styled('div', {
 
   const foldStyle = {
     '.cm-foldGutter': {
-      width: 16,
+      width: 18,
     },
     '.problem-editor-foldMarker': {
       display: 'block',
-      margin: '4px 0',
+      margin: '4px 2px 4px 0',
       padding: 0,
       maskImage: svgURL(expandMoreSVG),
       maskSize: '16px 16px',
@@ -455,7 +465,7 @@ export default styled('div', {
       cursor: 'pointer',
       WebkitTapHighlightColor: 'transparent',
       [theme.breakpoints.down('sm')]: {
-        margin: '2px 0',
+        margin: '2px 2px 2px 0',
       },
     },
     '.problem-editor-foldMarker-open': {

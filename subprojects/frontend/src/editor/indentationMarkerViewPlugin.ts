@@ -61,7 +61,7 @@ class IndentationWidget extends WidgetType {
 
     const wrapper = document.createElement('span');
     wrapper.style.top = '0';
-    wrapper.style.left = '6px';
+    wrapper.style.left = '0';
     wrapper.style.position = 'absolute';
     wrapper.style.pointerEvents = 'none';
 
