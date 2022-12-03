@@ -58,7 +58,7 @@ export default observer(function TopBar(): JSX.Element {
   const { editorStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
   const { breakpoints } = useTheme();
-  const showGenerateButton = useMediaQuery(breakpoints.down('sm'));
+  const small = useMediaQuery(breakpoints.down('sm'));
 
   return (
     <AppBar
@@ -90,17 +90,13 @@ export default observer(function TopBar(): JSX.Element {
         }}
       >
         <Typography variant="h6" component="h1" flexGrow={1}>
-          Refinery
-          {import.meta.env.DEV && (
-            <>
-              {' '}
-              <DevModeBadge>Dev</DevModeBadge>
-            </>
-          )}
+          Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
-        {showGenerateButton && (
-          <GenerateButton editorStore={editorStore} hideWarnings />
-        )}
+        <GenerateButton
+          editorStore={editorStore}
+          hideWarnings={small}
+          sx={{ marginRight: 1 }}
+        />
         <ToggleDarkModeButton />
       </Toolbar>
     </AppBar>

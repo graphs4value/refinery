@@ -1,15 +1,13 @@
 import {
   alpha,
   createTheme,
-  type Components,
-  type CSSObject,
   responsiveFontSizes,
   type Theme,
   type ThemeOptions,
   ThemeProvider as MaterialUiThemeProvider,
   type TypographyStyle,
-  type TypographyVariantsOptions,
   useTheme,
+  type CSSObject,
 } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, createContext, useContext } from 'react';
@@ -22,13 +20,11 @@ interface OuterPalette {
 }
 
 interface HighlightPalette {
-  cursor: string;
   number: string;
   parameter: string;
   comment: string;
   activeLine: string;
   selection: string;
-  lineNumber: string;
   foldPlaceholder: string;
   activeLintRange: string;
   occurences: {
@@ -49,11 +45,10 @@ declare module '@mui/material/styles' {
     editor: TypographyStyle;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-shadow -- Augment imported interface.
   interface TypographyVariantsOptions {
-    fontWeightEditorNormal: number;
-    fontWeightEditorBold: number;
-    editor: TypographyStyle;
+    fontWeightEditorNormal?: number;
+    fontWeightEditorBold?: number;
+    editor?: TypographyStyle;
   }
 
   interface Palette {
@@ -62,221 +57,269 @@ declare module '@mui/material/styles' {
   }
 
   interface PaletteOptions {
-    outer: OuterPalette;
-    highlight: HighlightPalette;
+    outer?: Partial<OuterPalette>;
+    highlight?: Partial<HighlightPalette>;
   }
 }
 
-const typography: TypographyVariantsOptions = {
-  fontFamily:
-    '"InterVariable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  fontWeightMedium: 600,
-  fontWeightEditorNormal: 400,
-  fontWeightEditorBold: 700,
-  button: {
-    // 24px line height for 14px button text means 36px high buttons.
-    // Making sure the button has whole pixel height reduces redering errors on Android.
-    lineHeight: 1.7143,
-  },
-  editor: {
-    fontFamily:
-      '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
-    fontFeatureSettings: '"liga", "calt"',
-    // `rem` for JetBrains MonoVariable make the text too large in Safari.
-    fontSize: '16px',
-    fontWeight: 400,
-    lineHeight: 1.5,
-    letterSpacing: 0,
-    textRendering: 'optimizeLegibility',
-  },
-};
-
-const components: Components = {
-  MuiButton: {
-    styleOverrides: {
-      root: {
-        '&.rounded': { borderRadius: '50em' },
-        '.MuiButton-startIcon': { marginRight: 6 },
-        '.MuiButton-endIcon': { marginLeft: 6 },
+function createResponsiveTheme(
+  options: ThemeOptions,
+  overrides: ThemeOptions = {},
+): Theme {
+  const theme = createTheme({
+    ...options,
+    typography: {
+      fontFamily:
+        '"InterVariable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+      fontWeightMedium: 600,
+      fontWeightEditorNormal: 400,
+      fontWeightEditorBold: 700,
+      button: {
+        // 24px line height for 14px button text to fix browser rounding errors.
+        lineHeight: 1.714286,
       },
-      sizeSmall: { fontSize: '0.75rem' },
-      sizeLarge: { fontSize: '1rem' },
-      text: { '&.rounded': { padding: '6px 14px' } },
-      textSizeSmall: { '&.rounded': { padding: '4px 8px' } },
-      textSizeLarge: { '&.rounded': { padding: '8px 20px' } },
-      outlined: { '&.rounded': { padding: '5px 13px' } },
-      outlinedSizeSmall: { '&.rounded': { padding: '3px 9px' } },
-      outlinedSizeLarge: { '&.rounded': { padding: '7px 19px' } },
+      editor: {
+        fontFamily:
+          '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
+        fontFeatureSettings: '"liga", "calt"',
+        // `rem` for JetBrains MonoVariable make the text too large in Safari.
+        fontSize: '16px',
+        fontWeight: 400,
+        lineHeight: 1.5,
+        letterSpacing: 0,
+        textRendering: 'optimizeLegibility',
+      },
+      ...(options.typography ?? {}),
     },
-  },
-  MuiToggleButton: {
-    styleOverrides: {
-      root: { '&.iconOnly': { borderRadius: '100%' } },
-    },
-  },
-  MuiToggleButtonGroup: {
-    styleOverrides: {
-      root: {
-        '&.rounded .MuiToggleButtonGroup-groupedHorizontal': {
-          ':first-of-type': {
-            paddingLeft: 15,
-            borderRadius: '50em 0 0 50em',
+  });
+
+  function shadedButtonStyle(color: string): CSSObject {
+    const opacity = theme.palette.action.focusOpacity;
+    return {
+      background: alpha(color, opacity),
+      ':hover': {
+        background: alpha(color, opacity + theme.palette.action.hoverOpacity),
+        '@media(hover: none)': {
+          background: alpha(color, opacity),
+        },
+      },
+      '&.Mui-disabled': {
+        background: alpha(theme.palette.text.disabled, opacity),
+      },
+    };
+  }
+
+  const themeWithComponents = createTheme(theme, {
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            overscrollBehavior: 'contain',
           },
-          ':last-of-type': {
-            paddingRight: 15,
-            borderRadius: '0 50em 50em 0',
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            '&.rounded': { borderRadius: '50em' },
+            '.MuiButton-startIcon': { marginRight: 6 },
+            '.MuiButton-endIcon': { marginLeft: 6 },
+            '&.shaded': {
+              ...shadedButtonStyle(theme.palette.text.primary),
+              ...(
+                [
+                  'primary',
+                  'secondary',
+                  'error',
+                  'warning',
+                  'success',
+                  'info',
+                ] as const
+              ).reduce((accumulator: CSSObject, color) => {
+                const colorCapitalized =
+                  (color[0] ?? '').toUpperCase() + color.substring(1);
+                return {
+                  ...accumulator,
+                  [`&.MuiButton-text${colorCapitalized}, &.MuiButton-outlined${colorCapitalized}`]:
+                    shadedButtonStyle(theme.palette[color].main),
+                };
+              }, {}),
+            },
           },
-          '&.MuiToggleButton-sizeSmall': {
-            ':first-of-type': { paddingLeft: 9 },
-            ':last-of-type': { paddingRight: 9 },
+          sizeSmall: { fontSize: '0.75rem' },
+          sizeLarge: { fontSize: '1rem' },
+          text: { '&.rounded': { padding: '6px 14px' } },
+          textSizeSmall: { '&.rounded': { padding: '4px 8px' } },
+          textSizeLarge: { '&.rounded': { padding: '8px 20px' } },
+          outlined: { '&.rounded': { padding: '5px 13px' } },
+          outlinedSizeSmall: { '&.rounded': { padding: '3px 9px' } },
+          outlinedSizeLarge: { '&.rounded': { padding: '7px 19px' } },
+        },
+      },
+      MuiToggleButton: {
+        styleOverrides: {
+          root: { '&.iconOnly': { borderRadius: '100%' } },
+        },
+      },
+      MuiToggleButtonGroup: {
+        styleOverrides: {
+          root: {
+            '&.rounded .MuiToggleButtonGroup-groupedHorizontal': {
+              ':first-of-type': {
+                paddingLeft: 15,
+                borderRadius: '50em 0 0 50em',
+              },
+              ':last-of-type': {
+                paddingRight: 15,
+                borderRadius: '0 50em 50em 0',
+              },
+              '&.MuiToggleButton-sizeSmall': {
+                ':first-of-type': { paddingLeft: 9 },
+                ':last-of-type': { paddingRight: 9 },
+              },
+              '&.MuiToggleButton-sizeLarge': {
+                ':first-of-type': { paddingLeft: 21 },
+                ':last-of-type': { paddingRight: 21 },
+              },
+            },
           },
-          '&.MuiToggleButton-sizeLarge': {
-            ':first-of-type': { paddingLeft: 21 },
-            ':last-of-type': { paddingRight: 21 },
+        },
+      },
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            background: alpha('#212121', 0.93),
+            color: '#fff',
+          },
+          arrow: {
+            color: alpha('#212121', 0.93),
           },
         },
       },
     },
-  },
-  MuiTooltip: {
-    styleOverrides: {
-      tooltip: {
-        background: alpha('#212121', 0.93),
-        color: '#fff',
-      },
-      arrow: {
-        color: alpha('#212121', 0.93),
-      },
-    },
-  },
-};
+  });
 
-function createResponsiveTheme(options: ThemeOptions): Theme {
-  return responsiveFontSizes(createTheme(options));
+  const themeWithOverrides = createTheme(themeWithComponents, overrides);
+
+  return responsiveFontSizes(themeWithOverrides);
 }
 
-const lightTheme = createResponsiveTheme({
-  typography,
-  components,
-  palette: {
-    mode: 'light',
-    primary: { main: '#038a99' },
-    secondary: { main: '#e45649' },
-    error: { main: '#ca1243' },
-    warning: { main: '#c18401' },
-    success: { main: '#50a14f' },
-    info: { main: '#4078f2' },
-    background: {
-      default: '#fff',
-      paper: '#fff',
-    },
-    text: {
-      primary: '#19202b',
-      secondary: '#696c77',
-      disabled: '#a0a1a7',
-    },
-    divider: alpha('#19202b', 0.16),
-    outer: {
-      background: '#f5f5f5',
-      border: '#c8c8c8',
-    },
-    highlight: {
-      cursor: '#4078f2',
-      number: '#0084bc',
-      parameter: '#6a3e3e',
-      comment: '#a0a1a7',
-      activeLine: '#f5f5f5',
-      selection: '#c8e4fb',
-      lineNumber: '#a0a1a7',
-      foldPlaceholder: alpha('#19202b', 0.08),
-      activeLintRange: alpha('#f2a60d', 0.28),
-      occurences: {
-        read: alpha('#19202b', 0.16),
-        write: alpha('#19202b', 0.16),
-      },
-      search: {
-        match: '#00bcd4',
-        selected: '#d500f9',
-        contrastText: '#ffffff',
-      },
-    },
-  },
-});
+const lightTheme = (() => {
+  const primaryText = '#19202b';
+  const disabledText = '#a0a1a7';
+  const darkBackground = '#f5f5f5';
 
-const darkTheme = createResponsiveTheme({
-  typography: {
-    ...typography,
-    fontWeightEditorNormal: 350,
-    fontWeightEditorBold: 650,
-  },
-  components: {
-    ...components,
-    MuiSnackbarContent: {
-      styleOverrides: {
-        root: {
-          color: '#f00',
-          backgroundColor: '#000',
-          border: `10px solid #ff0`,
+  return createResponsiveTheme({
+    palette: {
+      mode: 'light',
+      primary: { main: '#038a99' },
+      secondary: { main: '#e45649' },
+      error: { main: '#ca1243' },
+      warning: { main: '#c18401' },
+      success: { main: '#50a14f' },
+      info: { main: '#4078f2' },
+      background: {
+        default: '#fff',
+        paper: '#fff',
+      },
+      text: {
+        primary: primaryText,
+        secondary: '#696c77',
+        disabled: disabledText,
+      },
+      divider: alpha(primaryText, 0.16),
+      outer: {
+        background: darkBackground,
+        border: '#c8c8c8',
+      },
+      highlight: {
+        number: '#0084bc',
+        parameter: '#6a3e3e',
+        comment: disabledText,
+        activeLine: darkBackground,
+        selection: '#c8e4fb',
+        foldPlaceholder: alpha(primaryText, 0.08),
+        activeLintRange: alpha('#f2a60d', 0.28),
+        occurences: {
+          read: alpha(primaryText, 0.16),
+          write: alpha(primaryText, 0.16),
+        },
+        search: {
+          match: '#00bcd4',
+          selected: '#d500f9',
+          contrastText: '#fff',
         },
       },
     },
-    MuiTooltip: {
-      ...(components.MuiTooltip || {}),
-      styleOverrides: {
-        ...(components.MuiTooltip?.styleOverrides || {}),
-        tooltip: {
-          ...((components.MuiTooltip?.styleOverrides?.tooltip as
-            | CSSObject
-            | undefined) || {}),
-          color: '#ebebff',
+  });
+})();
+
+const darkTheme = (() => {
+  const primaryText = '#ebebff';
+  const secondaryText = '#abb2bf';
+  const darkBackground = '#21252b';
+
+  return createResponsiveTheme(
+    {
+      typography: {
+        fontWeightEditorNormal: 350,
+        fontWeightEditorBold: 650,
+      },
+      palette: {
+        mode: 'dark',
+        primary: { main: '#56b6c2' },
+        secondary: { main: '#be5046' },
+        error: { main: '#e06c75' },
+        warning: { main: '#e5c07b' },
+        success: { main: '#98c379' },
+        info: { main: '#61afef' },
+        background: {
+          default: '#282c34',
+          paper: darkBackground,
+        },
+        text: {
+          primary: primaryText,
+          secondary: secondaryText,
+          disabled: '#5c6370',
+        },
+        divider: alpha(secondaryText, 0.24),
+        outer: {
+          background: darkBackground,
+          border: '#181a1f',
+        },
+        highlight: {
+          number: '#6188a6',
+          parameter: '#c8ae9d',
+          comment: '#7f848e',
+          activeLine: '#2c313c',
+          selection: '#404859',
+          foldPlaceholder: alpha(primaryText, 0.12),
+          activeLintRange: alpha('#fbc346', 0.28),
+          occurences: {
+            read: alpha(primaryText, 0.14),
+            write: alpha(primaryText, 0.14),
+          },
+          search: {
+            match: '#33eaff',
+            selected: '#dd33fa',
+            contrastText: darkBackground,
+          },
         },
       },
     },
-  },
-  palette: {
-    mode: 'dark',
-    primary: { main: '#56b6c2' },
-    secondary: { main: '#be5046' },
-    error: { main: '#e06c75' },
-    warning: { main: '#e5c07b' },
-    success: { main: '#98c379' },
-    info: { main: '#61afef' },
-    background: {
-      default: '#282c34',
-      paper: '#21252b',
-    },
-    text: {
-      primary: '#ebebff',
-      secondary: '#abb2bf',
-      disabled: '#5c6370',
-    },
-    divider: alpha('#abb2bf', 0.24),
-    outer: {
-      background: '#21252b',
-      border: '#181a1f',
-    },
-    highlight: {
-      cursor: '#61afef',
-      number: '#6188a6',
-      parameter: '#c8ae9d',
-      comment: '#7f848e',
-      activeLine: '#2c313c',
-      selection: '#404859',
-      lineNumber: '#5c6370',
-      foldPlaceholder: alpha('#ebebff', 0.12),
-      activeLintRange: alpha('#fbc346', 0.28),
-      occurences: {
-        read: alpha('#ebebff', 0.14),
-        write: alpha('#ebebff', 0.14),
-      },
-      search: {
-        match: '#33eaff',
-        selected: '#dd33fa',
-        contrastText: '#21252b',
+    {
+      components: {
+        MuiTooltip: {
+          styleOverrides: {
+            tooltip: {
+              color: primaryText,
+            },
+          },
+        },
       },
     },
-  },
-});
+  );
+})();
 
 const ContrastThemeContext = createContext<Theme | undefined>(undefined);
 

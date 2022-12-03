@@ -2,8 +2,6 @@ import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -12,7 +10,6 @@ import { useRootStore } from '../RootStoreProvider';
 import ConnectionStatusNotification from './ConnectionStatusNotification';
 import EditorArea from './EditorArea';
 import EditorButtons from './EditorButtons';
-import GenerateButton from './GenerateButton';
 import SearchPanelPortal from './SearchPanelPortal';
 
 function EditorLoading(): JSX.Element {
@@ -34,14 +31,11 @@ function EditorLoading(): JSX.Element {
 
 export default observer(function EditorPane(): JSX.Element {
   const { editorStore } = useRootStore();
-  const { breakpoints } = useTheme();
-  const showGenerateButton = useMediaQuery(breakpoints.up('sm'));
 
   return (
     <Stack direction="column" flexGrow={1} flexShrink={1} overflow="auto">
       <Toolbar variant="dense">
         <EditorButtons editorStore={editorStore} />
-        {showGenerateButton && <GenerateButton editorStore={editorStore} />}
       </Toolbar>
       <Box display="flex" flexGrow={1} flexShrink={1} overflow="auto">
         {editorStore === undefined ? (

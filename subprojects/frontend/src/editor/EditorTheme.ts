@@ -161,7 +161,7 @@ export default styled('div', {
       background: 'transparent',
     },
     '.cm-cursor, .cm-cursor-primary': {
-      borderLeft: `2px solid ${theme.palette.highlight.cursor}`,
+      borderLeft: `2px solid ${theme.palette.info.main}`,
     },
     '.cm-selectionBackground': {
       background: theme.palette.highlight.selection,
@@ -265,7 +265,7 @@ export default styled('div', {
     },
     '.cm-indentation-marker': {
       display: 'inline-block',
-      boxShadow: `1px 0 0 ${theme.palette.highlight.lineNumber} inset`,
+      boxShadow: `1px 0 0 ${theme.palette.text.disabled} inset`,
       '&.active': {
         boxShadow: `1px 0 0 ${theme.palette.text.primary} inset`,
       },
@@ -273,7 +273,7 @@ export default styled('div', {
     '.cm-scroller-selection': {
       position: 'absolute',
       right: 0,
-      boxShadow: `0 2px 0 ${theme.palette.highlight.cursor} inset`,
+      boxShadow: `0 2px 0 ${theme.palette.info.main} inset`,
       zIndex: 200,
     },
     '.cm-scroller-occurrence': {
@@ -286,7 +286,7 @@ export default styled('div', {
   const lineNumberStyle: CSSObject = {
     '.cm-lineNumbers': {
       ...editorFontStyle,
-      color: theme.palette.highlight.lineNumber,
+      color: theme.palette.text.disabled,
       ...(!showLineNumbers && {
         display: 'none !important',
       }),
@@ -426,7 +426,7 @@ export default styled('div', {
           '&[aria-selected="true"]': {
             color: theme.palette.text.primary,
             background: 'transparent',
-            fontWeight: theme.typography.fontWeightMedium,
+            fontWeight: theme.typography.fontWeightBold,
           },
           ':hover': {
             background: alpha(

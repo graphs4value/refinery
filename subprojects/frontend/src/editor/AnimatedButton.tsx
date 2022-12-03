@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
+import { styled, type SxProps, type Theme } from '@mui/material/styles';
 import { type ReactNode, useLayoutEffect, useState } from 'react';
 
 const AnimatedButtonBase = styled(Button, {
@@ -9,7 +9,9 @@ const AnimatedButtonBase = styled(Button, {
   // Transition copied from `@mui/material/Button`.
   const colorTransition = theme.transitions.create(
     ['background-color', 'box-shadow', 'border-color', 'color'],
-    { duration: theme.transitions.duration.short },
+    {
+      duration: theme.transitions.duration.short,
+    },
   );
   return {
     width,
@@ -19,7 +21,6 @@ const AnimatedButtonBase = styled(Button, {
       ${colorTransition},
       ${theme.transitions.create(['width'], {
         duration: theme.transitions.duration.short,
-        easing: theme.transitions.easing.easeOut,
       })}
     `,
     '@media (prefers-reduced-motion: reduce)': {
@@ -34,6 +35,7 @@ export default function AnimatedButton({
   color,
   disabled,
   startIcon,
+  sx,
   children,
 }: {
   'aria-label'?: string;
@@ -41,6 +43,7 @@ export default function AnimatedButton({
   color: 'error' | 'warning' | 'primary' | 'inherit';
   disabled?: boolean;
   startIcon: JSX.Element;
+  sx?: SxProps<Theme> | undefined;
   children?: ReactNode;
 }): JSX.Element {
   const [width, setWidth] = useState<string | undefined>();
@@ -65,9 +68,9 @@ export default function AnimatedButton({
     <AnimatedButtonBase
       {...(ariaLabel === undefined ? {} : { 'aria-label': ariaLabel })}
       {...(onClick === undefined ? {} : { onClick })}
+      {...(sx === undefined ? {} : { sx })}
       color={color}
-      variant="outlined"
-      className="rounded"
+      className="rounded shaded"
       disabled={disabled ?? false}
       startIcon={startIcon}
       width={width === undefined ? 'auto' : `calc(${width} + 50px)`}
@@ -91,5 +94,6 @@ AnimatedButton.defaultProps = {
   'aria-label': undefined,
   onClick: undefined,
   disabled: false,
+  sx: undefined,
   children: undefined,
 };
