@@ -1,11 +1,28 @@
 package tools.refinery.store.query.atom;
 
-public sealed interface CallPolarity permits SimplePolarity, CountingPolarity {
-	boolean isPositive();
+public enum CallPolarity {
+	POSITIVE(true, false),
+	NEGATIVE(false, false),
+	TRANSITIVE(true, true);
 
-	boolean isTransitive();
+	private final boolean positive;
 
-	static CallPolarity fromBoolean(boolean positive) {
-		return positive ? SimplePolarity.POSITIVE : SimplePolarity.NEGATIVE;
+	private final boolean transitive;
+
+	CallPolarity(boolean positive, boolean transitive) {
+		this.positive = positive;
+		this.transitive = transitive;
+	}
+
+	public boolean isPositive() {
+		return positive;
+	}
+
+	public boolean isTransitive() {
+		return transitive;
+	}
+
+	public static CallPolarity fromBoolean(boolean positive) {
+		return positive ? POSITIVE : NEGATIVE;
 	}
 }

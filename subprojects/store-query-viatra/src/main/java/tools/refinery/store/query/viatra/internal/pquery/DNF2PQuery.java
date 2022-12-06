@@ -85,8 +85,6 @@ public class DNF2PQuery {
 			translateCallAtom(callAtom, body);
 		} else if (constraint instanceof ConstantAtom constantAtom) {
 			translateConstantAtom(constantAtom, body);
-		} else if (constraint instanceof CountNotEqualsAtom<?> countNotEqualsAtom) {
-			translateCountNotEqualsAtom(countNotEqualsAtom, body);
 		} else {
 			throw new IllegalArgumentException("Unknown constraint: " + constraint.toString());
 		}
@@ -128,41 +126,16 @@ public class DNF2PQuery {
 		var variablesTuple = translateSubstitution(callAtom.getSubstitution(), body);
 		var translatedReferred = translate(target);
 		var polarity = callAtom.getPolarity();
-		if (polarity instanceof SimplePolarity simplePolarity) {
-			switch (simplePolarity) {
-			case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
-			case TRANSITIVE -> new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
-			case NEGATIVE -> new NegativePatternCall(body, variablesTuple, translatedReferred);
-			default -> throw new IllegalArgumentException("Unknown BasicCallKind: " + simplePolarity);
-			}
-		} else if (polarity instanceof CountingPolarity countingPolarity) {
-			var countVariableName = DNFUtils.generateUniqueName("count");
-			var countPVariable = body.getOrCreateVariableByName(countVariableName);
-			new PatternMatchCounter(body, variablesTuple, translatedReferred, countPVariable);
-			new ExpressionEvaluation(body, new CountExpressionEvaluator(countVariableName, countingPolarity), null);
-		} else {
-			throw new IllegalArgumentException("Unknown CallKind: " + polarity);
+		switch (polarity) {
+		case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
+		case TRANSITIVE -> new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
+		case NEGATIVE -> new NegativePatternCall(body, variablesTuple, translatedReferred);
+		default -> throw new IllegalArgumentException("Unknown polarity: " + polarity);
 		}
 	}
 
 	private void translateConstantAtom(ConstantAtom constantAtom, PBody body) {
 		var variable = body.getOrCreateVariableByName(constantAtom.variable().getUniqueName());
 		new ConstantValue(body, variable, constantAtom.nodeId());
-	}
-
-	private void translateCountNotEqualsAtom(CountNotEqualsAtom<?> countNotEqualsAtom, PBody body) {
-		if (!(countNotEqualsAtom.mayTarget() instanceof DNF mayTarget) ||
-				!(countNotEqualsAtom.mustTarget() instanceof DNF mustTarget)) {
-			throw new IllegalArgumentException("Only calls to DNF are supported");
-		}
-		var variablesTuple = translateSubstitution(countNotEqualsAtom.substitution(), body);
-		var mayCountName = DNFUtils.generateUniqueName("countMay");
-		var mayCountVariable = body.getOrCreateVariableByName(mayCountName);
-		new PatternMatchCounter(body, variablesTuple, translate(mayTarget), mayCountVariable);
-		var mustCountName = DNFUtils.generateUniqueName("countMust");
-		var mustCountVariable = body.getOrCreateVariableByName(mustCountName);
-		new PatternMatchCounter(body, variablesTuple, translate(mustTarget), mustCountVariable);
-		new ExpressionEvaluation(body, new CountNotEqualsExpressionEvaluator(countNotEqualsAtom.must(),
-				countNotEqualsAtom.threshold(), mayCountName, mustCountName), null);
 	}
 }

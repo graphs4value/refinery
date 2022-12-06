@@ -57,8 +57,6 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 						validateRelationAtom(relationViews, dnfPredicate, relationViewAtom);
 					} else if (atom instanceof CallAtom<?> queryCallAtom) {
 						validatePredicateAtom(predicates, dnfPredicate, queryCallAtom);
-					} else if (atom instanceof CountNotEqualsAtom<?> countNotEqualsAtom) {
-						validateCountNotEqualsAtom(predicates, dnfPredicate, countNotEqualsAtom);
 					} else if (!(atom instanceof EquivalenceAtom || atom instanceof ConstantAtom)) {
 						throw new IllegalArgumentException("Unknown constraint: " + atom.toString());
 					}
@@ -89,11 +87,6 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 		validatePredicateReference(predicates, dnfPredicate, queryCallAtom.getTarget());
 	}
 
-	private void validateCountNotEqualsAtom(Set<DNF> predicates, DNF dnfPredicate,
-											CountNotEqualsAtom<?> countNotEqualsAtom) {
-		validatePredicateReference(predicates, dnfPredicate, countNotEqualsAtom.mayTarget());
-		validatePredicateReference(predicates, dnfPredicate, countNotEqualsAtom.mustTarget());
-	}
 
 	private Map<DNF, GenericQuerySpecification<RawPatternMatcher>> initPredicates(Set<DNF> predicates) {
 		Map<DNF, GenericQuerySpecification<RawPatternMatcher>> result = new HashMap<>();
