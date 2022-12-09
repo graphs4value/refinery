@@ -4,9 +4,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { lezer } from '@lezer/generator/rollup';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import { minify } from 'html-minifier-terser';
-import { defineConfig, PluginOption } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import injectPreload from 'vite-plugin-inject-preload';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -104,8 +104,8 @@ export default defineConfig({
       workbox: {
         globPatterns: [
           '**/*.{css,html,js}',
-          'inter-latin-variable-wghtOnly-normal.*.woff2',
-          'jetbrains-mono-latin-variable-wghtOnly-{normal,italic}.*.woff2',
+          'inter-latin-variable-wghtOnly-normal-*.woff2',
+          'jetbrains-mono-latin-variable-wghtOnly-{normal,italic}-*.woff2',
         ],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
         navigateFallbackDenylist: [/^\/xtext-service/],
