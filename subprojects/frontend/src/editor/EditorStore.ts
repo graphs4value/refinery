@@ -16,12 +16,12 @@ import {
   type EditorState,
 } from '@codemirror/state';
 import { type Command, EditorView } from '@codemirror/view';
-import { makeAutoObservable, observable } from 'mobx';
+import { makeAutoObservable, observable, runInAction } from 'mobx';
 import { nanoid } from 'nanoid';
 
 import type PWAStore from '../PWAStore';
 import getLogger from '../utils/getLogger';
-import XtextClient from '../xtext/XtextClient';
+import type XtextClient from '../xtext/XtextClient';
 
 import LintPanelStore from './LintPanelStore';
 import SearchPanelStore from './SearchPanelStore';
@@ -40,7 +40,7 @@ export default class EditorStore {
 
   state: EditorState;
 
-  private readonly client: XtextClient;
+  private client: XtextClient | undefined;
 
   view: EditorView | undefined;
 
@@ -50,51 +50,63 @@ export default class EditorStore {
 
   showLineNumbers = false;
 
+  disposed = false;
+
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
     this.state = createEditorState(initialValue, this);
-    this.client = new XtextClient(this, pwaStore);
     this.searchPanel = new SearchPanelStore(this);
     this.lintPanel = new LintPanelStore(this);
+    (async () => {
+      const { default: LazyXtextClient } = await import('../xtext/XtextClient');
+      runInAction(() => {
+        if (this.disposed) {
+          return;
+        }
+        this.client = new LazyXtextClient(this, pwaStore);
+        this.client.start();
+      });
+    })().catch((error) => {
+      log.error('Failed to load XtextClient', error);
+    });
     makeAutoObservable<EditorStore, 'client'>(this, {
       id: false,
       state: observable.ref,
-      client: false,
+      client: observable.ref,
       view: observable.ref,
       searchPanel: false,
       lintPanel: false,
       contentAssist: false,
       formatText: false,
     });
-    this.client.start();
   }
 
   get opened(): boolean {
-    return this.client.webSocketClient.opened;
+    return this.client?.webSocketClient.opened ?? false;
   }
 
   get opening(): boolean {
-    return this.client.webSocketClient.opening;
+    return this.client?.webSocketClient.opening ?? true;
   }
 
   get disconnectedByUser(): boolean {
-    return this.client.webSocketClient.disconnectedByUser;
+    return this.client?.webSocketClient.disconnectedByUser ?? false;
   }
 
   get networkMissing(): boolean {
-    return this.client.webSocketClient.networkMissing;
+    return this.client?.webSocketClient.networkMissing ?? false;
   }
 
   get connectionErrors(): string[] {
-    return this.client.webSocketClient.errors;
+    return this.client?.webSocketClient.errors ?? [];
   }
 
   connect(): void {
-    this.client.webSocketClient.connect();
+    this.client?.webSocketClient.connect();
   }
 
   disconnect(): void {
-    this.client.webSocketClient.disconnect();
+    this.client?.webSocketClient.disconnect();
   }
 
   setDarkMode(darkMode: boolean): void {
@@ -158,7 +170,7 @@ export default class EditorStore {
   private dispatchTransactionWithoutView(tr: Transaction): void {
     log.trace('Editor transaction', tr);
     this.state = tr.state;
-    this.client.onTransaction(tr);
+    this.client?.onTransaction(tr);
   }
 
   doCommand(command: Command): boolean {
@@ -216,7 +228,12 @@ export default class EditorStore {
     this.dispatch(setOccurrences(write, read));
   }
 
-  contentAssist(context: CompletionContext): Promise<CompletionResult> {
+  async contentAssist(
+    context: CompletionContext,
+  ): Promise<CompletionResult | null> {
+    if (this.client === undefined) {
+      return null;
+    }
     return this.client.contentAssist(context);
   }
 
@@ -252,11 +269,15 @@ export default class EditorStore {
   }
 
   formatText(): boolean {
+    if (this.client === undefined) {
+      return false;
+    }
     this.client.formatText();
     return true;
   }
 
   dispose(): void {
-    this.client.dispose();
+    this.client?.dispose();
+    this.disposed = true;
   }
 }
