@@ -2114,6 +2114,7 @@ __metadata:
     "@types/eslint": ^8.4.10
     "@types/html-minifier-terser": ^7.0.0
     "@types/lodash-es": ^4.17.6
+    "@types/micromatch": ^4.0.2
     "@types/ms": ^0.7.31
     "@types/node": ^18.11.13
     "@types/prettier": ^2.7.1
@@ -2141,6 +2142,7 @@ __metadata:
     lodash-es: ^4.17.21
     loglevel: ^1.8.1
     loglevel-plugin-prefix: ^0.8.4
+    micromatch: ^4.0.5
     mobx: ^6.7.0
     mobx-react-lite: ^3.4.0
     ms: ^2.1.3
@@ -2151,7 +2153,6 @@ __metadata:
     react-dom: ^18.2.0
     typescript: 4.9.3
     vite: ^4.0.0
-    vite-plugin-inject-preload: ^1.1.1
     vite-plugin-pwa: ^0.13.3
     workbox-window: ^6.5.4
     xstate: ^4.35.0
@@ -2375,6 +2376,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/braces@npm:*":
+  version: 3.0.1
+  resolution: "@types/braces@npm:3.0.1"
+  checksum: 3749f7673a03d498ddb2f199b222bb403e53e78ac05a599c757c2049703ece802602c78640af0ff826be0fd2ea8b03daff04ce18806ed739592302195b7a569b
+  languageName: node
+  linkType: hard
+
 "@types/eslint@npm:^8.4.10":
   version: 8.4.10
   resolution: "@types/eslint@npm:8.4.10"
@@ -2433,6 +2441,15 @@ __metadata:
   version: 4.14.184
   resolution: "@types/lodash@npm:4.14.184"
   checksum: 6d9a4d67f7f9d0ec3fd21174f3dd3d00629dc1227eb469450eace53adbc1f7e2330699c28d0fe093e5f0fef0f0e763098be1f779268857213224af082b62be21
+  languageName: node
+  linkType: hard
+
+"@types/micromatch@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "@types/micromatch@npm:4.0.2"
+  dependencies:
+    "@types/braces": "*"
+  checksum: 6c678e9c625d5b422c6d2c1001da1c502ecc4457248343bbd324b79fd798a6563e336a4d79630d80e8202312013dd7cf8b4440afa644d04477abd26fde6fba24
   languageName: node
   linkType: hard
 
@@ -5248,29 +5265,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromatch@npm:^4.0.4":
+"micromatch@npm:^4.0.4, micromatch@npm:^4.0.5":
   version: 4.0.5
   resolution: "micromatch@npm:4.0.5"
   dependencies:
     braces: ^3.0.2
     picomatch: ^2.3.1
   checksum: 02a17b671c06e8fefeeb6ef996119c1e597c942e632a21ef589154f23898c9c6a9858526246abb14f8bca6e77734aa9dcf65476fca47cedfb80d9577d52843fc
-  languageName: node
-  linkType: hard
-
-"mime-db@npm:1.52.0":
-  version: 1.52.0
-  resolution: "mime-db@npm:1.52.0"
-  checksum: 0d99a03585f8b39d68182803b12ac601d9c01abfa28ec56204fa330bc9f3d1c5e14beb049bafadb3dbdf646dfb94b87e24d4ec7b31b7279ef906a8ea9b6a513f
-  languageName: node
-  linkType: hard
-
-"mime-types@npm:^2.1.35":
-  version: 2.1.35
-  resolution: "mime-types@npm:2.1.35"
-  dependencies:
-    mime-db: 1.52.0
-  checksum: 89a5b7f1def9f3af5dad6496c5ed50191ae4331cc5389d7c521c8ad28d5fdad2d06fd81baf38fed813dc4e46bb55c8145bb0ff406330818c9cf712fb2e9b3836
   languageName: node
   linkType: hard
 
@@ -6868,17 +6869,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"vite-plugin-inject-preload@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "vite-plugin-inject-preload@npm:1.1.1"
-  dependencies:
-    mime-types: ^2.1.35
-  peerDependencies:
-    vite: ^2.9.0 || ^3.0.0-0
-  checksum: a39b0bfa7b37253d96f6837064d1192847fb0b05ce9346091880d9517070f58df84ef710609d1a828df7a0af182018bf0f80b62ac42ff7a8e5dd3cd2040e6de5
   languageName: node
   linkType: hard
 

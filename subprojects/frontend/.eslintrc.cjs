@@ -4,6 +4,7 @@ const path = require('node:path');
 const project = [
   path.join(__dirname, 'tsconfig.json'),
   path.join(__dirname, 'tsconfig.node.json'),
+  path.join(__dirname, 'tsconfig.shared.json'),
 ];
 
 /** @type {import('eslint').Linter.Config} */
@@ -86,7 +87,12 @@ module.exports = {
       },
     },
     {
-      files: ['.eslintrc.cjs', 'prettier.config.cjs', 'vite.config.ts'],
+      files: [
+        '.eslintrc.cjs',
+        'config/*.ts',
+        'prettier.config.cjs',
+        'vite.config.ts',
+      ],
       env: {
         browser: false,
         node: true,

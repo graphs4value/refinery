@@ -10,8 +10,12 @@
     "src",
     "types"
   ],
-  "exclude": ["types/node"],
+  "exclude": [
+    "src/xtext/BackendConfig.ts",
+    "types/node"
+  ],
   "references": [
-    { "path": "./tsconfig.node.json" }
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.shared.json" }
   ]
 }
