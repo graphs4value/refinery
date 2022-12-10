@@ -1,6 +1,6 @@
 [versions]
 eclipseCollections = "11.1.0"
-jetty = "12.0.0.alpha2"
+jetty = "12.0.0.alpha3"
 jmh = "1.36"
 junit = "5.9.1"
 mockito = "4.9.0"

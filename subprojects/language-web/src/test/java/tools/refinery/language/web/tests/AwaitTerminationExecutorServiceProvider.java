@@ -13,7 +13,7 @@ public class AwaitTerminationExecutorServiceProvider extends VirtualThreadExecut
 
 	@Override
 	protected ExecutorService createInstance(String key) {
-		var instance = new RestartableCachedThreadPool();
+		var instance = new RestartableCachedThreadPool(() -> super.createInstance(key));
 		synchronized (servicesToShutDown) {
 			servicesToShutDown.add(instance);
 		}

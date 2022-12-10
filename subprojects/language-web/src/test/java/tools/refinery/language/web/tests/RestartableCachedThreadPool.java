@@ -1,5 +1,6 @@
 package tools.refinery.language.web.tests;
 
+import com.google.inject.Provider;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +14,17 @@ public class RestartableCachedThreadPool implements ExecutorService {
 
 	private ExecutorService delegate;
 
-	public RestartableCachedThreadPool() {
-		delegate = createExecutorService();
+	private final Provider<ExecutorService> executorServiceProvider;
+
+	public RestartableCachedThreadPool(Provider<ExecutorService> executorServiceProvider) {
+		this.executorServiceProvider = executorServiceProvider;
+		delegate = executorServiceProvider.get();
 	}
 
 	public void waitForAllTasksToFinish() {
 		delegate.shutdown();
 		waitForTermination();
-		delegate = createExecutorService();
+		delegate = executorServiceProvider.get();
 	}
 
 	public void waitForTermination() {
@@ -33,10 +37,6 @@ public class RestartableCachedThreadPool implements ExecutorService {
 		if (!result) {
 			throw new IllegalStateException("Failed to shut down Xtext thread pool");
 		}
-	}
-
-	protected ExecutorService createExecutorService() {
-		return Executors.newCachedThreadPool();
 	}
 
 	@Override

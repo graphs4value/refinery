@@ -14,9 +14,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.xtext.testing.GlobalRegistries;
 import org.eclipse.xtext.testing.GlobalRegistries.GlobalStateMemento;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tools.refinery.language.web.tests.WebSocketIntegrationTestClient;
@@ -25,6 +23,7 @@ import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -34,18 +33,29 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ProblemWebSocketServletIntegrationTest {
-	private static final int SERVER_PORT = 28080;
+	private static final String HOSTNAME = "127.0.0.1";
 
 	private static final String SERVLET_URI = "/xtext-service";
 
 	private GlobalStateMemento stateBeforeInjectorCreation;
+
+	private TestInfo testInfo;
+
+	private int serverPort;
 
 	private Server server;
 
 	private WebSocketClient client;
 
 	@BeforeEach
-	void beforeEach() throws Exception {
+	void beforeEach(TestInfo testInfo) throws Exception {
+		this.testInfo = testInfo;
+		// Find a free port for running the test. See e.g., https://stackoverflow.com/a/65937797
+		try (var serverSocket = new ServerSocket()) {
+			serverSocket.setReuseAddress(true);
+			serverSocket.bind(new InetSocketAddress(HOSTNAME, 0));
+			serverPort = serverSocket.getLocalPort();
+		}
 		stateBeforeInjectorCreation = GlobalRegistries.makeCopyOfGlobalState();
 		client = new WebSocketClient();
 		client.start();
@@ -147,7 +157,7 @@ class ProblemWebSocketServletIntegrationTest {
 		}
 	}
 
-	@ParameterizedTest(name = "Origin: {0}")
+	@ParameterizedTest(name = "validOriginTest(\"{0}\")")
 	@ValueSource(strings = { "https://refinery.example", "https://refinery.example:443", "HTTPS://REFINERY.EXAMPLE" })
 	void validOriginTest(String origin) {
 		startServer("https://refinery.example,https://refinery.example:443");
@@ -176,8 +186,9 @@ class ProblemWebSocketServletIntegrationTest {
 	}
 
 	private void startServer(String allowedOrigins) {
-		server = new Server(new InetSocketAddress(SERVER_PORT));
-		ServerLauncher.enableVirtualThreads(server);
+		var testName = getClass().getSimpleName() + "-" + testInfo.getDisplayName();
+		var listenAddress = new InetSocketAddress(HOSTNAME, serverPort);
+		server = VirtualThreadUtils.newServerWithVirtualThreadsThreadPool(testName, listenAddress);
 		var handler = new ServletContextHandler();
 		var holder = new ServletHolder(ProblemWebSocketServlet.class);
 		if (allowedOrigins != null) {
@@ -201,7 +212,8 @@ class ProblemWebSocketServletIntegrationTest {
 		upgradeRequest.setSubProtocols(subProtocols);
 		CompletableFuture<Session> sessionFuture;
 		try {
-			sessionFuture = client.connect(webSocketClient, URI.create("ws://localhost:" + SERVER_PORT + SERVLET_URI),
+			sessionFuture = client.connect(webSocketClient,
+					URI.create("ws://%s:%d%s".formatted(HOSTNAME, serverPort, SERVLET_URI)),
 					upgradeRequest);
 		} catch (IOException e) {
 			throw new AssertionError("Unexpected exception while connection to websocket", e);

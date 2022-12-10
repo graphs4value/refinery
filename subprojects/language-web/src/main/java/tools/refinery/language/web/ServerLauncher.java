@@ -11,7 +11,6 @@ import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.ee10.servlet.SessionHandler;
 import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.VirtualThreads;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.slf4j.Logger;
@@ -44,13 +43,7 @@ public class ServerLauncher {
 	private final Server server;
 
 	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String webSocketUrl) {
-		server = new Server(bindAddress);
-		enableVirtualThreads(server);
-		if (server.getThreadPool() instanceof VirtualThreads.Configurable virtualThreadsConfigurable) {
-			// Change this to setVirtualThreadsExecutor once
-			// https://github.com/eclipse/jetty.project/commit/83154b4ffe4767ef44981598d6c26e6a5d32e57c gets released.
-			virtualThreadsConfigurable.setUseVirtualThreads(VirtualThreads.areSupported());
-		}
+		server = VirtualThreadUtils.newServerWithVirtualThreadsThreadPool("jetty", bindAddress);
 		var handler = new ServletContextHandler();
 		addSessionHandler(handler);
 		addProblemServlet(handler, allowedOrigins);
@@ -147,14 +140,6 @@ public class ServerLauncher {
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
 			System.exit(1);
-		}
-	}
-
-	public static void enableVirtualThreads(Server server) {
-		if (server.getThreadPool() instanceof VirtualThreads.Configurable virtualThreadsConfigurable) {
-			// Change this to setVirtualThreadsExecutor once
-			// https://github.com/eclipse/jetty.project/commit/83154b4ffe4767ef44981598d6c26e6a5d32e57c gets released.
-			virtualThreadsConfigurable.setUseVirtualThreads(VirtualThreads.areSupported());
 		}
 	}
 
