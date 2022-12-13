@@ -1,6 +1,7 @@
 package tools.refinery.store.map.internal;
 
 import tools.refinery.store.map.AnyVersionedMap;
+import tools.refinery.store.map.ContentHashCode;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.VersionedMap;
 
@@ -45,7 +46,7 @@ public class MapCursor<K, V> implements Cursor<K, V> {
 
 		// Initializing state
 		this.map = map;
-		this.creationHash = map.hashCode();
+		this.creationHash = map.contentHashCode(ContentHashCode.APPROXIMATE_FAST);
 	}
 
 	public K getKey() {
@@ -87,7 +88,7 @@ public class MapCursor<K, V> implements Cursor<K, V> {
 
 	@Override
 	public boolean isDirty() {
-		return this.map.hashCode() != this.creationHash;
+		return this.map.contentHashCode(ContentHashCode.APPROXIMATE_FAST) != this.creationHash;
 	}
 
 	@Override

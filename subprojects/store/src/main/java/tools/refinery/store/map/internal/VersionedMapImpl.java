@@ -5,6 +5,7 @@ import tools.refinery.store.map.*;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Not threadSafe in itself
@@ -144,5 +145,16 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		if (this.root != null) {
 			this.root.checkIntegrity(hashProvider, defaultValue, 0);
 		}
+	}
+
+	@Override
+	public int contentHashCode(ContentHashCode mode) {
+		// Calculating the root hashCode is always fast, because {@link Node} caches its hashCode.
+		return Objects.hashCode(root);
+	}
+
+	@Override
+	public boolean contentEquals(AnyVersionedMap other) {
+		return other instanceof VersionedMapImpl<?, ?> otherImpl && Objects.equals(root, otherImpl.root);
 	}
 }

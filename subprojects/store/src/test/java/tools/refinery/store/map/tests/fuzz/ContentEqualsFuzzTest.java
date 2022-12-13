@@ -17,12 +17,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ContentEqualsFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, int commitFrequency,
-			boolean evilHash) {
+							 boolean evilHash) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
@@ -31,7 +30,9 @@ class ContentEqualsFuzzTest {
 		iterativeRandomPutsAndCommitsThenCompare(scenario, chp, steps, maxKey, values, r, commitFrequency);
 	}
 
-	private void iterativeRandomPutsAndCommitsThenCompare(String scenario, ContinousHashProvider<Integer> chp, int steps, int maxKey, String[] values, Random r, int commitFrequency) {
+	private void iterativeRandomPutsAndCommitsThenCompare(String scenario, ContinousHashProvider<Integer> chp,
+														  int steps, int maxKey, String[] values, Random r,
+														  int commitFrequency) {
 		VersionedMapStore<Integer, String> store1 = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
 		VersionedMap<Integer, String> sut1 = store1.createMap();
 
@@ -67,58 +68,43 @@ class ContentEqualsFuzzTest {
 		int index2 = 1;
 		for (SimpleEntry<Integer, String> entry : content) {
 			sut2.put(entry.getKey(), entry.getValue());
-			if(index2++%commitFrequency == 0)
+			if (index2++ % commitFrequency == 0)
 				sut2.commit();
 		}
 
 		// Check the integrity of the maps
-		((VersionedMapImpl<Integer,String>) sut1).checkIntegrity();
-		((VersionedMapImpl<Integer,String>) sut2).checkIntegrity();
+		((VersionedMapImpl<Integer, String>) sut1).checkIntegrity();
+		((VersionedMapImpl<Integer, String>) sut2).checkIntegrity();
 
-//		// Compare the two maps
-		// By size
-		assertEquals(sut1.getSize(), content.size());
-		assertEquals(sut2.getSize(), content.size());
-
-		// By cursors
-		Cursor<Integer, String> cursor1 = sut1.getAll();
-		Cursor<Integer, String> cursor2 = sut2.getAll();
-		int index3 = 1;
-		boolean canMove = true;
-		do{
-			boolean canMove1 = cursor1.move();
-			boolean canMove2 = cursor2.move();
-			assertEquals(canMove1, canMove2, scenario + ":" + index3 +" Cursors stopped at different times!");
-			assertEquals(cursor1.getKey(), cursor2.getKey(), scenario + ":" + index3 +" Cursors have different keys!");
-			assertEquals(cursor1.getValue(), cursor2.getValue(), scenario + ":" + index3 +" Cursors have different values!");
-
-			canMove = canMove1;
-			MapTestEnvironment.printStatus(scenario, index3++, content.size(), "Compare");
-		} while (canMove);
+		// Compare the two maps
+		MapTestEnvironment.compareTwoMaps(scenario, sut1, sut2);
 	}
 
-	@ParameterizedTest(name = "Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} " +
+			"evil-hash={6}")
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+							  boolean evilHash) {
 		runFuzzTest("CompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32,
+						32 * 32},
+				new Object[]{2, 3}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
+				new Object[]{false, true});
 	}
 
-	@ParameterizedTest(name = "Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} " +
+			"evil-hash={6}")
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+							  boolean evilHash) {
 		runFuzzTest("CompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				commitFrequency, evilHash);
 	}

@@ -1,8 +1,6 @@
 package tools.refinery.store.map.tests.utils;
 
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.Cursor;
-import tools.refinery.store.map.VersionedMap;
+import tools.refinery.store.map.*;
 import tools.refinery.store.map.internal.VersionedMapImpl;
 
 import java.util.*;
@@ -50,37 +48,62 @@ public class MapTestEnvironment<K, V> {
 
 	}
 
-	public static <K, V> void compareTwoMaps(String title, VersionedMapImpl<K, V> map1,
-			VersionedMapImpl<K, V> map2) {
+	public static <K, V> void compareTwoMaps(String title, VersionedMap<K, V> map1,
+											 VersionedMap<K, V> map2) {
 		compareTwoMaps(title, map1, map2, null);
 	}
-	public static <K, V> void compareTwoMaps(String title, VersionedMapImpl<K, V> map1,
-			VersionedMapImpl<K, V> map2, List<Throwable> errors) {
+
+	public static <K, V> void compareTwoMaps(String title, VersionedMap<K, V> map1,
+											 VersionedMap<K, V> map2, List<Throwable> errors) {
+		assertEqualsList(map1.getSize(), map2.getSize(), title + ": Sizes not equal", errors);
+
 		Cursor<K, V> cursor1 = map1.getAll();
 		Cursor<K, V> cursor2 = map2.getAll();
 		while (!cursor1.isTerminated()) {
 			if (cursor2.isTerminated()) {
 				fail("cursor 2 terminated before cursor1");
 			}
-			assertEqualsList(cursor1.getKey(), cursor2.getKey(),"Keys not equal", errors);
-			assertEqualsList(cursor2.getValue(), cursor2.getValue(), "Values not equal", errors);
+			assertEqualsList(cursor1.getKey(), cursor2.getKey(), title + ": Keys not equal", errors);
+			assertEqualsList(cursor2.getValue(), cursor2.getValue(), title + ": Values not equal", errors);
 			cursor1.move();
 			cursor2.move();
 		}
-		if (!cursor2.isTerminated())
+		if (!cursor2.isTerminated()) {
 			fail("cursor 1 terminated before cursor 2");
+		}
+
+		for (var mode : ContentHashCode.values()) {
+			assertEqualsList(map1.contentHashCode(mode), map2.contentHashCode(mode),
+					title + ": " + mode + " hashCode check", errors);
+		}
+		assertContentEqualsList(map1, map2, title + ": map1.contentEquals(map2)", errors);
+		assertContentEqualsList(map2, map1, title + ": map2.contentEquals(map1)", errors);
 	}
 
 	private static void assertEqualsList(Object o1, Object o2, String message, List<Throwable> errors) {
-		if(errors == null) {
+		if (errors == null) {
 			assertEquals(o1, o2, message);
 		} else {
-			if(o1 != null) {
-				if(!(o1.equals(o2))) {
-					AssertionError error = new AssertionError((message != null ? message+" " : "") + "expected: " + o1 + " but was : " + o2);
+			if (o1 != null) {
+				if (!(o1.equals(o2))) {
+					AssertionError error =
+							new AssertionError((message != null ? message + " " : "") + "expected: " + o1 + " but was " +
+									": " + o2);
 					errors.add(error);
 				}
 			}
+		}
+	}
+
+	private static void assertContentEqualsList(AnyVersionedMap o1, AnyVersionedMap o2, String message,
+												List<Throwable> errors) {
+		boolean result = o1.contentEquals(o2);
+		if (errors == null) {
+			assertTrue(result, message);
+		} else if (!result) {
+			AssertionError error =
+					new AssertionError((message != null ? message + " " : "") + "expected: true but was: false");
+			errors.add(error);
 		}
 	}
 
@@ -99,10 +122,10 @@ public class MapTestEnvironment<K, V> {
 		} else {
 			oldOracleValue = oracle.remove(key);
 		}
-		if(oldSutValue == sut.getDefaultValue() && oldOracleValue != null) {
+		if (oldSutValue == sut.getDefaultValue() && oldOracleValue != null) {
 			fail("After put, SUT old nodeId was default, but oracle old value was " + oldOracleValue);
 		}
-		if(oldSutValue != sut.getDefaultValue()) {
+		if (oldSutValue != sut.getDefaultValue()) {
 			assertEquals(oldOracleValue, oldSutValue);
 		}
 	}
@@ -158,14 +181,15 @@ public class MapTestEnvironment<K, V> {
 		}
 	}
 
-	public static <K,V> void checkOrder(String scenario, VersionedMap<K,V> versionedMap) {
+	public static <K, V> void checkOrder(String scenario, VersionedMap<K, V> versionedMap) {
 		K previous = null;
 		Cursor<K, V> cursor = versionedMap.getAll();
-		while(cursor.move()) {
+		while (cursor.move()) {
 			System.out.println(cursor.getKey() + " " + ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().getHash(cursor.getKey(), 0));
-			if(previous != null) {
-				int comparisonResult = ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().compare(previous, cursor.getKey());
-				assertTrue(comparisonResult<0,scenario+" Cursor order is not incremental!");
+			if (previous != null) {
+				int comparisonResult = ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().compare(previous,
+						cursor.getKey());
+				assertTrue(comparisonResult < 0, scenario + " Cursor order is not incremental!");
 			}
 			previous = cursor.getKey();
 		}
