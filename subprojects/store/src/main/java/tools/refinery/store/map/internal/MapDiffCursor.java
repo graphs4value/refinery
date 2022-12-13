@@ -1,12 +1,13 @@
 package tools.refinery.store.map.internal;
 
-import java.util.List;
-import java.util.stream.Stream;
-
+import tools.refinery.store.map.AnyVersionedMap;
 import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.map.VersionedMap;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A cursor representing the difference between two states of a map.
@@ -18,10 +19,10 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 	/**
 	 * Default nodeId representing missing elements.
 	 */
-	private V defaultValue;
-	private MapCursor<K, V> cursor1;
-	private MapCursor<K, V> cursor2;
-	private ContinousHashProvider<? super K> hashProvider;
+	private final V defaultValue;
+	private final MapCursor<K, V> cursor1;
+	private final MapCursor<K, V> cursor2;
+	private final ContinousHashProvider<? super K> hashProvider;
 
 	// Values
 	private K key;
@@ -75,8 +76,10 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 	}
 
 	@Override
-	public List<VersionedMap<?, ?>> getDependingMaps() {
-		return Stream.concat(cursor1.getDependingMaps().stream(), cursor2.getDependingMaps().stream()).toList();
+	public Set<AnyVersionedMap> getDependingMaps() {
+		return Stream.concat(cursor1.getDependingMaps().stream(), cursor2.getDependingMaps().stream())
+				.map(AnyVersionedMap.class::cast)
+				.collect(Collectors.toUnmodifiableSet());
 	}
 
 	protected void updateState() {

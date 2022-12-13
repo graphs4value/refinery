@@ -1,17 +1,17 @@
 package tools.refinery.store.query.atom;
 
 import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.List;
 import java.util.Objects;
 
-public final class RelationViewAtom extends AbstractSubstitutionAtom<RelationView<?>> {
-	public RelationViewAtom(RelationView<?> target, List<Variable> substitution) {
+public final class RelationViewAtom extends AbstractSubstitutionAtom<AnyRelationView> {
+	public RelationViewAtom(AnyRelationView target, List<Variable> substitution) {
 		super(target, substitution);
 	}
 
-	public RelationViewAtom(RelationView<?> target, Variable... substitution) {
+	public RelationViewAtom(AnyRelationView target, Variable... substitution) {
 		this(target, List.of(substitution));
 	}
 

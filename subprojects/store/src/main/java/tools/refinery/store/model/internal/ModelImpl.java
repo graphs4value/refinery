@@ -1,9 +1,5 @@
 package tools.refinery.store.model.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
@@ -12,29 +8,39 @@ import tools.refinery.store.map.internal.MapDiffCursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.model.representation.AnyDataRepresentation;
 import tools.refinery.store.model.representation.DataRepresentation;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class ModelImpl implements Model {
 	private final ModelStore store;
-	private final Map<DataRepresentation<?, ?>, VersionedMap<?, ?>> maps;
 
-	public ModelImpl(ModelStore store, Map<DataRepresentation<?, ?>, VersionedMap<?, ?>> maps) {
+	private final Map<AnyDataRepresentation, VersionedMap<?, ?>> maps;
+
+	public ModelImpl(ModelStore store, Map<AnyDataRepresentation, VersionedMap<?, ?>> maps) {
 		this.store = store;
 		this.maps = maps;
 	}
 
 	@Override
-	public Set<DataRepresentation<?, ?>> getDataRepresentations() {
+	public Set<AnyDataRepresentation> getDataRepresentations() {
 		return maps.keySet();
+	}
+
+	private VersionedMap<?, ?> getMap(AnyDataRepresentation representation) {
+		if (maps.containsKey(representation)) {
+			return maps.get(representation);
+		} else {
+			throw new IllegalArgumentException("Model does have representation " + representation);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private <K, V> VersionedMap<K, V> getMap(DataRepresentation<K, V> representation) {
-		if (maps.containsKey(representation)) {
-			return (VersionedMap<K, V>) maps.get(representation);
-		} else {
-			throw new IllegalArgumentException("Model does have representation " + representation);
-		}
+		return (VersionedMap<K, V>) maps.get(representation);
 	}
 
 	private <K, V> VersionedMap<K, V> getMapValidateKey(DataRepresentation<K, V> representation, K key) {
@@ -67,17 +73,18 @@ public class ModelImpl implements Model {
 	}
 
 	@Override
-	public <K, V> long getSize(DataRepresentation<K, V> representation) {
+	public long getSize(AnyDataRepresentation representation) {
 		return getMap(representation).getSize();
 	}
 
 	@Override
 	public ModelDiffCursor getDiffCursor(long to) {
 		Model toModel = store.createModel(to);
-		Map<DataRepresentation<?, ?>, DiffCursor<?, ?>> diffCursors = new HashMap<>();
-		for (DataRepresentation<?, ?> representation : this.maps.keySet()) {
-			MapDiffCursor<?, ?> diffCursor = constructDiffCursor(toModel, representation);
-			diffCursors.put(representation, diffCursor);
+		Map<AnyDataRepresentation, DiffCursor<?, ?>> diffCursors = new HashMap<>();
+		for (AnyDataRepresentation anyDataRepresentation : this.maps.keySet()) {
+			var dataRepresentation = (DataRepresentation<?, ?>) anyDataRepresentation;
+			MapDiffCursor<?, ?> diffCursor = constructDiffCursor(toModel, dataRepresentation);
+			diffCursors.put(dataRepresentation, diffCursor);
 		}
 		return new ModelDiffCursor(diffCursors);
 	}
@@ -113,12 +120,12 @@ public class ModelImpl implements Model {
 
 	@Override
 	public void restore(long state) {
-		if(store.getStates().contains(state)) {
+		if (store.getStates().contains(state)) {
 			for (VersionedMap<?, ?> map : maps.values()) {
 				map.restore(state);
 			}
 		} else {
-			throw new IllegalArgumentException("Map does not contain state "+state+"!");
+			throw new IllegalArgumentException("Map does not contain state " + state + "!");
 		}
 	}
 }

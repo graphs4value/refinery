@@ -2,7 +2,10 @@ package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.*;
+import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Equality;
+import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.ExportedParameter;
+import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Inequality;
+import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.NegativePatternCall;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.BinaryTransitiveClosure;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.ConstantValue;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
@@ -10,9 +13,11 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeCo
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import tools.refinery.store.query.*;
+import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.DNFAnd;
+import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.atom.*;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +27,7 @@ public class DNF2PQuery {
 
 	private final Map<DNF, SimplePQuery> dnf2PQueryMap = new HashMap<>();
 
-	private final Map<RelationView<?>, RelationViewWrapper> view2WrapperMap = new HashMap<>();
+	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new HashMap<>();
 
 	public SimplePQuery translate(DNF dnfQuery) {
 		if (translating.contains(dnfQuery)) {
@@ -115,7 +120,7 @@ public class DNF2PQuery {
 		return Tuples.flatTupleOf(variables);
 	}
 
-	private RelationViewWrapper wrapView(RelationView<?> relationView) {
+	private RelationViewWrapper wrapView(AnyRelationView relationView) {
 		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
 	}
 

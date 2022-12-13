@@ -1,13 +1,11 @@
 package tools.refinery.language.semantics.model.internal;
 
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.List;
 
 class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
 	static final int STATE_FINISH = Integer.MAX_VALUE;
@@ -80,15 +78,5 @@ class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
 		}
 		key = Tuple.of(rawTuple);
 		return true;
-	}
-
-	@Override
-	public boolean isDirty() {
-		return false;
-	}
-
-	@Override
-	public List<VersionedMap<?, ?>> getDependingMaps() {
-		return List.of();
 	}
 }

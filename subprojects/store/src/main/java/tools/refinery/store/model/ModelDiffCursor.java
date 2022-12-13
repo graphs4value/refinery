@@ -1,26 +1,27 @@
 package tools.refinery.store.model;
 
-import java.util.Map;
-
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
+import tools.refinery.store.model.representation.AnyDataRepresentation;
 import tools.refinery.store.model.representation.DataRepresentation;
 
-public class ModelDiffCursor {
-	final Map<DataRepresentation<?, ?>,DiffCursor<?,?>> diffcursors;
+import java.util.Map;
 
-	public ModelDiffCursor(Map<DataRepresentation<?, ?>, DiffCursor<?, ?>> diffcursors) {
+public class ModelDiffCursor {
+	final Map<AnyDataRepresentation, DiffCursor<?, ?>> diffCursors;
+
+	public ModelDiffCursor(Map<AnyDataRepresentation, DiffCursor<?, ?>> diffCursors) {
 		super();
-		this.diffcursors = diffcursors;
+		this.diffCursors = diffCursors;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public <K,V> DiffCursor<K,V> getCursor(DataRepresentation<K, V> representation) {
-		Cursor<?, ?> cursor = diffcursors.get(representation);
-		if(cursor != null) {
+	public <K, V> DiffCursor<K, V> getCursor(DataRepresentation<K, V> representation) {
+		Cursor<?, ?> cursor = diffCursors.get(representation);
+		if (cursor != null) {
 			return (DiffCursor<K, V>) cursor;
 		} else {
-			throw new IllegalArgumentException("ModelCursor does not contain cursor for representation "+representation);
+			throw new IllegalArgumentException("ModelCursor does not contain cursor for representation " + representation);
 		}
 	}
 }

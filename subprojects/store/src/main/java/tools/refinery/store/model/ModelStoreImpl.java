@@ -3,6 +3,7 @@ package tools.refinery.store.model;
 import tools.refinery.store.map.*;
 import tools.refinery.store.model.internal.ModelImpl;
 import tools.refinery.store.model.internal.SimilarRelationEquivalenceClass;
+import tools.refinery.store.model.representation.AnyDataRepresentation;
 import tools.refinery.store.model.representation.AuxiliaryData;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
@@ -13,26 +14,26 @@ import java.util.Map.Entry;
 
 public class ModelStoreImpl implements ModelStore {
 
-	private final Map<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> stores;
+	private final Map<AnyDataRepresentation, VersionedMapStore<?, ?>> stores;
 
-	public ModelStoreImpl(Set<DataRepresentation<?, ?>> dataRepresentations) {
+	public ModelStoreImpl(Set<AnyDataRepresentation> dataRepresentations) {
 		stores = initStores(dataRepresentations);
 	}
 
-	private Map<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> initStores(
-			Set<DataRepresentation<?, ?>> dataRepresentations) {
-		Map<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> result = new HashMap<>();
+	private Map<AnyDataRepresentation, VersionedMapStore<?, ?>> initStores(
+			Set<AnyDataRepresentation> dataRepresentations) {
+		Map<AnyDataRepresentation, VersionedMapStore<?, ?>> result = new HashMap<>();
 
 		Map<SimilarRelationEquivalenceClass, List<Relation<?>>> symbolRepresentationsPerHashPerArity = new HashMap<>();
 
-		for (DataRepresentation<?, ?> dataRepresentation : dataRepresentations) {
+		for (AnyDataRepresentation dataRepresentation : dataRepresentations) {
 			if (dataRepresentation instanceof Relation<?> symbolRepresentation) {
 				addOrCreate(symbolRepresentationsPerHashPerArity,
 						new SimilarRelationEquivalenceClass(symbolRepresentation), symbolRepresentation);
-			} else if (dataRepresentation instanceof AuxiliaryData<?, ?>) {
-				VersionedMapStoreImpl<?, ?> store = new VersionedMapStoreImpl<>(dataRepresentation.getHashProvider(),
-						dataRepresentation.getDefaultValue());
-				result.put(dataRepresentation, store);
+			} else if (dataRepresentation instanceof AuxiliaryData<?, ?> auxiliaryData) {
+				VersionedMapStoreImpl<?, ?> store = new VersionedMapStoreImpl<>(auxiliaryData.getHashProvider(),
+						auxiliaryData.getDefaultValue());
+				result.put(auxiliaryData, store);
 			} else {
 				throw new UnsupportedOperationException(
 						"Model store does not have strategy to use " + dataRepresentation.getClass() + "!");
@@ -45,7 +46,7 @@ public class ModelStoreImpl implements ModelStore {
 		return result;
 	}
 
-	private void initRepresentationGroup(Map<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> result,
+	private void initRepresentationGroup(Map<AnyDataRepresentation, VersionedMapStore<?, ?>> result,
 			List<Relation<?>> symbolGroup) {
 		final ContinousHashProvider<Tuple> hashProvider = symbolGroup.get(0).getHashProvider();
 		final Object defaultValue = symbolGroup.get(0).getDefaultValue();
@@ -70,14 +71,14 @@ public class ModelStoreImpl implements ModelStore {
 	}
 
 	@Override
-	public Set<DataRepresentation<?, ?>> getDataRepresentations() {
+	public Set<AnyDataRepresentation> getDataRepresentations() {
 		return this.stores.keySet();
 	}
 
 	@Override
 	public ModelImpl createModel() {
-		Map<DataRepresentation<?, ?>, VersionedMap<?, ?>> maps = new HashMap<>();
-		for (Entry<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> entry : this.stores.entrySet()) {
+		Map<AnyDataRepresentation, VersionedMap<?, ?>> maps = new HashMap<>();
+		for (var entry : this.stores.entrySet()) {
 			maps.put(entry.getKey(), entry.getValue().createMap());
 		}
 		return new ModelImpl(this, maps);
@@ -85,8 +86,8 @@ public class ModelStoreImpl implements ModelStore {
 
 	@Override
 	public synchronized ModelImpl createModel(long state) {
-		Map<DataRepresentation<?, ?>, VersionedMap<?, ?>> maps = new HashMap<>();
-		for (Entry<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> entry : this.stores.entrySet()) {
+		Map<AnyDataRepresentation, VersionedMap<?, ?>> maps = new HashMap<>();
+		for (var entry : this.stores.entrySet()) {
 			maps.put(entry.getKey(), entry.getValue().createMap(state));
 		}
 		return new ModelImpl(this, maps);
@@ -103,10 +104,10 @@ public class ModelStoreImpl implements ModelStore {
 
 	@Override
 	public synchronized ModelDiffCursor getDiffCursor(long from, long to) {
-		Map<DataRepresentation<?, ?>, DiffCursor<?, ?>> diffcursors = new HashMap<>();
-		for (Entry<DataRepresentation<?, ?>, VersionedMapStore<?, ?>> entry : stores.entrySet()) {
-			DataRepresentation<?, ?> representation = entry.getKey();
-			DiffCursor<?, ?> diffCursor = entry.getValue().getDiffCursor(from, to);
+		Map<AnyDataRepresentation, DiffCursor<?, ?>> diffcursors = new HashMap<>();
+		for (var entry : stores.entrySet()) {
+			var representation = entry.getKey();
+			var diffCursor = entry.getValue().getDiffCursor(from, to);
 			diffcursors.put(representation, diffCursor);
 		}
 		return new ModelDiffCursor(diffcursors);

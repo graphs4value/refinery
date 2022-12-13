@@ -3,6 +3,7 @@ package tools.refinery.store.query.view;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.representation.Relation;
 
+import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -30,5 +31,19 @@ public class FilteredRelationView<D> extends AbstractFilteredRelationView<D> {
 	@Override
 	public boolean filter(Tuple key, D value) {
 		return this.predicate.test(key, value);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		FilteredRelationView<?> that = (FilteredRelationView<?>) o;
+		return Objects.equals(predicate, that.predicate);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), predicate);
 	}
 }

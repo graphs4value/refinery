@@ -1,21 +1,14 @@
 package tools.refinery.store.map.tests.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.internal.VersionedMapImpl;
 
-import java.util.TreeMap;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MapTestEnvironment<K, V> {
 	public static String[] prepareValues(int maxValue) {
@@ -63,7 +56,6 @@ public class MapTestEnvironment<K, V> {
 	}
 	public static <K, V> void compareTwoMaps(String title, VersionedMapImpl<K, V> map1,
 			VersionedMapImpl<K, V> map2, List<Throwable> errors) {
-		// 1. Comparing cursors.
 		Cursor<K, V> cursor1 = map1.getAll();
 		Cursor<K, V> cursor2 = map2.getAll();
 		while (!cursor1.isTerminated()) {
@@ -77,12 +69,8 @@ public class MapTestEnvironment<K, V> {
 		}
 		if (!cursor2.isTerminated())
 			fail("cursor 1 terminated before cursor 2");
-
-		// 2.1. comparing hash codes
-		assertEqualsList(map1.hashCode(), map2.hashCode(), title + ": hash code check",errors);
-		assertEqualsList(map1, map2, title + ": 1.equals(2)",errors);
-		assertEqualsList(map2, map1, title + ": 2.equals(1)",errors);
 	}
+
 	private static void assertEqualsList(Object o1, Object o2, String message, List<Throwable> errors) {
 		if(errors == null) {
 			assertEquals(o1, o2, message);
@@ -112,7 +100,7 @@ public class MapTestEnvironment<K, V> {
 			oldOracleValue = oracle.remove(key);
 		}
 		if(oldSutValue == sut.getDefaultValue() && oldOracleValue != null) {
-			fail("After put, SUT old nodeId was default, but oracle old walue was " + oldOracleValue);
+			fail("After put, SUT old nodeId was default, but oracle old value was " + oldOracleValue);
 		}
 		if(oldSutValue != sut.getDefaultValue()) {
 			assertEquals(oldOracleValue, oldSutValue);
@@ -165,7 +153,7 @@ public class MapTestEnvironment<K, V> {
 		long sutSize = sut.getSize();
 		if (oracleSize != sutSize || oracleSize != elementsInSutEntrySet) {
 			printComparison();
-			fail(title + ": Non-eqivalent size() result: SUT.getSize()=" + sutSize + ", SUT.entryset.size="
+			fail(title + ": Non-equivalent size() result: SUT.getSize()=" + sutSize + ", SUT.entryset.size="
 					+ elementsInSutEntrySet + ", Oracle=" + oracleSize + "!");
 		}
 	}
@@ -192,22 +180,22 @@ public class MapTestEnvironment<K, V> {
 	}
 
 	private void printEntrySet(Iterator<Entry<K, V>> iterator) {
-		TreeMap<K, V> treemap = new TreeMap<>();
+		Map<K, V> map = new LinkedHashMap<>();
 		while (iterator.hasNext()) {
 			Entry<K, V> entry = iterator.next();
-			treemap.put(entry.getKey(), entry.getValue());
+			map.put(entry.getKey(), entry.getValue());
 		}
-		for (Entry<K, V> e : treemap.entrySet()) {
+		for (Entry<K, V> e : map.entrySet()) {
 			System.out.println("\t" + e.getKey() + " -> " + e.getValue());
 		}
 	}
 
 	private void printEntrySet(Cursor<K, V> cursor) {
-		TreeMap<K, V> treemap = new TreeMap<>();
+		Map<K, V> map = new LinkedHashMap<>();
 		while (cursor.move()) {
-			treemap.put(cursor.getKey(), cursor.getValue());
+			map.put(cursor.getKey(), cursor.getValue());
 		}
-		for (Entry<K, V> e : treemap.entrySet()) {
+		for (Entry<K, V> e : map.entrySet()) {
 			System.out.println("\t" + e.getKey() + " -> " + e.getValue());
 		}
 	}

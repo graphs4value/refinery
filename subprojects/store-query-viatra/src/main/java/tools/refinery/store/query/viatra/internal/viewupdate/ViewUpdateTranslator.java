@@ -4,8 +4,9 @@ import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.query.view.AnyRelationView;
 import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
@@ -27,7 +28,7 @@ public class ViewUpdateTranslator<D> {
 		this.listener = listener;
 	}
 
-	public boolean equals(IInputKey wrappedKey, RelationView<?> relationView, ITuple seed,
+	public boolean equals(IInputKey wrappedKey, AnyRelationView relationView, ITuple seed,
 						  IQueryRuntimeContextListener listener) {
 		return this.wrappedKey == wrappedKey && key == relationView && filter.equals(seed) && this.listener == listener;
 	}

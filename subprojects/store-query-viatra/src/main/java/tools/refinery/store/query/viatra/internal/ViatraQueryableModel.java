@@ -8,6 +8,7 @@ import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelDiffCursor;
+import tools.refinery.store.model.representation.AnyDataRepresentation;
 import tools.refinery.store.model.representation.DataRepresentation;
 import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.QueryableModel;
@@ -66,7 +67,7 @@ public class ViatraQueryableModel implements QueryableModel {
 	}
 
 	@Override
-	public Set<DataRepresentation<?, ?>> getDataRepresentations() {
+	public Set<AnyDataRepresentation> getDataRepresentations() {
 		return model.getDataRepresentations();
 	}
 
@@ -113,7 +114,7 @@ public class ViatraQueryableModel implements QueryableModel {
 	}
 
 	@Override
-	public <K, V> long getSize(DataRepresentation<K, V> representation) {
+	public long getSize(AnyDataRepresentation representation) {
 		return model.getSize(representation);
 	}
 
@@ -207,7 +208,8 @@ public class ViatraQueryableModel implements QueryableModel {
 
 	private void restoreWithDiffReplay(long state) {
 		var modelDiffCursor = getDiffCursor(state);
-		for (DataRepresentation<?, ?> dataRepresentation : this.getDataRepresentations()) {
+		for (AnyDataRepresentation anyDataRepresentation : this.getDataRepresentations()) {
+			var dataRepresentation = (DataRepresentation<?, ?>) anyDataRepresentation;
 			restoreRepresentationWithDiffReplay(modelDiffCursor, dataRepresentation);
 		}
 	}

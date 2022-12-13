@@ -2,7 +2,7 @@ package tools.refinery.store.model.representation;
 
 import tools.refinery.store.map.ContinousHashProvider;
 
-public abstract sealed class DataRepresentation<K, V> permits Relation, AuxiliaryData {
+public abstract sealed class DataRepresentation<K, V> implements AnyDataRepresentation permits Relation, AuxiliaryData {
 	private final String name;
 
 	private final V defaultValue;
@@ -18,6 +18,7 @@ public abstract sealed class DataRepresentation<K, V> permits Relation, Auxiliar
 		this.valueType = valueType;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -30,10 +31,12 @@ public abstract sealed class DataRepresentation<K, V> permits Relation, Auxiliar
 		return defaultValue;
 	}
 
+	@Override
 	public Class<K> getKeyType() {
 		return keyType;
 	}
 
+	@Override
 	public Class<V> getValueType() {
 		return valueType;
 	}

@@ -1,7 +1,14 @@
 package tools.refinery.store.map.tests.fuzz;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import tools.refinery.store.map.*;
+import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
+import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
@@ -10,20 +17,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.Cursor;
-import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
-import tools.refinery.store.map.internal.VersionedMapImpl;
-import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
-import tools.refinery.store.map.tests.utils.MapTestEnvironment;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ContentEqualsFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, int commitFrequency,
@@ -37,10 +32,9 @@ class ContentEqualsFuzzTest {
 	}
 
 	private void iterativeRandomPutsAndCommitsThenCompare(String scenario, ContinousHashProvider<Integer> chp, int steps, int maxKey, String[] values, Random r, int commitFrequency) {
-		
 		VersionedMapStore<Integer, String> store1 = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
 		VersionedMap<Integer, String> sut1 = store1.createMap();
-		
+
 		// Fill one map
 		for (int i = 0; i < steps; i++) {
 			int index1 = i + 1;
@@ -57,17 +51,17 @@ class ContentEqualsFuzzTest {
 				sut1.commit();
 			}
 		}
-		
+
 		// Get the content of the first map
 		List<SimpleEntry<Integer, String>> content = new LinkedList<>();
 		Cursor<Integer, String> cursor = sut1.getAll();
 		while (cursor.move()) {
 			content.add(new SimpleEntry<>(cursor.getKey(), cursor.getValue()));
 		}
-		
+
 		// Randomize the order of the content
 		Collections.shuffle(content, r);
-		
+
 		VersionedMapStore<Integer, String> store2 = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
 		VersionedMap<Integer, String> sut2 = store2.createMap();
 		int index2 = 1;
@@ -76,18 +70,16 @@ class ContentEqualsFuzzTest {
 			if(index2++%commitFrequency == 0)
 				sut2.commit();
 		}
-		
+
 		// Check the integrity of the maps
 		((VersionedMapImpl<Integer,String>) sut1).checkIntegrity();
 		((VersionedMapImpl<Integer,String>) sut2).checkIntegrity();
-		
+
 //		// Compare the two maps
 		// By size
 		assertEquals(sut1.getSize(), content.size());
 		assertEquals(sut2.getSize(), content.size());
-		
-		
-		
+
 		// By cursors
 		Cursor<Integer, String> cursor1 = sut1.getAll();
 		Cursor<Integer, String> cursor2 = sut2.getAll();
@@ -99,16 +91,10 @@ class ContentEqualsFuzzTest {
 			assertEquals(canMove1, canMove2, scenario + ":" + index3 +" Cursors stopped at different times!");
 			assertEquals(cursor1.getKey(), cursor2.getKey(), scenario + ":" + index3 +" Cursors have different keys!");
 			assertEquals(cursor1.getValue(), cursor2.getValue(), scenario + ":" + index3 +" Cursors have different values!");
-			
+
 			canMove = canMove1;
 			MapTestEnvironment.printStatus(scenario, index3++, content.size(), "Compare");
 		} while (canMove);
-		
-		// By hashcode
-		assertEquals(sut1.hashCode(), sut2.hashCode(), "Hash codes are not equal!");
-		
-		// By equals
-		assertEquals(sut1, sut2, "Maps are not equals");
 	}
 
 	@ParameterizedTest(name = "Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")

@@ -1,22 +1,15 @@
 package tools.refinery.store.map;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import tools.refinery.store.map.internal.ImmutableNode;
 import tools.refinery.store.map.internal.MapDiffCursor;
 import tools.refinery.store.map.internal.Node;
 import tools.refinery.store.map.internal.VersionedMapImpl;
 
+import java.util.*;
+
 public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 	// Configuration
-	private final boolean immutableWhenCommiting;
+	private final boolean immutableWhenCommitting;
 
 	// Static data
 	protected final ContinousHashProvider<K> hashProvider;
@@ -29,7 +22,7 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 
 	public VersionedMapStoreImpl(ContinousHashProvider<K> hashProvider, V defaultValue,
 			VersionedMapStoreConfiguration config) {
-		this.immutableWhenCommiting = config.isImmutableWhenCommiting();
+		this.immutableWhenCommitting = config.isImmutableWhenCommitting();
 		this.hashProvider = hashProvider;
 		this.defaultValue = defaultValue;
 		if (config.isSharedNodeCacheInStore()) {
@@ -41,7 +34,7 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 
 	private VersionedMapStoreImpl(ContinousHashProvider<K> hashProvider, V defaultValue,
 			Map<Node<K, V>, ImmutableNode<K, V>> nodeCache, VersionedMapStoreConfiguration config) {
-		this.immutableWhenCommiting = config.isImmutableWhenCommiting();
+		this.immutableWhenCommitting = config.isImmutableWhenCommitting();
 		this.hashProvider = hashProvider;
 		this.defaultValue = defaultValue;
 		this.nodeCache = nodeCache;
@@ -77,7 +70,7 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 			ContinousHashProvider<K> hashProvider, V defaultValue) {
 		return createSharedVersionedMapStores(amount, hashProvider, defaultValue, new VersionedMapStoreConfiguration());
 	}
-	
+
 	@Override
 	public synchronized Set<Long> getStates() {
 		return new HashSet<>(states.keySet());
@@ -93,7 +86,6 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 		ImmutableNode<K, V> data = revert(state);
 		return new VersionedMapImpl<>(this, hashProvider, defaultValue, data);
 	}
-	
 
 	public synchronized ImmutableNode<K, V> revert(long state) {
 		if (states.containsKey(state)) {
@@ -118,7 +110,7 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 			throw new IllegalStateException("Map store run out of Id-s");
 		long id = nextID++;
 		this.states.put(id, immutable);
-		if (this.immutableWhenCommiting) {
+		if (this.immutableWhenCommitting) {
 			mapToUpdateRoot.setRoot(immutable);
 		}
 		return id;

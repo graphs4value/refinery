@@ -1,17 +1,15 @@
 package tools.refinery.store.query;
 
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.model.representation.DataRepresentation;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.model.representation.AnyDataRepresentation;
+import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.Set;
 
 public interface QueryableModelStore extends ModelStore {
-	@SuppressWarnings("squid:S1452")
-	Set<DataRepresentation<?, ?>> getDataRepresentations();
+    Set<AnyDataRepresentation> getDataRepresentations();
 
-	@SuppressWarnings("squid:S1452")
-	Set<RelationView<?>> getViews();
+	Set<AnyRelationView> getViews();
 
 	Set<DNF> getPredicates();
 

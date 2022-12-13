@@ -1,14 +1,14 @@
 package tools.refinery.store.map;
 
 public class VersionedMapStoreConfiguration {
-	
+
 	public VersionedMapStoreConfiguration() {
-		
+
 	}
-	public VersionedMapStoreConfiguration(boolean immutableWhenCommiting, boolean sharedNodeCacheInStore,
+	public VersionedMapStoreConfiguration(boolean immutableWhenCommitting, boolean sharedNodeCacheInStore,
 			boolean sharedNodeCacheInStoreGroups) {
 		super();
-		this.immutableWhenCommiting = immutableWhenCommiting;
+		this.immutableWhenCommitting = immutableWhenCommitting;
 		this.sharedNodeCacheInStore = sharedNodeCacheInStore;
 		this.sharedNodeCacheInStoreGroups = sharedNodeCacheInStoreGroups;
 	}
@@ -18,13 +18,13 @@ public class VersionedMapStoreConfiguration {
 	 * by releasing immutable nodes, but it may decrease performance by recreating
 	 * immutable nodes upon changes (some evidence).
 	 */
-	private boolean immutableWhenCommiting = true;
-	public boolean isImmutableWhenCommiting() {
-		return immutableWhenCommiting;
+	private boolean immutableWhenCommitting = true;
+	public boolean isImmutableWhenCommitting() {
+		return immutableWhenCommitting;
 	}
 
 	/**
-	 * If true, all subnodes are cached within a {@link VersionedMapStore}. It
+	 * If true, all sub-nodes are cached within a {@link VersionedMapStore}. It
 	 * decreases the memory requirements. It may increase performance by discovering
 	 * existing immutable copy of a node (some evidence). Additional overhead may
 	 * decrease performance (no example found). The option permits the efficient
@@ -34,9 +34,9 @@ public class VersionedMapStoreConfiguration {
 	public boolean isSharedNodeCacheInStore() {
 		return sharedNodeCacheInStore;
 	}
-	
+
 	/**
-	 * If true, all subnodes are cached within a group of
+	 * If true, all sub-nodes are cached within a group of
 	 * {@link VersionedMapStoreImpl#createSharedVersionedMapStores(int, ContinousHashProvider, Object, VersionedMapStoreConfiguration)}.
 	 * If {@link VersionedMapStoreConfiguration#sharedNodeCacheInStore} is
 	 * <code>false</code>, then it has currently no impact.

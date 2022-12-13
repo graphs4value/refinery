@@ -1,11 +1,10 @@
 package tools.refinery.store.model.representation;
 
 import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.model.RelationLike;
 import tools.refinery.store.model.TupleHashProvider;
 import tools.refinery.store.tuple.Tuple;
 
-public final class Relation<D> extends DataRepresentation<Tuple, D> implements RelationLike {
+public final class Relation<D> extends DataRepresentation<Tuple, D> implements AnyRelation {
 	private final int arity;
 
 	public Relation(String name, int arity, Class<D> valueType, D defaultValue) {

@@ -5,13 +5,17 @@ import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreImpl;
 import tools.refinery.store.model.RelationLike;
+import tools.refinery.store.model.representation.AnyDataRepresentation;
 import tools.refinery.store.model.representation.DataRepresentation;
-import tools.refinery.store.query.*;
+import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.DNFAnd;
+import tools.refinery.store.query.QueryableModel;
+import tools.refinery.store.query.QueryableModelStore;
 import tools.refinery.store.query.atom.*;
 import tools.refinery.store.query.viatra.internal.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.ViatraQueryableModel;
 import tools.refinery.store.query.viatra.internal.pquery.DNF2PQuery;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,11 +25,11 @@ import java.util.Set;
 public class ViatraQueryableModelStore implements QueryableModelStore {
 	protected final ModelStore store;
 
-	protected final Set<RelationView<?>> relationViews;
+	protected final Set<AnyRelationView> relationViews;
 
 	protected final Map<DNF, GenericQuerySpecification<RawPatternMatcher>> predicates;
 
-	public ViatraQueryableModelStore(ModelStore store, Set<RelationView<?>> relationViews,
+	public ViatraQueryableModelStore(ModelStore store, Set<AnyRelationView> relationViews,
 									 Set<DNF> predicates) {
 		this.store = store;
 		validateViews(store.getDataRepresentations(), relationViews);
@@ -34,13 +38,13 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 		this.predicates = initPredicates(predicates);
 	}
 
-	public ViatraQueryableModelStore(Set<DataRepresentation<?, ?>> dataRepresentations,
-									 Set<RelationView<?>> relationViews, Set<DNF> predicates) {
+	public ViatraQueryableModelStore(Set<AnyDataRepresentation> dataRepresentations,
+									 Set<AnyRelationView> relationViews, Set<DNF> predicates) {
 		this(new ModelStoreImpl(dataRepresentations), relationViews, predicates);
 	}
 
-	private void validateViews(Set<DataRepresentation<?, ?>> dataRepresentations, Set<RelationView<?>> relationViews) {
-		for (RelationView<?> relationView : relationViews) {
+	private void validateViews(Set<AnyDataRepresentation> dataRepresentations, Set<AnyRelationView> relationViews) {
+		for (var relationView : relationViews) {
 			if (!dataRepresentations.contains(relationView.getRepresentation())) {
 				throw new IllegalArgumentException("%s %s added to %s without a referred representation.".formatted(
 						DataRepresentation.class.getSimpleName(), relationView.getName(),
@@ -49,7 +53,7 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 		}
 	}
 
-	private void validatePredicates(Set<RelationView<?>> relationViews, Set<DNF> predicates) {
+	private void validatePredicates(Set<AnyRelationView> relationViews, Set<DNF> predicates) {
 		for (DNF dnfPredicate : predicates) {
 			for (DNFAnd clause : dnfPredicate.getClauses()) {
 				for (DNFAtom atom : clause.constraints()) {
@@ -65,7 +69,7 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 		}
 	}
 
-	private void validateRelationAtom(Set<RelationView<?>> relationViews, DNF dnfPredicate,
+	private void validateRelationAtom(Set<AnyRelationView> relationViews, DNF dnfPredicate,
 									  RelationViewAtom relationViewAtom) {
 		if (!relationViews.contains(relationViewAtom.getTarget())) {
 			throw new IllegalArgumentException(
@@ -100,12 +104,12 @@ public class ViatraQueryableModelStore implements QueryableModelStore {
 	}
 
 	@Override
-	public Set<DataRepresentation<?, ?>> getDataRepresentations() {
+	public Set<AnyDataRepresentation> getDataRepresentations() {
 		return store.getDataRepresentations();
 	}
 
 	@Override
-	public Set<RelationView<?>> getViews() {
+	public Set<AnyRelationView> getViews() {
 		return this.relationViews;
 	}
 
