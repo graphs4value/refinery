@@ -238,6 +238,8 @@ export default function scrollbarViewPlugin(
 
     let gutters: Element | undefined;
 
+    let firstRun = true;
+    let firstRunTimeout: number | undefined;
     let requested = false;
     let rebuildRequested = false;
 
@@ -260,7 +262,18 @@ export default function scrollbarViewPlugin(
       const { scrollTop, scrollLeft, scrollWidth } = scrollDOM;
       const scrollHeight =
         view.contentHeight + scrollerHeight - view.defaultLineHeight;
-      spacer.style.minHeight = `${scrollHeight}px`;
+      if (firstRun) {
+        if (firstRunTimeout !== undefined) {
+          clearTimeout(firstRunTimeout);
+        }
+        // @ts-expect-error `@types/node` typings should not be in effect here.
+        firstRunTimeout = setTimeout(() => {
+          spacer.style.minHeight = `${scrollHeight}px`;
+          firstRun = false;
+        }, 0);
+      } else {
+        spacer.style.minHeight = `${scrollHeight}px`;
+      }
       gutterWidth = gutters?.clientWidth ?? 0;
       let trackYHeight = scrollerHeight;
 
