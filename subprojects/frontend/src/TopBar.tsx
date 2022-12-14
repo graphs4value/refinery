@@ -1,4 +1,8 @@
+import GitHubIcon from '@mui/icons-material/GitHub';
 import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
@@ -59,6 +63,7 @@ export default observer(function TopBar(): JSX.Element {
   const overlayVisible = useWindowControlsOverlayVisible();
   const { breakpoints } = useTheme();
   const small = useMediaQuery(breakpoints.down('sm'));
+  const large = useMediaQuery(breakpoints.up('md'));
 
   return (
     <AppBar
@@ -92,11 +97,49 @@ export default observer(function TopBar(): JSX.Element {
         <Typography variant="h6" component="h1" flexGrow={1}>
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
-        <GenerateButton
-          editorStore={editorStore}
-          hideWarnings={small}
-          sx={{ marginRight: 1 }}
-        />
+        <Stack direction="row" marginRight={1}>
+          <GenerateButton editorStore={editorStore} hideWarnings={small} />
+          {large && (
+            <>
+              <Button
+                arial-label="Budapest University of Technology and Economics, Critical Systems Research Group"
+                className="rounded"
+                color="inherit"
+                href="https://ftsrg.mit.bme.hu"
+                target="_blank"
+                sx={{ marginLeft: 1 }}
+              >
+                BME FTSRG
+              </Button>
+              <Button
+                aria-label="McGill University, Department of Electrical and Computer Engineering"
+                className="rounded"
+                color="inherit"
+                href="https://www.mcgill.ca/ece/daniel-varro"
+                target="_blank"
+              >
+                McGill ECE
+              </Button>
+              <Button
+                aria-label="2022 Amazon Research Awards recipent"
+                className="rounded"
+                color="inherit"
+                href="https://www.amazon.science/research-awards/recipients/daniel-varro-fall-2021"
+                target="_blank"
+              >
+                Amazon Science
+              </Button>
+              <IconButton
+                aria-label="GitHub"
+                href="https://github.com/graphs4value/refinery"
+                target="_blank"
+                color="inherit"
+              >
+                <GitHubIcon />
+              </IconButton>
+            </>
+          )}
+        </Stack>
         <ToggleDarkModeButton />
       </Toolbar>
     </AppBar>

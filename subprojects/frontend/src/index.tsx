@@ -4,46 +4,40 @@ import { type Root, createRoot } from 'react-dom/client';
 import App from './App';
 import RootStore from './RootStore';
 
-const initialValue = `class Family {
-    contains Person[] members
-}
-
+const initialValue = `// Metamodel
 class Person {
-    Person[] children opposite parent
-    Person[0..1] parent opposite children
-    int age
-    TaxStatus taxStatus
+    Person[] friend opposite friend
 }
 
-enum TaxStatus {
-    CHILD, STUDENT, ADULT, RETIRED
+class Post {
+    Person author
+    Post[0..1] replyTo
 }
 
-% A child cannot have any dependents.
-pred invalidTaxStatus(Person p) <->
-    taxStatus(p, CHILD),
-    children(p, _q)
-;
-    parent(p, q),
-    age(q) < age(p)
-;
-    taxStatus(p, RETIRED),
-    parent(p, q),
-    !taxStatus(q, RETIRED).
+// Constraints
+error replyToNotFriend(Post x, Post y) <->
+    replyTo(x, y),
+    author(x, xAuthor),
+    author(y, yAuthor),
+    !friend(xAuthor, yAuthor).
 
-indiv family.
-Family(family).
-members(family, anne).
-members(family, bob).
-members(family, ciri).
-children(anne, ciri).
-?children(bob, ciri).
-default children(ciri, *): false.
-taxStatus(anne, ADULT).
-age(bob): 21..35.
-age(ciri): 10.
+error replyToCycle(Post x) <-> replyTo+(x,x).
 
-scope Family = 1, Person += 5..10.
+// Instance model
+Person(a).
+Person(b).
+friend(a, b).
+friend(b, a).
+Post(p1).
+author(p1, a).
+Post(p2).
+author(p2, b).
+replyTo(p2, p1).
+
+!author(Post::new, a). // Automatically inferred: author(Post::new, b).
+
+// Scope
+scope Post = 10..15, Person += 0.
 `;
 
 configure({
