@@ -2,14 +2,14 @@
 eclipseCollections = "11.1.0"
 jetty = "12.0.0.alpha3"
 jmh = "1.36"
-junit = "5.9.1"
-mockito = "4.10.0"
+junit = "5.9.2"
+mockito = "5.0.0"
 mwe2 = "2.14.0"
 slf4j = "2.0.6"
-xtext = "2.29.0"
+xtext = "2.30.0.M1"
 
 [libraries]
-jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "23.1.0"}
+jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.0"}
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.29.0" }

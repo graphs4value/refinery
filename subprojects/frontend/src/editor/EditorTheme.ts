@@ -148,6 +148,7 @@ export default styled('div', {
     '.cm-gutters': {
       background: theme.palette.background.default,
       border: 'none',
+      marginRight: 1,
     },
     '.cm-content': {
       ...editorFontStyle,
@@ -161,6 +162,7 @@ export default styled('div', {
       background: 'transparent',
     },
     '.cm-cursor, .cm-cursor-primary': {
+      marginLeft: -1,
       borderLeft: `2px solid ${theme.palette.info.main}`,
     },
     '.cm-selectionBackground': {
@@ -450,11 +452,11 @@ export default styled('div', {
 
   const foldStyle = {
     '.cm-foldGutter': {
-      width: 18,
+      width: 17,
     },
     '.problem-editor-foldMarker': {
       display: 'block',
-      margin: '4px 2px 4px 0',
+      margin: '4px 1px 4px 0',
       padding: 0,
       maskImage: svgURL(expandMoreSVG),
       maskSize: '16px 16px',
@@ -465,7 +467,7 @@ export default styled('div', {
       cursor: 'pointer',
       WebkitTapHighlightColor: 'transparent',
       [theme.breakpoints.down('sm')]: {
-        margin: '2px 2px 2px 0',
+        margin: '2px 1px 2px 0',
       },
     },
     '.problem-editor-foldMarker-open': {
