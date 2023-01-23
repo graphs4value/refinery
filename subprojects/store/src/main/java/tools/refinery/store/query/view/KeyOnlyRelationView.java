@@ -1,23 +1,23 @@
 package tools.refinery.store.query.view;
 
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.model.representation.Relation;
 
 import java.util.Objects;
 
-public class KeyOnlyRelationView extends AbstractFilteredRelationView<Boolean> {
+public class KeyOnlyRelationView<T> extends TuplePreservingRelationView<T> {
 	public static final String VIEW_NAME = "key";
 
-	private final Boolean defaultValue;
+	private final T defaultValue;
 
-	public KeyOnlyRelationView(Relation<Boolean> representation) {
-		super(representation, VIEW_NAME);
-		defaultValue = representation.getDefaultValue();
+	public KeyOnlyRelationView(Symbol<T> symbol) {
+		super(symbol, VIEW_NAME);
+		defaultValue = symbol.defaultValue();
 	}
 
 	@Override
-	public boolean filter(Tuple key, Boolean value) {
-		return !value.equals(defaultValue);
+	public boolean filter(Tuple key, T value) {
+		return !Objects.equals(value, defaultValue);
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class KeyOnlyRelationView extends AbstractFilteredRelationView<Boolean> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		KeyOnlyRelationView that = (KeyOnlyRelationView) o;
+		KeyOnlyRelationView<?> that = (KeyOnlyRelationView<?>) o;
 		return Objects.equals(defaultValue, that.defaultValue);
 	}
 

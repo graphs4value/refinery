@@ -3,7 +3,7 @@ package tools.refinery.language.semantics.model.internal;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.representation.TruthValue;
 
 public class DecisionTree {
 	private final int levels;

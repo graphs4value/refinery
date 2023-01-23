@@ -39,7 +39,7 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 
 	public void ensureValidKey(IInputKey key) {
 		if (!(key instanceof RelationViewWrapper)) {
-			throw new IllegalArgumentException("The input key %s is not a valid input key.".formatted(key));
+			throw new IllegalArgumentException("The input key %s is not a valid input key".formatted(key));
 		}
 	}
 }

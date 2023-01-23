@@ -2,8 +2,8 @@ package tools.refinery.store.query.viatra.internal.cardinality;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.model.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.model.representation.cardinality.UpperCardinality;
+import tools.refinery.store.representation.cardinality.UpperCardinalities;
+import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

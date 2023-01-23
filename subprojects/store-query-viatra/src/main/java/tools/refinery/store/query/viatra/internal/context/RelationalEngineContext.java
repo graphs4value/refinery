@@ -5,7 +5,7 @@ import org.eclipse.viatra.query.runtime.api.scope.IEngineContext;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContext;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.viatra.internal.viewupdate.ModelUpdateListener;
+import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
 
 public class RelationalEngineContext implements IEngineContext {
 	private final IBaseIndex baseIndex = new DummyBaseIndexer();

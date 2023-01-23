@@ -9,7 +9,7 @@ configurations.testRuntimeClasspath {
 
 dependencies {
 	implementation libs.ecore
-	implementation libs.viatra
+	api libs.viatra
 	api project(':refinery-store')
 	testImplementation libs.slf4j.simple
 	testImplementation libs.slf4j.log4j

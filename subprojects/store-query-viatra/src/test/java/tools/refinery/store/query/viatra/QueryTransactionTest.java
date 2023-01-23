@@ -1,54 +1,59 @@
 package tools.refinery.store.query.viatra;
 
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.model.representation.Relation;
+import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.DNF;
-import tools.refinery.store.query.QueryableModel;
-import tools.refinery.store.query.QueryableModelStore;
+import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.atom.RelationViewAtom;
-import tools.refinery.store.query.viatra.ViatraQueryableModelStore;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class QueryTransactionTest {
 	@Test
 	void flushTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
-		Relation<Boolean> asset = new Relation<>("Asset", 1, Boolean.class, false);
-		RelationView<Boolean> personView = new KeyOnlyRelationView(person);
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
+		var personView = new KeyOnlyRelationView<>(person);
 
 		var p1 = new Variable("p1");
-		DNF predicate = DNF.builder("TypeConstraint")
+		var predicate = DNF.builder("TypeConstraint")
 				.parameters(p1)
 				.clause(new RelationViewAtom(personView, p1))
 				.build();
 
-		QueryableModelStore store = new ViatraQueryableModelStore(Set.of(person, asset), Set.of(personView),
-				Set.of(predicate));
-		QueryableModel model = store.createModel();
+		var store = ModelStore.builder()
+				.symbols(person, asset)
+				.with(ViatraModelQuery.ADAPTER)
+				.queries(predicate)
+				.build();
 
-		assertEquals(0, model.countResults(predicate));
+		var model = store.createModel();
+		var personInterpretation = model.getInterpretation(person);
+		var assetInterpretation = model.getInterpretation(asset);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		model.put(person, Tuple.of(0), true);
-		model.put(person, Tuple.of(1), true);
-		model.put(asset, Tuple.of(1), true);
-		model.put(asset, Tuple.of(2), true);
+		assertEquals(0, predicateResultSet.countResults());
 
-		assertEquals(0, model.countResults(predicate));
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
 
-		model.flushChanges();
-		assertEquals(2, model.countResults(predicate));
+		assetInterpretation.put(Tuple.of(1), true);
+		assetInterpretation.put(Tuple.of(2), true);
 
-		model.put(person, Tuple.of(4), true);
-		assertEquals(2, model.countResults(predicate));
+		assertEquals(0, predicateResultSet.countResults());
 
-		model.flushChanges();
-		assertEquals(3, model.countResults(predicate));
+		queryEngine.flushChanges();
+		assertEquals(2, predicateResultSet.countResults());
+
+		personInterpretation.put(Tuple.of(4), true);
+		assertEquals(2, predicateResultSet.countResults());
+
+		queryEngine.flushChanges();
+		assertEquals(3, predicateResultSet.countResults());
 	}
 }

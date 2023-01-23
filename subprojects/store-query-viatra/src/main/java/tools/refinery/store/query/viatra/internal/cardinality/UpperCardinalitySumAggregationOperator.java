@@ -2,10 +2,10 @@ package tools.refinery.store.query.viatra.internal.cardinality;
 
 import org.eclipse.viatra.query.runtime.matchers.psystem.aggregations.BoundAggregator;
 import org.eclipse.viatra.query.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
-import tools.refinery.store.model.representation.cardinality.FiniteUpperCardinality;
-import tools.refinery.store.model.representation.cardinality.UnboundedUpperCardinality;
-import tools.refinery.store.model.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.model.representation.cardinality.UpperCardinality;
+import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
+import tools.refinery.store.representation.cardinality.UnboundedUpperCardinality;
+import tools.refinery.store.representation.cardinality.UpperCardinalities;
+import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.stream.Stream;
 

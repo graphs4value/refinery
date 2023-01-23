@@ -1,11 +1,11 @@
 package tools.refinery.store.query;
 
-import tools.refinery.store.model.RelationLike;
+import tools.refinery.store.representation.SymbolLike;
 import tools.refinery.store.query.atom.DNFAtom;
 
 import java.util.*;
 
-public class DNF implements RelationLike {
+public class DNF implements SymbolLike {
 	private final String name;
 
 	private final String uniqueName;
@@ -22,7 +22,7 @@ public class DNF implements RelationLike {
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
@@ -35,7 +35,7 @@ public class DNF implements RelationLike {
 	}
 
 	@Override
-	public int getArity() {
+	public int arity() {
 		return parameters.size();
 	}
 

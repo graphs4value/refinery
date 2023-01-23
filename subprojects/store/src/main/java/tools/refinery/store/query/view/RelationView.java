@@ -2,49 +2,49 @@ package tools.refinery.store.query.view;
 
 import tools.refinery.store.map.CursorAsIterator;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.model.representation.Relation;
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Represents a view of a {@link Relation} that can be queried.
+ * Represents a view of a {@link Symbol} that can be queried.
  *
- * @param <D>
+ * @param <T>
  * @author Oszkar Semerath
  */
-public abstract non-sealed class RelationView<D> implements AnyRelationView {
-	private final Relation<D> representation;
+public abstract non-sealed class RelationView<T> implements AnyRelationView {
+	private final Symbol<T> symbol;
 
 	private final String name;
 
-	protected RelationView(Relation<D> representation, String name) {
-		this.representation = representation;
+	protected RelationView(Symbol<T> symbol, String name) {
+		this.symbol = symbol;
 		this.name = name;
 	}
 
-	protected RelationView(Relation<D> representation) {
+	protected RelationView(Symbol<T> representation) {
 		this(representation, UUID.randomUUID().toString());
 	}
 
 	@Override
-	public Relation<D> getRepresentation() {
-		return representation;
+	public Symbol<T> getSymbol() {
+		return symbol;
 	}
 
 	@Override
-	public String getName() {
-		return representation.getName() + "#" + name;
+	public String name() {
+		return symbol.name() + "#" + name;
 	}
 
-	public abstract boolean filter(Tuple key, D value);
+	public abstract boolean filter(Tuple key, T value);
 
-	public abstract Object[] forwardMap(Tuple key, D value);
+	public abstract Object[] forwardMap(Tuple key, T value);
 
 	@Override
 	public Iterable<Object[]> getAll(Model model) {
-		return (() -> new CursorAsIterator<>(model.getAll(representation), this::forwardMap, this::filter));
+		return (() -> new CursorAsIterator<>(model.getInterpretation(symbol).getAll(), this::forwardMap, this::filter));
 	}
 
 	@Override
@@ -52,11 +52,11 @@ public abstract non-sealed class RelationView<D> implements AnyRelationView {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		RelationView<?> that = (RelationView<?>) o;
-		return Objects.equals(representation, that.representation) && Objects.equals(name, that.name);
+		return Objects.equals(symbol, that.symbol) && Objects.equals(name, that.name);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(representation, name);
+		return Objects.hash(symbol, name);
 	}
 }

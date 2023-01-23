@@ -4,15 +4,6 @@ import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.tuple.Tuple;
 
 public class TupleHashProvider implements ContinousHashProvider<Tuple> {
-	protected static TupleHashProvider instance;
-
-	public static TupleHashProvider singleton() {
-		if (instance == null) {
-			instance = new TupleHashProvider();
-		}
-		return instance;
-	}
-
 	protected static final int[] primes = new int[] { 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101,
 			103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,
 			223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337,
@@ -44,6 +35,8 @@ public class TupleHashProvider implements ContinousHashProvider<Tuple> {
 	public static final long LARGEST_PRIME_30_BITS = 1073741789;
 
 	public static final int MAX_MODEL_SIZE = (int) LARGEST_PRIME_30_BITS;
+
+	public static final TupleHashProvider INSTANCE = new TupleHashProvider();
 
 	public TupleHashProvider() {
 		if (primes.length < MAX_PRACTICAL_DEPTH) {

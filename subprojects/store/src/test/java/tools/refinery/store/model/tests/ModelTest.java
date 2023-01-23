@@ -1,145 +1,149 @@
 package tools.refinery.store.model.tests;
 
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.model.ModelStoreImpl;
-import tools.refinery.store.model.representation.Relation;
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModelTest {
-
 	@Test
 	void modelConstructionTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
-		Relation<Boolean> friend = new Relation<>("friend", 2, Boolean.class, false);
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
-		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
-		Model model = store.createModel();
+		var store = ModelStore.builder().symbols(person, friend).build();
+		var symbols = store.getSymbols();
 
-		assertTrue(store.getDataRepresentations().contains(person));
-		assertTrue(store.getDataRepresentations().contains(friend));
-		assertTrue(model.getDataRepresentations().contains(person));
-		assertTrue(model.getDataRepresentations().contains(friend));
+		assertTrue(symbols.contains(person));
+		assertTrue(symbols.contains(friend));
 
-		Relation<Integer> other = new Relation<Integer>("other", 2, Integer.class, null);
-		assertFalse(model.getDataRepresentations().contains(other));
+		var other = new Symbol<>("other", 2, Integer.class, null);
+		assertFalse(symbols.contains(other));
 	}
 
 	@Test
 	void modelBuildingTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
-		Relation<Integer> age = new Relation<Integer>("age", 1, Integer.class, null);
-		Relation<Boolean> friend = new Relation<>("friend", 2, Boolean.class, false);
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var age = new Symbol<>("age", 1, Integer.class, null);
+		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
-		ModelStore store = new ModelStoreImpl(Set.of(person, age, friend));
-		Model model = store.createModel();
+		var store = ModelStore.builder().symbols(person, age, friend).build();
+		var model = store.createModel();
+		var personInterpretation = model.getInterpretation(person);
+		var ageInterpretation = model.getInterpretation(age);
+		var friendInterpretation = model.getInterpretation(friend);
 
-		model.put(person, Tuple.of(0), true);
-		model.put(person, Tuple.of(1), true);
-		model.put(age, Tuple.of(0), 3);
-		model.put(age, Tuple.of(1), 1);
-		model.put(friend, Tuple.of(0, 1), true);
-		model.put(friend, Tuple.of(1, 0), true);
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		ageInterpretation.put(Tuple.of(0), 3);
+		ageInterpretation.put(Tuple.of(1), 1);
+		friendInterpretation.put(Tuple.of(0, 1), true);
+		friendInterpretation.put(Tuple.of(1, 0), true);
 
-		assertTrue(model.get(person, Tuple.of(0)));
-		assertTrue(model.get(person, Tuple.of(1)));
-		assertFalse(model.get(person, Tuple.of(2)));
+		assertTrue(personInterpretation.get(Tuple.of(0)));
+		assertTrue(personInterpretation.get(Tuple.of(1)));
+		assertFalse(personInterpretation.get(Tuple.of(2)));
 
-		assertEquals(3, model.get(age, Tuple.of(0)));
-		assertEquals(1, model.get(age, Tuple.of(1)));
-		assertNull(model.get(age, Tuple.of(2)));
+		assertEquals(3, ageInterpretation.get(Tuple.of(0)));
+		assertEquals(1, ageInterpretation.get(Tuple.of(1)));
+		assertNull(ageInterpretation.get( Tuple.of(2)));
 
-		assertTrue(model.get(friend, Tuple.of(0, 1)));
-		assertFalse(model.get(friend, Tuple.of(0, 5)));
+		assertTrue(friendInterpretation.get(Tuple.of(0, 1)));
+		assertFalse(friendInterpretation.get(Tuple.of(0, 5)));
 	}
 
 	@Test
 	void modelBuildingArityFailTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
 
-		ModelStore store = new ModelStoreImpl(Set.of(person));
-		Model model = store.createModel();
+		var store = ModelStore.builder().symbols(person).build();
+		var model = store.createModel();
+		var personInterpretation = model.getInterpretation(person);
 
 		final Tuple tuple3 = Tuple.of(1, 1, 1);
-		assertThrows(IllegalArgumentException.class, () -> model.put(person, tuple3, true));
-		assertThrows(IllegalArgumentException.class, () -> model.get(person, tuple3));
+		assertThrows(IllegalArgumentException.class, () -> personInterpretation.put(tuple3, true));
+		assertThrows(IllegalArgumentException.class, () -> personInterpretation.get(tuple3));
 	}
 
 	@Test
 	void modelBuildingNullFailTest() {
-		Relation<Integer> age = new Relation<Integer>("age", 1, Integer.class, null);
-		ModelStore store = new ModelStoreImpl(Set.of(age));
-		Model model = store.createModel();
+		var age = new Symbol<>("age", 1, Integer.class, null);
 
-		model.put(age, Tuple.of(1), null); // valid
-		assertThrows(IllegalArgumentException.class, () -> model.put(age, null, 1));
-		assertThrows(IllegalArgumentException.class, () -> model.get(age, null));
+		var store = ModelStore.builder().symbols(age).build();
+		var model = store.createModel();
+		var ageInterpretation = model.getInterpretation(age);
+
+		ageInterpretation.put(Tuple.of(1), null); // valid
+		assertThrows(IllegalArgumentException.class, () -> ageInterpretation.put(null, 1));
+		assertThrows(IllegalArgumentException.class, () -> ageInterpretation.get(null));
 
 	}
 
 	@Test
 	void modelUpdateTest() {
-		Relation<Boolean> person = new Relation<>("Person", 1, Boolean.class, false);
-		Relation<Integer> age = new Relation<Integer>("age", 1, Integer.class, null);
-		Relation<Boolean> friend = new Relation<>("friend", 2, Boolean.class, false);
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var age = new Symbol<>("age", 1, Integer.class, null);
+		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
-		ModelStore store = new ModelStoreImpl(Set.of(person, age, friend));
-		Model model = store.createModel();
+		var store = ModelStore.builder().symbols(person, age, friend).build();
+		var model = store.createModel();
+		var personInterpretation = model.getInterpretation(person);
+		var ageInterpretation = model.getInterpretation(age);
+		var friendInterpretation = model.getInterpretation(friend);
 
-		model.put(person, Tuple.of(0), true);
-		model.put(person, Tuple.of(1), true);
-		model.put(age, Tuple.of(0), 3);
-		model.put(age, Tuple.of(1), 1);
-		model.put(friend, Tuple.of(0, 1), true);
-		model.put(friend, Tuple.of(1, 0), true);
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		ageInterpretation.put(Tuple.of(0), 3);
+		ageInterpretation.put(Tuple.of(1), 1);
+		friendInterpretation.put(Tuple.of(0, 1), true);
+		friendInterpretation.put(Tuple.of(1, 0), true);
 
-		assertEquals(3, model.get(age, Tuple.of(0)));
-		assertTrue(model.get(friend, Tuple.of(0, 1)));
+		assertEquals(3, ageInterpretation.get(Tuple.of(0)));
+		assertTrue(friendInterpretation.get(Tuple.of(0, 1)));
 
-		model.put(age, Tuple.of(0), 4);
-		model.put(friend, Tuple.of(0, 1), false);
+		ageInterpretation.put(Tuple.of(0), 4);
+		friendInterpretation.put(Tuple.of(0, 1), false);
 
-		assertEquals(4, model.get(age, Tuple.of(0)));
-		assertFalse(model.get(friend, Tuple.of(0, 1)));
+		assertEquals(4, ageInterpretation.get(Tuple.of(0)));
+		assertFalse(friendInterpretation.get(Tuple.of(0, 1)));
 	}
 
 	@Test
 	void restoreTest() {
-		Relation<Boolean> person = new Relation<Boolean>("Person", 1, Boolean.class, false);
-		Relation<Boolean> friend = new Relation<Boolean>("friend", 2, Boolean.class, false);
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
-		ModelStore store = new ModelStoreImpl(Set.of(person, friend));
-		Model model = store.createModel();
+		var store = ModelStore.builder().symbols(person, friend).build();
+		var model = store.createModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
 
-		model.put(person, Tuple.of(0), true);
-		model.put(person, Tuple.of(1), true);
-		model.put(friend, Tuple.of(0, 1), true);
-		model.put(friend, Tuple.of(1, 0), true);
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		friendInterpretation.put(Tuple.of(0, 1), true);
+		friendInterpretation.put(Tuple.of(1, 0), true);
 		long state1 = model.commit();
 
-		assertFalse(model.get(person, Tuple.of(2)));
-		assertFalse(model.get(friend, Tuple.of(0, 2)));
+		assertFalse(personInterpretation.get(Tuple.of(2)));
+		assertFalse(friendInterpretation.get(Tuple.of(0, 2)));
 
-		model.put(person, Tuple.of(2), true);
-		model.put(friend, Tuple.of(0, 2), true);
+		personInterpretation.put(Tuple.of(2), true);
+		friendInterpretation.put(Tuple.of(0, 2), true);
 		long state2 = model.commit();
 
-		assertTrue(model.get(person, Tuple.of(2)));
-		assertTrue(model.get(friend, Tuple.of(0, 2)));
+		assertTrue(personInterpretation.get(Tuple.of(2)));
+		assertTrue(friendInterpretation.get(Tuple.of(0, 2)));
 
 		model.restore(state1);
 
-		assertFalse(model.get(person, Tuple.of(2)));
-		assertFalse(model.get(friend, Tuple.of(0, 2)));
+		assertFalse(personInterpretation.get(Tuple.of(2)));
+		assertFalse(friendInterpretation.get(Tuple.of(0, 2)));
 
 		model.restore(state2);
 
-		assertTrue(model.get(person, Tuple.of(2)));
-		assertTrue(model.get(friend, Tuple.of(0, 2)));
+		assertTrue(personInterpretation.get(Tuple.of(2)));
+		assertTrue(friendInterpretation.get(Tuple.of(0, 2)));
 	}
 }

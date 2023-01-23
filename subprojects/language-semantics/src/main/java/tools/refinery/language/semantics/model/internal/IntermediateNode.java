@@ -5,7 +5,7 @@ import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntObjectPair;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.representation.TruthValue;
 
 final class IntermediateNode extends DecisionTreeNode {
 	private final MutableIntObjectMap<DecisionTreeNode> children;

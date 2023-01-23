@@ -1,5 +1,6 @@
 package tools.refinery.store.query.viatra.internal.pquery;
 
+import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Equality;
@@ -20,20 +21,28 @@ import tools.refinery.store.query.atom.*;
 import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DNF2PQuery {
 	private final Set<DNF> translating = new LinkedHashSet<>();
 
-	private final Map<DNF, SimplePQuery> dnf2PQueryMap = new HashMap<>();
+	private final Map<DNF, RawPQuery> dnf2PQueryMap = new HashMap<>();
 
-	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new HashMap<>();
+	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 
-	public SimplePQuery translate(DNF dnfQuery) {
+	private Function<DNF, QueryEvaluationHint> computeHint = dnf -> new QueryEvaluationHint(null,
+			QueryEvaluationHint.BackendRequirement.UNSPECIFIED);
+
+	public void setComputeHint(Function<DNF, QueryEvaluationHint> computeHint) {
+		this.computeHint = computeHint;
+	}
+
+	public RawPQuery translate(DNF dnfQuery) {
 		if (translating.contains(dnfQuery)) {
-			var path = translating.stream().map(DNF::getName).collect(Collectors.joining(" -> "));
+			var path = translating.stream().map(DNF::name).collect(Collectors.joining(" -> "));
 			throw new IllegalStateException("Circular reference %s -> %s detected".formatted(path,
-					dnfQuery.getName()));
+					dnfQuery.name()));
 		}
 		// We can't use computeIfAbsent here, because translating referenced queries calls this method in a reentrant
 		// way, which would cause a ConcurrentModificationException with computeIfAbsent.
@@ -50,8 +59,17 @@ public class DNF2PQuery {
 		return pQuery;
 	}
 
-	private SimplePQuery doTranslate(DNF dnfQuery) {
-		var pQuery = new SimplePQuery(dnfQuery.getUniqueName());
+	public Collection<AnyRelationView> getRelationViews() {
+		return Collections.unmodifiableCollection(view2WrapperMap.keySet());
+	}
+
+	public RawPQuery getAlreadyTranslated(DNF dnfQuery) {
+		return dnf2PQueryMap.get(dnfQuery);
+	}
+
+	private RawPQuery doTranslate(DNF dnfQuery) {
+		var pQuery = new RawPQuery(dnfQuery.getUniqueName());
+		pQuery.setEvaluationHints(computeHint.apply(dnfQuery));
 
 		Map<Variable, PParameter> parameters = new HashMap<>();
 		for (Variable variable : dnfQuery.getParameters()) {
@@ -86,7 +104,7 @@ public class DNF2PQuery {
 			translateEquivalenceAtom(equivalenceAtom, body);
 		} else if (constraint instanceof RelationViewAtom relationViewAtom) {
 			translateRelationViewAtom(relationViewAtom, body);
-		} else if (constraint instanceof CallAtom<?> callAtom) {
+		} else if (constraint instanceof DNFCallAtom callAtom) {
 			translateCallAtom(callAtom, body);
 		} else if (constraint instanceof ConstantAtom constantAtom) {
 			translateConstantAtom(constantAtom, body);

@@ -10,7 +10,7 @@ public class RelationViewWrapper extends BaseInputKeyWrapper<AnyRelationView> {
 
 	@Override
 	public String getPrettyPrintableName() {
-		return wrappedKey.getName();
+		return wrappedKey.name();
 	}
 
 	@Override
@@ -20,7 +20,7 @@ public class RelationViewWrapper extends BaseInputKeyWrapper<AnyRelationView> {
 
 	@Override
 	public int getArity() {
-		return wrappedKey.getArity();
+		return wrappedKey.arity();
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package tools.refinery.language.semantics.model.internal;
 
-import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.representation.TruthValue;
 
 public enum DecisionTreeValue {
 	UNSET(null),

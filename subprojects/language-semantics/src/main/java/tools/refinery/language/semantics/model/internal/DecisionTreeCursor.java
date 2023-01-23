@@ -1,7 +1,7 @@
 package tools.refinery.language.semantics.model.internal;
 
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayDeque;

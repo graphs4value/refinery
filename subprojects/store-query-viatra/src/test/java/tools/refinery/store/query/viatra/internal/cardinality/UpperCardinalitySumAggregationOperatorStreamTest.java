@@ -3,8 +3,8 @@ package tools.refinery.store.query.viatra.internal.cardinality;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.store.model.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.model.representation.cardinality.UpperCardinality;
+import tools.refinery.store.representation.cardinality.UpperCardinalities;
+import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.stream.Stream;
 

@@ -1,40 +1,40 @@
 package tools.refinery.store.query.atom;
 
-import tools.refinery.store.model.RelationLike;
+import tools.refinery.store.representation.SymbolLike;
 import tools.refinery.store.query.Variable;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public final class CallAtom<T extends RelationLike> extends AbstractSubstitutionAtom<T> {
+public abstract class CallAtom<T extends SymbolLike> extends AbstractSubstitutionAtom<T> {
 	private final CallPolarity polarity;
 
-	public CallAtom(CallPolarity polarity, T target, List<Variable> substitution) {
+	protected CallAtom(CallPolarity polarity, T target, List<Variable> substitution) {
 		super(target, substitution);
-		if (polarity.isTransitive() && target.getArity() != 2) {
+		if (polarity.isTransitive() && target.arity() != 2) {
 			throw new IllegalArgumentException("Transitive closures can only take binary relations");
 		}
 		this.polarity = polarity;
 	}
 
-	public CallAtom(CallPolarity polarity, T target, Variable... substitution) {
+	protected CallAtom(CallPolarity polarity, T target, Variable... substitution) {
 		this(polarity, target, List.of(substitution));
 	}
 
-	public CallAtom(boolean positive, T target, List<Variable> substitution) {
+	protected CallAtom(boolean positive, T target, List<Variable> substitution) {
 		this(CallPolarity.fromBoolean(positive), target, substitution);
 	}
 
-	public CallAtom(boolean positive, T target, Variable... substitution) {
+	protected CallAtom(boolean positive, T target, Variable... substitution) {
 		this(positive, target, List.of(substitution));
 	}
 
-	public CallAtom(T target, List<Variable> substitution) {
+	protected CallAtom(T target, List<Variable> substitution) {
 		this(true, target, substitution);
 	}
 
-	public CallAtom(T target, Variable... substitution) {
+	protected CallAtom(T target, Variable... substitution) {
 		this(target, List.of(substitution));
 	}
 

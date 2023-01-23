@@ -8,7 +8,7 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
-import tools.refinery.store.query.viatra.internal.viewupdate.ModelUpdateListener;
+import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
 import tools.refinery.store.query.view.AnyRelationView;
 import tools.refinery.store.query.view.RelationView;
 
@@ -48,12 +48,12 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public boolean isCoalescing() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
-		if (key instanceof RelationView<?> relationalKey) {
+		if (key instanceof AnyRelationView relationalKey) {
 			return this.modelUpdateListener.containsRelationView(relationalKey);
 		} else {
 			return false;
@@ -63,7 +63,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public void ensureIndexed(IInputKey key, IndexingService service) {
 		if (!isIndexed(key, service)) {
-			throw new IllegalStateException("Engine tries to index a new key " + key);
+			throw new IllegalStateException("Engine tries to index a new key %s".formatted(key));
 		}
 	}
 
@@ -73,7 +73,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 			if (modelUpdateListener.containsRelationView(relationViewKey)) {
 				return relationViewKey;
 			} else {
-				throw new IllegalStateException("Query is asking for non-indexed key");
+				throw new IllegalStateException("Query is asking for non-indexed key %s".formatted(relationViewKey));
 			}
 		} else {
 			throw new IllegalStateException("Query is asking for non-relational key");
@@ -131,7 +131,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public void addUpdateListener(IInputKey key, Tuple seed, IQueryRuntimeContextListener listener) {
-		var relationViewKey = (RelationView<?>) checkKey(key);
+		var relationViewKey = checkKey(key);
 		this.modelUpdateListener.addListener(key, relationViewKey, seed, listener);
 
 	}
@@ -168,7 +168,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	}
 
 	@Override
-	public void executeAfterTraversal(Runnable runnable) throws InvocationTargetException {
+	public void executeAfterTraversal(Runnable runnable) {
 		runnable.run();
 	}
 }

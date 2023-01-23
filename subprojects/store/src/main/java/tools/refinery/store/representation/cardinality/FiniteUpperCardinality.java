@@ -1,0 +1,55 @@
+package tools.refinery.store.representation.cardinality;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.function.IntBinaryOperator;
+
+public record FiniteUpperCardinality(int finiteUpperBound) implements UpperCardinality {
+	public FiniteUpperCardinality {
+		if (finiteUpperBound < 0) {
+			throw new IllegalArgumentException("finiteUpperBound must not be negative");
+		}
+	}
+
+	@Override
+	public UpperCardinality add(UpperCardinality other) {
+		return lift(other, Integer::sum);
+	}
+
+	@Override
+	public UpperCardinality multiply(UpperCardinality other) {
+		return lift(other, (a, b) -> a * b);
+	}
+
+	@Override
+	public int compareTo(@NotNull UpperCardinality upperCardinality) {
+		if (upperCardinality instanceof FiniteUpperCardinality finiteUpperCardinality) {
+			return compareToInt(finiteUpperCardinality.finiteUpperBound);
+		}
+		if (upperCardinality instanceof UnboundedUpperCardinality) {
+			return -1;
+		}
+		throw new IllegalArgumentException("Unknown UpperCardinality: " + upperCardinality);
+	}
+
+	@Override
+	public int compareToInt(int value) {
+		return Integer.compare(finiteUpperBound, value);
+	}
+
+	@Override
+	public String toString() {
+		return Integer.toString(finiteUpperBound);
+	}
+
+	private UpperCardinality lift(@NotNull UpperCardinality other, IntBinaryOperator operator) {
+		if (other instanceof FiniteUpperCardinality finiteUpperCardinality) {
+			return UpperCardinalities.valueOf(operator.applyAsInt(finiteUpperBound,
+					finiteUpperCardinality.finiteUpperBound));
+		}
+		if (other instanceof UnboundedUpperCardinality) {
+			return UpperCardinalities.UNBOUNDED;
+		}
+		throw new IllegalArgumentException("Unknown UpperCardinality: " + other);
+	}
+}

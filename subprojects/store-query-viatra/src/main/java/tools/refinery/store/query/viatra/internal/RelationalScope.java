@@ -6,34 +6,20 @@ import org.eclipse.viatra.query.runtime.api.scope.IEngineContext;
 import org.eclipse.viatra.query.runtime.api.scope.IIndexingErrorListener;
 import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.model.representation.Relation;
 import tools.refinery.store.query.viatra.internal.context.RelationalEngineContext;
-import tools.refinery.store.query.viatra.internal.viewupdate.ModelUpdateListener;
+import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
 import tools.refinery.store.query.view.AnyRelationView;
-import tools.refinery.store.tuple.Tuple;
 
-import java.util.Set;
+import java.util.Collection;
 
 public class RelationalScope extends QueryScope {
 	private final Model model;
 
 	private final ModelUpdateListener updateListener;
 
-	public RelationalScope(Model model, Set<AnyRelationView> relationViews) {
+	public RelationalScope(Model model, Collection<AnyRelationView> relationViews) {
 		this.model = model;
-		this.updateListener = new ModelUpdateListener(relationViews);
-	}
-
-	public <D> void processUpdate(Relation<D> relation, Tuple key, D oldValue, D newValue) {
-		updateListener.addUpdate(relation, key, oldValue, newValue);
-	}
-
-	public boolean hasChanges() {
-		return updateListener.hasChanges();
-	}
-
-	public void flush() {
-		updateListener.flush();
+		updateListener = new ModelUpdateListener(model, relationViews);
 	}
 
 	@Override

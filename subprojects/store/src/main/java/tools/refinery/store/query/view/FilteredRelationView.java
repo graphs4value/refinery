@@ -1,35 +1,35 @@
 package tools.refinery.store.query.view;
 
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.model.representation.Relation;
+import tools.refinery.store.representation.Symbol;
 
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-public class FilteredRelationView<D> extends AbstractFilteredRelationView<D> {
-	private final BiPredicate<Tuple, D> predicate;
+public class FilteredRelationView<T> extends TuplePreservingRelationView<T> {
+	private final BiPredicate<Tuple, T> predicate;
 
-	public FilteredRelationView(Relation<D> representation, String name, BiPredicate<Tuple, D> predicate) {
-		super(representation, name);
+	public FilteredRelationView(Symbol<T> symbol, String name, BiPredicate<Tuple, T> predicate) {
+		super(symbol, name);
 		this.predicate = predicate;
 	}
 
-	public FilteredRelationView(Relation<D> representation, BiPredicate<Tuple, D> predicate) {
-		super(representation);
+	public FilteredRelationView(Symbol<T> symbol, BiPredicate<Tuple, T> predicate) {
+		super(symbol);
 		this.predicate = predicate;
 	}
 
-	public FilteredRelationView(Relation<D> representation, String name, Predicate<D> predicate) {
-		this(representation, name, (k, v) -> predicate.test(v));
+	public FilteredRelationView(Symbol<T> symbol, String name, Predicate<T> predicate) {
+		this(symbol, name, (k, v) -> predicate.test(v));
 	}
 
-	public FilteredRelationView(Relation<D> representation, Predicate<D> predicate) {
-		this(representation, (k, v) -> predicate.test(v));
+	public FilteredRelationView(Symbol<T> symbol, Predicate<T> predicate) {
+		this(symbol, (k, v) -> predicate.test(v));
 	}
 
 	@Override
-	public boolean filter(Tuple key, D value) {
+	public boolean filter(Tuple key, T value) {
 		return this.predicate.test(key, value);
 	}
 

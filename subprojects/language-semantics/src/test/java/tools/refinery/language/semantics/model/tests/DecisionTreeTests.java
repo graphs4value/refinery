@@ -2,7 +2,7 @@ package tools.refinery.language.semantics.model.tests;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.language.semantics.model.internal.DecisionTree;
-import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.LinkedHashMap;

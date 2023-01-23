@@ -1,131 +1,166 @@
 package tools.refinery.store.model.internal;
 
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.Cursor;
+import tools.refinery.store.adapter.AdapterList;
+import tools.refinery.store.adapter.AnyModelAdapterType;
+import tools.refinery.store.adapter.ModelAdapter;
+import tools.refinery.store.adapter.ModelAdapterType;
 import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.internal.MapDiffCursor;
-import tools.refinery.store.model.Model;
-import tools.refinery.store.model.ModelDiffCursor;
-import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.model.representation.AnyDataRepresentation;
-import tools.refinery.store.model.representation.DataRepresentation;
+import tools.refinery.store.model.*;
+import tools.refinery.store.representation.AnySymbol;
+import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.tuple.Tuple;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ModelImpl implements Model {
 	private final ModelStore store;
+	private long state;
+	private Map<? extends AnySymbol, ? extends VersionedInterpretation<?>> interpretations;
+	private final AdapterList<ModelAdapter> adapters;
+	private final List<ModelListener> listeners = new ArrayList<>();
+	private ModelAction pendingAction = ModelAction.NONE;
+	private long restoringToState = -1;
 
-	private final Map<AnyDataRepresentation, VersionedMap<?, ?>> maps;
-
-	public ModelImpl(ModelStore store, Map<AnyDataRepresentation, VersionedMap<?, ?>> maps) {
+	ModelImpl(ModelStore store, long state, int adapterCount) {
 		this.store = store;
-		this.maps = maps;
+		this.state = state;
+		adapters = new AdapterList<>(adapterCount);
+	}
+
+	void setInterpretations(Map<? extends AnySymbol, ? extends VersionedInterpretation<?>> interpretations) {
+		this.interpretations = interpretations;
 	}
 
 	@Override
-	public Set<AnyDataRepresentation> getDataRepresentations() {
-		return maps.keySet();
+	public ModelStore getStore() {
+		return store;
 	}
 
-	private VersionedMap<?, ?> getMap(AnyDataRepresentation representation) {
-		if (maps.containsKey(representation)) {
-			return maps.get(representation);
-		} else {
-			throw new IllegalArgumentException("Model does have representation " + representation);
+	@Override
+	public long getState() {
+		return state;
+	}
+
+	@Override
+	public <T> Interpretation<T> getInterpretation(Symbol<T> symbol) {
+		var interpretation = interpretations.get(symbol);
+		if (interpretation == null) {
+			throw new IllegalArgumentException("No interpretation for symbol %s in model".formatted(symbol));
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <K, V> VersionedMap<K, V> getMap(DataRepresentation<K, V> representation) {
-		return (VersionedMap<K, V>) maps.get(representation);
-	}
-
-	private <K, V> VersionedMap<K, V> getMapValidateKey(DataRepresentation<K, V> representation, K key) {
-		if (representation.isValidKey(key)) {
-			return getMap(representation);
-		} else {
-			throw new IllegalArgumentException(
-					"Key is not valid for representation! (representation=" + representation + ", key=" + key + ");");
-		}
-	}
-
-	@Override
-	public <K, V> V get(DataRepresentation<K, V> representation, K key) {
-		return getMapValidateKey(representation, key).get(key);
-	}
-
-	@Override
-	public <K, V> Cursor<K, V> getAll(DataRepresentation<K, V> representation) {
-		return getMap(representation).getAll();
-	}
-
-	@Override
-	public <K, V> V put(DataRepresentation<K, V> representation, K key, V value) {
-		return getMapValidateKey(representation, key).put(key, value);
-	}
-
-	@Override
-	public <K, V> void putAll(DataRepresentation<K, V> representation, Cursor<K, V> cursor) {
-		getMap(representation).putAll(cursor);
-	}
-
-	@Override
-	public long getSize(AnyDataRepresentation representation) {
-		return getMap(representation).getSize();
+		@SuppressWarnings("unchecked")
+		var typedInterpretation = (Interpretation<T>) interpretation;
+		return typedInterpretation;
 	}
 
 	@Override
 	public ModelDiffCursor getDiffCursor(long to) {
-		Model toModel = store.createModel(to);
-		Map<AnyDataRepresentation, DiffCursor<?, ?>> diffCursors = new HashMap<>();
-		for (AnyDataRepresentation anyDataRepresentation : this.maps.keySet()) {
-			var dataRepresentation = (DataRepresentation<?, ?>) anyDataRepresentation;
-			MapDiffCursor<?, ?> diffCursor = constructDiffCursor(toModel, dataRepresentation);
-			diffCursors.put(dataRepresentation, diffCursor);
+		var diffCursors = new HashMap<AnySymbol, DiffCursor<Tuple, ?>>(interpretations.size());
+		for (var entry : interpretations.entrySet()) {
+			diffCursors.put(entry.getKey(), entry.getValue().getDiffCursor(to));
 		}
 		return new ModelDiffCursor(diffCursors);
 	}
 
-	private <K, V> MapDiffCursor<K, V> constructDiffCursor(Model toModel, DataRepresentation<K, V> representation) {
-		@SuppressWarnings("unchecked")
-		Cursor<K, V> fromCursor = (Cursor<K, V>) this.maps.get(representation).getAll();
-		Cursor<K, V> toCursor = toModel.getAll(representation);
-
-		ContinousHashProvider<K> hashProvider = representation.getHashProvider();
-		V defaultValue = representation.getDefaultValue();
-		return new MapDiffCursor<>(hashProvider, defaultValue, fromCursor, toCursor);
-	}
-
 	@Override
 	public long commit() {
-		long version = 0;
-		boolean versionSet = false;
-		for (VersionedMap<?, ?> map : maps.values()) {
-			long newVersion = map.commit();
-			if (versionSet) {
-				if (version != newVersion) {
-					throw new IllegalStateException(
-							"Maps in model have different versions! (" + version + " and" + newVersion + ")");
-				}
-			} else {
-				version = newVersion;
-				versionSet = true;
-			}
+		if (pendingAction != ModelAction.NONE) {
+			throw pendingActionError("commit");
 		}
-		return version;
+		pendingAction = ModelAction.COMMIT;
+		try {
+			int listenerCount = listeners.size();
+			int i = listenerCount;
+			long version = 0;
+			while (i > 0) {
+				i--;
+				listeners.get(i).beforeCommit();
+			}
+			boolean versionSet = false;
+			for (var interpretation : interpretations.values()) {
+				long newVersion = interpretation.commit();
+				if (versionSet) {
+					if (version != newVersion) {
+						throw new IllegalStateException("Interpretations in model have different versions (%d and %d)"
+								.formatted(version, newVersion));
+					}
+				} else {
+					version = newVersion;
+					versionSet = true;
+				}
+			}
+			state = version;
+			while (i < listenerCount) {
+				listeners.get(i).afterCommit();
+				i++;
+			}
+			return version;
+		} finally {
+			pendingAction = ModelAction.NONE;
+		}
 	}
 
 	@Override
-	public void restore(long state) {
-		if (store.getStates().contains(state)) {
-			for (VersionedMap<?, ?> map : maps.values()) {
-				map.restore(state);
-			}
-		} else {
-			throw new IllegalArgumentException("Map does not contain state " + state + "!");
+	public void restore(long version) {
+		if (pendingAction != ModelAction.NONE) {
+			throw pendingActionError("restore to %d".formatted(version));
 		}
+		if (!store.getStates().contains(version)) {
+			throw new IllegalArgumentException("Store does not contain state %d".formatted(version));
+		}
+		pendingAction = ModelAction.RESTORE;
+		restoringToState = version;
+		try {
+			int listenerCount = listeners.size();
+			int i = listenerCount;
+			while (i > 0) {
+				i--;
+				listeners.get(i).beforeRestore(version);
+			}
+			for (var interpretation : interpretations.values()) {
+				interpretation.restore(version);
+			}
+			state = version;
+			while (i < listenerCount) {
+				listeners.get(i).afterRestore();
+				i++;
+			}
+		} finally {
+			pendingAction = ModelAction.NONE;
+			restoringToState = -1;
+		}
+	}
+
+	public RuntimeException pendingActionError(String currentActionName) {
+		var pendingActionName = switch (pendingAction) {
+			case NONE -> throw new IllegalArgumentException("Trying to throw pending action error when there is no " +
+					"pending action");
+			case COMMIT -> "commit";
+			case RESTORE -> "restore to %d".formatted(restoringToState);
+		};
+		return new IllegalStateException("Cannot %s due to pending %s".formatted(currentActionName, pendingActionName));
+	}
+
+	@Override
+	public <T extends ModelAdapter> Optional<T> tryGetAdapter(ModelAdapterType<? extends T, ?, ?> adapterType) {
+		return adapters.tryGet(adapterType, adapterType.getModelAdapterClass());
+	}
+
+	@Override
+	public <T extends ModelAdapter> T getAdapter(ModelAdapterType<T, ?, ?> adapterType) {
+		return adapters.get(adapterType, adapterType.getModelAdapterClass());
+	}
+
+	void addAdapter(AnyModelAdapterType adapterType, ModelAdapter adapter) {
+		adapters.add(adapterType, adapter);
+	}
+
+	@Override
+	public void addListener(ModelListener listener) {
+		listeners.add(listener);
+	}
+
+	@Override
+	public void removeListener(ModelListener listener) {
+		listeners.remove(listener);
 	}
 }

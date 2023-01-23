@@ -1,27 +1,27 @@
 package tools.refinery.store.model;
 
-import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.model.representation.AnyDataRepresentation;
-import tools.refinery.store.model.representation.DataRepresentation;
+import tools.refinery.store.representation.AnySymbol;
+import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.Map;
 
 public class ModelDiffCursor {
-	final Map<AnyDataRepresentation, DiffCursor<?, ?>> diffCursors;
+	private final Map<? extends AnySymbol, ? extends DiffCursor<?, ?>> diffCursors;
 
-	public ModelDiffCursor(Map<AnyDataRepresentation, DiffCursor<?, ?>> diffCursors) {
+	public ModelDiffCursor(Map<? extends AnySymbol, ? extends DiffCursor<?, ?>> diffCursors) {
 		super();
 		this.diffCursors = diffCursors;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <K, V> DiffCursor<K, V> getCursor(DataRepresentation<K, V> representation) {
-		Cursor<?, ?> cursor = diffCursors.get(representation);
-		if (cursor != null) {
-			return (DiffCursor<K, V>) cursor;
-		} else {
-			throw new IllegalArgumentException("ModelCursor does not contain cursor for representation " + representation);
+	public <T> DiffCursor<Tuple, T> getCursor(Symbol<T> symbol) {
+		var cursor = diffCursors.get(symbol);
+		if (cursor == null) {
+			throw new IllegalArgumentException("No cursor for symbol %s".formatted(symbol));
 		}
+		@SuppressWarnings("unchecked")
+		var typedCursor = (DiffCursor<Tuple, T>) cursor;
+		return typedCursor;
 	}
 }

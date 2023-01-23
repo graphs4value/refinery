@@ -7,8 +7,8 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.model.internal.DecisionTree;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.RelationInfo;
-import tools.refinery.store.model.representation.Relation;
-import tools.refinery.store.model.representation.TruthValue;
+import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public class ModelInitializer {
 
 	private final MutableObjectIntMap<Node> nodeTrace = ObjectIntMaps.mutable.empty();
 
-	private final Map<tools.refinery.language.model.problem.Relation, Relation<TruthValue>> relationTrace =
+	private final Map<tools.refinery.language.model.problem.Relation, Symbol<TruthValue>> relationTrace =
 			new HashMap<>();
 
 	private int nodeCount = 0;
@@ -39,7 +39,7 @@ public class ModelInitializer {
 			var isEqualsRelation = relation == builtinSymbols.equals();
 			var decisionTree = mergeAssertions(relationInfo, isEqualsRelation);
 			var defaultValue = isEqualsRelation ? TruthValue.FALSE : TruthValue.UNKNOWN;
-			relationTrace.put(relation, new Relation<>(relationInfo.name(), relationInfo.arity(), TruthValue.class, defaultValue
+			relationTrace.put(relation, new Symbol<>(relationInfo.name(), relationInfo.arity(), TruthValue.class, defaultValue
 			));
 		}
 	}
