@@ -18,9 +18,13 @@ public class RawPQuery extends BasePQuery {
 	private List<PParameter> parameters;
 	private final LinkedHashSet<PBody> bodies = new LinkedHashSet<>();
 
-	public RawPQuery(String name) {
-		super(PVisibility.PUBLIC);
+	public RawPQuery(String name, PVisibility visibility) {
+		super(visibility);
 		fullyQualifiedName = name;
+	}
+
+	public RawPQuery(String name) {
+		this(name, PVisibility.PUBLIC);
 	}
 
 	@Override

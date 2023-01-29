@@ -12,10 +12,12 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.Consta
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
+import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.DNF;
 import tools.refinery.store.query.DNFAnd;
+import tools.refinery.store.query.DNFUtils;
 import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.atom.*;
 import tools.refinery.store.query.view.AnyRelationView;
@@ -124,8 +126,19 @@ public class DNF2PQuery {
 	}
 
 	private void translateRelationViewAtom(RelationViewAtom relationViewAtom, PBody body) {
-		new TypeConstraint(body, translateSubstitution(relationViewAtom.getSubstitution(), body),
-				wrapView(relationViewAtom.getTarget()));
+		var substitution = translateSubstitution(relationViewAtom.getSubstitution(), body);
+		var polarity = relationViewAtom.getPolarity();
+		var relationView = relationViewAtom.getTarget();
+		if (polarity == CallPolarity.POSITIVE) {
+			new TypeConstraint(body, substitution, wrapView(relationView));
+		} else {
+			var embeddedPQuery = translateEmbeddedRelationViewPQuery(relationView);
+			switch (polarity) {
+			case TRANSITIVE -> new BinaryTransitiveClosure(body, substitution, embeddedPQuery);
+			case NEGATIVE -> new NegativePatternCall(body, substitution, embeddedPQuery);
+			default -> throw new IllegalArgumentException("Unknown polarity: " + polarity);
+			}
+		}
 	}
 
 	private static Tuple translateSubstitution(List<Variable> substitution, PBody body) {
@@ -138,16 +151,36 @@ public class DNF2PQuery {
 		return Tuples.flatTupleOf(variables);
 	}
 
+	private RawPQuery translateEmbeddedRelationViewPQuery(AnyRelationView relationView) {
+		var embeddedPQuery = new RawPQuery(DNFUtils.generateUniqueName(relationView.name()), PVisibility.EMBEDDED);
+		var body = new PBody(embeddedPQuery);
+		int arity = relationView.arity();
+		var parameters = new ArrayList<PParameter>(arity);
+		var arguments = new Object[arity];
+		var symbolicParameters = new ArrayList<ExportedParameter>(arity);
+		for (int i = 0; i < arity; i++) {
+			var parameterName = "p" + i;
+			var parameter = new PParameter(parameterName);
+			parameters.add(parameter);
+			var variable = body.getOrCreateVariableByName(parameterName);
+			arguments[i] = variable;
+			symbolicParameters.add(new ExportedParameter(body, variable, parameter));
+		}
+		embeddedPQuery.setParameters(parameters);
+		body.setSymbolicParameters(symbolicParameters);
+		var argumentTuple = Tuples.flatTupleOf(arguments);
+		new TypeConstraint(body, argumentTuple, wrapView(relationView));
+		embeddedPQuery.addBody(body);
+		return embeddedPQuery;
+	}
+
 	private RelationViewWrapper wrapView(AnyRelationView relationView) {
 		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
 	}
 
-	private void translateCallAtom(CallAtom<?> callAtom, PBody body) {
-		if (!(callAtom.getTarget() instanceof DNF target)) {
-			throw new IllegalArgumentException("Only calls to DNF are supported");
-		}
+	private void translateCallAtom(DNFCallAtom callAtom, PBody body) {
 		var variablesTuple = translateSubstitution(callAtom.getSubstitution(), body);
-		var translatedReferred = translate(target);
+		var translatedReferred = translate(callAtom.getTarget());
 		var polarity = callAtom.getPolarity();
 		switch (polarity) {
 		case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
