@@ -38,21 +38,21 @@ public class DummyBaseIndexer implements IBaseIndex {
 
 	@Override
 	public boolean addIndexingErrorListener(IIndexingErrorListener listener) {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean removeIndexingErrorListener(IIndexingErrorListener listener) {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean addInstanceObserver(IInstanceObserver observer, Object observedObject) {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean removeInstanceObserver(IInstanceObserver observer, Object observedObject) {
-		return true;
+		return false;
 	}
 }

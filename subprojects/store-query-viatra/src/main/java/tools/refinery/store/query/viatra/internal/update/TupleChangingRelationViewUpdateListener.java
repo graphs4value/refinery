@@ -28,7 +28,7 @@ public class TupleChangingRelationViewUpdateListener<T> extends RelationViewUpda
 			} else { // fromValue disappears
 				processUpdate(Tuples.flatTupleOf(relationView.forwardMap(key, fromValue)), false);
 			}
-		} else if (toPresent) { // toValue disappears
+		} else if (toPresent) { // toValue appears
 			processUpdate(Tuples.flatTupleOf(relationView.forwardMap(key, toValue)), true);
 		}
 	}

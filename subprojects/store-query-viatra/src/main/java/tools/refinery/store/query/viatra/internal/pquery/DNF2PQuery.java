@@ -27,6 +27,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DNF2PQuery {
+	private static final Object P_CONSTRAINT_LOCK = new Object();
+
 	private final Set<DNF> translating = new LinkedHashSet<>();
 
 	private final Map<DNF, RawPQuery> dnf2PQueryMap = new HashMap<>();
@@ -84,17 +86,22 @@ public class DNF2PQuery {
 		}
 		pQuery.setParameters(parameterList);
 
-		for (DNFAnd clause : dnfQuery.getClauses()) {
-			PBody body = new PBody(pQuery);
-			List<ExportedParameter> symbolicParameters = new ArrayList<>();
-			for (var param : dnfQuery.getParameters()) {
-				PVariable pVar = body.getOrCreateVariableByName(param.getUniqueName());
-				symbolicParameters.add(new ExportedParameter(body, pVar, parameters.get(param)));
-			}
-			body.setSymbolicParameters(symbolicParameters);
-			pQuery.addBody(body);
-			for (DNFAtom constraint : clause.constraints()) {
-				translateDNFAtom(constraint, body);
+		// The constructor of {@link org.eclipse.viatra.query.runtime.matchers.psystem.BasePConstraint} mutates
+		// global static state (<code>nextID</code>) without locking. Therefore, we need to synchronize before creating
+		// any query constraints to avoid a data race.
+		synchronized (P_CONSTRAINT_LOCK) {
+			for (DNFAnd clause : dnfQuery.getClauses()) {
+				PBody body = new PBody(pQuery);
+				List<ExportedParameter> symbolicParameters = new ArrayList<>();
+				for (var param : dnfQuery.getParameters()) {
+					PVariable pVar = body.getOrCreateVariableByName(param.getUniqueName());
+					symbolicParameters.add(new ExportedParameter(body, pVar, parameters.get(param)));
+				}
+				body.setSymbolicParameters(symbolicParameters);
+				pQuery.addBody(body);
+				for (DNFAtom constraint : clause.constraints()) {
+					translateDNFAtom(constraint, body);
+				}
 			}
 		}
 

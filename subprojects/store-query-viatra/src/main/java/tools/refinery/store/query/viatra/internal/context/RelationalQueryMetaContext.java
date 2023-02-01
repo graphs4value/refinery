@@ -26,6 +26,11 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 	}
 
 	@Override
+	public boolean canLeadOutOfScope(IInputKey key) {
+		return false;
+	}
+
+	@Override
 	public Collection<InputKeyImplication> getImplications(IInputKey implyingKey) {
 		ensureValidKey(implyingKey);
 		return Set.of();

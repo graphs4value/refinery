@@ -10,7 +10,6 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
 import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
 import tools.refinery.store.query.view.AnyRelationView;
-import tools.refinery.store.query.view.RelationView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
