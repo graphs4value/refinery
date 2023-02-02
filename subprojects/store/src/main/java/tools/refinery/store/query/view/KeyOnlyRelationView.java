@@ -5,7 +5,7 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
-public class KeyOnlyRelationView<T> extends TuplePreservingRelationView<T> {
+public final class KeyOnlyRelationView<T> extends TuplePreservingRelationView<T> {
 	public static final String VIEW_NAME = "key";
 
 	private final T defaultValue;

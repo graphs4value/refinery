@@ -30,7 +30,7 @@ public class ViatraModelQueryAdapterImpl implements ModelQueryAdapter {
 	ViatraModelQueryAdapterImpl(Model model, ViatraModelQueryStoreAdapterImpl storeAdapter) {
 		this.model = model;
 		this.storeAdapter = storeAdapter;
-		var scope = new RelationalScope(model, storeAdapter.getRelationViews());
+		var scope = new RelationalScope(model, storeAdapter.getInputKeys());
 		queryEngine = (ViatraQueryEngineImpl) AdvancedViatraQueryEngine.createUnmanagedEngine(scope);
 
 		try {

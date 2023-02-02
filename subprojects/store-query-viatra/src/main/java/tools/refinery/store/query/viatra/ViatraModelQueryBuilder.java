@@ -29,7 +29,7 @@ public interface ViatraModelQueryBuilder extends ModelQueryBuilder {
 	}
 
 	@Override
-	default ViatraModelQueryBuilder queries(Collection<? extends DNF> queries) {
+	default ViatraModelQueryBuilder queries(Collection<DNF> queries) {
 		ModelQueryBuilder.super.queries(queries);
 		return this;
 	}

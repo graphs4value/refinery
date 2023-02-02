@@ -1,8 +1,10 @@
 package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
+import org.eclipse.viatra.query.runtime.matchers.psystem.annotations.PAnnotation;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Equality;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.ExportedParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.Inequality;
@@ -35,6 +37,8 @@ public class DNF2PQuery {
 
 	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 
+	private final Map<AnyRelationView, RawPQuery> view2EmbeddedMap = new HashMap<>();
+
 	private Function<DNF, QueryEvaluationHint> computeHint = dnf -> new QueryEvaluationHint(null,
 			QueryEvaluationHint.BackendRequirement.UNSPECIFIED);
 
@@ -63,8 +67,8 @@ public class DNF2PQuery {
 		return pQuery;
 	}
 
-	public Collection<AnyRelationView> getRelationViews() {
-		return Collections.unmodifiableCollection(view2WrapperMap.keySet());
+	public Map<AnyRelationView, IInputKey> getRelationViews() {
+		return Collections.unmodifiableMap(view2WrapperMap);
 	}
 
 	public RawPQuery getAlreadyTranslated(DNF dnfQuery) {
@@ -85,6 +89,17 @@ public class DNF2PQuery {
 			parameterList.add(parameters.get(param));
 		}
 		pQuery.setParameters(parameterList);
+
+		for (var functionalDependency : dnfQuery.getFunctionalDependencies()) {
+			var functionalDependencyAnnotation = new PAnnotation("FunctionalDependency");
+			for (var forEachVariable : functionalDependency.forEach()) {
+				functionalDependencyAnnotation.addAttribute("forEach", forEachVariable.getUniqueName());
+			}
+			for (var uniqueVariable : functionalDependency.unique()) {
+				functionalDependencyAnnotation.addAttribute("unique", uniqueVariable.getUniqueName());
+			}
+			pQuery.addAnnotation(functionalDependencyAnnotation);
+		}
 
 		// The constructor of {@link org.eclipse.viatra.query.runtime.matchers.psystem.BasePConstraint} mutates
 		// global static state (<code>nextID</code>) without locking. Therefore, we need to synchronize before creating
@@ -159,6 +174,10 @@ public class DNF2PQuery {
 	}
 
 	private RawPQuery translateEmbeddedRelationViewPQuery(AnyRelationView relationView) {
+		return view2EmbeddedMap.computeIfAbsent(relationView, this::doTranslateEmbeddedRelationViewPQuery);
+	}
+
+	private RawPQuery doTranslateEmbeddedRelationViewPQuery(AnyRelationView relationView) {
 		var embeddedPQuery = new RawPQuery(DNFUtils.generateUniqueName(relationView.name()), PVisibility.EMBEDDED);
 		var body = new PBody(embeddedPQuery);
 		int arity = relationView.arity();

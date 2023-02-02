@@ -1,11 +1,16 @@
 package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.FunctionalDependency;
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
-import tools.refinery.store.representation.Symbol;
 
-public class FunctionalRelationView<T> extends RelationView<T> {
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+public final class FunctionalRelationView<T> extends RelationView<T> {
 	public FunctionalRelationView(Symbol<T> symbol, String name) {
 		super(symbol, name);
 	}
@@ -15,13 +20,35 @@ public class FunctionalRelationView<T> extends RelationView<T> {
 	}
 
 	@Override
+	public Set<FunctionalDependency<Integer>> getFunctionalDependencies() {
+		var arity = getSymbol().arity();
+		var forEach = IntStream.range(0, arity).boxed().collect(Collectors.toUnmodifiableSet());
+		var unique = Set.of(arity);
+		return Set.of(new FunctionalDependency<>(forEach, unique));
+	}
+
+	@Override
+	public Set<RelationViewImplication> getImpliedRelationViews() {
+		var symbol = getSymbol();
+		var impliedIndices = IntStream.range(0, symbol.arity()).boxed().toList();
+		var keyOnlyRelationView = new KeyOnlyRelationView<>(symbol);
+		return Set.of(new RelationViewImplication(this, keyOnlyRelationView, impliedIndices));
+	}
+
+	@Override
 	public boolean filter(Tuple key, T value) {
 		return true;
 	}
 
 	@Override
 	public Object[] forwardMap(Tuple key, T value) {
-		return toTuple1ArrayPlusValue(key, value);
+		int size = key.getSize();
+		Object[] result = new Object[size + 1];
+		for (int i = 0; i < size; i++) {
+			result[i] = Tuple.of(key.get(i));
+		}
+		result[key.getSize()] = value;
+		return result;
 	}
 
 	@Override
@@ -40,14 +67,5 @@ public class FunctionalRelationView<T> extends RelationView<T> {
 	@Override
 	public int arity() {
 		return getSymbol().arity() + 1;
-	}
-
-	private static <D> Object[] toTuple1ArrayPlusValue(Tuple t, D value) {
-		Object[] result = new Object[t.getSize() + 1];
-		for (int i = 0; i < t.getSize(); i++) {
-			result[i] = Tuple.of(t.get(i));
-		}
-		result[t.getSize()] = value;
-		return result;
 	}
 }

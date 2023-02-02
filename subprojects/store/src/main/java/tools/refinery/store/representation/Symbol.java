@@ -2,8 +2,6 @@ package tools.refinery.store.representation;
 
 import java.util.Objects;
 
-// Deliberately not a record, because we want equality by reference.
-@SuppressWarnings({"squid:S6206", "ClassCanBeRecord"})
 public final class Symbol<T> implements AnySymbol {
 	private final String name;
 	private final int arity;

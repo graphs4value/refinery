@@ -2,6 +2,7 @@ package tools.refinery.store.query.viatra.internal;
 
 import org.eclipse.viatra.query.runtime.api.IQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
+import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.DNF;
@@ -15,15 +16,15 @@ import java.util.Map;
 public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAdapter {
 	private final ModelStore store;
 	private final ViatraQueryEngineOptions engineOptions;
-	private final Collection<AnyRelationView> relationViews;
+	private final Map<AnyRelationView, IInputKey> inputKeys;
 	private final Map<DNF, IQuerySpecification<RawPatternMatcher>> querySpecifications;
 
 	ViatraModelQueryStoreAdapterImpl(ModelStore store, ViatraQueryEngineOptions engineOptions,
-									 Collection<AnyRelationView> relationViews,
+									 Map<AnyRelationView, IInputKey> inputKeys,
 									 Map<DNF, IQuerySpecification<RawPatternMatcher>> querySpecifications) {
 		this.store = store;
 		this.engineOptions = engineOptions;
-		this.relationViews = relationViews;
+		this.inputKeys = inputKeys;
 		this.querySpecifications = querySpecifications;
 	}
 
@@ -32,9 +33,12 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 		return store;
 	}
 
-	@Override
 	public Collection<AnyRelationView> getRelationViews() {
-		return relationViews;
+		return inputKeys.keySet();
+	}
+
+	Map<AnyRelationView, IInputKey> getInputKeys() {
+		return inputKeys;
 	}
 
 	@Override

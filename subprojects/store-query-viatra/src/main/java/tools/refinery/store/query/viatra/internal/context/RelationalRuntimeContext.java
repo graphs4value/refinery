@@ -13,6 +13,7 @@ import tools.refinery.store.query.view.AnyRelationView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -20,15 +21,16 @@ import static tools.refinery.store.util.CollectionsUtil.filter;
 import static tools.refinery.store.util.CollectionsUtil.map;
 
 public class RelationalRuntimeContext implements IQueryRuntimeContext {
-	private final RelationalQueryMetaContext metaContext = new RelationalQueryMetaContext();
+	private final RelationalQueryMetaContext metaContext;
 
 	private final ModelUpdateListener modelUpdateListener;
 
 	private final Model model;
 
-	public RelationalRuntimeContext(Model model, ModelUpdateListener relationUpdateListener) {
+	RelationalRuntimeContext(Model model, Map<AnyRelationView, IInputKey> inputKeys) {
 		this.model = model;
-		this.modelUpdateListener = relationUpdateListener;
+		metaContext = new RelationalQueryMetaContext(inputKeys);
+		modelUpdateListener = new ModelUpdateListener(model, inputKeys.keySet());
 	}
 
 	@Override

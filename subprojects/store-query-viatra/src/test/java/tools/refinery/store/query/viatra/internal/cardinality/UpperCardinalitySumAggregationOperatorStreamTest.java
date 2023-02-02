@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import tools.refinery.store.representation.cardinality.UpperCardinalities;
 import tools.refinery.store.representation.cardinality.UpperCardinality;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,32 +15,32 @@ import static org.hamcrest.Matchers.equalTo;
 class UpperCardinalitySumAggregationOperatorStreamTest {
 	@ParameterizedTest
 	@MethodSource
-	void testStream(Stream<UpperCardinality> stream, UpperCardinality expected) {
-		var result = UpperCardinalitySumAggregationOperator.INSTANCE.aggregateStream(stream);
+	void testStream(List<UpperCardinality> list, UpperCardinality expected) {
+		var result = UpperCardinalitySumAggregationOperator.INSTANCE.aggregateStream(list.stream());
 		assertThat(result, equalTo(expected));
 	}
 
 	static Stream<Arguments> testStream() {
 		return Stream.of(
-				Arguments.of(Stream.of(), UpperCardinalities.ZERO),
-				Arguments.of(Stream.of(UpperCardinality.of(3)), UpperCardinality.of(3)),
+				Arguments.of(List.of(), UpperCardinalities.ZERO),
+				Arguments.of(List.of(UpperCardinality.of(3)), UpperCardinality.of(3)),
 				Arguments.of(
-						Stream.of(
+						List.of(
 								UpperCardinality.of(2),
 								UpperCardinality.of(3)
 						),
 						UpperCardinality.of(5)
 				),
-				Arguments.of(Stream.of(UpperCardinalities.UNBOUNDED), UpperCardinalities.UNBOUNDED),
+				Arguments.of(List.of(UpperCardinalities.UNBOUNDED), UpperCardinalities.UNBOUNDED),
 				Arguments.of(
-						Stream.of(
+						List.of(
 								UpperCardinalities.UNBOUNDED,
 								UpperCardinalities.UNBOUNDED
 						),
 						UpperCardinalities.UNBOUNDED
 				),
 				Arguments.of(
-						Stream.of(
+						List.of(
 								UpperCardinalities.UNBOUNDED,
 								UpperCardinality.of(3)
 						),

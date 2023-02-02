@@ -11,7 +11,7 @@ public interface ModelQueryBuilder extends ModelAdapterBuilder {
 		return queries(List.of(queries));
 	}
 
-	default ModelQueryBuilder queries(Collection<? extends DNF> queries) {
+	default ModelQueryBuilder queries(Collection<DNF> queries) {
 		queries.forEach(this::query);
 		return this;
 	}

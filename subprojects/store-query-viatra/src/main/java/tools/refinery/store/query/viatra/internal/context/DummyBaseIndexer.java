@@ -12,6 +12,9 @@ import java.util.concurrent.Callable;
  * Copied from <code>org.eclipse.viatra.query.runtime.tabular.TabularEngineContext</code>
  */
 public class DummyBaseIndexer implements IBaseIndex {
+	DummyBaseIndexer() {
+	}
+
 	@Override
 	public <V> V coalesceTraversals(Callable<V> callable) throws InvocationTargetException {
 		try {

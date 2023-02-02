@@ -4,6 +4,7 @@ import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
 import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
 import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
+import org.eclipse.viatra.query.runtime.matchers.psystem.annotations.PAnnotation;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.BasePQuery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
@@ -34,6 +35,11 @@ public class RawPQuery extends BasePQuery {
 
 	public void setParameters(List<PParameter> parameters) {
 		this.parameters = parameters;
+	}
+
+	@Override
+	public void addAnnotation(PAnnotation annotation) {
+		super.addAnnotation(annotation);
 	}
 
 	@Override

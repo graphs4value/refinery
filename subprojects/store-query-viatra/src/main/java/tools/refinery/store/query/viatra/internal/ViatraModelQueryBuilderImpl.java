@@ -92,7 +92,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 			throw new IllegalArgumentException(
 					"Cannot specify hint for %s, because it was not added to the query engine".formatted(dnf.name()));
 		}
-		pQuery.setEvaluationHints(queryEvaluationHint);
+		pQuery.setEvaluationHints(pQuery.getEvaluationHints().overrideBy(queryEvaluationHint));
 		return this;
 	}
 
@@ -105,7 +105,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 
 	private void validateSymbols(ModelStore store) {
 		var symbols = store.getSymbols();
-		for (var relationView : dnf2PQuery.getRelationViews()) {
+		for (var relationView : dnf2PQuery.getRelationViews().keySet()) {
 			var symbol = relationView.getSymbol();
 			if (!symbols.contains(symbol)) {
 				throw new IllegalArgumentException("Cannot query relation view %s: symbol %s is not in the model"
