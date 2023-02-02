@@ -27,7 +27,7 @@ java.toolchain {
 }
 
 tasks.withType(JavaCompile) {
-	options.release = 17
+	options.release.set(17)
 }
 
 def jacocoTestReport = tasks.named('jacocoTestReport')
