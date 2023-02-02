@@ -66,6 +66,9 @@ public class AdapterList<T> implements Iterable<T> {
 
 			@Override
 			public Entry<T> next() {
+				if (i >= size()) {
+					throw new NoSuchElementException();
+				}
 				var entry = new Entry<>(getType(i), get(i));
 				i++;
 				return entry;
