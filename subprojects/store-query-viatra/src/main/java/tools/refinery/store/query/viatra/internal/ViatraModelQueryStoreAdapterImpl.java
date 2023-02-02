@@ -37,7 +37,7 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 		return inputKeys.keySet();
 	}
 
-	Map<AnyRelationView, IInputKey> getInputKeys() {
+	public Map<AnyRelationView, IInputKey> getInputKeys() {
 		return inputKeys;
 	}
 

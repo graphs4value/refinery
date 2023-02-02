@@ -8,15 +8,17 @@ import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackend;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.DNF;
-import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.ModelQueryStoreAdapter;
 import tools.refinery.store.query.ResultSet;
+import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ViatraModelQueryAdapterImpl implements ModelQueryAdapter {
+public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 	private static final String DELAY_MESSAGE_DELIVERY_FIELD_NAME = "delayMessageDelivery";
 	private static final String QUERY_BACKENDS_FIELD_NAME = "queryBackends";
 
@@ -26,11 +28,12 @@ public class ViatraModelQueryAdapterImpl implements ModelQueryAdapter {
 	private final MethodHandle setUpdatePropagationDelayedHandle;
 	private final MethodHandle getQueryBackendsHandle;
 	private final Map<DNF, ResultSet> resultSets;
+	private boolean pendingChanges;
 
 	ViatraModelQueryAdapterImpl(Model model, ViatraModelQueryStoreAdapterImpl storeAdapter) {
 		this.model = model;
 		this.storeAdapter = storeAdapter;
-		var scope = new RelationalScope(model, storeAdapter.getInputKeys());
+		var scope = new RelationalScope(this);
 		queryEngine = (ViatraQueryEngineImpl) AdvancedViatraQueryEngine.createUnmanagedEngine(scope);
 
 		try {
@@ -87,7 +90,7 @@ public class ViatraModelQueryAdapterImpl implements ModelQueryAdapter {
 	}
 
 	@Override
-	public ModelQueryStoreAdapter getStoreAdapter() {
+	public ViatraModelQueryStoreAdapterImpl getStoreAdapter() {
 		return storeAdapter;
 	}
 
@@ -101,9 +104,23 @@ public class ViatraModelQueryAdapterImpl implements ModelQueryAdapter {
 	}
 
 	@Override
+	public boolean hasPendingChanges() {
+		return pendingChanges;
+	}
+
+	public void markAsPending() {
+		if (!pendingChanges) {
+			pendingChanges = true;
+		}
+	}
+
+	@Override
 	public void flushChanges() {
 		if (!queryEngine.isUpdatePropagationDelayed()) {
 			throw new IllegalStateException("Trying to flush changes while changes are already being flushed");
+		}
+		if (!pendingChanges) {
+			return;
 		}
 		setUpdatePropagationDelayed(false);
 		try {
@@ -113,5 +130,6 @@ public class ViatraModelQueryAdapterImpl implements ModelQueryAdapter {
 		} finally {
 			setUpdatePropagationDelayed(true);
 		}
+		pendingChanges = false;
 	}
 }

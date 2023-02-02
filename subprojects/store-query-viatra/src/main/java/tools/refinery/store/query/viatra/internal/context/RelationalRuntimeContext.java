@@ -7,13 +7,13 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
 import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
 import tools.refinery.store.query.view.AnyRelationView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -27,10 +27,10 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	private final Model model;
 
-	RelationalRuntimeContext(Model model, Map<AnyRelationView, IInputKey> inputKeys) {
-		this.model = model;
-		metaContext = new RelationalQueryMetaContext(inputKeys);
-		modelUpdateListener = new ModelUpdateListener(model, inputKeys.keySet());
+	RelationalRuntimeContext(ViatraModelQueryAdapterImpl adapter) {
+		model = adapter.getModel();
+		metaContext = new RelationalQueryMetaContext(adapter.getStoreAdapter().getInputKeys());
+		modelUpdateListener = new ModelUpdateListener(adapter);
 	}
 
 	@Override

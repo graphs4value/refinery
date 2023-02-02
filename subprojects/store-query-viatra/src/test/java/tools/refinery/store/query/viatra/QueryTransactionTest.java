@@ -10,7 +10,7 @@ import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class QueryTransactionTest {
 	@Test
@@ -38,6 +38,7 @@ class QueryTransactionTest {
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertEquals(0, predicateResultSet.countResults());
+		assertFalse(queryEngine.hasPendingChanges());
 
 		personInterpretation.put(Tuple.of(0), true);
 		personInterpretation.put(Tuple.of(1), true);
@@ -46,14 +47,18 @@ class QueryTransactionTest {
 		assetInterpretation.put(Tuple.of(2), true);
 
 		assertEquals(0, predicateResultSet.countResults());
+		assertTrue(queryEngine.hasPendingChanges());
 
 		queryEngine.flushChanges();
 		assertEquals(2, predicateResultSet.countResults());
+		assertFalse(queryEngine.hasPendingChanges());
 
 		personInterpretation.put(Tuple.of(4), true);
 		assertEquals(2, predicateResultSet.countResults());
+		assertTrue(queryEngine.hasPendingChanges());
 
 		queryEngine.flushChanges();
 		assertEquals(3, predicateResultSet.countResults());
+		assertFalse(queryEngine.hasPendingChanges());
 	}
 }

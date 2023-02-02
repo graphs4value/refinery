@@ -7,5 +7,7 @@ public interface ModelQueryAdapter extends ModelAdapter {
 
 	ResultSet getResultSet(DNF query);
 
+	boolean hasPendingChanges();
+
 	void flushChanges();
 }
