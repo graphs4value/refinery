@@ -1,13 +1,13 @@
 package tools.refinery.store.query.atom;
 
 import tools.refinery.store.query.Variable;
-import tools.refinery.store.representation.SymbolLike;
+import tools.refinery.store.query.RelationLike;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class CallAtom<T extends SymbolLike> implements DNFAtom {
+public abstract class CallAtom<T extends RelationLike> implements DNFAtom {
 	private final CallPolarity polarity;
 	private final T target;
 	private final List<Variable> substitution;

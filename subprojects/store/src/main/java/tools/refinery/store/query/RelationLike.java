@@ -1,6 +1,6 @@
-package tools.refinery.store.representation;
+package tools.refinery.store.query;
 
-public interface SymbolLike {
+public interface RelationLike {
 	String name();
 
 	int arity();

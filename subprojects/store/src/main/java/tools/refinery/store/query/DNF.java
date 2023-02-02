@@ -1,11 +1,10 @@
 package tools.refinery.store.query;
 
-import tools.refinery.store.representation.SymbolLike;
 import tools.refinery.store.query.atom.DNFAtom;
 
 import java.util.*;
 
-public final class DNF implements SymbolLike {
+public final class DNF implements RelationLike {
 	private final String name;
 
 	private final String uniqueName;
