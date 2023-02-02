@@ -31,7 +31,7 @@ class QueryTransactionTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var assetInterpretation = model.getInterpretation(asset);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);

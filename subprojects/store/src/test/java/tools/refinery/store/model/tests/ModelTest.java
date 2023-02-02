@@ -1,6 +1,7 @@
 package tools.refinery.store.model.tests;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
@@ -30,7 +31,7 @@ class ModelTest {
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
 		var store = ModelStore.builder().symbols(person, age, friend).build();
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
 		var friendInterpretation = model.getInterpretation(friend);
@@ -59,7 +60,7 @@ class ModelTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 
 		var store = ModelStore.builder().symbols(person).build();
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 
 		final Tuple tuple3 = Tuple.of(1, 1, 1);
@@ -72,7 +73,7 @@ class ModelTest {
 		var age = new Symbol<>("age", 1, Integer.class, null);
 
 		var store = ModelStore.builder().symbols(age).build();
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var ageInterpretation = model.getInterpretation(age);
 
 		ageInterpretation.put(Tuple.of(1), null); // valid
@@ -88,7 +89,7 @@ class ModelTest {
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
 		var store = ModelStore.builder().symbols(person, age, friend).build();
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
 		var friendInterpretation = model.getInterpretation(friend);
@@ -116,7 +117,7 @@ class ModelTest {
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 
 		var store = ModelStore.builder().symbols(person, friend).build();
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 
@@ -124,24 +125,44 @@ class ModelTest {
 		personInterpretation.put(Tuple.of(1), true);
 		friendInterpretation.put(Tuple.of(0, 1), true);
 		friendInterpretation.put(Tuple.of(1, 0), true);
+
+		assertTrue(model.hasUncommittedChanges());
+		assertEquals(Model.NO_STATE_ID, model.getState());
+
 		long state1 = model.commit();
+
+		assertFalse(model.hasUncommittedChanges());
+		assertEquals(state1, model.getState());
 
 		assertFalse(personInterpretation.get(Tuple.of(2)));
 		assertFalse(friendInterpretation.get(Tuple.of(0, 2)));
 
 		personInterpretation.put(Tuple.of(2), true);
 		friendInterpretation.put(Tuple.of(0, 2), true);
+
+		assertTrue(model.hasUncommittedChanges());
+		assertEquals(state1, model.getState());
+
 		long state2 = model.commit();
+
+		assertFalse(model.hasUncommittedChanges());
+		assertEquals(state2, model.getState());
 
 		assertTrue(personInterpretation.get(Tuple.of(2)));
 		assertTrue(friendInterpretation.get(Tuple.of(0, 2)));
 
 		model.restore(state1);
 
+		assertFalse(model.hasUncommittedChanges());
+		assertEquals(state1, model.getState());
+
 		assertFalse(personInterpretation.get(Tuple.of(2)));
 		assertFalse(friendInterpretation.get(Tuple.of(0, 2)));
 
 		model.restore(state2);
+
+		assertFalse(model.hasUncommittedChanges());
+		assertEquals(state2, model.getState());
 
 		assertTrue(personInterpretation.get(Tuple.of(2)));
 		assertTrue(friendInterpretation.get(Tuple.of(0, 2)));

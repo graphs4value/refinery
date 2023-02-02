@@ -38,7 +38,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var assetInterpretation = model.getInterpretation(asset);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -79,7 +79,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -127,7 +127,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -181,7 +181,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -233,7 +233,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var animalInterpretation = model.getInterpretation(animal);
 		var friendInterpretation = model.getInterpretation(friend);
@@ -278,7 +278,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
@@ -319,7 +319,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -372,7 +372,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -414,7 +414,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -467,7 +467,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -509,7 +509,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -559,7 +559,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -600,7 +600,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
@@ -652,7 +652,7 @@ class QueryTest {
 				.queries(predicate)
 				.build();
 
-		var model = store.createModel();
+		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);

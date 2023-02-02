@@ -18,8 +18,9 @@ public class ModelImpl implements Model {
 	private Map<? extends AnySymbol, ? extends VersionedInterpretation<?>> interpretations;
 	private final AdapterList<ModelAdapter> adapters;
 	private final List<ModelListener> listeners = new ArrayList<>();
+	private boolean uncommittedChanges;
 	private ModelAction pendingAction = ModelAction.NONE;
-	private long restoringToState = -1;
+	private long restoringToState = NO_STATE_ID;
 
 	ModelImpl(ModelStore store, long state, int adapterCount) {
 		this.store = store;
@@ -61,9 +62,29 @@ public class ModelImpl implements Model {
 		return new ModelDiffCursor(diffCursors);
 	}
 
+	private void setState(long state) {
+		this.state = state;
+		uncommittedChanges = false;
+	}
+
+	void markAsChanged() {
+		if (!uncommittedChanges) {
+			uncommittedChanges = true;
+		}
+	}
+
+	@Override
+	public boolean hasUncommittedChanges() {
+		return uncommittedChanges;
+	}
+
+	private boolean hasPendingAction() {
+		return pendingAction != ModelAction.NONE || restoringToState != NO_STATE_ID;
+	}
+
 	@Override
 	public long commit() {
-		if (pendingAction != ModelAction.NONE) {
+		if (hasPendingAction()) {
 			throw pendingActionError("commit");
 		}
 		pendingAction = ModelAction.COMMIT;
@@ -88,7 +109,7 @@ public class ModelImpl implements Model {
 					versionSet = true;
 				}
 			}
-			state = version;
+			setState(version);
 			while (i < listenerCount) {
 				listeners.get(i).afterCommit();
 				i++;
@@ -101,7 +122,7 @@ public class ModelImpl implements Model {
 
 	@Override
 	public void restore(long version) {
-		if (pendingAction != ModelAction.NONE) {
+		if (hasPendingAction()) {
 			throw pendingActionError("restore to %d".formatted(version));
 		}
 		if (!store.getStates().contains(version)) {
@@ -119,14 +140,14 @@ public class ModelImpl implements Model {
 			for (var interpretation : interpretations.values()) {
 				interpretation.restore(version);
 			}
-			state = version;
+			setState(version);
 			while (i < listenerCount) {
 				listeners.get(i).afterRestore();
 				i++;
 			}
 		} finally {
 			pendingAction = ModelAction.NONE;
-			restoringToState = -1;
+			restoringToState = NO_STATE_ID;
 		}
 	}
 

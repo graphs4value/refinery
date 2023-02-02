@@ -9,9 +9,13 @@ import tools.refinery.store.representation.Symbol;
 import java.util.Optional;
 
 public interface Model extends Versioned {
+	long NO_STATE_ID = -1;
+
 	ModelStore getStore();
 
 	long getState();
+
+	boolean hasUncommittedChanges();
 
 	default AnyInterpretation getInterpretation(AnySymbol symbol) {
 		return getInterpretation((Symbol<?>) symbol);

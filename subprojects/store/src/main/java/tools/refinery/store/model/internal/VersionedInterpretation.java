@@ -77,6 +77,7 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 	@Override
 	public T put(Tuple key, T value) {
 		checkKey(key);
+		model.markAsChanged();
 		var oldValue = map.put(key, value);
 		notifyListeners(key, oldValue, value, false);
 		return oldValue;
@@ -88,6 +89,7 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 			map.putAll(cursor);
 			return;
 		}
+		model.markAsChanged();
 		if (cursor.getDependingMaps().contains(map)) {
 			List<Tuple> keys = new ArrayList<>();
 			List<T> values = new ArrayList<>();

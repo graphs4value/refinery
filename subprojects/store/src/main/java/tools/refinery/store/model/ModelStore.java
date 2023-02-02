@@ -12,9 +12,9 @@ import java.util.Set;
 public interface ModelStore {
 	Collection<AnySymbol> getSymbols();
 
-	Model createModel();
+	Model createEmptyModel();
 
-	Model createModel(long state);
+	Model createModelForState(long state);
 
 	Set<Long> getStates();
 

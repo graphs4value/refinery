@@ -6,6 +6,7 @@ import tools.refinery.store.adapter.ModelAdapterType;
 import tools.refinery.store.adapter.ModelStoreAdapter;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.map.VersionedMapStore;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.representation.AnySymbol;
@@ -27,13 +28,13 @@ public class ModelStoreImpl implements ModelStore {
 		return Collections.unmodifiableCollection(stores.keySet());
 	}
 
-	private ModelImpl createEmptyModel(long state) {
+	private ModelImpl createModelWithoutInterpretations(long state) {
 		return new ModelImpl(this, state, adapters.size());
 	}
 
 	@Override
-	public ModelImpl createModel() {
-		var model = createEmptyModel(-1);
+	public ModelImpl createEmptyModel() {
+		var model = createModelWithoutInterpretations(Model.NO_STATE_ID);
 		var interpretations = new HashMap<AnySymbol, VersionedInterpretation<?>>(stores.size());
 		for (var entry : this.stores.entrySet()) {
 			var symbol = entry.getKey();
@@ -45,8 +46,8 @@ public class ModelStoreImpl implements ModelStore {
 	}
 
 	@Override
-	public synchronized ModelImpl createModel(long state) {
-		var model = createEmptyModel(state);
+	public synchronized ModelImpl createModelForState(long state) {
+		var model = createModelWithoutInterpretations(state);
 		var interpretations = new HashMap<AnySymbol, VersionedInterpretation<?>>(stores.size());
 		for (var entry : this.stores.entrySet()) {
 			var symbol = entry.getKey();
