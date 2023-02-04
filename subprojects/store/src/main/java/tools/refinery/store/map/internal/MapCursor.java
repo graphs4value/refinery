@@ -96,7 +96,7 @@ public class MapCursor<K, V> implements Cursor<K, V> {
 		return Set.of(this.map);
 	}
 
-	public static <K, V> boolean sameSubnode(MapCursor<K, V> cursor1, MapCursor<K, V> cursor2) {
+	public static <K, V> boolean sameSubNode(MapCursor<K, V> cursor1, MapCursor<K, V> cursor2) {
 		Node<K, V> nodeOfCursor1 = cursor1.nodeStack.peek();
 		Node<K, V> nodeOfCursor2 = cursor2.nodeStack.peek();
 		if (nodeOfCursor1 != null && nodeOfCursor2 != null) {
@@ -107,10 +107,12 @@ public class MapCursor<K, V> implements Cursor<K, V> {
 	}
 
 	/**
-	 * @param <K>
-	 * @param <V>
-	 * @param cursor1
-	 * @param cursor2
+	 * Compares the state of two cursors started on two @{@link VersionedMap of the }same
+	 * {@link tools.refinery.store.map.VersionedMapStore}.
+	 * @param <K> Key type
+	 * @param <V> Value type
+	 * @param cursor1 first cursor
+	 * @param cursor2 second cursor
 	 * @return Positive number if cursor 1 is behind, negative number if cursor 2 is behind, and 0 if they are at the
 	 * same position.
 	 */

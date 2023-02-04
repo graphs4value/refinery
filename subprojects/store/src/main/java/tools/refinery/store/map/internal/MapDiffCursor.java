@@ -131,22 +131,21 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 
 	protected void resolveHashClashWithSecondEntry() {
 		switch (this.hashClash) {
-		case STUCK_CURSOR_1:
+		case STUCK_CURSOR_1 -> {
 			this.hashClash = HashClash.NONE;
 			this.cursorRelation = 0;
 			this.key = cursor1.key;
 			this.fromValue = cursor1.value;
 			this.toValue = defaultValue;
-			break;
-		case STUCK_CURSOR_2:
+		}
+		case STUCK_CURSOR_2 -> {
 			this.hashClash = HashClash.NONE;
 			this.cursorRelation = 0;
 			this.key = cursor2.key;
 			this.fromValue = defaultValue;
 			this.toValue = cursor2.value;
-			break;
-		default:
-			throw new IllegalArgumentException("Inconsistent compare result for diffcursor");
+		}
+		default -> throw new IllegalArgumentException("Inconsistent compare result for diffcursor");
 		}
 	}
 
@@ -189,7 +188,7 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 			boolean lastResult = true;
 			do {
 				changed = false;
-				if (MapCursor.sameSubnode(cursor1, cursor2)) {
+				if (MapCursor.sameSubNode(cursor1, cursor2)) {
 					lastResult = skipNode();
 					changed = true;
 				}
