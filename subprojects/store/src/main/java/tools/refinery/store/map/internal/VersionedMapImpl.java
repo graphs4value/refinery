@@ -18,7 +18,6 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 	protected final VersionedMapStoreImpl<K, V> store;
 
 	protected final ContinousHashProvider<K> hashProvider;
-
 	protected final V defaultValue;
 	protected Node<K, V> root;
 
@@ -109,6 +108,7 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 
 	@Override
 	public DiffCursor<K, V> getDiffCursor(long toVersion) {
+
 		Cursor<K, V> fromCursor = this.getAll();
 		VersionedMap<K, V> toMap = this.store.createMap(toVersion);
 		Cursor<K, V> toCursor = toMap.getAll();
@@ -131,13 +131,35 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		root = this.store.revert(state);
 	}
 
-	public void prettyPrint() {
-		StringBuilder s = new StringBuilder();
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((root == null) ? 0 : root.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VersionedMapImpl<?, ?> other = (VersionedMapImpl<?, ?>) obj;
+		if (root == null) {
+			return other.root == null;
+		} else return root.equals(other.root);
+	}
+
+	public String prettyPrint() {
 		if (this.root != null) {
+			StringBuilder s = new StringBuilder();
 			this.root.prettyPrint(s, 0, -1);
-			System.out.println(s.toString());
+			return s.toString();
 		} else {
-			System.out.println("empty tree");
+			return "empty tree";
 		}
 	}
 

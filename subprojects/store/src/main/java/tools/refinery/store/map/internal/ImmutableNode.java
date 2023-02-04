@@ -42,8 +42,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	 *              available.
 	 * @return an immutable version of the input node.
 	 */
-	static <K, V> ImmutableNode<K, V> constructImmutable(MutableNode<K, V> node,
-			Map<Node<K, V>, ImmutableNode<K, V>> cache) {
+	static <K, V> ImmutableNode<K, V> constructImmutable(MutableNode<K, V> node, Map<Node<K, V>, ImmutableNode<K, V>> cache) {
 		// 1. try to return from cache
 		if (cache != null) {
 			ImmutableNode<K, V> cachedResult = cache.get(node);
@@ -75,8 +74,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				resultContent[datas * 2 + 1] = node.content[i * 2 + 1];
 				datas++;
 			} else {
-				@SuppressWarnings("unchecked")
-				var subnode = (Node<K, V>) node.content[i * 2 + 1];
+				@SuppressWarnings("unchecked") var subnode = (Node<K, V>) node.content[i * 2 + 1];
 				if (subnode != null) {
 					ImmutableNode<K, V> immutableSubnode = subnode.toImmutable(cache);
 					resultNodeMap |= bitposition;
@@ -107,11 +105,9 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 		// If the key is stored as a data
 		if ((dataMap & bitposition) != 0) {
 			int keyIndex = 2 * index(dataMap, bitposition);
-			@SuppressWarnings("unchecked")
-			K keyCandidate = (K) content[keyIndex];
+			@SuppressWarnings("unchecked") K keyCandidate = (K) content[keyIndex];
 			if (keyCandidate.equals(key)) {
-				@SuppressWarnings("unchecked")
-				V value = (V) content[keyIndex + 1];
+				@SuppressWarnings("unchecked") V value = (V) content[keyIndex + 1];
 				return value;
 			} else {
 				return defaultValue;
@@ -120,9 +116,8 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 		// the key is stored as a node
 		else if ((nodeMap & bitposition) != 0) {
 			int keyIndex = content.length - 1 - index(nodeMap, bitposition);
-			@SuppressWarnings("unchecked")
-			var subNode = (ImmutableNode<K, V>) content[keyIndex];
-			int newDepth = depth + 1;
+			@SuppressWarnings("unchecked") var subNode = (ImmutableNode<K, V>) content[keyIndex];
+			int newDepth = incrementDepth(depth);
 			int newHash = newHash(hashProvider, key, hash, newDepth);
 			return subNode.getValue(key, hashProvider, defaultValue, newHash, newDepth);
 		}
@@ -133,14 +128,12 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValue, ContinousHashProvider<? super K> hashProvider,
-			V defaultValue, int hash, int depth) {
+	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValue, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
 		int selectedHashFragment = hashFragment(hash, shiftDepth(depth));
 		int bitposition = 1 << selectedHashFragment;
 		if ((dataMap & bitposition) != 0) {
 			int keyIndex = 2 * index(dataMap, bitposition);
-			@SuppressWarnings("unchecked")
-			K keyCandidate = (K) content[keyIndex];
+			@SuppressWarnings("unchecked") K keyCandidate = (K) content[keyIndex];
 			if (keyCandidate.equals(key)) {
 				if (value == defaultValue) {
 					// delete
@@ -151,7 +144,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 					oldValue.setOldValue(value);
 					return this;
 				} else {
-					// update existing nodeId
+					// update existing value
 					MutableNode<K, V> mutable = this.toMutable();
 					return mutable.updateValue(value, oldValue, selectedHashFragment);
 				}
@@ -161,16 +154,15 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 					oldValue.setOldValue(defaultValue);
 					return this;
 				} else {
-					// add new key + nodeId
+					// add new key + value
 					MutableNode<K, V> mutable = this.toMutable();
 					return mutable.putValue(key, value, oldValue, hashProvider, defaultValue, hash, depth);
 				}
 			}
 		} else if ((nodeMap & bitposition) != 0) {
 			int keyIndex = content.length - 1 - index(nodeMap, bitposition);
-			@SuppressWarnings("unchecked")
-			var subNode = (ImmutableNode<K, V>) content[keyIndex];
-			int newDepth = depth + 1;
+			@SuppressWarnings("unchecked") var subNode = (ImmutableNode<K, V>) content[keyIndex];
+			int newDepth = incrementDepth(depth);
 			int newHash = newHash(hashProvider, key, hash, newDepth);
 			var newsubNode = subNode.putValue(key, value, oldValue, hashProvider, defaultValue, newHash, newDepth);
 
@@ -179,10 +171,11 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				return this;
 			} else {
 				MutableNode<K, V> mutable = toMutable();
-				return mutable.updateWithSubNode(selectedHashFragment, newsubNode, value.equals(defaultValue));
+				return mutable.updateWithSubNode(selectedHashFragment, newsubNode,
+						(value == null && defaultValue == null) || (value != null && value.equals(defaultValue)));
 			}
 		} else {
-			// add new key + nodeId
+			// add new key + value
 			MutableNode<K, V> mutable = this.toMutable();
 			return mutable.putValue(key, value, oldValue, hashProvider, defaultValue, hash, depth);
 		}
@@ -192,8 +185,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	public long getSize() {
 		int result = Integer.bitCount(this.dataMap);
 		for (int subnodeIndex = 0; subnodeIndex < Integer.bitCount(this.nodeMap); subnodeIndex++) {
-			@SuppressWarnings("unchecked")
-			var subnode = (ImmutableNode<K, V>) this.content[this.content.length - 1 - subnodeIndex];
+			@SuppressWarnings("unchecked") var subnode = (ImmutableNode<K, V>) this.content[this.content.length - 1 - subnodeIndex];
 			result += subnode.getSize();
 		}
 		return result;
@@ -289,10 +281,9 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 		int nodeMask = 1;
 		for (int i = 0; i < FACTOR; i++) {
 			if ((nodeMask & nodeMap) != 0) {
-				@SuppressWarnings("unchecked")
-				Node<K, V> subNode = (Node<K, V>) content[content.length - 1 - index(nodeMap, nodeMask)];
+				@SuppressWarnings("unchecked") Node<K, V> subNode = (Node<K, V>) content[content.length - 1 - index(nodeMap, nodeMask)];
 				builder.append("\n");
-				subNode.prettyPrint(builder, depth + 1, i);
+				subNode.prettyPrint(builder, incrementDepth(depth), i);
 			}
 			nodeMask <<= 1;
 		}
@@ -310,12 +301,11 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 
 		// check subnodes
 		for (int i = 0; i < Integer.bitCount(nodeMap); i++) {
-			@SuppressWarnings("unchecked")
-			var subnode = (Node<K, V>) this.content[this.content.length - 1 - i];
+			@SuppressWarnings("unchecked") var subnode = (Node<K, V>) this.content[this.content.length - 1 - i];
 			if (!(subnode instanceof ImmutableNode<?, ?>)) {
 				throw new IllegalStateException("Immutable node contains mutable subnodes!");
 			} else {
-				subnode.checkIntegrity(hashProvider, defaultValue, depth + 1);
+				subnode.checkIntegrity(hashProvider, defaultValue, incrementDepth(depth));
 			}
 		}
 	}
@@ -327,13 +317,10 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
 		if (obj instanceof ImmutableNode<?, ?> other) {
-			return precalculatedHash == other.precalculatedHash && dataMap == other.dataMap && nodeMap == other.nodeMap
-					&& Arrays.deepEquals(content, other.content);
+			return precalculatedHash == other.precalculatedHash && dataMap == other.dataMap && nodeMap == other.nodeMap && Arrays.deepEquals(content, other.content);
 		} else if (obj instanceof MutableNode<?, ?> mutableObj) {
 			return ImmutableNode.compareImmutableMutable(this, mutableObj);
 		} else {
@@ -351,12 +338,10 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 			if (key != null) {
 				// Check whether a new Key-Value pair can fit into the immutable container
 				if (datas * 2 + nodes + 2 <= immutableLength) {
-					if (!immutable.content[datas * 2].equals(key)
-							|| !immutable.content[datas * 2 + 1].equals(mutable.content[i * 2 + 1])) {
+					if (!immutable.content[datas * 2].equals(key) || !immutable.content[datas * 2 + 1].equals(mutable.content[i * 2 + 1])) {
 						return false;
 					}
-				} else
-					return false;
+				} else return false;
 				datas++;
 			} else {
 				var mutableSubnode = (Node<?, ?>) mutable.content[i * 2 + 1];
