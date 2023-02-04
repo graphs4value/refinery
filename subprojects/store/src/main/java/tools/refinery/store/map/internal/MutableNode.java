@@ -306,6 +306,9 @@ public class MutableNode<K, V> extends Node<K, V> {
 		}
 
 		// 2. look inside the subnodes
+		if(cursor.nodeIndexStack.peek()==null) {
+			throw new IllegalStateException("Cursor moved to the next state when the state is empty.");
+		}
 		for (int index = cursor.nodeIndexStack.peek() + 1; index < FACTOR; index++) {
 			if (this.content[index * 2] == null && this.content[index * 2 + 1] != null) {
 				// 2.1 found next subnode, move down to the subnode
@@ -335,9 +338,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 
 	@Override
 	public void prettyPrint(StringBuilder builder, int depth, int code) {
-		for (int i = 0; i < depth; i++) {
-			builder.append("\t");
-		}
+		builder.append("\t".repeat(Math.max(0, depth)));
 		if (code >= 0) {
 			builder.append(code);
 			builder.append(":");

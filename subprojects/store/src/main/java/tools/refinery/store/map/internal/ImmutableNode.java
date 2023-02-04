@@ -225,6 +225,9 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 
 		// 2. look inside the subnodes
 		int nodes = Integer.bitCount(this.nodeMap);
+		if(cursor.nodeIndexStack.peek()==null) {
+			throw new IllegalStateException("Cursor moved to the next state when the state is empty.");
+		}
 		int newNodeIndex = cursor.nodeIndexStack.peek() + 1;
 		if (newNodeIndex < nodes) {
 			// 2.1 found next subnode, move down to the subnode
@@ -252,9 +255,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 
 	@Override
 	public void prettyPrint(StringBuilder builder, int depth, int code) {
-		for (int i = 0; i < depth; i++) {
-			builder.append("\t");
-		}
+		builder.append("\t".repeat(Math.max(0, depth)));
 		if (code >= 0) {
 			builder.append(code);
 			builder.append(":");
