@@ -22,11 +22,11 @@ import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 class DiffCursorFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
 							 boolean nullDefault, int commitFrequency,
-			boolean evilHash) {
+							 boolean evilHash) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
 		iterativeRandomPutsAndCommitsThenDiffCursor(scenario, store, steps, maxKey, values, seed, commitFrequency);
 	}
 
@@ -62,7 +62,7 @@ class DiffCursorFuzzTest {
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
 			if (index % diffTravelFrequency == 0) {
-				// difftravel
+				// diff-travel
 				long travelToVersion = r2.nextInt(largestCommit + 1);
 				DiffCursor<Integer, String> diffCursor = moving.getDiffCursor(travelToVersion);
 				moving.putAll(diffCursor);
@@ -94,16 +94,17 @@ class DiffCursorFuzzTest {
 	@Tag("fuzz")
 	void parametrizedFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
 						  int seed,
-			boolean evilHash) {
+						  boolean evilHash) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
 				noKeys, noValues, nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[]{false,true}, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32, 32 * 32},
+				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
+				new Object[]{false, true});
 	}
+
 	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
 			"commit frequency={5} seed={6} evil-hash={7}")
 	@MethodSource
@@ -111,7 +112,7 @@ class DiffCursorFuzzTest {
 	@Tag("slow")
 	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
 							  int seed,
-			boolean evilHash) {
+							  boolean evilHash) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, evilHash);
 	}

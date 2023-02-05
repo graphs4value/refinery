@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MapTestEnvironment<K, V> {
 	public static String[] prepareValues(int maxValue, boolean nullDefault) {
 		String[] values = new String[maxValue];
-		if(nullDefault) {
+		if (nullDefault) {
 			values[0] = null;
 		} else {
 			values[0] = "DEFAULT";
@@ -26,23 +26,18 @@ public class MapTestEnvironment<K, V> {
 	public static ContinousHashProvider<Integer> prepareHashProvider(final boolean evil) {
 		// Use maxPrime = 2147483629
 
-		ContinousHashProvider<Integer> chp = new ContinousHashProvider<Integer>() {
-
-			@Override
-			public int getHash(Integer key, int index) {
-				if (evil && index < 15 && index < key / 3) {
-					return 7;
-				}
-				int result = 1;
-				final int prime = 31;
-
-				result = prime * result + key;
-				result = prime * result + index;
-
-				return result;
+		return (key, index) -> {
+			if (evil && index < 15 && index < key / 3) {
+				return 7;
 			}
+			int result = 1;
+			final int prime = 31;
+
+			result = prime * result + key;
+			result = prime * result + index;
+
+			return result;
 		};
-		return chp;
 	}
 
 	public static void printStatus(String scenario, int actual, int max, String stepName) {

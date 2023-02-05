@@ -24,7 +24,7 @@ class MutableImmutableCompareFuzzTest {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
 		VersionedMapImpl<Integer, String> immutable = (VersionedMapImpl<Integer, String>) store.createMap();
 		VersionedMapImpl<Integer, String> mutable = (VersionedMapImpl<Integer, String>) store.createMap();
 
@@ -35,8 +35,8 @@ class MutableImmutableCompareFuzzTest {
 	}
 
 	private void iterativeRandomPutsAndCommitsAndCompare(String scenario, VersionedMapImpl<Integer, String> immutable,
-			VersionedMapImpl<Integer, String> mutable, int steps, int maxKey, String[] values, Random r,
-			int commitFrequency) {
+														 VersionedMapImpl<Integer, String> mutable, int steps, int maxKey, String[] values, Random r,
+														 int commitFrequency) {
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
 			int nextKey = r.nextInt(maxKey);
@@ -69,9 +69,9 @@ class MutableImmutableCompareFuzzTest {
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[]{false,true}, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32, 32 * 32},
+				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
+				new Object[]{false, true});
 	}
 
 	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +

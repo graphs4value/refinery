@@ -32,22 +32,22 @@ class SharedStoreFuzzTest {
 	}
 
 	private void iterativeRandomPutsAndCommitsThenRestore(String scenario, List<VersionedMapStore<Integer, String>> stores,
-			int steps, int maxKey, String[] values, int seed, int commitFrequency) {
+														  int steps, int maxKey, String[] values, int seed, int commitFrequency) {
 		// 1. maps with versions
 		Random r = new Random(seed);
 		List<VersionedMapImpl<Integer, String>> versioneds = new LinkedList<>();
-		for(VersionedMapStore<Integer, String> store : stores) {
+		for (VersionedMapStore<Integer, String> store : stores) {
 			versioneds.add((VersionedMapImpl<Integer, String>) store.createMap());
 		}
 
 		List<Map<Integer, Long>> index2Version = new LinkedList<>();
-		for(int i = 0; i<stores.size(); i++) {
+		for (int i = 0; i < stores.size(); i++) {
 			index2Version.add(new HashMap<>());
 		}
 
 		for (int i = 0; i < steps; i++) {
 			int stepIndex = i + 1;
-			for (int storeIndex = 0; storeIndex<versioneds.size(); storeIndex++) {
+			for (int storeIndex = 0; storeIndex < versioneds.size(); storeIndex++) {
 				int nextKey = r.nextInt(maxKey);
 				String nextValue = values[r.nextInt(values.length)];
 				versioneds.get(storeIndex).put(nextKey, nextValue);
@@ -60,14 +60,14 @@ class SharedStoreFuzzTest {
 		}
 		// 2. create a non-versioned and
 		List<VersionedMapImpl<Integer, String>> reference = new LinkedList<>();
-		for(VersionedMapStore<Integer, String> store : stores) {
+		for (VersionedMapStore<Integer, String> store : stores) {
 			reference.add((VersionedMapImpl<Integer, String>) store.createMap());
 		}
 		r = new Random(seed);
 
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
-			for (int storeIndex = 0; storeIndex<versioneds.size(); storeIndex++) {
+			for (int storeIndex = 0; storeIndex < versioneds.size(); storeIndex++) {
 				int nextKey = r.nextInt(maxKey);
 				String nextValue = values[r.nextInt(values.length)];
 				reference.get(storeIndex).put(nextKey, nextValue);
@@ -93,9 +93,9 @@ class SharedStoreFuzzTest {
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[]{false, true}, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32, 32 * 32},
+				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
+				new Object[]{false, true});
 	}
 
 	@ParameterizedTest(name = "Shared Store {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit " +

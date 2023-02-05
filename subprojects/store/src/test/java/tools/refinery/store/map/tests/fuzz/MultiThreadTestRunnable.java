@@ -13,17 +13,17 @@ import tools.refinery.store.map.internal.VersionedMapImpl;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 public class MultiThreadTestRunnable implements Runnable {
-	String scenario;
-	VersionedMapStore<Integer, String> store;
-	int steps;
-	int maxKey;
-	String[] values;
-	int seed;
-	int commitFrequency;
-	List<Throwable> errors = new LinkedList<>();
-	
+	final String scenario;
+	final VersionedMapStore<Integer, String> store;
+	final int steps;
+	final int maxKey;
+	final String[] values;
+	final int seed;
+	final int commitFrequency;
+	final List<Throwable> errors = new LinkedList<>();
+
 	public MultiThreadTestRunnable(String scenario, VersionedMapStore<Integer, String> store, int steps,
-			int maxKey, String[] values, int seed, int commitFrequency) {
+								   int maxKey, String[] values, int seed, int commitFrequency) {
 		super();
 		this.scenario = scenario;
 		this.store = store;
@@ -38,11 +38,11 @@ public class MultiThreadTestRunnable implements Runnable {
 		AssertionError error = new AssertionError(message);
 		errors.add(error);
 	}
-	
+
 	public List<Throwable> getErrors() {
 		return errors;
 	}
-	
+
 	@Override
 	public void run() {
 		// 1. build a map with versions
@@ -66,10 +66,10 @@ public class MultiThreadTestRunnable implements Runnable {
 			}
 			MapTestEnvironment.printStatus(scenario, index, steps, "building");
 		}
-		// 2. create a non-versioned 
+		// 2. create a non-versioned
 		VersionedMapImpl<Integer, String> reference = (VersionedMapImpl<Integer, String>) store.createMap();
 		r = new Random(seed);
-		Random r2 = new Random(seed+1);
+		Random r2 = new Random(seed + 1);
 
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
@@ -84,12 +84,12 @@ public class MultiThreadTestRunnable implements Runnable {
 			// go back to an existing state and compare to the reference
 			if (index % (commitFrequency) == 0) {
 				versioned.restore(index2Version.get(i));
-				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned,errors);
-				
+				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned, errors);
+
 				// go back to a random state (probably created by another thread)
 				List<Long> states = new ArrayList<>(store.getStates());
 				Collections.shuffle(states, r2);
-				for(Long state : states.subList(0, Math.min(states.size(), 100))) {
+				for (Long state : states.subList(0, Math.min(states.size(), 100))) {
 					versioned.restore(state);
 				}
 				versioned.restore(index2Version.get(i));

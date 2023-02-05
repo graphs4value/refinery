@@ -34,7 +34,7 @@ class ContentEqualsFuzzTest {
 	private void iterativeRandomPutsAndCommitsThenCompare(String scenario, ContinousHashProvider<Integer> chp,
 														  int steps, int maxKey, String[] values, Random r,
 														  int commitFrequency) {
-		VersionedMapStore<Integer, String> store1 = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
+		VersionedMapStore<Integer, String> store1 = new VersionedMapStoreImpl<>(chp, values[0]);
 		VersionedMap<Integer, String> sut1 = store1.createMap();
 
 		// Fill one map
@@ -64,7 +64,7 @@ class ContentEqualsFuzzTest {
 		// Randomize the order of the content
 		Collections.shuffle(content, r);
 
-		VersionedMapStore<Integer, String> store2 = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
+		VersionedMapStore<Integer, String> store2 = new VersionedMapStoreImpl<>(chp, values[0]);
 		VersionedMap<Integer, String> sut2 = store2.createMap();
 		int index2 = 1;
 		for (SimpleEntry<Integer, String> entry : content) {
@@ -95,7 +95,7 @@ class ContentEqualsFuzzTest {
 	static Stream<Arguments> parametrizedFastFuzz() {
 		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32,
 						32 * 32},
-				new Object[]{2, 3}, new Object[]{false,true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
+				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
 				new Object[]{false, true});
 	}
 

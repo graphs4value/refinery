@@ -23,17 +23,17 @@ import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 class RestoreFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
 							 boolean nullDefault, int commitFrequency,
-			boolean evilHash) {
+							 boolean evilHash) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
 
 		iterativeRandomPutsAndCommitsThenRestore(scenario, store, steps, maxKey, values, seed, commitFrequency);
 	}
 
 	private void iterativeRandomPutsAndCommitsThenRestore(String scenario, VersionedMapStore<Integer, String> store,
-			int steps, int maxKey, String[] values, int seed, int commitFrequency) {
+														  int steps, int maxKey, String[] values, int seed, int commitFrequency) {
 		// 1. build a map with versions
 		Random r = new Random(seed);
 		VersionedMapImpl<Integer, String> versioned = (VersionedMapImpl<Integer, String>) store.createMap();
@@ -90,9 +90,9 @@ class RestoreFuzzTest {
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[]{false, true}, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32, 32 * 32},
+				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
+				new Object[]{false, true});
 	}
 
 	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5}" +
