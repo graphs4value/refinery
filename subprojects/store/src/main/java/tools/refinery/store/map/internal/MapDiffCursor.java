@@ -5,6 +5,7 @@ import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -121,7 +122,7 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 			this.fromValue = defaultValue;
 			this.toValue = cursor2.value;
 		} else {
-			throw new IllegalArgumentException("Inconsistent compare result for diffcursor");
+			throw new IllegalArgumentException("Inconsistent compare result for diffCursor");
 		}
 	}
 
@@ -145,16 +146,17 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 			this.fromValue = defaultValue;
 			this.toValue = cursor2.value;
 		}
-		default -> throw new IllegalArgumentException("Inconsistent compare result for diffcursor");
+		default -> throw new IllegalArgumentException("Inconsistent compare result for diffCursor");
 		}
 	}
 
+	/**
+	 * Checks if two states has the same values, i.e., there is no difference.
+	 * @return whether two states has the same values
+	 */
 	protected boolean sameValues() {
-		if (this.fromValue == null) {
-			return this.toValue == null;
-		} else {
-			return this.fromValue.equals(this.toValue);
-		}
+		if(cursor1.isTerminated() || cursor2.isTerminated()) return false;
+		else return Objects.equals(this.fromValue, this.toValue);
 	}
 
 	protected boolean moveOne() {
