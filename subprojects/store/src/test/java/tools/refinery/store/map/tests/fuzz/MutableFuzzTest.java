@@ -19,8 +19,9 @@ import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class MutableFuzzTest {
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean evilHash) {
-		String[] values = MapTestEnvironment.prepareValues(maxValue);
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
+							 boolean nullDefault, boolean evilHash) {
+		String[] values = MapTestEnvironment.prepareValues(maxValue,nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
 		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
@@ -60,30 +61,34 @@ class MutableFuzzTest {
 		}
 	}
 
-	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} seed={4} evil-hash={5}")
+	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} defaultNull={4} seed={5} " +
+			"evil-hash={6}")
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
-	void parametrizedFuzz(int test, int steps, int noKeys, int noValues, int seed, boolean evilHash) {
+	void parametrizedFuzz(int test, int steps, int noKeys, int noValues, boolean defaultNull, int seed,
+						  boolean evilHash) {
 		runFuzzTest(
 				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed + "H" + (evilHash ? "Evil" : "Normal"),
-				seed, steps, noKeys, noValues, evilHash);
+				seed, steps, noKeys, noValues, defaultNull, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
 		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT },
-				new Object[] { 3, 32, 32 * 32, 32 * 32 * 32 * 32 }, new Object[] { 2, 3 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+				new Object[] { 3, 32, 32 * 32, 32 * 32 * 32 * 32 }, new Object[] { 2, 3 }, new Object[] { false, true },
+				new Object[] { 1, 2, 3 }, new Object[] { false, true });
 	}
-	
-	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} seed={4} evil-hash={5}")
+
+	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} seed={5} " +
+			"evil-hash={6}")
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int test, int steps, int noKeys, int noValues, int seed, boolean evilHash) {
+	void parametrizedSlowFuzz(int test, int steps, int noKeys, int noValues, boolean nullDefault, int seed,
+							  boolean evilHash) {
 		runFuzzTest(
 				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed + "H" + (evilHash ? "Evil" : "Normal"),
-				seed, steps, noKeys, noValues, evilHash);
+				seed, steps, noKeys, noValues, nullDefault, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

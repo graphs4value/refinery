@@ -21,9 +21,10 @@ import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class RestoreFuzzTest {
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, int commitFrequency,
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
+							 boolean nullDefault, int commitFrequency,
 			boolean evilHash) {
-		String[] values = MapTestEnvironment.prepareValues(maxValue);
+		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
 		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
@@ -77,30 +78,32 @@ class RestoreFuzzTest {
 
 	}
 
-	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5}" +
+			" seed={6} evil-hash={7}")
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("smoke")
-	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+							  int seed, boolean evilHash) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				commitFrequency, evilHash);
+				nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
 		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
+				new Object[] { 2, 3 }, new Object[]{false, true}, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
 				new Object[] { false, true });
 	}
 
-	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5}" +
+			" seed={6} evil-hash={7}")
 	@MethodSource
 	@Tag("smoke")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+							  int seed, boolean evilHash) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				commitFrequency, evilHash);
+				nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

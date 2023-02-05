@@ -21,9 +21,9 @@ import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class SharedStoreFuzzTest {
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, int commitFrequency,
-			boolean evilHash) {
-		String[] values = MapTestEnvironment.prepareValues(maxValue);
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
+							 boolean nullDefault, int commitFrequency, boolean evilHash) {
+		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
 		List<VersionedMapStore<Integer, String>> stores = VersionedMapStoreImpl.createSharedVersionedMapStores(5, chp, values[0]);
@@ -39,7 +39,7 @@ class SharedStoreFuzzTest {
 		for(VersionedMapStore<Integer, String> store : stores) {
 			versioneds.add((VersionedMapImpl<Integer, String>) store.createMap());
 		}
-				
+
 		List<Map<Integer, Long>> index2Version = new LinkedList<>();
 		for(int i = 0; i<stores.size(); i++) {
 			index2Version.add(new HashMap<>());
@@ -56,7 +56,7 @@ class SharedStoreFuzzTest {
 					index2Version.get(storeIndex).put(i, version);
 				}
 				MapTestEnvironment.printStatus(scenario, stepIndex, steps, "building");
-			}		
+			}
 		}
 		// 2. create a non-versioned and
 		List<VersionedMapImpl<Integer, String>> reference = new LinkedList<>();
@@ -76,35 +76,37 @@ class SharedStoreFuzzTest {
 					MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference.get(storeIndex), versioneds.get(storeIndex));
 				}
 			}
-			MapTestEnvironment.printStatus(scenario, index, steps, "comparison");	
+			MapTestEnvironment.printStatus(scenario, index, steps, "comparison");
 		}
 
 	}
 
-	@ParameterizedTest(name = "Shared Store {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Shared Store {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit " +
+			"frequency={4} seed={5} evil-hash={6}")
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("smoke")
-	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+							  int seed, boolean evilHash) {
 		runFuzzTest("SharedS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				commitFrequency, evilHash);
+				nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
 		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
+				new Object[] { 2, 3 }, new Object[]{false, true}, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
 				new Object[] { false, true });
 	}
 
-	@ParameterizedTest(name = "Shared Store {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Shared Store {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit " +
+			"frequency={4} seed={5} evil-hash={6}")
 	@MethodSource
 	@Tag("smoke")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+							  int seed, boolean evilHash) {
 		runFuzzTest("SharedS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				commitFrequency, evilHash);
+				nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {
