@@ -56,7 +56,7 @@ class MutableFuzzTest {
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
-	void parametrizedFuzz(int test, int steps, int noKeys, int noValues, boolean defaultNull, int seed,
+	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull, int seed,
 						  boolean evilHash) {
 		runFuzzTest(
 				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed + "H" + (evilHash ? "Evil" : "Normal"),
@@ -74,7 +74,7 @@ class MutableFuzzTest {
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int test, int steps, int noKeys, int noValues, boolean nullDefault, int seed,
+	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int seed,
 							  boolean evilHash) {
 		runFuzzTest(
 				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed + "H" + (evilHash ? "Evil" : "Normal"),

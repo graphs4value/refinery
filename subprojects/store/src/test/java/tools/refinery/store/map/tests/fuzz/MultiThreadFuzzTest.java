@@ -71,7 +71,7 @@ class MultiThreadFuzzTest {
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
-	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, boolean defaultNull, int commitFrequency,
+	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull, int commitFrequency,
 							  int seed, boolean evilHash) {
 		runFuzzTest("MultiThreadS" + steps + "K" + noKeys + "V" + noValues + defaultNull + "CF" + commitFrequency +
 				"s" + seed, seed, steps, noKeys, noValues, defaultNull, commitFrequency, evilHash);
@@ -88,7 +88,7 @@ class MultiThreadFuzzTest {
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency, int seed,
+	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency, int seed,
 							  boolean evilHash) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, evilHash);

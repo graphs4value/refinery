@@ -86,7 +86,7 @@ class SharedStoreFuzzTest {
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("smoke")
-	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
 							  int seed, boolean evilHash) {
 		runFuzzTest("SharedS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, evilHash);
@@ -103,7 +103,7 @@ class SharedStoreFuzzTest {
 	@MethodSource
 	@Tag("smoke")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
 							  int seed, boolean evilHash) {
 		runFuzzTest("SharedS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, evilHash);
