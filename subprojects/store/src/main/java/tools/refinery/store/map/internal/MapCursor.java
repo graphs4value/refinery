@@ -117,7 +117,12 @@ public class MapCursor<K, V> implements Cursor<K, V> {
 	 * same position.
 	 */
 	public static <K, V> int compare(MapCursor<K, V> cursor1, MapCursor<K, V> cursor2) {
-		// two cursors are equally deep
+		// Checking the state of the cursors
+		if(!cursor1.isTerminated() && cursor2.isTerminated()) return -1;
+		else if(cursor1.isTerminated() && !cursor2.isTerminated()) return 1;
+		else if(cursor1.isTerminated() && cursor2.isTerminated()) return 0;
+
+		// If the state does not determine the order, then compare @nodeIndexStack.
 		Iterator<Integer> stack1 = cursor1.nodeIndexStack.descendingIterator();
 		Iterator<Integer> stack2 = cursor2.nodeIndexStack.descendingIterator();
 		if (stack1.hasNext()) {
@@ -137,6 +142,8 @@ public class MapCursor<K, V> implements Cursor<K, V> {
 			// stack 2 has more element, thus stack 2 is deeper
 			return 1;
 		}
+
+		// two cursors are equally deep decide by data index
 		return Integer.compare(cursor1.dataIndex, cursor2.dataIndex);
 	}
 }
