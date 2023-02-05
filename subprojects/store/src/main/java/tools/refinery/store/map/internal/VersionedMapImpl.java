@@ -131,28 +131,6 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		root = this.store.revert(state);
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((root == null) ? 0 : root.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		VersionedMapImpl<?, ?> other = (VersionedMapImpl<?, ?>) obj;
-		if (root == null) {
-			return other.root == null;
-		} else return root.equals(other.root);
-	}
-
 	public String prettyPrint() {
 		if (this.root != null) {
 			StringBuilder s = new StringBuilder();
