@@ -9,9 +9,14 @@ import java.util.Map.Entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MapTestEnvironment<K, V> {
-	public static String[] prepareValues(int maxValue) {
+	public static String[] prepareValues(int maxValue, boolean nullDefault) {
 		String[] values = new String[maxValue];
-		values[0] = "DEFAULT";
+		if(nullDefault) {
+			values[0] = null;
+		} else {
+			values[0] = "DEFAULT";
+		}
+
 		for (int i = 1; i < values.length; i++) {
 			values[i] = "VAL" + i;
 		}
