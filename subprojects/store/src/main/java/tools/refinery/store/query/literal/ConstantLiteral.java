@@ -1,10 +1,10 @@
-package tools.refinery.store.query.atom;
+package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Variable;
 
 import java.util.Set;
 
-public record ConstantAtom(Variable variable, int nodeId) implements DNFAtom {
+public record ConstantLiteral(Variable variable, int nodeId) implements Literal {
 	@Override
 	public void collectAllVariables(Set<Variable> variables) {
 		variables.add(variable);

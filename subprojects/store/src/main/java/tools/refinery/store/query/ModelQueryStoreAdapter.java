@@ -9,7 +9,7 @@ import java.util.Collection;
 public interface ModelQueryStoreAdapter extends ModelStoreAdapter {
 	Collection<AnyRelationView> getRelationViews();
 
-	Collection<DNF> getQueries();
+	Collection<Dnf> getQueries();
 
 	@Override
 	ModelQueryAdapter createModelAdapter(Model model);

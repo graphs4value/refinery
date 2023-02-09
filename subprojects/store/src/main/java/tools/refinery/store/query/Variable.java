@@ -13,7 +13,7 @@ public class Variable {
 	public Variable(String name) {
 		super();
 		this.name = name;
-		this.uniqueName = DNFUtils.generateUniqueName(name);
+		this.uniqueName = DnfUtils.generateUniqueName(name);
 
 	}
 	public String getName() {

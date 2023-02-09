@@ -49,7 +49,7 @@ class ModelTest {
 
 		assertEquals(3, ageInterpretation.get(Tuple.of(0)));
 		assertEquals(1, ageInterpretation.get(Tuple.of(1)));
-		assertNull(ageInterpretation.get( Tuple.of(2)));
+		assertNull(ageInterpretation.get(Tuple.of(2)));
 
 		assertTrue(friendInterpretation.get(Tuple.of(0, 1)));
 		assertFalse(friendInterpretation.get(Tuple.of(0, 5)));

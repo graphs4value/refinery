@@ -1,4 +1,4 @@
-package tools.refinery.store.query.atom;
+package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.RelationLike;
@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class CallAtom<T extends RelationLike> implements DNFAtom {
+public abstract class CallLiteral<T extends RelationLike> implements Literal {
 	private final CallPolarity polarity;
 	private final T target;
 	private final List<Variable> substitution;
 
-	protected CallAtom(CallPolarity polarity, T target, List<Variable> substitution) {
+	protected CallLiteral(CallPolarity polarity, T target, List<Variable> substitution) {
 		if (substitution.size() != target.arity()) {
 			throw new IllegalArgumentException("%s needs %d arguments, but got %s".formatted(target.name(),
 					target.arity(), substitution.size()));
@@ -23,26 +23,6 @@ public abstract class CallAtom<T extends RelationLike> implements DNFAtom {
 		this.polarity = polarity;
 		this.target = target;
 		this.substitution = substitution;
-	}
-
-	protected CallAtom(CallPolarity polarity, T target, Variable... substitution) {
-		this(polarity, target, List.of(substitution));
-	}
-
-	protected CallAtom(boolean positive, T target, List<Variable> substitution) {
-		this(CallPolarity.fromBoolean(positive), target, substitution);
-	}
-
-	protected CallAtom(boolean positive, T target, Variable... substitution) {
-		this(positive, target, List.of(substitution));
-	}
-
-	protected CallAtom(T target, List<Variable> substitution) {
-		this(true, target, substitution);
-	}
-
-	protected CallAtom(T target, Variable... substitution) {
-		this(target, List.of(substitution));
 	}
 
 	public CallPolarity getPolarity() {
@@ -68,9 +48,9 @@ public abstract class CallAtom<T extends RelationLike> implements DNFAtom {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		CallAtom<?> callAtom = (CallAtom<?>) o;
-		return polarity == callAtom.polarity && Objects.equals(target, callAtom.target) && Objects.equals(substitution
-				, callAtom.substitution);
+		CallLiteral<?> callAtom = (CallLiteral<?>) o;
+		return polarity == callAtom.polarity && Objects.equals(target, callAtom.target) &&
+				Objects.equals(substitution, callAtom.substitution);
 	}
 
 	@Override

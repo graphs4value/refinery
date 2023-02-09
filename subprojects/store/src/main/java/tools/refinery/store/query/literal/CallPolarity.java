@@ -1,4 +1,4 @@
-package tools.refinery.store.query.atom;
+package tools.refinery.store.query.literal;
 
 public enum CallPolarity {
 	POSITIVE(true, false),

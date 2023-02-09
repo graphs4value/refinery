@@ -9,9 +9,9 @@ import org.eclipse.viatra.query.runtime.rete.matcher.ReteBackendFactory;
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.viatra.ViatraModelQueryBuilder;
-import tools.refinery.store.query.viatra.internal.pquery.DNF2PQuery;
+import tools.refinery.store.query.viatra.internal.pquery.Dnf2PQuery;
 import tools.refinery.store.query.viatra.internal.pquery.RawPatternMatcher;
 
 import java.util.Collections;
@@ -21,8 +21,8 @@ import java.util.function.Function;
 
 public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder implements ViatraModelQueryBuilder {
 	private ViatraQueryEngineOptions.Builder engineOptionsBuilder;
-	private final DNF2PQuery dnf2PQuery = new DNF2PQuery();
-	private final Map<DNF, IQuerySpecification<RawPatternMatcher>> querySpecifications = new LinkedHashMap<>();
+	private final Dnf2PQuery dnf2PQuery = new Dnf2PQuery();
+	private final Map<Dnf, IQuerySpecification<RawPatternMatcher>> querySpecifications = new LinkedHashMap<>();
 
 	public ViatraModelQueryBuilderImpl(ModelStoreBuilder storeBuilder) {
 		super(storeBuilder);
@@ -63,7 +63,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 	}
 
 	@Override
-	public ViatraModelQueryBuilder query(DNF query) {
+	public ViatraModelQueryBuilder query(Dnf query) {
 		if (querySpecifications.containsKey(query)) {
 			throw new IllegalArgumentException("%s was already added to the query engine".formatted(query.name()));
 		}
@@ -73,20 +73,20 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 	}
 
 	@Override
-	public ViatraModelQueryBuilder query(DNF query, QueryEvaluationHint queryEvaluationHint) {
+	public ViatraModelQueryBuilder query(Dnf query, QueryEvaluationHint queryEvaluationHint) {
 		query(query);
 		hint(query, queryEvaluationHint);
 		return this;
 	}
 
 	@Override
-	public ViatraModelQueryBuilder computeHint(Function<DNF, QueryEvaluationHint> computeHint) {
+	public ViatraModelQueryBuilder computeHint(Function<Dnf, QueryEvaluationHint> computeHint) {
 		dnf2PQuery.setComputeHint(computeHint);
 		return this;
 	}
 
 	@Override
-	public ViatraModelQueryBuilder hint(DNF dnf, QueryEvaluationHint queryEvaluationHint) {
+	public ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint) {
 		var pQuery = dnf2PQuery.getAlreadyTranslated(dnf);
 		if (pQuery == null) {
 			throw new IllegalArgumentException(

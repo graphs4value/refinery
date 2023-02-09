@@ -2,8 +2,8 @@ package tools.refinery.store.query;
 
 import java.util.UUID;
 
-public final class DNFUtils {
-	private DNFUtils() {
+public final class DnfUtils {
+	private DnfUtils() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 

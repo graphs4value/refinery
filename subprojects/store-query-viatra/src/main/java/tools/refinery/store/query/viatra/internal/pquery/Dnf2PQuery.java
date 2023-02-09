@@ -17,38 +17,38 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import tools.refinery.store.query.DNF;
-import tools.refinery.store.query.DNFAnd;
-import tools.refinery.store.query.DNFUtils;
+import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.DnfClause;
+import tools.refinery.store.query.DnfUtils;
 import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.atom.*;
+import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class DNF2PQuery {
+public class Dnf2PQuery {
 	private static final Object P_CONSTRAINT_LOCK = new Object();
 
-	private final Set<DNF> translating = new LinkedHashSet<>();
+	private final Set<Dnf> translating = new LinkedHashSet<>();
 
-	private final Map<DNF, RawPQuery> dnf2PQueryMap = new HashMap<>();
+	private final Map<Dnf, RawPQuery> dnf2PQueryMap = new HashMap<>();
 
 	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 
 	private final Map<AnyRelationView, RawPQuery> view2EmbeddedMap = new HashMap<>();
 
-	private Function<DNF, QueryEvaluationHint> computeHint = dnf -> new QueryEvaluationHint(null,
+	private Function<Dnf, QueryEvaluationHint> computeHint = dnf -> new QueryEvaluationHint(null,
 			QueryEvaluationHint.BackendRequirement.UNSPECIFIED);
 
-	public void setComputeHint(Function<DNF, QueryEvaluationHint> computeHint) {
+	public void setComputeHint(Function<Dnf, QueryEvaluationHint> computeHint) {
 		this.computeHint = computeHint;
 	}
 
-	public RawPQuery translate(DNF dnfQuery) {
+	public RawPQuery translate(Dnf dnfQuery) {
 		if (translating.contains(dnfQuery)) {
-			var path = translating.stream().map(DNF::name).collect(Collectors.joining(" -> "));
+			var path = translating.stream().map(Dnf::name).collect(Collectors.joining(" -> "));
 			throw new IllegalStateException("Circular reference %s -> %s detected".formatted(path,
 					dnfQuery.name()));
 		}
@@ -71,11 +71,11 @@ public class DNF2PQuery {
 		return Collections.unmodifiableMap(view2WrapperMap);
 	}
 
-	public RawPQuery getAlreadyTranslated(DNF dnfQuery) {
+	public RawPQuery getAlreadyTranslated(Dnf dnfQuery) {
 		return dnf2PQueryMap.get(dnfQuery);
 	}
 
-	private RawPQuery doTranslate(DNF dnfQuery) {
+	private RawPQuery doTranslate(Dnf dnfQuery) {
 		var pQuery = new RawPQuery(dnfQuery.getUniqueName());
 		pQuery.setEvaluationHints(computeHint.apply(dnfQuery));
 
@@ -103,9 +103,9 @@ public class DNF2PQuery {
 
 		// The constructor of {@link org.eclipse.viatra.query.runtime.matchers.psystem.BasePConstraint} mutates
 		// global static state (<code>nextID</code>) without locking. Therefore, we need to synchronize before creating
-		// any query constraints to avoid a data race.
+		// any query literals to avoid a data race.
 		synchronized (P_CONSTRAINT_LOCK) {
-			for (DNFAnd clause : dnfQuery.getClauses()) {
+			for (DnfClause clause : dnfQuery.getClauses()) {
 				PBody body = new PBody(pQuery);
 				List<ExportedParameter> symbolicParameters = new ArrayList<>();
 				for (var param : dnfQuery.getParameters()) {
@@ -114,8 +114,8 @@ public class DNF2PQuery {
 				}
 				body.setSymbolicParameters(symbolicParameters);
 				pQuery.addBody(body);
-				for (DNFAtom constraint : clause.constraints()) {
-					translateDNFAtom(constraint, body);
+				for (Literal literal : clause.literals()) {
+					translateLiteral(literal, body);
 				}
 			}
 		}
@@ -123,34 +123,34 @@ public class DNF2PQuery {
 		return pQuery;
 	}
 
-	private void translateDNFAtom(DNFAtom constraint, PBody body) {
-		if (constraint instanceof EquivalenceAtom equivalenceAtom) {
-			translateEquivalenceAtom(equivalenceAtom, body);
-		} else if (constraint instanceof RelationViewAtom relationViewAtom) {
-			translateRelationViewAtom(relationViewAtom, body);
-		} else if (constraint instanceof DNFCallAtom callAtom) {
-			translateCallAtom(callAtom, body);
-		} else if (constraint instanceof ConstantAtom constantAtom) {
-			translateConstantAtom(constantAtom, body);
+	private void translateLiteral(Literal literal, PBody body) {
+		if (literal instanceof EquivalenceLiteral equivalenceLiteral) {
+			translateEquivalenceLiteral(equivalenceLiteral, body);
+		} else if (literal instanceof RelationViewLiteral relationViewLiteral) {
+			translateRelationViewLiteral(relationViewLiteral, body);
+		} else if (literal instanceof DnfCallLiteral dnfCallLiteral) {
+			translateDnfCallLiteral(dnfCallLiteral, body);
+		} else if (literal instanceof ConstantLiteral constantLiteral) {
+			translateConstantLiteral(constantLiteral, body);
 		} else {
-			throw new IllegalArgumentException("Unknown constraint: " + constraint.toString());
+			throw new IllegalArgumentException("Unknown literal: " + literal.toString());
 		}
 	}
 
-	private void translateEquivalenceAtom(EquivalenceAtom equivalence, PBody body) {
-		PVariable varSource = body.getOrCreateVariableByName(equivalence.left().getUniqueName());
-		PVariable varTarget = body.getOrCreateVariableByName(equivalence.right().getUniqueName());
-		if (equivalence.positive()) {
+	private void translateEquivalenceLiteral(EquivalenceLiteral equivalenceLiteral, PBody body) {
+		PVariable varSource = body.getOrCreateVariableByName(equivalenceLiteral.left().getUniqueName());
+		PVariable varTarget = body.getOrCreateVariableByName(equivalenceLiteral.right().getUniqueName());
+		if (equivalenceLiteral.positive()) {
 			new Equality(body, varSource, varTarget);
 		} else {
 			new Inequality(body, varSource, varTarget);
 		}
 	}
 
-	private void translateRelationViewAtom(RelationViewAtom relationViewAtom, PBody body) {
-		var substitution = translateSubstitution(relationViewAtom.getSubstitution(), body);
-		var polarity = relationViewAtom.getPolarity();
-		var relationView = relationViewAtom.getTarget();
+	private void translateRelationViewLiteral(RelationViewLiteral relationViewLiteral, PBody body) {
+		var substitution = translateSubstitution(relationViewLiteral.getSubstitution(), body);
+		var polarity = relationViewLiteral.getPolarity();
+		var relationView = relationViewLiteral.getTarget();
 		if (polarity == CallPolarity.POSITIVE) {
 			new TypeConstraint(body, substitution, wrapView(relationView));
 		} else {
@@ -178,7 +178,7 @@ public class DNF2PQuery {
 	}
 
 	private RawPQuery doTranslateEmbeddedRelationViewPQuery(AnyRelationView relationView) {
-		var embeddedPQuery = new RawPQuery(DNFUtils.generateUniqueName(relationView.name()), PVisibility.EMBEDDED);
+		var embeddedPQuery = new RawPQuery(DnfUtils.generateUniqueName(relationView.name()), PVisibility.EMBEDDED);
 		var body = new PBody(embeddedPQuery);
 		int arity = relationView.arity();
 		var parameters = new ArrayList<PParameter>(arity);
@@ -204,10 +204,10 @@ public class DNF2PQuery {
 		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
 	}
 
-	private void translateCallAtom(DNFCallAtom callAtom, PBody body) {
-		var variablesTuple = translateSubstitution(callAtom.getSubstitution(), body);
-		var translatedReferred = translate(callAtom.getTarget());
-		var polarity = callAtom.getPolarity();
+	private void translateDnfCallLiteral(DnfCallLiteral dnfCallLiteral, PBody body) {
+		var variablesTuple = translateSubstitution(dnfCallLiteral.getSubstitution(), body);
+		var translatedReferred = translate(dnfCallLiteral.getTarget());
+		var polarity = dnfCallLiteral.getPolarity();
 		switch (polarity) {
 		case POSITIVE -> new PositivePatternCall(body, variablesTuple, translatedReferred);
 		case TRANSITIVE -> new BinaryTransitiveClosure(body, variablesTuple, translatedReferred);
@@ -216,8 +216,8 @@ public class DNF2PQuery {
 		}
 	}
 
-	private void translateConstantAtom(ConstantAtom constantAtom, PBody body) {
-		var variable = body.getOrCreateVariableByName(constantAtom.variable().getUniqueName());
-		new ConstantValue(body, variable, constantAtom.nodeId());
+	private void translateConstantLiteral(ConstantLiteral constantLiteral, PBody body) {
+		var variable = body.getOrCreateVariableByName(constantLiteral.variable().getUniqueName());
+		new ConstantValue(body, variable, constantLiteral.nodeId());
 	}
 }

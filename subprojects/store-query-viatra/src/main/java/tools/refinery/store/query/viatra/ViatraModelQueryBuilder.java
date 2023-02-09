@@ -4,7 +4,7 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.ModelQueryBuilder;
 
 import java.util.Collection;
@@ -23,25 +23,25 @@ public interface ViatraModelQueryBuilder extends ModelQueryBuilder {
 	ViatraModelQueryBuilder searchBackend(IQueryBackendFactory queryBackendFactory);
 
 	@Override
-	default ViatraModelQueryBuilder queries(DNF... queries) {
+	default ViatraModelQueryBuilder queries(Dnf... queries) {
 		ModelQueryBuilder.super.queries(queries);
 		return this;
 	}
 
 	@Override
-	default ViatraModelQueryBuilder queries(Collection<DNF> queries) {
+	default ViatraModelQueryBuilder queries(Collection<Dnf> queries) {
 		ModelQueryBuilder.super.queries(queries);
 		return this;
 	}
 
 	@Override
-	ViatraModelQueryBuilder query(DNF query);
+	ViatraModelQueryBuilder query(Dnf query);
 
-	ViatraModelQueryBuilder query(DNF query, QueryEvaluationHint queryEvaluationHint);
+	ViatraModelQueryBuilder query(Dnf query, QueryEvaluationHint queryEvaluationHint);
 
-	ViatraModelQueryBuilder computeHint(Function<DNF, QueryEvaluationHint> computeHint);
+	ViatraModelQueryBuilder computeHint(Function<Dnf, QueryEvaluationHint> computeHint);
 
-	ViatraModelQueryBuilder hint(DNF dnf, QueryEvaluationHint queryEvaluationHint);
+	ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint);
 
 	@Override
 	ViatraModelQueryStoreAdapter createStoreAdapter(ModelStore store);

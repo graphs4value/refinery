@@ -7,7 +7,7 @@ import org.eclipse.viatra.query.runtime.internal.apiimpl.ViatraQueryEngineImpl;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackend;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.ResultSet;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 
@@ -27,7 +27,7 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 	private final ViatraQueryEngineImpl queryEngine;
 	private final MethodHandle setUpdatePropagationDelayedHandle;
 	private final MethodHandle getQueryBackendsHandle;
-	private final Map<DNF, ResultSet> resultSets;
+	private final Map<Dnf, ResultSet> resultSets;
 	private boolean pendingChanges;
 
 	ViatraModelQueryAdapterImpl(Model model, ViatraModelQueryStoreAdapterImpl storeAdapter) {
@@ -95,7 +95,7 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 	}
 
 	@Override
-	public ResultSet getResultSet(DNF query) {
+	public ResultSet getResultSet(Dnf query) {
 		var resultSet = resultSets.get(query);
 		if (resultSet == null) {
 			throw new IllegalArgumentException("No matcher for query %s in model".formatted(query.name()));

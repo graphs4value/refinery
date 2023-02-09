@@ -1,10 +1,10 @@
 package tools.refinery.store.query;
 
-import tools.refinery.store.query.atom.DNFAtom;
+import tools.refinery.store.query.literal.Literal;
 
 import java.util.*;
 
-public final class DNF implements RelationLike {
+public final class Dnf implements RelationLike {
 	private final String name;
 
 	private final String uniqueName;
@@ -13,13 +13,13 @@ public final class DNF implements RelationLike {
 
 	private final List<FunctionalDependency<Variable>> functionalDependencies;
 
-	private final List<DNFAnd> clauses;
+	private final List<DnfClause> clauses;
 
-	private DNF(String name, List<Variable> parameters, List<FunctionalDependency<Variable>> functionalDependencies,
-				List<DNFAnd> clauses) {
+	private Dnf(String name, List<Variable> parameters, List<FunctionalDependency<Variable>> functionalDependencies,
+				List<DnfClause> clauses) {
 		validateFunctionalDependencies(parameters, functionalDependencies);
 		this.name = name;
-		this.uniqueName = DNFUtils.generateUniqueName(name);
+		this.uniqueName = DnfUtils.generateUniqueName(name);
 		this.parameters = parameters;
 		this.functionalDependencies = functionalDependencies;
 		this.clauses = clauses;
@@ -68,7 +68,7 @@ public final class DNF implements RelationLike {
 		return parameters.size();
 	}
 
-	public List<DNFAnd> getClauses() {
+	public List<DnfClause> getClauses() {
 		return clauses;
 	}
 
@@ -88,7 +88,7 @@ public final class DNF implements RelationLike {
 
 		private final List<FunctionalDependency<Variable>> functionalDependencies = new ArrayList<>();
 
-		private final List<List<DNFAtom>> clauses = new ArrayList<>();
+		private final List<List<Literal>> clauses = new ArrayList<>();
 
 		private Builder(String name) {
 			this.name = name;
@@ -122,46 +122,46 @@ public final class DNF implements RelationLike {
 			return functionalDependency(new FunctionalDependency<>(forEach, unique));
 		}
 
-		public Builder clause(DNFAtom... atoms) {
+		public Builder clause(Literal... atoms) {
 			clauses.add(List.of(atoms));
 			return this;
 		}
 
-		public Builder clause(Collection<DNFAtom> atoms) {
+		public Builder clause(Collection<Literal> atoms) {
 			clauses.add(List.copyOf(atoms));
 			return this;
 		}
 
-		public Builder clause(DNFAnd clause) {
-			return clause(clause.constraints());
+		public Builder clause(DnfClause clause) {
+			return clause(clause.literals());
 		}
 
-		public Builder clauses(DNFAnd... clauses) {
+		public Builder clauses(DnfClause... clauses) {
 			for (var clause : clauses) {
 				this.clause(clause);
 			}
 			return this;
 		}
 
-		public Builder clauses(Collection<DNFAnd> clauses) {
+		public Builder clauses(Collection<DnfClause> clauses) {
 			for (var clause : clauses) {
 				this.clause(clause);
 			}
 			return this;
 		}
 
-		public DNF build() {
-			var postProcessedClauses = new ArrayList<DNFAnd>();
+		public Dnf build() {
+			var postProcessedClauses = new ArrayList<DnfClause>();
 			for (var constraints : clauses) {
 				var variables = new HashSet<Variable>();
 				for (var constraint : constraints) {
 					constraint.collectAllVariables(variables);
 				}
 				parameters.forEach(variables::remove);
-				postProcessedClauses.add(new DNFAnd(Collections.unmodifiableSet(variables),
+				postProcessedClauses.add(new DnfClause(Collections.unmodifiableSet(variables),
 						Collections.unmodifiableList(constraints)));
 			}
-			return new DNF(name, Collections.unmodifiableList(parameters),
+			return new Dnf(name, Collections.unmodifiableList(parameters),
 					Collections.unmodifiableList(functionalDependencies),
 					Collections.unmodifiableList(postProcessedClauses));
 		}

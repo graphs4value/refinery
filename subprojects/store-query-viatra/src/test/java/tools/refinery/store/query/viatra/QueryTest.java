@@ -2,10 +2,13 @@ package tools.refinery.store.query.viatra;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.atom.*;
+import tools.refinery.store.query.literal.CallPolarity;
+import tools.refinery.store.query.literal.DnfCallLiteral;
+import tools.refinery.store.query.literal.EquivalenceLiteral;
+import tools.refinery.store.query.literal.RelationViewLiteral;
 import tools.refinery.store.query.view.FilteredRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
@@ -27,9 +30,9 @@ class QueryTest {
 		var personView = new KeyOnlyRelationView<>(person);
 
 		var p1 = new Variable("p1");
-		var predicate = DNF.builder("TypeConstraint")
+		var predicate = Dnf.builder("TypeConstraint")
 				.parameters(p1)
-				.clause(new RelationViewAtom(personView, p1))
+				.clause(new RelationViewLiteral(personView, p1))
 				.build();
 
 		var store = ModelStore.builder()
@@ -64,12 +67,12 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("RelationConstraint")
+		var predicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
@@ -111,13 +114,13 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("RelationConstraint")
+		var predicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2),
-						new RelationViewAtom(friendMustView, p2, p1)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2),
+						new RelationViewLiteral(friendMustView, p2, p1)
 				)
 				.build();
 
@@ -166,12 +169,12 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("RelationConstraint")
+		var predicate = Dnf.builder("RelationConstraint")
 				.parameters(p1)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
@@ -213,17 +216,17 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("Or")
+		var predicate = Dnf.builder("Or")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.clause(
-						new RelationViewAtom(animalView, p1),
-						new RelationViewAtom(animalView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(animalView, p1),
+						new RelationViewLiteral(animalView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
@@ -263,12 +266,12 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("Equality")
+		var predicate = Dnf.builder("Equality")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new EquivalenceAtom(p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new EquivalenceLiteral(p1, p2)
 				)
 				.build();
 
@@ -302,14 +305,14 @@ class QueryTest {
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
 		var p3 = new Variable("p3");
-		var predicate = DNF.builder("Inequality")
+		var predicate = Dnf.builder("Inequality")
 				.parameters(p1, p2, p3)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p3),
-						new RelationViewAtom(friendMustView, p2, p3),
-						new EquivalenceAtom(false, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p3),
+						new RelationViewLiteral(friendMustView, p2, p3),
+						new EquivalenceLiteral(false, p1, p2)
 				)
 				.build();
 
@@ -346,23 +349,23 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var friendPredicate = DNF.builder("RelationConstraint")
+		var friendPredicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
 		var p3 = new Variable("p3");
 		var p4 = new Variable("p4");
-		var predicate = DNF.builder("PositivePatternCall")
+		var predicate = Dnf.builder("PositivePatternCall")
 				.parameters(p3, p4)
 				.clause(
-						new RelationViewAtom(personView, p3),
-						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(friendPredicate, p3, p4)
+						new RelationViewLiteral(personView, p3),
+						new RelationViewLiteral(personView, p4),
+						new DnfCallLiteral(friendPredicate, p3, p4)
 				)
 				.build();
 
@@ -399,12 +402,12 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("NegativePatternCall")
+		var predicate = Dnf.builder("NegativePatternCall")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(false, friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(false, friendMustView, p1, p2)
 				)
 				.build();
 
@@ -441,23 +444,23 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var friendPredicate = DNF.builder("RelationConstraint")
+		var friendPredicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
 		var p3 = new Variable("p3");
 		var p4 = new Variable("p4");
-		var predicate = DNF.builder("NegativePatternCall")
+		var predicate = Dnf.builder("NegativePatternCall")
 				.parameters(p3, p4)
 				.clause(
-						new RelationViewAtom(personView, p3),
-						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(false, friendPredicate, p3, p4)
+						new RelationViewLiteral(personView, p3),
+						new RelationViewLiteral(personView, p4),
+						new DnfCallLiteral(false, friendPredicate, p3, p4)
 				)
 				.build();
 
@@ -495,11 +498,11 @@ class QueryTest {
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
 
-		var predicate = DNF.builder("Count")
+		var predicate = Dnf.builder("Count")
 				.parameters(p1)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(false, friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(false, friendMustView, p1, p2)
 				)
 				.build();
 
@@ -536,20 +539,20 @@ class QueryTest {
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
 
-		var called = DNF.builder("Called")
+		var called = Dnf.builder("Called")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
-		var predicate = DNF.builder("Count")
+		var predicate = Dnf.builder("Count")
 				.parameters(p1)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new DNFCallAtom(false, called, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new DnfCallLiteral(false, called, p1, p2)
 				)
 				.build();
 
@@ -585,12 +588,12 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var predicate = DNF.builder("TransitivePatternCall")
+		var predicate = Dnf.builder("TransitivePatternCall")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(CallPolarity.TRANSITIVE, friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(CallPolarity.TRANSITIVE, friendMustView, p1, p2)
 				)
 				.build();
 
@@ -626,23 +629,23 @@ class QueryTest {
 
 		var p1 = new Variable("p1");
 		var p2 = new Variable("p2");
-		var friendPredicate = DNF.builder("RelationConstraint")
+		var friendPredicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						new RelationViewLiteral(personView, p1),
+						new RelationViewLiteral(personView, p2),
+						new RelationViewLiteral(friendMustView, p1, p2)
 				)
 				.build();
 
 		var p3 = new Variable("p3");
 		var p4 = new Variable("p4");
-		var predicate = DNF.builder("TransitivePatternCall")
+		var predicate = Dnf.builder("TransitivePatternCall")
 				.parameters(p3, p4)
 				.clause(
-						new RelationViewAtom(personView, p3),
-						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(CallPolarity.TRANSITIVE, friendPredicate, p3, p4)
+						new RelationViewLiteral(personView, p3),
+						new RelationViewLiteral(personView, p4),
+						new DnfCallLiteral(CallPolarity.TRANSITIVE, friendPredicate, p3, p4)
 				)
 				.build();
 

@@ -1,11 +1,11 @@
-package tools.refinery.store.query.atom;
+package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Variable;
 
 import java.util.Set;
 
-public record EquivalenceAtom(boolean positive, Variable left, Variable right) implements DNFAtom {
-	public EquivalenceAtom(Variable left, Variable right) {
+public record EquivalenceLiteral(boolean positive, Variable left, Variable right) implements Literal {
+	public EquivalenceLiteral(Variable left, Variable right) {
 		this(true, left, right);
 	}
 

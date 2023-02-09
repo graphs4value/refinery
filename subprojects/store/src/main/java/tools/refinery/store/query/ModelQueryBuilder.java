@@ -7,16 +7,16 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ModelQueryBuilder extends ModelAdapterBuilder {
-	default ModelQueryBuilder queries(DNF... queries) {
+	default ModelQueryBuilder queries(Dnf... queries) {
 		return queries(List.of(queries));
 	}
 
-	default ModelQueryBuilder queries(Collection<DNF> queries) {
+	default ModelQueryBuilder queries(Collection<Dnf> queries) {
 		queries.forEach(this::query);
 		return this;
 	}
 
-	ModelQueryBuilder query(DNF query);
+	ModelQueryBuilder query(Dnf query);
 
 	@Override
 	ModelQueryStoreAdapter createStoreAdapter(ModelStore store);
