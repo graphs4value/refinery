@@ -5,7 +5,6 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.literal.RelationViewLiteral;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
@@ -22,7 +21,7 @@ class QueryTransactionTest {
 		var p1 = new Variable("p1");
 		var predicate = Dnf.builder("TypeConstraint")
 				.parameters(p1)
-				.clause(new RelationViewLiteral(personView, p1))
+				.clause(personView.call(p1))
 				.build();
 
 		var store = ModelStore.builder()

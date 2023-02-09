@@ -5,28 +5,13 @@ import tools.refinery.store.query.Variable;
 
 import java.util.List;
 
-public final class DnfCallLiteral extends CallLiteral<Dnf> {
+public final class DnfCallLiteral extends CallLiteral<Dnf> implements PolarLiteral<DnfCallLiteral> {
 	public DnfCallLiteral(CallPolarity polarity, Dnf target, List<Variable> substitution) {
 		super(polarity, target, substitution);
 	}
 
-	public DnfCallLiteral(CallPolarity polarity, Dnf target, Variable... substitution) {
-		this(polarity, target, List.of(substitution));
-	}
-
-	public DnfCallLiteral(boolean positive, Dnf target, List<Variable> substitution) {
-		this(CallPolarity.fromBoolean(positive), target, substitution);
-	}
-
-	public DnfCallLiteral(boolean positive, Dnf target, Variable... substitution) {
-		this(positive, target, List.of(substitution));
-	}
-
-	public DnfCallLiteral(Dnf target, List<Variable> substitution) {
-		this(CallPolarity.POSITIVE, target, substitution);
-	}
-
-	public DnfCallLiteral(Dnf target, Variable... substitution) {
-		this(target, List.of(substitution));
+	@Override
+	public DnfCallLiteral negate() {
+		return new DnfCallLiteral(getPolarity().negate(), getTarget(), getSubstitution());
 	}
 }

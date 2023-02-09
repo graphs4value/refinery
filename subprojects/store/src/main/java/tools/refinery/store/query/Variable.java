@@ -1,5 +1,8 @@
 package tools.refinery.store.query;
 
+import tools.refinery.store.query.literal.ConstantLiteral;
+import tools.refinery.store.query.literal.EquivalenceLiteral;
+
 import java.util.Objects;
 
 public class Variable {
@@ -26,6 +29,18 @@ public class Variable {
 
 	public boolean isNamed() {
 		return name != null;
+	}
+
+	public ConstantLiteral isConstant(int value) {
+		return new ConstantLiteral(this, value);
+	}
+
+	public EquivalenceLiteral isEquivalent(Variable other) {
+		return new EquivalenceLiteral(true, this, other);
+	}
+
+	public EquivalenceLiteral notEquivalent(Variable other) {
+		return new EquivalenceLiteral(false, this, other);
 	}
 
 	@Override

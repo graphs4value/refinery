@@ -1,5 +1,7 @@
 package tools.refinery.store.query;
 
+import tools.refinery.store.query.literal.CallPolarity;
+import tools.refinery.store.query.literal.DnfCallLiteral;
 import tools.refinery.store.query.literal.Literal;
 
 import java.util.*;
@@ -70,6 +72,22 @@ public final class Dnf implements RelationLike {
 
 	public List<DnfClause> getClauses() {
 		return clauses;
+	}
+
+	public DnfCallLiteral call(CallPolarity polarity, List<Variable> substitution) {
+		return new DnfCallLiteral(polarity, this, substitution);
+	}
+
+	public DnfCallLiteral call(CallPolarity polarity, Variable... substitution) {
+		return call(polarity, List.of(substitution));
+	}
+
+	public DnfCallLiteral call(Variable... substitution) {
+		return call(CallPolarity.POSITIVE, substitution);
+	}
+
+	public DnfCallLiteral callTransitive(Variable left, Variable right) {
+		return call(CallPolarity.TRANSITIVE, List.of(left, right));
 	}
 
 	public static Builder builder() {

@@ -5,10 +5,6 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.literal.CallPolarity;
-import tools.refinery.store.query.literal.DnfCallLiteral;
-import tools.refinery.store.query.literal.EquivalenceLiteral;
-import tools.refinery.store.query.literal.RelationViewLiteral;
 import tools.refinery.store.query.view.FilteredRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
@@ -21,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static tools.refinery.store.query.literal.Literals.not;
 
 class QueryTest {
 	@Test
@@ -32,7 +29,7 @@ class QueryTest {
 		var p1 = new Variable("p1");
 		var predicate = Dnf.builder("TypeConstraint")
 				.parameters(p1)
-				.clause(new RelationViewLiteral(personView, p1))
+				.clause(personView.call(p1))
 				.build();
 
 		var store = ModelStore.builder()
@@ -70,9 +67,9 @@ class QueryTest {
 		var predicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
@@ -117,10 +114,10 @@ class QueryTest {
 		var predicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2),
-						new RelationViewLiteral(friendMustView, p2, p1)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2),
+						friendMustView.call(p2, p1)
 				)
 				.build();
 
@@ -172,9 +169,9 @@ class QueryTest {
 		var predicate = Dnf.builder("RelationConstraint")
 				.parameters(p1)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
@@ -219,14 +216,14 @@ class QueryTest {
 		var predicate = Dnf.builder("Or")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.clause(
-						new RelationViewLiteral(animalView, p1),
-						new RelationViewLiteral(animalView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						animalView.call(p1),
+						animalView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
@@ -269,9 +266,9 @@ class QueryTest {
 		var predicate = Dnf.builder("Equality")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new EquivalenceLiteral(p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						p1.isEquivalent(p2)
 				)
 				.build();
 
@@ -308,11 +305,11 @@ class QueryTest {
 		var predicate = Dnf.builder("Inequality")
 				.parameters(p1, p2, p3)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p3),
-						new RelationViewLiteral(friendMustView, p2, p3),
-						new EquivalenceLiteral(false, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p3),
+						friendMustView.call(p2, p3),
+						p1.notEquivalent(p2)
 				)
 				.build();
 
@@ -352,9 +349,9 @@ class QueryTest {
 		var friendPredicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
@@ -363,9 +360,9 @@ class QueryTest {
 		var predicate = Dnf.builder("PositivePatternCall")
 				.parameters(p3, p4)
 				.clause(
-						new RelationViewLiteral(personView, p3),
-						new RelationViewLiteral(personView, p4),
-						new DnfCallLiteral(friendPredicate, p3, p4)
+						personView.call(p3),
+						personView.call(p4),
+						friendPredicate.call(p3, p4)
 				)
 				.build();
 
@@ -405,9 +402,9 @@ class QueryTest {
 		var predicate = Dnf.builder("NegativePatternCall")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(false, friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						not(friendMustView.call(p1, p2))
 				)
 				.build();
 
@@ -447,9 +444,9 @@ class QueryTest {
 		var friendPredicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
@@ -458,9 +455,9 @@ class QueryTest {
 		var predicate = Dnf.builder("NegativePatternCall")
 				.parameters(p3, p4)
 				.clause(
-						new RelationViewLiteral(personView, p3),
-						new RelationViewLiteral(personView, p4),
-						new DnfCallLiteral(false, friendPredicate, p3, p4)
+						personView.call(p3),
+						personView.call(p4),
+						not(friendPredicate.call(p3, p4))
 				)
 				.build();
 
@@ -501,8 +498,8 @@ class QueryTest {
 		var predicate = Dnf.builder("Count")
 				.parameters(p1)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(false, friendMustView, p1, p2)
+						personView.call(p1),
+						not(friendMustView.call(p1, p2))
 				)
 				.build();
 
@@ -542,17 +539,17 @@ class QueryTest {
 		var called = Dnf.builder("Called")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
 		var predicate = Dnf.builder("Count")
 				.parameters(p1)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new DnfCallLiteral(false, called, p1, p2)
+						personView.call(p1),
+						not(called.call(p1, p2))
 				)
 				.build();
 
@@ -591,9 +588,9 @@ class QueryTest {
 		var predicate = Dnf.builder("TransitivePatternCall")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(CallPolarity.TRANSITIVE, friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.callTransitive(p1, p2)
 				)
 				.build();
 
@@ -632,9 +629,9 @@ class QueryTest {
 		var friendPredicate = Dnf.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewLiteral(personView, p1),
-						new RelationViewLiteral(personView, p2),
-						new RelationViewLiteral(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
@@ -643,9 +640,9 @@ class QueryTest {
 		var predicate = Dnf.builder("TransitivePatternCall")
 				.parameters(p3, p4)
 				.clause(
-						new RelationViewLiteral(personView, p3),
-						new RelationViewLiteral(personView, p4),
-						new DnfCallLiteral(CallPolarity.TRANSITIVE, friendPredicate, p3, p4)
+						personView.call(p3),
+						personView.call(p4),
+						friendPredicate.callTransitive(p3, p4)
 				)
 				.build();
 

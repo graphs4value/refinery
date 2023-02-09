@@ -2,9 +2,13 @@ package tools.refinery.store.query.view;
 
 import tools.refinery.store.map.CursorAsIterator;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.literal.CallPolarity;
+import tools.refinery.store.query.literal.RelationViewLiteral;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -45,6 +49,22 @@ public abstract non-sealed class RelationView<T> implements AnyRelationView {
 	@Override
 	public Iterable<Object[]> getAll(Model model) {
 		return (() -> new CursorAsIterator<>(model.getInterpretation(symbol).getAll(), this::forwardMap, this::filter));
+	}
+
+	public RelationViewLiteral call(CallPolarity polarity, List<Variable> substitution) {
+		return new RelationViewLiteral(polarity, this, substitution);
+	}
+
+	public RelationViewLiteral call(CallPolarity polarity, Variable... substitution) {
+		return call(polarity, List.of(substitution));
+	}
+
+	public RelationViewLiteral call(Variable... substitution) {
+		return call(CallPolarity.POSITIVE, substitution);
+	}
+
+	public RelationViewLiteral callTransitive(Variable left, Variable right) {
+		return call(CallPolarity.TRANSITIVE, List.of(left, right));
 	}
 
 	@Override

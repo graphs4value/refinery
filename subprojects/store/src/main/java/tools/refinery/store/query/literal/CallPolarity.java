@@ -22,7 +22,11 @@ public enum CallPolarity {
 		return transitive;
 	}
 
-	public static CallPolarity fromBoolean(boolean positive) {
-		return positive ? POSITIVE : NEGATIVE;
+	public CallPolarity negate() {
+		return switch (this) {
+			case POSITIVE -> NEGATIVE;
+			case NEGATIVE -> POSITIVE;
+			case TRANSITIVE -> throw new IllegalArgumentException("Transitive polarity cannot be negated");
+		};
 	}
 }
