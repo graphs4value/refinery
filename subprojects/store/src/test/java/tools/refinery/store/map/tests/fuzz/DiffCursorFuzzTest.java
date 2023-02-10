@@ -1,6 +1,7 @@
 package tools.refinery.store.map.tests.fuzz;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 import java.util.Random;
 import java.util.stream.Stream;
@@ -93,16 +94,14 @@ class DiffCursorFuzzTest {
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-						  int seed,
-						  boolean evilHash) {
+						  int seed, boolean evilHash) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
 				noKeys, noValues, nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32, 32 * 32},
-				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
-				new Object[]{false, true});
+		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
+				commitFrequencyOptions, randomSeedOptions, evilHashOptions);
 	}
 
 	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
@@ -111,8 +110,7 @@ class DiffCursorFuzzTest {
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed,
-							  boolean evilHash) {
+							  int seed, boolean evilHash) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, evilHash);
 	}

@@ -18,7 +18,10 @@ import tools.refinery.store.map.internal.VersionedMapImpl;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
+
 class CommitFuzzTest {
+
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
 							 boolean nullDefault, int commitFrequency,
 							 boolean evilHash) {
@@ -67,9 +70,8 @@ class CommitFuzzTest {
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT}, new Object[]{3, 32, 32 * 32},
-				new Object[]{2, 3}, new Object[]{false, true}, new Object[]{1, 10, 100}, new Object[]{1, 2, 3},
-				new Object[]{false, true});
+		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
+				commitFrequencyOptions, randomSeedOptions, evilHashOptions);
 	}
 
 	@ParameterizedTest(name = "Commit {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5} " +

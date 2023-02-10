@@ -1,6 +1,7 @@
 package tools.refinery.store.map.tests.fuzz;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 import java.util.Random;
 import java.util.stream.Stream;
@@ -64,9 +65,8 @@ class MutableFuzzTest {
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[]{FuzzTestUtils.FAST_STEP_COUNT},
-				new Object[]{3, 32, 32 * 32, 32 * 32 * 32 * 32}, new Object[]{2, 3}, new Object[]{false, true},
-				new Object[]{1, 2, 3}, new Object[]{false, true});
+		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
+				randomSeedOptions, evilHashOptions);
 	}
 
 	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} seed={5} " +
