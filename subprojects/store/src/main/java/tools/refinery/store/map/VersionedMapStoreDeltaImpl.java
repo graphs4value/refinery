@@ -2,32 +2,32 @@ package tools.refinery.store.map;
 
 import java.util.*;
 
-import tools.refinery.store.map.internal.DeltaDiffCursor;
-import tools.refinery.store.map.internal.MapDelta;
-import tools.refinery.store.map.internal.MapTransaction;
-import tools.refinery.store.map.internal.VersionedMapDeltaImpl;
+import tools.refinery.store.map.internal.*;
 
-public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>{
+public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V> {
+	// Configuration
+	protected final boolean summarizeChanges;
+
 	// Static data
 	protected final V defaultValue;
 
 	// Dynamic data
-	protected final Map<Long,MapTransaction<K, V>> states = new HashMap<>();
+	protected final Map<Long, MapTransaction<K, V>> states = new HashMap<>();
 	protected long nextID = 0;
 
-	public VersionedMapStoreDeltaImpl(V defaultValue) {
-		super();
+	public VersionedMapStoreDeltaImpl(boolean summarizeChanges, V defaultValue) {
+		this.summarizeChanges = summarizeChanges;
 		this.defaultValue = defaultValue;
 	}
 
 	@Override
 	public VersionedMap<K, V> createMap() {
-		return new VersionedMapDeltaImpl<>(this, defaultValue);
+		return new VersionedMapDeltaImpl<>(this, this.summarizeChanges, this.defaultValue);
 	}
 
 	@Override
 	public VersionedMap<K, V> createMap(long state) {
-		VersionedMapDeltaImpl<K, V> result = new VersionedMapDeltaImpl<>(this, defaultValue);
+		VersionedMapDeltaImpl<K, V> result = new VersionedMapDeltaImpl<>(this, this.summarizeChanges, this.defaultValue);
 		result.restore(state);
 		return result;
 	}
@@ -35,7 +35,7 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 	public synchronized MapTransaction<K, V> appendTransaction(MapDelta<K, V>[] deltas, MapTransaction<K, V> previous, long[] versionContainer) {
 		long version = nextID++;
 		versionContainer[0] = version;
-		if(deltas == null) {
+		if (deltas == null) {
 			states.put(version, previous);
 			return previous;
 		} else {
@@ -45,26 +45,25 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 		}
 	}
 
-	private synchronized MapTransaction<K,V> getState(long state) {
+	private synchronized MapTransaction<K, V> getState(long state) {
 		return states.get(state);
 	}
 
 	public void getPath(long to, List<MapDelta<K, V>[]> forwardTransactions) {
-		MapTransaction<K,V> toTransaction = getState(to);
-		while(toTransaction != null) {
+		MapTransaction<K, V> toTransaction = getState(to);
+		while (toTransaction != null) {
 			forwardTransactions.add(toTransaction.deltas());
 			toTransaction = toTransaction.parent();
 		}
 	}
 
 	public void getPath(long from, long to,
-			List<MapDelta<K, V>[]> backwardTransactions,
-			List<MapDelta<K, V>[]> forwardTransactions)
-	{
-		MapTransaction<K,V> fromTransaction = getState(from);
-		MapTransaction<K,V> toTransaction = getState(to);
-		while(fromTransaction != toTransaction) {
-			if(fromTransaction == null || fromTransaction.version() < toTransaction.version()) {
+						List<MapDelta<K, V>[]> backwardTransactions,
+						List<MapDelta<K, V>[]> forwardTransactions) {
+		MapTransaction<K, V> fromTransaction = getState(from);
+		MapTransaction<K, V> toTransaction = getState(to);
+		while (fromTransaction != toTransaction) {
+			if (fromTransaction == null || fromTransaction.version() < toTransaction.version()) {
 				forwardTransactions.add(toTransaction.deltas());
 				toTransaction = toTransaction.parent();
 			} else {

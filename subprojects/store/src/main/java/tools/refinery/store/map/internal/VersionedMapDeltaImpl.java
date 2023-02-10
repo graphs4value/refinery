@@ -14,12 +14,16 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 
 	protected final V defaultValue;
 
-	public VersionedMapDeltaImpl(VersionedMapStoreDeltaImpl<K, V> store, V defaultValue) {
+	public VersionedMapDeltaImpl(VersionedMapStoreDeltaImpl<K, V> store, boolean summarizeChanges, V defaultValue) {
 		this.store = store;
 		this.defaultValue = defaultValue;
 
 		current = new HashMap<>();
-		uncommittedStore = new UncommittedDeltaArrayStore<>();
+		if(summarizeChanges) {
+			this.uncommittedStore = new UncommittedDeltaMapStore<>(this);
+		} else {
+			this.uncommittedStore = new UncommittedDeltaArrayStore<>();
+		}
 	}
 
 	@Override
@@ -146,8 +150,7 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 			if (versioned == this) {
 				return true;
 			} else {
-				return Objects.equals(this.defaultValue, versioned.defaultValue) &&
-						Objects.equals(this.current, versioned.current);
+				return Objects.equals(this.defaultValue, versioned.defaultValue) && Objects.equals(this.current, versioned.current);
 			}
 		} else {
 			throw new UnsupportedOperationException("Comparing different map implementations is ineffective.");
