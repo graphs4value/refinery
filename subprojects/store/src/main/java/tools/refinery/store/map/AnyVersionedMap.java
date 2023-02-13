@@ -37,4 +37,9 @@ public sealed interface AnyVersionedMap extends Versioned permits VersionedMap {
 	@SuppressWarnings("squid:S1133")
 	@Deprecated(since = "0.0.0")
 	boolean equals(Object obj);
+
+	/**
+	 * Checks the integrity of the map, and throws an exception if an inconsistency is detected.
+	 */
+	void checkIntegrity();
 }

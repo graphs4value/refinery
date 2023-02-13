@@ -19,11 +19,16 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 		this.defaultValue = defaultValue;
 
 		current = new HashMap<>();
-		if(summarizeChanges) {
+		if (summarizeChanges) {
 			this.uncommittedStore = new UncommittedDeltaMapStore<>(this);
 		} else {
 			this.uncommittedStore = new UncommittedDeltaArrayStore<>();
 		}
+	}
+
+	@Override
+	public V getDefaultValue() {
+		return defaultValue;
 	}
 
 	@Override
@@ -43,16 +48,18 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 		}
 
 		// 2. get common ancestor
+		final MapTransaction<K,V> parent;
 		List<MapDelta<K, V>[]> forward = new ArrayList<>();
 		if (this.previous == null) {
-			this.store.getPath(state, forward);
+			parent = this.store.getPath(state, forward);
 			this.forward(forward);
 		} else {
 			List<MapDelta<K, V>[]> backward = new ArrayList<>();
-			this.store.getPath(this.previous.version(), state, backward, forward);
+			parent = this.store.getPath(this.previous.version(), state, backward, forward);
 			this.backward(backward);
 			this.forward(forward);
 		}
+		this.previous = parent;
 	}
 
 	protected void forward(List<MapDelta<K, V>[]> changes) {
@@ -70,14 +77,28 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 	protected void forward(MapDelta<K, V>[] changes) {
 		for (int i = 0; i < changes.length; i++) {
 			final MapDelta<K, V> change = changes[i];
-			current.put(change.getKey(), change.getNewValue());
+			K key = change.getKey();
+			V newValue = change.getNewValue();
+
+			if(newValue == defaultValue) {
+				current.remove(key);
+			} else {
+				current.put(key,newValue);
+			}
 		}
 	}
 
 	protected void backward(MapDelta<K, V>[] changes) {
 		for (int i = changes.length - 1; i >= 0; i--) {
 			final MapDelta<K, V> change = changes[i];
-			current.put(change.getKey(), change.getOldValue());
+			K key = change.getKey();
+			V oldValue = change.oldValue();
+
+			if(oldValue == defaultValue) {
+				current.remove(key);
+			} else {
+				current.put(key,oldValue);
+			}
 		}
 	}
 
@@ -93,26 +114,46 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 
 	@Override
 	public V put(K key, V value) {
-		if (value == defaultValue) {
-			V res = current.remove(key);
+		final V oldValue;
+		if (Objects.equals(value, defaultValue)) {
+			final V res = current.remove(key);
 			if (res == null) {
-				// no changes
-				return defaultValue;
+				// no changes: default > default
+				oldValue = defaultValue;
 			} else {
-				uncommittedStore.processChange(key, res, value);
-				return res;
+				oldValue = res;
 			}
 		} else {
-			V oldValue = current.put(key, value);
-			uncommittedStore.processChange(key, oldValue, value);
-			return oldValue;
+			final var mapValue = current.put(key, value);
+			if (mapValue == null) {
+				oldValue = defaultValue;
+			} else {
+				oldValue = mapValue;
+			}
 		}
+		if(!Objects.equals(oldValue,value)) {
+			uncommittedStore.processChange(key, oldValue, value);
+		}
+		return oldValue;
 	}
 
 	@Override
 	public void putAll(Cursor<K, V> cursor) {
-		throw new UnsupportedOperationException();
-
+		if (cursor.getDependingMaps().contains(this)) {
+			List<K> keys = new ArrayList<>();
+			List<V> values = new ArrayList<>();
+			while (cursor.move()) {
+				keys.add(cursor.getKey());
+				values.add(cursor.getValue());
+			}
+			for (int i = 0; i < keys.size(); i++) {
+				this.put(keys.get(i), values.get(i));
+			}
+		} else {
+			while (cursor.move()) {
+				this.put(cursor.getKey(), cursor.getValue());
+			}
+		}
 	}
 
 	@Override
@@ -154,6 +195,20 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 			}
 		} else {
 			throw new UnsupportedOperationException("Comparing different map implementations is ineffective.");
+		}
+	}
+
+	@Override
+	public void checkIntegrity() {
+		this.uncommittedStore.checkIntegrity();
+
+		for (var entry : this.current.entrySet()) {
+			var value = entry.getValue();
+			if (value == this.defaultValue) {
+				throw new IllegalStateException("Default value stored in map!");
+			} else if (value == null) {
+				throw new IllegalStateException("null value stored in map!");
+			}
 		}
 	}
 }

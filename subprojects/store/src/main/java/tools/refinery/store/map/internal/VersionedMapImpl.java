@@ -43,6 +43,7 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		this.root = data;
 	}
 
+	@Override
 	public V getDefaultValue() {
 		return defaultValue;
 	}
@@ -141,6 +142,7 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		}
 	}
 
+	@Override
 	public void checkIntegrity() {
 		if (this.root != null) {
 			this.root.checkIntegrity(hashProvider, defaultValue, 0);

@@ -62,6 +62,7 @@ public class DeltaDiffCursor<K, V> implements DiffCursor<K, V> {
 		return this.direction && listIndex == -1;
 	}
 
+
 	@Override
 	public boolean move() {
 		if (isTerminated()) {
@@ -74,6 +75,7 @@ public class DeltaDiffCursor<K, V> implements DiffCursor<K, V> {
 				} else {
 					if (listIndex-1 >= 0) {
 						listIndex--;
+						arrayIndex = 0;
 						return true;
 					} else {
 						listIndex = -1;

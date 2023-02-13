@@ -18,7 +18,6 @@ public class IteratorAsCursor<K, V> implements Cursor<K, V> {
 	public IteratorAsCursor(VersionedMap<K, V> source, Map<K, V> current) {
 		this.iterator = current.entrySet().iterator();
 		this.source = source;
-		move();
 	}
 
 	@Override
@@ -38,7 +37,7 @@ public class IteratorAsCursor<K, V> implements Cursor<K, V> {
 
 	@Override
 	public boolean move() {
-		terminated = iterator.hasNext();
+		terminated = !iterator.hasNext();
 		if (terminated) {
 			this.key = null;
 			this.value = null;
