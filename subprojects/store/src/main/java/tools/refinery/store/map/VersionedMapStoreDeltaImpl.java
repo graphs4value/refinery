@@ -78,7 +78,7 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 
 	@Override
 	public synchronized Set<Long> getStates() {
-		return states.keySet();
+		return new HashSet<>(states.keySet());
 	}
 
 	@Override
