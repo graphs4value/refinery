@@ -71,7 +71,7 @@ class MutableImmutableCompareFuzzTest {
 
 	static Stream<Arguments> parametrizedFastFuzz() {
 		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
-				commitFrequencyOptions, randomSeedOptions, evilHashOptions);
+				commitFrequencyOptions, randomSeedOptions, new Object[]{false, true});
 	}
 
 	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +

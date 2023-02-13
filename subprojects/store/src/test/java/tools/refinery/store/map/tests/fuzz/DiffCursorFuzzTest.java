@@ -1,33 +1,26 @@
 package tools.refinery.store.map.tests.fuzz;
 
-import static org.junit.jupiter.api.Assertions.fail;
-import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
-
-import java.util.Random;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.*;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
+import java.util.Random;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.fail;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
+
 class DiffCursorFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
-							 boolean nullDefault, int commitFrequency,
-							 boolean evilHash) {
+							 boolean nullDefault, int commitFrequency, VersionedMapStoreBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
-		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
 		iterativeRandomPutsAndCommitsThenDiffCursor(scenario, store, steps, maxKey, values, seed, commitFrequency);
 	}
 
@@ -35,7 +28,7 @@ class DiffCursorFuzzTest {
 															 int steps, int maxKey, String[] values, int seed, int commitFrequency) {
 		// 1. build a map with versions
 		Random r = new Random(seed);
-		VersionedMapImpl<Integer, String> versioned = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMap<Integer, String> versioned = store.createMap();
 		int largestCommit = -1;
 
 		for (int i = 0; i < steps; i++) {
@@ -56,7 +49,7 @@ class DiffCursorFuzzTest {
 				System.out.println(scenario + ":" + index + "/" + steps + " building finished");
 		}
 		// 2. create a non-versioned map,
-		VersionedMapImpl<Integer, String> moving = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMap<Integer, String> moving = store.createMap();
 		Random r2 = new Random(seed + 1);
 
 		final int diffTravelFrequency = commitFrequency * 2;
@@ -88,31 +81,32 @@ class DiffCursorFuzzTest {
 
 	}
 
-	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
-			"commit frequency={5} seed={6} evil-hash={7}")
+	public static final String title = "DiffCursor {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
+			"commit frequency={5} seed={6} config={7}";
+
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-						  int seed, boolean evilHash) {
+						  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
-				noKeys, noValues, nullDefault, commitFrequency, evilHash);
+				noKeys, noValues, nullDefault, commitFrequency, builder);
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
-		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
-				commitFrequencyOptions, randomSeedOptions, evilHashOptions);
+		return FuzzTestUtils.permutationWithSize(new Object[]{100}, keyCounts, valueCounts, nullDefaultOptions,
+				commitFrequencyOptions, randomSeedOptions, storeConfigs);
 	}
 
-	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
-			"commit frequency={5} seed={6} evil-hash={7}")
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed, boolean evilHash) {
+							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				nullDefault, commitFrequency, evilHash);
+				nullDefault, commitFrequency, builder);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

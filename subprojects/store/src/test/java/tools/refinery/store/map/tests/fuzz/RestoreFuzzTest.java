@@ -14,9 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
+import tools.refinery.store.map.*;
 import tools.refinery.store.map.internal.VersionedMapImpl;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
@@ -24,11 +22,10 @@ import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 class RestoreFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
 							 boolean nullDefault, int commitFrequency,
-							 boolean evilHash) {
+							 VersionedMapStoreBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
-		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
 
 		iterativeRandomPutsAndCommitsThenRestore(scenario, store, steps, maxKey, values, seed, commitFrequency);
 	}
@@ -37,7 +34,7 @@ class RestoreFuzzTest {
 														  int steps, int maxKey, String[] values, int seed, int commitFrequency) {
 		// 1. build a map with versions
 		Random r = new Random(seed);
-		VersionedMapImpl<Integer, String> versioned = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMap<Integer, String> versioned = store.createMap();
 		Map<Integer, Long> index2Version = new HashMap<>();
 
 		for (int i = 0; i < steps; i++) {
@@ -57,7 +54,7 @@ class RestoreFuzzTest {
 			MapTestEnvironment.printStatus(scenario, index, steps, "building");
 		}
 		// 2. create a non-versioned and
-		VersionedMapImpl<Integer, String> reference = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMap<Integer, String> reference = store.createMap();
 		r = new Random(seed);
 
 		for (int i = 0; i < steps; i++) {
@@ -79,31 +76,32 @@ class RestoreFuzzTest {
 
 	}
 
-	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5}" +
-			" seed={6} evil-hash={7}")
+	public static final String title = "Commit {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5} " +
+			"seed={6} config={7}";
+
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("smoke")
 	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed, boolean evilHash) {
+							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				nullDefault, commitFrequency, evilHash);
+				nullDefault, commitFrequency, builder);
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
 		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
-				commitFrequencyOptions, randomSeedOptions, evilHashOptions);
+				commitFrequencyOptions, randomSeedOptions, storeConfigs);
 	}
 
-	@ParameterizedTest(name = "Restore {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} commit frequency={5}" +
-			" seed={6} evil-hash={7}")
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Tag("smoke")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed, boolean evilHash) {
+							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				nullDefault, commitFrequency, evilHash);
+				nullDefault, commitFrequency, builder);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

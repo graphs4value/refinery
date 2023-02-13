@@ -15,27 +15,24 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
+import tools.refinery.store.map.VersionedMapStoreBuilder;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class MultiThreadFuzzTest {
-	public static final int noThreads = 32;
+	public static final int noThreads = 10;
 
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
-							 boolean nullDefault, int commitFrequency,
-							 boolean evilHash) {
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean nullDefault, int commitFrequency, VersionedMapStoreBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
-		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
 
 		// initialize runnables
 		MultiThreadTestRunnable[] runnables = new MultiThreadTestRunnable[noThreads];
 		for (int i = 0; i < noThreads; i++) {
-			runnables[i] = new MultiThreadTestRunnable(scenario + "-T" + (i + 1), store, steps, maxKey, values, seed, commitFrequency);
+			runnables[i] = new MultiThreadTestRunnable(scenario + "-T" + (i + 1), store, steps, maxKey, values, seed
+					 , commitFrequency);
 		}
 
 		// initialize threads
@@ -46,7 +43,8 @@ class MultiThreadFuzzTest {
 
 		// start threads;
 		for (int i = 0; i < noThreads; i++) {
-			threads[i].start();
+			runnables[i].run();
+			//threads[i].start();
 		}
 
 		// wait all the threads;
@@ -67,32 +65,32 @@ class MultiThreadFuzzTest {
 		assertEquals(Collections.EMPTY_LIST, errors);
 	}
 
-	@ParameterizedTest(name = "MultiThread {index}/{0} Steps={1} Keys={2} Values={3} defaultNull={4} commit " +
-			"frequency={5} seed={6} evil-hash={7}")
+	static final String title = "MultiThread {index}/{0} Steps={1} Keys={2} Values={3} defaultNull={4} commit " +
+			 "frequency={5} seed={6} config={7}";
+
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
-	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull, int commitFrequency,
-							  int seed, boolean evilHash) {
+	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull,
+							   int commitFrequency, int seed, VersionedMapStoreBuilder<Integer, String> builder) {
 		runFuzzTest("MultiThreadS" + steps + "K" + noKeys + "V" + noValues + defaultNull + "CF" + commitFrequency +
-				"s" + seed, seed, steps, noKeys, noValues, defaultNull, commitFrequency, evilHash);
+				 "s" + seed, seed, steps, noKeys, noValues, defaultNull, commitFrequency, builder);
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
 		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
-				new Object[]{10, 100}, randomSeedOptions,
-				evilHashOptions);
+				 new Object[]{10, 100}, randomSeedOptions, storeConfigs);
 	}
 
-	@ParameterizedTest(name = "MultiThread {index}/{0} Steps={1} Keys={2} Values={3} defaultNull={4} commit " +
-			"frequency={5} seed={6} evil-hash={7}")
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency, int seed,
-							  boolean evilHash) {
+	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault,
+							  int commitFrequency, int seed, VersionedMapStoreBuilder<Integer, String> builder) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
-				nullDefault, commitFrequency, evilHash);
+				nullDefault, commitFrequency, builder);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

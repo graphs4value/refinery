@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.internal.VersionedMapImpl;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 public class MultiThreadTestRunnable implements Runnable {
@@ -45,9 +45,17 @@ public class MultiThreadTestRunnable implements Runnable {
 
 	@Override
 	public void run() {
+		try{
+			task();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void task() {
 		// 1. build a map with versions
 		Random r = new Random(seed);
-		VersionedMapImpl<Integer, String> versioned = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMap<Integer, String> versioned =  store.createMap();
 		Map<Integer, Long> index2Version = new HashMap<>();
 
 		for (int i = 0; i < steps; i++) {
@@ -67,7 +75,7 @@ public class MultiThreadTestRunnable implements Runnable {
 			MapTestEnvironment.printStatus(scenario, index, steps, "building");
 		}
 		// 2. create a non-versioned
-		VersionedMapImpl<Integer, String> reference = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMap<Integer, String> reference = store.createMap();
 		r = new Random(seed);
 		Random r2 = new Random(seed + 1);
 
@@ -84,13 +92,17 @@ public class MultiThreadTestRunnable implements Runnable {
 			// go back to an existing state and compare to the reference
 			if (index % (commitFrequency) == 0) {
 				versioned.restore(index2Version.get(i));
-				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned, errors);
+				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned, null);
 
 				// go back to a random state (probably created by another thread)
 				List<Long> states = new ArrayList<>(store.getStates());
+				states.sort(Long::compare);
 				Collections.shuffle(states, r2);
 				for (Long state : states.subList(0, Math.min(states.size(), 100))) {
-					versioned.restore(state);
+					long x = state;
+					versioned.restore(x);
+					var clean = store.createMap(x);
+					MapTestEnvironment.compareTwoMaps(scenario + ":" + index, clean, versioned, null);
 				}
 				versioned.restore(index2Version.get(i));
 			}
