@@ -50,19 +50,22 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 	}
 
 	public MapTransaction<K, V> getPath(long to, List<MapDelta<K, V>[]> forwardTransactions) {
-		MapTransaction<K, V> toTransaction = getState(to);
+		final MapTransaction<K, V> target = getState(to);
+		MapTransaction<K, V> toTransaction = target;
 		while (toTransaction != null) {
 			forwardTransactions.add(toTransaction.deltas());
 			toTransaction = toTransaction.parent();
 		}
-		return toTransaction;
+		return target;
 	}
 
 	public MapTransaction<K, V> getPath(long from, long to,
 						List<MapDelta<K, V>[]> backwardTransactions,
 						List<MapDelta<K, V>[]> forwardTransactions) {
 		MapTransaction<K, V> fromTransaction = getState(from);
-		MapTransaction<K, V> toTransaction = getState(to);
+		final MapTransaction<K, V> target = getState(to);
+		MapTransaction<K, V> toTransaction = target;
+
 		while (fromTransaction != toTransaction) {
 			if (fromTransaction == null || (toTransaction != null && fromTransaction.version() < toTransaction.version())) {
 				forwardTransactions.add(toTransaction.deltas());
@@ -72,7 +75,7 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 				fromTransaction = fromTransaction.parent();
 			}
 		}
-		return toTransaction;
+		return target;
 	}
 
 
