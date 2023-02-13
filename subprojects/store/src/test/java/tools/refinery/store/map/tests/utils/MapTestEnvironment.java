@@ -55,23 +55,9 @@ public class MapTestEnvironment<K, V> {
 
 	public static <K, V> void compareTwoMaps(String title, VersionedMap<K, V> map1,
 											 VersionedMap<K, V> map2, List<Throwable> errors) {
+		map1.checkIntegrity();
+		map2.checkIntegrity();
 		assertEqualsList(map1.getSize(), map2.getSize(), title + ": Sizes not equal", errors);
-
-		Cursor<K, V> cursor1 = map1.getAll();
-		Cursor<K, V> cursor2 = map2.getAll();
-		while (!cursor1.isTerminated()) {
-			if (cursor2.isTerminated()) {
-				fail("cursor 2 terminated before cursor1");
-			}
-			assertEqualsList(cursor1.getKey(), cursor2.getKey(), title + ": Keys not equal", errors);
-			assertEqualsList(cursor2.getValue(), cursor2.getValue(), title + ": Values not equal", errors);
-			cursor1.move();
-			cursor2.move();
-		}
-		if (!cursor2.isTerminated()) {
-			fail("cursor 1 terminated before cursor 2");
-		}
-
 		for (var mode : ContentHashCode.values()) {
 			assertEqualsList(map1.contentHashCode(mode), map2.contentHashCode(mode),
 					title + ": " + mode + " hashCode check", errors);
@@ -107,27 +93,33 @@ public class MapTestEnvironment<K, V> {
 		}
 	}
 
-	public VersionedMapImpl<K, V> sut;
-	Map<K, V> oracle = new HashMap<K, V>();
+	final private VersionedMap<K, V> sut;
+	final private V defaultValue;
+	Map<K, V> oracle = new HashMap<>();
 
-	public MapTestEnvironment(VersionedMapImpl<K, V> sut) {
+	public MapTestEnvironment(VersionedMap<K, V> sut) {
 		this.sut = sut;
+		this.defaultValue = sut.getDefaultValue();
 	}
 
 	public void put(K key, V value) {
 		V oldSutValue = sut.put(key, value);
 		V oldOracleValue;
-		if (value != sut.getDefaultValue()) {
+		if (value != defaultValue) {
 			oldOracleValue = oracle.put(key, value);
 		} else {
 			oldOracleValue = oracle.remove(key);
 		}
-		if (oldSutValue == sut.getDefaultValue() && oldOracleValue != null) {
+		if (oldSutValue == defaultValue && oldOracleValue != null) {
 			fail("After put, SUT old nodeId was default, but oracle old value was " + oldOracleValue);
 		}
-		if (oldSutValue != sut.getDefaultValue()) {
+		if (oldSutValue != defaultValue) {
 			assertEquals(oldOracleValue, oldSutValue);
 		}
+	}
+
+	public long commit(){
+		return sut.commit();
 	}
 
 	public void checkEquivalence(String title) {
@@ -176,7 +168,7 @@ public class MapTestEnvironment<K, V> {
 		long sutSize = sut.getSize();
 		if (oracleSize != sutSize || oracleSize != elementsInSutEntrySet) {
 			printComparison();
-			fail(title + ": Non-equivalent size() result: SUT.getSize()=" + sutSize + ", SUT.entryset.size="
+			fail(title + ": Non-equivalent size() result: SUT.getSize()=" + sutSize + ", SUT.entrySet.size="
 					+ elementsInSutEntrySet + ", Oracle=" + oracleSize + "!");
 		}
 	}
