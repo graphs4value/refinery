@@ -1,7 +1,9 @@
 package tools.refinery.store.query.literal;
 
+import tools.refinery.store.query.DnfUtils;
 import tools.refinery.store.query.Variable;
 
+import java.util.Map;
 import java.util.Set;
 
 public record EquivalenceLiteral(boolean positive, Variable left, Variable right)
@@ -15,5 +17,11 @@ public record EquivalenceLiteral(boolean positive, Variable left, Variable right
 	@Override
 	public EquivalenceLiteral negate() {
 		return new EquivalenceLiteral(!positive, left, right);
+	}
+
+	@Override
+	public EquivalenceLiteral substitute(Map<Variable, Variable> substitution) {
+		return new EquivalenceLiteral(positive, DnfUtils.maybeSubstitute(left, substitution),
+				DnfUtils.maybeSubstitute(right, substitution));
 	}
 }

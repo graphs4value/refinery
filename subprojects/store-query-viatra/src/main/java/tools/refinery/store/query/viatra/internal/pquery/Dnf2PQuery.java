@@ -23,17 +23,16 @@ import tools.refinery.store.query.DnfUtils;
 import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Dnf2PQuery {
 	private static final Object P_CONSTRAINT_LOCK = new Object();
 
-	private final Set<Dnf> translating = new LinkedHashSet<>();
-
-	private final Map<Dnf, RawPQuery> dnf2PQueryMap = new HashMap<>();
+	private final CycleDetectingMapper<Dnf, RawPQuery> mapper = new CycleDetectingMapper<>(Dnf::name,
+			this::doTranslate);
 
 	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 
@@ -47,24 +46,7 @@ public class Dnf2PQuery {
 	}
 
 	public RawPQuery translate(Dnf dnfQuery) {
-		if (translating.contains(dnfQuery)) {
-			var path = translating.stream().map(Dnf::name).collect(Collectors.joining(" -> "));
-			throw new IllegalStateException("Circular reference %s -> %s detected".formatted(path,
-					dnfQuery.name()));
-		}
-		// We can't use computeIfAbsent here, because translating referenced queries calls this method in a reentrant
-		// way, which would cause a ConcurrentModificationException with computeIfAbsent.
-		var pQuery = dnf2PQueryMap.get(dnfQuery);
-		if (pQuery == null) {
-			translating.add(dnfQuery);
-			try {
-				pQuery = doTranslate(dnfQuery);
-				dnf2PQueryMap.put(dnfQuery, pQuery);
-			} finally {
-				translating.remove(dnfQuery);
-			}
-		}
-		return pQuery;
+		return mapper.map(dnfQuery);
 	}
 
 	public Map<AnyRelationView, IInputKey> getRelationViews() {
@@ -72,7 +54,7 @@ public class Dnf2PQuery {
 	}
 
 	public RawPQuery getAlreadyTranslated(Dnf dnfQuery) {
-		return dnf2PQueryMap.get(dnfQuery);
+		return mapper.getAlreadyMapped(dnfQuery);
 	}
 
 	private RawPQuery doTranslate(Dnf dnfQuery) {
@@ -148,7 +130,7 @@ public class Dnf2PQuery {
 	}
 
 	private void translateRelationViewLiteral(RelationViewLiteral relationViewLiteral, PBody body) {
-		var substitution = translateSubstitution(relationViewLiteral.getSubstitution(), body);
+		var substitution = translateSubstitution(relationViewLiteral.getArguments(), body);
 		var polarity = relationViewLiteral.getPolarity();
 		var relationView = relationViewLiteral.getTarget();
 		if (polarity == CallPolarity.POSITIVE) {
@@ -205,7 +187,7 @@ public class Dnf2PQuery {
 	}
 
 	private void translateDnfCallLiteral(DnfCallLiteral dnfCallLiteral, PBody body) {
-		var variablesTuple = translateSubstitution(dnfCallLiteral.getSubstitution(), body);
+		var variablesTuple = translateSubstitution(dnfCallLiteral.getArguments(), body);
 		var translatedReferred = translate(dnfCallLiteral.getTarget());
 		var polarity = dnfCallLiteral.getPolarity();
 		switch (polarity) {

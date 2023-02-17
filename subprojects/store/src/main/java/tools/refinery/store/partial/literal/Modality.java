@@ -1,4 +1,6 @@
-package tools.refinery.store.query.literal;
+package tools.refinery.store.partial.literal;
+
+import tools.refinery.store.query.literal.CallPolarity;
 
 import java.util.Locale;
 
@@ -13,6 +15,13 @@ public enum Modality {
 			case MAY -> MUST;
 			case CURRENT -> CURRENT;
 		};
+	}
+
+	public Modality commute(CallPolarity polarity) {
+		if (polarity.isPositive()) {
+			return this;
+		}
+		return this.negate();
 	}
 
 	@Override

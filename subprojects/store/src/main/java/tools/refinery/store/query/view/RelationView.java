@@ -51,16 +51,16 @@ public abstract non-sealed class RelationView<T> implements AnyRelationView {
 		return (() -> new CursorAsIterator<>(model.getInterpretation(symbol).getAll(), this::forwardMap, this::filter));
 	}
 
-	public RelationViewLiteral call(CallPolarity polarity, List<Variable> substitution) {
-		return new RelationViewLiteral(polarity, this, substitution);
+	public RelationViewLiteral call(CallPolarity polarity, List<Variable> arguments) {
+		return new RelationViewLiteral(polarity, this, arguments);
 	}
 
-	public RelationViewLiteral call(CallPolarity polarity, Variable... substitution) {
-		return call(polarity, List.of(substitution));
+	public RelationViewLiteral call(CallPolarity polarity, Variable... arguments) {
+		return call(polarity, List.of(arguments));
 	}
 
-	public RelationViewLiteral call(Variable... substitution) {
-		return call(CallPolarity.POSITIVE, substitution);
+	public RelationViewLiteral call(Variable... arguments) {
+		return call(CallPolarity.POSITIVE, arguments);
 	}
 
 	public RelationViewLiteral callTransitive(Variable left, Variable right) {

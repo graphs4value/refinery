@@ -74,16 +74,16 @@ public final class Dnf implements RelationLike {
 		return clauses;
 	}
 
-	public DnfCallLiteral call(CallPolarity polarity, List<Variable> substitution) {
-		return new DnfCallLiteral(polarity, this, substitution);
+	public DnfCallLiteral call(CallPolarity polarity, List<Variable> arguments) {
+		return new DnfCallLiteral(polarity, this, arguments);
 	}
 
-	public DnfCallLiteral call(CallPolarity polarity, Variable... substitution) {
-		return call(polarity, List.of(substitution));
+	public DnfCallLiteral call(CallPolarity polarity, Variable... arguments) {
+		return call(polarity, List.of(arguments));
 	}
 
-	public DnfCallLiteral call(Variable... substitution) {
-		return call(CallPolarity.POSITIVE, substitution);
+	public DnfCallLiteral call(Variable... arguments) {
+		return call(CallPolarity.POSITIVE, arguments);
 	}
 
 	public DnfCallLiteral callTransitive(Variable left, Variable right) {
