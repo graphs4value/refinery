@@ -7,6 +7,8 @@ include 'language-model'
 include 'language-semantics'
 include 'language-web'
 include 'store'
+include 'store-partial'
+include 'store-query'
 include 'store-query-viatra'
 
 for (project in rootProject.children) {
