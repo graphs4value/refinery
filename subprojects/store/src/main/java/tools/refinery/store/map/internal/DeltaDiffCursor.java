@@ -11,6 +11,7 @@ public class DeltaDiffCursor<K, V> implements DiffCursor<K, V> {
 	final List<MapDelta<K, V>[]> backwardTransactions;
 	final List<MapDelta<K, V>[]> forwardTransactions;
 
+	boolean started;
 	/**
 	 * Denotes the direction of traversal. False means backwards, true means
 	 * forward.
@@ -35,6 +36,7 @@ public class DeltaDiffCursor<K, V> implements DiffCursor<K, V> {
 			direction = true;
 			listIndex = -1;
 		}
+		started = false;
 	}
 
 	protected MapDelta<K, V> getCurrentDelta() {
@@ -65,7 +67,10 @@ public class DeltaDiffCursor<K, V> implements DiffCursor<K, V> {
 
 	@Override
 	public boolean move() {
-		if (isTerminated()) {
+		if(!started) {
+			started = true;
+			return !isTerminated();
+		} else if (isTerminated()) {
 			return false;
 		} else {
 			if (this.direction) {
@@ -119,11 +124,19 @@ public class DeltaDiffCursor<K, V> implements DiffCursor<K, V> {
 
 	@Override
 	public V getFromValue() {
-		return getCurrentDelta().getOldValue();
+		if(this.direction) {
+			return getCurrentDelta().getOldValue();
+		} else {
+			return getCurrentDelta().getNewValue();
+		}
 	}
 
 	@Override
 	public V getToValue() {
-		return getCurrentDelta().getNewValue();
+		if(this.direction) {
+			return getCurrentDelta().getNewValue();
+		} else {
+			return getCurrentDelta().getOldValue();
+		}
 	}
 }
