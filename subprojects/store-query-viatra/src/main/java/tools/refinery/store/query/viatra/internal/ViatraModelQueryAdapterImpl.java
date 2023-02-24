@@ -8,6 +8,7 @@ import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackend;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.EmptyResultSet;
 import tools.refinery.store.query.ResultSet;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 
@@ -15,7 +16,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
@@ -51,10 +52,14 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 		GenericQueryGroup.of(
 				Collections.<IQuerySpecification<?>>unmodifiableCollection(querySpecifications.values()).stream()
 		).prepare(queryEngine);
-		resultSets = new HashMap<>(querySpecifications.size());
+		var vacuousQueries = storeAdapter.getVacuousQueries();
+		resultSets = new LinkedHashMap<>(querySpecifications.size() + vacuousQueries.size());
 		for (var entry : querySpecifications.entrySet()) {
 			var matcher = queryEngine.getMatcher(entry.getValue());
 			resultSets.put(entry.getKey(), matcher);
+		}
+		for (var vacuousQuery : vacuousQueries) {
+			resultSets.put(vacuousQuery, new EmptyResultSet());
 		}
 
 		setUpdatePropagationDelayed(true);

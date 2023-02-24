@@ -1,10 +1,10 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.List;
-import java.util.Map;
 
 public final class RelationViewLiteral extends CallLiteral<AnyRelationView>
 		implements PolarLiteral<RelationViewLiteral> {
@@ -13,7 +13,18 @@ public final class RelationViewLiteral extends CallLiteral<AnyRelationView>
 	}
 
 	@Override
-	public RelationViewLiteral substitute(Map<Variable, Variable> substitution) {
+	public Class<AnyRelationView> getTargetType() {
+		return AnyRelationView.class;
+	}
+
+	@Override
+	protected String targetToString() {
+		var target = getTarget();
+		return "@RelationView(\"%s\") %s".formatted(target.getViewName(), target.getSymbol().name());
+	}
+
+	@Override
+	public RelationViewLiteral substitute(Substitution substitution) {
 		return new RelationViewLiteral(getPolarity(), getTarget(), substituteArguments(substitution));
 	}
 

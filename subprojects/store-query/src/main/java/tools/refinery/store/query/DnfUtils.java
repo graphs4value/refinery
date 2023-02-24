@@ -1,6 +1,5 @@
 package tools.refinery.store.query;
 
-import java.util.Map;
 import java.util.UUID;
 
 public final class DnfUtils {
@@ -16,9 +15,5 @@ public final class DnfUtils {
 		} else {
 			return originalName + uniqueString;
 		}
-	}
-
-	public static Variable maybeSubstitute(Variable variable, Map<Variable, Variable> substitution) {
-		return substitution.getOrDefault(variable, variable);
 	}
 }

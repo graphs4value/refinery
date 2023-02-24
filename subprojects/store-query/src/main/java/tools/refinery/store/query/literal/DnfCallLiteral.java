@@ -2,9 +2,10 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.substitution.Substitution;
 
 import java.util.List;
-import java.util.Map;
 
 public final class DnfCallLiteral extends CallLiteral<Dnf> implements PolarLiteral<DnfCallLiteral> {
 	public DnfCallLiteral(CallPolarity polarity, Dnf target, List<Variable> arguments) {
@@ -12,7 +13,12 @@ public final class DnfCallLiteral extends CallLiteral<Dnf> implements PolarLiter
 	}
 
 	@Override
-	public DnfCallLiteral substitute(Map<Variable, Variable> substitution) {
+	public Class<Dnf> getTargetType() {
+		return Dnf.class;
+	}
+
+	@Override
+	public DnfCallLiteral substitute(Substitution substitution) {
 		return new DnfCallLiteral(getPolarity(), getTarget(), substituteArguments(substitution));
 	}
 
@@ -25,5 +31,10 @@ public final class DnfCallLiteral extends CallLiteral<Dnf> implements PolarLiter
 	public LiteralReduction getReduction() {
 		var dnfReduction = getTarget().getReduction();
 		return getPolarity().isPositive() ? dnfReduction : dnfReduction.negate();
+	}
+
+	@Override
+	protected boolean targetEquals(LiteralEqualityHelper helper, Dnf otherTarget) {
+		return helper.dnfEqual(getTarget(), otherTarget);
 	}
 }

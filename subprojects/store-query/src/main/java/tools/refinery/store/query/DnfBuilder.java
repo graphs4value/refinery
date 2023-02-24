@@ -52,7 +52,8 @@ public class DnfBuilder {
 	}
 
 	public DnfBuilder clause(Collection<Literal> literals) {
-		var filteredLiterals = new ArrayList<Literal>(literals.size());
+		// Remove duplicates by using a hashed data structure.
+		var filteredLiterals = new LinkedHashSet<Literal>(literals.size());
 		for (var literal : literals) {
 			var reduction = literal.getReduction();
 			switch (reduction) {
@@ -65,10 +66,10 @@ public class DnfBuilder {
 				// Clauses with {@code false} literals can be omitted entirely.
 				return this;
 			}
-			default -> throw new IllegalStateException("Invalid reduction %s".formatted(reduction));
+			default -> throw new IllegalArgumentException("Invalid reduction: " + reduction);
 			}
 		}
-		clauses.add(Collections.unmodifiableList(filteredLiterals));
+		clauses.add(List.copyOf(filteredLiterals));
 		return this;
 	}
 
@@ -77,10 +78,7 @@ public class DnfBuilder {
 	}
 
 	public DnfBuilder clauses(DnfClause... clauses) {
-		for (var clause : clauses) {
-			this.clause(clause);
-		}
-		return this;
+		return clauses(List.of(clauses));
 	}
 
 	public DnfBuilder clauses(Collection<DnfClause> clauses) {
@@ -91,18 +89,27 @@ public class DnfBuilder {
 	}
 
 	public Dnf build() {
+		var postProcessedClauses = postProcessClauses();
+		return new Dnf(name, Collections.unmodifiableList(parameters),
+				Collections.unmodifiableList(functionalDependencies),
+				Collections.unmodifiableList(postProcessedClauses));
+	}
+
+	private List<DnfClause> postProcessClauses() {
 		var postProcessedClauses = new ArrayList<DnfClause>(clauses.size());
-		for (var constraints : clauses) {
+		for (var literals : clauses) {
+			if (literals.isEmpty()) {
+				// Predicate will always match, the other clauses are irrelevant.
+				return List.of(new DnfClause(Set.of(), List.of()));
+			}
 			var variables = new HashSet<Variable>();
-			for (var constraint : constraints) {
+			for (var constraint : literals) {
 				constraint.collectAllVariables(variables);
 			}
 			parameters.forEach(variables::remove);
 			postProcessedClauses.add(new DnfClause(Collections.unmodifiableSet(variables),
-					Collections.unmodifiableList(constraints)));
+					Collections.unmodifiableList(literals)));
 		}
-		return new Dnf(name, Collections.unmodifiableList(parameters),
-				Collections.unmodifiableList(functionalDependencies),
-				Collections.unmodifiableList(postProcessedClauses));
+		return postProcessedClauses;
 	}
 }

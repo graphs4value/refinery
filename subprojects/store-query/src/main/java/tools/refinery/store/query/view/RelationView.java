@@ -21,11 +21,11 @@ import java.util.UUID;
 public abstract non-sealed class RelationView<T> implements AnyRelationView {
 	private final Symbol<T> symbol;
 
-	private final String name;
+	private final String viewName;
 
-	protected RelationView(Symbol<T> symbol, String name) {
+	protected RelationView(Symbol<T> symbol, String viewName) {
 		this.symbol = symbol;
-		this.name = name;
+		this.viewName = viewName;
 	}
 
 	protected RelationView(Symbol<T> representation) {
@@ -38,8 +38,13 @@ public abstract non-sealed class RelationView<T> implements AnyRelationView {
 	}
 
 	@Override
+	public String getViewName() {
+		return viewName;
+	}
+
+	@Override
 	public String name() {
-		return symbol.name() + "#" + name;
+		return symbol.name() + "#" + viewName;
 	}
 
 	public abstract boolean filter(Tuple key, T value);
@@ -72,11 +77,11 @@ public abstract non-sealed class RelationView<T> implements AnyRelationView {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		RelationView<?> that = (RelationView<?>) o;
-		return Objects.equals(symbol, that.symbol) && Objects.equals(name, that.name);
+		return Objects.equals(symbol, that.symbol) && Objects.equals(viewName, that.viewName);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(symbol, name);
+		return Objects.hash(symbol, viewName);
 	}
 }

@@ -10,6 +10,8 @@ import java.util.Set;
 public sealed interface AnyRelationView extends RelationLike permits RelationView {
 	AnySymbol getSymbol();
 
+	String getViewName();
+
 	default Set<FunctionalDependency<Integer>> getFunctionalDependencies() {
 		return Set.of();
 	}

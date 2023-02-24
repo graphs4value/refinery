@@ -20,15 +20,15 @@ public class Variable {
 
 	}
 	public String getName() {
-		return name;
+		return name == null ? uniqueName : name;
+	}
+
+	public boolean isExplicitlyNamed() {
+		return name != null;
 	}
 
 	public String getUniqueName() {
 		return uniqueName;
-	}
-
-	public boolean isNamed() {
-		return name != null;
 	}
 
 	public ConstantLiteral isConstant(int value) {
@@ -41,6 +41,11 @@ public class Variable {
 
 	public EquivalenceLiteral notEquivalent(Variable other) {
 		return new EquivalenceLiteral(false, this, other);
+	}
+
+	@Override
+	public String toString() {
+		return getName();
 	}
 
 	@Override

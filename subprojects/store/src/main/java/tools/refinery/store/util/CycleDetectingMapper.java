@@ -1,9 +1,6 @@
 package tools.refinery.store.util;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,6 +40,10 @@ public class CycleDetectingMapper<T, R> {
 			}
 		}
 		return result;
+	}
+
+	public List<T> getInProgress() {
+		return List.copyOf(inProgress);
 	}
 
 	public R getAlreadyMapped(T input) {

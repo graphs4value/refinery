@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static tools.refinery.store.query.literal.Literals.not;
 
 class QueryTest {
@@ -667,6 +668,45 @@ class QueryTest {
 
 		queryEngine.flushChanges();
 		assertEquals(3, predicateResultSet.countResults());
+	}
+
+	@Test
+	void alwaysFalseTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+
+		var p1 = new Variable("p1");
+		var predicate = Dnf.builder("AlwaysFalse").parameters(p1).build();
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(ViatraModelQuery.ADAPTER)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		queryEngine.flushChanges();
+		assertEquals(0, predicateResultSet.countResults());
+	}
+
+	@Test
+	void alwaysTrueTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+
+		var p1 = new Variable("p1");
+		var predicate = Dnf.builder("AlwaysTrue").parameters(p1).clause().build();
+
+		var storeBuilder = ModelStore.builder().symbols(person);
+		var queryBuilder = storeBuilder.with(ViatraModelQuery.ADAPTER);
+
+		assertThrows(IllegalArgumentException.class, () -> queryBuilder.queries(predicate));
 	}
 
 	static void compareMatchSets(Stream<TupleLike> matchSet, Set<Tuple> expected) {

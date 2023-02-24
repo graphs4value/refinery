@@ -14,14 +14,13 @@ import tools.refinery.store.query.viatra.ViatraModelQueryBuilder;
 import tools.refinery.store.query.viatra.internal.pquery.Dnf2PQuery;
 import tools.refinery.store.query.viatra.internal.pquery.RawPatternMatcher;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder implements ViatraModelQueryBuilder {
 	private ViatraQueryEngineOptions.Builder engineOptionsBuilder;
 	private final Dnf2PQuery dnf2PQuery = new Dnf2PQuery();
+	private final Set<Dnf> vacuousQueries = new LinkedHashSet<>();
 	private final Map<Dnf, IQuerySpecification<RawPatternMatcher>> querySpecifications = new LinkedHashMap<>();
 
 	public ViatraModelQueryBuilderImpl(ModelStoreBuilder storeBuilder) {
@@ -64,11 +63,21 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 
 	@Override
 	public ViatraModelQueryBuilder query(Dnf query) {
-		if (querySpecifications.containsKey(query)) {
-			throw new IllegalArgumentException("%s was already added to the query engine".formatted(query.name()));
+		if (querySpecifications.containsKey(query) || vacuousQueries.contains(query)) {
+			// Ignore duplicate queries.
+			return this;
 		}
-		var pQuery = dnf2PQuery.translate(query);
-		querySpecifications.put(query, pQuery.build());
+		var reduction = query.getReduction();
+		switch (reduction) {
+		case NOT_REDUCIBLE -> {
+			var pQuery = dnf2PQuery.translate(query);
+			querySpecifications.put(query, pQuery.build());
+		}
+		case ALWAYS_FALSE -> vacuousQueries.add(query);
+		case ALWAYS_TRUE -> throw new IllegalArgumentException(
+				"Query %s is relationally unsafe (it matches every tuple)".formatted(query.name()));
+		default -> throw new IllegalArgumentException("Unknown reduction: " + reduction);
+		}
 		return this;
 	}
 
@@ -89,6 +98,10 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 	public ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint) {
 		var pQuery = dnf2PQuery.getAlreadyTranslated(dnf);
 		if (pQuery == null) {
+			if (vacuousQueries.contains(dnf)) {
+				// Ignore hits for queries that will never be executed by the query engine.
+				return this;
+			}
 			throw new IllegalArgumentException(
 					"Cannot specify hint for %s, because it was not added to the query engine".formatted(dnf.name()));
 		}
@@ -100,7 +113,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 	public ViatraModelQueryStoreAdapterImpl createStoreAdapter(ModelStore store) {
 		validateSymbols(store);
 		return new ViatraModelQueryStoreAdapterImpl(store, engineOptionsBuilder.build(), dnf2PQuery.getRelationViews(),
-				Collections.unmodifiableMap(querySpecifications));
+				Collections.unmodifiableMap(querySpecifications), Collections.unmodifiableSet(vacuousQueries));
 	}
 
 	private void validateSymbols(ModelStore store) {

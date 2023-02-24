@@ -4,9 +4,9 @@ import tools.refinery.store.partial.representation.PartialRelation;
 import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.literal.CallPolarity;
 import tools.refinery.store.query.literal.PolarLiteral;
+import tools.refinery.store.query.substitution.Substitution;
 
 import java.util.List;
-import java.util.Map;
 
 public final class ModalRelationLiteral extends ModalLiteral<PartialRelation>
 		implements PolarLiteral<ModalRelationLiteral> {
@@ -15,12 +15,18 @@ public final class ModalRelationLiteral extends ModalLiteral<PartialRelation>
 		super(polarity, modality, target, arguments);
 	}
 
+
 	public ModalRelationLiteral(Modality modality, PartialRelationLiteral baseLiteral) {
 		super(modality, baseLiteral);
 	}
 
 	@Override
-	public ModalRelationLiteral substitute(Map<Variable, Variable> substitution) {
+	public Class<PartialRelation> getTargetType() {
+		return PartialRelation.class;
+	}
+
+	@Override
+	public ModalRelationLiteral substitute(Substitution substitution) {
 		return new ModalRelationLiteral(getPolarity(), getModality(), getTarget(), substituteArguments(substitution));
 	}
 

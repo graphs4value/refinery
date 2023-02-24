@@ -1,18 +1,19 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.substitution.Substitution;
 
-import java.util.Map;
 import java.util.Set;
 
-public class BooleanLiteral implements Literal {
-	public static final BooleanLiteral TRUE = new BooleanLiteral(LiteralReduction.ALWAYS_TRUE);
-	public static final BooleanLiteral FALSE = new BooleanLiteral(LiteralReduction.ALWAYS_FALSE);
+public enum BooleanLiteral implements PolarLiteral<BooleanLiteral> {
+	TRUE(true),
+	FALSE(false);
 
-	private final LiteralReduction reduction;
+	private final boolean value;
 
-	private BooleanLiteral(LiteralReduction reduction) {
-		this.reduction = reduction;
+	BooleanLiteral(boolean value) {
+		this.value = value;
 	}
 
 	@Override
@@ -21,14 +22,29 @@ public class BooleanLiteral implements Literal {
 	}
 
 	@Override
-	public Literal substitute(Map<Variable, Variable> substitution) {
+	public Literal substitute(Substitution substitution) {
 		// No variables to substitute.
 		return this;
 	}
 
 	@Override
 	public LiteralReduction getReduction() {
-		return reduction;
+		return value ? LiteralReduction.ALWAYS_TRUE : LiteralReduction.ALWAYS_FALSE;
+	}
+
+	@Override
+	public BooleanLiteral negate() {
+		return fromBoolean(!value);
+	}
+
+	@Override
+	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
+		return equals(other);
+	}
+
+	@Override
+	public String toString() {
+		return Boolean.toString(value);
 	}
 
 	public static BooleanLiteral fromBoolean(boolean value) {

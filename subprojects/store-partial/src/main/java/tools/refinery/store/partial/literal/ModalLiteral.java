@@ -2,8 +2,10 @@ package tools.refinery.store.partial.literal;
 
 import tools.refinery.store.query.RelationLike;
 import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.literal.CallLiteral;
 import tools.refinery.store.query.literal.CallPolarity;
+import tools.refinery.store.query.literal.Literal;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +25,22 @@ public abstract class ModalLiteral<T extends RelationLike> extends CallLiteral<T
 
 	public Modality getModality() {
 		return modality;
+	}
+
+	@Override
+	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
+		if (!super.equalsWithSubstitution(helper, other)) {
+			return false;
+		}
+		// If {@link CallLiteral#equalsWithSubstitution(LiteralEqualityHelper, Literal)} has returned {@code true},
+		// we must have the same dynamic type as {@code other}.
+		var otherModalLiteral = (ModalLiteral<?>) other;
+		return modality == otherModalLiteral.modality;
+	}
+
+	@Override
+	protected String targetToString() {
+		return "%s %s".formatted(modality, super.targetToString());
 	}
 
 	@Override

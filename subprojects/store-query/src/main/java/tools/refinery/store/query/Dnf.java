@@ -1,5 +1,7 @@
 package tools.refinery.store.query;
 
+import tools.refinery.store.query.equality.DnfEqualityChecker;
+import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.literal.CallPolarity;
 import tools.refinery.store.query.literal.DnfCallLiteral;
 import tools.refinery.store.query.literal.LiteralReduction;
@@ -7,6 +9,8 @@ import tools.refinery.store.query.literal.LiteralReduction;
 import java.util.*;
 
 public final class Dnf implements RelationLike {
+	private static final String INDENTATION = "    ";
+
 	private final String name;
 
 	private final String uniqueName;
@@ -50,7 +54,11 @@ public final class Dnf implements RelationLike {
 
 	@Override
 	public String name() {
-		return name;
+		return name == null ? uniqueName : name;
+	}
+
+	public boolean isExplicitlyNamed() {
+		return name == null;
 	}
 
 	public String getUniqueName() {
@@ -100,6 +108,61 @@ public final class Dnf implements RelationLike {
 
 	public DnfCallLiteral callTransitive(Variable left, Variable right) {
 		return call(CallPolarity.TRANSITIVE, List.of(left, right));
+	}
+
+	public boolean equalsWithSubstitution(DnfEqualityChecker callEqualityChecker, Dnf other) {
+		if (arity() != other.arity()) {
+			return false;
+		}
+		int numClauses = clauses.size();
+		if (numClauses != other.clauses.size()) {
+			return false;
+		}
+		for (int i = 0; i < numClauses; i++) {
+			var literalEqualityHelper = new LiteralEqualityHelper(callEqualityChecker, parameters, other.parameters);
+			if (!clauses.get(i).equalsWithSubstitution(literalEqualityHelper, other.clauses.get(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		var builder = new StringBuilder();
+		builder.append("pred ").append(name()).append("(");
+		var parameterIterator = parameters.iterator();
+		if (parameterIterator.hasNext()) {
+			builder.append(parameterIterator.next());
+			while (parameterIterator.hasNext()) {
+				builder.append(", ").append(parameterIterator.next());
+			}
+		}
+		builder.append(") <->");
+		var clauseIterator = clauses.iterator();
+		if (clauseIterator.hasNext()) {
+			appendClause(clauseIterator.next(), builder);
+			while (clauseIterator.hasNext()) {
+				builder.append("\n;");
+				appendClause(clauseIterator.next(), builder);
+			}
+		} else {
+			builder.append("\n").append(INDENTATION).append("<no clauses>");
+		}
+		builder.append(".\n");
+		return builder.toString();
+	}
+
+	private static void appendClause(DnfClause clause, StringBuilder builder) {
+		var iterator = clause.literals().iterator();
+		if (!iterator.hasNext()) {
+			builder.append("\n").append(INDENTATION).append("<empty>");
+			return;
+		}
+		builder.append("\n").append(INDENTATION).append(iterator.next());
+		while (iterator.hasNext()) {
+			builder.append(",\n").append(INDENTATION).append(iterator.next());
+		}
 	}
 
 	public static DnfBuilder builder() {
