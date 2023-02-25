@@ -266,7 +266,6 @@ export default function scrollbarViewPlugin(
         if (firstRunTimeout !== undefined) {
           clearTimeout(firstRunTimeout);
         }
-        // @ts-expect-error `@types/node` typings should not be in effect here.
         firstRunTimeout = setTimeout(() => {
           spacer.style.minHeight = `${scrollHeight}px`;
           firstRun = false;
