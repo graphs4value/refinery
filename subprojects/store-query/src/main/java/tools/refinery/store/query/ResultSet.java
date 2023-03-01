@@ -1,25 +1,17 @@
 package tools.refinery.store.query;
 
-import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.TupleLike;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface ResultSet {
-	boolean hasResult();
+	default boolean hasResult() {
+		return countResults() > 0;
+	}
 
-	boolean hasResult(Tuple parameters);
-
-	Optional<TupleLike> oneResult();
-
-	Optional<TupleLike> oneResult(Tuple parameters);
+	boolean hasResult(TupleLike parameters);
 
 	Stream<TupleLike> allResults();
 
-	Stream<TupleLike> allResults(Tuple parameters);
-
 	int countResults();
-
-	int countResults(Tuple parameters);
 }

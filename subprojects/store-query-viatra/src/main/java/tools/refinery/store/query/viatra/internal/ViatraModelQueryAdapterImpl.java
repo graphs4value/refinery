@@ -21,15 +21,29 @@ import java.util.Map;
 
 public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 	private static final String DELAY_MESSAGE_DELIVERY_FIELD_NAME = "delayMessageDelivery";
+	private static final MethodHandle SET_UPDATE_PROPAGATION_DELAYED_HANDLE;
 	private static final String QUERY_BACKENDS_FIELD_NAME = "queryBackends";
+	private static final MethodHandle GET_QUERY_BACKENDS_HANDLE;
 
 	private final Model model;
 	private final ViatraModelQueryStoreAdapterImpl storeAdapter;
 	private final ViatraQueryEngineImpl queryEngine;
-	private final MethodHandle setUpdatePropagationDelayedHandle;
-	private final MethodHandle getQueryBackendsHandle;
+
 	private final Map<Dnf, ResultSet> resultSets;
 	private boolean pendingChanges;
+
+	static {
+		try {
+			var lookup = MethodHandles.privateLookupIn(ViatraQueryEngineImpl.class, MethodHandles.lookup());
+			SET_UPDATE_PROPAGATION_DELAYED_HANDLE = lookup.findSetter(ViatraQueryEngineImpl.class,
+					DELAY_MESSAGE_DELIVERY_FIELD_NAME, Boolean.TYPE);
+			GET_QUERY_BACKENDS_HANDLE = lookup.findGetter(ViatraQueryEngineImpl.class, QUERY_BACKENDS_FIELD_NAME,
+					Map.class);
+		} catch (IllegalAccessException | NoSuchFieldException e) {
+			throw new IllegalStateException("Cannot access private members of %s"
+					.formatted(ViatraQueryEngineImpl.class.getName()), e);
+		}
+	}
 
 	ViatraModelQueryAdapterImpl(Model model, ViatraModelQueryStoreAdapterImpl storeAdapter) {
 		this.model = model;
@@ -37,16 +51,7 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 		var scope = new RelationalScope(this);
 		queryEngine = (ViatraQueryEngineImpl) AdvancedViatraQueryEngine.createUnmanagedEngine(scope);
 
-		try {
-			var lookup = MethodHandles.privateLookupIn(ViatraQueryEngineImpl.class, MethodHandles.lookup());
-			setUpdatePropagationDelayedHandle = lookup.findSetter(ViatraQueryEngineImpl.class,
-					DELAY_MESSAGE_DELIVERY_FIELD_NAME, Boolean.TYPE);
-			getQueryBackendsHandle = lookup.findGetter(ViatraQueryEngineImpl.class, QUERY_BACKENDS_FIELD_NAME,
-					Map.class);
-		} catch (IllegalAccessException | NoSuchFieldException e) {
-			throw new IllegalStateException("Cannot access private members of %s"
-					.formatted(ViatraQueryEngineImpl.class.getName()), e);
-		}
+
 
 		var querySpecifications = storeAdapter.getQuerySpecifications();
 		GenericQueryGroup.of(
@@ -67,7 +72,7 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 
 	private void setUpdatePropagationDelayed(boolean value) {
 		try {
-			setUpdatePropagationDelayedHandle.invokeExact(queryEngine, value);
+			SET_UPDATE_PROPAGATION_DELAYED_HANDLE.invokeExact(queryEngine, value);
 		} catch (Error e) {
 			// Fatal JVM errors should not be wrapped.
 			throw e;
@@ -79,7 +84,7 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter {
 	private Collection<IQueryBackend> getQueryBackends() {
 		try {
 			@SuppressWarnings("unchecked")
-			var backendMap = (Map<IQueryBackendFactory, IQueryBackend>) getQueryBackendsHandle.invokeExact(queryEngine);
+			var backendMap = (Map<IQueryBackendFactory, IQueryBackend>) GET_QUERY_BACKENDS_HANDLE.invokeExact(queryEngine);
 			return backendMap.values();
 		} catch (Error e) {
 			// Fatal JVM errors should not be wrapped.

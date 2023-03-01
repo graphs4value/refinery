@@ -16,8 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static tools.refinery.store.query.literal.Literals.not;
 
 class QueryTest {
@@ -97,10 +96,14 @@ class QueryTest {
 		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
 		assertEquals(0, predicateResultSet.countResults());
+		assertFalse(predicateResultSet.hasResult(Tuple.of(0, 1)));
+		assertFalse(predicateResultSet.hasResult(Tuple.of(0, 2)));
 
 		queryEngine.flushChanges();
 		assertEquals(3, predicateResultSet.countResults());
 		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 1), Tuple.of(1, 0), Tuple.of(1, 2)));
+		assertTrue(predicateResultSet.hasResult(Tuple.of(0, 1)));
+		assertFalse(predicateResultSet.hasResult(Tuple.of(0, 2)));
 	}
 
 	@Test
