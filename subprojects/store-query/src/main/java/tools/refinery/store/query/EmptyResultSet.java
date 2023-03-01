@@ -1,8 +1,8 @@
 package tools.refinery.store.query;
 
+import tools.refinery.store.map.Cursor;
+import tools.refinery.store.map.Cursors;
 import tools.refinery.store.tuple.TupleLike;
-
-import java.util.stream.Stream;
 
 public class EmptyResultSet implements ResultSet {
 	@Override
@@ -11,8 +11,8 @@ public class EmptyResultSet implements ResultSet {
 	}
 
 	@Override
-	public Stream<TupleLike> allResults() {
-		return Stream.of();
+	public Cursor<TupleLike, Boolean> allResults() {
+		return Cursors.empty();
 	}
 
 	@Override

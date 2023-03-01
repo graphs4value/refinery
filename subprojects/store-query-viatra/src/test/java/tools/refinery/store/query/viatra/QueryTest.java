@@ -1,6 +1,7 @@
 package tools.refinery.store.query.viatra;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.Dnf;
 import tools.refinery.store.query.ModelQuery;
@@ -14,7 +15,6 @@ import tools.refinery.store.tuple.TupleLike;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tools.refinery.store.query.literal.Literals.not;
@@ -712,11 +712,10 @@ class QueryTest {
 		assertThrows(IllegalArgumentException.class, () -> queryBuilder.queries(predicate));
 	}
 
-	static void compareMatchSets(Stream<TupleLike> matchSet, Set<Tuple> expected) {
+	private static void compareMatchSets(Cursor<TupleLike, Boolean> cursor, Set<Tuple> expected) {
 		Set<Tuple> translatedMatchSet = new HashSet<>();
-		var iterator = matchSet.iterator();
-		while (iterator.hasNext()) {
-			var element = iterator.next();
+		while (cursor.move()) {
+			var element = cursor.getKey();
 			translatedMatchSet.add(element.toTuple());
 		}
 		assertEquals(expected, translatedMatchSet);

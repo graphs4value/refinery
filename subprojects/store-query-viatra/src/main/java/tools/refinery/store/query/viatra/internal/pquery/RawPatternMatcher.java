@@ -9,12 +9,12 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.rete.index.Indexer;
 import org.eclipse.viatra.query.runtime.rete.matcher.RetePatternMatcher;
+import tools.refinery.store.map.Cursor;
+import tools.refinery.store.map.Cursors;
 import tools.refinery.store.query.ResultSet;
 import tools.refinery.store.query.viatra.ViatraTupleLike;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.TupleLike;
-
-import java.util.stream.Stream;
 
 /**
  * Directly access the tuples inside a VIATRA pattern matcher.<p>
@@ -64,12 +64,12 @@ public class RawPatternMatcher extends GenericPatternMatcher implements ResultSe
     }
 
     @Override
-    public Stream<TupleLike> allResults() {
+    public Cursor<TupleLike, Boolean> allResults() {
         if (emptyMaskIndexer == null) {
-            return backend.getAllMatches(empty).map(ViatraTupleLike::new);
+            return new ResultSetCursor(backend.getAllMatches(empty).iterator());
         }
         var matches = emptyMaskIndexer.get(Tuples.staticArityFlatTupleOf());
-        return matches == null ? Stream.of() : matches.stream().map(ViatraTupleLike::new);
+        return matches == null ? Cursors.empty() : new ResultSetCursor(matches.stream().iterator());
     }
 
     @Override

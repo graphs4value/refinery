@@ -1,8 +1,7 @@
 package tools.refinery.store.query;
 
+import tools.refinery.store.map.Cursor;
 import tools.refinery.store.tuple.TupleLike;
-
-import java.util.stream.Stream;
 
 public interface ResultSet {
 	default boolean hasResult() {
@@ -11,7 +10,7 @@ public interface ResultSet {
 
 	boolean hasResult(TupleLike parameters);
 
-	Stream<TupleLike> allResults();
+	Cursor<TupleLike, Boolean> allResults();
 
 	int countResults();
 }
