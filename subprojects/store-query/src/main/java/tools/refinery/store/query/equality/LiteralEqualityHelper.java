@@ -1,7 +1,7 @@
 package tools.refinery.store.query.equality;
 
-import tools.refinery.store.query.Dnf;
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.HashMap;
 import java.util.List;

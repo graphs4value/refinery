@@ -1,7 +1,7 @@
 package tools.refinery.store.reasoning.rule;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.Dnf;
 
 import java.util.ArrayList;
 import java.util.HashSet;

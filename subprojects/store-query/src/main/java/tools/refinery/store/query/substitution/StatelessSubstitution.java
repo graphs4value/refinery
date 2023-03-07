@@ -1,6 +1,6 @@
 package tools.refinery.store.query.substitution;
 
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.Variable;
 
 public enum StatelessSubstitution implements Substitution {
 	FAILING {

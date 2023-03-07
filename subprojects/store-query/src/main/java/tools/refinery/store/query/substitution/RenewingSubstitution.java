@@ -1,6 +1,6 @@
 package tools.refinery.store.query.substitution;
 
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,10 +10,6 @@ public class RenewingSubstitution implements Substitution {
 
 	@Override
 	public Variable getSubstitute(Variable variable) {
-		return alreadyRenewed.computeIfAbsent(variable, RenewingSubstitution::renew);
-	}
-
-	private static Variable renew(Variable variable) {
-		return variable.isExplicitlyNamed() ? new Variable(variable.getName()) : new Variable();
+		return alreadyRenewed.computeIfAbsent(variable, Variable::renew);
 	}
 }

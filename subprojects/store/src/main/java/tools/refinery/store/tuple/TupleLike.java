@@ -1,5 +1,8 @@
 package tools.refinery.store.tuple;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 public interface TupleLike {
 	int getSize();
 
@@ -21,5 +24,12 @@ public interface TupleLike {
 			case 2 -> Tuple.of(get(0), get(1));
 			default -> Tuple.of(toArray());
 		};
+	}
+
+	static String toString(TupleLike tuple) {
+		var valuesString = IntStream.range(0, tuple.getSize())
+				.mapToObj(i -> Integer.toString(tuple.get(i)))
+				.collect(Collectors.joining(", "));
+		return "[" + valuesString + "]";
 	}
 }

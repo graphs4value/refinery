@@ -1,13 +1,13 @@
 package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.FunctionalDependency;
+import tools.refinery.store.query.dnf.FunctionalDependency;
 import tools.refinery.store.representation.AnySymbol;
-import tools.refinery.store.query.RelationLike;
+import tools.refinery.store.query.Constraint;
 
 import java.util.Set;
 
-public sealed interface AnyRelationView extends RelationLike permits RelationView {
+public sealed interface AnyRelationView extends Constraint permits RelationView {
 	AnySymbol getSymbol();
 
 	String getViewName();

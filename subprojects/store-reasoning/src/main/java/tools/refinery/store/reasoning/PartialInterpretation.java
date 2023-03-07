@@ -12,8 +12,6 @@ public non-sealed interface PartialInterpretation<A, C> extends AnyPartialInterp
 
 	Cursor<Tuple, A> getAll();
 
-	Cursor<Tuple, A> getAllErrors();
-
 	MergeResult merge(Tuple key, A value);
 
 	C getConcrete(Tuple key);

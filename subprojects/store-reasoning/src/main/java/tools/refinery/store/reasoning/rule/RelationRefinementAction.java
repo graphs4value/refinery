@@ -3,7 +3,7 @@ package tools.refinery.store.reasoning.rule;
 import tools.refinery.store.reasoning.Reasoning;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 

@@ -1,20 +1,21 @@
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.Set;
 
-public record ConstantLiteral(Variable variable, int nodeId) implements Literal {
+public record ConstantLiteral(NodeVariable variable, int nodeId) implements Literal {
 	@Override
-	public void collectAllVariables(Set<Variable> variables) {
-		variables.add(variable);
+	public Set<Variable> getBoundVariables() {
+		return Set.of(variable);
 	}
 
 	@Override
 	public ConstantLiteral substitute(Substitution substitution) {
-		return new ConstantLiteral(substitution.getSubstitute(variable), nodeId);
+		return new ConstantLiteral(substitution.getTypeSafeSubstitute(variable), nodeId);
 	}
 
 	@Override

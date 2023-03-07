@@ -1,17 +1,19 @@
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 
 import java.util.Set;
 
-public record EquivalenceLiteral(boolean positive, Variable left, Variable right)
-		implements PolarLiteral<EquivalenceLiteral> {
+public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right)
+		implements CanNegate<EquivalenceLiteral> {
 	@Override
-	public void collectAllVariables(Set<Variable> variables) {
-		variables.add(left);
-		variables.add(right);
+	public Set<Variable> getBoundVariables() {
+		// If one side of a {@code positive} equivalence is bound, it may bind its other side, but we under-approximate
+		// this behavior by not binding any of the sides by default.
+		return Set.of();
 	}
 
 	@Override
@@ -21,7 +23,8 @@ public record EquivalenceLiteral(boolean positive, Variable left, Variable right
 
 	@Override
 	public EquivalenceLiteral substitute(Substitution substitution) {
-		return new EquivalenceLiteral(positive, substitution.getSubstitute(left), substitution.getSubstitute(right));
+		return new EquivalenceLiteral(positive, substitution.getTypeSafeSubstitute(left),
+				substitution.getTypeSafeSubstitute(right));
 	}
 
 	@Override

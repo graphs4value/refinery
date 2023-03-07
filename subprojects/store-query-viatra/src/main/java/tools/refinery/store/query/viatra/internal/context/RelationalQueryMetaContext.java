@@ -3,6 +3,8 @@ package tools.refinery.store.query.viatra.internal.context;
 import org.eclipse.viatra.query.runtime.matchers.context.AbstractQueryMetaContext;
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.InputKeyImplication;
+import org.eclipse.viatra.query.runtime.matchers.context.common.JavaTransitiveInstancesKey;
+import tools.refinery.store.query.term.DataSort;
 import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
 import tools.refinery.store.query.view.AnyRelationView;
 
@@ -37,6 +39,9 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 
 	@Override
 	public Collection<InputKeyImplication> getImplications(IInputKey implyingKey) {
+		if (implyingKey instanceof JavaTransitiveInstancesKey) {
+			return List.of();
+		}
 		var relationView = checkKey(implyingKey);
 		var relationViewImplications = relationView.getImpliedRelationViews();
 		var inputKeyImplications = new HashSet<InputKeyImplication>(relationViewImplications.size());
@@ -52,11 +57,25 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 						relationViewImplication.impliedIndices()));
 			}
 		}
+		var sorts = relationView.getSorts();
+		int arity = relationView.arity();
+		for (int i = 0; i < arity; i++) {
+			var sort = sorts.get(i);
+			if (sort instanceof DataSort<?> dataSort) {
+				var javaTransitiveInstancesKey = new JavaTransitiveInstancesKey(dataSort.type());
+				var javaImplication = new InputKeyImplication(implyingKey, javaTransitiveInstancesKey,
+						List.of(i));
+				inputKeyImplications.add(javaImplication);
+			}
+		}
 		return inputKeyImplications;
 	}
 
 	@Override
 	public Map<Set<Integer>, Set<Integer>> getFunctionalDependencies(IInputKey key) {
+		if (key instanceof JavaTransitiveInstancesKey) {
+			return Map.of();
+		}
 		var relationView = checkKey(key);
 		var functionalDependencies = relationView.getFunctionalDependencies();
 		var flattened = new HashMap<Set<Integer>, Set<Integer>>(functionalDependencies.size());

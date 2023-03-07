@@ -22,10 +22,9 @@ public class ModelUpdateListener {
 	}
 
 	private <T> void registerView(ViatraModelQueryAdapterImpl adapter, RelationView<T> relationView) {
-		var listener = RelationViewUpdateListener.of(adapter, relationView);
 		var model = adapter.getModel();
 		var interpretation = model.getInterpretation(relationView.getSymbol());
-		interpretation.addListener(listener, true);
+		var listener = RelationViewUpdateListener.of(adapter, relationView, interpretation);
 		relationViewUpdateListeners.put(relationView, listener);
 	}
 

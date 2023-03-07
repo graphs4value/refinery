@@ -4,7 +4,7 @@ import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.Dnf;
 
 import java.util.Collection;
 

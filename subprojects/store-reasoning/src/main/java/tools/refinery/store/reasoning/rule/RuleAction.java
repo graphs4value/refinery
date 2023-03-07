@@ -1,7 +1,7 @@
 package tools.refinery.store.reasoning.rule;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.List;
 

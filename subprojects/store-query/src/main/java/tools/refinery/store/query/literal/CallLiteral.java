@@ -1,109 +1,78 @@
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.RelationLike;
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.NodeSort;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class CallLiteral<T extends RelationLike> implements Literal {
+public final class CallLiteral extends AbstractCallLiteral implements CanNegate<CallLiteral> {
 	private final CallPolarity polarity;
-	private final T target;
-	private final List<Variable> arguments;
 
-	protected CallLiteral(CallPolarity polarity, T target, List<Variable> arguments) {
-		if (arguments.size() != target.arity()) {
-			throw new IllegalArgumentException("%s needs %d arguments, but got %s".formatted(target.name(),
-					target.arity(), arguments.size()));
-		}
-		if (polarity.isTransitive() && target.arity() != 2) {
-			throw new IllegalArgumentException("Transitive closures can only take binary relations");
+	public CallLiteral(CallPolarity polarity, Constraint target, List<Variable> arguments) {
+		super(target, arguments);
+		if (polarity.isTransitive()) {
+			if (target.arity() != 2) {
+				throw new IllegalArgumentException("Transitive closures can only take binary relations");
+			}
+			var sorts = target.getSorts();
+			if (!sorts.get(0).equals(NodeSort.INSTANCE) || !sorts.get(1).equals(NodeSort.INSTANCE)) {
+				throw new IllegalArgumentException("Transitive closures can only be computed over nodes");
+			}
 		}
 		this.polarity = polarity;
-		this.target = target;
-		this.arguments = arguments;
 	}
 
 	public CallPolarity getPolarity() {
 		return polarity;
 	}
 
-	public abstract Class<T> getTargetType();
-
-	public T getTarget() {
-		return target;
-	}
-
-	public List<Variable> getArguments() {
-		return arguments;
+	@Override
+	public Set<Variable> getBoundVariables() {
+		return polarity.isPositive() ? Set.copyOf(getArguments()) : Set.of();
 	}
 
 	@Override
-	public void collectAllVariables(Set<Variable> variables) {
-		if (polarity.isPositive()) {
-			variables.addAll(arguments);
-		}
+	protected Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments) {
+		return new CallLiteral(polarity, getTarget(), substitutedArguments);
 	}
 
-	protected List<Variable> substituteArguments(Substitution substitution) {
-		return arguments.stream().map(substitution::getSubstitute).toList();
-	}
-
-	/**
-	 * Compares the target of this call literal with another object.
-	 *
-	 * @param helper      Equality helper for comparing {@link Variable} and {@link tools.refinery.store.query.Dnf}
-	 *                    instances.
-	 * @param otherTarget The object to compare the target to.
-	 * @return {@code true} if {@code otherTarget} is equal to the return value of {@link #getTarget()} according to
-	 * {@code helper}, {@code false} otherwise.
-	 */
-	protected boolean targetEquals(LiteralEqualityHelper helper, T otherTarget) {
-		return target.equals(otherTarget);
+	@Override
+	public LiteralReduction getReduction() {
+		var reduction = getTarget().getReduction();
+		return polarity.isPositive() ? reduction : reduction.negate();
 	}
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
-		if (other.getClass() != getClass()) {
+		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;
 		}
-		var otherCallLiteral = (CallLiteral<?>) other;
-		if (getTargetType() != otherCallLiteral.getTargetType() || polarity != otherCallLiteral.polarity) {
-			return false;
-		}
-		var arity = arguments.size();
-		if (arity != otherCallLiteral.arguments.size()) {
-			return false;
-		}
-		for (int i = 0; i < arity; i++) {
-			if (!helper.variableEqual(arguments.get(i), otherCallLiteral.arguments.get(i))) {
-				return false;
-			}
-		}
-		@SuppressWarnings("unchecked")
-		var otherTarget = (T) otherCallLiteral.target;
-		return targetEquals(helper, otherTarget);
+		var otherCallLiteral = (CallLiteral) other;
+		return polarity.equals(otherCallLiteral.polarity);
+	}
+
+	@Override
+	public CallLiteral negate() {
+		return new CallLiteral(polarity.negate(), getTarget(), getArguments());
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		CallLiteral<?> callAtom = (CallLiteral<?>) o;
-		return polarity == callAtom.polarity && Objects.equals(target, callAtom.target) &&
-				Objects.equals(arguments, callAtom.arguments);
+		if (!super.equals(o)) return false;
+		CallLiteral that = (CallLiteral) o;
+		return polarity == that.polarity;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(polarity, target, arguments);
-	}
-
-	protected String targetToString() {
-		return "@%s %s".formatted(getTargetType().getSimpleName(), target.name());
+		return Objects.hash(super.hashCode(), polarity);
 	}
 
 	@Override
@@ -112,12 +81,12 @@ public abstract class CallLiteral<T extends RelationLike> implements Literal {
 		if (!polarity.isPositive()) {
 			builder.append("!(");
 		}
-		builder.append(targetToString());
+		builder.append(getTarget().toReferenceString());
 		if (polarity.isTransitive()) {
 			builder.append("+");
 		}
 		builder.append("(");
-		var argumentIterator = arguments.iterator();
+		var argumentIterator = getArguments().iterator();
 		if (argumentIterator.hasNext()) {
 			builder.append(argumentIterator.next());
 			while (argumentIterator.hasNext()) {

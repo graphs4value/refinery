@@ -30,14 +30,14 @@ class MismatchDescribingDnfEqualityChecker extends DeepDnfEqualityChecker {
 		var inProgress = getInProgress();
 		int size = inProgress.size();
 		if (size <= 1) {
-			description.appendText("was ").appendValue(pair.left());
+			description.appendText("was ").appendText(pair.left().toDefinitionString());
 			return;
 		}
 		var last = inProgress.get(size - 1);
-		description.appendText("expected ").appendValue(last.right());
+		description.appendText("expected ").appendText(last.right().toDefinitionString());
 		for (int i = size - 2; i >= 0; i--) {
-			description.appendText(" called from ").appendText(inProgress.get(i).left().name());
+			description.appendText(" called from ").appendText(inProgress.get(i).left().toString());
 		}
-		description.appendText(" was not structurally equal to ").appendValue(last.right());
+		description.appendText(" was not structurally equal to ").appendText(last.right().toDefinitionString());
 	}
 }

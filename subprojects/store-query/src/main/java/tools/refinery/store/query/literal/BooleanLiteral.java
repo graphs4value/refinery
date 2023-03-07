@@ -1,12 +1,12 @@
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 
 import java.util.Set;
 
-public enum BooleanLiteral implements PolarLiteral<BooleanLiteral> {
+public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	TRUE(true),
 	FALSE(false);
 
@@ -17,8 +17,8 @@ public enum BooleanLiteral implements PolarLiteral<BooleanLiteral> {
 	}
 
 	@Override
-	public void collectAllVariables(Set<Variable> variables) {
-		// No variables to collect.
+	public Set<Variable> getBoundVariables() {
+		return Set.of();
 	}
 
 	@Override

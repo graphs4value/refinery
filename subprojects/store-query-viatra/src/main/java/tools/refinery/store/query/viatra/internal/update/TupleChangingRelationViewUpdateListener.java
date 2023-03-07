@@ -1,6 +1,7 @@
 package tools.refinery.store.query.viatra.internal.update;
 
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
+import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.view.RelationView;
 import tools.refinery.store.tuple.Tuple;
@@ -10,8 +11,9 @@ import java.util.Arrays;
 public class TupleChangingRelationViewUpdateListener<T> extends RelationViewUpdateListener<T> {
 	private final RelationView<T> relationView;
 
-	TupleChangingRelationViewUpdateListener(ViatraModelQueryAdapterImpl adapter, RelationView<T> relationView) {
-        super(adapter);
+	TupleChangingRelationViewUpdateListener(ViatraModelQueryAdapterImpl adapter, RelationView<T> relationView,
+											Interpretation<T> interpretation) {
+        super(adapter, interpretation);
         this.relationView = relationView;
 	}
 

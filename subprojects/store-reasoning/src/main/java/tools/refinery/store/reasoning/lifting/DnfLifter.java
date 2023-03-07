@@ -1,18 +1,18 @@
 package tools.refinery.store.reasoning.lifting;
 
 import org.jetbrains.annotations.Nullable;
-import tools.refinery.store.reasoning.literal.ModalDnfCallLiteral;
-import tools.refinery.store.reasoning.Reasoning;
-import tools.refinery.store.reasoning.literal.ModalRelationLiteral;
-import tools.refinery.store.reasoning.literal.PartialRelationLiteral;
-import tools.refinery.store.query.Dnf;
-import tools.refinery.store.query.DnfBuilder;
-import tools.refinery.store.query.DnfClause;
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.dnf.DnfBuilder;
+import tools.refinery.store.query.dnf.DnfClause;
+import tools.refinery.store.query.literal.CallLiteral;
 import tools.refinery.store.query.literal.CallPolarity;
-import tools.refinery.store.query.literal.DnfCallLiteral;
 import tools.refinery.store.query.literal.Literal;
+import tools.refinery.store.query.term.DataVariable;
+import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.reasoning.Reasoning;
+import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.ArrayList;
@@ -46,7 +46,10 @@ public class DnfLifter {
 
 	private boolean liftClause(Modality modality, DnfClause clause, DnfBuilder builder) {
 		boolean changed = false;
-		var quantifiedVariables = new HashSet<>(clause.quantifiedVariables());
+		var quantifiedVariables = new HashSet<>(clause.boundVariables()
+				.stream()
+				.filter(DataVariable.class::isInstance)
+				.toList());
 		var literals = clause.literals();
 		var liftedLiterals = new ArrayList<Literal>(literals.size());
 		for (var literal : literals) {
@@ -65,8 +68,8 @@ public class DnfLifter {
 			}
 		}
 		for (var quantifiedVariable : quantifiedVariables) {
-			// Quantify over variables that are not already quantified with the expected modality.
-			liftedLiterals.add(Reasoning.EXISTS.call(CallPolarity.POSITIVE, modality,
+			// Quantify over data variables that are not already quantified with the expected modality.
+			liftedLiterals.add(new CallLiteral(CallPolarity.POSITIVE, new ModalConstraint(modality, Reasoning.EXISTS),
 					List.of(quantifiedVariable)));
 		}
 		builder.clause(liftedLiterals);
@@ -75,33 +78,39 @@ public class DnfLifter {
 
 	@Nullable
 	private Variable isExistsLiteralForVariable(Modality modality, Literal literal) {
-		if (literal instanceof ModalRelationLiteral modalRelationLiteral &&
-				modalRelationLiteral.getPolarity() == CallPolarity.POSITIVE &&
-				modalRelationLiteral.getModality() == modality &&
-				modalRelationLiteral.getTarget().equals(Reasoning.EXISTS)) {
-			return modalRelationLiteral.getArguments().get(0);
+		if (literal instanceof CallLiteral callLiteral &&
+				callLiteral.getPolarity() == CallPolarity.POSITIVE &&
+				callLiteral.getTarget() instanceof ModalConstraint modalConstraint &&
+				modalConstraint.modality() == modality &&
+				modalConstraint.constraint().equals(Reasoning.EXISTS)) {
+			return callLiteral.getArguments().get(0);
 		}
 		return null;
 	}
 
 	@Nullable
 	private Literal liftLiteral(Modality modality, Literal literal) {
-		if (literal instanceof PartialRelationLiteral partialRelationLiteral) {
-			return new ModalRelationLiteral(modality, partialRelationLiteral);
-		} else if (literal instanceof DnfCallLiteral dnfCallLiteral) {
-			var polarity = dnfCallLiteral.getPolarity();
-			var target = dnfCallLiteral.getTarget();
-			var liftedTarget = lift(modality.commute(polarity), target);
-			if (target.equals(liftedTarget)) {
-				return null;
-			}
-			return new DnfCallLiteral(polarity, liftedTarget, dnfCallLiteral.getArguments());
-		} else if (literal instanceof ModalDnfCallLiteral modalDnfCallLiteral) {
-			var liftedTarget = lift(modalDnfCallLiteral.getModality(), modalDnfCallLiteral.getTarget());
-			return new DnfCallLiteral(modalDnfCallLiteral.getPolarity(), liftedTarget,
-					modalDnfCallLiteral.getArguments());
-		} else {
+		if (!(literal instanceof CallLiteral callLiteral)) {
 			return null;
+		}
+		var target = callLiteral.getTarget();
+		if (target instanceof ModalConstraint modalTarget) {
+			var actualTarget = modalTarget.constraint();
+			if (actualTarget instanceof Dnf dnf) {
+				var targetModality = modalTarget.modality();
+				var liftedTarget = lift(targetModality, dnf);
+				return new CallLiteral(callLiteral.getPolarity(), liftedTarget, callLiteral.getArguments());
+			}
+			// No more lifting to be done, pass any modal call to a partial symbol through.
+			return null;
+		} else if (target instanceof Dnf dnf) {
+			var polarity = callLiteral.getPolarity();
+			var liftedTarget = lift(modality.commute(polarity), dnf);
+			// Use == instead of equals(), because lift will return the same object by reference is there are no
+			// changes made during lifting.
+			return liftedTarget == target ? null : new CallLiteral(polarity, liftedTarget, callLiteral.getArguments());
+		} else {
+			return PartialLiterals.addModality(callLiteral, modality);
 		}
 	}
 }

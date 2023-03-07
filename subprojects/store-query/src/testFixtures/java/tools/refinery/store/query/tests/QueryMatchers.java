@@ -1,7 +1,7 @@
 package tools.refinery.store.query.tests;
 
 import org.hamcrest.Matcher;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.Dnf;
 
 public final class QueryMatchers {
 	private QueryMatchers() {

@@ -2,7 +2,7 @@ package tools.refinery.store.query.tests;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.equality.DeepDnfEqualityChecker;
 
 public class StructurallyEqualTo extends TypeSafeMatcher<Dnf> {
@@ -31,6 +31,6 @@ public class StructurallyEqualTo extends TypeSafeMatcher<Dnf> {
 
 	@Override
 	public void describeTo(Description description) {
-		description.appendText("structurally equal to ").appendValue(expected);
+		description.appendText("structurally equal to ").appendText(expected.toDefinitionString());
 	}
 }

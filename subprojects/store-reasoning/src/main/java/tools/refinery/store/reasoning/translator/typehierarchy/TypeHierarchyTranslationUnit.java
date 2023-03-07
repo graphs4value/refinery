@@ -1,18 +1,14 @@
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
-import tools.refinery.store.reasoning.AnyPartialInterpretation;
-import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
-import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.translator.Advice;
-import tools.refinery.store.reasoning.translator.TranslationUnit;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.literal.CallPolarity;
-import tools.refinery.store.query.literal.Literal;
+import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslatedRelation;
+import tools.refinery.store.reasoning.translator.TranslationUnit;
 import tools.refinery.store.representation.Symbol;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class TypeHierarchyTranslationUnit extends TranslationUnit {
 	static final Symbol<InferredType> INFERRED_TYPE_SYMBOL = new Symbol<>("inferredType", 1,
@@ -25,24 +21,8 @@ public class TypeHierarchyTranslationUnit extends TranslationUnit {
 	}
 
 	@Override
-	public Collection<AnyPartialSymbol> getTranslatedPartialSymbols() {
-		return null;
-	}
-
-	@Override
-	public void configure(Collection<Advice> advices) {
-
-	}
-
-	@Override
-	public List<Literal> call(CallPolarity polarity, Modality modality, PartialRelation target,
-							  List<Variable> arguments) {
-		return null;
-	}
-
-	@Override
-	public Map<AnyPartialSymbol, AnyPartialInterpretation> createPartialInterpretations(Model model) {
-		return null;
+	public Collection<TranslatedRelation> getTranslatedRelations() {
+		return List.of();
 	}
 
 	@Override

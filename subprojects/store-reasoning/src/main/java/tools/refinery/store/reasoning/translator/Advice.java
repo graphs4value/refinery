@@ -2,7 +2,7 @@ package tools.refinery.store.reasoning.translator;
 
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.query.Variable;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.substitution.Substitutions;
 

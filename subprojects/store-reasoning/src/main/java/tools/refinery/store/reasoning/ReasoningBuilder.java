@@ -3,7 +3,7 @@ package tools.refinery.store.reasoning;
 import tools.refinery.store.adapter.ModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.Dnf;
 
 import java.util.Collection;
 import java.util.List;

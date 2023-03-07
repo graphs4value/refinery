@@ -1,18 +1,16 @@
 package tools.refinery.store.reasoning.representation;
 
-import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.literal.PartialRelationLiteral;
-import tools.refinery.store.reasoning.literal.ModalRelationLiteral;
-import tools.refinery.store.query.RelationLike;
-import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.literal.CallPolarity;
+import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.term.NodeSort;
+import tools.refinery.store.query.term.Sort;
 import tools.refinery.store.representation.AbstractDomain;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.TruthValueDomain;
 
+import java.util.Arrays;
 import java.util.List;
 
-public record PartialRelation(String name, int arity) implements PartialSymbol<TruthValue, Boolean>, RelationLike {
+public record PartialRelation(String name, int arity) implements PartialSymbol<TruthValue, Boolean>, Constraint {
 	@Override
 	public AbstractDomain<TruthValue, Boolean> abstractDomain() {
 		return TruthValueDomain.INSTANCE;
@@ -28,24 +26,16 @@ public record PartialRelation(String name, int arity) implements PartialSymbol<T
 		return false;
 	}
 
-	public ModalRelationLiteral call(CallPolarity polarity, Modality modality, List<Variable> arguments) {
-		return new ModalRelationLiteral(polarity, modality, this, arguments);
+	@Override
+	public List<Sort> getSorts() {
+		var sorts = new Sort[arity()];
+		Arrays.fill(sorts, NodeSort.INSTANCE);
+		return List.of(sorts);
 	}
 
-	public PartialRelationLiteral call(CallPolarity polarity, List<Variable> arguments) {
-		return new PartialRelationLiteral(polarity, this, arguments);
-	}
-
-	public PartialRelationLiteral call(CallPolarity polarity, Variable... arguments) {
-		return call(polarity, List.of(arguments));
-	}
-
-	public PartialRelationLiteral call(Variable... arguments) {
-		return call(CallPolarity.POSITIVE, arguments);
-	}
-
-	public PartialRelationLiteral callTransitive(Variable left, Variable right) {
-		return call(CallPolarity.TRANSITIVE, List.of(left, right));
+	@Override
+	public String toReferenceString() {
+		return name;
 	}
 
 	@Override

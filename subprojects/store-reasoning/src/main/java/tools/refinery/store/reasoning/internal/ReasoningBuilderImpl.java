@@ -5,7 +5,7 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.Dnf;
 
 public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder implements ReasoningBuilder {
 	public ReasoningBuilderImpl(ModelStoreBuilder storeBuilder) {

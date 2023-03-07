@@ -1,9 +1,14 @@
 package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.term.NodeSort;
+import tools.refinery.store.query.term.Sort;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 import tools.refinery.store.representation.Symbol;
+
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class TuplePreservingRelationView<T> extends RelationView<T> {
 	protected TuplePreservingRelationView(Symbol<T> symbol, String name) {
@@ -38,7 +43,15 @@ public abstract class TuplePreservingRelationView<T> extends RelationView<T> {
 		return filter(key, value);
 	}
 
+	@Override
 	public int arity() {
 		return this.getSymbol().arity();
+	}
+
+	@Override
+	public List<Sort> getSorts() {
+		var sorts = new Sort[arity()];
+		Arrays.fill(sorts, NodeSort.INSTANCE);
+		return List.of(sorts);
 	}
 }

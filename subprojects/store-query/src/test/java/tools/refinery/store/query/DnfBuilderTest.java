@@ -1,7 +1,9 @@
 package tools.refinery.store.query;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.literal.BooleanLiteral;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
 
@@ -12,8 +14,8 @@ import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo
 class DnfBuilderTest {
 	@Test
 	void eliminateTrueTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 
@@ -28,8 +30,8 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateFalseTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 
@@ -45,8 +47,8 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysTrueTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 
@@ -62,8 +64,8 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysFalseTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 
@@ -78,8 +80,8 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateTrueDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var trueDnf = Dnf.builder().parameter(p).clause().build();
@@ -95,8 +97,8 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateFalseDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var falseDnf = Dnf.builder().parameter(p).build();
@@ -113,8 +115,8 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysTrueDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var trueDnf = Dnf.builder().parameter(p).clause().build();
@@ -131,8 +133,8 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysFalseDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var falseDnf = Dnf.builder().parameter(p).build();
@@ -148,8 +150,8 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateNotFalseDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var falseDnf = Dnf.builder().parameter(p).build();
@@ -165,8 +167,8 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateNotTrueDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var trueDnf = Dnf.builder().parameter(p).clause().build();
@@ -183,8 +185,8 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysNotFalseDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var falseDnf = Dnf.builder().parameter(p).build();
@@ -201,8 +203,8 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysNotTrueDnfTest() {
-		var p = new Variable("p");
-		var q = new Variable("q");
+		var p = Variable.of("p");
+		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyRelationView<>(friend);
 		var trueDnf = Dnf.builder().parameter(p).clause().build();

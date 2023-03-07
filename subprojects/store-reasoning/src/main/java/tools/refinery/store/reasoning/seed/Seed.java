@@ -1,4 +1,4 @@
-package tools.refinery.store.reasoning.translator;
+package tools.refinery.store.reasoning.seed;
 
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.tuple.Tuple;
@@ -6,7 +6,7 @@ import tools.refinery.store.tuple.Tuple;
 public interface Seed<T> {
 	int arity();
 
-	T getReducedValue();
+	T reducedValue();
 
 	T get(Tuple key);
 

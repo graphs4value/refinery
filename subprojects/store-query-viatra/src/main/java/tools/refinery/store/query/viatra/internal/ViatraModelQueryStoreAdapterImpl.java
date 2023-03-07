@@ -5,9 +5,9 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.Dnf;
+import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.viatra.ViatraModelQueryStoreAdapter;
-import tools.refinery.store.query.viatra.internal.pquery.RawPatternMatcher;
+import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.view.AnyRelationView;
 
 import java.util.*;
@@ -16,20 +16,20 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 	private final ModelStore store;
 	private final ViatraQueryEngineOptions engineOptions;
 	private final Map<AnyRelationView, IInputKey> inputKeys;
-	private final Map<Dnf, IQuerySpecification<RawPatternMatcher>> querySpecifications;
-	private final Set<Dnf> vacuousQueries;
-	private final Set<Dnf> allQueries;
+	private final Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications;
+	private final Set<AnyQuery> vacuousQueries;
+	private final Set<AnyQuery> allQueries;
 
 	ViatraModelQueryStoreAdapterImpl(ModelStore store, ViatraQueryEngineOptions engineOptions,
 									 Map<AnyRelationView, IInputKey> inputKeys,
-									 Map<Dnf, IQuerySpecification<RawPatternMatcher>> querySpecifications,
-									 Set<Dnf> vacuousQueries) {
+									 Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications,
+									 Set<AnyQuery> vacuousQueries) {
 		this.store = store;
 		this.engineOptions = engineOptions;
 		this.inputKeys = inputKeys;
 		this.querySpecifications = querySpecifications;
 		this.vacuousQueries = vacuousQueries;
-		var mutableAllQueries = new LinkedHashSet<Dnf>(querySpecifications.size() + vacuousQueries.size());
+		var mutableAllQueries = new LinkedHashSet<AnyQuery>(querySpecifications.size() + vacuousQueries.size());
 		mutableAllQueries.addAll(querySpecifications.keySet());
 		mutableAllQueries.addAll(vacuousQueries);
 		this.allQueries = Collections.unmodifiableSet(mutableAllQueries);
@@ -49,15 +49,15 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 	}
 
 	@Override
-	public Collection<Dnf> getQueries() {
+	public Collection<AnyQuery> getQueries() {
 		return allQueries;
 	}
 
-	Map<Dnf, IQuerySpecification<RawPatternMatcher>> getQuerySpecifications() {
+	Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> getQuerySpecifications() {
 		return querySpecifications;
 	}
 
-	Set<Dnf> getVacuousQueries() {
+	Set<AnyQuery> getVacuousQueries() {
 		return vacuousQueries;
 	}
 

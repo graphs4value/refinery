@@ -1,33 +1,31 @@
 package tools.refinery.store.reasoning.literal;
 
-import tools.refinery.store.query.literal.DnfCallLiteral;
+import tools.refinery.store.query.literal.CallLiteral;
 
 public final class PartialLiterals {
 	private PartialLiterals() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public ModalRelationLiteral may(PartialRelationLiteral literal) {
-		return new ModalRelationLiteral(Modality.MAY, literal);
+	public static CallLiteral may(CallLiteral literal) {
+		return addModality(literal, Modality.MAY);
 	}
 
-	public ModalRelationLiteral must(PartialRelationLiteral literal) {
-		return new ModalRelationLiteral(Modality.MUST, literal);
+	public static CallLiteral must(CallLiteral literal) {
+		return addModality(literal, Modality.MUST);
 	}
 
-	public ModalRelationLiteral current(PartialRelationLiteral literal) {
-		return new ModalRelationLiteral(Modality.CURRENT, literal);
+	public static CallLiteral current(CallLiteral literal) {
+		return addModality(literal, Modality.CURRENT);
 	}
 
-	public ModalDnfCallLiteral may(DnfCallLiteral literal) {
-		return new ModalDnfCallLiteral(Modality.MAY, literal);
-	}
-
-	public ModalDnfCallLiteral must(DnfCallLiteral literal) {
-		return new ModalDnfCallLiteral(Modality.MUST, literal);
-	}
-
-	public ModalDnfCallLiteral current(DnfCallLiteral literal) {
-		return new ModalDnfCallLiteral(Modality.CURRENT, literal);
+	public static CallLiteral addModality(CallLiteral literal, Modality modality) {
+		var target = literal.getTarget();
+		if (target instanceof ModalConstraint) {
+			throw new IllegalArgumentException("Literal %s already has modality".formatted(literal));
+		}
+		var polarity = literal.getPolarity();
+		var modalTarget = new ModalConstraint(modality.commute(polarity), target);
+		return new CallLiteral(polarity, modalTarget, literal.getArguments());
 	}
 }

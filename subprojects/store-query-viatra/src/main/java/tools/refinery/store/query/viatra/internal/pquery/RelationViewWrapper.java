@@ -27,4 +27,9 @@ public class RelationViewWrapper extends BaseInputKeyWrapper<AnyRelationView> {
 	public boolean isEnumerable() {
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "RelationViewWrapper{wrappedKey=%s}".formatted(wrappedKey);
+	}
 }

@@ -1,6 +1,8 @@
 package tools.refinery.store.query.substitution;
 
-import tools.refinery.store.query.Variable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.Map;
 
@@ -23,5 +25,9 @@ public final class Substitutions {
 
 	public static Substitution renewing() {
 		return new RenewingSubstitution();
+	}
+
+	public static Substitution compose(@Nullable Substitution first, @NotNull Substitution second) {
+		return first == null ? second : first.andThen(second);
 	}
 }
