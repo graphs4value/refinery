@@ -6,7 +6,6 @@ import {
   type ThemeOptions,
   ThemeProvider as MaterialUiThemeProvider,
   type TypographyStyle,
-  useTheme,
   type CSSObject,
 } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
@@ -350,15 +349,14 @@ export function ContrastThemeProvider({
 }: {
   children?: ReactNode;
 }): JSX.Element {
-  const theme = useTheme();
   const contrastTheme = useContext(ContrastThemeContext);
   if (!contrastTheme) {
     throw new Error('ContrastThemeProvider must be used within ThemeProvider');
   }
   return (
-    <ThemeAndContrastThemeProvider theme={contrastTheme} contrastTheme={theme}>
+    <MaterialUiThemeProvider theme={contrastTheme}>
       {children}
-    </ThemeAndContrastThemeProvider>
+    </MaterialUiThemeProvider>
   );
 }
 
@@ -378,7 +376,7 @@ const ThemeProvider = observer(function ThemeProvider({
   return (
     <ThemeAndContrastThemeProvider
       theme={darkMode ? darkTheme : lightTheme}
-      contrastTheme={darkMode ? lightTheme : darkTheme}
+      contrastTheme={darkTheme}
     >
       {children}
     </ThemeAndContrastThemeProvider>

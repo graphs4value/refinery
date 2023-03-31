@@ -32,14 +32,14 @@ export default observer(function UpdateNotification(): null {
       return enqueueLater('Failed to download update', {
         variant: 'error',
         action: (
-          <>
+          <ContrastThemeProvider>
             <Button color="inherit" onClick={() => pwaStore.checkForUpdates()}>
               Try again
             </Button>
             <Button color="inherit" onClick={() => pwaStore.dismissError()}>
               Dismiss
             </Button>
-          </>
+          </ContrastThemeProvider>
         ),
       });
     }

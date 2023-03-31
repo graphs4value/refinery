@@ -8,7 +8,6 @@ import EditorPane from './editor/EditorPane';
 
 export default function Refinery(): JSX.Element {
   return (
-    // @ts-expect-error -- notistack has problems with `exactOptionalPropertyTypes
     <SnackbarProvider TransitionComponent={Grow}>
       <UpdateNotification />
       <Stack direction="column" height="100%" overflow="auto">
