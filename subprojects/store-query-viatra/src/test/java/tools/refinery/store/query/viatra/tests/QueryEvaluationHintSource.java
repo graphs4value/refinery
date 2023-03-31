@@ -1,0 +1,19 @@
+package tools.refinery.store.query.viatra.tests;
+
+import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+
+import java.util.stream.Stream;
+
+public class QueryEvaluationHintSource implements ArgumentsProvider {
+	@Override
+	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+		return Stream.of(
+				Arguments.of(new QueryBackendHint(QueryEvaluationHint.BackendRequirement.UNSPECIFIED)),
+				Arguments.of(new QueryBackendHint(QueryEvaluationHint.BackendRequirement.DEFAULT_CACHING)),
+				Arguments.of(new QueryBackendHint(QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
+		);
+	}
+}

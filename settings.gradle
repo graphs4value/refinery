@@ -7,7 +7,9 @@ include 'language-model'
 include 'language-semantics'
 include 'language-web'
 include 'store'
+include 'store-query'
 include 'store-query-viatra'
+include 'store-reasoning'
 
 for (project in rootProject.children) {
 	def projectName = project.name

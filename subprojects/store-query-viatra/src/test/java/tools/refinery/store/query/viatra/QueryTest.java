@@ -1,41 +1,47 @@
 package tools.refinery.store.query.viatra;
 
+import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.DNF;
 import tools.refinery.store.query.ModelQuery;
-import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.atom.*;
+import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.viatra.tests.QueryEngineTest;
 import tools.refinery.store.query.view.FilteredRelationView;
+import tools.refinery.store.query.view.FunctionalRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.tuple.TupleLike;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static tools.refinery.store.query.literal.Literals.assume;
+import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.store.query.term.int_.IntTerms.constant;
+import static tools.refinery.store.query.term.int_.IntTerms.greaterEq;
+import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class QueryTest {
-	@Test
-	void typeConstraintTest() {
+	@QueryEngineTest
+	void typeConstraintTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
 		var personView = new KeyOnlyRelationView<>(person);
 
-		var p1 = new Variable("p1");
-		var predicate = DNF.builder("TypeConstraint")
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("TypeConstraint")
 				.parameters(p1)
-				.clause(new RelationViewAtom(personView, p1))
+				.clause(personView.call(p1))
 				.build();
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
 				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.defaultHint(hint)
+				.query(predicate)
 				.build();
 
 		var model = store.createEmptyModel();
@@ -51,31 +57,35 @@ class QueryTest {
 		assetInterpretation.put(Tuple.of(2), true);
 
 		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0), Tuple.of(1)));
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false
+		), predicateResultSet);
 	}
 
-	@Test
-	void relationConstraintTest() {
+	@QueryEngineTest
+	void relationConstraintTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		var personView = new KeyOnlyRelationView<>(person);
 		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
 
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("RelationConstraint")
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var predicate = Query.builder("RelationConstraint")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
 				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
 				.queries(predicate)
 				.build();
 
@@ -84,8 +94,6 @@ class QueryTest {
 		var friendInterpretation = model.getInterpretation(friend);
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		assertEquals(0, predicateResultSet.countResults());
 
 		personInterpretation.put(Tuple.of(0), true);
 		personInterpretation.put(Tuple.of(1), true);
@@ -94,90 +102,39 @@ class QueryTest {
 		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
 		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
 		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		assertEquals(0, predicateResultSet.countResults());
+		friendInterpretation.put(Tuple.of(1, 3), TruthValue.TRUE);
 
 		queryEngine.flushChanges();
-		assertEquals(3, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 1), Tuple.of(1, 0), Tuple.of(1, 2)));
+		assertResults(Map.of(
+				Tuple.of(0, 1), true,
+				Tuple.of(1, 0), true,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 1), false
+		), predicateResultSet);
 	}
 
-	@Test
-	void andTest() {
+	@QueryEngineTest
+	void existTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
 		var personView = new KeyOnlyRelationView<>(person);
 		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
 
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2),
-						new RelationViewAtom(friendMustView, p2, p1)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		assertEquals(0, predicateResultSet.countResults());
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(0, predicateResultSet.countResults());
-
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 1), Tuple.of(1, 0)));
-
-		friendInterpretation.put(Tuple.of(2, 0), TruthValue.TRUE);
-		queryEngine.flushChanges();
-		assertEquals(4, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 1), Tuple.of(1, 0), Tuple.of(0, 2),
-				Tuple.of(2, 0)));
-	}
-
-	@Test
-	void existTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("RelationConstraint")
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var predicate = Query.builder("RelationConstraint")
 				.parameters(p1)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
 				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
 				.queries(predicate)
 				.build();
 
@@ -194,16 +151,19 @@ class QueryTest {
 		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
 		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
 		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		assertEquals(0, predicateResultSet.countResults());
+		friendInterpretation.put(Tuple.of(3, 2), TruthValue.TRUE);
 
 		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0), Tuple.of(1)));
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
 	}
 
-	@Test
-	void orTest() {
+	@QueryEngineTest
+	void orTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var animal = new Symbol<>("Animal", 1, Boolean.class, false);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
@@ -211,25 +171,26 @@ class QueryTest {
 		var animalView = new KeyOnlyRelationView<>(animal);
 		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
 
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("Or")
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var predicate = Query.builder("Or")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.clause(
-						new RelationViewAtom(animalView, p1),
-						new RelationViewAtom(animalView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
+						animalView.call(p1),
+						animalView.call(p2),
+						friendMustView.call(p1, p2)
 				)
 				.build();
 
 		var store = ModelStore.builder()
 				.symbols(person, animal, friend)
 				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
 				.queries(predicate)
 				.build();
 
@@ -252,25 +213,555 @@ class QueryTest {
 		friendInterpretation.put(Tuple.of(3, 0), TruthValue.TRUE);
 
 		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 1), Tuple.of(2, 3)));
+		assertResults(Map.of(
+				Tuple.of(0, 1), true,
+				Tuple.of(0, 2), false,
+				Tuple.of(2, 3), true,
+				Tuple.of(3, 0), false,
+				Tuple.of(3, 2), false
+		), predicateResultSet);
 	}
 
-	@Test
-	void equalityTest() {
+	@QueryEngineTest
+	void equalityTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var personView = new KeyOnlyRelationView<>(person);
 
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("Equality")
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var predicate = Query.builder("Equality")
 				.parameters(p1, p2)
 				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new EquivalenceAtom(p1, p2)
+						personView.call(p1),
+						personView.call(p2),
+						p1.isEquivalent(p2)
 				)
 				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 0), true,
+				Tuple.of(1, 1), true,
+				Tuple.of(2, 2), true,
+				Tuple.of(0, 1), false,
+				Tuple.of(3, 3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void inequalityTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var p3 = Variable.of("p3");
+		var predicate = Query.builder("Inequality")
+				.parameters(p1, p2, p3)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p3),
+						friendMustView.call(p2, p3),
+						p1.notEquivalent(p2)
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 1, 2), true,
+				Tuple.of(1, 0, 2), true,
+				Tuple.of(0, 0, 2), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void patternCallTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var friendPredicate = Dnf.builder("RelationConstraint")
+				.parameters(p1, p2)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
+				)
+				.build();
+
+		var p3 = Variable.of("p3");
+		var p4 = Variable.of("p4");
+		var predicate = Query.builder("PositivePatternCall")
+				.parameters(p3, p4)
+				.clause(
+						personView.call(p3),
+						personView.call(p4),
+						friendPredicate.call(p3, p4)
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 1), true,
+				Tuple.of(1, 0), true,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 1), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void negativeRelationViewTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var predicate = Query.builder("NegativePatternCall")
+				.parameters(p1, p2)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						not(friendMustView.call(p1, p2))
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 0), true,
+				Tuple.of(0, 2), true,
+				Tuple.of(1, 1), true,
+				Tuple.of(2, 0), true,
+				Tuple.of(2, 1), true,
+				Tuple.of(2, 2), true,
+				Tuple.of(0, 1), false,
+				Tuple.of(1, 0), false,
+				Tuple.of(1, 2), false,
+				Tuple.of(0, 3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void negativePatternCallTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var friendPredicate = Dnf.builder("RelationConstraint")
+				.parameters(p1, p2)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
+				)
+				.build();
+
+		var p3 = Variable.of("p3");
+		var p4 = Variable.of("p4");
+		var predicate = Query.builder("NegativePatternCall")
+				.parameters(p3, p4)
+				.clause(
+						personView.call(p3),
+						personView.call(p4),
+						not(friendPredicate.call(p3, p4))
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 0), true,
+				Tuple.of(0, 2), true,
+				Tuple.of(1, 1), true,
+				Tuple.of(2, 0), true,
+				Tuple.of(2, 1), true,
+				Tuple.of(2, 2), true,
+				Tuple.of(0, 1), false,
+				Tuple.of(1, 0), false,
+				Tuple.of(1, 2), false,
+				Tuple.of(0, 3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void negativeRelationViewWithQuantificationTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+
+		var predicate = Query.builder("Count")
+				.parameters(p1)
+				.clause(
+						personView.call(p1),
+						not(friendMustView.call(p1, p2))
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), true,
+				Tuple.of(2), true,
+				Tuple.of(3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void negativeWithQuantificationTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+
+		var called = Dnf.builder("Called")
+				.parameters(p1, p2)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
+				)
+				.build();
+
+		var predicate = Query.builder("Count")
+				.parameters(p1)
+				.clause(
+						personView.call(p1),
+						not(called.call(p1, p2))
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), true,
+				Tuple.of(2), true,
+				Tuple.of(3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void transitiveRelationViewTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var predicate = Query.builder("TransitivePatternCall")
+				.parameters(p1, p2)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.callTransitive(p1, p2)
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 0), false,
+				Tuple.of(0, 1), true,
+				Tuple.of(0, 2), true,
+				Tuple.of(1, 0), false,
+				Tuple.of(1, 1), false,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 0), false,
+				Tuple.of(2, 1), false,
+				Tuple.of(2, 2), false,
+				Tuple.of(2, 3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void transitivePatternCallTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
+		var personView = new KeyOnlyRelationView<>(person);
+		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+
+		var p1 = Variable.of("p1");
+		var p2 = Variable.of("p2");
+		var friendPredicate = Dnf.builder("RelationConstraint")
+				.parameters(p1, p2)
+				.clause(
+						personView.call(p1),
+						personView.call(p2),
+						friendMustView.call(p1, p2)
+				)
+				.build();
+
+		var p3 = Variable.of("p3");
+		var p4 = Variable.of("p4");
+		var predicate = Query.builder("TransitivePatternCall")
+				.parameters(p3, p4)
+				.clause(
+						personView.call(p3),
+						personView.call(p4),
+						friendPredicate.callTransitive(p3, p4)
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 0), false,
+				Tuple.of(0, 1), true,
+				Tuple.of(0, 2), true,
+				Tuple.of(1, 0), false,
+				Tuple.of(1, 1), false,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 0), false,
+				Tuple.of(2, 1), false,
+				Tuple.of(2, 2), false,
+				Tuple.of(2, 3), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void assumeTest(QueryEvaluationHint hint) {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var age = new Symbol<>("age", 1, Integer.class, null);
+		var personView = new KeyOnlyRelationView<>(person);
+		var ageView = new FunctionalRelationView<>(age);
+
+		var p1 = Variable.of("p1");
+		var x = Variable.of("x", Integer.class);
+		var query = Query.builder("Constraint")
+				.parameter(p1)
+				.clause(
+						personView.call(p1),
+						ageView.call(p1, x),
+						assume(greaterEq(x, constant(18)))
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, age)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(hint)
+				.queries(query)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var ageInterpretation = model.getInterpretation(age);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryResultSet = queryEngine.getResultSet(query);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+
+		ageInterpretation.put(Tuple.of(0), 12);
+		ageInterpretation.put(Tuple.of(1), 24);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), true,
+				Tuple.of(2), false
+		), queryResultSet);
+	}
+
+	@Test
+	void alwaysFalseTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("AlwaysFalse").parameters(p1).build();
 
 		var store = ModelStore.builder()
 				.symbols(person)
@@ -288,394 +779,19 @@ class QueryTest {
 		personInterpretation.put(Tuple.of(2), true);
 
 		queryEngine.flushChanges();
-		assertEquals(3, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 0), Tuple.of(1, 1), Tuple.of(2, 2)));
+		assertResults(Map.of(), predicateResultSet);
 	}
 
 	@Test
-	void inequalityTest() {
+	void alwaysTrueTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
 
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var p3 = new Variable("p3");
-		var predicate = DNF.builder("Inequality")
-				.parameters(p1, p2, p3)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p3),
-						new RelationViewAtom(friendMustView, p2, p3),
-						new EquivalenceAtom(false, p1, p2)
-				)
-				.build();
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("AlwaysTrue").parameters(p1).clause().build();
 
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
+		var storeBuilder = ModelStore.builder().symbols(person);
+		var queryBuilder = storeBuilder.with(ViatraModelQuery.ADAPTER);
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-		compareMatchSets(predicateResultSet.allResults(), Set.of(Tuple.of(0, 1, 2), Tuple.of(1, 0, 2)));
-	}
-
-	@Test
-	void patternCallTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var friendPredicate = DNF.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
-				)
-				.build();
-
-		var p3 = new Variable("p3");
-		var p4 = new Variable("p4");
-		var predicate = DNF.builder("PositivePatternCall")
-				.parameters(p3, p4)
-				.clause(
-						new RelationViewAtom(personView, p3),
-						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(friendPredicate, p3, p4)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(3, predicateResultSet.countResults());
-	}
-
-	@Test
-	void negativeRelationViewTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("NegativePatternCall")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(false, friendMustView, p1, p2)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(6, predicateResultSet.countResults());
-	}
-
-	@Test
-	void negativePatternCallTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var friendPredicate = DNF.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
-				)
-				.build();
-
-		var p3 = new Variable("p3");
-		var p4 = new Variable("p4");
-		var predicate = DNF.builder("NegativePatternCall")
-				.parameters(p3, p4)
-				.clause(
-						new RelationViewAtom(personView, p3),
-						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(false, friendPredicate, p3, p4)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(6, predicateResultSet.countResults());
-	}
-
-	@Test
-	void negativeRelationViewWithQuantificationTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-
-		var predicate = DNF.builder("Count")
-				.parameters(p1)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(false, friendMustView, p1, p2)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-	}
-
-	@Test
-	void negativeWithQuantificationTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-
-		var called = DNF.builder("Called")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
-				)
-				.build();
-
-		var predicate = DNF.builder("Count")
-				.parameters(p1)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new DNFCallAtom(false, called, p1, p2)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
-	}
-
-	@Test
-	void transitiveRelationViewTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var predicate = DNF.builder("TransitivePatternCall")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(CallPolarity.TRANSITIVE, friendMustView, p1, p2)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(3, predicateResultSet.countResults());
-	}
-
-	@Test
-	void transitivePatternCallTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = new Variable("p1");
-		var p2 = new Variable("p2");
-		var friendPredicate = DNF.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						new RelationViewAtom(personView, p1),
-						new RelationViewAtom(personView, p2),
-						new RelationViewAtom(friendMustView, p1, p2)
-				)
-				.build();
-
-		var p3 = new Variable("p3");
-		var p4 = new Variable("p4");
-		var predicate = DNF.builder("TransitivePatternCall")
-				.parameters(p3, p4)
-				.clause(
-						new RelationViewAtom(personView, p3),
-						new RelationViewAtom(personView, p4),
-						new DNFCallAtom(CallPolarity.TRANSITIVE, friendPredicate, p3, p4)
-				)
-				.build();
-
-		var store = ModelStore.builder()
-				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
-				.build();
-
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
-
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-
-		queryEngine.flushChanges();
-		assertEquals(3, predicateResultSet.countResults());
-	}
-
-	static void compareMatchSets(Stream<TupleLike> matchSet, Set<Tuple> expected) {
-		Set<Tuple> translatedMatchSet = new HashSet<>();
-		var iterator = matchSet.iterator();
-		while (iterator.hasNext()) {
-			var element = iterator.next();
-			translatedMatchSet.add(element.toTuple());
-		}
-		assertEquals(expected, translatedMatchSet);
+		assertThrows(IllegalArgumentException.class, () -> queryBuilder.queries(predicate));
 	}
 }

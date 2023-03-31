@@ -54,7 +54,8 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
-		if (key instanceof AnyRelationView relationalKey) {
+		if (key instanceof RelationViewWrapper wrapper) {
+			var relationalKey = wrapper.getWrappedKey();
 			return this.modelUpdateListener.containsRelationView(relationalKey);
 		} else {
 			return false;
@@ -83,10 +84,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public int countTuples(IInputKey key, TupleMask seedMask, ITuple seed) {
-		var relationViewKey = checkKey(key);
-		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
-		Iterable<Object[]> filteredBySeed = filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
-		Iterator<Object[]> iterator = filteredBySeed.iterator();
+		Iterator<Object[]> iterator = enumerate(key, seedMask, seed).iterator();
 		int result = 0;
 		while (iterator.hasNext()) {
 			iterator.next();
@@ -102,13 +100,25 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public Iterable<Tuple> enumerateTuples(IInputKey key, TupleMask seedMask, ITuple seed) {
-		var relationViewKey = checkKey(key);
-		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
-		Iterable<Object[]> filteredBySeed = filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+		var filteredBySeed = enumerate(key, seedMask, seed);
 		return map(filteredBySeed, Tuples::flatTupleOf);
 	}
 
-	private boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
+	@Override
+	public Iterable<?> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
+		var index = seedMask.getFirstOmittedIndex().orElseThrow(
+				() -> new IllegalArgumentException("Seed mask does not omit a value"));
+		var filteredBySeed = enumerate(key, seedMask, seed);
+		return map(filteredBySeed, array -> array[index]);
+	}
+
+	private Iterable<Object[]> enumerate(IInputKey key, TupleMask seedMask, ITuple seed) {
+		var relationViewKey = checkKey(key);
+		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
+		return filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+	}
+
+	private static boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
 		for (int i = 0; i < seedMask.indices.length; i++) {
 			final Object seedElement = seed.get(i);
 			final Object tupleElement = tuple[seedMask.indices[i]];
@@ -117,11 +127,6 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 			}
 		}
 		return true;
-	}
-
-	@Override
-	public Iterable<?> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
-		return enumerateTuples(key, seedMask, seed);
 	}
 
 	@Override

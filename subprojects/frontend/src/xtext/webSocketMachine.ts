@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { actions, assign, createMachine, RaiseAction } from 'xstate';
+import { actions, assign, createMachine } from 'xstate';
 
 const { raise } = actions;
 
@@ -217,16 +217,15 @@ export default createMachine(
         ...context,
         errors: [],
       })),
-      // Workaround from https://github.com/statelyai/xstate/issues/1414#issuecomment-699972485
       raiseTimeoutError: raise({
         type: 'ERROR',
         message: 'Open timeout',
-      }) as RaiseAction<WebSocketEvent>,
+      }),
       raisePromiseRejectionError: (_context, { data }) =>
-        raise({
+        raise<WebSocketContext, WebSocketEvent>({
           type: 'ERROR',
-          message: data,
-        }) as RaiseAction<WebSocketEvent>,
+          message: String(data),
+        }),
     },
   },
 );

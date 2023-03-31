@@ -1,12 +1,6 @@
 package tools.refinery.store.representation;
 
-import java.util.Objects;
-
 public record Symbol<T>(String name, int arity, Class<T> valueType, T defaultValue) implements AnySymbol {
-	public boolean isDefaultValue(T value) {
-		return Objects.equals(defaultValue, value);
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		return this == o;

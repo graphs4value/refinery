@@ -9,6 +9,7 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.queries.BasePQuery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import tools.refinery.store.query.viatra.internal.RelationalScope;
+import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 
 import java.util.LinkedHashSet;
 import java.util.List;

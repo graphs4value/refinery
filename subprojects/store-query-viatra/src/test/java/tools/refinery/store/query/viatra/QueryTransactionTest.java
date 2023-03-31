@@ -1,28 +1,162 @@
 package tools.refinery.store.query.viatra;
 
+import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.DNF;
 import tools.refinery.store.query.ModelQuery;
-import tools.refinery.store.query.Variable;
-import tools.refinery.store.query.atom.RelationViewAtom;
+import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.view.FilteredRelationView;
+import tools.refinery.store.query.view.FunctionalRelationView;
 import tools.refinery.store.query.view.KeyOnlyRelationView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNullableResults;
+import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class QueryTransactionTest {
 	@Test
 	void flushTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var personView = new KeyOnlyRelationView<>(person);
+
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("TypeConstraint")
+				.parameters(p1)
+				.clause(personView.call(p1))
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(ViatraModelQuery.ADAPTER)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), false,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), false,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertTrue(queryEngine.hasPendingChanges());
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+
+		personInterpretation.put(Tuple.of(1), false);
+		personInterpretation.put(Tuple.of(2), true);
+
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertTrue(queryEngine.hasPendingChanges());
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), false,
+				Tuple.of(2), true,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+	}
+
+	@Test
+	void localSearchTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var personView = new KeyOnlyRelationView<>(person);
+
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("TypeConstraint")
+				.parameters(p1)
+				.clause(personView.call(p1))
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(ViatraModelQuery.ADAPTER)
+				.defaultHint(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), false,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+
+		personInterpretation.put(Tuple.of(1), false);
+		personInterpretation.put(Tuple.of(2), true);
+
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), false,
+				Tuple.of(2), true,
+				Tuple.of(3), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+	}
+
+	@Test
+	void unrelatedChangesTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
 		var personView = new KeyOnlyRelationView<>(person);
 
-		var p1 = new Variable("p1");
-		var predicate = DNF.builder("TypeConstraint")
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("TypeConstraint")
 				.parameters(p1)
-				.clause(new RelationViewAtom(personView, p1))
+				.clause(personView.call(p1))
 				.build();
 
 		var store = ModelStore.builder()
@@ -37,7 +171,6 @@ class QueryTransactionTest {
 		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		assertEquals(0, predicateResultSet.countResults());
 		assertFalse(queryEngine.hasPendingChanges());
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -46,19 +179,245 @@ class QueryTransactionTest {
 		assetInterpretation.put(Tuple.of(1), true);
 		assetInterpretation.put(Tuple.of(2), true);
 
-		assertEquals(0, predicateResultSet.countResults());
+		assertResults(Map.of(
+				Tuple.of(0), false,
+				Tuple.of(1), false,
+				Tuple.of(2), false,
+				Tuple.of(3), false,
+				Tuple.of(4), false
+		), predicateResultSet);
 		assertTrue(queryEngine.hasPendingChanges());
 
 		queryEngine.flushChanges();
-		assertEquals(2, predicateResultSet.countResults());
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false,
+				Tuple.of(4), false
+		), predicateResultSet);
 		assertFalse(queryEngine.hasPendingChanges());
 
-		personInterpretation.put(Tuple.of(4), true);
-		assertEquals(2, predicateResultSet.countResults());
-		assertTrue(queryEngine.hasPendingChanges());
+		assetInterpretation.put(Tuple.of(3), true);
+		assertFalse(queryEngine.hasPendingChanges());
+
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false,
+				Tuple.of(4), false
+		), predicateResultSet);
 
 		queryEngine.flushChanges();
-		assertEquals(3, predicateResultSet.countResults());
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false,
+				Tuple.of(4), false
+		), predicateResultSet);
+		assertFalse(queryEngine.hasPendingChanges());
+	}
+
+	@Test
+	void tupleChangingChangeTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var age = new Symbol<>("age", 1, Integer.class, null);
+		var personView = new KeyOnlyRelationView<>(person);
+		var ageView = new FunctionalRelationView<>(age);
+
+		var p1 = Variable.of("p1");
+		var x = Variable.of("x", Integer.class);
+		var query = Query.builder()
+				.parameter(p1)
+				.output(x)
+				.clause(
+						personView.call(p1),
+						ageView.call(p1, x)
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, age)
+				.with(ViatraModelQuery.ADAPTER)
+				.query(query)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var ageInterpretation = model.getInterpretation(age);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryResultSet = queryEngine.getResultSet(query);
+
+		personInterpretation.put(Tuple.of(0), true);
+
+		ageInterpretation.put(Tuple.of(0), 24);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(Tuple.of(0), 24), queryResultSet);
+
+		ageInterpretation.put(Tuple.of(0), 25);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(Tuple.of(0), 25), queryResultSet);
+
+		ageInterpretation.put(Tuple.of(0), null);
+
+		queryEngine.flushChanges();
+		assertNullableResults(Map.of(Tuple.of(0), Optional.empty()), queryResultSet);
+	}
+
+	@Test
+	void tuplePreservingUnchangedTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var age = new Symbol<>("age", 1, Integer.class, null);
+		var personView = new KeyOnlyRelationView<>(person);
+		var adultView = new FilteredRelationView<>(age, "adult", n -> n != null && n >= 18);
+
+		var p1 = Variable.of("p1");
+		var x = Variable.of("x", Integer.class);
+		var query = Query.builder()
+				.parameter(p1)
+				.clause(
+						personView.call(p1),
+						adultView.call(p1)
+				)
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person, age)
+				.with(ViatraModelQuery.ADAPTER)
+				.query(query)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var ageInterpretation = model.getInterpretation(age);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryResultSet = queryEngine.getResultSet(query);
+
+		personInterpretation.put(Tuple.of(0), true);
+
+		ageInterpretation.put(Tuple.of(0), 24);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(Tuple.of(0), true), queryResultSet);
+
+		ageInterpretation.put(Tuple.of(0), 25);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(Tuple.of(0), true), queryResultSet);
+
+		ageInterpretation.put(Tuple.of(0), 17);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(Tuple.of(0), false), queryResultSet);
+	}
+
+	@Disabled("TODO Fix DiffCursor")
+	@Test
+	void commitAfterFlushTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var personView = new KeyOnlyRelationView<>(person);
+
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("TypeConstraint")
+				.parameters(p1)
+				.clause(personView.call(p1))
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(ViatraModelQuery.ADAPTER)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+
+		var state1 = model.commit();
+
+		personInterpretation.put(Tuple.of(1), false);
+		personInterpretation.put(Tuple.of(2), true);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), false,
+				Tuple.of(2), true,
+				Tuple.of(3), false
+		), predicateResultSet);
+
+		model.restore(state1);
+
+		assertFalse(queryEngine.hasPendingChanges());
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
+	}
+
+	@Disabled("TODO Fix DiffCursor")
+	@Test
+	void commitWithoutFlushTest() {
+		var person = new Symbol<>("Person", 1, Boolean.class, false);
+		var personView = new KeyOnlyRelationView<>(person);
+
+		var p1 = Variable.of("p1");
+		var predicate = Query.builder("TypeConstraint")
+				.parameters(p1)
+				.clause(personView.call(p1))
+				.build();
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(ViatraModelQuery.ADAPTER)
+				.queries(predicate)
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+
+		assertResults(Map.of(), predicateResultSet);
+		assertTrue(queryEngine.hasPendingChanges());
+
+		var state1 = model.commit();
+
+		personInterpretation.put(Tuple.of(1), false);
+		personInterpretation.put(Tuple.of(2), true);
+
+		assertResults(Map.of(), predicateResultSet);
+		assertTrue(queryEngine.hasPendingChanges());
+
+		model.restore(state1);
+
+		assertResults(Map.of(
+				Tuple.of(0), true,
+				Tuple.of(1), true,
+				Tuple.of(2), false,
+				Tuple.of(3), false
+		), predicateResultSet);
 		assertFalse(queryEngine.hasPendingChanges());
 	}
 }

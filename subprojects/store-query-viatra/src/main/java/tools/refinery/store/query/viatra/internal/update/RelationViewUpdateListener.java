@@ -4,6 +4,7 @@ import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
+import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.InterpretationListener;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.view.RelationView;
@@ -14,18 +15,27 @@ import java.util.List;
 
 public abstract class RelationViewUpdateListener<T> implements InterpretationListener<T> {
 	private final ViatraModelQueryAdapterImpl adapter;
+	private final Interpretation<T> interpretation;
 	private final List<RelationViewFilter> filters = new ArrayList<>();
 
-	protected RelationViewUpdateListener(ViatraModelQueryAdapterImpl adapter) {
+	protected RelationViewUpdateListener(ViatraModelQueryAdapterImpl adapter, Interpretation<T> interpretation) {
 		this.adapter = adapter;
+		this.interpretation = interpretation;
 	}
 
 	public void addFilter(IInputKey inputKey, ITuple seed, IQueryRuntimeContextListener listener) {
+		if (filters.isEmpty()) {
+			// First filter to be added, from now on we have to subscribe to model updates.
+			interpretation.addListener(this, true);
+		}
 		filters.add(new RelationViewFilter(inputKey, seed, listener));
 	}
 
 	public void removeFilter(IInputKey inputKey, ITuple seed, IQueryRuntimeContextListener listener) {
-		filters.remove(new RelationViewFilter(inputKey, seed, listener));
+		if (filters.remove(new RelationViewFilter(inputKey, seed, listener)) && filters.isEmpty()) {
+			// Last listener to be added, we don't have be subscribed to model updates anymore.
+			interpretation.removeListener(this);
+		}
 	}
 
 	protected void processUpdate(Tuple tuple, boolean isInsertion) {
@@ -39,10 +49,12 @@ public abstract class RelationViewUpdateListener<T> implements InterpretationLis
 	}
 
 	public static <T> RelationViewUpdateListener<T> of(ViatraModelQueryAdapterImpl adapter,
-													   RelationView<T> relationView) {
+													   RelationView<T> relationView,
+													   Interpretation<T> interpretation) {
 		if (relationView instanceof TuplePreservingRelationView<T> tuplePreservingRelationView) {
-			return new TuplePreservingRelationViewUpdateListener<>(adapter, tuplePreservingRelationView);
+			return new TuplePreservingRelationViewUpdateListener<>(adapter, tuplePreservingRelationView,
+					interpretation);
 		}
-		return new TupleChangingRelationViewUpdateListener<>(adapter, relationView);
+		return new TupleChangingRelationViewUpdateListener<>(adapter, relationView, interpretation);
 	}
 }

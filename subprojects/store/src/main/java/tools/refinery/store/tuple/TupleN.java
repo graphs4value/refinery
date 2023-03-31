@@ -1,7 +1,6 @@
 package tools.refinery.store.tuple;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public record TupleN(int[] values) implements Tuple {
 	static final int CUSTOM_TUPLE_SIZE = 2;
@@ -29,8 +28,7 @@ public record TupleN(int[] values) implements Tuple {
 
 	@Override
 	public String toString() {
-		var valuesString = Arrays.stream(values).mapToObj(Integer::toString).collect(Collectors.joining(", "));
-		return "[" + valuesString + "]";
+		return TupleLike.toString(this);
 	}
 
 	@Override
