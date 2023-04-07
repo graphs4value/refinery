@@ -1,17 +1,16 @@
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.rete.index.IterableIndexer;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.Iterator;
 
-class FunctionalCursor<T> implements Cursor<TupleLike, T> {
+class FunctionalCursor<T> implements Cursor<Tuple, T> {
 	private final IterableIndexer indexer;
-	private final Iterator<Tuple> iterator;
+	private final Iterator<org.eclipse.viatra.query.runtime.matchers.tuple.Tuple> iterator;
 	private boolean terminated;
-	private TupleLike key;
+	private Tuple key;
 	private T value;
 
 	public FunctionalCursor(IterableIndexer indexer) {
@@ -20,7 +19,7 @@ class FunctionalCursor<T> implements Cursor<TupleLike, T> {
 	}
 
 	@Override
-	public TupleLike getKey() {
+	public Tuple getKey() {
 		return key;
 	}
 
@@ -38,7 +37,7 @@ class FunctionalCursor<T> implements Cursor<TupleLike, T> {
 	public boolean move() {
 		if (!terminated && iterator.hasNext()) {
 			var match = iterator.next();
-			key = new ViatraTupleLike(match);
+			key = MatcherUtils.toRefineryTuple(match);
 			value = MatcherUtils.getSingleValue(indexer.get(match));
 			return true;
 		}

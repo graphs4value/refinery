@@ -1,9 +1,9 @@
 package tools.refinery.store.reasoning.rule;
 
 import tools.refinery.store.reasoning.MergeResult;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 @FunctionalInterface
 public interface RuleActionExecutor {
-	MergeResult execute(TupleLike activationTuple);
+	MergeResult execute(Tuple activationTuple);
 }

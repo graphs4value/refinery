@@ -3,7 +3,7 @@ package tools.refinery.store.query;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.Cursors;
 import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 public record EmptyResultSet<T>(ModelQueryAdapter adapter, Query<T> query) implements ResultSet<T> {
 	@Override
@@ -17,13 +17,12 @@ public record EmptyResultSet<T>(ModelQueryAdapter adapter, Query<T> query) imple
 	}
 
 	@Override
-	public T get(TupleLike parameters) {
+	public T get(Tuple parameters) {
 		return query.defaultValue();
 	}
 
-
 	@Override
-	public Cursor<TupleLike, T> getAll() {
+	public Cursor<Tuple, T> getAll() {
 		return Cursors.empty();
 	}
 

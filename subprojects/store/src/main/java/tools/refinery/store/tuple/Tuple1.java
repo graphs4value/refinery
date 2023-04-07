@@ -4,7 +4,20 @@ import tools.refinery.store.model.TupleHashProvider;
 
 import java.util.Arrays;
 
-public record Tuple1(int value0) implements Tuple {
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_BEGIN;
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_END;
+
+public final class Tuple1 implements Tuple {
+	private final int value0;
+
+	private Tuple1(int value0) {
+		this.value0 = value0;
+	}
+
+	public int value0() {
+		return value0;
+	}
+
 	@Override
 	public int getSize() {
 		return 1;
@@ -19,13 +32,21 @@ public record Tuple1(int value0) implements Tuple {
 	}
 
 	@Override
-	public int[] toArray() {
-		return new int[]{value0};
+	public String toString() {
+		return TUPLE_BEGIN + value0 + TUPLE_END;
 	}
 
 	@Override
-	public String toString() {
-		return "[" + value0 + "]";
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Tuple1 tuple1 = (Tuple1) o;
+		return value0 == tuple1.value0;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 + value0;
 	}
 
 	/**

@@ -1,13 +1,18 @@
 package tools.refinery.store.tuple;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
-public record TupleN(int[] values) implements Tuple {
-	static final int CUSTOM_TUPLE_SIZE = 2;
+import static tools.refinery.store.tuple.TupleConstants.*;
 
-	public TupleN(int[] values) {
-		if (values.length < CUSTOM_TUPLE_SIZE)
-			throw new IllegalArgumentException();
+public final class TupleN implements Tuple {
+	private final int[] values;
+
+	TupleN(int[] values) {
+		if (values.length < MAX_STATIC_ARITY_TUPLE_SIZE) {
+			throw new IllegalArgumentException("Tuples of size at most %d must use static arity Tuple classes"
+					.formatted(MAX_STATIC_ARITY_TUPLE_SIZE));
+		}
 		this.values = Arrays.copyOf(values, values.length);
 	}
 
@@ -22,18 +27,11 @@ public record TupleN(int[] values) implements Tuple {
 	}
 
 	@Override
-	public int[] toArray() {
-		return values;
-	}
-
-	@Override
 	public String toString() {
-		return TupleLike.toString(this);
-	}
-
-	@Override
-	public int hashCode() {
-		return Arrays.hashCode(values);
+		var valuesString = Arrays.stream(values)
+				.mapToObj(Integer::toString)
+				.collect(Collectors.joining(TUPLE_SEPARATOR));
+		return TUPLE_BEGIN + valuesString + TUPLE_END;
 	}
 
 	@Override
@@ -46,5 +44,10 @@ public record TupleN(int[] values) implements Tuple {
 			return false;
 		TupleN other = (TupleN) obj;
 		return Arrays.equals(values, other.values);
+	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(values);
 	}
 }

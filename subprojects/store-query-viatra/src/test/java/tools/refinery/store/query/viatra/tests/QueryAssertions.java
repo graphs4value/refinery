@@ -42,7 +42,7 @@ public final class QueryAssertions {
 		var cursor = resultSet.getAll();
 		while (cursor.move()) {
 			var key = cursor.getKey();
-			var previous = actual.put(key.toTuple(), cursor.getValue());
+			var previous = actual.put(key, cursor.getValue());
 			assertThat("duplicate value for key " + key, previous, nullValue());
 		}
 		executables.add(() -> assertThat("results cursor", actual, is(filteredExpected)));

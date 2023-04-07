@@ -1,7 +1,13 @@
 package tools.refinery.store.tuple;
 
-public record Tuple0() implements Tuple {
-	public static Tuple0 INSTANCE = new Tuple0();
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_BEGIN;
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_END;
+
+public final class Tuple0 implements Tuple {
+	public static final Tuple0 INSTANCE = new Tuple0();
+
+	private Tuple0() {
+	}
 
 	@Override
 	public int getSize() {
@@ -14,12 +20,7 @@ public record Tuple0() implements Tuple {
 	}
 
 	@Override
-	public int[] toArray() {
-		return new int[]{};
-	}
-
-	@Override
 	public String toString() {
-		return "[]";
+		return TUPLE_BEGIN + TUPLE_END;
 	}
 }
