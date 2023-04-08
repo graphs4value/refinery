@@ -36,7 +36,7 @@ dependencies {
 	jmhAnnotationProcessor(libs.jmh.annprocess)
 }
 
-tasks.register("jmh", JavaExec::class) {
+tasks.register<JavaExec>("jmh") {
 	dependsOn(tasks.named("jmhClasses"))
 	mainClass.set("org.openjdk.jmh.Main")
 	classpath = jmh.runtimeClasspath

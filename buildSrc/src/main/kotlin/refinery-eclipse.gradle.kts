@@ -23,14 +23,14 @@ val eclipseResourceEncoding by tasks.registering {
 	}
 }
 
-val eclipseTask = tasks.named("eclipse") {
+val eclipse by tasks.existing {
 	dependsOn(eclipseResourceEncoding)
 }
 
 the<EclipseModel>().synchronizationTasks(eclipseResourceEncoding)
 
-tasks.register("clobberEclipse", Delete::class) {
-	mustRunAfter(eclipseTask)
+tasks.register<Delete>("clobberEclipse") {
+	mustRunAfter(eclipse)
 	delete(".classpath")
 	delete(".project")
 	delete(".settings")

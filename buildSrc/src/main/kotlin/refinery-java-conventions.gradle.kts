@@ -63,7 +63,7 @@ jacocoTestReport.configure {
 	}
 }
 
-tasks.named<org.gradle.jvm.tasks.Jar>("jar") {
+tasks.named<Jar>("jar") {
 	manifest {
 		attributes(
 				"Bundle-SymbolicName" to "${project.group}.${project.name}",

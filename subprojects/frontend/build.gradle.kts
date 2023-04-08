@@ -110,7 +110,7 @@ tasks.check {
 	dependsOn(lintFrontend)
 }
 
-tasks.register("serveFrontend", RunYarn::class) {
+tasks.register<RunYarn>("serveFrontend") {
 	dependsOn(tasks.installFrontend)
 	dependsOn(generateXStateTypes)
 	inputs.files(assembleFiles)

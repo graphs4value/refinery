@@ -9,7 +9,7 @@ dependencies {
 	api(libs.xtext.xbase.ide)
 }
 
-val generateXtextLanguage = project(":refinery-language").tasks.named("generateXtextLanguage")
+val generateXtextLanguage by project(":refinery-language").tasks.existing
 
 for (taskName in listOf("compileJava", "processResources")) {
 	tasks.named(taskName) {
