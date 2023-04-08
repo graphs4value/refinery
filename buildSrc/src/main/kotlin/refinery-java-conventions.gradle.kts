@@ -17,6 +17,11 @@ repositories {
 	}
 }
 
+// Use log4j-over-slf4j instead of log4j 1.x in the tests.
+configurations.testRuntimeClasspath {
+	exclude(group = "log4j", module = "log4j")
+}
+
 val libs = the<LibrariesForLibs>()
 
 dependencies {
@@ -28,6 +33,8 @@ dependencies {
 	testImplementation(libs.junit.params)
 	testImplementation(libs.mockito.core)
 	testImplementation(libs.mockito.junit)
+	testImplementation(libs.slf4j.simple)
+	testImplementation(libs.slf4j.log4j)
 }
 
 java.toolchain {

@@ -8,11 +8,6 @@ val webapp: Configuration by configurations.creating {
 	isCanBeResolved = true
 }
 
-configurations.all {
-	// Use log4j-over-slf4j instead of log4j 1.x
-	exclude(group = "log4j", module = "log4j")
-}
-
 dependencies {
 	implementation(project(":refinery-language"))
 	implementation(project(":refinery-language-ide"))
@@ -20,8 +15,6 @@ dependencies {
 	implementation(libs.jetty.servlet)
 	implementation(libs.jetty.websocket.server)
 	implementation(libs.slf4j.api)
-	implementation(libs.slf4j.simple)
-	implementation(libs.slf4j.log4j)
 	implementation(libs.xtext.web)
 	webapp(project(path = ":refinery-frontend", configuration = "productionAssets"))
 	testImplementation(testFixtures(project(":refinery-language")))
