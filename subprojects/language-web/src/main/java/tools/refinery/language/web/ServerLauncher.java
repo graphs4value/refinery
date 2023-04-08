@@ -105,7 +105,7 @@ public class ServerLauncher {
 		var indexUrlInJar = ServerLauncher.class.getResource("/webapp/index.html");
 		if (indexUrlInJar != null) {
 			// If the app is packaged in the jar, serve it.
-			URI webRootUri = null;
+			URI webRootUri;
 			try {
 				webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString().replaceFirst("/index.html$", "/"));
 			} catch (URISyntaxException e) {
