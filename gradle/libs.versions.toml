@@ -6,7 +6,7 @@ junit = "5.9.2"
 mockito = "5.2.0"
 mwe2 = "2.14.0"
 slf4j = "2.0.7"
-xtext = "2.30.0"
+xtext = "2.31.0.M0"
 
 [libraries]
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1"}
