@@ -2112,7 +2112,6 @@ __metadata:
     "@material-icons/svg": "npm:^1.0.33"
     "@mui/icons-material": "npm:5.11.16"
     "@mui/material": "npm:5.11.16"
-    "@tsconfig/strictest": "npm:^2.0.0"
     "@types/eslint": "npm:^8.37.0"
     "@types/html-minifier-terser": "npm:^7.0.0"
     "@types/lodash-es": "npm:^4.17.7"
@@ -2386,13 +2385,6 @@ __metadata:
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
   checksum: d9f7f2130a0a2e1ea50f3bc90b83a8b99c913bbb80d7a1706f7f4730292ef299d18443c3b57a42dfb17c6559c9085e13f751b1b6c969bcff7bee3eeaf9da4dec
-  languageName: node
-  linkType: hard
-
-"@tsconfig/strictest@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@tsconfig/strictest@npm:2.0.0"
-  checksum: d3a0f23cc1b0bdfd3d4470dec51e83cb5750c4b867f3e4d74f6900160497d256a291cbc94f700fcb0cf77444618490f637b69d5eeeebe149c6164691f27dc3cd
   languageName: node
   linkType: hard
 

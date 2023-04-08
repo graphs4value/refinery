@@ -18,15 +18,45 @@ val productionAssets: Configuration by configurations.creating {
 	isCanBeResolved = false
 }
 
-val sourcesWithoutTypeGen = fileTree("src") {
+val sourcesWithoutTypes = fileTree("src") {
 	exclude("**/*.typegen.ts")
 }
 
+val sourcesWithTypes = fileTree("src") + fileTree("types")
+
+val buildScripts = fileTree("config") + files(
+		".eslintrc.cjs",
+		"prettier.config.cjs",
+		"vite.config.ts",
+)
+
+val installationState = files(
+		rootProject.file("yarn.lock"),
+		rootProject.file("package.json"),
+		"package.json",
+)
+
+val sharedConfigFiles = installationState + files(
+		"tsconfig.json",
+		"tsconfig.base.json",
+		"tsconfig.node.json",
+		"tsconfig.shared.json",
+)
+
+val assembleConfigFiles = sharedConfigFiles + file("vite.config.ts") + fileTree("config") {
+	include("**/*.ts")
+}
+
+val assembleSources = sourcesWithTypes + fileTree("public") + file("index.html")
+
+val assembleFiles = assembleSources + assembleConfigFiles
+
+val lintingFiles = sourcesWithTypes + buildScripts + sharedConfigFiles
+
 val generateXStateTypes by tasks.registering(RunYarn::class) {
 	dependsOn(tasks.installFrontend)
-	inputs.files(sourcesWithoutTypeGen)
-	inputs.file("package.json")
-	inputs.file(rootProject.file("yarn.lock"))
+	inputs.files(sourcesWithoutTypes)
+	inputs.files(installationState)
 	outputs.dir("src")
 	script.set("run typegen")
 	description = "Generate TypeScript typings for XState state machines."
@@ -34,11 +64,7 @@ val generateXStateTypes by tasks.registering(RunYarn::class) {
 
 tasks.assembleFrontend {
 	dependsOn(generateXStateTypes)
-	inputs.dir("public")
-	inputs.files(sourcesWithoutTypeGen)
-	inputs.file("index.html")
-	inputs.files("package.json", "tsconfig.json", "tsconfig.base.json", "vite.config.ts")
-	inputs.file(rootProject.file("yarn.lock"))
+	inputs.files(assembleFiles)
 	outputs.dir(productionResources)
 }
 
@@ -51,10 +77,7 @@ artifacts {
 val typeCheckFrontend by tasks.registering(RunYarn::class) {
 	dependsOn(tasks.installFrontend)
 	dependsOn(generateXStateTypes)
-	inputs.dir("src")
-	inputs.dir("types")
-	inputs.files("package.json", "tsconfig.json", "tsconfig.base.json", "tsconfig.node.json")
-	inputs.file(rootProject.file("yarn.lock"))
+	inputs.files(lintingFiles)
 	outputs.dir("$buildDir/typescript")
 	script.set("run typecheck")
 	group = "verification"
@@ -65,17 +88,9 @@ val lintFrontend by tasks.registering(RunYarn::class) {
 	dependsOn(tasks.installFrontend)
 	dependsOn(generateXStateTypes)
 	dependsOn(typeCheckFrontend)
-	inputs.dir("src")
-	inputs.dir("types")
-	inputs.files(".eslintrc.cjs", "prettier.config.cjs")
-	inputs.files("package.json", "tsconfig.json", "tsconfig.base.json", "tsconfig.node.json")
-	inputs.file(rootProject.file("yarn.lock"))
-	if (project.hasProperty("ci")) {
-		outputs.file("$buildDir/eslint.json")
-		script.set("run lint:ci")
-	} else {
-		script.set("run lint")
-	}
+	inputs.files(lintingFiles)
+	outputs.file("$buildDir/eslint.json")
+	script.set("run lint")
 	group = "verification"
 	description = "Check for TypeScript lint errors and warnings."
 }
@@ -84,11 +99,7 @@ val fixFrontend by tasks.registering(RunYarn::class) {
 	dependsOn(tasks.installFrontend)
 	dependsOn(generateXStateTypes)
 	dependsOn(typeCheckFrontend)
-	inputs.dir("src")
-	inputs.dir("types")
-	inputs.files(".eslintrc.cjs", "prettier.config.cjs")
-	inputs.files("package.json", "tsconfig.json", "tsconfig.base.json", "tsconfig.node.json")
-	inputs.file(rootProject.file("yarn.lock"))
+	inputs.files(lintingFiles)
 	script.set("run lint:fix")
 	group = "verification"
 	description = "Fix TypeScript lint errors and warnings."
@@ -102,11 +113,7 @@ tasks.check {
 tasks.register("serveFrontend", RunYarn::class) {
 	dependsOn(tasks.installFrontend)
 	dependsOn(generateXStateTypes)
-	inputs.dir("public")
-	inputs.files(sourcesWithoutTypeGen)
-	inputs.file("index.html")
-	inputs.files("package.json", "tsconfig.json", "tsconfig.base.json", "vite.config.ts")
-	inputs.file(rootProject.file("yarn.lock"))
+	inputs.files(assembleFiles)
 	outputs.dir("$viteOutputDir/development")
 	script.set("run serve")
 	group = "run"

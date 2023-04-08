@@ -9,8 +9,7 @@
     "serve": "cross-env MODE=development vite serve",
     "typegen": "xstate typegen \"src/**/*.ts?(x)\"",
     "typecheck": "tsc -p tsconfig.shared.json && tsc -p tsconfig.node.json && tsc -p tsconfig.json",
-    "lint": "eslint .",
-    "lint:ci": "eslint -f json -o build/eslint.json .",
+    "lint": "node config/eslintReport.cjs",
     "lint:fix": "yarn run lint --fix"
   },
   "repository": {
@@ -60,7 +59,6 @@
   },
   "devDependencies": {
     "@lezer/generator": "^1.2.2",
-    "@tsconfig/strictest": "^2.0.0",
     "@types/eslint": "^8.37.0",
     "@types/html-minifier-terser": "^7.0.0",
     "@types/lodash-es": "^4.17.7",

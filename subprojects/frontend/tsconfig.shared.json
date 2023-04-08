@@ -4,8 +4,6 @@
     "composite": true,
     "lib": ["ES2022"],
     "types": [],
-    "emitDeclarationOnly": true,
-    "outDir": "build/typescript"
   },
   "include": [
     "src/xtext/BackendConfig.ts",

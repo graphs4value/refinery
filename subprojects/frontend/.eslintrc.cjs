@@ -90,6 +90,7 @@ module.exports = {
       files: [
         '.eslintrc.cjs',
         'config/*.ts',
+        'config/*.cjs',
         'prettier.config.cjs',
         'vite.config.ts',
       ],
@@ -103,6 +104,8 @@ module.exports = {
           'error',
           { devDependencies: true },
         ],
+        // Allow writing to the console in ad-hoc scripts.
+        'no-console': 'off',
         // Access to the environment in configuration files.
         'no-process-env': 'off',
       },
