@@ -72,3 +72,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./gradlew build sonarqube -Pci --info
+  reuse-check:
+    name: REUSE Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: REUSE Compliance Check
+      uses: fsfe/reuse-action@v1
+      with:
+        args: --include-meson-subprojects lint
