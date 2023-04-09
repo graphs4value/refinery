@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 const path = require('node:path');
 
 // Allow the Codium ESLint plugin to find `tsconfig.json` from the repository root.

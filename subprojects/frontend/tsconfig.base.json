@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) Microsoft Corporation.
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: MIT OR EPL-2.0
+ *
+ * This file is based on
+ * https://github.com/tsconfig/bases/blob/7db25a41bc5a9c0f66d91f6f3aa28438afcb2f18/bases/strictest.json
+ * but we moved it inside the project for better tooling support.
+ */
 {
   "compilerOptions": {
     "strict": true,
@@ -11,6 +21,8 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    // "verbatimModuleSyntax" is incompatible with `import` syntax in modules
+    // with CommonJS import resolution, so we use "isolatedModules" only.
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "checkJs": true,
@@ -18,6 +30,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
+    // Project-specific configuration below.
     "module": "es2022",
     "moduleResolution": "node",
     "incremental": true,

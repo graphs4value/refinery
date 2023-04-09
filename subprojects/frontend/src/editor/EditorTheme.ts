@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import errorSVG from '@material-icons/svg/svg/error/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';

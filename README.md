@@ -1,3 +1,9 @@
+<!--
+  SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+
+  SPDX-License-Identifier: EPL-2.0
+-->
+
 # Refinery
 
 [![Build](https://github.com/graphs4value/refinery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refinery/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refinery) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=coverage)](https://sonarcloud.io/dashboard?id=graphs4value_refinery)
@@ -45,4 +51,9 @@ It is possible to import the project into IntelliJ IDEA, but it gives no editing
 
 ## License
 
-All code in this repository is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
+Copyright (c) 2021-2023 [The Refinery Authors](CONTRIBUTORS.md)
+
+Refinery is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
+
+Refinery complies with the [REUSE Specification – Version 3.0](https://reuse.software/) to provide copyright and licensing information to each file, including files available under other licenses.
+For more information, see the comments headers in each file and the license texts in the [LICENSES](LICENSES/) directory.

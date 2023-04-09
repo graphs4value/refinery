@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.tuple;
 
 public sealed interface Tuple permits Tuple0, Tuple1, Tuple2, Tuple3, Tuple4, TupleN {

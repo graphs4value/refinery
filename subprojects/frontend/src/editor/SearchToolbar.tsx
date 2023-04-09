@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import CloseIcon from '@mui/icons-material/Close';
 import FindReplaceIcon from '@mui/icons-material/FindReplace';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';

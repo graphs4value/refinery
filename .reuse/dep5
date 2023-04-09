@@ -1,0 +1,29 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Refinery
+Upstream-Contact: Dániel Varró <daniel.varro@liu.se>
+Source: https://github.com/graphs4value/refinery
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
+
+Files: .yarn/releases/*.cjs
+Copyright: (c) 2016-present, Yarn Contributors. All rights reserved.
+           (c) 2014-present, Jon Schlinkert.
+           (c) 2014-2016, Jon Schlinkert.
+           (c) 2014-2017, Jon Schlinkert.
+           © 2015-2018, Jon Schlinkert.
+           (c) 2015-present, Jon Schlinkert.
+           (c) 2015, Rebecca Turner
+           Joyent, Inc. and other Node contributors.
+           Node.js contributors. All rights reserved.
+           (c) 2014 Blake Embrey (hello@blakeembrey.com)
+           (c) Facebook, Inc. and its affiliates.
+License: BSD-2-Clause AND MIT
+
+Files: .yarn/sdks/eslint/*
+       .yarn/sdks/typescript/*
+Copyright: (c) 2016-present, Yarn Contributors. All rights reserved.
+License: BSD-2-Clause

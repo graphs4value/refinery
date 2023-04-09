@@ -1,10 +1,16 @@
+/*
+ * Copyright (c) 2022 Replit
+ * Copyright (c) 2022-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: MIT OR EPL-2.0
+ */
+
 /**
  * @file CodeMirror plugin to highlight indentation
  *
  * This file is based on the
  * [@replit/codemirror-indentation-markers](https://github.com/replit/codemirror-indentation-markers)
- * package, which is available under the
- * [MIT License](https://github.com/replit/codemirror-indentation-markers/blob/543cc508ca5cef5d8350af23973eb1425e31525c/LICENSE).
+ * package.
  *
  * The highlighting heuristics were adjusted to make them more suitable
  * for logic programming.

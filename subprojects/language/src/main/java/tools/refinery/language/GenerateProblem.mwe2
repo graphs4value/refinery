@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 module tools.refinery.language.GenerateProblem
 
 import org.eclipse.xtext.xtext.generator.*
@@ -55,7 +60,7 @@ Workflow {
 			}
 			webSupport = {
 				// We only generate the {@code AbstractProblemWebModule},
-				// because we write our own integration code for CodeMirror 6. 
+				// because we write our own integration code for CodeMirror 6.
 				framework = 'codemirror'
 				generateHtmlExample = false
 				generateJettyLauncher = false
