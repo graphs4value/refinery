@@ -1,4 +1,4 @@
-package tools.refinery.buildsrc;
+package tools.refinery.gradle.utils;
 
 import groovy.lang.Closure;
 import org.gradle.api.Action;

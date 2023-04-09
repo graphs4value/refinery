@@ -1,33 +1,31 @@
-import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.plugins.ide.eclipse.model.EclipseModel
-import org.sonarqube.gradle.SonarExtension
-import tools.refinery.buildsrc.EclipseUtils
-import tools.refinery.buildsrc.SonarPropertiesUtils
+package tools.refinery.gradle
 
-apply(plugin = "refinery-java-conventions")
-apply(plugin = "refinery-sonarqube")
+import org.gradle.accessors.dm.LibrariesForLibs
+import tools.refinery.gradle.utils.EclipseUtils
+import tools.refinery.gradle.utils.SonarPropertiesUtils
+
+plugins {
+	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.sonarqube")
+}
 
 val sourceSets = the<SourceSetContainer>()
 
-val main: SourceSet by sourceSets.getting
-
-val test: SourceSet by sourceSets.getting
-
 val jmh: SourceSet by sourceSets.creating {
-	compileClasspath += main.output
-	runtimeClasspath += main.output
+	compileClasspath += sourceSets.main.get().output
+	runtimeClasspath += sourceSets.main.get().output
 	// Allow using test classes in benchmarks for now.
-	compileClasspath += test.output
-	runtimeClasspath += test.output
+	compileClasspath += sourceSets.test.get().output
+	runtimeClasspath += sourceSets.test.get().output
 }
 
 val jmhImplementation: Configuration by configurations.getting {
-	extendsFrom(configurations["implementation"], configurations["testImplementation"])
+	extendsFrom(configurations.implementation.get(), configurations.testImplementation.get())
 }
 
 val jmhAnnotationProcessor: Configuration by configurations.getting
 
-configurations["jmhRuntimeOnly"].extendsFrom(configurations["runtimeOnly"], configurations["testRuntimeOnly"])
+configurations["jmhRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get(), configurations.testRuntimeOnly.get())
 
 val libs = the<LibrariesForLibs>()
 
@@ -42,7 +40,7 @@ tasks.register<JavaExec>("jmh") {
 	classpath = jmh.runtimeClasspath
 }
 
-EclipseUtils.patchClasspathEntries(the<EclipseModel>()) { entry ->
+EclipseUtils.patchClasspathEntries(eclipse) { entry ->
 	// Workaround from https://github.com/gradle/gradle/issues/4802#issuecomment-407902081
 	if (entry.entryAttributes["gradle_scope"] == "jmh") {
 		// Allow test helper classes to be used in benchmarks from Eclipse
@@ -58,6 +56,6 @@ EclipseUtils.patchClasspathEntries(the<EclipseModel>()) { entry ->
 	}
 }
 
-the<SonarExtension>().properties {
+sonarqube.properties {
 	SonarPropertiesUtils.addToList(properties, "sonar.tests", "src/jmh/java")
 }

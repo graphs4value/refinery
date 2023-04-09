@@ -1,6 +1,6 @@
 plugins {
-	id("refinery-java-application")
-	id("refinery-xtext-conventions")
+	id("tools.refinery.gradle.java-application")
+	id("tools.refinery.gradle.xtext-generated")
 }
 
 val webapp: Configuration by configurations.creating {
@@ -21,24 +21,10 @@ dependencies {
 	testImplementation(libs.jetty.websocket.client)
 }
 
-val generateXtextLanguage by project(":refinery-language").tasks.existing
-
-for (taskName in listOf("compileJava", "processResources")) {
-	tasks.named(taskName) {
-		dependsOn(generateXtextLanguage)
-	}
-}
-
 application {
 	mainClass.set("tools.refinery.language.web.ServerLauncher")
 	// Enable JDK 19 preview features for virtual thread support.
 	applicationDefaultJvmArgs += "--enable-preview"
-}
-
-tasks.withType(JavaCompile::class) {
-	options.release.set(19)
-	// Enable JDK 19 preview features for virtual thread support.
-	options.compilerArgs.plusAssign("--enable-preview")
 }
 
 // Enable JDK 19 preview features for virtual thread support.
@@ -46,39 +32,55 @@ fun enablePreview(task: JavaForkOptions) {
 	task.jvmArgs("--enable-preview")
 }
 
-tasks.withType(Test::class) {
-	enablePreview(this)
-}
+tasks {
+	val generateXtextLanguage by project(":refinery-language").tasks.existing
 
-tasks.jar {
-	dependsOn(webapp)
-	from(webapp) {
-		into("webapp")
+	for (taskName in listOf("compileJava", "processResources")) {
+		named(taskName) {
+			dependsOn(generateXtextLanguage)
+		}
 	}
-}
 
-tasks.shadowJar {
-	dependsOn(webapp)
-	from(project.sourceSets.main.map { it.output })
-	exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA","schema/*",
-		".options", ".api_description", "*.profile", "about.*", "about_*.html", "about_files/*",
-		"plugin.xml", "systembundle.properties", "profile.list", "META-INF/resources/xtext/**")
-	append("plugin.properties")
-	from(webapp) {
-		into("webapp")
+	withType(JavaCompile::class) {
+		options.release.set(19)
+		// Enable JDK 19 preview features for virtual thread support.
+		options.compilerArgs.plusAssign("--enable-preview")
 	}
-}
 
-tasks.register<JavaExec>("serveBackend") {
-	dependsOn(webapp)
-	val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
-	dependsOn(mainRuntimeClasspath)
-	classpath(mainRuntimeClasspath)
-	mainClass.set(application.mainClass)
-	enablePreview(this)
-	standardInput = System.`in`
-	val baseResource = webapp.incoming.artifacts.artifactFiles.first()
-	environment("BASE_RESOURCE", baseResource)
-	group = "run"
-	description = "Start a Jetty web server serving the Xtex API and assets."
+	withType(Test::class) {
+		enablePreview(this)
+	}
+
+	jar {
+		dependsOn(webapp)
+		from(webapp) {
+			into("webapp")
+		}
+	}
+
+	shadowJar {
+		dependsOn(webapp)
+		from(project.sourceSets.main.map { it.output })
+		exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "schema/*",
+				".options", ".api_description", "*.profile", "about.*", "about_*.html", "about_files/*",
+				"plugin.xml", "systembundle.properties", "profile.list", "META-INF/resources/xtext/**")
+		append("plugin.properties")
+		from(webapp) {
+			into("webapp")
+		}
+	}
+
+	register<JavaExec>("serveBackend") {
+		dependsOn(webapp)
+		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
+		dependsOn(mainRuntimeClasspath)
+		classpath(mainRuntimeClasspath)
+		mainClass.set(application.mainClass)
+		enablePreview(this)
+		standardInput = System.`in`
+		val baseResource = webapp.incoming.artifacts.artifactFiles.first()
+		environment("BASE_RESOURCE", baseResource)
+		group = "run"
+		description = "Start a Jetty web server serving the Xtex API and assets."
+	}
 }

@@ -1,14 +1,15 @@
+package tools.refinery.gradle
+
 import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
 	application
 	id("com.github.johnrengelman.shadow")
+	id("tools.refinery.gradle.internal.java-conventions")
 }
 
-apply(plugin = "refinery-java-conventions")
-
 // Use log4j-over-slf4j instead of log4j 1.x when running the application.
-configurations.named("runtimeClasspath") {
+configurations.runtimeClasspath {
 	exclude(group = "log4j", module = "log4j")
 }
 

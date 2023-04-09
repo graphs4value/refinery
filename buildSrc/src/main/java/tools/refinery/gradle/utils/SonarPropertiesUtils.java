@@ -1,4 +1,4 @@
-package tools.refinery.buildsrc;
+package tools.refinery.gradle.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;

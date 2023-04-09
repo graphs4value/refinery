@@ -1,12 +1,15 @@
-import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.plugins.ide.eclipse.model.EclipseModel
+package tools.refinery.gradle
 
-apply(plugin = "refinery-java-conventions")
+import org.gradle.accessors.dm.LibrariesForLibs
+
+plugins {
+	id("tools.refinery.gradle.internal.java-conventions")
+}
 
 val mwe2: Configuration by configurations.creating {
 	isCanBeConsumed = false
 	isCanBeResolved = true
-	extendsFrom(configurations["implementation"])
+	extendsFrom(configurations.implementation.get())
 }
 
 val libs = the<LibrariesForLibs>()
@@ -15,4 +18,4 @@ dependencies {
 	mwe2(libs.mwe2.launch)
 }
 
-the<EclipseModel>().classpath.plusConfigurations += mwe2
+eclipse.classpath.plusConfigurations += mwe2

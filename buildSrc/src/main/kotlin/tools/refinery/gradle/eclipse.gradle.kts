@@ -1,5 +1,6 @@
-import org.gradle.plugins.ide.eclipse.model.EclipseModel
-import java.util.*
+package tools.refinery.gradle
+
+import java.util.Properties
 
 plugins {
 	eclipse
@@ -23,14 +24,14 @@ val eclipseResourceEncoding by tasks.registering {
 	}
 }
 
-val eclipse by tasks.existing {
+tasks.eclipse {
 	dependsOn(eclipseResourceEncoding)
 }
 
-the<EclipseModel>().synchronizationTasks(eclipseResourceEncoding)
+eclipse.synchronizationTasks(eclipseResourceEncoding)
 
 tasks.register<Delete>("clobberEclipse") {
-	mustRunAfter(eclipse)
+	mustRunAfter(tasks.eclipse)
 	delete(".classpath")
 	delete(".project")
 	delete(".settings")

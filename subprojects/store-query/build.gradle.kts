@@ -1,6 +1,6 @@
 plugins {
-	id("refinery-java-library")
-	id("refinery-java-test-fixtures")
+	id("tools.refinery.gradle.java-library")
+	id("tools.refinery.gradle.java-test-fixtures")
 }
 
 dependencies {

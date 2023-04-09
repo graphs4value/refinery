@@ -1,4 +1,4 @@
 plugins {
-	id("refinery-java-library")
-	id("refinery-jmh")
+	id("tools.refinery.gradle.java-library")
+	id("tools.refinery.gradle.jmh")
 }

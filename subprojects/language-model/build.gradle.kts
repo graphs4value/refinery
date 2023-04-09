@@ -1,9 +1,9 @@
-import tools.refinery.buildsrc.SonarPropertiesUtils
+import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
-	id("refinery-java-library")
-	id("refinery-mwe2")
-	id("refinery-sonarqube")
+	id("tools.refinery.gradle.java-library")
+	id("tools.refinery.gradle.mwe2")
+	id("tools.refinery.gradle.sonarqube")
 }
 
 dependencies {
@@ -22,24 +22,26 @@ sourceSets {
 	}
 }
 
-val generateEPackage by tasks.registering(JavaExec::class) {
-	mainClass.set("org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher")
-	classpath(configurations.mwe2)
-	inputs.file("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2")
-	inputs.file("src/main/resources/model/problem.ecore")
-	inputs.file("src/main/resources/model/problem.genmodel")
-	outputs.dir("src/main/emf-gen")
-	args("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2", "-p", "rootPath=/$projectDir")
-}
-
-for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders")) {
-	tasks.named(taskName) {
-		dependsOn(generateEPackage)
+tasks {
+	val generateEPackage by registering(JavaExec::class) {
+		mainClass.set("org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher")
+		classpath(configurations.mwe2)
+		inputs.file("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2")
+		inputs.file("src/main/resources/model/problem.ecore")
+		inputs.file("src/main/resources/model/problem.genmodel")
+		outputs.dir("src/main/emf-gen")
+		args("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2", "-p", "rootPath=/$projectDir")
 	}
-}
 
-tasks.clean {
-	delete("src/main/emf-gen")
+	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders")) {
+		named(taskName) {
+			dependsOn(generateEPackage)
+		}
+	}
+
+	clean {
+		delete("src/main/emf-gen")
+	}
 }
 
 sonarqube.properties {

@@ -1,6 +1,6 @@
 plugins {
-	id("refinery-java-library")
-	id("refinery-xtext-conventions")
+	id("tools.refinery.gradle.java-library")
+	id("tools.refinery.gradle.xtext-generated")
 }
 
 dependencies {

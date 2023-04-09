@@ -1,14 +1,14 @@
+package tools.refinery.gradle
+
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
-import org.gradle.plugins.ide.eclipse.model.EclipseModel
-import tools.refinery.buildsrc.EclipseUtils
+import tools.refinery.gradle.utils.EclipseUtils
 
 plugins {
 	`java-test-fixtures`
+	id("tools.refinery.gradle.internal.java-conventions")
 }
 
-apply(plugin = "refinery-java-conventions")
-
-the<EclipseModel>().classpath {
+eclipse.classpath {
 	containsTestFixtures.set(true)
 
 	EclipseUtils.whenClasspathFileMerged(file) { eclipseClasspath ->

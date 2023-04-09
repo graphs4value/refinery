@@ -1,14 +1,14 @@
+package tools.refinery.gradle.internal
+
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.plugins.ide.eclipse.model.EclipseModel
 import org.gradle.plugins.ide.eclipse.model.ProjectDependency
-import tools.refinery.buildsrc.EclipseUtils
+import tools.refinery.gradle.utils.EclipseUtils
 
 plugins {
     jacoco
     java
+	id("tools.refinery.gradle.eclipse")
 }
-
-apply(plugin = "refinery-eclipse")
 
 repositories {
 	mavenCentral()
@@ -41,49 +41,47 @@ java.toolchain {
 	languageVersion.set(JavaLanguageVersion.of(19))
 }
 
-tasks.withType(JavaCompile::class) {
-    options.release.set(17)
-}
+tasks {
+	withType(JavaCompile::class) {
+		options.release.set(17)
+	}
 
-val test = tasks.named<Test>("test")
+	test {
+		useJUnitPlatform {
+			excludeTags("slow")
+		}
+		finalizedBy(tasks.jacocoTestReport)
+	}
 
-val jacocoTestReport = tasks.named<JacocoReport>("jacocoTestReport")
+	jacocoTestReport {
+		dependsOn(tasks.test)
+		reports {
+			xml.required.set(true)
+		}
+	}
 
-test.configure {
-    useJUnitPlatform {
-        excludeTags("slow")
-    }
-    finalizedBy(jacocoTestReport)
-}
+	jar {
+		manifest {
+			attributes(
+					"Bundle-SymbolicName" to "${project.group}.${project.name}",
+					"Bundle-Version" to project.version
+			)
+		}
+	}
 
-jacocoTestReport.configure {
-	dependsOn(test)
-	reports {
-		xml.required.set(true)
+	val generateEclipseSourceFolders by tasks.registering
+
+	register("prepareEclipse") {
+		dependsOn(generateEclipseSourceFolders)
+		dependsOn(tasks.named("eclipseJdt"))
+	}
+
+	eclipseClasspath {
+		dependsOn(generateEclipseSourceFolders)
 	}
 }
 
-tasks.named<Jar>("jar") {
-	manifest {
-		attributes(
-				"Bundle-SymbolicName" to "${project.group}.${project.name}",
-				"Bundle-Version" to project.version
-		)
-	}
-}
-
-val generateEclipseSourceFolders by tasks.registering
-
-tasks.register("prepareEclipse") {
-	dependsOn(generateEclipseSourceFolders)
-	dependsOn(tasks.named("eclipseJdt"))
-}
-
-tasks.named("eclipseClasspath") {
-	dependsOn(generateEclipseSourceFolders)
-}
-
-configure<EclipseModel> {
+eclipse {
 	EclipseUtils.patchClasspathEntries(this) { entry ->
 		if (entry.path.endsWith("-gen")) {
 			entry.entryAttributes["ignore_optional_problems"] = true

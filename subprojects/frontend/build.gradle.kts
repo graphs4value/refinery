@@ -1,17 +1,18 @@
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
-import tools.refinery.buildsrc.SonarPropertiesUtils
+import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
-	id("refinery-frontend-workspace")
-	id("refinery-sonarqube")
+	id("tools.refinery.gradle.frontend-workspace")
+	id("tools.refinery.gradle.sonarqube")
 }
-
-val viteOutputDir = "$buildDir/vite"
-val productionResources = file("$viteOutputDir/production")
 
 frontend {
 	assembleScript.set("run build")
 }
+
+val viteOutputDir = "$buildDir/vite"
+
+val productionResources = file("$viteOutputDir/production")
 
 val productionAssets: Configuration by configurations.creating {
 	isCanBeConsumed = true
@@ -53,78 +54,81 @@ val assembleFiles = assembleSources + assembleConfigFiles
 
 val lintingFiles = sourcesWithTypes + buildScripts + sharedConfigFiles
 
-val generateXStateTypes by tasks.registering(RunYarn::class) {
-	dependsOn(tasks.installFrontend)
-	inputs.files(sourcesWithoutTypes)
-	inputs.files(installationState)
-	outputs.dir("src")
-	script.set("run typegen")
-	description = "Generate TypeScript typings for XState state machines."
-}
+tasks {
+	val generateXStateTypes by registering(RunYarn::class) {
+		dependsOn(installFrontend)
+		inputs.files(sourcesWithoutTypes)
+		inputs.files(installationState)
+		outputs.dir("src")
+		script.set("run typegen")
+		description = "Generate TypeScript typings for XState state machines."
+	}
 
-tasks.assembleFrontend {
-	dependsOn(generateXStateTypes)
-	inputs.files(assembleFiles)
-	outputs.dir(productionResources)
+	assembleFrontend {
+		dependsOn(generateXStateTypes)
+		inputs.files(assembleFiles)
+		outputs.dir(productionResources)
+	}
+
+
+	val typeCheckFrontend by registering(RunYarn::class) {
+		dependsOn(installFrontend)
+		dependsOn(generateXStateTypes)
+		inputs.files(lintingFiles)
+		outputs.dir("$buildDir/typescript")
+		script.set("run typecheck")
+		group = "verification"
+		description = "Check for TypeScript type errors."
+	}
+
+	val lintFrontend by registering(RunYarn::class) {
+		dependsOn(installFrontend)
+		dependsOn(generateXStateTypes)
+		dependsOn(typeCheckFrontend)
+		inputs.files(lintingFiles)
+		outputs.file("$buildDir/eslint.json")
+		script.set("run lint")
+		group = "verification"
+		description = "Check for TypeScript lint errors and warnings."
+	}
+
+	register<RunYarn>("fixFrontend") {
+		dependsOn(installFrontend)
+		dependsOn(generateXStateTypes)
+		dependsOn(typeCheckFrontend)
+		inputs.files(lintingFiles)
+		script.set("run lint:fix")
+		group = "verification"
+		description = "Fix TypeScript lint errors and warnings."
+	}
+
+	check {
+		dependsOn(typeCheckFrontend)
+		dependsOn(lintFrontend)
+	}
+
+	register<RunYarn>("serveFrontend") {
+		dependsOn(installFrontend)
+		dependsOn(generateXStateTypes)
+		inputs.files(assembleFiles)
+		outputs.dir("$viteOutputDir/development")
+		script.set("run serve")
+		group = "run"
+		description = "Start a Vite dev server with hot module replacement."
+	}
+
+	clean {
+		delete("dev-dist")
+		delete(fileTree("src") {
+			include("**/*.typegen.ts")
+		})
+	}
 }
 
 artifacts {
 	add("productionAssets", productionResources) {
 		builtBy(tasks.assembleFrontend)
 	}
-}
-
-val typeCheckFrontend by tasks.registering(RunYarn::class) {
-	dependsOn(tasks.installFrontend)
-	dependsOn(generateXStateTypes)
-	inputs.files(lintingFiles)
-	outputs.dir("$buildDir/typescript")
-	script.set("run typecheck")
-	group = "verification"
-	description = "Check for TypeScript type errors."
-}
-
-val lintFrontend by tasks.registering(RunYarn::class) {
-	dependsOn(tasks.installFrontend)
-	dependsOn(generateXStateTypes)
-	dependsOn(typeCheckFrontend)
-	inputs.files(lintingFiles)
-	outputs.file("$buildDir/eslint.json")
-	script.set("run lint")
-	group = "verification"
-	description = "Check for TypeScript lint errors and warnings."
-}
-
-val fixFrontend by tasks.registering(RunYarn::class) {
-	dependsOn(tasks.installFrontend)
-	dependsOn(generateXStateTypes)
-	dependsOn(typeCheckFrontend)
-	inputs.files(lintingFiles)
-	script.set("run lint:fix")
-	group = "verification"
-	description = "Fix TypeScript lint errors and warnings."
-}
-
-tasks.check {
-	dependsOn(typeCheckFrontend)
-	dependsOn(lintFrontend)
-}
-
-tasks.register<RunYarn>("serveFrontend") {
-	dependsOn(tasks.installFrontend)
-	dependsOn(generateXStateTypes)
-	inputs.files(assembleFiles)
-	outputs.dir("$viteOutputDir/development")
-	script.set("run serve")
-	group = "run"
-	description = "Start a Vite dev server with hot module replacement."
-}
-
-tasks.clean {
-	delete("dev-dist")
-	delete(fileTree("src") {
-		include("**/*.typegen.ts")
-	})
 }
 
 sonarqube.properties {

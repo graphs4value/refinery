@@ -1,5 +1,5 @@
 plugins {
-	id("refinery-java-library")
+	id("tools.refinery.gradle.java-library")
 }
 
 dependencies {
