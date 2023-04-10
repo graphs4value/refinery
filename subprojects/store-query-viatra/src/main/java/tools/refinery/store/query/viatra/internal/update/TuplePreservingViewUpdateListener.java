@@ -8,14 +8,14 @@ package tools.refinery.store.query.viatra.internal.update;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.query.view.TuplePreservingRelationView;
+import tools.refinery.store.query.view.TuplePreservingView;
 import tools.refinery.store.tuple.Tuple;
 
-public class TuplePreservingRelationViewUpdateListener<T> extends RelationViewUpdateListener<T> {
-	private final TuplePreservingRelationView<T> view;
+public class TuplePreservingViewUpdateListener<T> extends SymbolViewUpdateListener<T> {
+	private final TuplePreservingView<T> view;
 
-	TuplePreservingRelationViewUpdateListener(ViatraModelQueryAdapterImpl adapter,
-											  TuplePreservingRelationView<T> view, Interpretation<T> interpretation) {
+	TuplePreservingViewUpdateListener(ViatraModelQueryAdapterImpl adapter, TuplePreservingView<T> view,
+									  Interpretation<T> interpretation) {
         super(adapter, interpretation);
         this.view = view;
 	}

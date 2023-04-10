@@ -21,8 +21,8 @@ import tools.refinery.store.query.dnf.DnfClause;
 import tools.refinery.store.query.dnf.DnfUtils;
 import tools.refinery.store.query.literal.AbstractCallLiteral;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.AnyRelationView;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.view.AnySymbolView;
+import tools.refinery.store.query.view.SymbolView;
 import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.*;
@@ -30,7 +30,7 @@ import java.util.function.ToIntFunction;
 
 class QueryWrapperFactory {
 	private final Dnf2PQuery dnf2PQuery;
-	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new LinkedHashMap<>();
+	private final Map<AnySymbolView, SymbolViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 	private final CycleDetectingMapper<RemappedConstraint, RawPQuery> wrapConstraint = new CycleDetectingMapper<>(
 			RemappedConstraint::toString, this::doWrapConstraint);
 
@@ -38,12 +38,12 @@ class QueryWrapperFactory {
 		this.dnf2PQuery = dnf2PQuery;
 	}
 
-	public PQuery wrapRelationViewIdentityArguments(AnyRelationView relationView) {
-		var identity = new int[relationView.arity()];
+	public PQuery wrapSymbolViewIdentityArguments(AnySymbolView symbolView) {
+		var identity = new int[symbolView.arity()];
 		for (int i = 0; i < identity.length; i++) {
 			identity[i] = i;
 		}
-		return maybeWrapConstraint(relationView, identity);
+		return maybeWrapConstraint(symbolView, identity);
 	}
 	public WrappedCall maybeWrapConstraint(AbstractCallLiteral callLiteral, DnfClause clause) {
 		var arguments = callLiteral.getArguments();
@@ -112,8 +112,8 @@ class QueryWrapperFactory {
 		}
 		var argumentTuple = Tuples.flatTupleOf(arguments);
 
-		if (constraint instanceof RelationView<?> relationView) {
-			new TypeConstraint(body, argumentTuple, getInputKey(relationView));
+		if (constraint instanceof SymbolView<?> view) {
+			new TypeConstraint(body, argumentTuple, getInputKey(view));
 		} else if (constraint instanceof Dnf dnf) {
 			var calledPQuery = dnf2PQuery.translate(dnf);
 			new PositivePatternCall(body, argumentTuple, calledPQuery);
@@ -125,11 +125,11 @@ class QueryWrapperFactory {
 		return embeddedPQuery;
 	}
 
-	public IInputKey getInputKey(AnyRelationView relationView) {
-		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
+	public IInputKey getInputKey(AnySymbolView symbolView) {
+		return view2WrapperMap.computeIfAbsent(symbolView, SymbolViewWrapper::new);
 	}
 
-	public Map<AnyRelationView, IInputKey> getRelationViews() {
+	public Map<AnySymbolView, IInputKey> getSymbolViews() {
 		return Collections.unmodifiableMap(view2WrapperMap);
 	}
 

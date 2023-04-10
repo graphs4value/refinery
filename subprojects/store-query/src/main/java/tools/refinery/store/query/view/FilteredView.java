@@ -12,24 +12,24 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-public class FilteredRelationView<T> extends TuplePreservingRelationView<T> {
+public class FilteredView<T> extends TuplePreservingView<T> {
 	private final BiPredicate<Tuple, T> predicate;
 
-	public FilteredRelationView(Symbol<T> symbol, String name, BiPredicate<Tuple, T> predicate) {
+	public FilteredView(Symbol<T> symbol, String name, BiPredicate<Tuple, T> predicate) {
 		super(symbol, name);
 		this.predicate = predicate;
 	}
 
-	public FilteredRelationView(Symbol<T> symbol, BiPredicate<Tuple, T> predicate) {
+	public FilteredView(Symbol<T> symbol, BiPredicate<Tuple, T> predicate) {
 		super(symbol);
 		this.predicate = predicate;
 	}
 
-	public FilteredRelationView(Symbol<T> symbol, String name, Predicate<T> predicate) {
+	public FilteredView(Symbol<T> symbol, String name, Predicate<T> predicate) {
 		this(symbol, name, (k, v) -> predicate.test(v));
 	}
 
-	public FilteredRelationView(Symbol<T> symbol, Predicate<T> predicate) {
+	public FilteredView(Symbol<T> symbol, Predicate<T> predicate) {
 		this(symbol, (k, v) -> predicate.test(v));
 	}
 
@@ -43,7 +43,7 @@ public class FilteredRelationView<T> extends TuplePreservingRelationView<T> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		FilteredRelationView<?> that = (FilteredRelationView<?>) o;
+		FilteredView<?> that = (FilteredView<?>) o;
 		return Objects.equals(predicate, that.predicate);
 	}
 

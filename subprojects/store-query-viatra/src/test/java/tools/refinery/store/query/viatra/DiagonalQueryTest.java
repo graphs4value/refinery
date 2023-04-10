@@ -12,8 +12,8 @@ import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
-import tools.refinery.store.query.view.FunctionalRelationView;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.view.FunctionView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -30,8 +30,8 @@ class DiagonalQueryTest {
 	void inputKeyNegationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 4, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new KeyOnlyRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new KeyOnlyView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -78,8 +78,8 @@ class DiagonalQueryTest {
 	void subQueryNegationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 4, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new KeyOnlyRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new KeyOnlyView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -139,8 +139,8 @@ class DiagonalQueryTest {
 	void inputKeyCountTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 4, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new KeyOnlyRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new KeyOnlyView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -190,8 +190,8 @@ class DiagonalQueryTest {
 	void subQueryCountTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 4, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new KeyOnlyRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new KeyOnlyView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -254,8 +254,8 @@ class DiagonalQueryTest {
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 4, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new FunctionalRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new FunctionView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -306,8 +306,8 @@ class DiagonalQueryTest {
 	void subQueryAggregationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 4, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new FunctionalRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new FunctionView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -374,8 +374,8 @@ class DiagonalQueryTest {
 	void inputKeyTransitiveTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 2, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new KeyOnlyRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new KeyOnlyView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var query = Query.builder("Diagonal")
@@ -420,8 +420,8 @@ class DiagonalQueryTest {
 	void subQueryTransitiveTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var symbol = new Symbol<>("symbol", 2, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-		var symbolView = new KeyOnlyRelationView<>(symbol);
+		var personView = new KeyOnlyView<>(person);
+		var symbolView = new KeyOnlyView<>(symbol);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");

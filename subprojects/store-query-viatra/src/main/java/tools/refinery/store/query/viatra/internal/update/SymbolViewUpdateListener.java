@@ -12,18 +12,18 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.InterpretationListener;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.query.view.RelationView;
-import tools.refinery.store.query.view.TuplePreservingRelationView;
+import tools.refinery.store.query.view.SymbolView;
+import tools.refinery.store.query.view.TuplePreservingView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class RelationViewUpdateListener<T> implements InterpretationListener<T> {
+public abstract class SymbolViewUpdateListener<T> implements InterpretationListener<T> {
 	private final ViatraModelQueryAdapterImpl adapter;
 	private final Interpretation<T> interpretation;
 	private final List<RelationViewFilter> filters = new ArrayList<>();
 
-	protected RelationViewUpdateListener(ViatraModelQueryAdapterImpl adapter, Interpretation<T> interpretation) {
+	protected SymbolViewUpdateListener(ViatraModelQueryAdapterImpl adapter, Interpretation<T> interpretation) {
 		this.adapter = adapter;
 		this.interpretation = interpretation;
 	}
@@ -53,13 +53,13 @@ public abstract class RelationViewUpdateListener<T> implements InterpretationLis
 		}
 	}
 
-	public static <T> RelationViewUpdateListener<T> of(ViatraModelQueryAdapterImpl adapter,
-													   RelationView<T> relationView,
-													   Interpretation<T> interpretation) {
-		if (relationView instanceof TuplePreservingRelationView<T> tuplePreservingRelationView) {
-			return new TuplePreservingRelationViewUpdateListener<>(adapter, tuplePreservingRelationView,
+	public static <T> SymbolViewUpdateListener<T> of(ViatraModelQueryAdapterImpl adapter,
+													 SymbolView<T> view,
+													 Interpretation<T> interpretation) {
+		if (view instanceof TuplePreservingView<T> tuplePreservingRelationView) {
+			return new TuplePreservingViewUpdateListener<>(adapter, tuplePreservingRelationView,
 					interpretation);
 		}
-		return new TupleChangingRelationViewUpdateListener<>(adapter, relationView, interpretation);
+		return new TupleChangingViewUpdateListener<>(adapter, view, interpretation);
 	}
 }

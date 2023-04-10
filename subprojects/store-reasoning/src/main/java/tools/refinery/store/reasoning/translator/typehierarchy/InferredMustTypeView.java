@@ -6,13 +6,13 @@
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.query.view.TuplePreservingRelationView;
+import tools.refinery.store.query.view.TuplePreservingView;
 import tools.refinery.store.tuple.Tuple;
 
-class InferredMustTypeRelationView extends TuplePreservingRelationView<InferredType> {
+class InferredMustTypeView extends TuplePreservingView<InferredType> {
 	private final PartialRelation type;
 
-	InferredMustTypeRelationView(PartialRelation type) {
+	InferredMustTypeView(PartialRelation type) {
 		super(TypeHierarchyTranslationUnit.INFERRED_TYPE_SYMBOL, "%s#must".formatted(type));
 		this.type = type;
 	}

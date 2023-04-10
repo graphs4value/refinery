@@ -117,7 +117,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 	public ViatraModelQueryStoreAdapterImpl createStoreAdapter(ModelStore store) {
 		validateSymbols(store);
 		dnf2PQuery.assertNoUnusedHints();
-		return new ViatraModelQueryStoreAdapterImpl(store, buildEngineOptions(), dnf2PQuery.getRelationViews(),
+		return new ViatraModelQueryStoreAdapterImpl(store, buildEngineOptions(), dnf2PQuery.getSymbolViews(),
 				Collections.unmodifiableMap(querySpecifications), Collections.unmodifiableSet(vacuousQueries));
 	}
 
@@ -140,11 +140,11 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 
 	private void validateSymbols(ModelStore store) {
 		var symbols = store.getSymbols();
-		for (var relationView : dnf2PQuery.getRelationViews().keySet()) {
-			var symbol = relationView.getSymbol();
+		for (var symbolView : dnf2PQuery.getSymbolViews().keySet()) {
+			var symbol = symbolView.getSymbol();
 			if (!symbols.contains(symbol)) {
-				throw new IllegalArgumentException("Cannot query relation view %s: symbol %s is not in the model"
-						.formatted(relationView, symbol));
+				throw new IllegalArgumentException("Cannot query view %s: symbol %s is not in the model"
+						.formatted(symbolView, symbol));
 			}
 		}
 	}

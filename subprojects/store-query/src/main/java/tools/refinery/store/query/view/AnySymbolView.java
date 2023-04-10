@@ -12,7 +12,7 @@ import tools.refinery.store.query.Constraint;
 
 import java.util.Set;
 
-public sealed interface AnyRelationView extends Constraint permits RelationView {
+public sealed interface AnySymbolView extends Constraint permits SymbolView {
 	AnySymbol getSymbol();
 
 	String getViewName();
@@ -21,7 +21,7 @@ public sealed interface AnyRelationView extends Constraint permits RelationView 
 		return Set.of();
 	}
 
-	default Set<RelationViewImplication> getImpliedRelationViews() {
+	default Set<ViewImplication> getImpliedRelationViews() {
 		return Set.of();
 	}
 

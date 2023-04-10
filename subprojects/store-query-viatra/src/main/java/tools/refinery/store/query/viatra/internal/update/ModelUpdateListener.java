@@ -9,43 +9,43 @@ import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.query.view.AnyRelationView;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.view.AnySymbolView;
+import tools.refinery.store.query.view.SymbolView;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ModelUpdateListener {
-	private final Map<AnyRelationView, RelationViewUpdateListener<?>> relationViewUpdateListeners;
+	private final Map<AnySymbolView, SymbolViewUpdateListener<?>> symbolViewUpdateListeners;
 
 	public ModelUpdateListener(ViatraModelQueryAdapterImpl adapter) {
-		var relationViews = adapter.getStoreAdapter().getInputKeys().keySet();
-		relationViewUpdateListeners = new HashMap<>(relationViews.size());
-		for (var relationView : relationViews) {
-			registerView(adapter, (RelationView<?>) relationView);
+		var symbolViews = adapter.getStoreAdapter().getInputKeys().keySet();
+		symbolViewUpdateListeners = new HashMap<>(symbolViews.size());
+		for (var symbolView : symbolViews) {
+			registerView(adapter, (SymbolView<?>) symbolView);
 		}
 	}
 
-	private <T> void registerView(ViatraModelQueryAdapterImpl adapter, RelationView<T> relationView) {
+	private <T> void registerView(ViatraModelQueryAdapterImpl adapter, SymbolView<T> view) {
 		var model = adapter.getModel();
-		var interpretation = model.getInterpretation(relationView.getSymbol());
-		var listener = RelationViewUpdateListener.of(adapter, relationView, interpretation);
-		relationViewUpdateListeners.put(relationView, listener);
+		var interpretation = model.getInterpretation(view.getSymbol());
+		var listener = SymbolViewUpdateListener.of(adapter, view, interpretation);
+		symbolViewUpdateListeners.put(view, listener);
 	}
 
-	public boolean containsRelationView(AnyRelationView relationView) {
-		return relationViewUpdateListeners.containsKey(relationView);
+	public boolean containsSymbolView(AnySymbolView relationView) {
+		return symbolViewUpdateListeners.containsKey(relationView);
 	}
 
-	public void addListener(IInputKey key, AnyRelationView relationView, ITuple seed,
+	public void addListener(IInputKey key, AnySymbolView symbolView, ITuple seed,
 							IQueryRuntimeContextListener listener) {
-		var relationViewUpdateListener = relationViewUpdateListeners.get(relationView);
-		relationViewUpdateListener.addFilter(key, seed, listener);
+		var symbolViewUpdateListener = symbolViewUpdateListeners.get(symbolView);
+		symbolViewUpdateListener.addFilter(key, seed, listener);
 	}
 
-	public void removeListener(IInputKey key, AnyRelationView relationView, ITuple seed,
+	public void removeListener(IInputKey key, AnySymbolView symbolView, ITuple seed,
 							   IQueryRuntimeContextListener listener) {
-		var relationViewUpdateListener = relationViewUpdateListeners.get(relationView);
-		relationViewUpdateListener.removeFilter(key, seed, listener);
+		var symbolViewUpdateListener = symbolViewUpdateListeners.get(symbolView);
+		symbolViewUpdateListener.removeFilter(key, seed, listener);
 	}
 }

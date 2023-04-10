@@ -7,7 +7,6 @@ package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.dnf.FunctionalDependency;
-import tools.refinery.store.query.term.DataSort;
 import tools.refinery.store.query.term.NodeSort;
 import tools.refinery.store.query.term.Sort;
 import tools.refinery.store.representation.Symbol;
@@ -20,16 +19,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public final class FunctionalRelationView<T> extends RelationView<T> {
+public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 	private final T defaultValue;
 
-	public FunctionalRelationView(Symbol<T> symbol, String name) {
+	protected AbstractFunctionView(Symbol<T> symbol, String name) {
 		super(symbol, name);
-		defaultValue = symbol.defaultValue();
-	}
-
-	public FunctionalRelationView(Symbol<T> symbol) {
-		super(symbol);
 		defaultValue = symbol.defaultValue();
 	}
 
@@ -42,16 +36,26 @@ public final class FunctionalRelationView<T> extends RelationView<T> {
 	}
 
 	@Override
-	public Set<RelationViewImplication> getImpliedRelationViews() {
+	public Set<ViewImplication> getImpliedRelationViews() {
 		var symbol = getSymbol();
 		var impliedIndices = IntStream.range(0, symbol.arity()).boxed().toList();
-		var keyOnlyRelationView = new KeyOnlyRelationView<>(symbol);
-		return Set.of(new RelationViewImplication(this, keyOnlyRelationView, impliedIndices));
+		var keysView = new KeyOnlyView<>(symbol);
+		return Set.of(new ViewImplication(this, keysView, impliedIndices));
 	}
 
 	@Override
-	public boolean filter(Tuple key, T value) {
+	public final boolean filter(Tuple key, T value) {
 		return !Objects.equals(defaultValue, value);
+	}
+
+	protected abstract Sort getForwardMappedValueSort();
+
+	protected Object forwardMapValue(Tuple key, T value) {
+		return value;
+	}
+
+	protected boolean valueEquals(Tuple key, T value, Object otherForwardMappedValue) {
+		return Objects.equals(otherForwardMappedValue, forwardMapValue(key, value));
 	}
 
 	@Override
@@ -61,7 +65,7 @@ public final class FunctionalRelationView<T> extends RelationView<T> {
 		for (int i = 0; i < size; i++) {
 			result[i] = Tuple.of(key.get(i));
 		}
-		result[key.getSize()] = value;
+		result[key.getSize()] = forwardMapValue(key, value);
 		return result;
 	}
 
@@ -69,13 +73,15 @@ public final class FunctionalRelationView<T> extends RelationView<T> {
 	public boolean get(Model model, Object[] tuple) {
 		int[] content = new int[tuple.length - 1];
 		for (int i = 0; i < tuple.length - 1; i++) {
-			content[i] = ((Tuple1) tuple[i]).value0();
+			if (!(tuple[i] instanceof Tuple1 wrapper)) {
+				return false;
+			}
+			content[i] = wrapper.value0();
 		}
 		Tuple key = Tuple.of(content);
-		@SuppressWarnings("unchecked")
-		T valueInTuple = (T) tuple[tuple.length - 1];
+		var valueInTuple = tuple[tuple.length - 1];
 		T valueInMap = model.getInterpretation(getSymbol()).get(key);
-		return valueInTuple.equals(valueInMap);
+		return valueEquals(key, valueInMap, valueInTuple);
 	}
 
 	@Override
@@ -90,7 +96,7 @@ public final class FunctionalRelationView<T> extends RelationView<T> {
 		for (int i = 0; i < valueIndex; i++) {
 			sorts[i] = NodeSort.INSTANCE;
 		}
-		sorts[valueIndex] = new DataSort<>(getSymbol().valueType());
+		sorts[valueIndex] = getForwardMappedValueSort();
 		return List.of(sorts);
 	}
 
@@ -99,7 +105,7 @@ public final class FunctionalRelationView<T> extends RelationView<T> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		FunctionalRelationView<?> that = (FunctionalRelationView<?>) o;
+		AbstractFunctionView<?> that = (AbstractFunctionView<?>) o;
 		return Objects.equals(defaultValue, that.defaultValue);
 	}
 

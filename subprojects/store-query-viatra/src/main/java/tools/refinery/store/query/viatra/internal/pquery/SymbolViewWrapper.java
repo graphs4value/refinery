@@ -6,10 +6,10 @@
 package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.matchers.context.common.BaseInputKeyWrapper;
-import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
 
-public class RelationViewWrapper extends BaseInputKeyWrapper<AnyRelationView> {
-	public RelationViewWrapper(AnyRelationView wrappedKey) {
+public class SymbolViewWrapper extends BaseInputKeyWrapper<AnySymbolView> {
+	public SymbolViewWrapper(AnySymbolView wrappedKey) {
 		super(wrappedKey);
 	}
 

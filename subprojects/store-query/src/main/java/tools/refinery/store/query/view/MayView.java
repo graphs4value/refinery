@@ -9,13 +9,13 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
-public class MustRelationView extends TuplePreservingRelationView<TruthValue> {
-	public MustRelationView(Symbol<TruthValue> symbol) {
-		super(symbol, "must");
+public class MayView extends TuplePreservingView<TruthValue> {
+	public MayView(Symbol<TruthValue> symbol) {
+		super(symbol, "may");
 	}
 
 	@Override
 	public boolean filter(Tuple key, TruthValue value) {
-		return value.must();
+		return value.may();
 	}
 }

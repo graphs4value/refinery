@@ -8,7 +8,7 @@ package tools.refinery.store.query.tests;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -22,7 +22,7 @@ class StructurallyEqualToTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var expected = Dnf.builder("Expected").parameters(q).clause(personView.call(q)).build();
 		var actual = Dnf.builder("Actual").parameters(p).clause(personView.call(p)).build();
@@ -35,7 +35,7 @@ class StructurallyEqualToTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var expected = Dnf.builder("Expected").parameters(q).clause(personView.call(q)).build();
 		var actual = Dnf.builder("Actual").parameters(p).clause(personView.call(q)).build();
@@ -49,7 +49,7 @@ class StructurallyEqualToTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var expected = Dnf.builder("Expected").parameters(q).clause(
 				Dnf.builder("Expected2").parameters(p).clause(personView.call(p)).build().call(q)
@@ -66,7 +66,7 @@ class StructurallyEqualToTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var expected = Dnf.builder("Expected").parameters(q).clause(
 				Dnf.builder("Expected2").parameters(p).clause(personView.call(p)).build().call(q)

@@ -8,7 +8,7 @@ package tools.refinery.store.query;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,7 +53,7 @@ class DnfToDefinitionStringTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var dnf = Dnf.builder("Example").parameter(p).clause(friendView.call(p, q)).build();
 
 		assertThat(dnf.toDefinitionString(), is("""
@@ -67,7 +67,7 @@ class DnfToDefinitionStringTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var dnf = Dnf.builder("Example").parameter(p).clause(not(friendView.call(p, q))).build();
 
 		assertThat(dnf.toDefinitionString(), is("""
@@ -81,7 +81,7 @@ class DnfToDefinitionStringTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var dnf = Dnf.builder("Example").parameter(p).clause(friendView.callTransitive(p, q)).build();
 
 		assertThat(dnf.toDefinitionString(), is("""
@@ -95,7 +95,7 @@ class DnfToDefinitionStringTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var dnf = Dnf.builder("Example").parameters(p, q).clause(friendView.call(p, q)).build();
 
 		assertThat(dnf.toDefinitionString(), is("""
@@ -109,9 +109,9 @@ class DnfToDefinitionStringTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var person = new Symbol<>("person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var dnf = Dnf.builder("Example")
 				.parameter(p)
 				.clause(
@@ -134,7 +134,7 @@ class DnfToDefinitionStringTest {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var dnf = Dnf.builder("Example")
 				.parameter(p)
 				.clause(friendView.call(p, q))
@@ -156,9 +156,9 @@ class DnfToDefinitionStringTest {
 		var r = Variable.of("r");
 		var s = Variable.of("s");
 		var person = new Symbol<>("person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyRelationView<>(friend);
+		var friendView = new KeyOnlyView<>(friend);
 		var called  = Dnf.builder("Called").parameters(r, s).clause(friendView.call(r, s)).build();
 		var dnf = Dnf.builder("Example")
 				.parameter(p)

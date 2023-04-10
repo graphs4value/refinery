@@ -13,9 +13,9 @@ import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
-import tools.refinery.store.query.view.FilteredRelationView;
-import tools.refinery.store.query.view.FunctionalRelationView;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.view.FilteredView;
+import tools.refinery.store.query.view.FunctionView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
@@ -38,8 +38,8 @@ class FunctionalQueryTest {
 	void inputKeyTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -84,8 +84,8 @@ class FunctionalQueryTest {
 	void predicateTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -137,8 +137,8 @@ class FunctionalQueryTest {
 	void computationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -184,8 +184,8 @@ class FunctionalQueryTest {
 	void inputKeyCountTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+		var personView = new KeyOnlyView<>(person);
+		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -233,8 +233,8 @@ class FunctionalQueryTest {
 	void predicateCountTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+		var personView = new KeyOnlyView<>(person);
+		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -289,7 +289,7 @@ class FunctionalQueryTest {
 	@QueryEngineTest
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var ageView = new FunctionalRelationView<>(age);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -324,8 +324,8 @@ class FunctionalQueryTest {
 	void predicateAggregationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -371,8 +371,8 @@ class FunctionalQueryTest {
 	void extremeValueTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+		var personView = new KeyOnlyView<>(person);
+		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");
@@ -447,8 +447,8 @@ class FunctionalQueryTest {
 	void invalidComputationTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -494,8 +494,8 @@ class FunctionalQueryTest {
 	void invalidAssumeTest(QueryEvaluationHint hint) {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -543,9 +543,9 @@ class FunctionalQueryTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
 		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
+		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
 		var p1 = Variable.of("p1");
 		var p2 = Variable.of("p2");

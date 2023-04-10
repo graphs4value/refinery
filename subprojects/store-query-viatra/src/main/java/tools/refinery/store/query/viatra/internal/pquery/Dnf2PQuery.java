@@ -29,7 +29,7 @@ import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.StatefulAggregator;
 import tools.refinery.store.query.term.StatelessAggregator;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.*;
@@ -53,8 +53,8 @@ public class Dnf2PQuery {
 		return mapper.map(dnfQuery);
 	}
 
-	public Map<AnyRelationView, IInputKey> getRelationViews() {
-		return wrapperFactory.getRelationViews();
+	public Map<AnySymbolView, IInputKey> getSymbolViews() {
+		return wrapperFactory.getSymbolViews();
 	}
 
 	public void hint(Dnf dnf, QueryEvaluationHint hint) {
@@ -165,8 +165,8 @@ public class Dnf2PQuery {
 			if (constraint instanceof Dnf dnf) {
 				var pattern = translate(dnf);
 				new PositivePatternCall(body, substitution, pattern);
-			} else if (constraint instanceof AnyRelationView relationView) {
-				var inputKey = wrapperFactory.getInputKey(relationView);
+			} else if (constraint instanceof AnySymbolView symbolView) {
+				var inputKey = wrapperFactory.getInputKey(symbolView);
 				new TypeConstraint(body, substitution, inputKey);
 			} else {
 				throw new IllegalArgumentException("Unknown Constraint: " + constraint);
@@ -178,8 +178,8 @@ public class Dnf2PQuery {
 			PQuery pattern;
 			if (constraint instanceof Dnf dnf) {
 				pattern = translate(dnf);
-			} else if (constraint instanceof AnyRelationView relationView) {
-				pattern = wrapperFactory.wrapRelationViewIdentityArguments(relationView);
+			} else if (constraint instanceof AnySymbolView symbolView) {
+				pattern = wrapperFactory.wrapSymbolViewIdentityArguments(symbolView);
 			} else {
 				throw new IllegalArgumentException("Unknown Constraint: " + constraint);
 			}

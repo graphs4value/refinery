@@ -15,12 +15,12 @@ import tools.refinery.store.representation.Symbol;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class TuplePreservingRelationView<T> extends RelationView<T> {
-	protected TuplePreservingRelationView(Symbol<T> symbol, String name) {
+public abstract class TuplePreservingView<T> extends SymbolView<T> {
+	protected TuplePreservingView(Symbol<T> symbol, String name) {
 		super(symbol, name);
 	}
 
-	protected TuplePreservingRelationView(Symbol<T> symbol) {
+	protected TuplePreservingView(Symbol<T> symbol) {
 		super(symbol);
 	}
 
@@ -41,7 +41,10 @@ public abstract class TuplePreservingRelationView<T> extends RelationView<T> {
 	public boolean get(Model model, Object[] tuple) {
 		int[] content = new int[tuple.length];
 		for (int i = 0; i < tuple.length; i++) {
-			content[i] = ((Tuple1) tuple[i]).value0();
+			if (!(tuple[i] instanceof Tuple1 wrapper)) {
+				return false;
+			}
+			content[i] = wrapper.value0();
 		}
 		Tuple key = Tuple.of(content);
 		T value = model.getInterpretation(getSymbol()).get(key);

@@ -12,9 +12,9 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.FilteredRelationView;
-import tools.refinery.store.query.view.FunctionalRelationView;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.view.FilteredView;
+import tools.refinery.store.query.view.FunctionView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -30,7 +30,7 @@ class QueryTransactionTest {
 	@Test
 	void flushTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("TypeConstraint")
@@ -101,7 +101,7 @@ class QueryTransactionTest {
 	@Test
 	void localSearchTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("TypeConstraint")
@@ -156,7 +156,7 @@ class QueryTransactionTest {
 	void unrelatedChangesTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("TypeConstraint")
@@ -229,8 +229,8 @@ class QueryTransactionTest {
 	void tupleChangingChangeTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
+		var personView = new KeyOnlyView<>(person);
+		var ageView = new FunctionView<>(age);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -277,8 +277,8 @@ class QueryTransactionTest {
 	void tuplePreservingUnchangedTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var adultView = new FilteredRelationView<>(age, "adult", n -> n != null && n >= 18);
+		var personView = new KeyOnlyView<>(person);
+		var adultView = new FilteredView<>(age, "adult", n -> n != null && n >= 18);
 
 		var p1 = Variable.of("p1");
 		var x = Variable.of("x", Integer.class);
@@ -324,7 +324,7 @@ class QueryTransactionTest {
 	@Test
 	void commitAfterFlushTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("TypeConstraint")
@@ -382,7 +382,7 @@ class QueryTransactionTest {
 	@Test
 	void commitWithoutFlushTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
+		var personView = new KeyOnlyView<>(person);
 
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("TypeConstraint")
