@@ -19,6 +19,7 @@ import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletConta
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.refinery.language.web.config.BackendConfigServlet;
@@ -49,7 +50,8 @@ public class ServerLauncher {
 	private final Server server;
 
 	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String webSocketUrl) {
-		server = VirtualThreadUtils.newServerWithVirtualThreadsThreadPool("jetty", bindAddress);
+		server = new Server(bindAddress);
+		((QueuedThreadPool) server.getThreadPool()).setName("jetty");
 		var handler = new ServletContextHandler();
 		addSessionHandler(handler);
 		addProblemServlet(handler, allowedOrigins);

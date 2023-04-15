@@ -17,9 +17,13 @@ import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletConta
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.xtext.testing.GlobalRegistries;
 import org.eclipse.xtext.testing.GlobalRegistries.GlobalStateMemento;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tools.refinery.language.web.tests.WebSocketIntegrationTestClient;
@@ -193,7 +197,8 @@ class ProblemWebSocketServletIntegrationTest {
 	private void startServer(String allowedOrigins) {
 		var testName = getClass().getSimpleName() + "-" + testInfo.getDisplayName();
 		var listenAddress = new InetSocketAddress(HOSTNAME, serverPort);
-		server = VirtualThreadUtils.newServerWithVirtualThreadsThreadPool(testName, listenAddress);
+		server = new Server(listenAddress);
+		((QueuedThreadPool) server.getThreadPool()).setName(testName);
 		var handler = new ServletContextHandler();
 		var holder = new ServletHolder(ProblemWebSocketServlet.class);
 		if (allowedOrigins != null) {
