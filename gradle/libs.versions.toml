@@ -7,13 +7,13 @@ eclipseCollections = "12.0.0.M1"
 jetty = "12.0.0.beta0"
 jmh = "1.36"
 junit = "5.9.2"
-mockito = "5.2.0"
+mockito = "5.3.0"
 mwe2 = "2.14.0"
 slf4j = "2.0.7"
 xtext = "2.31.0.M0"
 
 [libraries]
-jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1"}
+jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.33.0" }

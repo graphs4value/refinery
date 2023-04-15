@@ -71,7 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed by Sonar to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew build sonarqube -Pci --info
+          ./gradlew build sonar -Pci --info
   reuse-check:
     name: REUSE Compliance Check
     runs-on: ubuntu-latest

@@ -23,7 +23,7 @@
     "noUnusedParameters": true,
     // "verbatimModuleSyntax" is incompatible with `import` syntax in modules
     // with CommonJS import resolution, so we use "isolatedModules" only.
-    "verbatimModuleSyntax": false,
+    // "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "checkJs": true,
     "esModuleInterop": true,
