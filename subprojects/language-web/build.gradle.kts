@@ -29,13 +29,6 @@ dependencies {
 
 application {
 	mainClass.set("tools.refinery.language.web.ServerLauncher")
-	// Enable JDK 19 preview features for virtual thread support.
-	applicationDefaultJvmArgs += "--enable-preview"
-}
-
-// Enable JDK 19 preview features for virtual thread support.
-fun enablePreview(task: JavaForkOptions) {
-	task.jvmArgs("--enable-preview")
 }
 
 tasks {
@@ -45,16 +38,6 @@ tasks {
 		named(taskName) {
 			dependsOn(generateXtextLanguage)
 		}
-	}
-
-	withType(JavaCompile::class) {
-		options.release.set(19)
-		// Enable JDK 19 preview features for virtual thread support.
-		options.compilerArgs.plusAssign("--enable-preview")
-	}
-
-	withType(Test::class) {
-		enablePreview(this)
 	}
 
 	jar {
@@ -82,7 +65,6 @@ tasks {
 		dependsOn(mainRuntimeClasspath)
 		classpath(mainRuntimeClasspath)
 		mainClass.set(application.mainClass)
-		enablePreview(this)
 		standardInput = System.`in`
 		val baseResource = webapp.incoming.artifacts.artifactFiles.first()
 		environment("BASE_RESOURCE", baseResource)

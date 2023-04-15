@@ -43,14 +43,10 @@ dependencies {
 }
 
 java.toolchain {
-	languageVersion.set(JavaLanguageVersion.of(19))
+	languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 tasks {
-	withType(JavaCompile::class) {
-		options.release.set(17)
-	}
-
 	test {
 		useJUnitPlatform {
 			excludeTags("slow")
