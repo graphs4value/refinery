@@ -42,11 +42,6 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	}
 
 	@Override
-	public NodeVariable asNodeVariable() {
-		throw new IllegalStateException("%s is a data variable".formatted(this));
-	}
-
-	@Override
 	public <U> DataVariable<U> asDataVariable(Class<U> newType) {
 		if (!getType().equals(newType)) {
 			throw new IllegalStateException("%s is not of type %s but of type %s".formatted(this, newType.getName(),
