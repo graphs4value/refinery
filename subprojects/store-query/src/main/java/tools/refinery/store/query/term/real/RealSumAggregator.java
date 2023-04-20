@@ -19,12 +19,12 @@ public final class RealSumAggregator implements StatefulAggregator<Double, Doubl
 
 	@Override
 	public Class<Double> getResultType() {
-		return null;
+		return Double.class;
 	}
 
 	@Override
 	public Class<Double> getInputType() {
-		return null;
+		return Double.class;
 	}
 
 	@Override
