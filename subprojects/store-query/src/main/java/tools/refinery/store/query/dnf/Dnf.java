@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class Dnf implements Constraint {
 	private static final String INDENTATION = "    ";
@@ -195,5 +196,15 @@ public final class Dnf implements Constraint {
 
 	public static DnfBuilder builder(String name) {
 		return new DnfBuilder(name);
+	}
+
+	public static Dnf of(Consumer<DnfBuilder> callback) {
+		return of(null, callback);
+	}
+
+	public static Dnf of(String name, Consumer<DnfBuilder> callback) {
+		var builder = builder(name);
+		callback.accept(builder);
+		return builder.build();
 	}
 }

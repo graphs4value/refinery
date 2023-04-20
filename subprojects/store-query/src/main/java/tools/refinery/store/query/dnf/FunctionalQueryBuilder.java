@@ -5,47 +5,25 @@
  */
 package tools.refinery.store.query.dnf;
 
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.DataVariable;
 
-import java.util.Collection;
-import java.util.Set;
-
-public final class FunctionalQueryBuilder<T> {
-	private final DnfBuilder dnfBuilder;
+public final class FunctionalQueryBuilder<T> extends AbstractQueryBuilder<FunctionalQueryBuilder<T>> {
+	private final DataVariable<T> outputVariable;
 	private final Class<T> type;
 
-	FunctionalQueryBuilder(DnfBuilder dnfBuilder, Class<T> type) {
-		this.dnfBuilder = dnfBuilder;
+	FunctionalQueryBuilder(DataVariable<T> outputVariable, DnfBuilder dnfBuilder, Class<T> type) {
+		super(dnfBuilder);
+		this.outputVariable = outputVariable;
 		this.type = type;
 	}
 
-	public FunctionalQueryBuilder<T> functionalDependencies(Collection<FunctionalDependency<Variable>> functionalDependencies) {
-		dnfBuilder.functionalDependencies(functionalDependencies);
-		return this;
-	}
-
-	public FunctionalQueryBuilder<T> functionalDependency(FunctionalDependency<Variable> functionalDependency) {
-		dnfBuilder.functionalDependency(functionalDependency);
-		return this;
-	}
-
-	public FunctionalQueryBuilder<T> functionalDependency(Set<? extends Variable> forEach, Set<? extends Variable> unique) {
-		dnfBuilder.functionalDependency(forEach, unique);
-		return this;
-	}
-
-	public FunctionalQueryBuilder<T> clause(Literal... literals) {
-		dnfBuilder.clause(literals);
-		return this;
-	}
-
-	public FunctionalQueryBuilder<T> clause(Collection<? extends Literal> literals) {
-		dnfBuilder.clause(literals);
+	@Override
+	protected FunctionalQueryBuilder<T> self() {
 		return this;
 	}
 
 	public FunctionalQuery<T> build() {
+		dnfBuilder.output(outputVariable);
 		return dnfBuilder.build().asFunction(type);
 	}
 }

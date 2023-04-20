@@ -10,13 +10,13 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,15 +33,10 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new KeyOnlyView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						not(symbolView.call(p1, p1, p2, p2))
-				)
-				.build();
+		var query = Query.of("Diagonal", (builder, p1) -> builder.clause(p2 -> List.of(
+				personView.call(p1),
+				not(symbolView.call(p1, p1, p2, p2))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -81,28 +76,24 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new KeyOnlyView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var p3 = Variable.of("p3");
-		var p4 = Variable.of("p4");
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, p2, p3, p4)
-				.clause(
-						personView.call(p1),
-						symbolView.call(p1, p2, p3, p4)
-				)
-				.clause(
-						personView.call(p2),
-						symbolView.call(p1, p2, p3, p4)
-				)
-				.build();
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						not(subQuery.call(p1, p1, p2, p2))
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			var p3 = builder.parameter("p3");
+			var p4 = builder.parameter("p4");
+			builder.clause(
+					personView.call(p1),
+					symbolView.call(p1, p2, p3, p4)
+			);
+			builder.clause(
+					personView.call(p2),
+					symbolView.call(p1, p2, p3, p4)
+			);
+		});
+		var query = Query.of("Diagonal", (builder, p1) -> builder.clause(p2 -> List.of(
+				personView.call(p1),
+				not(subQuery.call(p1, p1, p2, p2))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -142,17 +133,10 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new KeyOnlyView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(symbolView.count(p1, p1, p2, p2))
-				)
-				.build();
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(p2 -> List.of(
+				personView.call(p1),
+				output.assign(symbolView.count(p1, p1, p2, p2))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -193,30 +177,24 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new KeyOnlyView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var p3 = Variable.of("p3");
-		var p4 = Variable.of("p4");
-		var x = Variable.of("x", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, p2, p3, p4)
-				.clause(
-						personView.call(p1),
-						symbolView.call(p1, p2, p3, p4)
-				)
-				.clause(
-						personView.call(p2),
-						symbolView.call(p1, p2, p3, p4)
-				)
-				.build();
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(subQuery.count(p1, p1, p2, p2))
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			var p3 = builder.parameter("p3");
+			var p4 = builder.parameter("p4");
+			builder.clause(
+					personView.call(p1),
+					symbolView.call(p1, p2, p3, p4)
+			);
+			builder.clause(
+					personView.call(p2),
+					symbolView.call(p1, p2, p3, p4)
+			);
+		});
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(p2 -> List.of(
+				personView.call(p1),
+				output.assign(subQuery.count(p1, p1, p2, p2))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -257,18 +235,11 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new FunctionView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.output(x)
-				.clause(
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(Integer.class,
+				(p2, y) -> List.of(
 						personView.call(p1),
-						x.assign(symbolView.aggregate(y, INT_SUM, p1, p1, p2, p2, y))
-				)
-				.build();
+						output.assign(symbolView.aggregate(y, INT_SUM, p1, p1, p2, p2, y))
+				)));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -309,34 +280,29 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new FunctionView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var p3 = Variable.of("p3");
-		var p4 = Variable.of("p4");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var z = Variable.of("z", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, p2, p3, p4, x, y)
-				.clause(
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			var p3 = builder.parameter("p3");
+			var p4 = builder.parameter("p4");
+			var x = builder.parameter("x", Integer.class);
+			var y = builder.parameter("y", Integer.class);
+			builder.clause(
+					personView.call(p1),
+					symbolView.call(p1, p2, p3, p4, x),
+					y.assign(x)
+			);
+			builder.clause(
+					personView.call(p2),
+					symbolView.call(p1, p2, p3, p4, x),
+					y.assign(x)
+			);
+		});
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(Integer.class,
+				(p2, y) -> List.of(
 						personView.call(p1),
-						symbolView.call(p1, p2, p3, p4, x),
-						y.assign(x)
-				)
-				.clause(
-						personView.call(p2),
-						symbolView.call(p1, p2, p3, p4, x),
-						y.assign(x)
-				)
-				.build();
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(subQuery.aggregate(z, INT_SUM, p1, p1, p2, p2, z, z))
-				)
-				.build();
+						output.assign(subQuery.aggregate(y, INT_SUM, p1, p1, p2, p2, y, y))
+				)));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -377,14 +343,10 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new KeyOnlyView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						symbolView.callTransitive(p1, p1)
-				)
-				.build();
+		var query = Query.of("Diagonal", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				symbolView.callTransitive(p1, p1)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)
@@ -423,26 +385,22 @@ class DiagonalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var symbolView = new KeyOnlyView<>(symbol);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						symbolView.call(p1, p2)
-				)
-				.clause(
-						personView.call(p2),
-						symbolView.call(p1, p2)
-				)
-				.build();
-		var query = Query.builder("Diagonal")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						subQuery.callTransitive(p1, p1)
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			builder.clause(
+					personView.call(p1),
+					symbolView.call(p1, p2)
+			);
+			builder.clause(
+					personView.call(p2),
+					symbolView.call(p1, p2)
+			);
+		});
+		var query = Query.of("Diagonal", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				subQuery.callTransitive(p1, p1)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, symbol)

@@ -20,6 +20,7 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -36,11 +37,7 @@ class QueryTest {
 		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
@@ -76,16 +73,11 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var predicate = Query.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
+		var predicate = Query.of("RelationConstraint", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -125,16 +117,11 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var predicate = Query.builder("RelationConstraint")
-				.parameters(p1)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
+		var predicate = Query.of("Exists", (builder, p1) -> builder.clause((p2) -> List.of(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -176,21 +163,15 @@ class QueryTest {
 		var animalView = new KeyOnlyView<>(animal);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var predicate = Query.builder("Or")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.clause(
-						animalView.call(p1),
-						animalView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
+		var predicate = Query.of("Or", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		).clause(
+				animalView.call(p1),
+				animalView.call(p2),
+				friendMustView.call(p1, p2)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, animal, friend)
@@ -232,16 +213,11 @@ class QueryTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var predicate = Query.builder("Equality")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						p1.isEquivalent(p2)
-				)
-				.build();
+		var predicate = Query.of("Equality", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				p1.isEquivalent(p2)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person)
@@ -276,19 +252,13 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var p3 = Variable.of("p3");
-		var predicate = Query.builder("Inequality")
-				.parameters(p1, p2, p3)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p3),
-						friendMustView.call(p2, p3),
-						p1.notEquivalent(p2)
-				)
-				.build();
+		var predicate = Query.of("Inequality", (builder, p1, p2, p3) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p3),
+				friendMustView.call(p2, p3),
+				p1.notEquivalent(p2)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -325,27 +295,20 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var friendPredicate = Dnf.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
-
-		var p3 = Variable.of("p3");
-		var p4 = Variable.of("p4");
-		var predicate = Query.builder("PositivePatternCall")
-				.parameters(p3, p4)
-				.clause(
-						personView.call(p3),
-						personView.call(p4),
-						friendPredicate.call(p3, p4)
-				)
-				.build();
+		var friendPredicate = Dnf.of("Friend", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+			);
+		});
+		var predicate = Query.of("PositivePatternCall", (builder, p3, p4) -> builder.clause(
+				personView.call(p3),
+				personView.call(p4),
+				friendPredicate.call(p3, p4)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -384,16 +347,11 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var predicate = Query.builder("NegativePatternCall")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						not(friendMustView.call(p1, p2))
-				)
-				.build();
+		var predicate = Query.of("NegativePatternCall", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				not(friendMustView.call(p1, p2))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -438,27 +396,20 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var friendPredicate = Dnf.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
-
-		var p3 = Variable.of("p3");
-		var p4 = Variable.of("p4");
-		var predicate = Query.builder("NegativePatternCall")
-				.parameters(p3, p4)
-				.clause(
-						personView.call(p3),
-						personView.call(p4),
-						not(friendPredicate.call(p3, p4))
-				)
-				.build();
+		var friendPredicate = Dnf.of("Friend", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+			);
+		});
+		var predicate = Query.of("NegativePatternCall", (builder, p3, p4) -> builder.clause(
+				personView.call(p3),
+				personView.call(p4),
+				not(friendPredicate.call(p3, p4))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -503,16 +454,10 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-
-		var predicate = Query.builder("Count")
-				.parameters(p1)
-				.clause(
-						personView.call(p1),
-						not(friendMustView.call(p1, p2))
-				)
-				.build();
+		var predicate = Query.of("Negative", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				not(friendMustView.call(p1, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -550,25 +495,19 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-
-		var called = Dnf.builder("Called")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
-
-		var predicate = Query.builder("Count")
-				.parameters(p1)
-				.clause(
-						personView.call(p1),
-						not(called.call(p1, p2))
-				)
-				.build();
+		var called = Dnf.of("Called", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+			);
+		});
+		var predicate = Query.of("Negative", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				not(called.call(p1, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -606,16 +545,11 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var predicate = Query.builder("TransitivePatternCall")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.callTransitive(p1, p2)
-				)
-				.build();
+		var predicate = Query.of("Transitive", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.callTransitive(p1, p2)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -659,27 +593,20 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var friendPredicate = Dnf.builder("RelationConstraint")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
-
-		var p3 = Variable.of("p3");
-		var p4 = Variable.of("p4");
-		var predicate = Query.builder("TransitivePatternCall")
-				.parameters(p3, p4)
-				.clause(
-						personView.call(p3),
-						personView.call(p4),
-						friendPredicate.callTransitive(p3, p4)
-				)
-				.build();
+		var called = Dnf.of("Called", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+			);
+		});
+		var predicate = Query.of("Transitive", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				called.callTransitive(p1, p2)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -723,16 +650,11 @@ class QueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("Constraint")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x),
-						assume(greaterEq(x, constant(18)))
-				)
-				.build();
+		var query = Query.of("Constraint", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
+				personView.call(p1),
+				ageView.call(p1, x),
+				assume(greaterEq(x, constant(18)))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -765,8 +687,7 @@ class QueryTest {
 	void alwaysFalseTest() {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("AlwaysFalse").parameters(p1).build();
+		var predicate = Query.of("AlwaysFalse", builder -> builder.parameter("p1"));
 
 		var store = ModelStore.builder()
 				.symbols(person)
@@ -789,8 +710,6 @@ class QueryTest {
 
 	@Test
 	void alwaysTrueTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("AlwaysTrue").parameters(p1).clause().build();
 

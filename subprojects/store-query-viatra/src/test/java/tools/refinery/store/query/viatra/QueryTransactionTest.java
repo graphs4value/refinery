@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQuery;
 import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -32,11 +31,7 @@ class QueryTransactionTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
 		var store = ModelStore.builder()
 				.symbols(person)
@@ -103,11 +98,7 @@ class QueryTransactionTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
 		var store = ModelStore.builder()
 				.symbols(person)
@@ -158,11 +149,7 @@ class QueryTransactionTest {
 		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
@@ -232,16 +219,10 @@ class QueryTransactionTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder()
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
+		var query = Query.of("TypeConstraint", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, output)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -280,15 +261,10 @@ class QueryTransactionTest {
 		var personView = new KeyOnlyView<>(person);
 		var adultView = new FilteredView<>(age, "adult", n -> n != null && n >= 18);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder()
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						adultView.call(p1)
-				)
-				.build();
+		var query = Query.of("TypeConstraint", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				adultView.call(p1)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -326,11 +302,7 @@ class QueryTransactionTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
 		var store = ModelStore.builder()
 				.symbols(person)
@@ -384,11 +356,7 @@ class QueryTransactionTest {
 		var person = new Symbol<>("Person", 1, Boolean.class, false);
 		var personView = new KeyOnlyView<>(person);
 
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
 		var store = ModelStore.builder()
 				.symbols(person)

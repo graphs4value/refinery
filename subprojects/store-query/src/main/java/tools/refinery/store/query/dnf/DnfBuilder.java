@@ -5,8 +5,10 @@
  */
 package tools.refinery.store.query.dnf;
 
+import tools.refinery.store.query.dnf.callback.*;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.term.DataVariable;
+import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
@@ -23,6 +25,26 @@ public final class DnfBuilder {
 
 	DnfBuilder(String name) {
 		this.name = name;
+	}
+
+	public NodeVariable parameter() {
+		return parameter((String) null);
+	}
+
+	public NodeVariable parameter(String name) {
+		var variable = Variable.of(name);
+		parameter(variable);
+		return variable;
+	}
+
+	public <T> DataVariable<T> parameter(Class<T> type) {
+		return parameter(null, type);
+	}
+
+	public <T> DataVariable<T> parameter(String name, Class<T> type) {
+		var variable = Variable.of(name, type);
+		parameter(variable);
+		return variable;
 	}
 
 	public DnfBuilder parameter(Variable variable) {
@@ -54,6 +76,74 @@ public final class DnfBuilder {
 
 	public DnfBuilder functionalDependency(Set<? extends Variable> forEach, Set<? extends Variable> unique) {
 		return functionalDependency(new FunctionalDependency<>(Set.copyOf(forEach), Set.copyOf(unique)));
+	}
+
+	public DnfBuilder clause(ClauseCallback0 callback) {
+		return clause(callback.toLiterals());
+	}
+
+	public DnfBuilder clause(ClauseCallback1Data0 callback) {
+		return clause(callback.toLiterals(Variable.of("v1")));
+	}
+
+	public <T> DnfBuilder clause(Class<T> type1, ClauseCallback1Data1<T> callback) {
+		return clause(callback.toLiterals(Variable.of("v1", type1)));
+	}
+
+	public DnfBuilder clause(ClauseCallback2Data0 callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("v2")));
+	}
+
+	public <T> DnfBuilder clause(Class<T> type1, ClauseCallback2Data1<T> callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("d1", type1)));
+	}
+
+	public <T1, T2> DnfBuilder clause(Class<T1> type1, Class<T2> type2, ClauseCallback2Data2<T1, T2> callback) {
+		return clause(callback.toLiterals(Variable.of("d1", type1), Variable.of("d2", type2)));
+	}
+
+	public DnfBuilder clause(ClauseCallback3Data0 callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("v2"), Variable.of("v3")));
+	}
+
+	public <T> DnfBuilder clause(Class<T> type1, ClauseCallback3Data1<T> callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("v2"), Variable.of("d1", type1)));
+	}
+
+	public <T1, T2> DnfBuilder clause(Class<T1> type1, Class<T2> type2, ClauseCallback3Data2<T1, T2> callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("d1", type1), Variable.of("d2", type2)));
+	}
+
+	public <T1, T2, T3> DnfBuilder clause(Class<T1> type1, Class<T2> type2, Class<T3> type3,
+										  ClauseCallback3Data3<T1, T2, T3> callback) {
+		return clause(callback.toLiterals(Variable.of("d1", type1), Variable.of("d2", type2),
+				Variable.of("d3", type3)));
+	}
+
+	public DnfBuilder clause(ClauseCallback4Data0 callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("v2"), Variable.of("v3"), Variable.of("v4")));
+	}
+
+	public <T> DnfBuilder clause(Class<T> type1, ClauseCallback4Data1<T> callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("v2"), Variable.of("v3"), Variable.of("d1",
+				type1)));
+	}
+
+	public <T1, T2> DnfBuilder clause(Class<T1> type1, Class<T2> type2, ClauseCallback4Data2<T1, T2> callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("v2"), Variable.of("d1", type1),
+				Variable.of("d2", type2)));
+	}
+
+	public <T1, T2, T3> DnfBuilder clause(Class<T1> type1, Class<T2> type2, Class<T3> type3,
+										  ClauseCallback4Data3<T1, T2, T3> callback) {
+		return clause(callback.toLiterals(Variable.of("v1"), Variable.of("d1", type1), Variable.of("d2", type2),
+				Variable.of("d3", type3)));
+	}
+
+	public <T1, T2, T3, T4> DnfBuilder clause(Class<T1> type1, Class<T2> type2, Class<T3> type3, Class<T4> type4,
+											  ClauseCallback4Data4<T1, T2, T3, T4> callback) {
+		return clause(callback.toLiterals(Variable.of("d1", type1), Variable.of("d2", type2),
+				Variable.of("d3", type3), Variable.of("d4", type4)));
 	}
 
 	public DnfBuilder clause(Literal... literals) {

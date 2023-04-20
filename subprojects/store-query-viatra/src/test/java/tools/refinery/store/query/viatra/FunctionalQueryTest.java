@@ -20,6 +20,7 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,16 +42,10 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("InputKey")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
+		var query = Query.of("InputKey", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, output)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -87,23 +82,18 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
-		var query = Query.builder("Predicate")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						subQuery.call(p1, x)
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var x = builder.parameter("x", Integer.class);
+			builder.clause(
+					personView.call(p1),
+					ageView.call(p1, x)
+			);
+		});
+		var query = Query.of("Predicate", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				subQuery.call(p1, output)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -140,18 +130,14 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("Computation")
-				.parameter(p1)
-				.output(y)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x),
-						y.assign(mul(x, constant(7)))
-				)
-				.build();
+		var query = Query.of("Computation", Integer.class, (builder, p1, output) -> builder.clause(() -> {
+			var x = Variable.of("x", Integer.class);
+			return List.of(
+					personView.call(p1),
+					ageView.call(p1, x),
+					output.assign(mul(x, constant(7)))
+			);
+		}));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -187,17 +173,10 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("Count")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(friendMustView.count(p1, p2))
-				)
-				.build();
+		var query = Query.of("Count", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				output.assign(friendMustView.count(p1, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -236,25 +215,19 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
-		var query = Query.builder("Count")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(subQuery.count(p1, p2))
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var p2 = builder.parameter("p2");
+			builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+			);
+		});
+		var query = Query.of("Count", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				output.assign(subQuery.count(p1, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -291,15 +264,8 @@ class FunctionalQueryTest {
 		var age = new Symbol<>("age", 1, Integer.class, null);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("Aggregate")
-				.output(x)
-				.clause(
-						x.assign(ageView.aggregate(y, INT_SUM, p1, y))
-				)
-				.build();
+		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(Integer.class,
+				(y) -> List.of(output.assign(ageView.aggregate(y, INT_SUM, Variable.of(), y)))));
 
 		var store = ModelStore.builder()
 				.symbols(age)
@@ -327,22 +293,16 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
-		var query = Query.builder("Aggregate")
-				.output(x)
-				.clause(
-						x.assign(subQuery.aggregate(y, INT_SUM, p1, y))
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var x = builder.parameter("x", Integer.class);
+			builder.clause(
+					personView.call(p1),
+					ageView.call(p1, x)
+			);
+		});
+		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(Integer.class,
+				(y) -> List.of(output.assign(subQuery.aggregate(y, INT_SUM, Variable.of(), y)))));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -374,29 +334,18 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, x)
-				.clause(
-						personView.call(p1),
-						x.assign(friendMustView.count(p1, p2))
-				)
-				.build();
-		var minQuery = Query.builder("Min")
-				.output(x)
-				.clause(
-						x.assign(subQuery.aggregate(y, INT_MIN, p1, y))
-				)
-				.build();
-		var maxQuery = Query.builder("Max")
-				.output(x)
-				.clause(
-						x.assign(subQuery.aggregate(y, INT_MAX, p1, y))
-				)
-				.build();
+		var subQuery = Dnf.of("SubQuery", builder -> {
+			var p1 = builder.parameter("p1");
+			var x = builder.parameter("x", Integer.class);
+			builder.clause(
+					personView.call(p1),
+					x.assign(friendMustView.count(p1, Variable.of()))
+			);
+		});
+		var minQuery = Query.of("Min", Integer.class, (builder, output) -> builder.clause(Integer.class,
+				(y) -> List.of(output.assign(subQuery.aggregate(y, INT_MIN, Variable.of(), y)))));
+		var maxQuery = Query.of("Max", Integer.class, (builder, output) -> builder.clause(Integer.class,
+				(y) -> List.of(output.assign(subQuery.aggregate(y, INT_MAX, Variable.of(), y)))));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
@@ -450,18 +399,12 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("InvalidComputation")
-				.parameter(p1)
-				.output(y)
-				.clause(
+		var query = Query.of("InvalidComputation", Integer.class,
+				(builder, p1, output) -> builder.clause(Integer.class, (x) -> List.of(
 						personView.call(p1),
 						ageView.call(p1, x),
-						y.assign(div(constant(120), x))
-				)
-				.build();
+						output.assign(div(constant(120), x))
+				)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -497,16 +440,11 @@ class FunctionalQueryTest {
 		var personView = new KeyOnlyView<>(person);
 		var ageView = new FunctionView<>(age);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("InvalidComputation")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x),
-						assume(lessEq(div(constant(120), x), constant(5)))
-				)
-				.build();
+		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
+				personView.call(p1),
+				ageView.call(p1, x),
+				assume(lessEq(div(constant(120), x), constant(5)))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -547,18 +485,11 @@ class FunctionalQueryTest {
 		var ageView = new FunctionView<>(age);
 		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("NotFunctional")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						friendMustView.call(p1, p2),
-						ageView.call(p2, x)
-				)
-				.build();
+		var query = Query.of("NotFunctional", Integer.class, (builder, p1, output) -> builder.clause((p2) -> List.of(
+				personView.call(p1),
+				friendMustView.call(p1, p2),
+				ageView.call(p2, output)
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age, friend)
