@@ -14,7 +14,7 @@ import tools.refinery.store.query.literal.CallPolarity;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.reasoning.Reasoning;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
@@ -74,8 +74,8 @@ public class DnfLifter {
 		}
 		for (var quantifiedVariable : quantifiedVariables) {
 			// Quantify over data variables that are not already quantified with the expected modality.
-			liftedLiterals.add(new CallLiteral(CallPolarity.POSITIVE, new ModalConstraint(modality, Reasoning.EXISTS),
-					List.of(quantifiedVariable)));
+			liftedLiterals.add(new CallLiteral(CallPolarity.POSITIVE,
+					new ModalConstraint(modality, ReasoningAdapter.EXISTS), List.of(quantifiedVariable)));
 		}
 		builder.clause(liftedLiterals);
 		return changed || !quantifiedVariables.isEmpty();
@@ -87,7 +87,7 @@ public class DnfLifter {
 				callLiteral.getPolarity() == CallPolarity.POSITIVE &&
 				callLiteral.getTarget() instanceof ModalConstraint modalConstraint &&
 				modalConstraint.modality() == modality &&
-				modalConstraint.constraint().equals(Reasoning.EXISTS)) {
+				modalConstraint.constraint().equals(ReasoningAdapter.EXISTS)) {
 			return callLiteral.getArguments().get(0);
 		}
 		return null;

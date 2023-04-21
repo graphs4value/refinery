@@ -25,7 +25,8 @@ import tools.refinery.store.query.viatra.internal.pquery.Dnf2PQuery;
 import java.util.*;
 import java.util.function.Function;
 
-public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder implements ViatraModelQueryBuilder {
+public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder<ViatraModelQueryStoreAdapterImpl>
+		implements ViatraModelQueryBuilder {
 	private ViatraQueryEngineOptions.Builder engineOptionsBuilder;
 	private QueryEvaluationHint defaultHint = new QueryEvaluationHint(Map.of(
 			// Use a cost function that ignores the initial (empty) model but allows higher arity input keys.
@@ -35,8 +36,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 	private final Set<AnyQuery> vacuousQueries = new LinkedHashSet<>();
 	private final Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications = new LinkedHashMap<>();
 
-	public ViatraModelQueryBuilderImpl(ModelStoreBuilder storeBuilder) {
-		super(storeBuilder);
+	public ViatraModelQueryBuilderImpl() {
 		engineOptionsBuilder = new ViatraQueryEngineOptions.Builder()
 				.withDefaultBackend(ReteBackendFactory.INSTANCE)
 				.withDefaultCachingBackend(ReteBackendFactory.INSTANCE)
@@ -45,36 +45,42 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 
 	@Override
 	public ViatraModelQueryBuilder engineOptions(ViatraQueryEngineOptions engineOptions) {
+		checkNotConfigured();
 		engineOptionsBuilder = new ViatraQueryEngineOptions.Builder(engineOptions);
 		return this;
 	}
 
 	@Override
 	public ViatraModelQueryBuilder defaultHint(QueryEvaluationHint queryEvaluationHint) {
+		checkNotConfigured();
 		defaultHint = defaultHint.overrideBy(queryEvaluationHint);
 		return this;
 	}
 
 	@Override
 	public ViatraModelQueryBuilder backend(IQueryBackendFactory queryBackendFactory) {
+		checkNotConfigured();
 		engineOptionsBuilder.withDefaultBackend(queryBackendFactory);
 		return this;
 	}
 
 	@Override
 	public ViatraModelQueryBuilder cachingBackend(IQueryBackendFactory queryBackendFactory) {
+		checkNotConfigured();
 		engineOptionsBuilder.withDefaultCachingBackend(queryBackendFactory);
 		return this;
 	}
 
 	@Override
 	public ViatraModelQueryBuilder searchBackend(IQueryBackendFactory queryBackendFactory) {
+		checkNotConfigured();
 		engineOptionsBuilder.withDefaultSearchBackend(queryBackendFactory);
 		return this;
 	}
 
 	@Override
 	public ViatraModelQueryBuilder query(AnyQuery query) {
+		checkNotConfigured();
 		if (querySpecifications.containsKey(query) || vacuousQueries.contains(query)) {
 			// Ignore duplicate queries.
 			return this;
@@ -103,20 +109,26 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder imp
 
 	@Override
 	public ViatraModelQueryBuilder computeHint(Function<Dnf, QueryEvaluationHint> computeHint) {
+		checkNotConfigured();
 		dnf2PQuery.setComputeHint(computeHint);
 		return this;
 	}
 
 	@Override
 	public ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint) {
+		checkNotConfigured();
 		dnf2PQuery.hint(dnf, queryEvaluationHint);
 		return this;
 	}
 
 	@Override
-	public ViatraModelQueryStoreAdapterImpl createStoreAdapter(ModelStore store) {
-		validateSymbols(store);
+	public void doConfigure(ModelStoreBuilder storeBuilder) {
 		dnf2PQuery.assertNoUnusedHints();
+	}
+
+	@Override
+	public ViatraModelQueryStoreAdapterImpl doBuild(ModelStore store) {
+		validateSymbols(store);
 		return new ViatraModelQueryStoreAdapterImpl(store, buildEngineOptions(), dnf2PQuery.getSymbolViews(),
 				Collections.unmodifiableMap(querySpecifications), Collections.unmodifiableSet(vacuousQueries));
 	}

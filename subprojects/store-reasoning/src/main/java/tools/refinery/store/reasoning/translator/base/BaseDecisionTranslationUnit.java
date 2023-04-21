@@ -37,11 +37,6 @@ public class BaseDecisionTranslationUnit extends TranslationUnit {
 	}
 
 	@Override
-	protected void configureReasoningBuilder() {
-		getModelStoreBuilder().symbol(symbol);
-	}
-
-	@Override
 	public Collection<TranslatedRelation> getTranslatedRelations() {
 		return List.of(new TranslatedBaseDecision(getReasoningBuilder(), partialRelation, symbol));
 	}

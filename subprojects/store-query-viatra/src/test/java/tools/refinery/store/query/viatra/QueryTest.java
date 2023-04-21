@@ -8,7 +8,7 @@ package tools.refinery.store.query.viatra;
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.ModelQuery;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
@@ -41,15 +41,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.query(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var assetInterpretation = model.getInterpretation(asset);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -81,15 +81,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -125,15 +125,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -175,16 +175,16 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, animal, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var animalInterpretation = model.getInterpretation(animal);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -221,14 +221,14 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -262,15 +262,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -312,15 +312,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -355,15 +355,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -413,15 +413,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -461,15 +461,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -511,15 +511,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -553,15 +553,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -610,15 +610,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -658,15 +658,15 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -691,13 +691,13 @@ class QueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -713,8 +713,7 @@ class QueryTest {
 		var p1 = Variable.of("p1");
 		var predicate = Query.builder("AlwaysTrue").parameters(p1).clause().build();
 
-		var storeBuilder = ModelStore.builder().symbols(person);
-		var queryBuilder = storeBuilder.with(ViatraModelQuery.ADAPTER);
+		var queryBuilder = ViatraModelQueryAdapter.builder();
 
 		assertThrows(IllegalArgumentException.class, () -> queryBuilder.queries(predicate));
 	}

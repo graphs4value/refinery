@@ -9,14 +9,9 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 
 public interface ModelAdapterBuilder {
-	ModelStoreAdapter createStoreAdapter(ModelStore store);
+	boolean isConfigured();
 
-	<T extends ModelAdapterBuilder> T with(ModelAdapterBuilderFactory<?, ?, T> adapterBuilderFactory);
+	void configure(ModelStoreBuilder storeBuilder);
 
-	ModelStoreBuilder getStoreBuilder();
-
-	default void configure() {
-	}
-
-	ModelStore build();
+	ModelStoreAdapter build(ModelStore store);
 }

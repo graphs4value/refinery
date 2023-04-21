@@ -8,7 +8,7 @@ package tools.refinery.store.query.viatra;
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.ModelQuery;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
@@ -49,15 +49,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -97,15 +97,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -141,15 +141,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -180,15 +180,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -231,15 +231,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -269,14 +269,14 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		ageInterpretation.put(Tuple.of(0), 12);
@@ -306,15 +306,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -349,15 +349,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(minQuery, maxQuery)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(minQuery, maxQuery))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var minResultSet = queryEngine.getResultSet(minQuery);
 		var maxResultSet = queryEngine.getResultSet(maxQuery);
 
@@ -408,15 +408,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -448,15 +448,15 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -493,16 +493,16 @@ class FunctionalQueryTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.query(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);

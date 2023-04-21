@@ -6,7 +6,6 @@
 package tools.refinery.store.model;
 
 import tools.refinery.store.adapter.ModelAdapter;
-import tools.refinery.store.adapter.ModelAdapterType;
 import tools.refinery.store.map.Versioned;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
@@ -30,9 +29,9 @@ public interface Model extends Versioned {
 
 	ModelDiffCursor getDiffCursor(long to);
 
-	<T extends ModelAdapter> Optional<T> tryGetAdapter(ModelAdapterType<? extends T, ?, ?> adapterType);
+	<T extends ModelAdapter> Optional<T> tryGetAdapter(Class<? extends T> adapterType);
 
-	<T extends ModelAdapter> T getAdapter(ModelAdapterType<T, ?, ?> adapterType);
+	<T extends ModelAdapter> T getAdapter(Class<T> adapterType);
 
 	void addListener(ModelListener listener);
 

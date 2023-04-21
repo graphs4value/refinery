@@ -29,5 +29,5 @@ public interface ReasoningBuilder extends ModelAdapterBuilder {
 	Dnf lift(Modality modality, Dnf query);
 
 	@Override
-	ReasoningStoreAdapter createStoreAdapter(ModelStore store);
+	ReasoningStoreAdapter build(ModelStore store);
 }

@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.reasoning.rule;
 
-import tools.refinery.store.reasoning.Reasoning;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.term.Variable;
@@ -28,7 +28,7 @@ public record RelationRefinementAction(PartialRelation target, List<Variable> ar
 
 	@Override
 	public RuleActionExecutor createExecutor(int[] argumentIndices, Model model) {
-		var targetInterpretation = model.getAdapter(Reasoning.ADAPTER).getPartialInterpretation(target);
+		var targetInterpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(target);
 		return activationTuple -> {
 			int arity = argumentIndices.length;
 			var arguments = new int[arity];

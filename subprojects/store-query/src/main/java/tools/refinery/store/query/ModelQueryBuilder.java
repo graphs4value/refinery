@@ -26,5 +26,5 @@ public interface ModelQueryBuilder extends ModelAdapterBuilder {
 	ModelQueryBuilder query(AnyQuery query);
 
 	@Override
-	ModelQueryStoreAdapter createStoreAdapter(ModelStore store);
+	ModelQueryStoreAdapter build(ModelStore store);
 }

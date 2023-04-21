@@ -50,5 +50,5 @@ public interface ViatraModelQueryBuilder extends ModelQueryBuilder {
 	ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint);
 
 	@Override
-	ViatraModelQueryStoreAdapter createStoreAdapter(ModelStore store);
+	ViatraModelQueryStoreAdapter build(ModelStore store);
 }

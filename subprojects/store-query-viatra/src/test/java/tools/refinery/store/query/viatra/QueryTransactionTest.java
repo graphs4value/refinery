@@ -9,7 +9,7 @@ import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.ModelQuery;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
@@ -35,13 +35,13 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertResults(Map.of(
@@ -102,14 +102,14 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+					.defaultHint(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
+					.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertResults(Map.of(
@@ -153,14 +153,14 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var assetInterpretation = model.getInterpretation(asset);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertFalse(queryEngine.hasPendingChanges());
@@ -226,14 +226,14 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.query(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -268,14 +268,14 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.query(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -306,13 +306,13 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -360,13 +360,13 @@ class QueryTransactionTest {
 
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);

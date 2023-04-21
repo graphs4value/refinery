@@ -37,7 +37,7 @@ public class ReasoningAdapterImpl implements ReasoningAdapter {
 	}
 
 	@Override
-	public ResultSet getLiftedResultSet(Dnf query) {
+	public ResultSet<Boolean> getLiftedResultSet(Dnf query) {
 		return null;
 	}
 }
