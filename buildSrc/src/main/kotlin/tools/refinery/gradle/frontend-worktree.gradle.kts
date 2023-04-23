@@ -24,7 +24,7 @@ frontend {
 	})
 }
 
-val frontendPropertiesFile = frontend.nodeInstallDirectory.map { dir -> "$dir/frontend.properties" }
+val frontendPropertiesFile: Provider<String> = frontend.nodeInstallDirectory.map { dir -> "$dir/frontend.properties" }
 
 fun readFrontendProperties(): Properties {
 	val props = Properties()
