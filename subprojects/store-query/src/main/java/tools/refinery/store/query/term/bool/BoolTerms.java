@@ -13,23 +13,23 @@ public final class BoolTerms {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public static ConstantTerm<Boolean> constant(boolean value) {
-		return BoolConstantTerm.valueOf(value);
+	public static Term<Boolean> constant(Boolean value) {
+		return new ConstantTerm<>(Boolean.class, value);
 	}
 
-	public static BoolNotTerm not(Term<Boolean> body) {
+	public static Term<Boolean> not(Term<Boolean> body) {
 		return new BoolNotTerm(body);
 	}
 
-	public static BoolLogicBinaryTerm and(Term<Boolean> left, Term<Boolean> right) {
-		return new BoolLogicBinaryTerm(LogicBinaryOperator.AND, left, right);
+	public static Term<Boolean> and(Term<Boolean> left, Term<Boolean> right) {
+		return new BoolAndTerm(left, right);
 	}
 
-	public static BoolLogicBinaryTerm or(Term<Boolean> left, Term<Boolean> right) {
-		return new BoolLogicBinaryTerm(LogicBinaryOperator.OR, left, right);
+	public static Term<Boolean> or(Term<Boolean> left, Term<Boolean> right) {
+		return new BoolOrTerm(left, right);
 	}
 
-	public static BoolLogicBinaryTerm xor(Term<Boolean> left, Term<Boolean> right) {
-		return new BoolLogicBinaryTerm(LogicBinaryOperator.XOR, left, right);
+	public static Term<Boolean> xor(Term<Boolean> left, Term<Boolean> right) {
+		return new BoolXorTerm(left, right);
 	}
 }

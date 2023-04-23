@@ -7,9 +7,9 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.Term;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.term.bool.BoolConstantTerm;
 
 import java.util.Set;
 
@@ -42,13 +42,12 @@ public record AssumeLiteral(Term<Boolean> term) implements Literal {
 
 	@Override
 	public LiteralReduction getReduction() {
-		if (BoolConstantTerm.TRUE.equals(term)) {
-			return LiteralReduction.ALWAYS_TRUE;
-		} else if (BoolConstantTerm.FALSE.equals(term)) {
-			return LiteralReduction.ALWAYS_FALSE;
-		} else {
-			return LiteralReduction.NOT_REDUCIBLE;
+		if (term instanceof ConstantTerm<Boolean> constantTerm) {
+			// Return {@code ALWAYS_FALSE} for {@code false} or {@code null} literals.
+			return Boolean.TRUE.equals(constantTerm.getValue()) ? LiteralReduction.ALWAYS_TRUE :
+					LiteralReduction.ALWAYS_FALSE;
 		}
+		return LiteralReduction.NOT_REDUCIBLE;
 	}
 
 	@Override

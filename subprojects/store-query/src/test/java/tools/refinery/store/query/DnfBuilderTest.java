@@ -6,13 +6,17 @@
 package tools.refinery.store.query;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.literal.BooleanLiteral;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.bool.BoolTerms;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static tools.refinery.store.query.literal.Literals.assume;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo;
 
@@ -34,6 +38,22 @@ class DnfBuilderTest {
 	}
 
 	@Test
+	void eliminateTrueAssumptionTest() {
+		var p = Variable.of("p");
+		var q = Variable.of("q");
+		var friend = new Symbol<>("friend", 2, Boolean.class, false);
+		var friendView = new KeyOnlyView<>(friend);
+
+		var actual = Dnf.builder()
+				.parameters(p, q)
+				.clause(assume(BoolTerms.constant(true)), friendView.call(p, q))
+				.build();
+		var expected = Dnf.builder().parameters(p, q).clause(friendView.call(p, q)).build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@Test
 	void eliminateFalseTest() {
 		var p = Variable.of("p");
 		var q = Variable.of("q");
@@ -44,6 +64,27 @@ class DnfBuilderTest {
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
 				.clause(friendView.call(q, p), BooleanLiteral.FALSE)
+				.build();
+		var expected = Dnf.builder().parameters(p, q).clause(friendView.call(p, q)).build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {
+			"false",
+			"null"
+	}, nullValues = "null")
+	void eliminateFalseAssumptionTest(Boolean value) {
+		var p = Variable.of("p");
+		var q = Variable.of("q");
+		var friend = new Symbol<>("friend", 2, Boolean.class, false);
+		var friendView = new KeyOnlyView<>(friend);
+
+		var actual = Dnf.builder()
+				.parameters(p, q)
+				.clause(friendView.call(p, q))
+				.clause(friendView.call(q, p), assume(BoolTerms.constant(value)))
 				.build();
 		var expected = Dnf.builder().parameters(p, q).clause(friendView.call(p, q)).build();
 

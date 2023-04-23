@@ -11,17 +11,7 @@ import tools.refinery.store.query.term.UnaryTerm;
 
 public class BoolNotTerm extends UnaryTerm<Boolean, Boolean> {
 	protected BoolNotTerm(Term<Boolean> body) {
-		super(body);
-	}
-
-	@Override
-	public Class<Boolean> getType() {
-		return Boolean.class;
-	}
-
-	@Override
-	public Class<Boolean> getBodyType() {
-		return getType();
+		super(Boolean.class, Boolean.class, body);
 	}
 
 	@Override
@@ -36,6 +26,6 @@ public class BoolNotTerm extends UnaryTerm<Boolean, Boolean> {
 
 	@Override
 	public String toString() {
-		return "!(%s)".formatted(getBody());
+		return "(!%s)".formatted(getBody());
 	}
 }

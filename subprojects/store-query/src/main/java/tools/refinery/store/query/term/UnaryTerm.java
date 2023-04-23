@@ -12,18 +12,23 @@ import tools.refinery.store.query.valuation.Valuation;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class UnaryTerm<R, T> implements Term<R> {
+public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
+	private final Class<T> bodyType;
 	private final Term<T> body;
 
-	protected UnaryTerm(Term<T> body) {
-		if (!body.getType().equals(getBodyType())) {
+	protected UnaryTerm(Class<R> type, Class<T> bodyType, Term<T> body) {
+		super(type);
+		if (!body.getType().equals(bodyType)) {
 			throw new IllegalArgumentException("Expected body %s to be of type %s, got %s instead".formatted(body,
-					getBodyType().getName(), body.getType().getName()));
+					bodyType.getName(), body.getType().getName()));
 		}
+		this.bodyType = bodyType;
 		this.body = body;
 	}
 
-	public abstract Class<T> getBodyType();
+	public Class<T> getBodyType() {
+		return bodyType;
+	}
 
 	public Term<T> getBody() {
 		return body;
@@ -39,11 +44,11 @@ public abstract class UnaryTerm<R, T> implements Term<R> {
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {
-		if (getClass() != other.getClass()) {
+		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;
 		}
 		var otherUnaryTerm = (UnaryTerm<?, ?>) other;
-		return body.equalsWithSubstitution(helper, otherUnaryTerm.body);
+		return bodyType.equals(otherUnaryTerm.bodyType) && body.equalsWithSubstitution(helper, otherUnaryTerm.body);
 	}
 
 	@Override
@@ -62,12 +67,13 @@ public abstract class UnaryTerm<R, T> implements Term<R> {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
 		UnaryTerm<?, ?> unaryTerm = (UnaryTerm<?, ?>) o;
-		return body.equals(unaryTerm.body);
+		return Objects.equals(bodyType, unaryTerm.bodyType) && Objects.equals(body, unaryTerm.body);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getClass(), body);
+		return Objects.hash(super.hashCode(), bodyType, body);
 	}
 }
