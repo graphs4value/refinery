@@ -35,6 +35,10 @@ tasks {
 		inputs.file("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2")
 		inputs.file("src/main/resources/model/problem.ecore")
 		inputs.file("src/main/resources/model/problem.genmodel")
+		outputs.file("build.properties")
+		outputs.file("META-INF/MANIFEST.MF")
+		outputs.file("plugin.xml")
+		outputs.file("plugin.properties")
 		outputs.dir("src/main/emf-gen")
 		args("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2", "-p", "rootPath=/$projectDir")
 	}

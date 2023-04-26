@@ -29,9 +29,9 @@ val sourcesWithoutTypes = fileTree("src") {
 	exclude("**/*.typegen.ts")
 }
 
-val sourcesWithTypes = fileTree("src") + fileTree("types")
+val sourcesWithTypes: FileCollection = fileTree("src") + fileTree("types")
 
-val buildScripts = fileTree("config") + files(
+val buildScripts: FileCollection = fileTree("config") + files(
 		".eslintrc.cjs",
 		"prettier.config.cjs",
 		"vite.config.ts",
@@ -43,7 +43,7 @@ val installationState = files(
 		"package.json",
 )
 
-val sharedConfigFiles = installationState + files(
+val sharedConfigFiles: FileCollection = installationState + files(
 		"tsconfig.json",
 		"tsconfig.base.json",
 		"tsconfig.node.json",
@@ -58,7 +58,7 @@ val assembleSources = sourcesWithTypes + fileTree("public") + file("index.html")
 
 val assembleFiles = assembleSources + assembleConfigFiles
 
-val lintingFiles = sourcesWithTypes + buildScripts + sharedConfigFiles
+val lintingFiles: FileCollection = sourcesWithTypes + buildScripts + sharedConfigFiles
 
 tasks {
 	val generateXStateTypes by registering(RunYarn::class) {

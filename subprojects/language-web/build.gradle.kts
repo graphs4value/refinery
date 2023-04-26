@@ -22,7 +22,8 @@ dependencies {
 	implementation(libs.jetty.websocket.server)
 	implementation(libs.slf4j.api)
 	implementation(libs.xtext.web)
-	webapp(project(path = ":refinery-frontend", configuration = "productionAssets"))
+	xtextGenerated(project(":refinery-language", "generatedWebSources"))
+	webapp(project(":refinery-frontend", "productionAssets"))
 	testImplementation(testFixtures(project(":refinery-language")))
 	testImplementation(libs.jetty.websocket.client)
 }
@@ -32,14 +33,6 @@ application {
 }
 
 tasks {
-	val generateXtextLanguage by project(":refinery-language").tasks.existing
-
-	for (taskName in listOf("compileJava", "processResources")) {
-		named(taskName) {
-			dependsOn(generateXtextLanguage)
-		}
-	}
-
 	jar {
 		dependsOn(webapp)
 		from(webapp) {

@@ -14,6 +14,16 @@ plugins {
 	id("tools.refinery.gradle.xtext-generated")
 }
 
+val generatedIdeSources: Configuration by configurations.creating {
+	isCanBeConsumed = true
+	isCanBeResolved = false
+}
+
+val generatedWebSources: Configuration by configurations.creating {
+	isCanBeConsumed = true
+	isCanBeResolved = false
+}
+
 dependencies {
 	api(platform(libs.xtext.bom))
 	api(libs.ecore)
@@ -32,6 +42,20 @@ sourceSets {
 	}
 }
 
+val generateXtextLanguage by tasks.registering(JavaExec::class) {
+	mainClass.set("org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher")
+	classpath(configurations.mwe2)
+	inputs.file("src/main/java/tools/refinery/language/GenerateProblem.mwe2")
+	inputs.file("src/main/java/tools/refinery/language/Problem.xtext")
+	inputs.file("../language-model/src/main/resources/model/problem.ecore")
+	inputs.file("../language-model/src/main/resources/model/problem.genmodel")
+	outputs.dir("src/main/xtext-gen")
+	outputs.dir("src/testFixtures/xtext-gen")
+	outputs.dir("$buildDir/generated/sources/xtext/ide")
+	outputs.dir("$buildDir/generated/sources/xtext/web")
+	args("src/main/java/tools/refinery/language/GenerateProblem.mwe2", "-p", "rootPath=/$projectDir/..")
+}
+
 tasks {
 	jar {
 		from(sourceSets.main.map { it.allSource }) {
@@ -39,20 +63,16 @@ tasks {
 		}
 	}
 
-	val generateXtextLanguage by registering(JavaExec::class) {
-		mainClass.set("org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher")
-		classpath(configurations.mwe2)
-		inputs.file("src/main/java/tools/refinery/language/GenerateProblem.mwe2")
-		inputs.file("src/main/java/tools/refinery/language/Problem.xtext")
-		outputs.dir("src/main/xtext-gen")
-		outputs.dir("src/testFixtures/xtext-gen")
-		outputs.dir("../language-ide/src/main/xtext-gen")
-		outputs.dir("../language-web/src/main/xtext-gen")
-		args("src/main/java/tools/refinery/language/GenerateProblem.mwe2", "-p", "rootPath=/$projectDir/..")
+	syncXtextGeneratedSources {
+		// We generate Xtext runtime sources directly to {@code src/main/xtext-gen}, so there is no need to copy them
+		// from an artifact. We expose the {@code generatedIdeSources} and {@code generatedWebSources} artifacts to
+		// sibling IDE and web projects which can use this task to consume them and copy the appropriate sources to
+		// their own {@code src/main/xtext-gen} directory.
+		enabled = false
 	}
 
-	for (taskName in listOf("compileJava", "processResources", "processTestFixturesResources",
-			"generateEclipseSourceFolders")) {
+	for (taskName in listOf("compileJava", "processResources", "compileTestFixturesJava",
+			"processTestFixturesResources", "generateEclipseSourceFolders")) {
 		named(taskName) {
 			dependsOn(generateXtextLanguage)
 		}
@@ -61,8 +81,16 @@ tasks {
 	clean {
 		delete("src/main/xtext-gen")
 		delete("src/testFixtures/xtext-gen")
-		delete("../language-ide/src/main/xtext-gen")
-		delete("../language-web/src/main/xtext-gen")
+	}
+}
+
+artifacts {
+	add(generatedIdeSources.name, file("$buildDir/generated/sources/xtext/ide")) {
+		builtBy(generateXtextLanguage)
+	}
+
+	add(generatedWebSources.name, file("$buildDir/generated/sources/xtext/web")) {
+		builtBy(generateXtextLanguage)
 	}
 }
 

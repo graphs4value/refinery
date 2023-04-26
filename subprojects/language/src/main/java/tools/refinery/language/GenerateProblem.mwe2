@@ -16,16 +16,28 @@ Workflow {
 			project = StandardProjectConfig {
 				baseName = 'language'
 				rootPath = rootPath
+				runtime = {
+					// Do not generate new files into src/main/java
+					src = null
+				}
 				runtimeTest = {
 					enabled = true
-					srcGen = 'src/testFixtures/xtext-gen'
+					// Only generate the xtext-gen files and leave the rest of the project alone
+					root = null
+					srcGen = '${rootPath}/language/src/testFixtures/xtext-gen'
 				}
 				genericIde = {
 					name = 'language-ide'
+					// Only generate the xtext-gen files and leave the rest of the project alone
+					root = null
+					srcGen = "${rootPath}/language/build/generated/sources/xtext/ide"
 				}
 				web = {
 					enabled = true
 					name = 'language-web'
+					// Only generate the xtext-gen files and leave the rest of the project alone
+					root = null
+					srcGen = "${rootPath}/language/build/generated/sources/xtext/web"
 				}
 				mavenLayout = true
 			}
