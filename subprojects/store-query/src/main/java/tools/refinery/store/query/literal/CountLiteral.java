@@ -10,13 +10,14 @@ import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.int_.IntTerms;
 
 import java.util.List;
 import java.util.Objects;
 
 public class CountLiteral extends AbstractCallLiteral {
 	private final DataVariable<Integer> resultVariable;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public CountLiteral(DataVariable<Integer> resultVariable, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
@@ -29,7 +30,7 @@ public class CountLiteral extends AbstractCallLiteral {
 					.formatted(resultVariable));
 		}
 		this.resultVariable = resultVariable;
-		variableBinder = VariableBinder.builder()
+		variableBindingSite = VariableBindingSite.builder()
 				.variable(resultVariable, VariableDirection.OUT)
 				.parameterList(false, target.getParameters(), arguments)
 				.build();
@@ -40,8 +41,20 @@ public class CountLiteral extends AbstractCallLiteral {
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
+	}
+
+	@Override
+	public Literal reduce() {
+		var reduction = getTarget().getReduction();
+		return switch (reduction) {
+			case ALWAYS_FALSE -> getResultVariable().assign(IntTerms.constant(0));
+			// The only way a constant {@code true} predicate can be called in a negative position is to have all of
+			// its arguments bound as input variables. Thus, there will only be a single match.
+			case ALWAYS_TRUE -> getResultVariable().assign(IntTerms.constant(1));
+			case NOT_REDUCIBLE -> this;
+		};
 	}
 
 	@Override

@@ -26,8 +26,12 @@ public class Parameter {
 		}
 	}
 
+	public boolean isNodeVariable() {
+		return dataType == null;
+	}
+
 	public boolean isDataVariable() {
-		return dataType != null;
+		return !isNodeVariable();
 	}
 
 	public Optional<Class<?>> tryGetType() {

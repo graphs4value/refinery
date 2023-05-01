@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.query.literal;
+package tools.refinery.store.query;
 
-public enum LiteralReduction {
+public enum Reduction {
 	/**
 	 * Signifies that a literal should be preserved in the clause.
 	 */
@@ -21,7 +21,7 @@ public enum LiteralReduction {
 	 */
 	ALWAYS_FALSE;
 
-	public LiteralReduction negate() {
+	public Reduction negate() {
 		return switch (this) {
 			case NOT_REDUCIBLE -> NOT_REDUCIBLE;
 			case ALWAYS_TRUE -> ALWAYS_FALSE;

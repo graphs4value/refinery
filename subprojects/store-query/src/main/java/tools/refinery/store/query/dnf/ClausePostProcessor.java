@@ -6,6 +6,7 @@
 package tools.refinery.store.query.dnf;
 
 import org.jetbrains.annotations.NotNull;
+import tools.refinery.store.query.literal.BooleanLiteral;
 import tools.refinery.store.query.literal.EquivalenceLiteral;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.literal.VariableDirection;
@@ -51,18 +52,11 @@ class ClausePostProcessor {
 		topologicallySortLiterals();
 		var filteredLiterals = new ArrayList<Literal>(topologicallySortedLiterals.size());
 		for (var literal : topologicallySortedLiterals) {
-			var reduction = literal.getReduction();
-			switch (reduction) {
-			case NOT_REDUCIBLE -> filteredLiterals.add(literal);
-			case ALWAYS_TRUE -> {
-				// Literals reducible to {@code true} can be omitted, because the model is always assumed to have at
-				// least on object.
-			}
-			case ALWAYS_FALSE -> {
-				// Clauses with {@code false} literals can be omitted entirely.
+			var reducedLiteral = literal.reduce();
+			if (BooleanLiteral.FALSE.equals(reducedLiteral)) {
 				return ConstantResult.ALWAYS_FALSE;
-			}
-			default -> throw new IllegalArgumentException("Invalid reduction: " + reduction);
+			} else if (!BooleanLiteral.TRUE.equals(reducedLiteral)) {
+				filteredLiterals.add(reducedLiteral);
 			}
 		}
 		if (filteredLiterals.isEmpty()) {
@@ -156,7 +150,7 @@ class ClausePostProcessor {
 
 	private void computePositiveVariables() {
 		for (var literal : substitutedLiterals) {
-			var variableBinder = literal.getVariableBinder();
+			var variableBinder = literal.getVariableBindingSite();
 			variableBinder.getVariablesWithDirection(VariableDirection.IN_OUT)
 					.forEach(existentiallyQuantifiedVariables::add);
 			variableBinder.getVariablesWithDirection(VariableDirection.OUT).forEach(variable -> {
@@ -192,7 +186,7 @@ class ClausePostProcessor {
 	private void validateClosureVariables() {
 		var negativeVariablesMap = new HashMap<Variable, Literal>();
 		for (var literal : substitutedLiterals) {
-			var variableBinder = literal.getVariableBinder();
+			var variableBinder = literal.getVariableBindingSite();
 			variableBinder.getVariablesWithDirection(VariableDirection.CLOSURE, positiveVariables)
 					.forEach(variable -> {
 						var oldLiteral = negativeVariablesMap.put(variable, literal);
@@ -243,7 +237,7 @@ class ClausePostProcessor {
 		private SortableLiteral(int index, Literal literal) {
 			this.index = index;
 			this.literal = literal;
-			remainingInputs = literal.getVariableBinder()
+			remainingInputs = literal.getVariableBindingSite()
 					.getVariablesWithDirection(VariableDirection.IN, positiveVariables)
 					.collect(Collectors.toCollection(HashSet::new));
 			remainingInputs.removeAll(inputParameters);
@@ -288,7 +282,7 @@ class ClausePostProcessor {
 			}
 			// Add literal if we haven't yet added a duplicate of this literal.
 			topologicallySortedLiterals.add(literal);
-			var variableBinder = literal.getVariableBinder();
+			var variableBinder = literal.getVariableBindingSite();
 			variableBinder.getVariablesWithDirection(VariableDirection.IN_OUT)
 					.forEach(ClausePostProcessor.this::topologicallySortVariable);
 			variableBinder.getVariablesWithDirection(VariableDirection.OUT)

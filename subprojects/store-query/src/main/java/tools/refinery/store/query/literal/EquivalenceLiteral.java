@@ -16,13 +16,13 @@ public final class EquivalenceLiteral
 	private final boolean positive;
 	private final NodeVariable left;
 	private final NodeVariable right;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right) {
 		this.positive = positive;
 		this.left = left;
 		this.right = right;
-		variableBinder = VariableBinder.builder()
+		variableBindingSite = VariableBindingSite.builder()
 				.variable(left, positive ? VariableDirection.IN_OUT : VariableDirection.IN)
 				.variable(right, VariableDirection.IN)
 				.build();
@@ -41,8 +41,8 @@ public final class EquivalenceLiteral
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
 	}
 
 	@Override
@@ -57,11 +57,11 @@ public final class EquivalenceLiteral
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Literal reduce() {
 		if (left.equals(right)) {
-			return positive ? LiteralReduction.ALWAYS_TRUE : LiteralReduction.ALWAYS_FALSE;
+			return positive ? BooleanLiteral.TRUE : BooleanLiteral.FALSE;
 		}
-		return LiteralReduction.NOT_REDUCIBLE;
+		return this;
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import java.util.Objects;
 
 public final class CallLiteral extends AbstractCallLiteral implements CanNegate<CallLiteral> {
 	private final CallPolarity polarity;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public CallLiteral(CallPolarity polarity, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
@@ -30,7 +30,7 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 			}
 		}
 		this.polarity = polarity;
-		variableBinder = VariableBinder.builder()
+		variableBindingSite = VariableBindingSite.builder()
 				.parameterList(polarity.isPositive(), parameters, arguments)
 				.build();
 	}
@@ -40,8 +40,8 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
 	}
 
 	@Override
@@ -50,9 +50,14 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Literal reduce() {
 		var reduction = getTarget().getReduction();
-		return polarity.isPositive() ? reduction : reduction.negate();
+		var negatedReduction = polarity.isPositive() ? reduction : reduction.negate();
+		return switch (negatedReduction) {
+			case ALWAYS_TRUE -> BooleanLiteral.TRUE;
+			case ALWAYS_FALSE -> BooleanLiteral.FALSE;
+			default -> this;
+		};
 	}
 
 	@Override

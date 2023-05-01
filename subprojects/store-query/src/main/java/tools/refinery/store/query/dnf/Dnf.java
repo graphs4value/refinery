@@ -6,9 +6,9 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.Reduction;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
-import tools.refinery.store.query.literal.LiteralReduction;
 import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.query.term.Variable;
 
@@ -103,16 +103,16 @@ public final class Dnf implements Constraint {
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Reduction getReduction() {
 		if (clauses.isEmpty()) {
-			return LiteralReduction.ALWAYS_FALSE;
+			return Reduction.ALWAYS_FALSE;
 		}
 		for (var clause : clauses) {
 			if (clause.literals().isEmpty()) {
-				return LiteralReduction.ALWAYS_TRUE;
+				return Reduction.ALWAYS_TRUE;
 			}
 		}
-		return LiteralReduction.NOT_REDUCIBLE;
+		return Reduction.NOT_REDUCIBLE;
 	}
 
 	public boolean equalsWithSubstitution(DnfEqualityChecker callEqualityChecker, Dnf other) {

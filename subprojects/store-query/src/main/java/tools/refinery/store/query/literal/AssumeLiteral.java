@@ -14,7 +14,7 @@ import java.util.Objects;
 
 public final class AssumeLiteral implements Literal {
 	private final Term<Boolean> term;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public AssumeLiteral(Term<Boolean> term) {
 		if (!term.getType().equals(Boolean.class)) {
@@ -22,7 +22,7 @@ public final class AssumeLiteral implements Literal {
 					term, Boolean.class.getName(), term.getType().getName()));
 		}
 		this.term = term;
-		variableBinder = VariableBinder.builder()
+		variableBindingSite = VariableBindingSite.builder()
 				.variables(term.getInputVariables(), VariableDirection.IN)
 				.build();
 	}
@@ -32,8 +32,8 @@ public final class AssumeLiteral implements Literal {
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
 	}
 
 	@Override
@@ -51,13 +51,13 @@ public final class AssumeLiteral implements Literal {
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Literal reduce() {
 		if (term instanceof ConstantTerm<Boolean> constantTerm) {
-			// Return {@code ALWAYS_FALSE} for {@code false} or {@code null} literals.
-			return Boolean.TRUE.equals(constantTerm.getValue()) ? LiteralReduction.ALWAYS_TRUE :
-					LiteralReduction.ALWAYS_FALSE;
+			// Return {@link BooleanLiteral#FALSE} for {@code false} or {@code null} literals.
+			return Boolean.TRUE.equals(constantTerm.getValue()) ? BooleanLiteral.TRUE :
+					BooleanLiteral.FALSE;
 		}
-		return LiteralReduction.NOT_REDUCIBLE;
+		return this;
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import java.util.Objects;
 public final class AssignLiteral<T> implements Literal {
 	private final DataVariable<T> variable;
 	private final Term<T> term;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public AssignLiteral(DataVariable<T> variable, Term<T> term) {
 		if (!term.getType().equals(variable.getType())) {
@@ -29,7 +29,7 @@ public final class AssignLiteral<T> implements Literal {
 			throw new IllegalArgumentException("Result variable %s must not appear in the term %s".formatted(
 					variable, term));
 		}
-		variableBinder = VariableBinder.builder()
+		variableBindingSite = VariableBindingSite.builder()
 				.variable(variable, VariableDirection.OUT)
 				.variables(inputVariables, VariableDirection.IN)
 				.build();
@@ -44,8 +44,8 @@ public final class AssignLiteral<T> implements Literal {
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
 	}
 
 	@Override

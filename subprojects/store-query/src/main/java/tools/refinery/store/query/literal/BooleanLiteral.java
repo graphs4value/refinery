@@ -19,19 +19,14 @@ public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return VariableBinder.EMPTY;
+	public VariableBindingSite getVariableBindingSite() {
+		return VariableBindingSite.EMPTY;
 	}
 
 	@Override
 	public Literal substitute(Substitution substitution) {
 		// No variables to substitute.
 		return this;
-	}
-
-	@Override
-	public LiteralReduction getReduction() {
-		return value ? LiteralReduction.ALWAYS_TRUE : LiteralReduction.ALWAYS_FALSE;
 	}
 
 	@Override

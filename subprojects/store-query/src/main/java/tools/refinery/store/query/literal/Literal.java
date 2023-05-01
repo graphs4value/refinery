@@ -9,12 +9,12 @@ import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 
 public interface Literal {
-	VariableBinder getVariableBinder();
+	VariableBindingSite getVariableBindingSite();
 
 	Literal substitute(Substitution substitution);
 
-	default LiteralReduction getReduction() {
-		return LiteralReduction.NOT_REDUCIBLE;
+	default Literal reduce() {
+		return this;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

@@ -9,6 +9,7 @@ import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.Aggregator;
+import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Variable;
 
@@ -19,7 +20,7 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	private final DataVariable<R> resultVariable;
 	private final DataVariable<T> inputVariable;
 	private final Aggregator<R, T> aggregator;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public AggregationLiteral(DataVariable<R> resultVariable, Aggregator<R, T> aggregator,
 							  DataVariable<T> inputVariable, Constraint target, List<Variable> arguments) {
@@ -39,13 +40,13 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 		this.resultVariable = resultVariable;
 		this.inputVariable = inputVariable;
 		this.aggregator = aggregator;
-		variableBinder = VariableBinder.builder()
+		variableBindingSite = VariableBindingSite.builder()
 				.variable(resultVariable, VariableDirection.OUT)
 				.parameterList(false, target.getParameters(), arguments)
 				.build();
-		if (variableBinder.getDirection(inputVariable) != VariableDirection.CLOSURE) {
-			throw new IllegalArgumentException("Input variable %s must appear in the argument list".formatted(
-					inputVariable));
+		if (variableBindingSite.getDirection(inputVariable) != VariableDirection.CLOSURE) {
+			throw new IllegalArgumentException(("Input variable %s must appear in the argument list as an output " +
+					"variable and should not be bound anywhere else").formatted(inputVariable));
 		}
 	}
 
@@ -62,8 +63,22 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
+	}
+
+	@Override
+	public Literal reduce() {
+		var reduction = getTarget().getReduction();
+		return switch (reduction) {
+			case ALWAYS_FALSE -> {
+				var emptyValue = aggregator.getEmptyResult();
+				yield emptyValue == null ? BooleanLiteral.FALSE :
+						resultVariable.assign(new ConstantTerm<>(resultVariable.getType(), emptyValue));
+			}
+			case ALWAYS_TRUE -> throw new IllegalArgumentException("Trying to aggregate over an infinite set");
+			case NOT_REDUCIBLE -> this;
+		};
 	}
 
 	@Override

@@ -24,8 +24,8 @@ public interface Constraint {
 		return i < 0 || i >= arity();
 	}
 
-	default LiteralReduction getReduction() {
-		return LiteralReduction.NOT_REDUCIBLE;
+	default Reduction getReduction() {
+		return Reduction.NOT_REDUCIBLE;
 	}
 
 	default boolean equals(LiteralEqualityHelper helper, Constraint other) {

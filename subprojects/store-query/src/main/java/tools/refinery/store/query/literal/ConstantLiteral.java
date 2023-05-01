@@ -14,12 +14,12 @@ import java.util.Objects;
 public final class ConstantLiteral implements Literal {
 	private final NodeVariable variable;
 	private final int nodeId;
-	private final VariableBinder variableBinder;
+	private final VariableBindingSite variableBindingSite;
 
 	public ConstantLiteral(NodeVariable variable, int nodeId) {
 		this.variable = variable;
 		this.nodeId = nodeId;
-		variableBinder = VariableBinder.builder().variable(variable, VariableDirection.IN_OUT).build();
+		variableBindingSite = VariableBindingSite.builder().variable(variable, VariableDirection.IN_OUT).build();
 	}
 
 	public NodeVariable getVariable() {
@@ -31,8 +31,8 @@ public final class ConstantLiteral implements Literal {
 	}
 
 	@Override
-	public VariableBinder getVariableBinder() {
-		return variableBinder;
+	public VariableBindingSite getVariableBindingSite() {
+		return variableBindingSite;
 	}
 
 	@Override
