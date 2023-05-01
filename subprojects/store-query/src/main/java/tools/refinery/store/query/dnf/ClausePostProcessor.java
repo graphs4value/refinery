@@ -11,6 +11,7 @@ import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.literal.VariableDirection;
 import tools.refinery.store.query.substitution.MapBasedSubstitution;
 import tools.refinery.store.query.substitution.StatelessSubstitution;
+import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
 
@@ -135,15 +136,20 @@ class ClausePostProcessor {
 	}
 
 	private void substituteLiterals() {
-		var substitution = new MapBasedSubstitution(Collections.unmodifiableMap(representatives),
-				StatelessSubstitution.IDENTITY);
+		Substitution substitution;
+		if (representatives.isEmpty()) {
+			substitution = null;
+		} else {
+			substitution = new MapBasedSubstitution(Collections.unmodifiableMap(representatives),
+					StatelessSubstitution.IDENTITY);
+		}
 		for (var literal : literals) {
 			if (isPositiveEquivalence(literal)) {
 				// We already retained all equivalences that cannot be replaced with substitutions in
 				// {@link#keepParameterEquivalences()}.
 				continue;
 			}
-			var substitutedLiteral = literal.substitute(substitution);
+			var substitutedLiteral = substitution == null ? literal : literal.substitute(substitution);
 			substitutedLiterals.add(substitutedLiteral);
 		}
 	}
