@@ -8,28 +8,31 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.NodeSort;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public final class CallLiteral extends AbstractCallLiteral implements CanNegate<CallLiteral> {
 	private final CallPolarity polarity;
+	private final VariableBinder variableBinder;
 
 	public CallLiteral(CallPolarity polarity, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
+		var parameters = target.getParameters();
+		int arity = target.arity();
 		if (polarity.isTransitive()) {
-			if (target.arity() != 2) {
+			if (arity != 2) {
 				throw new IllegalArgumentException("Transitive closures can only take binary relations");
 			}
-			var sorts = target.getSorts();
-			if (!sorts.get(0).equals(NodeSort.INSTANCE) || !sorts.get(1).equals(NodeSort.INSTANCE)) {
+			if (parameters.get(0).isDataVariable() || parameters.get(1).isDataVariable()) {
 				throw new IllegalArgumentException("Transitive closures can only be computed over nodes");
 			}
 		}
 		this.polarity = polarity;
+		variableBinder = VariableBinder.builder()
+				.parameterList(polarity.isPositive(), parameters, arguments)
+				.build();
 	}
 
 	public CallPolarity getPolarity() {
@@ -37,8 +40,8 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
-		return polarity.isPositive() ? Set.copyOf(getArguments()) : Set.of();
+	public VariableBinder getVariableBinder() {
+		return variableBinder;
 	}
 
 	@Override

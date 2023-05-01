@@ -6,22 +6,26 @@
 package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.term.NodeSort;
-import tools.refinery.store.query.term.Sort;
+import tools.refinery.store.query.term.Parameter;
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
-import tools.refinery.store.representation.Symbol;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class TuplePreservingView<T> extends SymbolView<T> {
+	private final List<Parameter> parameters;
+
 	protected TuplePreservingView(Symbol<T> symbol, String name) {
 		super(symbol, name);
+		this.parameters = createParameters(symbol.arity());
 	}
 
 	protected TuplePreservingView(Symbol<T> symbol) {
 		super(symbol);
+		this.parameters = createParameters(symbol.arity());
 	}
 
 	public Object[] forwardMap(Tuple key) {
@@ -52,14 +56,27 @@ public abstract class TuplePreservingView<T> extends SymbolView<T> {
 	}
 
 	@Override
-	public int arity() {
-		return this.getSymbol().arity();
+	public List<Parameter> getParameters() {
+		return parameters;
 	}
 
 	@Override
-	public List<Sort> getSorts() {
-		var sorts = new Sort[arity()];
-		Arrays.fill(sorts, NodeSort.INSTANCE);
-		return List.of(sorts);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		TuplePreservingView<?> that = (TuplePreservingView<?>) o;
+		return Objects.equals(parameters, that.parameters);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), parameters);
+	}
+
+	private static List<Parameter> createParameters(int arity) {
+		var parameters = new Parameter[arity];
+		Arrays.fill(parameters, Parameter.NODE_IN_OUT);
+		return List.of(parameters);
 	}
 }

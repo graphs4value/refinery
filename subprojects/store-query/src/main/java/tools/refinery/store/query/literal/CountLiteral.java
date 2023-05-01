@@ -13,10 +13,10 @@ import tools.refinery.store.query.term.Variable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class CountLiteral extends AbstractCallLiteral {
 	private final DataVariable<Integer> resultVariable;
+	private final VariableBinder variableBinder;
 
 	public CountLiteral(DataVariable<Integer> resultVariable, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
@@ -29,6 +29,10 @@ public class CountLiteral extends AbstractCallLiteral {
 					.formatted(resultVariable));
 		}
 		this.resultVariable = resultVariable;
+		variableBinder = VariableBinder.builder()
+				.variable(resultVariable, VariableDirection.OUT)
+				.parameterList(false, target.getParameters(), arguments)
+				.build();
 	}
 
 	public DataVariable<Integer> getResultVariable() {
@@ -36,8 +40,8 @@ public class CountLiteral extends AbstractCallLiteral {
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
-		return Set.of(resultVariable);
+	public VariableBinder getVariableBinder() {
+		return variableBinder;
 	}
 
 	@Override

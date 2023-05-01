@@ -25,13 +25,13 @@ public abstract class AbstractCallLiteral implements Literal {
 		}
 		this.target = target;
 		this.arguments = arguments;
-		var sorts = target.getSorts();
+		var parameters = target.getParameters();
 		for (int i = 0; i < arity; i++) {
 			var argument = arguments.get(i);
-			var sort = sorts.get(i);
-			if (!sort.isInstance(argument)) {
-				throw new IllegalArgumentException("Required argument %d of %s to be of sort %s, but got %s instead"
-						.formatted(i, target, sort, argument.getSort()));
+			var parameter = parameters.get(i);
+			if (!parameter.isAssignable(argument)) {
+				throw new IllegalArgumentException("Argument %d of %s is not assignable to parameter %s"
+						.formatted(i, target, parameter));
 			}
 		}
 	}
@@ -80,6 +80,6 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(target, arguments);
+		return Objects.hash(getClass(), target, arguments);
 	}
 }

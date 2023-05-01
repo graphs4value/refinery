@@ -9,14 +9,16 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.query.literal.ConstantLiteral;
 import tools.refinery.store.query.literal.EquivalenceLiteral;
 
+import java.util.Optional;
+
 public final class NodeVariable extends Variable {
 	NodeVariable(@Nullable String name) {
 		super(name);
 	}
 
 	@Override
-	public NodeSort getSort() {
-		return NodeSort.INSTANCE;
+	public Optional<Class<?>> tryGetType() {
+		return Optional.empty();
 	}
 
 	@Override

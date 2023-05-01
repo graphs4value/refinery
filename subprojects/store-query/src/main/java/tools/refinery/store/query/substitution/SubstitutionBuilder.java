@@ -32,9 +32,10 @@ public class SubstitutionBuilder {
 	}
 
 	public SubstitutionBuilder putChecked(Variable original, Variable substitute) {
-		if (!original.getSort().equals(substitute.getSort())) {
+		if (!original.tryGetType().equals(substitute.tryGetType())) {
 			throw new IllegalArgumentException("Cannot substitute variable %s of sort %s with variable %s of sort %s"
-					.formatted(original, original.getSort(), substitute, substitute.getSort()));
+					.formatted(original, original.tryGetType().map(Class::getName).orElse("node"), substitute,
+							substitute.tryGetType().map(Class::getName).orElse("node")));
 		}
 		if (map.containsKey(original)) {
 			throw new IllegalArgumentException("Already has substitution for variable %s".formatted(original));

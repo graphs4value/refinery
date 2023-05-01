@@ -6,8 +6,7 @@
 package tools.refinery.store.reasoning.representation;
 
 import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.term.NodeSort;
-import tools.refinery.store.query.term.Sort;
+import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.representation.AbstractDomain;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.TruthValueDomain;
@@ -32,10 +31,10 @@ public record PartialRelation(String name, int arity) implements PartialSymbol<T
 	}
 
 	@Override
-	public List<Sort> getSorts() {
-		var sorts = new Sort[arity()];
-		Arrays.fill(sorts, NodeSort.INSTANCE);
-		return List.of(sorts);
+	public List<Parameter> getParameters() {
+		var parameters = new Parameter[arity];
+		Arrays.fill(parameters, Parameter.NODE_IN_OUT);
+		return List.of(parameters);
 	}
 
 	@Override

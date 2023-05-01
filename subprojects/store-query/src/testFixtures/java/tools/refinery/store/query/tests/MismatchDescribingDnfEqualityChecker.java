@@ -35,11 +35,11 @@ class MismatchDescribingDnfEqualityChecker extends DeepDnfEqualityChecker {
 		var inProgress = getInProgress();
 		int size = inProgress.size();
 		if (size <= 1) {
-			description.appendText("was ").appendText(pair.left().toDefinitionString());
+			description.appendText("was ").appendText(pair.right().toDefinitionString());
 			return;
 		}
 		var last = inProgress.get(size - 1);
-		description.appendText("expected ").appendText(last.right().toDefinitionString());
+		description.appendText("expected ").appendText(last.left().toDefinitionString());
 		for (int i = size - 2; i >= 0; i--) {
 			description.appendText(" called from ").appendText(inProgress.get(i).left().toString());
 		}

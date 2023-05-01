@@ -7,20 +7,16 @@ package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.dnf.callback.*;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.*;
 
 import java.util.*;
 
 @SuppressWarnings("UnusedReturnValue")
 public final class DnfBuilder {
 	private final String name;
-
 	private final List<Variable> parameters = new ArrayList<>();
-
+	private final Map<Variable, ParameterDirection> directions = new HashMap<>();
 	private final List<FunctionalDependency<Variable>> functionalDependencies = new ArrayList<>();
-
 	private final List<List<Literal>> clauses = new ArrayList<>();
 
 	DnfBuilder(String name) {
@@ -37,6 +33,18 @@ public final class DnfBuilder {
 		return variable;
 	}
 
+	public NodeVariable parameter(ParameterDirection direction) {
+		var variable = parameter();
+		putDirection(variable, direction);
+		return variable;
+	}
+
+	public NodeVariable parameter(String name, ParameterDirection direction) {
+		var variable = parameter(name);
+		putDirection(variable, direction);
+		return variable;
+	}
+
 	public <T> DataVariable<T> parameter(Class<T> type) {
 		return parameter(null, type);
 	}
@@ -44,6 +52,18 @@ public final class DnfBuilder {
 	public <T> DataVariable<T> parameter(String name, Class<T> type) {
 		var variable = Variable.of(name, type);
 		parameter(variable);
+		return variable;
+	}
+
+	public <T> DataVariable<T> parameter(Class<T> type, ParameterDirection direction) {
+		var variable = parameter(type);
+		putDirection(variable, direction);
+		return variable;
+	}
+
+	public <T> DataVariable<T> parameter(String name, Class<T> type, ParameterDirection direction) {
+		var variable = parameter(name, type);
+		putDirection(variable, direction);
 		return variable;
 	}
 
@@ -55,12 +75,49 @@ public final class DnfBuilder {
 		return this;
 	}
 
+	public DnfBuilder parameter(Variable variable, ParameterDirection direction) {
+		parameter(variable);
+		putDirection(variable, direction);
+		return this;
+	}
+
+	private void putDirection(Variable variable, ParameterDirection direction) {
+		if (variable.tryGetType().isPresent()) {
+			if (direction == ParameterDirection.IN_OUT) {
+				throw new IllegalArgumentException("%s direction is forbidden for data variable %s"
+						.formatted(direction, variable));
+			}
+		} else {
+			if (direction == ParameterDirection.OUT) {
+				throw new IllegalArgumentException("%s direction is forbidden for node variable %s"
+						.formatted(direction, variable));
+			}
+		}
+		directions.put(variable, direction);
+	}
+
 	public DnfBuilder parameters(Variable... variables) {
 		return parameters(List.of(variables));
 	}
 
 	public DnfBuilder parameters(Collection<? extends Variable> variables) {
-		parameters.addAll(variables);
+		for (var variable : variables) {
+			parameter(variable);
+		}
+		return this;
+	}
+
+	public DnfBuilder parameters(Collection<? extends Variable> variables, ParameterDirection direction) {
+		for (var variable : variables) {
+			parameter(variable, direction);
+		}
+		return this;
+	}
+
+	public DnfBuilder symbolicParameters(Collection<SymbolicParameter> parameters) {
+		for (var parameter : parameters) {
+			parameter(parameter.getVariable(), parameter.getDirection());
+		}
 		return this;
 	}
 
@@ -152,54 +209,98 @@ public final class DnfBuilder {
 	}
 
 	public DnfBuilder clause(Collection<? extends Literal> literals) {
-		// Remove duplicates by using a hashed data structure.
-		var filteredLiterals = new LinkedHashSet<Literal>(literals.size());
-		for (var literal : literals) {
-			var reduction = literal.getReduction();
-			switch (reduction) {
-			case NOT_REDUCIBLE -> filteredLiterals.add(literal);
-			case ALWAYS_TRUE -> {
-				// Literals reducible to {@code true} can be omitted, because the model is always assumed to have at
-				// least on object.
-			}
-			case ALWAYS_FALSE -> {
-				// Clauses with {@code false} literals can be omitted entirely.
-				return this;
-			}
-			default -> throw new IllegalArgumentException("Invalid reduction: " + reduction);
-			}
-		}
-		clauses.add(List.copyOf(filteredLiterals));
+		clauses.add(List.copyOf(literals));
 		return this;
+	}
+
+	<T> void output(DataVariable<T> outputVariable) {
+		var fromParameters = Set.copyOf(parameters);
+		parameter(outputVariable, ParameterDirection.OUT);
+		functionalDependency(fromParameters, Set.of(outputVariable));
 	}
 
 	public Dnf build() {
 		var postProcessedClauses = postProcessClauses();
-		return new Dnf(name, Collections.unmodifiableList(parameters),
+		return new Dnf(name, createParameterList(postProcessedClauses),
 				Collections.unmodifiableList(functionalDependencies),
 				Collections.unmodifiableList(postProcessedClauses));
 	}
 
-	<T> void output(DataVariable<T> outputVariable) {
-		functionalDependency(Set.copyOf(parameters), Set.of(outputVariable));
-		parameter(outputVariable);
-	}
-
 	private List<DnfClause> postProcessClauses() {
+		var parameterSet = Collections.unmodifiableSet(new LinkedHashSet<>(parameters));
+		var parameterWeights = getParameterWeights();
 		var postProcessedClauses = new ArrayList<DnfClause>(clauses.size());
 		for (var literals : clauses) {
-			if (literals.isEmpty()) {
-				// Predicate will always match, the other clauses are irrelevant.
-				return List.of(new DnfClause(Set.of(), List.of()));
+			var postProcessor = new ClausePostProcessor(parameterSet, parameterWeights, literals);
+			var result = postProcessor.postProcessClause();
+			if (result instanceof ClausePostProcessor.ClauseResult clauseResult) {
+				postProcessedClauses.add(clauseResult.clause());
+			} else if (result instanceof ClausePostProcessor.ConstantResult constantResult) {
+				switch (constantResult) {
+				case ALWAYS_TRUE -> {
+					return List.of(new DnfClause(Set.of(), List.of()));
+				}
+				case ALWAYS_FALSE -> {
+					// Skip this clause because it can never match.
+				}
+				default -> throw new IllegalStateException("Unexpected ClausePostProcessor.ConstantResult: " +
+						constantResult);
+				}
+			} else {
+				throw new IllegalStateException("Unexpected ClausePostProcessor.Result: " + result);
 			}
-			var variables = new HashSet<Variable>();
-			for (var literal : literals) {
-				variables.addAll(literal.getBoundVariables());
-			}
-			parameters.forEach(variables::remove);
-			postProcessedClauses.add(new DnfClause(Collections.unmodifiableSet(variables),
-					Collections.unmodifiableList(literals)));
 		}
 		return postProcessedClauses;
+	}
+
+	private Map<Variable, Integer> getParameterWeights() {
+		var mutableParameterWeights = new HashMap<Variable, Integer>();
+		int arity = parameters.size();
+		for (int i = 0; i < arity; i++) {
+			mutableParameterWeights.put(parameters.get(i), i);
+		}
+		return Collections.unmodifiableMap(mutableParameterWeights);
+	}
+
+	private List<SymbolicParameter> createParameterList(List<DnfClause> postProcessedClauses) {
+		var outputParameterVariables = new HashSet<>(parameters);
+		for (var clause : postProcessedClauses) {
+			outputParameterVariables.retainAll(clause.positiveVariables());
+		}
+		var parameterList = new ArrayList<SymbolicParameter>(parameters.size());
+		for (var parameter : parameters) {
+			ParameterDirection direction = getDirection(outputParameterVariables, parameter);
+			parameterList.add(new SymbolicParameter(parameter, direction));
+		}
+		return Collections.unmodifiableList(parameterList);
+	}
+
+	private ParameterDirection getDirection(HashSet<Variable> outputParameterVariables, Variable parameter) {
+		var direction = getInferredDirection(outputParameterVariables, parameter);
+		var expectedDirection = directions.get(parameter);
+		if (expectedDirection == ParameterDirection.IN && direction == ParameterDirection.IN_OUT) {
+			// Parameters may be explicitly marked as {@code @In} even if they are bound in all clauses.
+			return expectedDirection;
+		}
+		if (expectedDirection != null && expectedDirection != direction) {
+			throw new IllegalArgumentException("Expected parameter %s to have direction %s, but got %s instead"
+					.formatted(parameter, expectedDirection, direction));
+		}
+		return direction;
+	}
+
+	private static ParameterDirection getInferredDirection(HashSet<Variable> outputParameterVariables,
+														   Variable parameter) {
+		if (outputParameterVariables.contains(parameter)) {
+			if (parameter instanceof NodeVariable) {
+				return ParameterDirection.IN_OUT;
+			} else if (parameter instanceof AnyDataVariable) {
+				return ParameterDirection.OUT;
+			} else {
+				throw new IllegalArgumentException("Unknown parameter: " + parameter);
+			}
+		} else {
+			return ParameterDirection.IN;
+		}
 	}
 }

@@ -8,14 +8,31 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
 
-import java.util.Set;
+import java.util.Objects;
 
-public record ConstantLiteral(NodeVariable variable, int nodeId) implements Literal {
+public final class ConstantLiteral implements Literal {
+	private final NodeVariable variable;
+	private final int nodeId;
+	private final VariableBinder variableBinder;
+
+	public ConstantLiteral(NodeVariable variable, int nodeId) {
+		this.variable = variable;
+		this.nodeId = nodeId;
+		variableBinder = VariableBinder.builder().variable(variable, VariableDirection.IN_OUT).build();
+	}
+
+	public NodeVariable getVariable() {
+		return variable;
+	}
+
+	public int getNodeId() {
+		return nodeId;
+	}
+
 	@Override
-	public Set<Variable> getBoundVariables() {
-		return Set.of(variable);
+	public VariableBinder getVariableBinder() {
+		return variableBinder;
 	}
 
 	@Override
@@ -32,8 +49,23 @@ public record ConstantLiteral(NodeVariable variable, int nodeId) implements Lite
 		return helper.variableEqual(variable, otherConstantLiteral.variable) && nodeId == otherConstantLiteral.nodeId;
 	}
 
+
 	@Override
 	public String toString() {
 		return "%s === @Constant %d".formatted(variable, nodeId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (ConstantLiteral) obj;
+		return Objects.equals(this.variable, that.variable) &&
+				this.nodeId == that.nodeId;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getClass(), variable, nodeId);
 	}
 }

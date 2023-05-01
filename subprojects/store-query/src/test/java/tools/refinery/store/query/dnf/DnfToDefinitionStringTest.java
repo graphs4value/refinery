@@ -3,10 +3,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.query;
+package tools.refinery.store.query.dnf;
 
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
@@ -43,7 +42,7 @@ class DnfToDefinitionStringTest {
 		var dnf = Dnf.builder("Example").parameter(p).clause().build();
 
 		assertThat(dnf.toDefinitionString(), is("""
-				pred Example(p) <->
+				pred Example(@In p) <->
 				    <empty>.
 				"""));
 	}

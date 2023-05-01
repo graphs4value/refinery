@@ -5,14 +5,11 @@
  */
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 
-import java.util.Set;
-
 public interface Literal {
-	Set<Variable> getBoundVariables();
+	VariableBinder getVariableBinder();
 
 	Literal substitute(Substitution substitution);
 

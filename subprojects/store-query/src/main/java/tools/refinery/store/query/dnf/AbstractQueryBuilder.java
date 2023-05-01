@@ -8,6 +8,7 @@ package tools.refinery.store.query.dnf;
 import tools.refinery.store.query.dnf.callback.*;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.Collection;
@@ -31,8 +32,21 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<T>> {
 		return dnfBuilder.parameter(name);
 	}
 
+	public NodeVariable parameter(ParameterDirection direction) {
+		return dnfBuilder.parameter(direction);
+	}
+
+	public NodeVariable parameter(String name, ParameterDirection direction) {
+		return dnfBuilder.parameter(name, direction);
+	}
+
 	public T parameter(NodeVariable variable) {
 		dnfBuilder.parameter(variable);
+		return self();
+	}
+
+	public T parameter(NodeVariable variable, ParameterDirection direction) {
+		dnfBuilder.parameter(variable, direction);
 		return self();
 	}
 
@@ -43,6 +57,16 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<T>> {
 
 	public T parameters(List<NodeVariable> variables) {
 		dnfBuilder.parameters(variables);
+		return self();
+	}
+
+	public T parameters(List<NodeVariable> variables, ParameterDirection direction) {
+		dnfBuilder.parameters(variables, direction);
+		return self();
+	}
+
+	public T symbolicParameters(List<SymbolicParameter> parameters) {
+		dnfBuilder.symbolicParameters(parameters);
 		return self();
 	}
 

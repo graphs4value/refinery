@@ -14,10 +14,10 @@ import java.util.List;
 public interface Constraint {
 	String name();
 
-	List<Sort> getSorts();
+	List<Parameter> getParameters();
 
 	default int arity() {
-		return getSorts().size();
+		return getParameters().size();
 	}
 
 	default boolean invalidIndex(int i) {

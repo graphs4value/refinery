@@ -17,20 +17,21 @@ public final class FunctionalQuery<T> implements Query<T> {
 	private final Class<T> type;
 
 	FunctionalQuery(Dnf dnf, Class<T> type) {
-		var parameters = dnf.getParameters();
+		var parameters = dnf.getSymbolicParameters();
 		int outputIndex = dnf.arity() - 1;
 		for (int i = 0; i < outputIndex; i++) {
 			var parameter = parameters.get(i);
-			if (!(parameter instanceof NodeVariable)) {
-				throw new IllegalArgumentException("Expected parameter %s of %s to be of sort %s, but got %s instead"
-						.formatted(parameter, dnf, NodeSort.INSTANCE, parameter.getSort()));
+			var parameterType = parameter.tryGetType();
+			if (parameterType.isPresent()) {
+				throw new IllegalArgumentException("Expected parameter %s of %s to be a node variable, got %s instead"
+						.formatted(parameter, dnf, parameterType.get().getName()));
 			}
 		}
 		var outputParameter = parameters.get(outputIndex);
-		if (!(outputParameter instanceof DataVariable<?> dataOutputParameter) ||
-				!dataOutputParameter.getType().equals(type)) {
-			throw new IllegalArgumentException("Expected parameter %s of %s to be of sort %s, but got %s instead"
-					.formatted(outputParameter, dnf, type, outputParameter.getSort()));
+		var outputParameterType = outputParameter.tryGetType();
+		if (outputParameterType.isEmpty() || !outputParameterType.get().equals(type)) {
+			throw new IllegalArgumentException("Expected parameter %s of %s to be %s, but got %s instead".formatted(
+					outputParameter, dnf, type, outputParameterType.map(Class::getName).orElse("node")));
 		}
 		this.dnf = dnf;
 		this.type = type;

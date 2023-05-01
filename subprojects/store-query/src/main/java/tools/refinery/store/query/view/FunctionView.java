@@ -5,21 +5,16 @@
  */
 package tools.refinery.store.query.view;
 
-import tools.refinery.store.query.term.DataSort;
-import tools.refinery.store.query.term.Sort;
+import tools.refinery.store.query.term.Parameter;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.representation.Symbol;
 
 public final class FunctionView<T> extends AbstractFunctionView<T> {
 	public FunctionView(Symbol<T> symbol, String name) {
-		super(symbol, name);
+		super(symbol, name, new Parameter(symbol.valueType(), ParameterDirection.OUT));
 	}
 
 	public FunctionView(Symbol<T> symbol) {
 		this(symbol, "function");
-	}
-
-	@Override
-	protected Sort getForwardMappedValueSort() {
-		return new DataSort<>(getSymbol().valueType());
 	}
 }

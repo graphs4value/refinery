@@ -8,11 +8,17 @@ package tools.refinery.store.query.term;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 
+import java.util.Optional;
 import java.util.Set;
 
 public abstract sealed class AnyDataVariable extends Variable implements AnyTerm permits DataVariable {
 	protected AnyDataVariable(String name) {
 		super(name);
+	}
+
+	@Override
+	public Optional<Class<?>> tryGetType() {
+		return Optional.of(getType());
 	}
 
 	@Override

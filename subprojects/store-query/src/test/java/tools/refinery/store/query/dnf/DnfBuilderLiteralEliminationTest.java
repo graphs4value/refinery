@@ -3,31 +3,36 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.query;
+package tools.refinery.store.query.dnf;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.literal.BooleanLiteral;
+import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.term.bool.BoolTerms;
 import tools.refinery.store.query.view.KeyOnlyView;
+import tools.refinery.store.query.view.SymbolView;
 import tools.refinery.store.representation.Symbol;
+
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static tools.refinery.store.query.literal.Literals.assume;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo;
 
-class DnfBuilderTest {
+class DnfBuilderLiteralEliminationTest {
+	private final Symbol<Boolean> friend = new Symbol<>("friend", 2, Boolean.class, false);
+	private final SymbolView<Boolean> friendView = new KeyOnlyView<>(friend);
+	private final NodeVariable p = Variable.of("p");
+	private final NodeVariable q = Variable.of("q");
+	private final Dnf trueDnf = Dnf.builder().parameter(p).clause().build();
+	private final Dnf falseDnf = Dnf.builder().parameter(p).build();
+
 	@Test
 	void eliminateTrueTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(BooleanLiteral.TRUE, friendView.call(p, q))
@@ -39,11 +44,6 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateTrueAssumptionTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(assume(BoolTerms.constant(true)), friendView.call(p, q))
@@ -55,11 +55,6 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateFalseTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -76,11 +71,6 @@ class DnfBuilderTest {
 			"null"
 	}, nullValues = "null")
 	void eliminateFalseAssumptionTest(Boolean value) {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -93,11 +83,6 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysTrueTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -110,11 +95,6 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysFalseTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q), BooleanLiteral.FALSE)
@@ -126,12 +106,6 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateTrueDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var trueDnf = Dnf.builder().parameter(p).clause().build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(trueDnf.call(q), friendView.call(p, q))
@@ -143,12 +117,6 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateFalseDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var falseDnf = Dnf.builder().parameter(p).build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -161,12 +129,6 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysTrueDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var trueDnf = Dnf.builder().parameter(p).clause().build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -179,12 +141,6 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysFalseDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var falseDnf = Dnf.builder().parameter(p).build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q), falseDnf.call(q))
@@ -196,12 +152,6 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateNotFalseDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var falseDnf = Dnf.builder().parameter(p).build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(not(falseDnf.call(q)), friendView.call(p, q))
@@ -213,12 +163,6 @@ class DnfBuilderTest {
 
 	@Test
 	void eliminateNotTrueDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var trueDnf = Dnf.builder().parameter(p).clause().build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -231,12 +175,6 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysNotFalseDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var falseDnf = Dnf.builder().parameter(p).build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
@@ -249,17 +187,22 @@ class DnfBuilderTest {
 
 	@Test
 	void alwaysNotTrueDnfTest() {
-		var p = Variable.of("p");
-		var q = Variable.of("q");
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-		var friendView = new KeyOnlyView<>(friend);
-		var trueDnf = Dnf.builder().parameter(p).clause().build();
-
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q), not(trueDnf.call(q)))
 				.build();
 		var expected = Dnf.builder().parameters(p, q).build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@Test
+	void removeDuplicateTest() {
+		var actual = Dnf.of(builder -> builder.clause((p, q) -> List.of(
+				friendView.call(p, q),
+				friendView.call(p, q)
+		)));
+		var expected = Dnf.of(builder -> builder.clause((p, q) -> List.of(friendView.call(p, q))));
 
 		assertThat(actual, structurallyEqualTo(expected));
 	}

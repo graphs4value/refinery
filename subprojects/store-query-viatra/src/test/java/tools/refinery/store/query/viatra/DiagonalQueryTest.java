@@ -298,10 +298,10 @@ class DiagonalQueryTest {
 					y.assign(x)
 			);
 		});
-		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(Integer.class,
-				(p2, y) -> List.of(
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(
+				Integer.class, Integer.class, (p2, y, z) -> List.of(
 						personView.call(p1),
-						output.assign(subQuery.aggregate(y, INT_SUM, p1, p1, p2, p2, y, y))
+						output.assign(subQuery.aggregate(y, INT_SUM, p1, p1, p2, p2, y, z))
 				)));
 
 		var store = ModelStore.builder()

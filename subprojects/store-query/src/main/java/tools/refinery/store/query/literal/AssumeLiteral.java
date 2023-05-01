@@ -9,21 +9,31 @@ import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.Term;
-import tools.refinery.store.query.term.Variable;
 
-import java.util.Set;
+import java.util.Objects;
 
-public record AssumeLiteral(Term<Boolean> term) implements Literal {
-	public AssumeLiteral {
+public final class AssumeLiteral implements Literal {
+	private final Term<Boolean> term;
+	private final VariableBinder variableBinder;
+
+	public AssumeLiteral(Term<Boolean> term) {
 		if (!term.getType().equals(Boolean.class)) {
 			throw new IllegalArgumentException("Term %s must be of type %s, got %s instead".formatted(
 					term, Boolean.class.getName(), term.getType().getName()));
 		}
+		this.term = term;
+		variableBinder = VariableBinder.builder()
+				.variables(term.getInputVariables(), VariableDirection.IN)
+				.build();
+	}
+
+	public Term<Boolean> getTerm() {
+		return term;
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
-		return Set.of();
+	public VariableBinder getVariableBinder() {
+		return variableBinder;
 	}
 
 	@Override
@@ -53,5 +63,18 @@ public record AssumeLiteral(Term<Boolean> term) implements Literal {
 	@Override
 	public String toString() {
 		return "(%s)".formatted(term);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (AssumeLiteral) obj;
+		return Objects.equals(this.term, that.term);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getClass(), term);
 	}
 }

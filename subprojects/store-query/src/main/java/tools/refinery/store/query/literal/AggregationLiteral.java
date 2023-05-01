@@ -14,12 +14,12 @@ import tools.refinery.store.query.term.Variable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	private final DataVariable<R> resultVariable;
 	private final DataVariable<T> inputVariable;
 	private final Aggregator<R, T> aggregator;
+	private final VariableBinder variableBinder;
 
 	public AggregationLiteral(DataVariable<R> resultVariable, Aggregator<R, T> aggregator,
 							  DataVariable<T> inputVariable, Constraint target, List<Variable> arguments) {
@@ -32,10 +32,6 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 			throw new IllegalArgumentException("Result variable %s must of type %s, got %s instead".formatted(
 					resultVariable, aggregator.getResultType().getName(), resultVariable.getType().getName()));
 		}
-		if (!arguments.contains(inputVariable)) {
-			throw new IllegalArgumentException("Input variable %s must appear in the argument list".formatted(
-					inputVariable));
-		}
 		if (arguments.contains(resultVariable)) {
 			throw new IllegalArgumentException("Result variable %s must not appear in the argument list".formatted(
 					resultVariable));
@@ -43,6 +39,14 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 		this.resultVariable = resultVariable;
 		this.inputVariable = inputVariable;
 		this.aggregator = aggregator;
+		variableBinder = VariableBinder.builder()
+				.variable(resultVariable, VariableDirection.OUT)
+				.parameterList(false, target.getParameters(), arguments)
+				.build();
+		if (variableBinder.getDirection(inputVariable) != VariableDirection.CLOSURE) {
+			throw new IllegalArgumentException("Input variable %s must appear in the argument list".formatted(
+					inputVariable));
+		}
 	}
 
 	public DataVariable<R> getResultVariable() {
@@ -58,8 +62,8 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
-		return Set.of(resultVariable);
+	public VariableBinder getVariableBinder() {
+		return variableBinder;
 	}
 
 	@Override

@@ -5,20 +5,44 @@
  */
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.NodeVariable;
 
-import java.util.Set;
+import java.util.Objects;
 
-public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right)
+public final class EquivalenceLiteral
 		implements CanNegate<EquivalenceLiteral> {
+	private final boolean positive;
+	private final NodeVariable left;
+	private final NodeVariable right;
+	private final VariableBinder variableBinder;
+
+	public EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right) {
+		this.positive = positive;
+		this.left = left;
+		this.right = right;
+		variableBinder = VariableBinder.builder()
+				.variable(left, positive ? VariableDirection.IN_OUT : VariableDirection.IN)
+				.variable(right, VariableDirection.IN)
+				.build();
+	}
+
+	public boolean isPositive() {
+		return positive;
+	}
+
+	public NodeVariable getLeft() {
+		return left;
+	}
+
+	public NodeVariable getRight() {
+		return right;
+	}
+
 	@Override
-	public Set<Variable> getBoundVariables() {
-		// If one side of a {@code positive} equivalence is bound, it may bind its other side, but we under-approximate
-		// this behavior by not binding any of the sides by default.
-		return Set.of();
+	public VariableBinder getVariableBinder() {
+		return variableBinder;
 	}
 
 	@Override
@@ -53,5 +77,20 @@ public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariab
 	@Override
 	public String toString() {
 		return "%s %s %s".formatted(left, positive ? "===" : "!==", right);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (EquivalenceLiteral) obj;
+		return this.positive == that.positive &&
+				Objects.equals(this.left, that.left) &&
+				Objects.equals(this.right, that.right);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getClass(), positive, left, right);
 	}
 }

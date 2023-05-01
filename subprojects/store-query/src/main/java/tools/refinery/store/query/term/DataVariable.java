@@ -22,11 +22,6 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	}
 
 	@Override
-	public DataSort<T> getSort() {
-		return new DataSort<>(getType());
-	}
-
-	@Override
 	public Class<T> getType() {
 		return type;
 	}

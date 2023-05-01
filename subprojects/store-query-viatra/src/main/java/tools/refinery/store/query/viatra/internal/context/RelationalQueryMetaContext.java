@@ -9,7 +9,6 @@ import org.eclipse.viatra.query.runtime.matchers.context.AbstractQueryMetaContex
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.InputKeyImplication;
 import org.eclipse.viatra.query.runtime.matchers.context.common.JavaTransitiveInstancesKey;
-import tools.refinery.store.query.term.DataSort;
 import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;
 import tools.refinery.store.query.view.AnySymbolView;
 
@@ -62,14 +61,14 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 						relationViewImplication.impliedIndices()));
 			}
 		}
-		var sorts = symbolView.getSorts();
+		var parameters = symbolView.getParameters();
 		int arity = symbolView.arity();
 		for (int i = 0; i < arity; i++) {
-			var sort = sorts.get(i);
-			if (sort instanceof DataSort<?> dataSort) {
-				var javaTransitiveInstancesKey = new JavaTransitiveInstancesKey(dataSort.type());
-				var javaImplication = new InputKeyImplication(implyingKey, javaTransitiveInstancesKey,
-						List.of(i));
+			var parameter = parameters.get(i);
+			var parameterType = parameter.tryGetType();
+			if (parameterType.isPresent()) {
+				var javaTransitiveInstancesKey = new JavaTransitiveInstancesKey(parameterType.get());
+				var javaImplication = new InputKeyImplication(implyingKey, javaTransitiveInstancesKey, List.of(i));
 				inputKeyImplications.add(javaImplication);
 			}
 		}

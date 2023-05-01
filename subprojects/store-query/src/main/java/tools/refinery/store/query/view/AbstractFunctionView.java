@@ -7,12 +7,12 @@ package tools.refinery.store.query.view;
 
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.dnf.FunctionalDependency;
-import tools.refinery.store.query.term.NodeSort;
-import tools.refinery.store.query.term.Sort;
+import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -21,10 +21,12 @@ import java.util.stream.IntStream;
 
 public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 	private final T defaultValue;
+	private final List<Parameter> parameters;
 
-	protected AbstractFunctionView(Symbol<T> symbol, String name) {
+	protected AbstractFunctionView(Symbol<T> symbol, String name, Parameter outParameter) {
 		super(symbol, name);
 		defaultValue = symbol.defaultValue();
+		parameters = createParameters(symbol.arity(), outParameter);
 	}
 
 	@Override
@@ -47,8 +49,6 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 	public final boolean filter(Tuple key, T value) {
 		return !Objects.equals(defaultValue, value);
 	}
-
-	protected abstract Sort getForwardMappedValueSort();
 
 	protected Object forwardMapValue(Tuple key, T value) {
 		return value;
@@ -85,19 +85,8 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 	}
 
 	@Override
-	public int arity() {
-		return getSymbol().arity() + 1;
-	}
-
-	@Override
-	public List<Sort> getSorts() {
-		var sorts = new Sort[arity()];
-		int valueIndex = sorts.length - 1;
-		for (int i = 0; i < valueIndex; i++) {
-			sorts[i] = NodeSort.INSTANCE;
-		}
-		sorts[valueIndex] = getForwardMappedValueSort();
-		return List.of(sorts);
+	public List<Parameter> getParameters() {
+		return parameters;
 	}
 
 	@Override
@@ -106,11 +95,18 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		AbstractFunctionView<?> that = (AbstractFunctionView<?>) o;
-		return Objects.equals(defaultValue, that.defaultValue);
+		return Objects.equals(defaultValue, that.defaultValue) && Objects.equals(parameters, that.parameters);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), defaultValue);
+		return Objects.hash(super.hashCode(), defaultValue, parameters);
+	}
+
+	private static List<Parameter> createParameters(int symbolArity, Parameter outParameter) {
+		var parameters = new Parameter[symbolArity + 1];
+		Arrays.fill(parameters, Parameter.NODE_IN_OUT);
+		parameters[symbolArity] = outParameter;
+		return List.of(parameters);
 	}
 }

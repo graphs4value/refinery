@@ -8,7 +8,6 @@ package tools.refinery.store.query.dnf;
 import tools.refinery.store.query.literal.CallLiteral;
 import tools.refinery.store.query.literal.CallPolarity;
 import tools.refinery.store.query.term.AssignedValue;
-import tools.refinery.store.query.term.NodeSort;
 import tools.refinery.store.query.term.NodeVariable;
 
 import java.util.Collections;
@@ -19,10 +18,11 @@ public final class RelationalQuery implements Query<Boolean> {
 	private final Dnf dnf;
 
 	RelationalQuery(Dnf dnf) {
-		for (var parameter : dnf.getParameters()) {
-			if (!(parameter instanceof NodeVariable)) {
-				throw new IllegalArgumentException("Expected parameter %s of %s to be of sort %s, but got %s instead"
-						.formatted(parameter, dnf, NodeSort.INSTANCE, parameter.getSort()));
+		for (var parameter : dnf.getSymbolicParameters()) {
+			var parameterType = parameter.tryGetType();
+			if (parameterType.isPresent()) {
+				throw new IllegalArgumentException("Expected parameter %s of %s to be a node variable, got %s instead"
+						.formatted(parameter, dnf, parameterType.get().getName()));
 			}
 		}
 		this.dnf = dnf;
@@ -76,7 +76,6 @@ public final class RelationalQuery implements Query<Boolean> {
 	public AssignedValue<Integer> count(NodeVariable... arguments) {
 		return dnf.count(arguments);
 	}
-
 
 	@Override
 	public boolean equals(Object o) {
