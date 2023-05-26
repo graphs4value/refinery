@@ -8,41 +8,26 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.Objects;
+import java.util.Set;
 
-public final class EquivalenceLiteral
+public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right)
 		implements CanNegate<EquivalenceLiteral> {
-	private final boolean positive;
-	private final NodeVariable left;
-	private final NodeVariable right;
-	private final VariableBindingSite variableBindingSite;
-
-	public EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right) {
-		this.positive = positive;
-		this.left = left;
-		this.right = right;
-		variableBindingSite = VariableBindingSite.builder()
-				.variable(left, positive ? VariableDirection.IN_OUT : VariableDirection.IN)
-				.variable(right, VariableDirection.IN)
-				.build();
-	}
-
-	public boolean isPositive() {
-		return positive;
-	}
-
-	public NodeVariable getLeft() {
-		return left;
-	}
-
-	public NodeVariable getRight() {
-		return right;
+	@Override
+	public Set<Variable> getOutputVariables() {
+		return Set.of(left);
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return variableBindingSite;
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of(right);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
 	}
 
 	@Override

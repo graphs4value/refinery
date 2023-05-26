@@ -8,31 +8,25 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.Objects;
+import java.util.Set;
 
-public final class ConstantLiteral implements Literal {
-	private final NodeVariable variable;
-	private final int nodeId;
-	private final VariableBindingSite variableBindingSite;
-
-	public ConstantLiteral(NodeVariable variable, int nodeId) {
-		this.variable = variable;
-		this.nodeId = nodeId;
-		variableBindingSite = VariableBindingSite.builder().variable(variable, VariableDirection.IN_OUT).build();
-	}
-
-	public NodeVariable getVariable() {
-		return variable;
-	}
-
-	public int getNodeId() {
-		return nodeId;
+public record ConstantLiteral(NodeVariable variable, int nodeId) implements Literal {
+	@Override
+	public Set<Variable> getOutputVariables() {
+		return Set.of(variable);
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return variableBindingSite;
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
 	}
 
 	@Override

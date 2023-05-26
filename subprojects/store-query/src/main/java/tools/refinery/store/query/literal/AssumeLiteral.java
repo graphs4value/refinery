@@ -9,32 +9,35 @@ import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.Term;
+import tools.refinery.store.query.term.Variable;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
-public final class AssumeLiteral implements Literal {
-	private final Term<Boolean> term;
-	private final VariableBindingSite variableBindingSite;
-
-	public AssumeLiteral(Term<Boolean> term) {
+public record AssumeLiteral(Term<Boolean> term) implements Literal {
+	public AssumeLiteral {
 		if (!term.getType().equals(Boolean.class)) {
 			throw new IllegalArgumentException("Term %s must be of type %s, got %s instead".formatted(
 					term, Boolean.class.getName(), term.getType().getName()));
 		}
-		this.term = term;
-		variableBindingSite = VariableBindingSite.builder()
-				.variables(term.getInputVariables(), VariableDirection.IN)
-				.build();
-	}
-
-	public Term<Boolean> getTerm() {
-		return term;
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return variableBindingSite;
+	public Set<Variable> getOutputVariables() {
+		return Set.of();
 	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Collections.unmodifiableSet(term.getInputVariables());
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
+	}
+
 
 	@Override
 	public Literal substitute(Substitution substitution) {

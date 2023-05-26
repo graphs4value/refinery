@@ -9,35 +9,30 @@ import org.jetbrains.annotations.NotNull;
 import tools.refinery.store.query.literal.BooleanLiteral;
 import tools.refinery.store.query.literal.EquivalenceLiteral;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.literal.VariableDirection;
 import tools.refinery.store.query.substitution.MapBasedSubstitution;
 import tools.refinery.store.query.substitution.StatelessSubstitution;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 class ClausePostProcessor {
-	private final Set<Variable> parameters;
-	private final Map<Variable, Integer> parameterWeights;
+	private final Map<Variable, ParameterInfo> parameters;
 	private final List<Literal> literals;
 	private final Map<NodeVariable, NodeVariable> representatives = new LinkedHashMap<>();
 	private final Map<NodeVariable, Set<NodeVariable>> equivalencePartition = new HashMap<>();
 	private List<Literal> substitutedLiterals;
 	private final Set<Variable> existentiallyQuantifiedVariables = new LinkedHashSet<>();
-	private Set<Variable> inputParameters;
 	private Set<Variable> positiveVariables;
 	private Map<Variable, Set<SortableLiteral>> variableToLiteralInputMap;
 	private PriorityQueue<SortableLiteral> literalsWithAllInputsBound;
 	private LinkedHashSet<Literal> topologicallySortedLiterals;
 
-	public ClausePostProcessor(Set<Variable> parameters, Map<Variable, Integer> parameterWeights,
-							   List<Literal> literals) {
+	public ClausePostProcessor(Map<Variable, ParameterInfo> parameters, List<Literal> literals) {
 		this.parameters = parameters;
-		this.parameterWeights = parameterWeights;
 		this.literals = literals;
 	}
 
@@ -46,9 +41,10 @@ class ClausePostProcessor {
 		substitutedLiterals = new ArrayList<>(literals.size());
 		keepParameterEquivalences();
 		substituteLiterals();
+		computeExistentiallyQuantifiedVariables();
 		computePositiveVariables();
 		validatePositiveRepresentatives();
-		validateClosureVariables();
+		validatePrivateVariables();
 		topologicallySortLiterals();
 		var filteredLiterals = new ArrayList<Literal>(topologicallySortedLiterals.size());
 		for (var literal : topologicallySortedLiterals) {
@@ -71,20 +67,21 @@ class ClausePostProcessor {
 		for (var literal : literals) {
 			if (isPositiveEquivalence(literal)) {
 				var equivalenceLiteral = (EquivalenceLiteral) literal;
-				mergeVariables(equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
+				mergeVariables(equivalenceLiteral.left(), equivalenceLiteral.right());
 			}
 		}
 	}
 
 	private static boolean isPositiveEquivalence(Literal literal) {
-		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.isPositive();
+		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.positive();
 	}
 
 	private void mergeVariables(NodeVariable left, NodeVariable right) {
 		var leftRepresentative = getRepresentative(left);
 		var rightRepresentative = getRepresentative(right);
-		if (parameters.contains(leftRepresentative) && (!parameters.contains(rightRepresentative) ||
-				parameterWeights.get(leftRepresentative).compareTo(parameterWeights.get(rightRepresentative)) <= 0)) {
+		var leftInfo = parameters.get(leftRepresentative);
+		var rightInfo = parameters.get(rightRepresentative);
+		if (leftInfo != null && (rightInfo == null || leftInfo.index() <= rightInfo.index())) {
 			// Prefer the variable occurring earlier in the parameter list as a representative.
 			doMergeVariables(leftRepresentative, rightRepresentative);
 		} else {
@@ -123,7 +120,7 @@ class ClausePostProcessor {
 		for (var pair : representatives.entrySet()) {
 			var left = pair.getKey();
 			var right = pair.getValue();
-			if (!left.equals(right) && parameters.contains(left) && parameters.contains(right)) {
+			if (!left.equals(right) && parameters.containsKey(left) && parameters.containsKey(right)) {
 				substitutedLiterals.add(left.isEquivalent(right));
 			}
 		}
@@ -148,27 +145,37 @@ class ClausePostProcessor {
 		}
 	}
 
-	private void computePositiveVariables() {
+	private void computeExistentiallyQuantifiedVariables() {
 		for (var literal : substitutedLiterals) {
-			var variableBinder = literal.getVariableBindingSite();
-			variableBinder.getVariablesWithDirection(VariableDirection.IN_OUT)
-					.forEach(existentiallyQuantifiedVariables::add);
-			variableBinder.getVariablesWithDirection(VariableDirection.OUT).forEach(variable -> {
+			for (var variable : literal.getOutputVariables()) {
 				boolean added = existentiallyQuantifiedVariables.add(variable);
-				if (!added) {
-					throw new IllegalArgumentException("Variable %s has multiple %s bindings"
-							.formatted(variable, VariableDirection.OUT));
+				if (!variable.isUnifiable()) {
+					var parameterInfo = parameters.get(variable);
+					if (parameterInfo != null && parameterInfo.direction() == ParameterDirection.IN) {
+						throw new IllegalArgumentException("Trying to bind %s parameter %s"
+								.formatted(ParameterDirection.IN, variable));
+					}
+					if (!added) {
+						throw new IllegalArgumentException("Variable %s has multiple assigned values"
+								.formatted(variable));
+					}
 				}
-			});
+			}
 		}
-		// Input parameters are parameters not bound by any positive literal.
-		inputParameters = new LinkedHashSet<>(parameters);
-		inputParameters.removeAll(existentiallyQuantifiedVariables);
-		// Existentially quantified variables are variables appearing in positive literals that aren't parameters.
-		existentiallyQuantifiedVariables.removeAll(parameters);
-		// Positive variables are parameters (including input parameters) and variables bound by positive literals.
-		positiveVariables = new LinkedHashSet<>(parameters.size() + existentiallyQuantifiedVariables.size());
-		positiveVariables.addAll(parameters);
+	}
+
+	private void computePositiveVariables() {
+		positiveVariables = new LinkedHashSet<>();
+		for (var pair : parameters.entrySet()) {
+			var variable = pair.getKey();
+			if (pair.getValue().direction() == ParameterDirection.IN) {
+				// Inputs count as positive, because they are already bound when we evaluate literals.
+				positiveVariables.add(variable);
+			} else if (!existentiallyQuantifiedVariables.contains(variable)) {
+				throw new IllegalArgumentException("Unbound %s parameter %s"
+						.formatted(ParameterDirection.OUT, variable));
+			}
+		}
 		positiveVariables.addAll(existentiallyQuantifiedVariables);
 	}
 
@@ -183,19 +190,16 @@ class ClausePostProcessor {
 		}
 	}
 
-	private void validateClosureVariables() {
+	private void validatePrivateVariables() {
 		var negativeVariablesMap = new HashMap<Variable, Literal>();
 		for (var literal : substitutedLiterals) {
-			var variableBinder = literal.getVariableBindingSite();
-			variableBinder.getVariablesWithDirection(VariableDirection.CLOSURE, positiveVariables)
-					.forEach(variable -> {
-						var oldLiteral = negativeVariablesMap.put(variable, literal);
-						if (oldLiteral != null) {
-							throw new IllegalArgumentException(
-									"Unbound variable %s appears in multiple literals %s and %s"
-											.formatted(variable, oldLiteral, literal));
-						}
-					});
+			for (var variable : literal.getPrivateVariables(positiveVariables)) {
+				var oldLiteral = negativeVariablesMap.put(variable, literal);
+				if (oldLiteral != null) {
+					throw new IllegalArgumentException("Unbound variable %s appears in multiple literals %s and %s"
+							.formatted(variable, oldLiteral, literal));
+				}
+			}
 		}
 	}
 
@@ -219,16 +223,6 @@ class ClausePostProcessor {
 		}
 	}
 
-	private void topologicallySortVariable(Variable variable) {
-		var literalSetForInput = variableToLiteralInputMap.remove(variable);
-		if (literalSetForInput == null) {
-			return;
-		}
-		for (var targetSortableLiteral : literalSetForInput) {
-			targetSortableLiteral.bindVariable(variable);
-		}
-	}
-
 	private class SortableLiteral implements Comparable<SortableLiteral> {
 		private final int index;
 		private final Literal literal;
@@ -237,10 +231,12 @@ class ClausePostProcessor {
 		private SortableLiteral(int index, Literal literal) {
 			this.index = index;
 			this.literal = literal;
-			remainingInputs = literal.getVariableBindingSite()
-					.getVariablesWithDirection(VariableDirection.IN, positiveVariables)
-					.collect(Collectors.toCollection(HashSet::new));
-			remainingInputs.removeAll(inputParameters);
+			remainingInputs = new HashSet<>(literal.getInputVariables(positiveVariables));
+			for (var pair : parameters.entrySet()) {
+				if (pair.getValue().direction() == ParameterDirection.IN) {
+					remainingInputs.remove(pair.getKey());
+				}
+			}
 		}
 
 		public void enqueue() {
@@ -282,11 +278,15 @@ class ClausePostProcessor {
 			}
 			// Add literal if we haven't yet added a duplicate of this literal.
 			topologicallySortedLiterals.add(literal);
-			var variableBinder = literal.getVariableBindingSite();
-			variableBinder.getVariablesWithDirection(VariableDirection.IN_OUT)
-					.forEach(ClausePostProcessor.this::topologicallySortVariable);
-			variableBinder.getVariablesWithDirection(VariableDirection.OUT)
-					.forEach(ClausePostProcessor.this::topologicallySortVariable);
+			for (var variable : literal.getOutputVariables()) {
+				var literalSetForInput = variableToLiteralInputMap.remove(variable);
+				if (literalSetForInput == null) {
+					continue;
+				}
+				for (var targetSortableLiteral : literalSetForInput) {
+					targetSortableLiteral.bindVariable(variable);
+				}
+			}
 		}
 
 		@Override
@@ -317,5 +317,8 @@ class ClausePostProcessor {
 	public enum ConstantResult implements Result {
 		ALWAYS_TRUE,
 		ALWAYS_FALSE
+	}
+
+	public record ParameterInfo(ParameterDirection direction, int index) {
 	}
 }

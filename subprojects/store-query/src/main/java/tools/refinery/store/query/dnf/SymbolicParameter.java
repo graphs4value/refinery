@@ -23,10 +23,14 @@ public final class SymbolicParameter extends Parameter {
 		return variable;
 	}
 
+	public boolean isUnifiable() {
+		return variable.isUnifiable();
+	}
+
 	@Override
 	public String toString() {
 		var direction = getDirection();
-		if (direction == ParameterDirection.IN_OUT) {
+		if (direction == ParameterDirection.OUT) {
 			return variable.toString();
 		}
 		return "%s %s".formatted(getDirection(), variable);

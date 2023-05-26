@@ -7,15 +7,18 @@ package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.dnf.callback.*;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.*;
+import tools.refinery.store.query.term.DataVariable;
+import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.ParameterDirection;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
 
 @SuppressWarnings("UnusedReturnValue")
 public final class DnfBuilder {
 	private final String name;
-	private final List<Variable> parameters = new ArrayList<>();
-	private final Map<Variable, ParameterDirection> directions = new HashMap<>();
+	private final Set<Variable> parameterVariables = new LinkedHashSet<>();
+	private final List<SymbolicParameter> parameters = new ArrayList<>();
 	private final List<FunctionalDependency<Variable>> functionalDependencies = new ArrayList<>();
 	private final List<List<Literal>> clauses = new ArrayList<>();
 
@@ -28,20 +31,16 @@ public final class DnfBuilder {
 	}
 
 	public NodeVariable parameter(String name) {
-		var variable = Variable.of(name);
-		parameter(variable);
-		return variable;
+		return parameter(name, ParameterDirection.OUT);
 	}
 
 	public NodeVariable parameter(ParameterDirection direction) {
-		var variable = parameter();
-		putDirection(variable, direction);
-		return variable;
+		return parameter((String) null, direction);
 	}
 
 	public NodeVariable parameter(String name, ParameterDirection direction) {
-		var variable = parameter(name);
-		putDirection(variable, direction);
+		var variable = Variable.of(name);
+		parameter(variable, direction);
 		return variable;
 	}
 
@@ -50,50 +49,25 @@ public final class DnfBuilder {
 	}
 
 	public <T> DataVariable<T> parameter(String name, Class<T> type) {
-		var variable = Variable.of(name, type);
-		parameter(variable);
-		return variable;
+		return parameter(name, type, ParameterDirection.OUT);
 	}
 
 	public <T> DataVariable<T> parameter(Class<T> type, ParameterDirection direction) {
-		var variable = parameter(type);
-		putDirection(variable, direction);
-		return variable;
+		return parameter(null, type, direction);
 	}
 
 	public <T> DataVariable<T> parameter(String name, Class<T> type, ParameterDirection direction) {
-		var variable = parameter(name, type);
-		putDirection(variable, direction);
+		var variable = Variable.of(name, type);
+		parameter(variable, direction);
 		return variable;
 	}
 
 	public DnfBuilder parameter(Variable variable) {
-		if (parameters.contains(variable)) {
-			throw new IllegalArgumentException("Duplicate parameter: " + variable);
-		}
-		parameters.add(variable);
-		return this;
+		return parameter(variable, ParameterDirection.OUT);
 	}
 
 	public DnfBuilder parameter(Variable variable, ParameterDirection direction) {
-		parameter(variable);
-		putDirection(variable, direction);
-		return this;
-	}
-
-	private void putDirection(Variable variable, ParameterDirection direction) {
-		if (variable.tryGetType().isPresent()) {
-			if (direction == ParameterDirection.IN_OUT) {
-				throw new IllegalArgumentException("%s direction is forbidden for data variable %s"
-						.formatted(direction, variable));
-			}
-		} else {
-			if (direction == ParameterDirection.OUT) {
-				throw new IllegalArgumentException("%s direction is forbidden for node variable %s"
-						.formatted(direction, variable));
-			}
-		}
-		directions.put(variable, direction);
+		return symbolicParameter(new SymbolicParameter(variable, direction));
 	}
 
 	public DnfBuilder parameters(Variable... variables) {
@@ -101,10 +75,7 @@ public final class DnfBuilder {
 	}
 
 	public DnfBuilder parameters(Collection<? extends Variable> variables) {
-		for (var variable : variables) {
-			parameter(variable);
-		}
-		return this;
+		return parameters(variables, ParameterDirection.OUT);
 	}
 
 	public DnfBuilder parameters(Collection<? extends Variable> variables, ParameterDirection direction) {
@@ -114,9 +85,23 @@ public final class DnfBuilder {
 		return this;
 	}
 
-	public DnfBuilder symbolicParameters(Collection<SymbolicParameter> parameters) {
-		for (var parameter : parameters) {
-			parameter(parameter.getVariable(), parameter.getDirection());
+	public DnfBuilder symbolicParameter(SymbolicParameter symbolicParameter) {
+		var variable = symbolicParameter.getVariable();
+		if (!parameterVariables.add(variable)) {
+			throw new IllegalArgumentException("Variable %s is already on the parameter list %s"
+					.formatted(variable, parameters));
+		}
+		parameters.add(symbolicParameter);
+		return this;
+	}
+
+	public DnfBuilder symbolicParameters(SymbolicParameter... symbolicParameters) {
+		return symbolicParameters(List.of(symbolicParameters));
+	}
+
+	public DnfBuilder symbolicParameters(Collection<SymbolicParameter> symbolicParameters) {
+		for (var symbolicParameter : symbolicParameters) {
+			symbolicParameter(symbolicParameter);
 		}
 		return this;
 	}
@@ -214,24 +199,24 @@ public final class DnfBuilder {
 	}
 
 	<T> void output(DataVariable<T> outputVariable) {
-		var fromParameters = Set.copyOf(parameters);
+		// Copy parameter variables to exclude the newly added {@code outputVariable}.
+		var fromParameters = Set.copyOf(parameterVariables);
 		parameter(outputVariable, ParameterDirection.OUT);
 		functionalDependency(fromParameters, Set.of(outputVariable));
 	}
 
 	public Dnf build() {
 		var postProcessedClauses = postProcessClauses();
-		return new Dnf(name, createParameterList(postProcessedClauses),
+		return new Dnf(name, Collections.unmodifiableList(parameters),
 				Collections.unmodifiableList(functionalDependencies),
 				Collections.unmodifiableList(postProcessedClauses));
 	}
 
 	private List<DnfClause> postProcessClauses() {
-		var parameterSet = Collections.unmodifiableSet(new LinkedHashSet<>(parameters));
-		var parameterWeights = getParameterWeights();
+		var parameterInfoMap = getParameterInfoMap();
 		var postProcessedClauses = new ArrayList<DnfClause>(clauses.size());
 		for (var literals : clauses) {
-			var postProcessor = new ClausePostProcessor(parameterSet, parameterWeights, literals);
+			var postProcessor = new ClausePostProcessor(parameterInfoMap, literals);
 			var result = postProcessor.postProcessClause();
 			if (result instanceof ClausePostProcessor.ClauseResult clauseResult) {
 				postProcessedClauses.add(clauseResult.clause());
@@ -253,54 +238,14 @@ public final class DnfBuilder {
 		return postProcessedClauses;
 	}
 
-	private Map<Variable, Integer> getParameterWeights() {
-		var mutableParameterWeights = new HashMap<Variable, Integer>();
+	private Map<Variable, ClausePostProcessor.ParameterInfo> getParameterInfoMap() {
+		var mutableParameterInfoMap = new LinkedHashMap<Variable, ClausePostProcessor.ParameterInfo>();
 		int arity = parameters.size();
 		for (int i = 0; i < arity; i++) {
-			mutableParameterWeights.put(parameters.get(i), i);
+			var parameter = parameters.get(i);
+			mutableParameterInfoMap.put(parameter.getVariable(),
+					new ClausePostProcessor.ParameterInfo(parameter.getDirection(), i));
 		}
-		return Collections.unmodifiableMap(mutableParameterWeights);
-	}
-
-	private List<SymbolicParameter> createParameterList(List<DnfClause> postProcessedClauses) {
-		var outputParameterVariables = new HashSet<>(parameters);
-		for (var clause : postProcessedClauses) {
-			outputParameterVariables.retainAll(clause.positiveVariables());
-		}
-		var parameterList = new ArrayList<SymbolicParameter>(parameters.size());
-		for (var parameter : parameters) {
-			ParameterDirection direction = getDirection(outputParameterVariables, parameter);
-			parameterList.add(new SymbolicParameter(parameter, direction));
-		}
-		return Collections.unmodifiableList(parameterList);
-	}
-
-	private ParameterDirection getDirection(HashSet<Variable> outputParameterVariables, Variable parameter) {
-		var direction = getInferredDirection(outputParameterVariables, parameter);
-		var expectedDirection = directions.get(parameter);
-		if (expectedDirection == ParameterDirection.IN && direction == ParameterDirection.IN_OUT) {
-			// Parameters may be explicitly marked as {@code @In} even if they are bound in all clauses.
-			return expectedDirection;
-		}
-		if (expectedDirection != null && expectedDirection != direction) {
-			throw new IllegalArgumentException("Expected parameter %s to have direction %s, but got %s instead"
-					.formatted(parameter, expectedDirection, direction));
-		}
-		return direction;
-	}
-
-	private static ParameterDirection getInferredDirection(HashSet<Variable> outputParameterVariables,
-														   Variable parameter) {
-		if (outputParameterVariables.contains(parameter)) {
-			if (parameter instanceof NodeVariable) {
-				return ParameterDirection.IN_OUT;
-			} else if (parameter instanceof AnyDataVariable) {
-				return ParameterDirection.OUT;
-			} else {
-				throw new IllegalArgumentException("Unknown parameter: " + parameter);
-			}
-		} else {
-			return ParameterDirection.IN;
-		}
+		return Collections.unmodifiableMap(mutableParameterInfoMap);
 	}
 }

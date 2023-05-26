@@ -8,14 +8,16 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class AbstractCallLiteral implements Literal {
 	private final Constraint target;
 	private final List<Variable> arguments;
+	private final Set<Variable> inArguments;
+	private final Set<Variable> outArguments;
 
 	protected AbstractCallLiteral(Constraint target, List<Variable> arguments) {
 		int arity = target.arity();
@@ -25,6 +27,8 @@ public abstract class AbstractCallLiteral implements Literal {
 		}
 		this.target = target;
 		this.arguments = arguments;
+		var mutableInArguments = new LinkedHashSet<Variable>();
+		var mutableOutArguments = new LinkedHashSet<Variable>();
 		var parameters = target.getParameters();
 		for (int i = 0; i < arity; i++) {
 			var argument = arguments.get(i);
@@ -33,6 +37,36 @@ public abstract class AbstractCallLiteral implements Literal {
 				throw new IllegalArgumentException("Argument %d of %s is not assignable to parameter %s"
 						.formatted(i, target, parameter));
 			}
+			switch (parameter.getDirection()) {
+			case IN -> {
+				if (mutableOutArguments.remove(argument)) {
+					checkInOutUnifiable(argument);
+				}
+				mutableInArguments.add(argument);
+			}
+			case OUT -> {
+				if (mutableInArguments.contains(argument)) {
+					checkInOutUnifiable(argument);
+				} else if (!mutableOutArguments.add(argument)) {
+					checkDuplicateOutUnifiable(argument);
+				}
+			}
+			}
+		}
+		inArguments = Collections.unmodifiableSet(mutableInArguments);
+		outArguments = Collections.unmodifiableSet(mutableOutArguments);
+	}
+
+	private static void checkInOutUnifiable(Variable argument) {
+		if (!argument.isUnifiable()) {
+			throw new IllegalArgumentException("Arguments %s cannot appear with both %s and %s direction"
+					.formatted(argument, ParameterDirection.IN, ParameterDirection.OUT));
+		}
+	}
+
+	private static void checkDuplicateOutUnifiable(Variable argument) {
+		if (!argument.isUnifiable()) {
+			throw new IllegalArgumentException("Arguments %s cannot be bound multiple times".formatted(argument));
 		}
 	}
 
@@ -42,6 +76,23 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	public List<Variable> getArguments() {
 		return arguments;
+	}
+
+	protected Set<Variable> getArgumentsOfDirection(ParameterDirection direction) {
+		return switch (direction) {
+			case IN -> inArguments;
+			case OUT -> outArguments;
+		};
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return getArgumentsOfDirection(ParameterDirection.IN);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
 	}
 
 	@Override

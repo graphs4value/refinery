@@ -8,19 +8,16 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.Aggregator;
-import tools.refinery.store.query.term.ConstantTerm;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	private final DataVariable<R> resultVariable;
 	private final DataVariable<T> inputVariable;
 	private final Aggregator<R, T> aggregator;
-	private final VariableBindingSite variableBindingSite;
 
 	public AggregationLiteral(DataVariable<R> resultVariable, Aggregator<R, T> aggregator,
 							  DataVariable<T> inputVariable, Constraint target, List<Variable> arguments) {
@@ -28,6 +25,10 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 		if (!inputVariable.getType().equals(aggregator.getInputType())) {
 			throw new IllegalArgumentException("Input variable %s must of type %s, got %s instead".formatted(
 					inputVariable, aggregator.getInputType().getName(), inputVariable.getType().getName()));
+		}
+		if (!getArgumentsOfDirection(ParameterDirection.OUT).contains(inputVariable)) {
+			throw new IllegalArgumentException("Input variable %s must be bound with direction %s in the argument list"
+					.formatted(inputVariable, ParameterDirection.OUT));
 		}
 		if (!resultVariable.getType().equals(aggregator.getResultType())) {
 			throw new IllegalArgumentException("Result variable %s must of type %s, got %s instead".formatted(
@@ -40,14 +41,6 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 		this.resultVariable = resultVariable;
 		this.inputVariable = inputVariable;
 		this.aggregator = aggregator;
-		variableBindingSite = VariableBindingSite.builder()
-				.variable(resultVariable, VariableDirection.OUT)
-				.parameterList(false, target.getParameters(), arguments)
-				.build();
-		if (variableBindingSite.getDirection(inputVariable) != VariableDirection.CLOSURE) {
-			throw new IllegalArgumentException(("Input variable %s must appear in the argument list as an output " +
-					"variable and should not be bound anywhere else").formatted(inputVariable));
-		}
 	}
 
 	public DataVariable<R> getResultVariable() {
@@ -63,8 +56,8 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return variableBindingSite;
+	public Set<Variable> getOutputVariables() {
+		return Set.of(resultVariable);
 	}
 
 	@Override

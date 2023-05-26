@@ -23,7 +23,6 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static tools.refinery.store.query.literal.Literals.assume;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.term.int_.IntTerms.constant;
@@ -706,15 +705,5 @@ class QueryTest {
 
 		queryEngine.flushChanges();
 		assertResults(Map.of(), predicateResultSet);
-	}
-
-	@Test
-	void alwaysTrueTest() {
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("AlwaysTrue").parameters(p1).clause().build();
-
-		var queryBuilder = ViatraModelQueryAdapter.builder();
-
-		assertThrows(IllegalArgumentException.class, () -> queryBuilder.queries(predicate));
 	}
 }

@@ -6,6 +6,7 @@
 package tools.refinery.store.query.dnf;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
@@ -39,7 +40,7 @@ class DnfToDefinitionStringTest {
 	@Test
 	void emptyClauseTest() {
 		var p = Variable.of("p");
-		var dnf = Dnf.builder("Example").parameter(p).clause().build();
+		var dnf = Dnf.builder("Example").parameter(p, ParameterDirection.IN).clause().build();
 
 		assertThat(dnf.toDefinitionString(), is("""
 				pred Example(@In p) <->
@@ -67,10 +68,13 @@ class DnfToDefinitionStringTest {
 		var q = Variable.of("q");
 		var friend = new Symbol<>("friend", 2, Boolean.class, false);
 		var friendView = new KeyOnlyView<>(friend);
-		var dnf = Dnf.builder("Example").parameter(p).clause(not(friendView.call(p, q))).build();
+		var dnf = Dnf.builder("Example")
+				.parameter(p, ParameterDirection.IN)
+				.clause(not(friendView.call(p, q)))
+				.build();
 
 		assertThat(dnf.toDefinitionString(), is("""
-				pred Example(p) <->
+				pred Example(@In p) <->
 				    !(@RelationView("key") friend(p, q)).
 				"""));
 	}

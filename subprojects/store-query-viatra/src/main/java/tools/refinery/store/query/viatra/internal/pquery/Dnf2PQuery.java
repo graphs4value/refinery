@@ -88,8 +88,7 @@ public class Dnf2PQuery {
 		List<PParameter> parameterList = new ArrayList<>();
 		for (var parameter : dnfQuery.getSymbolicParameters()) {
 			var direction = switch (parameter.getDirection()) {
-				case IN_OUT -> PParameterDirection.INOUT;
-				case OUT -> PParameterDirection.OUT;
+				case OUT -> parameter.isUnifiable() ? PParameterDirection.INOUT : PParameterDirection.OUT;
 				case IN -> throw new IllegalArgumentException("Query %s with input parameter %s is not supported"
 						.formatted(dnfQuery, parameter.getVariable()));
 			};
@@ -154,9 +153,9 @@ public class Dnf2PQuery {
 	}
 
 	private void translateEquivalenceLiteral(EquivalenceLiteral equivalenceLiteral, PBody body) {
-		PVariable varSource = body.getOrCreateVariableByName(equivalenceLiteral.getLeft().getUniqueName());
-		PVariable varTarget = body.getOrCreateVariableByName(equivalenceLiteral.getRight().getUniqueName());
-		if (equivalenceLiteral.isPositive()) {
+		PVariable varSource = body.getOrCreateVariableByName(equivalenceLiteral.left().getUniqueName());
+		PVariable varTarget = body.getOrCreateVariableByName(equivalenceLiteral.right().getUniqueName());
+		if (equivalenceLiteral.positive()) {
 			new Equality(body, varSource, varTarget);
 		} else {
 			new Inequality(body, varSource, varTarget);
@@ -213,13 +212,13 @@ public class Dnf2PQuery {
 	}
 
 	private void translateConstantLiteral(ConstantLiteral constantLiteral, PBody body) {
-		var variable = body.getOrCreateVariableByName(constantLiteral.getVariable().getUniqueName());
-		new ConstantValue(body, variable, constantLiteral.getNodeId());
+		var variable = body.getOrCreateVariableByName(constantLiteral.variable().getUniqueName());
+		new ConstantValue(body, variable, constantLiteral.nodeId());
 	}
 
 	private <T> void translateAssignLiteral(AssignLiteral<T> assignLiteral, PBody body) {
-		var variable = body.getOrCreateVariableByName(assignLiteral.getTargetVariable().getUniqueName());
-		var term = assignLiteral.getTerm();
+		var variable = body.getOrCreateVariableByName(assignLiteral.variable().getUniqueName());
+		var term = assignLiteral.term();
 		if (term instanceof ConstantTerm<T> constantTerm) {
 			new ConstantValue(body, variable, constantTerm.getValue());
 		} else {
@@ -229,7 +228,7 @@ public class Dnf2PQuery {
 	}
 
 	private void translateAssumeLiteral(AssumeLiteral assumeLiteral, PBody body) {
-		var evaluator = new AssumptionEvaluator(assumeLiteral.getTerm());
+		var evaluator = new AssumptionEvaluator(assumeLiteral.term());
 		new ExpressionEvaluation(body, evaluator, null);
 	}
 

@@ -6,7 +6,6 @@
 package tools.refinery.store.query.term;
 
 public enum ParameterDirection {
-	IN_OUT("@InOut"),
 	OUT("@Out"),
 	IN("@In");
 

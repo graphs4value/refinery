@@ -6,113 +6,158 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.dnf.callback.*;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
-public sealed interface Query<T> extends AnyQuery permits RelationalQuery, FunctionalQuery {
-	String OUTPUT_VARIABLE_NAME = "output";
+import java.util.Objects;
+
+public abstract sealed class Query<T> implements AnyQuery permits FunctionalQuery, RelationalQuery {
+	private static final String OUTPUT_VARIABLE_NAME = "output";
+
+	private final Dnf dnf;
+
+	protected Query(Dnf dnf) {
+		for (var parameter : dnf.getSymbolicParameters()) {
+			if (parameter.getDirection() != ParameterDirection.OUT) {
+				throw new IllegalArgumentException("Query parameter %s with direction %s is not allowed"
+						.formatted(parameter.getVariable(), parameter.getDirection()));
+			}
+		}
+		this.dnf = dnf;
+	}
 
 	@Override
-	Class<T> valueType();
+	public String name() {
+		return dnf.name();
+	}
 
-	T defaultValue();
+	@Override
+	public Dnf getDnf() {
+		return dnf;
+	}
 
-	static QueryBuilder builder() {
+	// Allow redeclaration of the method with refined return type.
+	@SuppressWarnings("squid:S3038")
+	@Override
+	public abstract Class<T> valueType();
+
+	public abstract T defaultValue();
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Query<?> that = (Query<?>) o;
+		return Objects.equals(dnf, that.dnf);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(dnf);
+	}
+
+	@Override
+	public String toString() {
+		return dnf.toString();
+	}
+
+	public static QueryBuilder builder() {
 		return builder(null);
 	}
 
-	static QueryBuilder builder(String name) {
+	public static QueryBuilder builder(String name) {
 		return new QueryBuilder(name);
 	}
 
-	static RelationalQuery of(QueryCallback0 callback) {
+	public static RelationalQuery of(QueryCallback0 callback) {
 		return of(null, callback);
 	}
 
-	static RelationalQuery of(String name, QueryCallback0 callback) {
+	public static RelationalQuery of(String name, QueryCallback0 callback) {
 		var builder = builder(name);
 		callback.accept(builder);
 		return builder.build();
 	}
 
-	static RelationalQuery of(QueryCallback1 callback) {
+	public static RelationalQuery of(QueryCallback1 callback) {
 		return of(null, callback);
 	}
 
-	static RelationalQuery of(String name, QueryCallback1 callback) {
+	public static RelationalQuery of(String name, QueryCallback1 callback) {
 		var builder = builder(name);
 		callback.accept(builder, builder.parameter("p1"));
 		return builder.build();
 	}
 
-	static RelationalQuery of(QueryCallback2 callback) {
+	public static RelationalQuery of(QueryCallback2 callback) {
 		return of(null, callback);
 	}
 
-	static RelationalQuery of(String name, QueryCallback2 callback) {
+	public static RelationalQuery of(String name, QueryCallback2 callback) {
 		var builder = builder(name);
 		callback.accept(builder, builder.parameter("p1"), builder.parameter("p2"));
 		return builder.build();
 	}
 
-	static RelationalQuery of(QueryCallback3 callback) {
+	public static RelationalQuery of(QueryCallback3 callback) {
 		return of(null, callback);
 	}
 
-	static RelationalQuery of(String name, QueryCallback3 callback) {
+	public static RelationalQuery of(String name, QueryCallback3 callback) {
 		var builder = builder(name);
 		callback.accept(builder, builder.parameter("p1"), builder.parameter("p2"), builder.parameter("p3"));
 		return builder.build();
 	}
 
-	static RelationalQuery of(QueryCallback4 callback) {
+	public static RelationalQuery of(QueryCallback4 callback) {
 		return of(null, callback);
 	}
 
-	static RelationalQuery of(String name, QueryCallback4 callback) {
+	public static RelationalQuery of(String name, QueryCallback4 callback) {
 		var builder = builder(name);
 		callback.accept(builder, builder.parameter("p1"), builder.parameter("p2"), builder.parameter("p3"),
 				builder.parameter("p4"));
 		return builder.build();
 	}
 
-	static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback0<T> callback) {
+	public static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback0<T> callback) {
 		return of(null, type, callback);
 	}
 
-	static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback0<T> callback) {
+	public static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback0<T> callback) {
 		var outputVariable = Variable.of(OUTPUT_VARIABLE_NAME, type);
 		var builder = builder(name).output(outputVariable);
 		callback.accept(builder, outputVariable);
 		return builder.build();
 	}
 
-	static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback1<T> callback) {
+	public static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback1<T> callback) {
 		return of(null, type, callback);
 	}
 
-	static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback1<T> callback) {
+	public static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback1<T> callback) {
 		var outputVariable = Variable.of(OUTPUT_VARIABLE_NAME, type);
 		var builder = builder(name).output(outputVariable);
 		callback.accept(builder, builder.parameter("p1"), outputVariable);
 		return builder.build();
 	}
 
-	static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback2<T> callback) {
+	public static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback2<T> callback) {
 		return of(null, type, callback);
 	}
 
-	static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback2<T> callback) {
+	public static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback2<T> callback) {
 		var outputVariable = Variable.of(OUTPUT_VARIABLE_NAME, type);
 		var builder = builder(name).output(outputVariable);
 		callback.accept(builder, builder.parameter("p1"), builder.parameter("p2"), outputVariable);
 		return builder.build();
 	}
 
-	static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback3<T> callback) {
+	public static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback3<T> callback) {
 		return of(null, type, callback);
 	}
 
-	static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback3<T> callback) {
+	public static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback3<T> callback) {
 		var outputVariable = Variable.of(OUTPUT_VARIABLE_NAME, type);
 		var builder = builder(name).output(outputVariable);
 		callback.accept(builder, builder.parameter("p1"), builder.parameter("p2"), builder.parameter("p3"),
@@ -120,11 +165,11 @@ public sealed interface Query<T> extends AnyQuery permits RelationalQuery, Funct
 		return builder.build();
 	}
 
-	static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback4<T> callback) {
+	public static <T> FunctionalQuery<T> of(Class<T> type, FunctionalQueryCallback4<T> callback) {
 		return of(null, type, callback);
 	}
 
-	static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback4<T> callback) {
+	public static <T> FunctionalQuery<T> of(String name, Class<T> type, FunctionalQueryCallback4<T> callback) {
 		var outputVariable = Variable.of(OUTPUT_VARIABLE_NAME, type);
 		var builder = builder(name).output(outputVariable);
 		callback.accept(builder, builder.parameter("p1"), builder.parameter("p2"), builder.parameter("p3"),

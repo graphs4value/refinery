@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Parameter {
-	public static final Parameter NODE_IN_OUT = new Parameter(null, ParameterDirection.IN_OUT);
+	public static final Parameter NODE_IN_OUT = new Parameter(null, ParameterDirection.OUT);
 
 	private final Class<?> dataType;
 	private final ParameterDirection direction;
@@ -17,13 +17,6 @@ public class Parameter {
 	public Parameter(Class<?> dataType, ParameterDirection direction) {
 		this.dataType = dataType;
 		this.direction = direction;
-		if (isDataVariable()) {
-			if (direction == ParameterDirection.IN_OUT) {
-				throw new IllegalArgumentException("IN_OUT direction is not supported for data parameters");
-			}
-		} else if (direction == ParameterDirection.OUT) {
-			throw new IllegalArgumentException("OUT direction is not supported for node parameters");
-		}
 	}
 
 	public boolean isNodeVariable() {

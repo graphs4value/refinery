@@ -9,43 +9,38 @@ import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Term;
+import tools.refinery.store.query.term.Variable;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
-public final class AssignLiteral<T> implements Literal {
-	private final DataVariable<T> variable;
-	private final Term<T> term;
-	private final VariableBindingSite variableBindingSite;
-
-	public AssignLiteral(DataVariable<T> variable, Term<T> term) {
+public record AssignLiteral<T>(DataVariable<T> variable, Term<T> term) implements Literal {
+	public AssignLiteral {
 		if (!term.getType().equals(variable.getType())) {
 			throw new IllegalArgumentException("Term %s must be of type %s, got %s instead".formatted(
 					term, variable.getType().getName(), term.getType().getName()));
 		}
-		this.variable = variable;
-		this.term = term;
 		var inputVariables = term.getInputVariables();
 		if (inputVariables.contains(variable)) {
 			throw new IllegalArgumentException("Result variable %s must not appear in the term %s".formatted(
 					variable, term));
 		}
-		variableBindingSite = VariableBindingSite.builder()
-				.variable(variable, VariableDirection.OUT)
-				.variables(inputVariables, VariableDirection.IN)
-				.build();
-	}
-
-	public DataVariable<T> getTargetVariable() {
-		return variable;
-	}
-
-	public Term<T> getTerm() {
-		return term;
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return variableBindingSite;
+	public Set<Variable> getOutputVariables() {
+		return Set.of(variable);
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Collections.unmodifiableSet(term.getInputVariables());
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
 	}
 
 	@Override

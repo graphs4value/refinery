@@ -6,17 +6,20 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.literal.CallPolarity;
-import tools.refinery.store.query.term.*;
+import tools.refinery.store.query.term.Aggregator;
+import tools.refinery.store.query.term.AssignedValue;
+import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class FunctionalQuery<T> implements Query<T> {
-	private final Dnf dnf;
+public final class FunctionalQuery<T> extends Query<T> {
 	private final Class<T> type;
 
 	FunctionalQuery(Dnf dnf, Class<T> type) {
+		super(dnf);
 		var parameters = dnf.getSymbolicParameters();
 		int outputIndex = dnf.arity() - 1;
 		for (int i = 0; i < outputIndex; i++) {
@@ -33,18 +36,12 @@ public final class FunctionalQuery<T> implements Query<T> {
 			throw new IllegalArgumentException("Expected parameter %s of %s to be %s, but got %s instead".formatted(
 					outputParameter, dnf, type, outputParameterType.map(Class::getName).orElse("node")));
 		}
-		this.dnf = dnf;
 		this.type = type;
 	}
 
 	@Override
-	public String name() {
-		return dnf.name();
-	}
-
-	@Override
 	public int arity() {
-		return dnf.arity() - 1;
+		return getDnf().arity() - 1;
 	}
 
 	@Override
@@ -57,17 +54,12 @@ public final class FunctionalQuery<T> implements Query<T> {
 		return null;
 	}
 
-	@Override
-	public Dnf getDnf() {
-		return dnf;
-	}
-
 	public AssignedValue<T> call(List<NodeVariable> arguments) {
 		return targetVariable -> {
 			var argumentsWithTarget = new ArrayList<Variable>(arguments.size() + 1);
 			argumentsWithTarget.addAll(arguments);
 			argumentsWithTarget.add(targetVariable);
-			return dnf.call(CallPolarity.POSITIVE, argumentsWithTarget);
+			return getDnf().call(CallPolarity.POSITIVE, argumentsWithTarget);
 		};
 	}
 
@@ -81,7 +73,9 @@ public final class FunctionalQuery<T> implements Query<T> {
 			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
 			argumentsWithPlaceholder.addAll(arguments);
 			argumentsWithPlaceholder.add(placeholderVariable);
-			return dnf.aggregate(placeholderVariable, aggregator, argumentsWithPlaceholder).toLiteral(targetVariable);
+			return getDnf()
+					.aggregate(placeholderVariable, aggregator, argumentsWithPlaceholder)
+					.toLiteral(targetVariable);
 		};
 	}
 
@@ -93,17 +87,13 @@ public final class FunctionalQuery<T> implements Query<T> {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
 		FunctionalQuery<?> that = (FunctionalQuery<?>) o;
-		return dnf.equals(that.dnf) && type.equals(that.type);
+		return Objects.equals(type, that.type);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(dnf, type);
-	}
-
-	@Override
-	public String toString() {
-		return dnf.toString();
+		return Objects.hash(super.hashCode(), type);
 	}
 }

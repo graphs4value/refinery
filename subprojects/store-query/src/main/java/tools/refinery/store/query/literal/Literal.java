@@ -7,9 +7,16 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.Variable;
+
+import java.util.Set;
 
 public interface Literal {
-	VariableBindingSite getVariableBindingSite();
+	Set<Variable> getOutputVariables();
+
+	Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause);
+
+	Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause);
 
 	Literal substitute(Substitution substitution);
 

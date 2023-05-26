@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import tools.refinery.store.query.literal.BooleanLiteral;
 import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.term.bool.BoolTerms;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -28,7 +29,7 @@ class DnfBuilderLiteralEliminationTest {
 	private final SymbolView<Boolean> friendView = new KeyOnlyView<>(friend);
 	private final NodeVariable p = Variable.of("p");
 	private final NodeVariable q = Variable.of("q");
-	private final Dnf trueDnf = Dnf.builder().parameter(p).clause().build();
+	private final Dnf trueDnf = Dnf.builder().parameter(p, ParameterDirection.IN).clause().build();
 	private final Dnf falseDnf = Dnf.builder().parameter(p).build();
 
 	@Test
@@ -84,11 +85,11 @@ class DnfBuilderLiteralEliminationTest {
 	@Test
 	void alwaysTrueTest() {
 		var actual = Dnf.builder()
-				.parameters(p, q)
+				.parameters(List.of(p, q), ParameterDirection.IN)
 				.clause(friendView.call(p, q))
 				.clause(BooleanLiteral.TRUE)
 				.build();
-		var expected = Dnf.builder().parameters(p, q).clause().build();
+		var expected = Dnf.builder().parameters(List.of(p, q), ParameterDirection.IN).clause().build();
 
 		assertThat(actual, structurallyEqualTo(expected));
 	}
@@ -130,11 +131,11 @@ class DnfBuilderLiteralEliminationTest {
 	@Test
 	void alwaysTrueDnfTest() {
 		var actual = Dnf.builder()
-				.parameters(p, q)
+				.parameters(List.of(p, q), ParameterDirection.IN)
 				.clause(friendView.call(p, q))
 				.clause(trueDnf.call(q))
 				.build();
-		var expected = Dnf.builder().parameters(p, q).clause().build();
+		var expected = Dnf.builder().parameters(List.of(p, q), ParameterDirection.IN).clause().build();
 
 		assertThat(actual, structurallyEqualTo(expected));
 	}
@@ -176,11 +177,11 @@ class DnfBuilderLiteralEliminationTest {
 	@Test
 	void alwaysNotFalseDnfTest() {
 		var actual = Dnf.builder()
-				.parameters(p, q)
+				.parameters(List.of(p, q), ParameterDirection.IN)
 				.clause(friendView.call(p, q))
 				.clause(not(falseDnf.call(q)))
 				.build();
-		var expected = Dnf.builder().parameters(p, q).clause().build();
+		var expected = Dnf.builder().parameters(List.of(p, q), ParameterDirection.IN).clause().build();
 
 		assertThat(actual, structurallyEqualTo(expected));
 	}

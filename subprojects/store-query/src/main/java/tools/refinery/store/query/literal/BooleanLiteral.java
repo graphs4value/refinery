@@ -7,6 +7,9 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.Variable;
+
+import java.util.Set;
 
 public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	TRUE(true),
@@ -19,8 +22,18 @@ public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return VariableBindingSite.EMPTY;
+	public Set<Variable> getOutputVariables() {
+		return Set.of();
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
 	}
 
 	@Override

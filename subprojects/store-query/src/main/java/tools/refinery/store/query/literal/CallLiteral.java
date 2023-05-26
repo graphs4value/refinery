@@ -8,14 +8,13 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public final class CallLiteral extends AbstractCallLiteral implements CanNegate<CallLiteral> {
 	private final CallPolarity polarity;
-	private final VariableBindingSite variableBindingSite;
 
 	public CallLiteral(CallPolarity polarity, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
@@ -30,9 +29,6 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 			}
 		}
 		this.polarity = polarity;
-		variableBindingSite = VariableBindingSite.builder()
-				.parameterList(polarity.isPositive(), parameters, arguments)
-				.build();
 	}
 
 	public CallPolarity getPolarity() {
@@ -40,13 +36,16 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
-	public VariableBindingSite getVariableBindingSite() {
-		return variableBindingSite;
+	protected Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments) {
+		return new CallLiteral(polarity, getTarget(), substitutedArguments);
 	}
 
 	@Override
-	protected Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments) {
-		return new CallLiteral(polarity, getTarget(), substitutedArguments);
+	public Set<Variable> getOutputVariables() {
+		if (polarity.isPositive()) {
+			return getArgumentsOfDirection(ParameterDirection.OUT);
+		}
+		return Set.of();
 	}
 
 	@Override
