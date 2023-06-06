@@ -2155,7 +2155,7 @@ __metadata:
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     typescript: "npm:5.0.3"
-    vite: "npm:^4.2.1"
+    vite: "npm:^4.2.3"
     vite-plugin-pwa: "npm:^0.14.7"
     workbox-window: "npm:^6.5.4"
     xstate: "npm:^4.37.1"
@@ -5628,7 +5628,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.4":
+"nanoid@npm:^3.3.6":
   version: 3.3.6
   resolution: "nanoid@npm:3.3.6"
   bin:
@@ -5984,14 +5984,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.21":
-  version: 8.4.21
-  resolution: "postcss@npm:8.4.21"
+"postcss@npm:^8.4.23":
+  version: 8.4.24
+  resolution: "postcss@npm:8.4.24"
   dependencies:
-    nanoid: "npm:^3.3.4"
+    nanoid: "npm:^3.3.6"
     picocolors: "npm:^1.0.0"
     source-map-js: "npm:^1.0.2"
-  checksum: 4fb944abed714e5aa88c76b6eae19b293e84ced7ea4162fe0da6ab5215ded572330df93ce3bb5073ee18a9ad0122a6a65e3000897dc3a828e96281d8b3e1f91e
+  checksum: 50c4ba61a7fed4d06e084c625f2603cc2448b66f4305d6495a105e73d2f53bdbf34828e5505d33498fa56e87d82e4192e55186e3b5167087d2b93882b6fc9db1
   languageName: node
   linkType: hard
 
@@ -6361,7 +6361,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^3.18.0, rollup@npm:^3.7.2":
+"rollup@npm:^3.21.0":
+  version: 3.23.1
+  resolution: "rollup@npm:3.23.1"
+  dependencies:
+    fsevents: "npm:~2.3.2"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: ea01f1647dea64b739d213cc6e25e4e9aea9e73862bb9a97e0008d7929f3454e078d18c770e31bfa9a6c051a0dc0d7dd40dd78a0f8a7f158a4f8a316ce02a146
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^3.7.2":
   version: 3.20.2
   resolution: "rollup@npm:3.20.2"
   dependencies:
@@ -7074,15 +7088,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "vite@npm:4.2.1"
+"vite@npm:^4.2.3":
+  version: 4.3.9
+  resolution: "vite@npm:4.3.9"
   dependencies:
     esbuild: "npm:^0.17.5"
     fsevents: "npm:~2.3.2"
-    postcss: "npm:^8.4.21"
-    resolve: "npm:^1.22.1"
-    rollup: "npm:^3.18.0"
+    postcss: "npm:^8.4.23"
+    rollup: "npm:^3.21.0"
   peerDependencies:
     "@types/node": ">= 14"
     less: "*"
@@ -7108,7 +7121,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 9b784639d35a074b12b72f60764ba6d6eedcaa112ac4b5df00a706e2d5a01d7d4b9ce19ddc5ce8b65260770e56e084fcf2ae7b7c763a0880a2d9f3bfb5fa3450
+  checksum: 3bdd4d860e646a5abdf9b0af1828d74e7e20f9124cc4081cc7d8a09df1b054286add51051c1127cc3c1ea522e3c756da21a1dc424dabd121fa5b82dd5c6911b1
   languageName: node
   linkType: hard
 

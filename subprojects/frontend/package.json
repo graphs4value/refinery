@@ -89,7 +89,7 @@
     "micromatch": "^4.0.5",
     "prettier": "^2.8.7",
     "typescript": "5.0.3",
-    "vite": "^4.2.1",
+    "vite": "^4.2.3",
     "vite-plugin-pwa": "^0.14.7",
     "workbox-window": "^6.5.4"
   }
