@@ -6,6 +6,8 @@
 package tools.refinery.store.query.dnf;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.query.term.ParameterDirection;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.query.view.SymbolView;
 import tools.refinery.store.representation.Symbol;
@@ -17,7 +19,7 @@ import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo
 
 class DnfBuilderVariableUnificationTest {
 	private final Symbol<Boolean> friend = new Symbol<>("friend", 2, Boolean.class, false);
-	private final Symbol<Boolean> children = new Symbol<>("friend", 2, Boolean.class, false);
+	private final Symbol<Boolean> children = new Symbol<>("children", 2, Boolean.class, false);
 	private final SymbolView<Boolean> friendView = new KeyOnlyView<>(friend);
 	private final SymbolView<Boolean> childrenView = new KeyOnlyView<>(children);
 
@@ -30,12 +32,14 @@ class DnfBuilderVariableUnificationTest {
 					p.isEquivalent(q)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			builder.clause(friendView.call(p, p));
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		assertThat(actual, structurallyEqualTo(
+				List.of(new SymbolicParameter(expectedP, ParameterDirection.OUT)),
+				List.of(
+						List.of(friendView.call(expectedP, expectedP))
+				)
+		));
 	}
 
 	@Test
@@ -47,12 +51,14 @@ class DnfBuilderVariableUnificationTest {
 					q.isEquivalent(p)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			builder.clause(friendView.call(p, p));
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		assertThat(actual, structurallyEqualTo(
+				List.of(new SymbolicParameter(expectedP, ParameterDirection.OUT)),
+				List.of(
+						List.of(friendView.call(expectedP, expectedP))
+				)
+		));
 	}
 
 	@Test
@@ -61,9 +67,14 @@ class DnfBuilderVariableUnificationTest {
 				friendView.call(p, q),
 				p.isEquivalent(q)
 		)));
-		var expected = Dnf.of(builder -> builder.clause(p -> List.of(friendView.call(p, p))));
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		assertThat(actual, structurallyEqualTo(
+				List.of(),
+				List.of(
+						List.of(friendView.call(expectedP, expectedP))
+				)
+		));
 	}
 
 	@Test
@@ -74,12 +85,14 @@ class DnfBuilderVariableUnificationTest {
 				childrenView.call(p, r),
 				q.isEquivalent(r)
 		)));
-		var expected = Dnf.of(builder -> builder.clause(p -> List.of(
-				friendView.call(p, p),
-				childrenView.call(p, p)
-		)));
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		assertThat(actual, structurallyEqualTo(
+				List.of(),
+				List.of(
+						List.of(friendView.call(expectedP, expectedP), childrenView.call(expectedP, expectedP))
+				)
+		));
 	}
 
 	@Test
@@ -90,9 +103,14 @@ class DnfBuilderVariableUnificationTest {
 				friendView.call(p, r),
 				q.isEquivalent(r)
 		)));
-		var expected = Dnf.of(builder -> builder.clause(p -> List.of(friendView.call(p, p))));
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		assertThat(actual, structurallyEqualTo(
+				List.of(),
+				List.of(
+						List.of(friendView.call(expectedP, expectedP))
+				)
+		));
 	}
 
 	@Test
@@ -105,16 +123,18 @@ class DnfBuilderVariableUnificationTest {
 					p.isEquivalent(q)
 			);
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			builder.clause(
-					q.isEquivalent(p),
-					friendView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(friendView.call(expectedP, expectedP), expectedQ.isEquivalent(expectedP))
+				)
+		));
 	}
 
 	@Test
@@ -130,19 +150,25 @@ class DnfBuilderVariableUnificationTest {
 					r.isEquivalent(q)
 			);
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			var r = builder.parameter("r");
-			builder.clause(
-					q.isEquivalent(p),
-					r.isEquivalent(p),
-					friendView.call(p, p),
-					childrenView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		var expectedR = Variable.of("r");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT),
+						new SymbolicParameter(expectedR, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(
+								friendView.call(expectedP, expectedP),
+								expectedQ.isEquivalent(expectedP),
+								expectedR.isEquivalent(expectedP),
+								childrenView.call(expectedP, expectedP)
+						)
+				)
+		));
 	}
 
 	@Test
@@ -157,17 +183,23 @@ class DnfBuilderVariableUnificationTest {
 					q.isEquivalent(r)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			builder.clause(
-					q.isEquivalent(p),
-					friendView.call(p, p),
-					childrenView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(
+								friendView.call(expectedP, expectedP),
+								expectedQ.isEquivalent(expectedP),
+								childrenView.call(expectedP, expectedP)
+						)
+				)
+		));
 	}
 
 	@Test
@@ -182,17 +214,22 @@ class DnfBuilderVariableUnificationTest {
 					q.isEquivalent(r)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			builder.clause(
-					q.isEquivalent(p),
-					friendView.call(p, p),
-					childrenView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(
+								friendView.call(expectedP, expectedP),
+								expectedQ.isEquivalent(expectedP),
+								childrenView.call(expectedP, expectedP)
+						)
+				)
+		));
 	}
 
 	@Test
@@ -207,17 +244,22 @@ class DnfBuilderVariableUnificationTest {
 					r.isEquivalent(q)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			builder.clause(
-					q.isEquivalent(p),
-					friendView.call(p, p),
-					childrenView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(
+								friendView.call(expectedP, expectedP),
+								expectedQ.isEquivalent(expectedP),
+								childrenView.call(expectedP, expectedP)
+						)
+				)
+		));
 	}
 
 	@Test
@@ -232,17 +274,22 @@ class DnfBuilderVariableUnificationTest {
 					r.isEquivalent(q)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			builder.clause(
-					q.isEquivalent(p),
-					friendView.call(p, p),
-					childrenView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(
+								friendView.call(expectedP, expectedP),
+								expectedQ.isEquivalent(expectedP),
+								childrenView.call(expectedP, expectedP)
+						)
+				)
+		));
 	}
 
 	@Test
@@ -258,16 +305,21 @@ class DnfBuilderVariableUnificationTest {
 					q.isEquivalent(s)
 			));
 		});
-		var expected = Dnf.of(builder -> {
-			var p = builder.parameter("p");
-			var q = builder.parameter("q");
-			builder.clause(
-					q.isEquivalent(p),
-					friendView.call(p, p),
-					childrenView.call(p, p)
-			);
-		});
 
-		assertThat(actual, structurallyEqualTo(expected));
+		var expectedP = Variable.of("p");
+		var expectedQ = Variable.of("q");
+		assertThat(actual, structurallyEqualTo(
+				List.of(
+						new SymbolicParameter(expectedP, ParameterDirection.OUT),
+						new SymbolicParameter(expectedQ, ParameterDirection.OUT)
+				),
+				List.of(
+						List.of(
+								friendView.call(expectedP, expectedP),
+								expectedQ.isEquivalent(expectedP),
+								childrenView.call(expectedP, expectedP)
+						)
+				)
+		));
 	}
 }

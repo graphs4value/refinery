@@ -29,7 +29,7 @@ public class StructurallyEqualTo extends TypeSafeMatcher<Dnf> {
 		if (describingChecker.dnfEqual(expected, item)) {
 			throw new IllegalStateException("Mismatched Dnf was matching on repeated comparison");
 		}
-		if (!describingChecker.isDescribed()) {
+		if (describingChecker.needsDescription()) {
 			super.describeMismatchSafely(item, mismatchDescription);
 		}
 	}

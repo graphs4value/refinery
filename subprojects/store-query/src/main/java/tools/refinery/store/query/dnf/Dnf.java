@@ -119,6 +119,11 @@ public final class Dnf implements Constraint {
 		if (arity() != other.arity()) {
 			return false;
 		}
+		for (int i = 0; i < arity(); i++) {
+			if (!symbolicParameters.get(i).getDirection().equals(other.getSymbolicParameters().get(i).getDirection())) {
+				return false;
+			}
+		}
 		int numClauses = clauses.size();
 		if (numClauses != other.clauses.size()) {
 			return false;
