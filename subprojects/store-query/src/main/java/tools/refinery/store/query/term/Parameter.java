@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Parameter {
-	public static final Parameter NODE_IN_OUT = new Parameter(null, ParameterDirection.OUT);
+	public static final Parameter NODE_OUT = new Parameter(null, ParameterDirection.OUT);
 
 	private final Class<?> dataType;
 	private final ParameterDirection direction;

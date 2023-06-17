@@ -106,7 +106,7 @@ class ClausePostProcessor {
 	private Set<NodeVariable> getEquivalentVariables(NodeVariable variable) {
 		var representative = getRepresentative(variable);
 		if (!representative.equals(variable)) {
-			throw new IllegalStateException("NodeVariable %s already has a representative %s"
+			throw new AssertionError("NodeVariable %s already has a representative %s"
 					.formatted(variable, representative));
 		}
 		return equivalencePartition.computeIfAbsent(variable, key -> {
@@ -249,7 +249,7 @@ class ClausePostProcessor {
 
 		private void bindVariable(Variable input) {
 			if (!remainingInputs.remove(input)) {
-				throw new IllegalStateException("Already processed input %s of literal %s".formatted(input, literal));
+				throw new AssertionError("Already processed input %s of literal %s".formatted(input, literal));
 			}
 			if (allInputsBound()) {
 				addToAllInputsBoundQueue();

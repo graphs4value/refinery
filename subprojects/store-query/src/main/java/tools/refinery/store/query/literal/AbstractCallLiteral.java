@@ -19,6 +19,8 @@ public abstract class AbstractCallLiteral implements Literal {
 	private final Set<Variable> inArguments;
 	private final Set<Variable> outArguments;
 
+	// Use exhaustive switch over enums.
+	@SuppressWarnings("squid:S1301")
 	protected AbstractCallLiteral(Constraint target, List<Variable> arguments) {
 		int arity = target.arity();
 		if (arguments.size() != arity) {
@@ -59,14 +61,14 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	private static void checkInOutUnifiable(Variable argument) {
 		if (!argument.isUnifiable()) {
-			throw new IllegalArgumentException("Arguments %s cannot appear with both %s and %s direction"
+			throw new IllegalArgumentException("Argument %s cannot appear with both %s and %s direction"
 					.formatted(argument, ParameterDirection.IN, ParameterDirection.OUT));
 		}
 	}
 
 	private static void checkDuplicateOutUnifiable(Variable argument) {
 		if (!argument.isUnifiable()) {
-			throw new IllegalArgumentException("Arguments %s cannot be bound multiple times".formatted(argument));
+			throw new IllegalArgumentException("Argument %s cannot be bound multiple times".formatted(argument));
 		}
 	}
 
@@ -87,12 +89,17 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return getArgumentsOfDirection(ParameterDirection.IN);
+		var inputVariables = new LinkedHashSet<>(getArgumentsOfDirection(ParameterDirection.OUT));
+		inputVariables.retainAll(positiveVariablesInClause);
+		inputVariables.addAll(getArgumentsOfDirection(ParameterDirection.IN));
+		return Collections.unmodifiableSet(inputVariables);
 	}
 
 	@Override
 	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Set.of();
+		var privateVariables = new LinkedHashSet<>(getArgumentsOfDirection(ParameterDirection.OUT));
+		privateVariables.removeAll(positiveVariablesInClause);
+		return Collections.unmodifiableSet(privateVariables);
 	}
 
 	@Override

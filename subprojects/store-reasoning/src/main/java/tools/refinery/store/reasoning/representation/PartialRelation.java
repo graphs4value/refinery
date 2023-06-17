@@ -33,7 +33,7 @@ public record PartialRelation(String name, int arity) implements PartialSymbol<T
 	@Override
 	public List<Parameter> getParameters() {
 		var parameters = new Parameter[arity];
-		Arrays.fill(parameters, Parameter.NODE_IN_OUT);
+		Arrays.fill(parameters, Parameter.NODE_OUT);
 		return List.of(parameters);
 	}
 

@@ -105,7 +105,7 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 
 	private static List<Parameter> createParameters(int symbolArity, Parameter outParameter) {
 		var parameters = new Parameter[symbolArity + 1];
-		Arrays.fill(parameters, Parameter.NODE_IN_OUT);
+		Arrays.fill(parameters, Parameter.NODE_OUT);
 		parameters[symbolArity] = outParameter;
 		return List.of(parameters);
 	}

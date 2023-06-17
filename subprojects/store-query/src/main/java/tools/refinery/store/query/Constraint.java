@@ -32,7 +32,9 @@ public interface Constraint {
 		return equals(other);
 	}
 
-	String toReferenceString();
+	default String toReferenceString() {
+		return name();
+	}
 
 	default CallLiteral call(CallPolarity polarity, List<Variable> arguments) {
 		return new CallLiteral(polarity, this, arguments);

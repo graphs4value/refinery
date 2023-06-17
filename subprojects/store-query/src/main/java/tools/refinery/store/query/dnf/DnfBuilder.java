@@ -223,7 +223,8 @@ public final class DnfBuilder {
 			} else if (result instanceof ClausePostProcessor.ConstantResult constantResult) {
 				switch (constantResult) {
 				case ALWAYS_TRUE -> {
-					return List.of(new DnfClause(Set.of(), List.of()));
+					var inputVariables = getInputVariables();
+					return List.of(new DnfClause(inputVariables, List.of()));
 				}
 				case ALWAYS_FALSE -> {
 					// Skip this clause because it can never match.
@@ -247,5 +248,15 @@ public final class DnfBuilder {
 					new ClausePostProcessor.ParameterInfo(parameter.getDirection(), i));
 		}
 		return Collections.unmodifiableMap(mutableParameterInfoMap);
+	}
+
+	private Set<Variable> getInputVariables() {
+		var inputParameters = new LinkedHashSet<Variable>();
+		for (var parameter : parameters) {
+			if (parameter.getDirection() == ParameterDirection.IN) {
+				inputParameters.add(parameter.getVariable());
+			}
+		}
+		return Collections.unmodifiableSet(inputParameters);
 	}
 }

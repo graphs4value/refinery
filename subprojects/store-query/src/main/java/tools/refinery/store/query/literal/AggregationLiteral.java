@@ -61,6 +61,14 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (positiveVariablesInClause.contains(inputVariable)) {
+			throw new IllegalArgumentException("Aggregation variable %s must not be bound".formatted(inputVariable));
+		}
+		return super.getInputVariables(positiveVariablesInClause);
+	}
+
+	@Override
 	public Literal reduce() {
 		var reduction = getTarget().getReduction();
 		return switch (reduction) {

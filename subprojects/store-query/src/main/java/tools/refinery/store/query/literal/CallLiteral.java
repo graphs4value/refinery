@@ -49,6 +49,22 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (polarity.isPositive()) {
+			return getArgumentsOfDirection(ParameterDirection.IN);
+		}
+		return super.getInputVariables(positiveVariablesInClause);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (polarity.isPositive()) {
+			return Set.of();
+		}
+		return super.getPrivateVariables(positiveVariablesInClause);
+	}
+
+	@Override
 	public Literal reduce() {
 		var reduction = getTarget().getReduction();
 		var negatedReduction = polarity.isPositive() ? reduction : reduction.negate();

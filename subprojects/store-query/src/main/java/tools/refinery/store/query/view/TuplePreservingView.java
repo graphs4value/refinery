@@ -76,7 +76,7 @@ public abstract class TuplePreservingView<T> extends SymbolView<T> {
 
 	private static List<Parameter> createParameters(int arity) {
 		var parameters = new Parameter[arity];
-		Arrays.fill(parameters, Parameter.NODE_IN_OUT);
+		Arrays.fill(parameters, Parameter.NODE_OUT);
 		return List.of(parameters);
 	}
 }
