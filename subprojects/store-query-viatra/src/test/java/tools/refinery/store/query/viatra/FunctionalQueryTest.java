@@ -13,6 +13,7 @@ import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
+import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -35,13 +36,15 @@ import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNull
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class FunctionalQueryTest {
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
+	private static final Symbol<TruthValue> friend = Symbol.of("friend", 2, TruthValue.class, TruthValue.FALSE);
+	private static final AnySymbolView personView = new KeyOnlyView<>(person);
+	private static final AnySymbolView ageView = new FunctionView<>(age);
+	private static final AnySymbolView friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
+
 	@QueryEngineTest
 	void inputKeyTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var query = Query.of("InputKey", Integer.class, (builder, p1, output) -> builder.clause(
 				personView.call(p1),
 				ageView.call(p1, output)
@@ -77,11 +80,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var subQuery = Dnf.of("SubQuery", builder -> {
 			var p1 = builder.parameter("p1");
 			var x = builder.parameter("x", Integer.class);
@@ -125,11 +123,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void computationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var query = Query.of("Computation", Integer.class, (builder, p1, output) -> builder.clause(() -> {
 			var x = Variable.of("x", Integer.class);
 			return List.of(
@@ -168,11 +161,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void inputKeyCountTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var query = Query.of("Count", Integer.class, (builder, p1, output) -> builder.clause(
 				personView.call(p1),
 				output.assign(friendMustView.count(p1, Variable.of()))
@@ -210,11 +198,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateCountTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var subQuery = Dnf.of("SubQuery", builder -> {
 			var p1 = builder.parameter("p1");
 			var p2 = builder.parameter("p2");
@@ -261,9 +244,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var ageView = new FunctionView<>(age);
-
 		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(Integer.class,
 				(y) -> List.of(output.assign(ageView.aggregate(y, INT_SUM, Variable.of(), y)))));
 
@@ -288,11 +268,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateAggregationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var subQuery = Dnf.of("SubQuery", builder -> {
 			var p1 = builder.parameter("p1");
 			var x = builder.parameter("x", Integer.class);
@@ -329,11 +304,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void extremeValueTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var subQuery = Dnf.of("SubQuery", builder -> {
 			var p1 = builder.parameter("p1");
 			var x = builder.parameter("x", Integer.class);
@@ -394,11 +364,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void invalidComputationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var query = Query.of("InvalidComputation", Integer.class,
 				(builder, p1, output) -> builder.clause(Integer.class, (x) -> List.of(
 						personView.call(p1),
@@ -435,11 +400,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void invalidAssumeTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
 				personView.call(p1),
 				ageView.call(p1, x),
@@ -478,13 +438,6 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void notFunctionalTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var query = Query.of("NotFunctional", Integer.class, (builder, p1, output) -> builder.clause((p2) -> List.of(
 				personView.call(p1),
 				friendMustView.call(p1, p2),

@@ -33,9 +33,9 @@ import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.term.int_.IntTerms.*;
 
 class VariableDirectionTest {
-	private static final Symbol<Boolean> person = new Symbol<>("Person", 1, Boolean.class, false);
-	private static final Symbol<Boolean> friend = new Symbol<>("friend", 2, Boolean.class, false);
-	private static final Symbol<Integer> age = new Symbol<>("age", 1, Integer.class, null);
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<Boolean> friend = Symbol.of("friend", 2);
+	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
 	private static final AnySymbolView personView = new KeyOnlyView<>(person);
 	private static final AnySymbolView friendView = new KeyOnlyView<>(friend);
 	private static final AnySymbolView ageView = new FunctionView<>(age);

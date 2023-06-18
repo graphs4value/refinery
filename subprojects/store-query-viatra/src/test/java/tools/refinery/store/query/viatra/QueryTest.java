@@ -13,6 +13,7 @@ import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
+import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -30,11 +31,14 @@ import static tools.refinery.store.query.term.int_.IntTerms.greaterEq;
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class QueryTest {
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<TruthValue> friend = Symbol.of("friend", 2, TruthValue.class, TruthValue.FALSE);
+	private static final AnySymbolView personView = new KeyOnlyView<>(person);
+	private static final AnySymbolView friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
+
 	@QueryEngineTest
 	void typeConstraintTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
+		var asset = Symbol.of("Asset", 1);
 
 		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
 
@@ -67,11 +71,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void relationConstraintTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var predicate = Query.of("RelationConstraint", (builder, p1, p2) -> builder.clause(
 				personView.call(p1),
 				personView.call(p2),
@@ -111,11 +110,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void existTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var predicate = Query.of("Exists", (builder, p1) -> builder.clause((p2) -> List.of(
 				personView.call(p1),
 				personView.call(p2),
@@ -155,12 +149,8 @@ class QueryTest {
 
 	@QueryEngineTest
 	void orTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var animal = new Symbol<>("Animal", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
+		var animal = Symbol.of("Animal", 1);
 		var animalView = new KeyOnlyView<>(animal);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
 		var predicate = Query.of("Or", (builder, p1, p2) -> builder.clause(
 				personView.call(p1),
@@ -209,9 +199,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void equalityTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
-
 		var predicate = Query.of("Equality", (builder, p1, p2) -> builder.clause(
 				personView.call(p1),
 				personView.call(p2),
@@ -246,11 +233,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void inequalityTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var predicate = Query.of("Inequality", (builder, p1, p2, p3) -> builder.clause(
 				personView.call(p1),
 				personView.call(p2),
@@ -289,11 +271,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void patternCallTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var friendPredicate = Dnf.of("Friend", builder -> {
 			var p1 = builder.parameter("p1");
 			var p2 = builder.parameter("p2");
@@ -341,11 +318,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void negativeRelationViewTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var predicate = Query.of("NegativePatternCall", (builder, p1, p2) -> builder.clause(
 				personView.call(p1),
 				personView.call(p2),
@@ -390,11 +362,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void negativePatternCallTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var friendPredicate = Dnf.of("Friend", builder -> {
 			var p1 = builder.parameter("p1");
 			var p2 = builder.parameter("p2");
@@ -448,11 +415,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void negativeRelationViewWithQuantificationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var predicate = Query.of("Negative", (builder, p1) -> builder.clause(
 				personView.call(p1),
 				not(friendMustView.call(p1, Variable.of()))
@@ -489,11 +451,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void negativeWithQuantificationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var called = Dnf.of("Called", builder -> {
 			var p1 = builder.parameter("p1");
 			var p2 = builder.parameter("p2");
@@ -539,11 +496,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void transitiveRelationViewTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var predicate = Query.of("Transitive", (builder, p1, p2) -> builder.clause(
 				personView.call(p1),
 				personView.call(p2),
@@ -587,11 +539,6 @@ class QueryTest {
 
 	@QueryEngineTest
 	void transitivePatternCallTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyView<>(person);
-		var friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
-
 		var called = Dnf.of("Called", builder -> {
 			var p1 = builder.parameter("p1");
 			var p2 = builder.parameter("p2");
@@ -644,9 +591,7 @@ class QueryTest {
 
 	@QueryEngineTest
 	void assumeTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
+		var age = Symbol.of("age", 1, Integer.class);
 		var ageView = new FunctionView<>(age);
 
 		var query = Query.of("Constraint", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
@@ -684,8 +629,6 @@ class QueryTest {
 
 	@Test
 	void alwaysFalseTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-
 		var predicate = Query.of("AlwaysFalse", builder -> builder.parameter("p1"));
 
 		var store = ModelStore.builder()

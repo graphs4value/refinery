@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -26,13 +28,15 @@ import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNull
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class QueryTransactionTest {
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
+	private static final AnySymbolView personView = new KeyOnlyView<>(person);
+	private static final AnySymbolView ageView = new FunctionView<>(age);
+	private static final RelationalQuery predicate = Query.of("TypeConstraint", (builder, p1) ->
+			builder.clause(personView.call(p1)));
+
 	@Test
 	void flushTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
-
-		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
-
 		var store = ModelStore.builder()
 				.symbols(person)
 				.with(ViatraModelQueryAdapter.builder()
@@ -95,11 +99,6 @@ class QueryTransactionTest {
 
 	@Test
 	void localSearchTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
-
-		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
-
 		var store = ModelStore.builder()
 				.symbols(person)
 				.with(ViatraModelQueryAdapter.builder()
@@ -145,11 +144,7 @@ class QueryTransactionTest {
 
 	@Test
 	void unrelatedChangesTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
-
-		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
+		var asset = Symbol.of("Asset", 1);
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
@@ -214,11 +209,6 @@ class QueryTransactionTest {
 
 	@Test
 	void tupleChangingChangeTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
-		var ageView = new FunctionView<>(age);
-
 		var query = Query.of("TypeConstraint", Integer.class, (builder, p1, output) -> builder.clause(
 				personView.call(p1),
 				ageView.call(p1, output)
@@ -256,9 +246,6 @@ class QueryTransactionTest {
 
 	@Test
 	void tuplePreservingUnchangedTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyView<>(person);
 		var adultView = new FilteredView<>(age, "adult", n -> n != null && n >= 18);
 
 		var query = Query.of("TypeConstraint", (builder, p1) -> builder.clause(
@@ -299,11 +286,6 @@ class QueryTransactionTest {
 	@Disabled("TODO Fix DiffCursor")
 	@Test
 	void commitAfterFlushTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
-
-		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
-
 		var store = ModelStore.builder()
 				.symbols(person)
 				.with(ViatraModelQueryAdapter.builder()
@@ -353,11 +335,6 @@ class QueryTransactionTest {
 	@Disabled("TODO Fix DiffCursor")
 	@Test
 	void commitWithoutFlushTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyView<>(person);
-
-		var predicate = Query.of("TypeConstraint", (builder, p1) -> builder.clause(personView.call(p1)));
-
 		var store = ModelStore.builder()
 				.symbols(person)
 				.with(ViatraModelQueryAdapter.builder()

@@ -14,27 +14,24 @@ import tools.refinery.store.tuple.Tuple;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModelTest {
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
+	private static final Symbol<Boolean> friend = Symbol.of("friend", 2);
+
 	@Test
 	void modelConstructionTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-
 		var store = ModelStore.builder().symbols(person, friend).build();
 		var symbols = store.getSymbols();
 
 		assertTrue(symbols.contains(person));
 		assertTrue(symbols.contains(friend));
 
-		var other = new Symbol<>("other", 2, Integer.class, null);
+		var other = Symbol.of("other", 2, Integer.class);
 		assertFalse(symbols.contains(other));
 	}
 
 	@Test
 	void modelBuildingTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-
 		var store = ModelStore.builder().symbols(person, age, friend).build();
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
@@ -62,8 +59,6 @@ class ModelTest {
 
 	@Test
 	void modelBuildingArityFailTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-
 		var store = ModelStore.builder().symbols(person).build();
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
@@ -75,8 +70,6 @@ class ModelTest {
 
 	@Test
 	void modelBuildingNullFailTest() {
-		var age = new Symbol<>("age", 1, Integer.class, null);
-
 		var store = ModelStore.builder().symbols(age).build();
 		var model = store.createEmptyModel();
 		var ageInterpretation = model.getInterpretation(age);
@@ -89,10 +82,6 @@ class ModelTest {
 
 	@Test
 	void modelUpdateTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-
 		var store = ModelStore.builder().symbols(person, age, friend).build();
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
@@ -118,9 +107,6 @@ class ModelTest {
 
 	@Test
 	void restoreTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, Boolean.class, false);
-
 		var store = ModelStore.builder().symbols(person, friend).build();
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);

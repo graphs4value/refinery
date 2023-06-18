@@ -29,7 +29,7 @@ public class BaseDecisionTranslationUnit extends TranslationUnit {
 		}
 		this.partialRelation = partialRelation;
 		this.seed = seed;
-		symbol = new Symbol<>(partialRelation.name(), partialRelation.arity(), TruthValue.class, TruthValue.UNKNOWN);
+		symbol = Symbol.of(partialRelation.name(), partialRelation.arity(), TruthValue.class, TruthValue.UNKNOWN);
 	}
 
 	public BaseDecisionTranslationUnit(PartialRelation partialRelation) {

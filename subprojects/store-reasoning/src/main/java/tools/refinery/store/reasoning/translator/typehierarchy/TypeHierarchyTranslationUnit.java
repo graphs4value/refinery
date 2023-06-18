@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 public class TypeHierarchyTranslationUnit extends TranslationUnit {
-	static final Symbol<InferredType> INFERRED_TYPE_SYMBOL = new Symbol<>("inferredType", 1,
-			InferredType.class, InferredType.UNTYPED);
+	static final Symbol<InferredType> INFERRED_TYPE_SYMBOL = Symbol.of(
+			"inferredType", 1, InferredType.class, InferredType.UNTYPED);
 
 	private final TypeAnalyzer typeAnalyzer;
 

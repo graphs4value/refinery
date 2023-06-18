@@ -21,7 +21,7 @@ import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo;
 
 class TopologicalSortTest {
-	private static final Symbol<Boolean> friend = new Symbol<>("friend", 2, Boolean.class, false);
+	private static final Symbol<Boolean> friend = Symbol.of("friend", 2);
 	private static final AnySymbolView friendView = new KeyOnlyView<>(friend);
 	private static final Dnf example = Dnf.of("example", builder -> {
 		var a = builder.parameter("a", ParameterDirection.IN);
