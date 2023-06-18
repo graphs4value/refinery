@@ -5,13 +5,12 @@
  */
 package tools.refinery.language.web.tests;
 
-import org.eclipse.jetty.ee10.websocket.api.Session;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketOpen;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +38,8 @@ public abstract class WebSocketIntegrationTestClient {
 		return responses;
 	}
 
-	@OnWebSocketConnect
-	public void onConnect(Session session) {
+	@OnWebSocketOpen
+	public void onOpen(Session session) {
 		arrangeAndCatchErrors(session);
 	}
 
@@ -52,7 +51,7 @@ public abstract class WebSocketIntegrationTestClient {
 		}
 	}
 
-	protected abstract void arrange(Session session, int responsesReceived) throws IOException;
+	protected abstract void arrange(Session session, int responsesReceived);
 
 	@OnWebSocketClose
 	public void onClose(int statusCode, String reason) {

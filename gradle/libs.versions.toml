@@ -4,28 +4,30 @@
 
 [versions]
 eclipseCollections = "12.0.0.M1"
-jetty = "12.0.0.beta0"
+ecore = "2.34.0"
+jetty = "12.0.0.beta1"
 jmh = "1.36"
-junit = "5.9.3"
-mockito = "5.3.1"
-mwe2 = "2.14.0"
+junit = "5.10.0-M1"
+mockito = "5.4.0"
+mwe2 = "2.15.0.M0"
 slf4j = "2.0.7"
-xtext = "2.31.0.M1"
+xtext = "2.31.0"
 
 [libraries]
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
-ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.33.0" }
+ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version.ref = "ecore" }
 ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.18.0" }
-ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.33.0" }
+ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecore" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", version = "8.1.1" }
-gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.0.0.2929" }
+gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.2.1.3168" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty.ee10", name = "jetty-ee10-servlet", version.ref = "jetty" }
-jetty-websocket-client = { group = "org.eclipse.jetty.ee10.websocket", name = "jetty-ee10-websocket-jetty-client", version.ref = "jetty" }
+jetty-websocket-api = { group = "org.eclipse.jetty.websocket", name = "jetty-websocket-jetty-api", version.ref = "jetty" }
+jetty-websocket-client = { group = "org.eclipse.jetty.websocket", name = "jetty-websocket-jetty-client", version.ref = "jetty" }
 jetty-websocket-server = { group = "org.eclipse.jetty.ee10.websocket", name = "jetty-ee10-websocket-jetty-server", version.ref = "jetty" }
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
@@ -34,7 +36,7 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.8.0" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.9.0.M0" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
@@ -52,4 +54,4 @@ xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", v
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.46.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.47.0" }

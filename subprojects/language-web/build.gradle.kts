@@ -19,6 +19,7 @@ dependencies {
 	implementation(project(":refinery-language-ide"))
 	implementation(libs.jetty.server)
 	implementation(libs.jetty.servlet)
+	implementation(libs.jetty.websocket.api)
 	implementation(libs.jetty.websocket.server)
 	implementation(libs.slf4j.api)
 	implementation(libs.xtext.web)

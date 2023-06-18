@@ -7,17 +7,18 @@ package tools.refinery.language.web;
 
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.eclipse.jetty.ee10.websocket.api.Session;
-import org.eclipse.jetty.ee10.websocket.api.StatusCode;
-import org.eclipse.jetty.ee10.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.ee10.websocket.api.exceptions.UpgradeException;
-import org.eclipse.jetty.ee10.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.ee10.websocket.client.WebSocketClient;
 import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.websocket.api.Callback;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.StatusCode;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.exceptions.UpgradeException;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.xtext.testing.GlobalRegistries;
 import org.eclipse.xtext.testing.GlobalRegistries.GlobalStateMemento;
 import org.junit.jupiter.api.AfterEach;
@@ -95,23 +96,34 @@ class ProblemWebSocketServletIntegrationTest {
 		assertThat(responses, hasSize(5));
 		assertThat(responses.get(0), equalTo("{\"id\":\"foo\",\"response\":{\"stateId\":\"-80000000\"}}"));
 		assertThat(responses.get(1), startsWith(
-				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"highlight\",\"push\":{\"regions\":["));
+				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"highlight\"," +
+						"\"push\":{\"regions\":["));
 		assertThat(responses.get(2), equalTo(
-				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"validate\",\"push\":{\"issues\":[]}}"));
+				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"validate\"," +
+						"\"push\":{\"issues\":[]}}"));
 		assertThat(responses.get(3), equalTo("{\"id\":\"bar\",\"response\":{\"stateId\":\"-7fffffff\"}}"));
 		assertThat(responses.get(4), startsWith(
-				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"highlight\",\"push\":{\"regions\":["));
+				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"highlight\"," +
+						"\"push\":{\"regions\":["));
 	}
 
 	@WebSocket
 	public static class UpdateTestClient extends WebSocketIntegrationTestClient {
 		@Override
-		protected void arrange(Session session, int responsesReceived) throws IOException {
+		protected void arrange(Session session, int responsesReceived) {
 			switch (responsesReceived) {
-			case 0 -> session.getRemote().sendString(
-					"{\"id\":\"foo\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"fullText\":\"class Person.\n\"}}");
-			case 3 -> session.getRemote().sendString(
-					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\",\"requiredStateId\":\"-80000000\",\"deltaText\":\"indiv q.\nnode(q).\n\",\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}");
+			case 0 -> session.sendText(
+					"{\"id\":\"foo\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\"," +
+							"\"fullText\":\"class Person.\n\"}}",
+					Callback.NOOP
+			);
+			case 3 -> //noinspection TextBlockMigration
+					session.sendText(
+					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\"," +
+							"\"requiredStateId\":\"-80000000\",\"deltaText\":\"indiv q.\nnode(q).\n\"," +
+							"\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}",
+					Callback.NOOP
+			);
 			case 5 -> session.close();
 			}
 		}
@@ -161,13 +173,13 @@ class ProblemWebSocketServletIntegrationTest {
 	@WebSocket
 	public static class InvalidJsonTestClient extends WebSocketIntegrationTestClient {
 		@Override
-		protected void arrange(Session session, int responsesReceived) throws IOException {
-			session.getRemote().sendString("<invalid json>");
+		protected void arrange(Session session, int responsesReceived) {
+			session.sendText("<invalid json>", Callback.NOOP);
 		}
 	}
 
 	@ParameterizedTest(name = "validOriginTest(\"{0}\")")
-	@ValueSource(strings = { "https://refinery.example", "https://refinery.example:443", "HTTPS://REFINERY.EXAMPLE" })
+	@ValueSource(strings = {"https://refinery.example", "https://refinery.example:443", "HTTPS://REFINERY.EXAMPLE"})
 	void validOriginTest(String origin) {
 		startServer("https://refinery.example,https://refinery.example:443");
 		var clientSocket = new CloseImmediatelyTestClient();
