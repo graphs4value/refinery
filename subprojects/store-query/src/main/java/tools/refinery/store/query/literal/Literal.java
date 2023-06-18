@@ -1,18 +1,27 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.Set;
 
 public interface Literal {
-	Set<Variable> getBoundVariables();
+	Set<Variable> getOutputVariables();
+
+	Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause);
+
+	Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause);
 
 	Literal substitute(Substitution substitution);
 
-	default LiteralReduction getReduction() {
-		return LiteralReduction.NOT_REDUCIBLE;
+	default Literal reduce() {
+		return this;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

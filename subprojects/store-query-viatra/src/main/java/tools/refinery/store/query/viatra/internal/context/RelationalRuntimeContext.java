@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.context;
 
 import org.eclipse.viatra.query.runtime.matchers.context.*;
@@ -8,9 +13,9 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
+import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;
 import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
-import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -54,9 +59,9 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
-		if (key instanceof RelationViewWrapper wrapper) {
-			var relationalKey = wrapper.getWrappedKey();
-			return this.modelUpdateListener.containsRelationView(relationalKey);
+		if (key instanceof SymbolViewWrapper wrapper) {
+			var symbolViewKey = wrapper.getWrappedKey();
+			return this.modelUpdateListener.containsSymbolView(symbolViewKey);
 		} else {
 			return false;
 		}
@@ -69,13 +74,13 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 		}
 	}
 
-	AnyRelationView checkKey(IInputKey key) {
-		if (key instanceof RelationViewWrapper wrappedKey) {
-			var relationViewKey = wrappedKey.getWrappedKey();
-			if (modelUpdateListener.containsRelationView(relationViewKey)) {
-				return relationViewKey;
+	AnySymbolView checkKey(IInputKey key) {
+		if (key instanceof SymbolViewWrapper wrappedKey) {
+			var symbolViewKey = wrappedKey.getWrappedKey();
+			if (modelUpdateListener.containsSymbolView(symbolViewKey)) {
+				return symbolViewKey;
 			} else {
-				throw new IllegalStateException("Query is asking for non-indexed key %s".formatted(relationViewKey));
+				throw new IllegalStateException("Query is asking for non-indexed key %s".formatted(symbolViewKey));
 			}
 		} else {
 			throw new IllegalStateException("Query is asking for non-relational key");

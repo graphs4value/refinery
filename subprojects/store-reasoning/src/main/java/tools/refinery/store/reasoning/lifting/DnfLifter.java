@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning.lifting;
 
 import org.jetbrains.annotations.Nullable;
@@ -7,16 +12,16 @@ import tools.refinery.store.query.dnf.DnfClause;
 import tools.refinery.store.query.literal.CallLiteral;
 import tools.refinery.store.query.literal.CallPolarity;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.DataVariable;
+import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.reasoning.Reasoning;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class DnfLifter {
@@ -31,10 +36,10 @@ public class DnfLifter {
 		var modality = modalDnf.modality();
 		var dnf = modalDnf.dnf();
 		var builder = Dnf.builder();
-		builder.parameters(dnf.getParameters());
+		builder.symbolicParameters(dnf.getSymbolicParameters());
 		boolean changed = false;
 		for (var clause : dnf.getClauses()) {
-			if (liftClause(modality, clause, builder)) {
+			if (liftClause(modality, dnf, clause, builder)) {
 				changed = true;
 			}
 		}
@@ -44,12 +49,9 @@ public class DnfLifter {
 		return dnf;
 	}
 
-	private boolean liftClause(Modality modality, DnfClause clause, DnfBuilder builder) {
+	private boolean liftClause(Modality modality, Dnf originalDnf, DnfClause clause, DnfBuilder builder) {
 		boolean changed = false;
-		var quantifiedVariables = new HashSet<>(clause.boundVariables()
-				.stream()
-				.filter(DataVariable.class::isInstance)
-				.toList());
+		var quantifiedVariables = getQuantifiedDataVariables(originalDnf, clause);
 		var literals = clause.literals();
 		var liftedLiterals = new ArrayList<Literal>(literals.size());
 		for (var literal : literals) {
@@ -69,11 +71,21 @@ public class DnfLifter {
 		}
 		for (var quantifiedVariable : quantifiedVariables) {
 			// Quantify over data variables that are not already quantified with the expected modality.
-			liftedLiterals.add(new CallLiteral(CallPolarity.POSITIVE, new ModalConstraint(modality, Reasoning.EXISTS),
-					List.of(quantifiedVariable)));
+			liftedLiterals.add(new CallLiteral(CallPolarity.POSITIVE,
+					new ModalConstraint(modality, ReasoningAdapter.EXISTS), List.of(quantifiedVariable)));
 		}
 		builder.clause(liftedLiterals);
 		return changed || !quantifiedVariables.isEmpty();
+	}
+
+	private static LinkedHashSet<Variable> getQuantifiedDataVariables(Dnf originalDnf, DnfClause clause) {
+		var quantifiedVariables = new LinkedHashSet<>(clause.positiveVariables());
+		for (var symbolicParameter : originalDnf.getSymbolicParameters()) {
+			// The existence of parameters will be checked outside this DNF.
+			quantifiedVariables.remove(symbolicParameter.getVariable());
+		}
+		quantifiedVariables.removeIf(variable -> !(variable instanceof NodeVariable));
+		return quantifiedVariables;
 	}
 
 	@Nullable
@@ -82,7 +94,7 @@ public class DnfLifter {
 				callLiteral.getPolarity() == CallPolarity.POSITIVE &&
 				callLiteral.getTarget() instanceof ModalConstraint modalConstraint &&
 				modalConstraint.modality() == modality &&
-				modalConstraint.constraint().equals(Reasoning.EXISTS)) {
+				modalConstraint.constraint().equals(ReasoningAdapter.EXISTS)) {
 			return callLiteral.getArguments().get(0);
 		}
 		return null;

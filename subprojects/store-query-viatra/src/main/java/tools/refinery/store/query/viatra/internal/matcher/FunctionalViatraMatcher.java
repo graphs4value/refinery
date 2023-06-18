@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.matcher;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
@@ -11,7 +16,7 @@ import tools.refinery.store.query.ResultSet;
 import tools.refinery.store.query.dnf.FunctionalQuery;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 /**
  * Directly access the tuples inside a VIATRA pattern matcher.<p>
@@ -63,7 +68,7 @@ public class FunctionalViatraMatcher<T> implements ResultSet<T> {
 	}
 
 	@Override
-	public T get(TupleLike parameters) {
+	public T get(Tuple parameters) {
 		var tuple = MatcherUtils.toViatraTuple(parameters);
 		if (omitOutputIndexer == null) {
 			return MatcherUtils.getSingleValue(backend.getAllMatches(omitOutputMask, tuple).iterator());
@@ -73,7 +78,7 @@ public class FunctionalViatraMatcher<T> implements ResultSet<T> {
 	}
 
 	@Override
-	public Cursor<TupleLike, T> getAll() {
+	public Cursor<Tuple, T> getAll() {
 		if (omitOutputIndexer == null) {
 			var allMatches = backend.getAllMatches(emptyMask, Tuples.staticArityFlatTupleOf());
 			return new UnsafeFunctionalCursor<>(allMatches.iterator());

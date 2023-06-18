@@ -1,9 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.map.internal;
+
+import tools.refinery.store.map.ContinousHashProvider;
 
 import java.util.Arrays;
 import java.util.Map;
-
-import tools.refinery.store.map.ContinousHashProvider;
 
 public class MutableNode<K, V> extends Node<K, V> {
 	int cachedHash;

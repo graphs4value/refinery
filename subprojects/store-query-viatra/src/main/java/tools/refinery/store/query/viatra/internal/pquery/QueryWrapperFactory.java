@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
@@ -9,15 +14,16 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeCo
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PQuery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
+import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.DnfClause;
 import tools.refinery.store.query.dnf.DnfUtils;
 import tools.refinery.store.query.literal.AbstractCallLiteral;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.AnyRelationView;
-import tools.refinery.store.query.view.RelationView;
+import tools.refinery.store.query.view.AnySymbolView;
+import tools.refinery.store.query.view.SymbolView;
 import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.*;
@@ -25,7 +31,7 @@ import java.util.function.ToIntFunction;
 
 class QueryWrapperFactory {
 	private final Dnf2PQuery dnf2PQuery;
-	private final Map<AnyRelationView, RelationViewWrapper> view2WrapperMap = new LinkedHashMap<>();
+	private final Map<AnySymbolView, SymbolViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 	private final CycleDetectingMapper<RemappedConstraint, RawPQuery> wrapConstraint = new CycleDetectingMapper<>(
 			RemappedConstraint::toString, this::doWrapConstraint);
 
@@ -33,28 +39,24 @@ class QueryWrapperFactory {
 		this.dnf2PQuery = dnf2PQuery;
 	}
 
-	public PQuery wrapRelationViewIdentityArguments(AnyRelationView relationView) {
-		var identity = new int[relationView.arity()];
+	public PQuery wrapSymbolViewIdentityArguments(AnySymbolView symbolView) {
+		var identity = new int[symbolView.arity()];
 		for (int i = 0; i < identity.length; i++) {
 			identity[i] = i;
 		}
-		return maybeWrapConstraint(relationView, identity);
+		return maybeWrapConstraint(symbolView, identity);
 	}
-	public WrappedCall maybeWrapConstraint(AbstractCallLiteral callLiteral, DnfClause clause) {
+
+	public WrappedCall maybeWrapConstraint(AbstractCallLiteral callLiteral) {
 		var arguments = callLiteral.getArguments();
 		int arity = arguments.size();
 		var remappedParameters = new int[arity];
-		var boundVariables = clause.boundVariables();
 		var unboundVariableIndices = new HashMap<Variable, Integer>();
 		var appendVariable = new VariableAppender();
 		for (int i = 0; i < arity; i++) {
 			var variable = arguments.get(i);
-			if (boundVariables.contains(variable)) {
-				// Do not join bound variable to make sure that the embedded pattern stays as general as possible.
-				remappedParameters[i] = appendVariable.applyAsInt(variable);
-			} else {
-				remappedParameters[i] = unboundVariableIndices.computeIfAbsent(variable, appendVariable::applyAsInt);
-			}
+			// Unify all variables to avoid VIATRA bugs, even if they're bound in the containing clause.
+			remappedParameters[i] = unboundVariableIndices.computeIfAbsent(variable, appendVariable::applyAsInt);
 		}
 		var pattern = maybeWrapConstraint(callLiteral.getTarget(), remappedParameters);
 		return new WrappedCall(pattern, appendVariable.getRemappedArguments());
@@ -84,6 +86,8 @@ class QueryWrapperFactory {
 		var constraint = remappedConstraint.constraint();
 		var remappedParameters = remappedConstraint.remappedParameters();
 
+		checkNoInputParameters(constraint);
+
 		var embeddedPQuery = new RawPQuery(DnfUtils.generateUniqueName(constraint.name()), PVisibility.EMBEDDED);
 		var body = new PBody(embeddedPQuery);
 		int arity = Arrays.stream(remappedParameters).max().orElse(-1) + 1;
@@ -107,24 +111,36 @@ class QueryWrapperFactory {
 		}
 		var argumentTuple = Tuples.flatTupleOf(arguments);
 
-		if (constraint instanceof RelationView<?> relationView) {
-			new TypeConstraint(body, argumentTuple, getInputKey(relationView));
+		addPositiveConstraint(constraint, body, argumentTuple);
+		embeddedPQuery.addBody(body);
+		return embeddedPQuery;
+	}
+
+	private static void checkNoInputParameters(Constraint constraint) {
+		for (var constraintParameter : constraint.getParameters()) {
+			if (constraintParameter.getDirection() == ParameterDirection.IN) {
+				throw new IllegalArgumentException("Input parameter %s of %s is not supported"
+						.formatted(constraintParameter, constraint));
+			}
+		}
+	}
+
+	private void addPositiveConstraint(Constraint constraint, PBody body, Tuple argumentTuple) {
+		if (constraint instanceof SymbolView<?> view) {
+			new TypeConstraint(body, argumentTuple, getInputKey(view));
 		} else if (constraint instanceof Dnf dnf) {
 			var calledPQuery = dnf2PQuery.translate(dnf);
 			new PositivePatternCall(body, argumentTuple, calledPQuery);
 		} else {
 			throw new IllegalArgumentException("Unknown Constraint: " + constraint);
 		}
-
-		embeddedPQuery.addBody(body);
-		return embeddedPQuery;
 	}
 
-	public IInputKey getInputKey(AnyRelationView relationView) {
-		return view2WrapperMap.computeIfAbsent(relationView, RelationViewWrapper::new);
+	public IInputKey getInputKey(AnySymbolView symbolView) {
+		return view2WrapperMap.computeIfAbsent(symbolView, SymbolViewWrapper::new);
 	}
 
-	public Map<AnyRelationView, IInputKey> getRelationViews() {
+	public Map<AnySymbolView, IInputKey> getSymbolViews() {
 		return Collections.unmodifiableMap(view2WrapperMap);
 	}
 

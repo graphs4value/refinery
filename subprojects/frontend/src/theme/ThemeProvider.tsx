@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import {
   alpha,
   createTheme,
@@ -69,7 +75,7 @@ function createResponsiveTheme(
     ...options,
     typography: {
       fontFamily:
-        '"InterVariable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+        '"Inter Variable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
       fontWeightMedium: 600,
       fontWeightEditorNormal: 400,
       fontWeightEditorBold: 700,
@@ -79,7 +85,7 @@ function createResponsiveTheme(
       },
       editor: {
         fontFamily:
-          '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
+          '"JetBrains Mono Variable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
         fontFeatureSettings: '"liga", "calt"',
         // `rem` for JetBrains MonoVariable make the text too large in Safari.
         fontSize: '16px',

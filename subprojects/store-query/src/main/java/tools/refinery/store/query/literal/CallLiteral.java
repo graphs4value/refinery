@@ -1,26 +1,30 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.NodeSort;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public final class CallLiteral extends AbstractCallLiteral implements CanNegate<CallLiteral> {
 	private final CallPolarity polarity;
 
 	public CallLiteral(CallPolarity polarity, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
+		var parameters = target.getParameters();
+		int arity = target.arity();
 		if (polarity.isTransitive()) {
-			if (target.arity() != 2) {
+			if (arity != 2) {
 				throw new IllegalArgumentException("Transitive closures can only take binary relations");
 			}
-			var sorts = target.getSorts();
-			if (!sorts.get(0).equals(NodeSort.INSTANCE) || !sorts.get(1).equals(NodeSort.INSTANCE)) {
+			if (parameters.get(0).isDataVariable() || parameters.get(1).isDataVariable()) {
 				throw new IllegalArgumentException("Transitive closures can only be computed over nodes");
 			}
 		}
@@ -32,19 +36,43 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
-		return polarity.isPositive() ? Set.copyOf(getArguments()) : Set.of();
-	}
-
-	@Override
 	protected Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments) {
 		return new CallLiteral(polarity, getTarget(), substitutedArguments);
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Set<Variable> getOutputVariables() {
+		if (polarity.isPositive()) {
+			return getArgumentsOfDirection(ParameterDirection.OUT);
+		}
+		return Set.of();
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (polarity.isPositive()) {
+			return getArgumentsOfDirection(ParameterDirection.IN);
+		}
+		return super.getInputVariables(positiveVariablesInClause);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (polarity.isPositive()) {
+			return Set.of();
+		}
+		return super.getPrivateVariables(positiveVariablesInClause);
+	}
+
+	@Override
+	public Literal reduce() {
 		var reduction = getTarget().getReduction();
-		return polarity.isPositive() ? reduction : reduction.negate();
+		var negatedReduction = polarity.isPositive() ? reduction : reduction.negate();
+		return switch (negatedReduction) {
+			case ALWAYS_TRUE -> BooleanLiteral.TRUE;
+			case ALWAYS_FALSE -> BooleanLiteral.FALSE;
+			default -> this;
+		};
 	}
 
 	@Override

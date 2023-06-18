@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term.int_;
 
 import tools.refinery.store.query.substitution.Substitution;
@@ -6,22 +11,12 @@ import tools.refinery.store.query.term.UnaryTerm;
 
 public class RealToIntTerm extends UnaryTerm<Integer, Double> {
 	protected RealToIntTerm(Term<Double> body) {
-		super(body);
-	}
-
-	@Override
-	public Class<Integer> getType() {
-		return Integer.class;
-	}
-
-	@Override
-	public Class<Double> getBodyType() {
-		return Double.class;
+		super(Integer.class, Double.class, body);
 	}
 
 	@Override
 	protected Integer doEvaluate(Double bodyValue) {
-		return bodyValue.intValue();
+		return bodyValue.isNaN() ? null : bodyValue.intValue();
 	}
 
 	@Override
@@ -31,6 +26,6 @@ public class RealToIntTerm extends UnaryTerm<Integer, Double> {
 
 	@Override
 	public String toString() {
-		return "(%s) as int".formatted(getBody());
+		return "(%s as int)".formatted(getBody());
 	}
 }

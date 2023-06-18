@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning.translator.base;
 
 import tools.refinery.store.model.Model;
@@ -24,16 +29,11 @@ public class BaseDecisionTranslationUnit extends TranslationUnit {
 		}
 		this.partialRelation = partialRelation;
 		this.seed = seed;
-		symbol = new Symbol<>(partialRelation.name(), partialRelation.arity(), TruthValue.class, TruthValue.UNKNOWN);
+		symbol = Symbol.of(partialRelation.name(), partialRelation.arity(), TruthValue.class, TruthValue.UNKNOWN);
 	}
 
 	public BaseDecisionTranslationUnit(PartialRelation partialRelation) {
 		this(partialRelation, new UniformSeed<>(partialRelation.arity(), TruthValue.UNKNOWN));
-	}
-
-	@Override
-	protected void configureReasoningBuilder() {
-		getModelStoreBuilder().symbol(symbol);
 	}
 
 	@Override

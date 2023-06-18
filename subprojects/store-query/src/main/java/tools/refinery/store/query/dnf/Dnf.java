@@ -1,57 +1,61 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.dnf;
 
+import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.Reduction;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.literal.LiteralReduction;
-import tools.refinery.store.query.term.Sort;
+import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class Dnf implements Constraint {
 	private static final String INDENTATION = "    ";
 
 	private final String name;
-
 	private final String uniqueName;
-
-	private final List<Variable> parameters;
-
+	private final List<SymbolicParameter> symbolicParameters;
 	private final List<FunctionalDependency<Variable>> functionalDependencies;
-
 	private final List<DnfClause> clauses;
 
-	Dnf(String name, List<Variable> parameters, List<FunctionalDependency<Variable>> functionalDependencies,
-		List<DnfClause> clauses) {
-		validateFunctionalDependencies(parameters, functionalDependencies);
+	Dnf(String name, List<SymbolicParameter> symbolicParameters,
+		List<FunctionalDependency<Variable>> functionalDependencies, List<DnfClause> clauses) {
+		validateFunctionalDependencies(symbolicParameters, functionalDependencies);
 		this.name = name;
 		this.uniqueName = DnfUtils.generateUniqueName(name);
-		this.parameters = parameters;
+		this.symbolicParameters = symbolicParameters;
 		this.functionalDependencies = functionalDependencies;
 		this.clauses = clauses;
 	}
 
 	private static void validateFunctionalDependencies(
-			Collection<Variable> parameters, Collection<FunctionalDependency<Variable>> functionalDependencies) {
-		var parameterSet = new HashSet<>(parameters);
+			Collection<SymbolicParameter> symbolicParameters,
+			Collection<FunctionalDependency<Variable>> functionalDependencies) {
+		var parameterSet = symbolicParameters.stream().map(SymbolicParameter::getVariable).collect(Collectors.toSet());
 		for (var functionalDependency : functionalDependencies) {
-			validateParameters(parameters, parameterSet, functionalDependency.forEach(), functionalDependency);
-			validateParameters(parameters, parameterSet, functionalDependency.unique(), functionalDependency);
+			validateParameters(symbolicParameters, parameterSet, functionalDependency.forEach(), functionalDependency);
+			validateParameters(symbolicParameters, parameterSet, functionalDependency.unique(), functionalDependency);
 		}
 	}
 
-	private static void validateParameters(Collection<Variable> parameters, Set<Variable> parameterSet,
-										   Collection<Variable> toValidate,
+	private static void validateParameters(Collection<SymbolicParameter> symbolicParameters,
+										   Set<Variable> parameterSet, Collection<Variable> toValidate,
 										   FunctionalDependency<Variable> functionalDependency) {
 		for (var variable : toValidate) {
 			if (!parameterSet.contains(variable)) {
 				throw new IllegalArgumentException(
 						"Variable %s of functional dependency %s does not appear in the parameter list %s"
-								.formatted(variable, functionalDependency, parameters));
+								.formatted(variable, functionalDependency, symbolicParameters));
 			}
 		}
 	}
@@ -69,13 +73,12 @@ public final class Dnf implements Constraint {
 		return uniqueName;
 	}
 
-	public List<Variable> getParameters() {
-		return parameters;
+	public List<SymbolicParameter> getSymbolicParameters() {
+		return symbolicParameters;
 	}
 
-	@Override
-	public List<Sort> getSorts() {
-		return parameters.stream().map(Variable::getSort).toList();
+	public List<Parameter> getParameters() {
+		return Collections.unmodifiableList(symbolicParameters);
 	}
 
 	public List<FunctionalDependency<Variable>> getFunctionalDependencies() {
@@ -84,7 +87,7 @@ public final class Dnf implements Constraint {
 
 	@Override
 	public int arity() {
-		return parameters.size();
+		return symbolicParameters.size();
 	}
 
 	public List<DnfClause> getClauses() {
@@ -100,28 +103,34 @@ public final class Dnf implements Constraint {
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Reduction getReduction() {
 		if (clauses.isEmpty()) {
-			return LiteralReduction.ALWAYS_FALSE;
+			return Reduction.ALWAYS_FALSE;
 		}
 		for (var clause : clauses) {
 			if (clause.literals().isEmpty()) {
-				return LiteralReduction.ALWAYS_TRUE;
+				return Reduction.ALWAYS_TRUE;
 			}
 		}
-		return LiteralReduction.NOT_REDUCIBLE;
+		return Reduction.NOT_REDUCIBLE;
 	}
 
 	public boolean equalsWithSubstitution(DnfEqualityChecker callEqualityChecker, Dnf other) {
 		if (arity() != other.arity()) {
 			return false;
 		}
+		for (int i = 0; i < arity(); i++) {
+			if (!symbolicParameters.get(i).getDirection().equals(other.getSymbolicParameters().get(i).getDirection())) {
+				return false;
+			}
+		}
 		int numClauses = clauses.size();
 		if (numClauses != other.clauses.size()) {
 			return false;
 		}
 		for (int i = 0; i < numClauses; i++) {
-			var literalEqualityHelper = new LiteralEqualityHelper(callEqualityChecker, parameters, other.parameters);
+			var literalEqualityHelper = new LiteralEqualityHelper(callEqualityChecker, symbolicParameters,
+					other.symbolicParameters);
 			if (!clauses.get(i).equalsWithSubstitution(literalEqualityHelper, other.clauses.get(i))) {
 				return false;
 			}
@@ -139,18 +148,18 @@ public final class Dnf implements Constraint {
 
 	@Override
 	public String toString() {
-		return "%s/%d".formatted(name, arity());
+		return "%s/%d".formatted(name(), arity());
 	}
 
 	@Override
 	public String toReferenceString() {
-		return "@Dnf " + name;
+		return "@Dnf " + name();
 	}
 
 	public String toDefinitionString() {
 		var builder = new StringBuilder();
 		builder.append("pred ").append(name()).append("(");
-		var parameterIterator = parameters.iterator();
+		var parameterIterator = symbolicParameters.iterator();
 		if (parameterIterator.hasNext()) {
 			builder.append(parameterIterator.next());
 			while (parameterIterator.hasNext()) {
@@ -190,5 +199,15 @@ public final class Dnf implements Constraint {
 
 	public static DnfBuilder builder(String name) {
 		return new DnfBuilder(name);
+	}
+
+	public static Dnf of(Consumer<DnfBuilder> callback) {
+		return of(null, callback);
+	}
+
+	public static Dnf of(String name, Consumer<DnfBuilder> callback) {
+		var builder = builder(name);
+		callback.accept(builder);
+		return builder.build();
 	}
 }

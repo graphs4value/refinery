@@ -1,13 +1,18 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query;
 
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 public non-sealed interface ResultSet<T> extends AnyResultSet {
 	Query<T> getQuery();
 
-	T get(TupleLike parameters);
+	T get(Tuple parameters);
 
-	Cursor<TupleLike, T> getAll();
+	Cursor<Tuple, T> getAll();
 }

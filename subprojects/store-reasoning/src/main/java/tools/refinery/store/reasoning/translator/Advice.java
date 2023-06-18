@@ -1,10 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning.translator;
 
+import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.substitution.Substitutions;
 
 import java.util.*;
 
@@ -61,14 +66,9 @@ public final class Advice {
 	public List<Literal> substitute(List<Variable> substituteParameters) {
 		checkArity(substituteParameters);
 		markProcessed();
-		int arity = parameters.size();
-		var variableMap = new HashMap<Variable, Variable>(arity);
-		for (int i = 0; i < arity; i++) {
-			variableMap.put(parameters.get(i), substituteParameters.get(i));
-		}
 		// Use a renewing substitution to remove any non-parameter variables and avoid clashed between variables
 		// coming from different advice in the same clause.
-		var substitution = Substitutions.renewing(variableMap);
+		var substitution = Substitution.builder().putManyChecked(parameters, substituteParameters).renewing().build();
 		return literals.stream().map(literal -> literal.substitute(substitution)).toList();
 	}
 

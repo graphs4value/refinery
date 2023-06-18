@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
@@ -5,6 +10,7 @@ import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.int_.IntTerms;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,8 +37,20 @@ public class CountLiteral extends AbstractCallLiteral {
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
+	public Set<Variable> getOutputVariables() {
 		return Set.of(resultVariable);
+	}
+
+	@Override
+	public Literal reduce() {
+		var reduction = getTarget().getReduction();
+		return switch (reduction) {
+			case ALWAYS_FALSE -> getResultVariable().assign(IntTerms.constant(0));
+			// The only way a constant {@code true} predicate can be called in a negative position is to have all of
+			// its arguments bound as input variables. Thus, there will only be a single match.
+			case ALWAYS_TRUE -> getResultVariable().assign(IntTerms.constant(1));
+			case NOT_REDUCIBLE -> this;
+		};
 	}
 
 	@Override

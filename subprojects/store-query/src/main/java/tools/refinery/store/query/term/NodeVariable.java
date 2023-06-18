@@ -1,8 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.query.literal.ConstantLiteral;
 import tools.refinery.store.query.literal.EquivalenceLiteral;
+
+import java.util.Optional;
 
 public final class NodeVariable extends Variable {
 	NodeVariable(@Nullable String name) {
@@ -10,8 +17,13 @@ public final class NodeVariable extends Variable {
 	}
 
 	@Override
-	public NodeSort getSort() {
-		return NodeSort.INSTANCE;
+	public Optional<Class<?>> tryGetType() {
+		return Optional.empty();
+	}
+
+	@Override
+	public boolean isUnifiable() {
+		return true;
 	}
 
 	@Override

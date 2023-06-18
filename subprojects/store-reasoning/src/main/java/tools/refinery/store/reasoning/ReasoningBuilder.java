@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning;
 
 import tools.refinery.store.adapter.ModelAdapterBuilder;
@@ -24,5 +29,5 @@ public interface ReasoningBuilder extends ModelAdapterBuilder {
 	Dnf lift(Modality modality, Dnf query);
 
 	@Override
-	ReasoningStoreAdapter createStoreAdapter(ModelStore store);
+	ReasoningStoreAdapter build(ModelStore store);
 }

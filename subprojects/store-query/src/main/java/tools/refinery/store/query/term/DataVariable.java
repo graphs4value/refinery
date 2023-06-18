@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
@@ -17,11 +22,6 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	}
 
 	@Override
-	public DataSort<T> getSort() {
-		return new DataSort<>(getType());
-	}
-
-	@Override
 	public Class<T> getType() {
 		return type;
 	}
@@ -34,11 +34,6 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public DataVariable<T> renew() {
 		return renew(getExplicitName());
-	}
-
-	@Override
-	public NodeVariable asNodeVariable() {
-		throw new IllegalStateException("%s is a data variable".formatted(this));
 	}
 
 	@Override

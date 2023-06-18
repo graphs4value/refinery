@@ -1,17 +1,17 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.adapter;
 
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 
 public interface ModelAdapterBuilder {
-	ModelStoreAdapter createStoreAdapter(ModelStore store);
+	boolean isConfigured();
 
-	<T extends ModelAdapterBuilder> T with(ModelAdapterBuilderFactory<?, ?, T> adapterBuilderFactory);
+	void configure(ModelStoreBuilder storeBuilder);
 
-	ModelStoreBuilder getStoreBuilder();
-
-	default void configure() {
-	}
-
-	ModelStore build();
+	ModelStoreAdapter build(ModelStore store);
 }

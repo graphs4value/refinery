@@ -1,20 +1,26 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.ModelQuery;
-import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
-import tools.refinery.store.query.view.FilteredRelationView;
-import tools.refinery.store.query.view.FunctionalRelationView;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
+import tools.refinery.store.query.view.FilteredView;
+import tools.refinery.store.query.view.FunctionView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,35 +35,31 @@ import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNull
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class FunctionalQueryTest {
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
+	private static final Symbol<TruthValue> friend = Symbol.of("friend", 2, TruthValue.class, TruthValue.FALSE);
+	private static final AnySymbolView personView = new KeyOnlyView<>(person);
+	private static final FunctionView<Integer> ageView = new FunctionView<>(age);
+	private static final AnySymbolView friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
+
 	@QueryEngineTest
 	void inputKeyTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("InputKey")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
+		var query = Query.of("InputKey", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, output)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -77,40 +79,26 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
-		var query = Query.builder("Predicate")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						subQuery.call(p1, x)
-				)
-				.build();
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, x) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, x)
+		));
+		var query = Query.of("Predicate", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				output.assign(subQuery.call(p1))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -130,35 +118,26 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void computationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("Computation")
-				.parameter(p1)
-				.output(y)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x),
-						y.assign(mul(x, constant(7)))
-				)
-				.build();
+		var query = Query.of("Computation", Integer.class, (builder, p1, output) -> builder.clause(() -> {
+			var x = Variable.of("x", Integer.class);
+			return List.of(
+					personView.call(p1),
+					ageView.call(p1, x),
+					output.assign(mul(x, constant(7)))
+			);
+		}));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -177,34 +156,22 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void inputKeyCountTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("Count")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(friendMustView.count(p1, p2))
-				)
-				.build();
+		var query = Query.of("Count", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				output.assign(friendMustView.count(p1, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -226,42 +193,27 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateCountTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, p2)
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendMustView.call(p1, p2)
-				)
-				.build();
-		var query = Query.builder("Count")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						x.assign(subQuery.count(p1, p2))
-				)
-				.build();
+		var subQuery = Query.of("SubQuery", (builder, p1, p2) -> builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+		));
+		var query = Query.of("Count", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				output.assign(subQuery.count(p1, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -283,29 +235,20 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("Aggregate")
-				.output(x)
-				.clause(
-						x.assign(ageView.aggregate(y, INT_SUM, p1, y))
-				)
-				.build();
+		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(
+				output.assign(ageView.aggregate(INT_SUM, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		ageInterpretation.put(Tuple.of(0), 12);
@@ -317,39 +260,25 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateAggregationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
-		var query = Query.builder("Aggregate")
-				.output(x)
-				.clause(
-						x.assign(subQuery.aggregate(y, INT_SUM, p1, y))
-				)
-				.build();
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, x) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, x)
+		));
+		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(
+				output.assign(subQuery.aggregate(INT_SUM, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -364,46 +293,28 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void extremeValueTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var subQuery = Dnf.builder("SubQuery")
-				.parameters(p1, x)
-				.clause(
-						personView.call(p1),
-						x.assign(friendMustView.count(p1, p2))
-				)
-				.build();
-		var minQuery = Query.builder("Min")
-				.output(x)
-				.clause(
-						x.assign(subQuery.aggregate(y, INT_MIN, p1, y))
-				)
-				.build();
-		var maxQuery = Query.builder("Max")
-				.output(x)
-				.clause(
-						x.assign(subQuery.aggregate(y, INT_MAX, p1, y))
-				)
-				.build();
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, x) -> builder.clause(
+				personView.call(p1),
+				x.assign(friendMustView.count(p1, Variable.of()))
+		));
+		var minQuery = Query.of("Min", Integer.class, (builder, output) -> builder.clause(
+				output.assign(subQuery.aggregate(INT_MIN, Variable.of()))
+		));
+		var maxQuery = Query.of("Max", Integer.class, (builder, output) -> builder.clause(
+				output.assign(subQuery.aggregate(INT_MAX, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(minQuery, maxQuery)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(minQuery, maxQuery))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var minResultSet = queryEngine.getResultSet(minQuery);
 		var maxResultSet = queryEngine.getResultSet(maxQuery);
 
@@ -440,35 +351,24 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void invalidComputationTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var y = Variable.of("y", Integer.class);
-		var query = Query.builder("InvalidComputation")
-				.parameter(p1)
-				.output(y)
-				.clause(
+		var query = Query.of("InvalidComputation", Integer.class,
+				(builder, p1, output) -> builder.clause(Integer.class, (x) -> List.of(
 						personView.call(p1),
 						ageView.call(p1, x),
-						y.assign(div(constant(120), x))
-				)
-				.build();
+						output.assign(div(constant(120), x))
+				)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -487,33 +387,23 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void invalidAssumeTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("InvalidComputation")
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x),
-						assume(lessEq(div(constant(120), x), constant(5)))
-				)
-				.build();
+		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
+				personView.call(p1),
+				ageView.call(p1, x),
+				assume(lessEq(div(constant(120), x), constant(5)))
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.queries(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -535,38 +425,24 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void notFunctionalTest(QueryEvaluationHint hint) {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var friend = new Symbol<>("friend", 2, TruthValue.class, TruthValue.FALSE);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-		var friendMustView = new FilteredRelationView<>(friend, "must", TruthValue::must);
-
-		var p1 = Variable.of("p1");
-		var p2 = Variable.of("p2");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder("NotFunctional")
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						friendMustView.call(p1, p2),
-						ageView.call(p2, x)
-				)
-				.build();
+		var query = Query.of("NotFunctional", Integer.class, (builder, p1, output) -> builder.clause((p2) -> List.of(
+				personView.call(p1),
+				friendMustView.call(p1, p2),
+				ageView.call(p2, output)
+		)));
 
 		var store = ModelStore.builder()
 				.symbols(person, age, friend)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(hint)
-				.query(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
 		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);

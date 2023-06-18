@@ -1,12 +1,20 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning;
 
 import tools.refinery.store.adapter.ModelAdapter;
-import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
-import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.ResultSet;
+import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
+import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.representation.PartialSymbol;
 
 public interface ReasoningAdapter extends ModelAdapter {
+	PartialRelation EXISTS = new PartialRelation("exists", 1);
+
 	@Override
 	ReasoningStoreAdapter getStoreAdapter();
 
@@ -18,5 +26,5 @@ public interface ReasoningAdapter extends ModelAdapter {
 
 	<A, C> PartialInterpretation<A, C> getPartialInterpretation(PartialSymbol<A, C> partialSymbol);
 
-	ResultSet getLiftedResultSet(Dnf query);
+	ResultSet<Boolean> getLiftedResultSet(Dnf query);
 }

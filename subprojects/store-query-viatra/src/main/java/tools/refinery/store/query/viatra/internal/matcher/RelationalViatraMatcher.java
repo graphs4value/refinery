@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.matcher;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
@@ -12,7 +17,7 @@ import tools.refinery.store.query.ResultSet;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 /**
  * Directly access the tuples inside a VIATRA pattern matcher.<p>
@@ -58,7 +63,7 @@ public class RelationalViatraMatcher implements ResultSet<Boolean> {
 	}
 
 	@Override
-	public Boolean get(TupleLike parameters) {
+	public Boolean get(Tuple parameters) {
 		var tuple = MatcherUtils.toViatraTuple(parameters);
 		if (emptyMaskIndexer == null) {
 			return backend.hasMatch(identityMask, tuple);
@@ -68,7 +73,7 @@ public class RelationalViatraMatcher implements ResultSet<Boolean> {
 	}
 
 	@Override
-	public Cursor<TupleLike, Boolean> getAll() {
+	public Cursor<Tuple, Boolean> getAll() {
 		if (emptyMaskIndexer == null) {
 			var allMatches = backend.getAllMatches(emptyMask, Tuples.staticArityFlatTupleOf());
 			return new RelationalCursor(allMatches.iterator());
@@ -85,5 +90,4 @@ public class RelationalViatraMatcher implements ResultSet<Boolean> {
 		var matches = emptyMaskIndexer.get(Tuples.staticArityFlatTupleOf());
 		return matches == null ? 0 : matches.size();
 	}
-
 }

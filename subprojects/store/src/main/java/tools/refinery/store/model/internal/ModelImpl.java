@@ -1,9 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.model.internal;
 
-import tools.refinery.store.adapter.AdapterList;
-import tools.refinery.store.adapter.AnyModelAdapterType;
+import tools.refinery.store.adapter.AdapterUtils;
 import tools.refinery.store.adapter.ModelAdapter;
-import tools.refinery.store.adapter.ModelAdapterType;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.model.*;
 import tools.refinery.store.representation.AnySymbol;
@@ -16,7 +19,7 @@ public class ModelImpl implements Model {
 	private final ModelStore store;
 	private long state;
 	private Map<? extends AnySymbol, ? extends VersionedInterpretation<?>> interpretations;
-	private final AdapterList<ModelAdapter> adapters;
+	private final List<ModelAdapter> adapters;
 	private final List<ModelListener> listeners = new ArrayList<>();
 	private boolean uncommittedChanges;
 	private ModelAction pendingAction = ModelAction.NONE;
@@ -25,7 +28,7 @@ public class ModelImpl implements Model {
 	ModelImpl(ModelStore store, long state, int adapterCount) {
 		this.store = store;
 		this.state = state;
-		adapters = new AdapterList<>(adapterCount);
+		adapters = new ArrayList<>(adapterCount);
 	}
 
 	void setInterpretations(Map<? extends AnySymbol, ? extends VersionedInterpretation<?>> interpretations) {
@@ -162,17 +165,17 @@ public class ModelImpl implements Model {
 	}
 
 	@Override
-	public <T extends ModelAdapter> Optional<T> tryGetAdapter(ModelAdapterType<? extends T, ?, ?> adapterType) {
-		return adapters.tryGet(adapterType, adapterType.getModelAdapterClass());
+	public <T extends ModelAdapter> Optional<T> tryGetAdapter(Class<? extends T> adapterType) {
+		return AdapterUtils.tryGetAdapter(adapters, adapterType);
 	}
 
 	@Override
-	public <T extends ModelAdapter> T getAdapter(ModelAdapterType<T, ?, ?> adapterType) {
-		return adapters.get(adapterType, adapterType.getModelAdapterClass());
+	public <T extends ModelAdapter> T getAdapter(Class<T> adapterType) {
+		return AdapterUtils.getAdapter(adapters, adapterType);
 	}
 
-	void addAdapter(AnyModelAdapterType adapterType, ModelAdapter adapter) {
-		adapters.add(adapterType, adapter);
+	void addAdapter(ModelAdapter adapter) {
+		adapters.add(adapter);
 	}
 
 	@Override

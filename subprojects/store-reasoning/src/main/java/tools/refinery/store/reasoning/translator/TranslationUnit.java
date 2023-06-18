@@ -1,7 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning.translator;
 
 import tools.refinery.store.model.Model;
-import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 
 import java.util.Collection;
@@ -16,10 +20,6 @@ public abstract class TranslationUnit {
 	public void setPartialInterpretationBuilder(ReasoningBuilder reasoningBuilder) {
 		this.reasoningBuilder = reasoningBuilder;
 		configureReasoningBuilder();
-	}
-
-	protected ModelStoreBuilder getModelStoreBuilder() {
-		return reasoningBuilder.getStoreBuilder();
 	}
 
 	protected void configureReasoningBuilder() {

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning.internal;
 
 import tools.refinery.store.model.Model;
@@ -32,7 +37,7 @@ public class ReasoningAdapterImpl implements ReasoningAdapter {
 	}
 
 	@Override
-	public ResultSet getLiftedResultSet(Dnf query) {
+	public ResultSet<Boolean> getLiftedResultSet(Dnf query) {
 		return null;
 	}
 }

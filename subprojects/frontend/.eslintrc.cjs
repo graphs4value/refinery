@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 const path = require('node:path');
 
 // Allow the Codium ESLint plugin to find `tsconfig.json` from the repository root.
@@ -43,6 +49,15 @@ module.exports = {
     // In typescript, some class methods implementing an inderface do not use `this`:
     // https://github.com/typescript-eslint/typescript-eslint/issues/1103
     'class-methods-use-this': 'off',
+    // Disable rules with a high performance cost.
+    // See https://typescript-eslint.io/linting/troubleshooting/performance-troubleshooting/
+    'import/default': 'off',
+    'import/extensions': 'off',
+    'import/named': 'off',
+    'import/namespace': 'off',
+    'import/no-named-as-default': 'off',
+    'import/no-named-as-default-member': 'off',
+    '@typescript-eslint/indent': 'off',
     // Make sure every import can be resolved by `eslint-import-resolver-typescript`.
     'import/no-unresolved': 'error',
     // Organize imports automatically.
@@ -90,6 +105,7 @@ module.exports = {
       files: [
         '.eslintrc.cjs',
         'config/*.ts',
+        'config/*.cjs',
         'prettier.config.cjs',
         'vite.config.ts',
       ],
@@ -103,6 +119,8 @@ module.exports = {
           'error',
           { devDependencies: true },
         ],
+        // Allow writing to the console in ad-hoc scripts.
+        'no-console': 'off',
         // Access to the environment in configuration files.
         'no-process-env': 'off',
       },

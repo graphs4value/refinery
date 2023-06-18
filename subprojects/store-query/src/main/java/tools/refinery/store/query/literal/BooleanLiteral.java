@@ -1,8 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.Variable;
 
 import java.util.Set;
 
@@ -17,7 +22,17 @@ public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
+	public Set<Variable> getOutputVariables() {
+		return Set.of();
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
 		return Set.of();
 	}
 
@@ -25,11 +40,6 @@ public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	public Literal substitute(Substitution substitution) {
 		// No variables to substitute.
 		return this;
-	}
-
-	@Override
-	public LiteralReduction getReduction() {
-		return value ? LiteralReduction.ALWAYS_TRUE : LiteralReduction.ALWAYS_FALSE;
 	}
 
 	@Override

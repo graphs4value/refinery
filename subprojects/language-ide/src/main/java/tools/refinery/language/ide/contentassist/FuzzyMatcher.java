@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.language.ide.contentassist;
 
 import org.eclipse.xtext.ide.editor.contentassist.IPrefixMatcher;

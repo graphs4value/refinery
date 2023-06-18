@@ -1,11 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.Aggregator;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,13 +26,13 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 			throw new IllegalArgumentException("Input variable %s must of type %s, got %s instead".formatted(
 					inputVariable, aggregator.getInputType().getName(), inputVariable.getType().getName()));
 		}
+		if (!getArgumentsOfDirection(ParameterDirection.OUT).contains(inputVariable)) {
+			throw new IllegalArgumentException("Input variable %s must be bound with direction %s in the argument list"
+					.formatted(inputVariable, ParameterDirection.OUT));
+		}
 		if (!resultVariable.getType().equals(aggregator.getResultType())) {
 			throw new IllegalArgumentException("Result variable %s must of type %s, got %s instead".formatted(
 					resultVariable, aggregator.getResultType().getName(), resultVariable.getType().getName()));
-		}
-		if (!arguments.contains(inputVariable)) {
-			throw new IllegalArgumentException("Input variable %s must appear in the argument list".formatted(
-					inputVariable));
 		}
 		if (arguments.contains(resultVariable)) {
 			throw new IllegalArgumentException("Result variable %s must not appear in the argument list".formatted(
@@ -53,8 +56,30 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	public Set<Variable> getBoundVariables() {
+	public Set<Variable> getOutputVariables() {
 		return Set.of(resultVariable);
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (positiveVariablesInClause.contains(inputVariable)) {
+			throw new IllegalArgumentException("Aggregation variable %s must not be bound".formatted(inputVariable));
+		}
+		return super.getInputVariables(positiveVariablesInClause);
+	}
+
+	@Override
+	public Literal reduce() {
+		var reduction = getTarget().getReduction();
+		return switch (reduction) {
+			case ALWAYS_FALSE -> {
+				var emptyValue = aggregator.getEmptyResult();
+				yield emptyValue == null ? BooleanLiteral.FALSE :
+						resultVariable.assign(new ConstantTerm<>(resultVariable.getType(), emptyValue));
+			}
+			case ALWAYS_TRUE -> throw new IllegalArgumentException("Trying to aggregate over an infinite set");
+			case NOT_REDUCIBLE -> this;
+		};
 	}
 
 	@Override

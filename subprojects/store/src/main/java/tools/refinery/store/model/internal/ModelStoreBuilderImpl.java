@@ -1,9 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.model.internal;
 
-import tools.refinery.store.adapter.AdapterList;
+import tools.refinery.store.adapter.AdapterUtils;
 import tools.refinery.store.adapter.ModelAdapterBuilder;
-import tools.refinery.store.adapter.ModelAdapterBuilderFactory;
-import tools.refinery.store.adapter.ModelAdapterType;
 import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.map.VersionedMapStoreImpl;
 import tools.refinery.store.model.ModelStore;
@@ -18,7 +21,7 @@ import java.util.*;
 public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	private final Set<AnySymbol> allSymbols = new HashSet<>();
 	private final Map<SymbolEquivalenceClass<?>, List<AnySymbol>> equivalenceClasses = new HashMap<>();
-	private final AdapterList<ModelAdapterBuilder> adapters = new AdapterList<>();
+	private final List<ModelAdapterBuilder> adapters = new ArrayList<>();
 
 	@Override
 	public <T> ModelStoreBuilder symbol(Symbol<T> symbol) {
@@ -33,46 +36,25 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	}
 
 	@Override
-	public <T extends ModelAdapterBuilder> T with(ModelAdapterBuilderFactory<?, ?, T> adapterBuilderFactory) {
-		return adapters.<T>tryGet(adapterBuilderFactory, adapterBuilderFactory.getModelAdapterBuilderClass())
-				.orElseGet(() -> addAdapter(adapterBuilderFactory));
-	}
-
-	private <T extends ModelAdapterBuilder> T addAdapter(ModelAdapterBuilderFactory<?, ?, T> adapterBuilderFactory) {
-		for (var configuredAdapterType : adapters.getAdapterTypes()) {
-			var intersection = new HashSet<>(adapterBuilderFactory.getSupportedAdapterTypes());
-			intersection.retainAll(configuredAdapterType.getSupportedAdapterTypes());
-			if (!intersection.isEmpty()) {
-				if (configuredAdapterType.supports(adapterBuilderFactory)) {
-					// Impossible to end up here from <code>#with</code>, because we should have returned
-					// the existing adapter there instead of adding a new one.
-					throw new IllegalArgumentException(
-							"Cannot add %s, because it is already provided by configured adapter %s"
-									.formatted(adapterBuilderFactory, configuredAdapterType));
-				} else if (adapterBuilderFactory.supports(configuredAdapterType)) {
-					throw new IllegalArgumentException(
-							"Cannot add %s, because it provides already configured adapter %s"
-									.formatted(adapterBuilderFactory, configuredAdapterType));
-				} else {
-					throw new IllegalArgumentException(
-							"Cannot add %s, because configured adapter %s already provides %s"
-									.formatted(adapterBuilderFactory, configuredAdapterType, intersection));
-				}
+	public <T extends ModelAdapterBuilder> ModelStoreBuilder with(T adapterBuilder) {
+		for (var existingAdapter : adapters) {
+			if (existingAdapter.getClass().equals(adapterBuilder.getClass())) {
+				throw new IllegalArgumentException("%s adapter was already configured for store builder"
+						.formatted(adapterBuilder.getClass().getName()));
 			}
 		}
-		var newAdapter = adapterBuilderFactory.createBuilder(this);
-		adapters.add(adapterBuilderFactory, newAdapter);
-		return newAdapter;
+		adapters.add(adapterBuilder);
+		return this;
 	}
 
 	@Override
-	public <T extends ModelAdapterBuilder> Optional<T> tryGetAdapter(ModelAdapterType<?, ?, ? extends T> adapterType) {
-		return adapters.tryGet(adapterType, adapterType.getModelAdapterBuilderClass());
+	public <T extends ModelAdapterBuilder> Optional<T> tryGetAdapter(Class<? extends T> adapterType) {
+		return AdapterUtils.tryGetAdapter(adapters, adapterType);
 	}
 
 	@Override
-	public <T extends ModelAdapterBuilder> T getAdapter(ModelAdapterType<?, ?, T> adapterType) {
-		return adapters.get(adapterType, adapterType.getModelAdapterBuilderClass());
+	public <T extends ModelAdapterBuilder> T getAdapter(Class<T> adapterType) {
+		return AdapterUtils.getAdapter(adapters, adapterType);
 	}
 
 	@Override
@@ -81,13 +63,13 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 		for (var entry : equivalenceClasses.entrySet()) {
 			createStores(stores, entry.getKey(), entry.getValue());
 		}
-		var modelStore = new ModelStoreImpl(stores, adapters.size());
 		for (int i = adapters.size() - 1; i >= 0; i--) {
-			adapters.get(i).configure();
+			adapters.get(i).configure(this);
 		}
-		for (var entry : adapters.withAdapterTypes()) {
-			var adapter = entry.adapter().createStoreAdapter(modelStore);
-			modelStore.addAdapter(entry.adapterType(), adapter);
+		var modelStore = new ModelStoreImpl(stores, adapters.size());
+		for (var adapterBuilder : adapters) {
+			var storeAdapter = adapterBuilder.build(modelStore);
+			modelStore.addAdapter(storeAdapter);
 		}
 		return modelStore;
 	}

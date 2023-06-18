@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term.real;
 
 import tools.refinery.store.query.term.StatefulAggregate;
@@ -14,12 +19,12 @@ public final class RealSumAggregator implements StatefulAggregator<Double, Doubl
 
 	@Override
 	public Class<Double> getResultType() {
-		return null;
+		return Double.class;
 	}
 
 	@Override
 	public Class<Double> getInputType() {
-		return null;
+		return Double.class;
 	}
 
 	@Override

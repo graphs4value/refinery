@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
@@ -14,17 +19,19 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.Consta
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
 import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
+import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameterDirection;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PQuery;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.DnfClause;
+import tools.refinery.store.query.dnf.SymbolicParameter;
 import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.StatefulAggregator;
 import tools.refinery.store.query.term.StatelessAggregator;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.*;
@@ -48,8 +55,8 @@ public class Dnf2PQuery {
 		return mapper.map(dnfQuery);
 	}
 
-	public Map<AnyRelationView, IInputKey> getRelationViews() {
-		return wrapperFactory.getRelationViews();
+	public Map<AnySymbolView, IInputKey> getSymbolViews() {
+		return wrapperFactory.getSymbolViews();
 	}
 
 	public void hint(Dnf dnf, QueryEvaluationHint hint) {
@@ -77,15 +84,19 @@ public class Dnf2PQuery {
 		var pQuery = new RawPQuery(dnfQuery.getUniqueName());
 		pQuery.setEvaluationHints(consumeHint(dnfQuery));
 
-		Map<Variable, PParameter> parameters = new HashMap<>();
-		for (Variable variable : dnfQuery.getParameters()) {
-			parameters.put(variable, new PParameter(variable.getUniqueName()));
+		Map<SymbolicParameter, PParameter> parameters = new HashMap<>();
+		List<PParameter> parameterList = new ArrayList<>();
+		for (var parameter : dnfQuery.getSymbolicParameters()) {
+			var direction = switch (parameter.getDirection()) {
+				case OUT -> parameter.isUnifiable() ? PParameterDirection.INOUT : PParameterDirection.OUT;
+				case IN -> throw new IllegalArgumentException("Query %s with input parameter %s is not supported"
+						.formatted(dnfQuery, parameter.getVariable()));
+			};
+			var pParameter = new PParameter(parameter.getVariable().getUniqueName(), null, null, direction);
+			parameters.put(parameter, pParameter);
+			parameterList.add(pParameter);
 		}
 
-		List<PParameter> parameterList = new ArrayList<>();
-		for (var param : dnfQuery.getParameters()) {
-			parameterList.add(parameters.get(param));
-		}
 		pQuery.setParameters(parameterList);
 
 		for (var functionalDependency : dnfQuery.getFunctionalDependencies()) {
@@ -105,15 +116,15 @@ public class Dnf2PQuery {
 		synchronized (P_CONSTRAINT_LOCK) {
 			for (DnfClause clause : dnfQuery.getClauses()) {
 				PBody body = new PBody(pQuery);
-				List<ExportedParameter> symbolicParameters = new ArrayList<>();
-				for (var param : dnfQuery.getParameters()) {
-					PVariable pVar = body.getOrCreateVariableByName(param.getUniqueName());
-					symbolicParameters.add(new ExportedParameter(body, pVar, parameters.get(param)));
+				List<ExportedParameter> parameterExports = new ArrayList<>();
+				for (var parameter : dnfQuery.getSymbolicParameters()) {
+					PVariable pVar = body.getOrCreateVariableByName(parameter.getVariable().getUniqueName());
+					parameterExports.add(new ExportedParameter(body, pVar, parameters.get(parameter)));
 				}
-				body.setSymbolicParameters(symbolicParameters);
+				body.setSymbolicParameters(parameterExports);
 				pQuery.addBody(body);
 				for (Literal literal : clause.literals()) {
-					translateLiteral(literal, clause, body);
+					translateLiteral(literal, body);
 				}
 			}
 		}
@@ -121,11 +132,11 @@ public class Dnf2PQuery {
 		return pQuery;
 	}
 
-	private void translateLiteral(Literal literal, DnfClause clause, PBody body) {
+	private void translateLiteral(Literal literal, PBody body) {
 		if (literal instanceof EquivalenceLiteral equivalenceLiteral) {
 			translateEquivalenceLiteral(equivalenceLiteral, body);
 		} else if (literal instanceof CallLiteral callLiteral) {
-			translateCallLiteral(callLiteral, clause, body);
+			translateCallLiteral(callLiteral, body);
 		} else if (literal instanceof ConstantLiteral constantLiteral) {
 			translateConstantLiteral(constantLiteral, body);
 		} else if (literal instanceof AssignLiteral<?> assignLiteral) {
@@ -133,9 +144,9 @@ public class Dnf2PQuery {
 		} else if (literal instanceof AssumeLiteral assumeLiteral) {
 			translateAssumeLiteral(assumeLiteral, body);
 		} else if (literal instanceof CountLiteral countLiteral) {
-			translateCountLiteral(countLiteral, clause, body);
+			translateCountLiteral(countLiteral, body);
 		} else if (literal instanceof AggregationLiteral<?, ?> aggregationLiteral) {
-			translateAggregationLiteral(aggregationLiteral, clause, body);
+			translateAggregationLiteral(aggregationLiteral, body);
 		} else {
 			throw new IllegalArgumentException("Unknown literal: " + literal.toString());
 		}
@@ -151,7 +162,7 @@ public class Dnf2PQuery {
 		}
 	}
 
-	private void translateCallLiteral(CallLiteral callLiteral, DnfClause clause, PBody body) {
+	private void translateCallLiteral(CallLiteral callLiteral, PBody body) {
 		var polarity = callLiteral.getPolarity();
 		switch (polarity) {
 		case POSITIVE -> {
@@ -160,8 +171,8 @@ public class Dnf2PQuery {
 			if (constraint instanceof Dnf dnf) {
 				var pattern = translate(dnf);
 				new PositivePatternCall(body, substitution, pattern);
-			} else if (constraint instanceof AnyRelationView relationView) {
-				var inputKey = wrapperFactory.getInputKey(relationView);
+			} else if (constraint instanceof AnySymbolView symbolView) {
+				var inputKey = wrapperFactory.getInputKey(symbolView);
 				new TypeConstraint(body, substitution, inputKey);
 			} else {
 				throw new IllegalArgumentException("Unknown Constraint: " + constraint);
@@ -173,15 +184,15 @@ public class Dnf2PQuery {
 			PQuery pattern;
 			if (constraint instanceof Dnf dnf) {
 				pattern = translate(dnf);
-			} else if (constraint instanceof AnyRelationView relationView) {
-				pattern = wrapperFactory.wrapRelationViewIdentityArguments(relationView);
+			} else if (constraint instanceof AnySymbolView symbolView) {
+				pattern = wrapperFactory.wrapSymbolViewIdentityArguments(symbolView);
 			} else {
 				throw new IllegalArgumentException("Unknown Constraint: " + constraint);
 			}
 			new BinaryTransitiveClosure(body, substitution, pattern);
 		}
 		case NEGATIVE -> {
-			var wrappedCall = wrapperFactory.maybeWrapConstraint(callLiteral, clause);
+			var wrappedCall = wrapperFactory.maybeWrapConstraint(callLiteral);
 			var substitution = translateSubstitution(wrappedCall.remappedArguments(), body);
 			var pattern = wrappedCall.pattern();
 			new NegativePatternCall(body, substitution, pattern);
@@ -221,15 +232,14 @@ public class Dnf2PQuery {
 		new ExpressionEvaluation(body, evaluator, null);
 	}
 
-	private void translateCountLiteral(CountLiteral countLiteral, DnfClause clause, PBody body) {
-		var wrappedCall = wrapperFactory.maybeWrapConstraint(countLiteral, clause);
+	private void translateCountLiteral(CountLiteral countLiteral, PBody body) {
+		var wrappedCall = wrapperFactory.maybeWrapConstraint(countLiteral);
 		var substitution = translateSubstitution(wrappedCall.remappedArguments(), body);
 		var resultVariable = body.getOrCreateVariableByName(countLiteral.getResultVariable().getUniqueName());
 		new PatternMatchCounter(body, substitution, wrappedCall.pattern(), resultVariable);
 	}
 
-	private <R, T> void translateAggregationLiteral(AggregationLiteral<R, T> aggregationLiteral, DnfClause clause,
-													PBody body) {
+	private <R, T> void translateAggregationLiteral(AggregationLiteral<R, T> aggregationLiteral, PBody body) {
 		var aggregator = aggregationLiteral.getAggregator();
 		IMultisetAggregationOperator<T, ?, R> aggregationOperator;
 		if (aggregator instanceof StatelessAggregator<R, T> statelessAggregator) {
@@ -239,7 +249,7 @@ public class Dnf2PQuery {
 		} else {
 			throw new IllegalArgumentException("Unknown aggregator: " + aggregator);
 		}
-		var wrappedCall = wrapperFactory.maybeWrapConstraint(aggregationLiteral, clause);
+		var wrappedCall = wrapperFactory.maybeWrapConstraint(aggregationLiteral);
 		var substitution = translateSubstitution(wrappedCall.remappedArguments(), body);
 		var inputVariable = body.getOrCreateVariableByName(aggregationLiteral.getInputVariable().getUniqueName());
 		var aggregatedColumn = substitution.invertIndex().get(inputVariable);

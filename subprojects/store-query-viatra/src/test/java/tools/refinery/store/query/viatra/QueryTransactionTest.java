@@ -1,15 +1,21 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.ModelQuery;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.FilteredRelationView;
-import tools.refinery.store.query.view.FunctionalRelationView;
-import tools.refinery.store.query.view.KeyOnlyRelationView;
+import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.store.query.view.AnySymbolView;
+import tools.refinery.store.query.view.FilteredView;
+import tools.refinery.store.query.view.FunctionView;
+import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -22,26 +28,24 @@ import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNull
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
 
 class QueryTransactionTest {
+	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
+	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
+	private static final AnySymbolView personView = new KeyOnlyView<>(person);
+	private static final AnySymbolView ageView = new FunctionView<>(age);
+	private static final RelationalQuery predicate = Query.of("TypeConstraint", (builder, p1) ->
+			builder.clause(personView.call(p1)));
+
 	@Test
 	void flushTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
-
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertResults(Map.of(
@@ -95,25 +99,16 @@ class QueryTransactionTest {
 
 	@Test
 	void localSearchTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
-
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.defaultHint(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+					.defaultHint(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
+					.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertResults(Map.of(
@@ -149,26 +144,18 @@ class QueryTransactionTest {
 
 	@Test
 	void unrelatedChangesTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var asset = new Symbol<>("Asset", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
+		var asset = Symbol.of("Asset", 1);
 
 		var store = ModelStore.builder()
 				.symbols(person, asset)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var assetInterpretation = model.getInterpretation(asset);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		assertFalse(queryEngine.hasPendingChanges());
@@ -222,32 +209,21 @@ class QueryTransactionTest {
 
 	@Test
 	void tupleChangingChangeTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var ageView = new FunctionalRelationView<>(age);
-
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder()
-				.parameter(p1)
-				.output(x)
-				.clause(
-						personView.call(p1),
-						ageView.call(p1, x)
-				)
-				.build();
+		var query = Query.of("TypeConstraint", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, output)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.query(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -270,31 +246,23 @@ class QueryTransactionTest {
 
 	@Test
 	void tuplePreservingUnchangedTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var age = new Symbol<>("age", 1, Integer.class, null);
-		var personView = new KeyOnlyRelationView<>(person);
-		var adultView = new FilteredRelationView<>(age, "adult", n -> n != null && n >= 18);
+		var adultView = new FilteredView<>(age, "adult", n -> n != null && n >= 18);
 
-		var p1 = Variable.of("p1");
-		var x = Variable.of("x", Integer.class);
-		var query = Query.builder()
-				.parameter(p1)
-				.clause(
-						personView.call(p1),
-						adultView.call(p1)
-				)
-				.build();
+		var query = Query.of("TypeConstraint", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				adultView.call(p1)
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
-				.with(ViatraModelQuery.ADAPTER)
-				.query(query)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(query))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
 		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var queryResultSet = queryEngine.getResultSet(query);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -318,24 +286,15 @@ class QueryTransactionTest {
 	@Disabled("TODO Fix DiffCursor")
 	@Test
 	void commitAfterFlushTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
-
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);
@@ -376,24 +335,15 @@ class QueryTransactionTest {
 	@Disabled("TODO Fix DiffCursor")
 	@Test
 	void commitWithoutFlushTest() {
-		var person = new Symbol<>("Person", 1, Boolean.class, false);
-		var personView = new KeyOnlyRelationView<>(person);
-
-		var p1 = Variable.of("p1");
-		var predicate = Query.builder("TypeConstraint")
-				.parameters(p1)
-				.clause(personView.call(p1))
-				.build();
-
 		var store = ModelStore.builder()
 				.symbols(person)
-				.with(ViatraModelQuery.ADAPTER)
-				.queries(predicate)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(predicate))
 				.build();
 
 		var model = store.createEmptyModel();
 		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQuery.ADAPTER);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var predicateResultSet = queryEngine.getResultSet(predicate);
 
 		personInterpretation.put(Tuple.of(0), true);

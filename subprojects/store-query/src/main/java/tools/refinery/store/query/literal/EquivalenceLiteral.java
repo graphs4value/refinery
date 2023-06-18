@@ -1,18 +1,32 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 
+import java.util.Objects;
 import java.util.Set;
 
 public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right)
 		implements CanNegate<EquivalenceLiteral> {
 	@Override
-	public Set<Variable> getBoundVariables() {
-		// If one side of a {@code positive} equivalence is bound, it may bind its other side, but we under-approximate
-		// this behavior by not binding any of the sides by default.
+	public Set<Variable> getOutputVariables() {
+		return Set.of(left);
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of(right);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
 		return Set.of();
 	}
 
@@ -28,11 +42,11 @@ public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariab
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Literal reduce() {
 		if (left.equals(right)) {
-			return positive ? LiteralReduction.ALWAYS_TRUE : LiteralReduction.ALWAYS_FALSE;
+			return positive ? BooleanLiteral.TRUE : BooleanLiteral.FALSE;
 		}
-		return LiteralReduction.NOT_REDUCIBLE;
+		return this;
 	}
 
 	@Override
@@ -48,5 +62,20 @@ public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariab
 	@Override
 	public String toString() {
 		return "%s %s %s".formatted(left, positive ? "===" : "!==", right);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (EquivalenceLiteral) obj;
+		return this.positive == that.positive &&
+				Objects.equals(this.left, that.left) &&
+				Objects.equals(this.right, that.right);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getClass(), positive, left, right);
 	}
 }

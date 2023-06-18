@@ -1,17 +1,26 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class AbstractCallLiteral implements Literal {
 	private final Constraint target;
 	private final List<Variable> arguments;
+	private final Set<Variable> inArguments;
+	private final Set<Variable> outArguments;
 
+	// Use exhaustive switch over enums.
+	@SuppressWarnings("squid:S1301")
 	protected AbstractCallLiteral(Constraint target, List<Variable> arguments) {
 		int arity = target.arity();
 		if (arguments.size() != arity) {
@@ -20,14 +29,46 @@ public abstract class AbstractCallLiteral implements Literal {
 		}
 		this.target = target;
 		this.arguments = arguments;
-		var sorts = target.getSorts();
+		var mutableInArguments = new LinkedHashSet<Variable>();
+		var mutableOutArguments = new LinkedHashSet<Variable>();
+		var parameters = target.getParameters();
 		for (int i = 0; i < arity; i++) {
 			var argument = arguments.get(i);
-			var sort = sorts.get(i);
-			if (!sort.isInstance(argument)) {
-				throw new IllegalArgumentException("Required argument %d of %s to be of sort %s, but got %s instead"
-						.formatted(i, target, sort, argument.getSort()));
+			var parameter = parameters.get(i);
+			if (!parameter.isAssignable(argument)) {
+				throw new IllegalArgumentException("Argument %d of %s is not assignable to parameter %s"
+						.formatted(i, target, parameter));
 			}
+			switch (parameter.getDirection()) {
+			case IN -> {
+				if (mutableOutArguments.remove(argument)) {
+					checkInOutUnifiable(argument);
+				}
+				mutableInArguments.add(argument);
+			}
+			case OUT -> {
+				if (mutableInArguments.contains(argument)) {
+					checkInOutUnifiable(argument);
+				} else if (!mutableOutArguments.add(argument)) {
+					checkDuplicateOutUnifiable(argument);
+				}
+			}
+			}
+		}
+		inArguments = Collections.unmodifiableSet(mutableInArguments);
+		outArguments = Collections.unmodifiableSet(mutableOutArguments);
+	}
+
+	private static void checkInOutUnifiable(Variable argument) {
+		if (!argument.isUnifiable()) {
+			throw new IllegalArgumentException("Argument %s cannot appear with both %s and %s direction"
+					.formatted(argument, ParameterDirection.IN, ParameterDirection.OUT));
+		}
+	}
+
+	private static void checkDuplicateOutUnifiable(Variable argument) {
+		if (!argument.isUnifiable()) {
+			throw new IllegalArgumentException("Argument %s cannot be bound multiple times".formatted(argument));
 		}
 	}
 
@@ -37,6 +78,28 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	public List<Variable> getArguments() {
 		return arguments;
+	}
+
+	protected Set<Variable> getArgumentsOfDirection(ParameterDirection direction) {
+		return switch (direction) {
+			case IN -> inArguments;
+			case OUT -> outArguments;
+		};
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		var inputVariables = new LinkedHashSet<>(getArgumentsOfDirection(ParameterDirection.OUT));
+		inputVariables.retainAll(positiveVariablesInClause);
+		inputVariables.addAll(getArgumentsOfDirection(ParameterDirection.IN));
+		return Collections.unmodifiableSet(inputVariables);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		var privateVariables = new LinkedHashSet<>(getArgumentsOfDirection(ParameterDirection.OUT));
+		privateVariables.removeAll(positiveVariablesInClause);
+		return Collections.unmodifiableSet(privateVariables);
 	}
 
 	@Override
@@ -75,6 +138,6 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(target, arguments);
+		return Objects.hash(getClass(), target, arguments);
 	}
 }

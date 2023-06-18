@@ -1,22 +1,27 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.matcher;
 
 import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.tuple.TupleLike;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.Iterator;
 
-class RelationalCursor implements Cursor<TupleLike, Boolean> {
+class RelationalCursor implements Cursor<Tuple, Boolean> {
     private final Iterator<? extends ITuple> tuplesIterator;
     private boolean terminated;
-    private TupleLike key;
+    private Tuple key;
 
     public RelationalCursor(Iterator<? extends ITuple> tuplesIterator) {
         this.tuplesIterator = tuplesIterator;
     }
 
     @Override
-    public TupleLike getKey() {
+    public Tuple getKey() {
         return key;
     }
 
@@ -33,7 +38,7 @@ class RelationalCursor implements Cursor<TupleLike, Boolean> {
     @Override
     public boolean move() {
         if (!terminated && tuplesIterator.hasNext()) {
-            key = new ViatraTupleLike(tuplesIterator.next());
+            key = MatcherUtils.toRefineryTuple(tuplesIterator.next());
             return true;
         }
         terminated = true;

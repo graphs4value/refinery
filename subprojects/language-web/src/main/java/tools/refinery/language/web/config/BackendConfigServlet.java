@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.language.web.config;
 
 import com.google.gson.Gson;
@@ -29,7 +34,7 @@ public class BackendConfigServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setStatus(HttpStatus.OK_200);
 		resp.setContentType("application/json");
 		var writer = resp.getWriter();

@@ -1,14 +1,19 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.language.web.tests;
 
 import com.google.inject.Singleton;
-import tools.refinery.language.web.xtext.VirtualThreadExecutorServiceProvider;
+import org.eclipse.xtext.ide.ExecutorServiceProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 @Singleton
-public class AwaitTerminationExecutorServiceProvider extends VirtualThreadExecutorServiceProvider {
+public class AwaitTerminationExecutorServiceProvider extends ExecutorServiceProvider {
 	private final List<RestartableCachedThreadPool> servicesToShutDown = new ArrayList<>();
 
 	@Override

@@ -1,12 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.language.web.tests;
 
-import org.eclipse.jetty.ee10.websocket.api.Session;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.ee10.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketOpen;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class WebSocketIntegrationTestClient {
-	private static final long TIMEOUT_MILLIS = Duration.ofSeconds(1).toMillis();
+	private static final long TIMEOUT_MILLIS = Duration.ofSeconds(10).toMillis();
 
 	private boolean finished = false;
 
@@ -34,8 +38,8 @@ public abstract class WebSocketIntegrationTestClient {
 		return responses;
 	}
 
-	@OnWebSocketConnect
-	public void onConnect(Session session) {
+	@OnWebSocketOpen
+	public void onOpen(Session session) {
 		arrangeAndCatchErrors(session);
 	}
 
@@ -47,7 +51,7 @@ public abstract class WebSocketIntegrationTestClient {
 		}
 	}
 
-	protected abstract void arrange(Session session, int responsesReceived) throws IOException;
+	protected abstract void arrange(Session session, int responsesReceived);
 
 	@OnWebSocketClose
 	public void onClose(int statusCode, String reason) {

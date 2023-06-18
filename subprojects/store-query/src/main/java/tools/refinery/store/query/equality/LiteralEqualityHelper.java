@@ -1,6 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.equality;
 
 import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.dnf.SymbolicParameter;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.HashMap;
@@ -12,8 +18,8 @@ public class LiteralEqualityHelper {
 	private final Map<Variable, Variable> leftToRight;
 	private final Map<Variable, Variable> rightToLeft;
 
-	public LiteralEqualityHelper(DnfEqualityChecker dnfEqualityChecker, List<Variable> leftParameters,
-								 List<Variable> rightParameters) {
+	public LiteralEqualityHelper(DnfEqualityChecker dnfEqualityChecker, List<SymbolicParameter> leftParameters,
+								 List<SymbolicParameter> rightParameters) {
 		this.dnfEqualityChecker = dnfEqualityChecker;
 		var arity = leftParameters.size();
 		if (arity != rightParameters.size()) {
@@ -22,7 +28,7 @@ public class LiteralEqualityHelper {
 		leftToRight = new HashMap<>(arity);
 		rightToLeft = new HashMap<>(arity);
 		for (int i = 0; i < arity; i++) {
-			if (!variableEqual(leftParameters.get(i), rightParameters.get(i))) {
+			if (!variableEqual(leftParameters.get(i).getVariable(), rightParameters.get(i).getVariable())) {
 				throw new IllegalArgumentException("Parameter lists cannot be unified: duplicate parameter " + i);
 			}
 		}

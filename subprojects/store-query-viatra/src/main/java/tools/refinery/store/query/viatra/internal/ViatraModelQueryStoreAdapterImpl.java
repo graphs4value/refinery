@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal;
 
 import org.eclipse.viatra.query.runtime.api.IQuerySpecification;
@@ -8,20 +13,20 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.viatra.ViatraModelQueryStoreAdapter;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
-import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
 
 import java.util.*;
 
 public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAdapter {
 	private final ModelStore store;
 	private final ViatraQueryEngineOptions engineOptions;
-	private final Map<AnyRelationView, IInputKey> inputKeys;
+	private final Map<AnySymbolView, IInputKey> inputKeys;
 	private final Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications;
 	private final Set<AnyQuery> vacuousQueries;
 	private final Set<AnyQuery> allQueries;
 
 	ViatraModelQueryStoreAdapterImpl(ModelStore store, ViatraQueryEngineOptions engineOptions,
-									 Map<AnyRelationView, IInputKey> inputKeys,
+									 Map<AnySymbolView, IInputKey> inputKeys,
 									 Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications,
 									 Set<AnyQuery> vacuousQueries) {
 		this.store = store;
@@ -40,11 +45,11 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 		return store;
 	}
 
-	public Collection<AnyRelationView> getRelationViews() {
+	public Collection<AnySymbolView> getSymbolViews() {
 		return inputKeys.keySet();
 	}
 
-	public Map<AnyRelationView, IInputKey> getInputKeys() {
+	public Map<AnySymbolView, IInputKey> getInputKeys() {
 		return inputKeys;
 	}
 

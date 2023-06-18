@@ -1,81 +1,94 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term.real;
 
-import tools.refinery.store.query.term.*;
+import tools.refinery.store.query.term.Aggregator;
+import tools.refinery.store.query.term.ConstantTerm;
+import tools.refinery.store.query.term.ExtremeValueAggregator;
+import tools.refinery.store.query.term.Term;
+import tools.refinery.store.query.term.comparable.*;
+
+import java.util.Comparator;
 
 public final class RealTerms {
 	public static final Aggregator<Double, Double> REAL_SUM = RealSumAggregator.INSTANCE;
-	public static final Aggregator<Double, Double> REAL_MIN = RealExtremeValueAggregator.MINIMUM;
-	public static final Aggregator<Double, Double> REAL_MAX = RealExtremeValueAggregator.MAXIMUM;
+	public static final Aggregator<Double, Double> REAL_MIN = new ExtremeValueAggregator<>(Double.class,
+			Double.POSITIVE_INFINITY);
+	public static final Aggregator<Double, Double> REAL_MAX = new ExtremeValueAggregator<>(Double.class,
+			Double.NEGATIVE_INFINITY, Comparator.reverseOrder());
 
 	private RealTerms() {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public static ConstantTerm<Double> constant(double value) {
+	public static Term<Double> constant(Double value) {
 		return new ConstantTerm<>(Double.class, value);
 	}
 
-	public static RealArithmeticUnaryTerm plus(Term<Double> body) {
-		return new RealArithmeticUnaryTerm(ArithmeticUnaryOperator.PLUS, body);
+	public static Term<Double> plus(Term<Double> body) {
+		return new RealPlusTerm(body);
 	}
 
-	public static RealArithmeticUnaryTerm minus(Term<Double> body) {
-		return new RealArithmeticUnaryTerm(ArithmeticUnaryOperator.MINUS, body);
+	public static Term<Double> minus(Term<Double> body) {
+		return new RealMinusTerm(body);
 	}
 
-	public static RealArithmeticBinaryTerm add(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.ADD, left, right);
+	public static Term<Double> add(Term<Double> left, Term<Double> right) {
+		return new RealAddTerm(left, right);
 	}
 
-	public static RealArithmeticBinaryTerm sub(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.SUB, left, right);
+	public static Term<Double> sub(Term<Double> left, Term<Double> right) {
+		return new RealSubTerm(left, right);
 	}
 
-	public static RealArithmeticBinaryTerm mul(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.MUL, left, right);
+	public static Term<Double> mul(Term<Double> left, Term<Double> right) {
+		return new RealMulTerm(left, right);
 	}
 
-	public static RealArithmeticBinaryTerm div(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.DIV, left, right);
+	public static Term<Double> div(Term<Double> left, Term<Double> right) {
+		return new RealDivTerm(left, right);
 	}
 
-	public static RealArithmeticBinaryTerm pow(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.POW, left, right);
+	public static Term<Double> pow(Term<Double> left, Term<Double> right) {
+		return new RealPowTerm(left, right);
 	}
 
-	public static RealArithmeticBinaryTerm min(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.MIN, left, right);
+	public static Term<Double> min(Term<Double> left, Term<Double> right) {
+		return new RealMinTerm(left, right);
 	}
 
-	public static RealArithmeticBinaryTerm max(Term<Double> left, Term<Double> right) {
-		return new RealArithmeticBinaryTerm(ArithmeticBinaryOperator.MAX, left, right);
+	public static Term<Double> max(Term<Double> left, Term<Double> right) {
+		return new RealMaxTerm(left, right);
 	}
 
-	public static RealComparisonTerm eq(Term<Double> left, Term<Double> right) {
-		return new RealComparisonTerm(ComparisonOperator.EQ, left, right);
+	public static Term<Boolean> eq(Term<Double> left, Term<Double> right) {
+		return new EqTerm<>(Double.class, left, right);
 	}
 
-	public static RealComparisonTerm notEq(Term<Double> left, Term<Double> right) {
-		return new RealComparisonTerm(ComparisonOperator.NOT_EQ, left, right);
+	public static Term<Boolean> notEq(Term<Double> left, Term<Double> right) {
+		return new NotEqTerm<>(Double.class, left, right);
 	}
 
-	public static RealComparisonTerm less(Term<Double> left, Term<Double> right) {
-		return new RealComparisonTerm(ComparisonOperator.LESS, left, right);
+	public static Term<Boolean> less(Term<Double> left, Term<Double> right) {
+		return new LessTerm<>(Double.class, left, right);
 	}
 
-	public static RealComparisonTerm lessEq(Term<Double> left, Term<Double> right) {
-		return new RealComparisonTerm(ComparisonOperator.LESS_EQ, left, right);
+	public static Term<Boolean> lessEq(Term<Double> left, Term<Double> right) {
+		return new LessEqTerm<>(Double.class, left, right);
 	}
 
-	public static RealComparisonTerm greater(Term<Double> left, Term<Double> right) {
-		return new RealComparisonTerm(ComparisonOperator.GREATER, left, right);
+	public static Term<Boolean> greater(Term<Double> left, Term<Double> right) {
+		return new GreaterTerm<>(Double.class, left, right);
 	}
 
-	public static RealComparisonTerm greaterEq(Term<Double> left, Term<Double> right) {
-		return new RealComparisonTerm(ComparisonOperator.GREATER_EQ, left, right);
+	public static Term<Boolean> greaterEq(Term<Double> left, Term<Double> right) {
+		return new GreaterEqTerm<>(Double.class, left, right);
 	}
 
-	public static IntToRealTerm asReal(Term<Integer> body) {
+	public static Term<Double> asReal(Term<Integer> body) {
 		return new IntToRealTerm(body);
 	}
 }

@@ -1,9 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.reasoning.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
-import tools.refinery.store.query.literal.LiteralReduction;
-import tools.refinery.store.query.term.Sort;
+import tools.refinery.store.query.Reduction;
+import tools.refinery.store.query.term.Parameter;
 
 import java.util.List;
 
@@ -16,12 +21,12 @@ public record ModalConstraint(Modality modality, Constraint constraint) implemen
 	}
 
 	@Override
-	public List<Sort> getSorts() {
-		return constraint.getSorts();
+	public List<Parameter> getParameters() {
+		return constraint.getParameters();
 	}
 
 	@Override
-	public LiteralReduction getReduction() {
+	public Reduction getReduction() {
 		return constraint.getReduction();
 	}
 

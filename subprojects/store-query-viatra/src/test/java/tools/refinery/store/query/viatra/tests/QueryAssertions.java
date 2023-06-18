@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.tests;
 
 import org.junit.jupiter.api.function.Executable;
@@ -42,7 +47,7 @@ public final class QueryAssertions {
 		var cursor = resultSet.getAll();
 		while (cursor.move()) {
 			var key = cursor.getKey();
-			var previous = actual.put(key.toTuple(), cursor.getValue());
+			var previous = actual.put(key, cursor.getValue());
 			assertThat("duplicate value for key " + key, previous, nullValue());
 		}
 		executables.add(() -> assertThat("results cursor", actual, is(filteredExpected)));

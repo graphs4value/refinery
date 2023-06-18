@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
@@ -9,26 +14,35 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class BinaryTerm<R, T1, T2> implements Term<R> {
+public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
+	private final Class<T1> leftType;
+	private final Class<T2> rightType;
 	private final Term<T1> left;
 	private final Term<T2> right;
 
-	protected BinaryTerm(Term<T1> left, Term<T2> right) {
-		if (!left.getType().equals(getLeftType())) {
-			throw new IllegalArgumentException("Expected left %s to be of type %s, got %s instead".formatted(left,
-					getLeftType().getName(), left.getType().getName()));
+	protected BinaryTerm(Class<R> type, Class<T1> leftType, Class<T2> rightType, Term<T1> left, Term<T2> right) {
+		super(type);
+		if (!left.getType().equals(leftType)) {
+			throw new IllegalArgumentException("Expected left %s to be of type %s, got %s instead".formatted(
+					left, leftType.getName(), left.getType().getName()));
 		}
-		if (!right.getType().equals(getRightType())) {
-			throw new IllegalArgumentException("Expected right %s to be of type %s, got %s instead".formatted(right,
-					getRightType().getName(), right.getType().getName()));
+		if (!right.getType().equals(rightType)) {
+			throw new IllegalArgumentException("Expected right %s to be of type %s, got %s instead".formatted(
+					right, rightType.getName(), right.getType().getName()));
 		}
+		this.leftType = leftType;
+		this.rightType = rightType;
 		this.left = left;
 		this.right = right;
 	}
 
-	public abstract Class<T1> getLeftType();
+	public Class<T1> getLeftType() {
+		return leftType;
+	}
 
-	public abstract Class<T2> getRightType();
+	public Class<T2> getRightType() {
+		return rightType;
+	}
 
 	public Term<T1> getLeft() {
 		return left;
@@ -55,12 +69,14 @@ public abstract class BinaryTerm<R, T1, T2> implements Term<R> {
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {
-		if (getClass() != other.getClass()) {
+		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;
 		}
 		var otherBinaryTerm = (BinaryTerm<?, ?, ?>) other;
-		return left.equalsWithSubstitution(helper, otherBinaryTerm.left) && right.equalsWithSubstitution(helper,
-				otherBinaryTerm.right);
+		return leftType.equals(otherBinaryTerm.leftType) &&
+				rightType.equals(otherBinaryTerm.rightType) &&
+				left.equalsWithSubstitution(helper, otherBinaryTerm.left) &&
+				right.equalsWithSubstitution(helper, otherBinaryTerm.right);
 	}
 
 	@Override
@@ -82,12 +98,16 @@ public abstract class BinaryTerm<R, T1, T2> implements Term<R> {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
 		BinaryTerm<?, ?, ?> that = (BinaryTerm<?, ?, ?>) o;
-		return left.equals(that.left) && right.equals(that.right);
+		return Objects.equals(leftType, that.leftType) &&
+				Objects.equals(rightType, that.rightType) &&
+				Objects.equals(left, that.left) &&
+				Objects.equals(right, that.right);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getClass(), left, right);
+		return Objects.hash(super.hashCode(), leftType, rightType, left, right);
 	}
 }

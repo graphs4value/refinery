@@ -1,9 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.query.dnf.DnfUtils;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 	private final String explicitName;
@@ -14,7 +20,7 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 		uniqueName = DnfUtils.generateUniqueName(name);
 	}
 
-	public abstract Sort getSort();
+	public abstract Optional<Class<?>> tryGetType();
 
 	public String getName() {
 		return explicitName == null ? uniqueName : explicitName;
@@ -31,6 +37,8 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 	public String getUniqueName() {
 		return uniqueName;
 	}
+
+	public abstract boolean isUnifiable();
 
 	public abstract Variable renew(@Nullable String name);
 

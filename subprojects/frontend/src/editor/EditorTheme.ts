@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import errorSVG from '@material-icons/svg/svg/error/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
@@ -6,32 +12,6 @@ import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
 function svgURL(svg: string): string {
   return `url('data:image/svg+xml;utf8,${svg}')`;
-}
-
-function radialShadowTheme(
-  origin: string,
-  scaleX: boolean,
-  scaleY: boolean,
-): CSSObject {
-  function radialGradient(opacity: number, scale: string): string {
-    return `radial-gradient(
-        farthest-side at ${origin},
-        rgba(0, 0, 0, ${opacity}),
-        rgba(0, 0, 0, 0)
-      )
-      ${origin} /
-      ${scaleX ? scale : '100%'}
-      ${scaleY ? scale : '100%'}
-      no-repeat`;
-  }
-
-  return {
-    background: `
-      ${radialGradient(0.2, '40%')},
-      ${radialGradient(0.14, '50%')},
-      ${radialGradient(0.12, '100%')}
-    `,
-  };
 }
 
 export default styled('div', {
@@ -52,98 +32,13 @@ export default styled('div', {
     },
   };
 
-  const scrollerThumbOpacity = theme.palette.mode === 'dark' ? 0.16 : 0.28;
-
   const generalStyle: CSSObject = {
     background: theme.palette.background.default,
     '&, .cm-editor': {
       height: '100%',
     },
-    '.cm-scroller-holder': {
-      display: 'flex',
-      position: 'relative',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      flex: '1 1',
-    },
-    '.cm-scroller-spacer': {
-      position: 'sticky',
-      flexShrink: 0,
-      zIndex: 300,
-      width: 1,
-      marginRight: -1,
-      pointerEvents: 'none',
-    },
     '.cm-scroller': {
       color: theme.palette.text.secondary,
-      scrollbarWidth: 'none',
-      MsOverflowStyle: 'none',
-      '&::-webkit-scrollbar': {
-        width: 0,
-        height: 0,
-        background: 'transparent',
-      },
-    },
-    '.cm-scroller-track': {
-      position: 'absolute',
-      zIndex: 300,
-      touchAction: 'none',
-    },
-    '.cm-scroller-thumb': {
-      position: 'absolute',
-      background: theme.palette.text.secondary,
-      opacity: scrollerThumbOpacity,
-      transition: theme.transitions.create('opacity', {
-        duration: theme.transitions.duration.shortest,
-      }),
-      touchAction: 'none',
-      WebkitTapHighlightColor: 'transparent',
-      '&:hover': {
-        opacity: 0.75,
-        '@media (hover: none)': {
-          opacity: scrollerThumbOpacity,
-        },
-      },
-      '&.active': {
-        opacity: 1,
-        pointerEvents: 'none',
-        userSelect: 'none',
-      },
-    },
-    '.cm-scroller-track-y, .cm-scroller-thumb-y': {
-      top: 0,
-      right: 0,
-      width: 12,
-    },
-    '.cm-scroller-track-x, .cm-scroller-thumb-x': {
-      left: 0,
-      bottom: 0,
-      height: 12,
-    },
-    '.cm-scroller-track-x': {
-      right: 12,
-    },
-    '.cm-scroller-gutter-decoration': {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: 0,
-      width: 0,
-      transition: theme.transitions.create('width', {
-        duration: theme.transitions.duration.shortest,
-      }),
-      ...radialShadowTheme('0 50%', true, false),
-    },
-    '.cm-scroller-top-decoration': {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 0,
-      transition: theme.transitions.create('height', {
-        duration: theme.transitions.duration.shortest,
-      }),
-      ...radialShadowTheme('50% 0', false, true),
     },
     '.cm-gutters': {
       background: theme.palette.background.default,
@@ -162,7 +57,6 @@ export default styled('div', {
       background: 'transparent',
     },
     '.cm-cursor, .cm-cursor-primary': {
-      marginLeft: -1,
       borderLeft: `2px solid ${theme.palette.info.main}`,
     },
     '.cm-selectionBackground': {
@@ -175,7 +69,6 @@ export default styled('div', {
       },
     },
     '.cm-line': {
-      position: 'relative', // For indentation highlights
       padding: '0 12px 0 0px',
     },
   };
@@ -264,13 +157,6 @@ export default styled('div', {
     },
     '.cm-searchMatch-selected': {
       background: theme.palette.highlight.search.selected,
-    },
-    '.cm-indentation-marker': {
-      display: 'inline-block',
-      boxShadow: `1px 0 0 ${theme.palette.text.disabled} inset`,
-      '&.active': {
-        boxShadow: `1px 0 0 ${theme.palette.text.primary} inset`,
-      },
     },
     '.cm-scroller-selection': {
       position: 'absolute',
@@ -452,11 +338,11 @@ export default styled('div', {
 
   const foldStyle = {
     '.cm-foldGutter': {
-      width: 17,
+      width: 16,
     },
     '.problem-editor-foldMarker': {
       display: 'block',
-      margin: '4px 1px 4px 0',
+      margin: '4px 0 4px 0',
       padding: 0,
       maskImage: svgURL(expandMoreSVG),
       maskSize: '16px 16px',
@@ -467,7 +353,7 @@ export default styled('div', {
       cursor: 'pointer',
       WebkitTapHighlightColor: 'transparent',
       [theme.breakpoints.down('sm')]: {
-        margin: '2px 1px 2px 0',
+        margin: '2px 0 2px 0',
       },
     },
     '.problem-editor-foldMarker-open': {
