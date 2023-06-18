@@ -34,7 +34,7 @@ class DiagonalQueryTest {
 	private static final AnySymbolView personView = new KeyOnlyView<>(person);
 	private static final AnySymbolView friendView = new KeyOnlyView<>(friend);
 	private static final AnySymbolView symbolView = new KeyOnlyView<>(symbol);
-	private static final AnySymbolView intSymbolView = new FunctionView<>(intSymbol);
+	private static final FunctionView<Integer> intSymbolView = new FunctionView<>(intSymbol);
 
 	@QueryEngineTest
 	void inputKeyNegationTest(QueryEvaluationHint hint) {
@@ -76,20 +76,15 @@ class DiagonalQueryTest {
 
 	@QueryEngineTest
 	void subQueryNegationTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			var p3 = builder.parameter("p3");
-			var p4 = builder.parameter("p4");
-			builder.clause(
-					personView.call(p1),
-					symbolView.call(p1, p2, p3, p4)
-			);
-			builder.clause(
-					personView.call(p2),
-					symbolView.call(p1, p2, p3, p4)
-			);
-		});
+		var subQuery = Query.of("SubQuery", (builder, p1, p2, p3, p4) -> builder
+				.clause(
+						personView.call(p1),
+						symbolView.call(p1, p2, p3, p4)
+				)
+				.clause(
+						personView.call(p2),
+						symbolView.call(p1, p2, p3, p4)
+				));
 		var query = Query.of("Diagonal", (builder, p1) -> builder.clause(p2 -> List.of(
 				personView.call(p1),
 				not(subQuery.call(p1, p1, p2, p2))
@@ -167,20 +162,14 @@ class DiagonalQueryTest {
 
 	@QueryEngineTest
 	void subQueryCountTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			var p3 = builder.parameter("p3");
-			var p4 = builder.parameter("p4");
-			builder.clause(
-					personView.call(p1),
-					symbolView.call(p1, p2, p3, p4)
-			);
-			builder.clause(
-					personView.call(p2),
-					symbolView.call(p1, p2, p3, p4)
-			);
-		});
+		var subQuery = Query.of("SubQuery", (builder, p1, p2, p3, p4) -> builder.clause(
+						personView.call(p1),
+						symbolView.call(p1, p2, p3, p4)
+				)
+				.clause(
+						personView.call(p2),
+						symbolView.call(p1, p2, p3, p4)
+				));
 		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(p2 -> List.of(
 				personView.call(p1),
 				output.assign(subQuery.count(p1, p1, p2, p2))
@@ -220,10 +209,10 @@ class DiagonalQueryTest {
 
 	@QueryEngineTest
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
-		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(Integer.class,
-				(p2, y) -> List.of(
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder
+				.clause((p2) -> List.of(
 						personView.call(p1),
-						output.assign(intSymbolView.aggregate(y, INT_SUM, p1, p1, p2, p2, y))
+						output.assign(intSymbolView.aggregate(INT_SUM, p1, p1, p2, p2))
 				)));
 
 		var store = ModelStore.builder()
@@ -278,10 +267,10 @@ class DiagonalQueryTest {
 					y.assign(x)
 			);
 		});
-		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder.clause(
-				Integer.class, Integer.class, (p2, y, z) -> List.of(
+		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder
+				.clause(Integer.class, Integer.class, (p2, y, z) -> List.of(
 						personView.call(p1),
-						output.assign(subQuery.aggregate(y, INT_SUM, p1, p1, p2, p2, y, z))
+						output.assign(subQuery.aggregateBy(y, INT_SUM, p1, p1, p2, p2, y, z))
 				)));
 
 		var store = ModelStore.builder()
@@ -355,18 +344,15 @@ class DiagonalQueryTest {
 
 	@QueryEngineTest
 	void subQueryTransitiveTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			builder.clause(
-					personView.call(p1),
-					friendView.call(p1, p2)
-			);
-			builder.clause(
-					personView.call(p2),
-					friendView.call(p1, p2)
-			);
-		});
+		var subQuery = Query.of("SubQuery", (builder, p1, p2) -> builder
+				.clause(
+						personView.call(p1),
+						friendView.call(p1, p2)
+				)
+				.clause(
+						personView.call(p2),
+						friendView.call(p1, p2)
+				));
 		var query = Query.of("Diagonal", (builder, p1) -> builder.clause(
 				personView.call(p1),
 				subQuery.callTransitive(p1, p1)

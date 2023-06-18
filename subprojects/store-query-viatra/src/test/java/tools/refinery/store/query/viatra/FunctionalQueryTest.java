@@ -9,7 +9,6 @@ import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
@@ -40,7 +39,7 @@ class FunctionalQueryTest {
 	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
 	private static final Symbol<TruthValue> friend = Symbol.of("friend", 2, TruthValue.class, TruthValue.FALSE);
 	private static final AnySymbolView personView = new KeyOnlyView<>(person);
-	private static final AnySymbolView ageView = new FunctionView<>(age);
+	private static final FunctionView<Integer> ageView = new FunctionView<>(age);
 	private static final AnySymbolView friendMustView = new FilteredView<>(friend, "must", TruthValue::must);
 
 	@QueryEngineTest
@@ -80,17 +79,13 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var x = builder.parameter("x", Integer.class);
-			builder.clause(
-					personView.call(p1),
-					ageView.call(p1, x)
-			);
-		});
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, x) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, x)
+		));
 		var query = Query.of("Predicate", Integer.class, (builder, p1, output) -> builder.clause(
 				personView.call(p1),
-				subQuery.call(p1, output)
+				output.assign(subQuery.call(p1))
 		));
 
 		var store = ModelStore.builder()
@@ -198,15 +193,11 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateCountTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			builder.clause(
+		var subQuery = Query.of("SubQuery", (builder, p1, p2) -> builder.clause(
 					personView.call(p1),
 					personView.call(p2),
 					friendMustView.call(p1, p2)
-			);
-		});
+		));
 		var query = Query.of("Count", Integer.class, (builder, p1, output) -> builder.clause(
 				personView.call(p1),
 				output.assign(subQuery.count(p1, Variable.of()))
@@ -244,8 +235,9 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
-		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(Integer.class,
-				(y) -> List.of(output.assign(ageView.aggregate(y, INT_SUM, Variable.of(), y)))));
+		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(
+				output.assign(ageView.aggregate(INT_SUM, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(age)
@@ -268,16 +260,13 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void predicateAggregationTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var x = builder.parameter("x", Integer.class);
-			builder.clause(
-					personView.call(p1),
-					ageView.call(p1, x)
-			);
-		});
-		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(Integer.class,
-				(y) -> List.of(output.assign(subQuery.aggregate(y, INT_SUM, Variable.of(), y)))));
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, x) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, x)
+		));
+		var query = Query.of("Aggregate", Integer.class, (builder, output) -> builder.clause(
+				output.assign(subQuery.aggregate(INT_SUM, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, age)
@@ -304,18 +293,16 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void extremeValueTest(QueryEvaluationHint hint) {
-		var subQuery = Dnf.of("SubQuery", builder -> {
-			var p1 = builder.parameter("p1");
-			var x = builder.parameter("x", Integer.class);
-			builder.clause(
-					personView.call(p1),
-					x.assign(friendMustView.count(p1, Variable.of()))
-			);
-		});
-		var minQuery = Query.of("Min", Integer.class, (builder, output) -> builder.clause(Integer.class,
-				(y) -> List.of(output.assign(subQuery.aggregate(y, INT_MIN, Variable.of(), y)))));
-		var maxQuery = Query.of("Max", Integer.class, (builder, output) -> builder.clause(Integer.class,
-				(y) -> List.of(output.assign(subQuery.aggregate(y, INT_MAX, Variable.of(), y)))));
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, x) -> builder.clause(
+				personView.call(p1),
+				x.assign(friendMustView.count(p1, Variable.of()))
+		));
+		var minQuery = Query.of("Min", Integer.class, (builder, output) -> builder.clause(
+				output.assign(subQuery.aggregate(INT_MIN, Variable.of()))
+		));
+		var maxQuery = Query.of("Max", Integer.class, (builder, output) -> builder.clause(
+				output.assign(subQuery.aggregate(INT_MAX, Variable.of()))
+		));
 
 		var store = ModelStore.builder()
 				.symbols(person, friend)

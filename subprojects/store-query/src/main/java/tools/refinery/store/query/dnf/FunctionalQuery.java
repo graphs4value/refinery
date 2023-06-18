@@ -74,7 +74,7 @@ public final class FunctionalQuery<T> extends Query<T> {
 			argumentsWithPlaceholder.addAll(arguments);
 			argumentsWithPlaceholder.add(placeholderVariable);
 			return getDnf()
-					.aggregate(placeholderVariable, aggregator, argumentsWithPlaceholder)
+					.aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder)
 					.toLiteral(targetVariable);
 		};
 	}

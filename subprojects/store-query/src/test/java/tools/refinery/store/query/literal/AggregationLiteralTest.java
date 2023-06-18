@@ -44,7 +44,7 @@ class AggregationLiteralTest {
 
 	@Test
 	void parameterDirectionTest() {
-		var literal = x.assign(fakeConstraint.aggregate(y, INT_SUM, p, y));
+		var literal = x.assign(fakeConstraint.aggregateBy(y, INT_SUM, p, y));
 		assertAll(
 				() -> assertThat(literal.getOutputVariables(), containsInAnyOrder(x)),
 				() -> assertThat(literal.getInputVariables(Set.of()), empty()),
@@ -56,13 +56,13 @@ class AggregationLiteralTest {
 
 	@Test
 	void missingAggregationVariableTest() {
-		var aggregation = fakeConstraint.aggregate(y, INT_SUM, p, z);
+		var aggregation = fakeConstraint.aggregateBy(y, INT_SUM, p, z);
 		assertThrows(IllegalArgumentException.class, () -> x.assign(aggregation));
 	}
 
 	@Test
 	void circularAggregationVariableTest() {
-		var aggregation = fakeConstraint.aggregate(x, INT_SUM, p, x);
+		var aggregation = fakeConstraint.aggregateBy(x, INT_SUM, p, x);
 		assertThrows(IllegalArgumentException.class, () -> x.assign(aggregation));
 	}
 
@@ -71,7 +71,7 @@ class AggregationLiteralTest {
 		var builder = Dnf.builder()
 				.clause(
 						not(fakeConstraint.call(p, y)),
-						x.assign(fakeConstraint.aggregate(y, INT_SUM, p, y))
+						x.assign(fakeConstraint.aggregateBy(y, INT_SUM, p, y))
 				);
 		assertThrows(IllegalArgumentException.class, builder::build);
 	}
@@ -81,7 +81,7 @@ class AggregationLiteralTest {
 		var builder = Dnf.builder()
 				.clause(
 						y.assign(constant(27)),
-						x.assign(fakeConstraint.aggregate(y, INT_SUM, p, y))
+						x.assign(fakeConstraint.aggregateBy(y, INT_SUM, p, y))
 				);
 		assertThrows(IllegalArgumentException.class, builder::build);
 	}

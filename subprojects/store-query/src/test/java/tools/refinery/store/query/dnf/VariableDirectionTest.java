@@ -38,7 +38,7 @@ class VariableDirectionTest {
 	private static final Symbol<Integer> age = Symbol.of("age", 1, Integer.class);
 	private static final AnySymbolView personView = new KeyOnlyView<>(person);
 	private static final AnySymbolView friendView = new KeyOnlyView<>(friend);
-	private static final AnySymbolView ageView = new FunctionView<>(age);
+	private static final FunctionView<Integer> ageView = new FunctionView<>(age);
 	private static final NodeVariable p = Variable.of("p");
 	private static final NodeVariable q = Variable.of("q");
 	private static final DataVariable<Integer> x = Variable.of("x", Integer.class);
@@ -149,10 +149,10 @@ class VariableDirectionTest {
 		return Stream.of(
 				Arguments.of(not(friendView.call(p, q))),
 				Arguments.of(y.assign(friendView.count(p, q))),
-				Arguments.of(y.assign(ageView.aggregate(z, INT_SUM, p, z))),
+				Arguments.of(y.assign(ageView.aggregate(INT_SUM, p))),
 				Arguments.of(not(dnfWithOutput.call(p, q))),
 				Arguments.of(y.assign(dnfWithOutput.count(p, q))),
-				Arguments.of(y.assign(dnfWithOutputToAggregate.aggregate(z, INT_SUM, p, q, z)))
+				Arguments.of(y.assign(dnfWithOutputToAggregate.aggregateBy(z, INT_SUM, p, q, z)))
 		);
 	}
 
@@ -192,8 +192,8 @@ class VariableDirectionTest {
 				Arguments.of(not(dnfWithInput.call(p, p))),
 				Arguments.of(y.assign(dnfWithInput.count(p, q))),
 				Arguments.of(y.assign(dnfWithInput.count(p, p))),
-				Arguments.of(y.assign(dnfWithInputToAggregate.aggregate(z, INT_SUM, p, q, z))),
-				Arguments.of(y.assign(dnfWithInputToAggregate.aggregate(z, INT_SUM, p, p, z)))
+				Arguments.of(y.assign(dnfWithInputToAggregate.aggregateBy(z, INT_SUM, p, q, z))),
+				Arguments.of(y.assign(dnfWithInputToAggregate.aggregateBy(z, INT_SUM, p, p, z)))
 		);
 	}
 
@@ -357,7 +357,7 @@ class VariableDirectionTest {
 				Arguments.of(dnfWithInput.call(x, q)),
 				Arguments.of(not(dnfWithInput.call(x, q))),
 				Arguments.of(y.assign(dnfWithInput.count(x, q))),
-				Arguments.of(y.assign(dnfWithInputToAggregate.aggregate(z, INT_SUM, x, q, z)))
+				Arguments.of(y.assign(dnfWithInputToAggregate.aggregateBy(z, INT_SUM, x, q, z)))
 		);
 	}
 
@@ -415,10 +415,10 @@ class VariableDirectionTest {
 				Arguments.of(x.assign(constant(24))),
 				Arguments.of(ageView.call(q, x)),
 				Arguments.of(x.assign(personView.count(q))),
-				Arguments.of(x.assign(ageView.aggregate(z, INT_SUM, q, z))),
+				Arguments.of(x.assign(ageView.aggregate(INT_SUM, q))),
 				Arguments.of(dnfWithDataOutput.call(x, q)),
 				Arguments.of(x.assign(dnfWithOutput.count(q))),
-				Arguments.of(x.assign(dnfWithOutputToAggregate.aggregate(z, INT_SUM, q, z)))
+				Arguments.of(x.assign(dnfWithOutputToAggregate.aggregateBy(z, INT_SUM, q, z)))
 		);
 	}
 

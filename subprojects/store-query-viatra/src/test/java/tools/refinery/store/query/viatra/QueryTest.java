@@ -9,7 +9,6 @@ import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
@@ -271,15 +270,11 @@ class QueryTest {
 
 	@QueryEngineTest
 	void patternCallTest(QueryEvaluationHint hint) {
-		var friendPredicate = Dnf.of("Friend", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			builder.clause(
-					personView.call(p1),
-					personView.call(p2),
-					friendMustView.call(p1, p2)
-			);
-		});
+		var friendPredicate = Query.of("Friend", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		));
 		var predicate = Query.of("PositivePatternCall", (builder, p3, p4) -> builder.clause(
 				personView.call(p3),
 				personView.call(p4),
@@ -362,15 +357,11 @@ class QueryTest {
 
 	@QueryEngineTest
 	void negativePatternCallTest(QueryEvaluationHint hint) {
-		var friendPredicate = Dnf.of("Friend", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			builder.clause(
-					personView.call(p1),
-					personView.call(p2),
-					friendMustView.call(p1, p2)
-			);
-		});
+		var friendPredicate = Query.of("Friend", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		));
 		var predicate = Query.of("NegativePatternCall", (builder, p3, p4) -> builder.clause(
 				personView.call(p3),
 				personView.call(p4),
@@ -451,15 +442,11 @@ class QueryTest {
 
 	@QueryEngineTest
 	void negativeWithQuantificationTest(QueryEvaluationHint hint) {
-		var called = Dnf.of("Called", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			builder.clause(
-					personView.call(p1),
-					personView.call(p2),
-					friendMustView.call(p1, p2)
-			);
-		});
+		var called = Query.of("Called", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		));
 		var predicate = Query.of("Negative", (builder, p1) -> builder.clause(
 				personView.call(p1),
 				not(called.call(p1, Variable.of()))
@@ -539,15 +526,11 @@ class QueryTest {
 
 	@QueryEngineTest
 	void transitivePatternCallTest(QueryEvaluationHint hint) {
-		var called = Dnf.of("Called", builder -> {
-			var p1 = builder.parameter("p1");
-			var p2 = builder.parameter("p2");
-			builder.clause(
-					personView.call(p1),
-					personView.call(p2),
-					friendMustView.call(p1, p2)
-			);
-		});
+		var called = Query.of("Called", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				personView.call(p2),
+				friendMustView.call(p1, p2)
+		));
 		var predicate = Query.of("Transitive", (builder, p1, p2) -> builder.clause(
 				personView.call(p1),
 				personView.call(p2),
