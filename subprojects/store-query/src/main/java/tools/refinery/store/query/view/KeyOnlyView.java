@@ -21,8 +21,8 @@ public final class KeyOnlyView<T> extends TuplePreservingView<T> {
 	}
 
 	@Override
-	public boolean filter(Tuple key, T value) {
-		return !Objects.equals(value, defaultValue);
+	protected boolean doFilter(Tuple key, T value) {
+		return true;
 	}
 
 	@Override

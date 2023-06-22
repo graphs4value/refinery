@@ -21,7 +21,6 @@ import java.util.UUID;
  */
 public abstract non-sealed class SymbolView<T> implements AnySymbolView {
 	private final Symbol<T> symbol;
-
 	private final String viewName;
 
 	protected SymbolView(Symbol<T> symbol, String viewName) {
@@ -48,7 +47,11 @@ public abstract non-sealed class SymbolView<T> implements AnySymbolView {
 		return symbol.name() + "#" + viewName;
 	}
 
-	public abstract boolean filter(Tuple key, T value);
+	public final boolean filter(Tuple key, T value) {
+		return !Objects.equals(symbol.defaultValue(), value) && doFilter(key, value);
+	}
+
+	protected abstract boolean doFilter(Tuple key, T value);
 
 	public abstract Object[] forwardMap(Tuple key, T value);
 
@@ -77,6 +80,6 @@ public abstract non-sealed class SymbolView<T> implements AnySymbolView {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(symbol, viewName);
+		return Objects.hash(getClass(), symbol, viewName);
 	}
 }

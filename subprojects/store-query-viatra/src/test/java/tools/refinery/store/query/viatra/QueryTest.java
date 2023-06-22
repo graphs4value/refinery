@@ -572,6 +572,78 @@ class QueryTest {
 		), predicateResultSet);
 	}
 
+	@Test
+	void filteredIntegerViewTest() {
+		var distance = Symbol.of("distance", 2, Integer.class);
+		var nearView = new FilteredView<>(distance, value -> value < 2);
+		var farView = new FilteredView<>(distance, value -> value >= 5);
+		var dangerQuery = Query.of("danger", (builder, a1, a2) -> builder.clause((a3) -> List.of(
+				a1.notEquivalent(a2),
+				nearView.call(a1, a3),
+				nearView.call(a2, a3),
+				not(farView.call(a1, a2))
+		)));
+		var store = ModelStore.builder()
+				.symbols(distance)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(dangerQuery))
+				.build();
+
+		var model = store.createEmptyModel();
+		var distanceInterpretation = model.getInterpretation(distance);
+		distanceInterpretation.put(Tuple.of(0, 1), 1);
+		distanceInterpretation.put(Tuple.of(1, 0), 1);
+		distanceInterpretation.put(Tuple.of(0, 2), 1);
+		distanceInterpretation.put(Tuple.of(2, 0), 1);
+		distanceInterpretation.put(Tuple.of(1, 2), 3);
+		distanceInterpretation.put(Tuple.of(2, 1), 3);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var dangerResultSet = queryEngine.getResultSet(dangerQuery);
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 1), false,
+				Tuple.of(0, 2), false,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 1), true
+		), dangerResultSet);
+	}
+
+	@Test
+	void filteredDoubleViewTest() {
+		var distance = Symbol.of("distance", 2, Double.class);
+		var nearView = new FilteredView<>(distance, value -> value < 2);
+		var farView = new FilteredView<>(distance, value -> value >= 5);
+		var dangerQuery = Query.of("danger", (builder, a1, a2) -> builder.clause((a3) -> List.of(
+				a1.notEquivalent(a2),
+				nearView.call(a1, a3),
+				nearView.call(a2, a3),
+				not(farView.call(a1, a2))
+		)));
+		var store = ModelStore.builder()
+				.symbols(distance)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(dangerQuery))
+				.build();
+
+		var model = store.createEmptyModel();
+		var distanceInterpretation = model.getInterpretation(distance);
+		distanceInterpretation.put(Tuple.of(0, 1), 1.0);
+		distanceInterpretation.put(Tuple.of(1, 0), 1.0);
+		distanceInterpretation.put(Tuple.of(0, 2), 1.0);
+		distanceInterpretation.put(Tuple.of(2, 0), 1.0);
+		distanceInterpretation.put(Tuple.of(1, 2), 3.0);
+		distanceInterpretation.put(Tuple.of(2, 1), 3.0);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var dangerResultSet = queryEngine.getResultSet(dangerQuery);
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 1), false,
+				Tuple.of(0, 2), false,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 1), true
+		), dangerResultSet);
+	}
+
 	@QueryEngineTest
 	void assumeTest(QueryEvaluationHint hint) {
 		var age = Symbol.of("age", 1, Integer.class);

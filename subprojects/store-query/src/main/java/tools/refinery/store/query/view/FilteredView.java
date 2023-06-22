@@ -27,14 +27,16 @@ public class FilteredView<T> extends TuplePreservingView<T> {
 
 	public FilteredView(Symbol<T> symbol, String name, Predicate<T> predicate) {
 		this(symbol, name, (k, v) -> predicate.test(v));
+		validateDefaultValue(predicate);
 	}
 
 	public FilteredView(Symbol<T> symbol, Predicate<T> predicate) {
 		this(symbol, (k, v) -> predicate.test(v));
+		validateDefaultValue(predicate);
 	}
 
 	@Override
-	public boolean filter(Tuple key, T value) {
+	protected boolean doFilter(Tuple key, T value) {
 		return this.predicate.test(key, value);
 	}
 
@@ -50,5 +52,22 @@ public class FilteredView<T> extends TuplePreservingView<T> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), predicate);
+	}
+
+	private void validateDefaultValue(Predicate<T> predicate) {
+		var defaultValue = getSymbol().defaultValue();
+		boolean matchesDefaultValue = false;
+		try {
+			matchesDefaultValue = predicate.test(defaultValue);
+		} catch (NullPointerException e) {
+			if (defaultValue != null) {
+				throw e;
+			}
+			// The predicate doesn't need to handle the default value if it is null.
+		}
+		if (matchesDefaultValue) {
+			throw new IllegalArgumentException("Tuples with default value %s cannot be enumerated in %s"
+					.formatted(defaultValue, getSymbol()));
+		}
 	}
 }

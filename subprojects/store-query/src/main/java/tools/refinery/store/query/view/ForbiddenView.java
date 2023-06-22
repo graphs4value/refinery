@@ -15,7 +15,7 @@ public class ForbiddenView extends TuplePreservingView<TruthValue> {
 	}
 
 	@Override
-	public boolean filter(Tuple key, TruthValue value) {
+	protected boolean doFilter(Tuple key, TruthValue value) {
 		return !value.may();
 	}
 }

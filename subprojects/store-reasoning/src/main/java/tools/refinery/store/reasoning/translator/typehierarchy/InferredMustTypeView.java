@@ -9,6 +9,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.query.view.TuplePreservingView;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.Objects;
+
 class InferredMustTypeView extends TuplePreservingView<InferredType> {
 	private final PartialRelation type;
 
@@ -18,7 +20,21 @@ class InferredMustTypeView extends TuplePreservingView<InferredType> {
 	}
 
 	@Override
-	public boolean filter(Tuple key, InferredType value) {
+	protected boolean doFilter(Tuple key, InferredType value) {
 		return value.mustTypes().contains(type);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		InferredMustTypeView that = (InferredMustTypeView) o;
+		return Objects.equals(type, that.type);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), type);
 	}
 }

@@ -20,12 +20,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public abstract class AbstractFunctionView<T> extends SymbolView<T> {
-	private final T defaultValue;
 	private final List<Parameter> parameters;
 
 	protected AbstractFunctionView(Symbol<T> symbol, String name, Parameter outParameter) {
 		super(symbol, name);
-		defaultValue = symbol.defaultValue();
 		parameters = createParameters(symbol.arity(), outParameter);
 	}
 
@@ -46,16 +44,16 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 	}
 
 	@Override
-	public final boolean filter(Tuple key, T value) {
-		return !Objects.equals(defaultValue, value);
+	protected boolean doFilter(Tuple key, T value) {
+		return true;
 	}
 
-	protected Object forwardMapValue(Tuple key, T value) {
+	protected Object forwardMapValue(T value) {
 		return value;
 	}
 
-	protected boolean valueEquals(Tuple key, T value, Object otherForwardMappedValue) {
-		return Objects.equals(otherForwardMappedValue, forwardMapValue(key, value));
+	protected boolean valueEquals(T value, Object otherForwardMappedValue) {
+		return Objects.equals(otherForwardMappedValue, forwardMapValue(value));
 	}
 
 	@Override
@@ -65,7 +63,7 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 		for (int i = 0; i < size; i++) {
 			result[i] = Tuple.of(key.get(i));
 		}
-		result[key.getSize()] = forwardMapValue(key, value);
+		result[key.getSize()] = forwardMapValue(value);
 		return result;
 	}
 
@@ -81,7 +79,7 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 		Tuple key = Tuple.of(content);
 		var valueInTuple = tuple[tuple.length - 1];
 		T valueInMap = model.getInterpretation(getSymbol()).get(key);
-		return valueEquals(key, valueInMap, valueInTuple);
+		return valueEquals(valueInMap, valueInTuple);
 	}
 
 	@Override
@@ -95,12 +93,12 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		AbstractFunctionView<?> that = (AbstractFunctionView<?>) o;
-		return Objects.equals(defaultValue, that.defaultValue) && Objects.equals(parameters, that.parameters);
+		return Objects.equals(parameters, that.parameters);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), defaultValue, parameters);
+		return Objects.hash(super.hashCode(), parameters);
 	}
 
 	private static List<Parameter> createParameters(int symbolArity, Parameter outParameter) {
