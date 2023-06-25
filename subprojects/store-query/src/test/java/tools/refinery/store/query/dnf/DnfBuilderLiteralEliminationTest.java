@@ -207,4 +207,53 @@ class DnfBuilderLiteralEliminationTest {
 
 		assertThat(actual, structurallyEqualTo(expected));
 	}
+
+	@Test
+	void removeContradictoryTest() {
+		var actual = Dnf.of(builder -> builder.clause((p, q) -> List.of(
+				friendView.call(p, q),
+				not(friendView.call(p, q))
+		)));
+		var expected = Dnf.builder().build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@Test
+	void removeContradictoryUniversalTest() {
+		var actual = Dnf.of(builder -> builder.clause((p, q) -> List.of(
+				friendView.call(q, q),
+				friendView.call(p, q),
+				not(friendView.call(p, Variable.of()))
+		)));
+		var expected = Dnf.builder().build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@Test
+	void removeContradictoryExistentialUniversalTest() {
+		var actual = Dnf.of(builder -> builder.clause((p) -> List.of(
+				friendView.call(p, Variable.of()),
+				not(friendView.call(p, Variable.of()))
+		)));
+		var expected = Dnf.builder().build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@Test
+	void removeContradictoryUniversalParameterTest() {
+		var actual = Dnf.of(builder -> {
+			var p = builder.parameter("p");
+			builder.clause((q) -> List.of(
+					friendView.call(q, q),
+					friendView.call(p, q),
+					not(friendView.call(p, Variable.of()))
+			));
+		});
+		var expected = Dnf.builder().parameter(p).build();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
 }

@@ -6,9 +6,8 @@
 package tools.refinery.store.query.dnf;
 
 import org.jetbrains.annotations.NotNull;
-import tools.refinery.store.query.literal.BooleanLiteral;
-import tools.refinery.store.query.literal.EquivalenceLiteral;
-import tools.refinery.store.query.literal.Literal;
+import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.substitution.MapBasedSubstitution;
 import tools.refinery.store.query.substitution.StatelessSubstitution;
 import tools.refinery.store.query.substitution.Substitution;
@@ -57,6 +56,9 @@ class ClausePostProcessor {
 		}
 		if (filteredLiterals.isEmpty()) {
 			return ConstantResult.ALWAYS_TRUE;
+		}
+		if (hasContradictoryCall(filteredLiterals)) {
+			return ConstantResult.ALWAYS_FALSE;
 		}
 		var clause = new DnfClause(Collections.unmodifiableSet(positiveVariables),
 				Collections.unmodifiableList(filteredLiterals));
@@ -221,6 +223,55 @@ class ClausePostProcessor {
 			throw new IllegalArgumentException("Unbound input variables %s"
 					.formatted(variableToLiteralInputMap.keySet()));
 		}
+	}
+
+	private boolean hasContradictoryCall(Collection<Literal> filteredLiterals) {
+		var positiveCalls = new HashMap<Constraint, Set<CallLiteral>>();
+		for (var literal : filteredLiterals) {
+			if (literal instanceof CallLiteral callLiteral && callLiteral.getPolarity() == CallPolarity.POSITIVE) {
+				var callsOfTarget = positiveCalls.computeIfAbsent(callLiteral.getTarget(), key -> new HashSet<>());
+				callsOfTarget.add(callLiteral);
+			}
+		}
+		for (var literal : filteredLiterals) {
+			if (literal instanceof CallLiteral callLiteral && callLiteral.getPolarity() == CallPolarity.NEGATIVE) {
+				var callsOfTarget = positiveCalls.get(callLiteral.getTarget());
+				if (contradicts(callLiteral, callsOfTarget)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean contradicts(CallLiteral negativeCall, Collection<CallLiteral> positiveCalls) {
+		if (positiveCalls == null) {
+			return false;
+		}
+		for (var positiveCall : positiveCalls) {
+			if (contradicts(negativeCall, positiveCall)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean contradicts(CallLiteral negativeCall, CallLiteral positiveCall) {
+		var privateVariables = negativeCall.getPrivateVariables(positiveVariables);
+		var negativeArguments = negativeCall.getArguments();
+		var positiveArguments = positiveCall.getArguments();
+		int arity = negativeArguments.size();
+		for (int i = 0; i < arity; i++) {
+			var negativeArgument = negativeArguments.get(i);
+			if (privateVariables.contains(negativeArgument)) {
+				continue;
+			}
+			var positiveArgument = positiveArguments.get(i);
+			if (!negativeArgument.equals(positiveArgument)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private class SortableLiteral implements Comparable<SortableLiteral> {
