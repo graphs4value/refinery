@@ -48,6 +48,8 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 
 	public abstract <T> DataVariable<T> asDataVariable(Class<T> type);
 
+	public abstract int hashCodeWithSubstitution(int sequenceNumber);
+
 	@Override
 	public String toString() {
 		return getName();

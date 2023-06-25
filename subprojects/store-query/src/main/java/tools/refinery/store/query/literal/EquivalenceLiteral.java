@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
@@ -13,8 +14,29 @@ import tools.refinery.store.query.term.Variable;
 import java.util.Objects;
 import java.util.Set;
 
-public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right)
-		implements CanNegate<EquivalenceLiteral> {
+public final class EquivalenceLiteral extends AbstractLiteral implements CanNegate<EquivalenceLiteral> {
+	private final boolean positive;
+	private final NodeVariable left;
+	private final NodeVariable right;
+
+	public EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right) {
+		this.positive = positive;
+		this.left = left;
+		this.right = right;
+	}
+
+	public boolean isPositive() {
+		return positive;
+	}
+
+	public NodeVariable getLeft() {
+		return left;
+	}
+
+	public NodeVariable getRight() {
+		return right;
+	}
+
 	@Override
 	public Set<Variable> getOutputVariables() {
 		return Set.of(left);
@@ -55,27 +77,18 @@ public record EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariab
 			return false;
 		}
 		var otherEquivalenceLiteral = (EquivalenceLiteral) other;
-		return helper.variableEqual(left, otherEquivalenceLiteral.left) && helper.variableEqual(right,
-				otherEquivalenceLiteral.right);
+		return helper.variableEqual(left, otherEquivalenceLiteral.left) &&
+				helper.variableEqual(right, otherEquivalenceLiteral.right);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), helper.getVariableHashCode(left),
+				helper.getVariableHashCode(right));
 	}
 
 	@Override
 	public String toString() {
 		return "%s %s %s".formatted(left, positive ? "===" : "!==", right);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) return true;
-		if (obj == null || obj.getClass() != this.getClass()) return false;
-		var that = (EquivalenceLiteral) obj;
-		return this.positive == that.positive &&
-				Objects.equals(this.left, that.left) &&
-				Objects.equals(this.right, that.right);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getClass(), positive, left, right);
 	}
 }

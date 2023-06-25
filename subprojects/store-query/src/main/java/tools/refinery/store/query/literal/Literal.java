@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.Variable;
 
@@ -26,4 +27,6 @@ public interface Literal {
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other);
+
+	int hashCodeWithSubstitution(LiteralHashCodeHelper helper);
 }

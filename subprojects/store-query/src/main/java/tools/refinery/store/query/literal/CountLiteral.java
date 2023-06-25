@@ -7,6 +7,7 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Variable;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public class CountLiteral extends AbstractCallLiteral {
 	private final DataVariable<Integer> resultVariable;
 
@@ -68,17 +71,8 @@ public class CountLiteral extends AbstractCallLiteral {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
-		CountLiteral that = (CountLiteral) o;
-		return resultVariable.equals(that.resultVariable);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), resultVariable);
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), helper.getVariableHashCode(resultVariable));
 	}
 
 	@Override

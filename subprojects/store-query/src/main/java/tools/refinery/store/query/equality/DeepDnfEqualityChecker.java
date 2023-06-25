@@ -38,7 +38,7 @@ public class DeepDnfEqualityChecker implements DnfEqualityChecker {
 			return false;
 		}
 		for (int i = 0; i < numClauses; i++) {
-			var literalEqualityHelper = new LiteralEqualityHelper(this, symbolicParameters,
+			var literalEqualityHelper = new SubstitutingLiteralEqualityHelper(this, symbolicParameters,
 					other.getSymbolicParameters());
 			if (!equalsWithSubstitutionRaw(literalEqualityHelper, clauses.get(i), other.getClauses().get(i))) {
 				return false;

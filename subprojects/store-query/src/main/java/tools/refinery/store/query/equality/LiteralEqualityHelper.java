@@ -6,49 +6,22 @@
 package tools.refinery.store.query.equality;
 
 import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.SymbolicParameter;
 import tools.refinery.store.query.term.Variable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
-public class LiteralEqualityHelper {
-	private final DnfEqualityChecker dnfEqualityChecker;
-	private final Map<Variable, Variable> leftToRight;
-	private final Map<Variable, Variable> rightToLeft;
-
-	public LiteralEqualityHelper(DnfEqualityChecker dnfEqualityChecker, List<SymbolicParameter> leftParameters,
-								 List<SymbolicParameter> rightParameters) {
-		this.dnfEqualityChecker = dnfEqualityChecker;
-		var arity = leftParameters.size();
-		if (arity != rightParameters.size()) {
-			throw new IllegalArgumentException("Parameter lists have unequal length");
+public interface LiteralEqualityHelper extends DnfEqualityChecker {
+	LiteralEqualityHelper DEFAULT = new LiteralEqualityHelper() {
+		@Override
+		public boolean variableEqual(Variable left, Variable right) {
+			return Objects.equals(left, right);
 		}
-		leftToRight = new HashMap<>(arity);
-		rightToLeft = new HashMap<>(arity);
-		for (int i = 0; i < arity; i++) {
-			if (!variableEqual(leftParameters.get(i).getVariable(), rightParameters.get(i).getVariable())) {
-				throw new IllegalArgumentException("Parameter lists cannot be unified: duplicate parameter " + i);
-			}
+
+		@Override
+		public boolean dnfEqual(Dnf left, Dnf right) {
+			return DnfEqualityChecker.DEFAULT.dnfEqual(left, right);
 		}
-	}
+	};
 
-	public boolean dnfEqual(Dnf left, Dnf right) {
-		return dnfEqualityChecker.dnfEqual(left, right);
-	}
-
-	public boolean variableEqual(Variable left, Variable right) {
-		if (checkMapping(leftToRight, left, right) && checkMapping(rightToLeft, right, left)) {
-			leftToRight.put(left, right);
-			rightToLeft.put(right, left);
-			return true;
-		}
-		return false;
-	}
-
-	private static boolean checkMapping(Map<Variable, Variable> map, Variable key, Variable expectedValue) {
-		var currentValue = map.get(key);
-		return currentValue == null || currentValue.equals(expectedValue);
-	}
+	boolean variableEqual(Variable left, Variable right);
 }

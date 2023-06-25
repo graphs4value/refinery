@@ -7,13 +7,14 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
 
-public abstract class AbstractCallLiteral implements Literal {
+public abstract class AbstractCallLiteral extends AbstractLiteral {
 	private final Constraint target;
 	private final List<Variable> arguments;
 	private final Set<Variable> inArguments;
@@ -112,7 +113,7 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
-		if (other == null || getClass() != other.getClass()) {
+		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;
 		}
 		var otherCallLiteral = (AbstractCallLiteral) other;
@@ -129,15 +130,11 @@ public abstract class AbstractCallLiteral implements Literal {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		AbstractCallLiteral that = (AbstractCallLiteral) o;
-		return target.equals(that.target) && arguments.equals(that.arguments);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getClass(), target, arguments);
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		int result = super.hashCodeWithSubstitution(helper) * 31 + target.hashCode();
+		for (var argument : arguments) {
+			result = result * 31 + helper.getVariableHashCode(argument);
+		}
+		return result;
 	}
 }

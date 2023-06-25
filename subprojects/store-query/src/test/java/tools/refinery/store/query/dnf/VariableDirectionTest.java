@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static tools.refinery.store.query.literal.Literals.assume;
+import static tools.refinery.store.query.literal.Literals.check;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.term.int_.IntTerms.*;
 
@@ -349,7 +349,7 @@ class VariableDirectionTest {
 				.clause(
 						friendView.call(p, q),
 						ageView.call(q, x),
-						assume(greaterEq(x, y))
+						check(greaterEq(x, y))
 				)
 				.build();
 
@@ -381,7 +381,7 @@ class VariableDirectionTest {
 	void boundPrivateDataVariableOutputTest(Literal literal) {
 		var dnfWithInput = Dnf.builder("WithInput")
 				.parameter(x, ParameterDirection.IN)
-				.clause(assume(greaterEq(x, constant(24))))
+				.clause(check(greaterEq(x, constant(24))))
 				.build();
 		var builder = Dnf.builder().clause(dnfWithInput.call(x), literal);
 		var dnf = assertDoesNotThrow(builder::build);

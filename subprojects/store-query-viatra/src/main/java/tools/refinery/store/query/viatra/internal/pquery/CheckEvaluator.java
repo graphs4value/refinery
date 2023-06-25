@@ -8,8 +8,8 @@ package tools.refinery.store.query.viatra.internal.pquery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.IValueProvider;
 import tools.refinery.store.query.term.Term;
 
-class AssumptionEvaluator extends TermEvaluator<Boolean> {
-	public AssumptionEvaluator(Term<Boolean> term) {
+class CheckEvaluator extends TermEvaluator<Boolean> {
+	public CheckEvaluator(Term<Boolean> term) {
 		super(term);
 	}
 

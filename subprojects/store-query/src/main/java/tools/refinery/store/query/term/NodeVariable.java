@@ -46,6 +46,11 @@ public final class NodeVariable extends Variable {
 		throw new IllegalStateException("%s is a node variable".formatted(this));
 	}
 
+	@Override
+	public int hashCodeWithSubstitution(int sequenceNumber) {
+		return sequenceNumber;
+	}
+
 	public ConstantLiteral isConstant(int value) {
 		return new ConstantLiteral(this, value);
 	}

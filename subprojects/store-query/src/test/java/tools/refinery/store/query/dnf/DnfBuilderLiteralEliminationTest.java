@@ -20,7 +20,7 @@ import tools.refinery.store.representation.Symbol;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static tools.refinery.store.query.literal.Literals.assume;
+import static tools.refinery.store.query.literal.Literals.check;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo;
 
@@ -47,7 +47,7 @@ class DnfBuilderLiteralEliminationTest {
 	void eliminateTrueAssumptionTest() {
 		var actual = Dnf.builder()
 				.parameters(p, q)
-				.clause(assume(BoolTerms.constant(true)), friendView.call(p, q))
+				.clause(check(BoolTerms.constant(true)), friendView.call(p, q))
 				.build();
 		var expected = Dnf.builder().parameters(p, q).clause(friendView.call(p, q)).build();
 
@@ -75,7 +75,7 @@ class DnfBuilderLiteralEliminationTest {
 		var actual = Dnf.builder()
 				.parameters(p, q)
 				.clause(friendView.call(p, q))
-				.clause(friendView.call(q, p), assume(BoolTerms.constant(value)))
+				.clause(friendView.call(q, p), check(BoolTerms.constant(value)))
 				.build();
 		var expected = Dnf.builder().parameters(p, q).clause(friendView.call(p, q)).build();
 

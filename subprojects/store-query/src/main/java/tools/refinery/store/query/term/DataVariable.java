@@ -7,6 +7,7 @@ package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.valuation.Valuation;
@@ -60,6 +61,16 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {
 		return other instanceof DataVariable<?> dataVariable && helper.variableEqual(this, dataVariable);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return helper.getVariableHashCode(this);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(int sequenceNumber) {
+		return Objects.hash(type, sequenceNumber);
 	}
 
 	public Literal assign(AssignedValue<T> value) {

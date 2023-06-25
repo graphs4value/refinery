@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.dnf;
 
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
@@ -25,6 +26,10 @@ public final class SymbolicParameter extends Parameter {
 
 	public boolean isUnifiable() {
 		return variable.isUnifiable();
+	}
+
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCode(), helper.getVariableHashCode(variable));
 	}
 
 	@Override

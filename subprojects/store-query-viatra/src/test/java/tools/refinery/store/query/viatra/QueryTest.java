@@ -23,7 +23,7 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.List;
 import java.util.Map;
 
-import static tools.refinery.store.query.literal.Literals.assume;
+import static tools.refinery.store.query.literal.Literals.check;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.term.int_.IntTerms.constant;
 import static tools.refinery.store.query.term.int_.IntTerms.greaterEq;
@@ -652,7 +652,7 @@ class QueryTest {
 		var query = Query.of("Constraint", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
 				personView.call(p1),
 				ageView.call(p1, x),
-				assume(greaterEq(x, constant(18)))
+				check(greaterEq(x, constant(18)))
 		)));
 
 		var store = ModelStore.builder()

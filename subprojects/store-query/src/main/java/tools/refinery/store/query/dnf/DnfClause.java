@@ -6,6 +6,7 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.term.Variable;
 
@@ -24,5 +25,13 @@ public record DnfClause(Set<Variable> positiveVariables, List<Literal> literals)
 			}
 		}
 		return true;
+	}
+
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		int result = 0;
+		for (var literal : literals) {
+			result = result * 31 + literal.hashCodeWithSubstitution(helper);
+		}
+		return result;
 	}
 }

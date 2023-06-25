@@ -7,6 +7,7 @@ package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.*;
 
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	private final DataVariable<R> resultVariable;
 	private final DataVariable<T> inputVariable;
@@ -100,18 +103,9 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
-		AggregationLiteral<?, ?> that = (AggregationLiteral<?, ?>) o;
-		return resultVariable.equals(that.resultVariable) && inputVariable.equals(that.inputVariable) &&
-				aggregator.equals(that.aggregator);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), resultVariable, inputVariable, aggregator);
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), helper.getVariableHashCode(resultVariable),
+				helper.getVariableHashCode(inputVariable), aggregator);
 	}
 
 	@Override

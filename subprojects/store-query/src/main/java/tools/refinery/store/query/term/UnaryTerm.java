@@ -6,12 +6,15 @@
 package tools.refinery.store.query.term;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.valuation.Valuation;
 
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractTerm}.
+@SuppressWarnings("squid:S2160")
 public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	private final Class<T> bodyType;
 	private final Term<T> body;
@@ -52,6 +55,11 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	}
 
 	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), bodyType, body.hashCodeWithSubstitution(helper));
+	}
+
+	@Override
 	public Term<R> substitute(Substitution substitution) {
 		return doSubstitute(substitution, body.substitute(substitution));
 	}
@@ -61,19 +69,5 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	@Override
 	public Set<AnyDataVariable> getInputVariables() {
 		return body.getInputVariables();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
-		UnaryTerm<?, ?> unaryTerm = (UnaryTerm<?, ?>) o;
-		return Objects.equals(bodyType, unaryTerm.bodyType) && Objects.equals(body, unaryTerm.body);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), bodyType, body);
 	}
 }

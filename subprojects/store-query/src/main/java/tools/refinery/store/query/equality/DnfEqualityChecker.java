@@ -7,7 +7,11 @@ package tools.refinery.store.query.equality;
 
 import tools.refinery.store.query.dnf.Dnf;
 
+import java.util.Objects;
+
 @FunctionalInterface
 public interface DnfEqualityChecker {
+	DnfEqualityChecker DEFAULT = Objects::equals;
+
 	boolean dnfEqual(Dnf left, Dnf right);
 }

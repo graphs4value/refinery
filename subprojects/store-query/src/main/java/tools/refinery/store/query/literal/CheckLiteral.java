@@ -6,21 +6,31 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.ConstantTerm;
 import tools.refinery.store.query.term.Term;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.bool.BoolNotTerm;
+import tools.refinery.store.query.term.bool.BoolTerms;
 
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
-public record AssumeLiteral(Term<Boolean> term) implements Literal {
-	public AssumeLiteral {
+public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLiteral> {
+	private final Term<Boolean> term;
+
+	public CheckLiteral(Term<Boolean> term) {
 		if (!term.getType().equals(Boolean.class)) {
 			throw new IllegalArgumentException("Term %s must be of type %s, got %s instead".formatted(
 					term, Boolean.class.getName(), term.getType().getName()));
 		}
+		this.term = term;
+	}
+
+	public Term<Boolean> getTerm() {
+		return term;
 	}
 
 	@Override
@@ -38,10 +48,17 @@ public record AssumeLiteral(Term<Boolean> term) implements Literal {
 		return Set.of();
 	}
 
-
 	@Override
 	public Literal substitute(Substitution substitution) {
-		return new AssumeLiteral(term.substitute(substitution));
+		return new CheckLiteral(term.substitute(substitution));
+	}
+
+	@Override
+	public CheckLiteral negate() {
+		if (term instanceof BoolNotTerm notTerm) {
+			return new CheckLiteral(notTerm.getBody());
+		}
+		return new CheckLiteral(BoolTerms.not(term));
 	}
 
 	@Override
@@ -49,8 +66,13 @@ public record AssumeLiteral(Term<Boolean> term) implements Literal {
 		if (other == null || getClass() != other.getClass()) {
 			return false;
 		}
-		var otherAssumeLiteral = (AssumeLiteral) other;
+		var otherAssumeLiteral = (CheckLiteral) other;
 		return term.equalsWithSubstitution(helper, otherAssumeLiteral.term);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), term.hashCodeWithSubstitution(helper));
 	}
 
 	@Override
@@ -66,18 +88,5 @@ public record AssumeLiteral(Term<Boolean> term) implements Literal {
 	@Override
 	public String toString() {
 		return "(%s)".formatted(term);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) return true;
-		if (obj == null || obj.getClass() != this.getClass()) return false;
-		var that = (AssumeLiteral) obj;
-		return Objects.equals(this.term, that.term);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getClass(), term);
 	}
 }

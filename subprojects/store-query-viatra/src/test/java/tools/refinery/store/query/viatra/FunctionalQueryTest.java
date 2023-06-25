@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static tools.refinery.store.query.literal.Literals.assume;
+import static tools.refinery.store.query.literal.Literals.check;
 import static tools.refinery.store.query.term.int_.IntTerms.*;
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNullableResults;
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
@@ -390,7 +390,7 @@ class FunctionalQueryTest {
 		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
 				personView.call(p1),
 				ageView.call(p1, x),
-				assume(lessEq(div(constant(120), x), constant(5)))
+				check(lessEq(div(constant(120), x), constant(5)))
 		)));
 
 		var store = ModelStore.builder()

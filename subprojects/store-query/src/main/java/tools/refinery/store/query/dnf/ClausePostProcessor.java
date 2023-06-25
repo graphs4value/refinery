@@ -67,13 +67,13 @@ class ClausePostProcessor {
 		for (var literal : literals) {
 			if (isPositiveEquivalence(literal)) {
 				var equivalenceLiteral = (EquivalenceLiteral) literal;
-				mergeVariables(equivalenceLiteral.left(), equivalenceLiteral.right());
+				mergeVariables(equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
 			}
 		}
 	}
 
 	private static boolean isPositiveEquivalence(Literal literal) {
-		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.positive();
+		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.isPositive();
 	}
 
 	private void mergeVariables(NodeVariable left, NodeVariable right) {

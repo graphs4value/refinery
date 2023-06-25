@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.DnfEqualityChecker;
+import tools.refinery.store.query.equality.SubstitutingLiteralEqualityHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.bool.BoolTerms;
 import tools.refinery.store.query.term.int_.IntTerms;
@@ -48,7 +48,7 @@ class TermSubstitutionTest {
 	void substitutionTest(AnyTerm term) {
 		var substitutedTerm1 = term.substitute(substitution);
 		Assertions.assertNotEquals(term, substitutedTerm1, "Original term is not equal to substituted term");
-		var helper = new LiteralEqualityHelper(Dnf::equals, List.of(), List.of());
+		var helper = new SubstitutingLiteralEqualityHelper(DnfEqualityChecker.DEFAULT, List.of(), List.of());
 		Assertions.assertTrue(term.equalsWithSubstitution(helper, substitutedTerm1), "Terms are equal by helper");
 		// The {@link #substitution} is its own inverse.
 		var substitutedTerm2 = substitutedTerm1.substitute(substitution);
