@@ -68,7 +68,7 @@ public final class Dnf implements Constraint {
 	}
 
 	public boolean isExplicitlyNamed() {
-		return name == null;
+		return name != null;
 	}
 
 	public String getUniqueName() {

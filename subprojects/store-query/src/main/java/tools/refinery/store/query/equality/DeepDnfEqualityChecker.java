@@ -14,8 +14,7 @@ import tools.refinery.store.util.CycleDetectingMapper;
 import java.util.List;
 
 public class DeepDnfEqualityChecker implements DnfEqualityChecker {
-	private final CycleDetectingMapper<Pair, Boolean> mapper = new CycleDetectingMapper<>(Pair::toString,
-			this::doCheckEqual);
+	private final CycleDetectingMapper<Pair, Boolean> mapper = new CycleDetectingMapper<>(this::doCheckEqual);
 
 	@Override
 	public boolean dnfEqual(Dnf left, Dnf right) {

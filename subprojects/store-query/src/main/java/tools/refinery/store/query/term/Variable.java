@@ -44,6 +44,10 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 
 	public abstract Variable renew();
 
+	public abstract boolean isNodeVariable();
+
+	public abstract boolean isDataVariable();
+
 	public abstract NodeVariable asNodeVariable();
 
 	public abstract <T> DataVariable<T> asDataVariable(Class<T> type);

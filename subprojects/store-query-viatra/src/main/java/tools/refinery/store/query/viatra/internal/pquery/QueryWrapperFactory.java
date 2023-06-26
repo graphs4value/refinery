@@ -33,7 +33,7 @@ class QueryWrapperFactory {
 	private final Dnf2PQuery dnf2PQuery;
 	private final Map<AnySymbolView, SymbolViewWrapper> view2WrapperMap = new LinkedHashMap<>();
 	private final CycleDetectingMapper<RemappedConstraint, RawPQuery> wrapConstraint = new CycleDetectingMapper<>(
-			RemappedConstraint::toString, this::doWrapConstraint);
+			this::doWrapConstraint);
 
 	QueryWrapperFactory(Dnf2PQuery dnf2PQuery) {
 		this.dnf2PQuery = dnf2PQuery;

@@ -13,7 +13,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 
 public interface ReasoningAdapter extends ModelAdapter {
-	PartialRelation EXISTS = new PartialRelation("exists", 1);
+	PartialRelation EXISTS = PartialSymbol.of("exists", 1);
+	PartialRelation EQUALS = PartialSymbol.of("equals", 2);
 
 	@Override
 	ReasoningStoreAdapter getStoreAdapter();

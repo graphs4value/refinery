@@ -37,6 +37,16 @@ public final class NodeVariable extends Variable {
 	}
 
 	@Override
+	public boolean isNodeVariable() {
+		return true;
+	}
+
+	@Override
+	public boolean isDataVariable() {
+		return false;
+	}
+
+	@Override
 	public NodeVariable asNodeVariable() {
 		return this;
 	}

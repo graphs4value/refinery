@@ -22,6 +22,16 @@ public abstract sealed class AnyDataVariable extends Variable implements AnyTerm
 	}
 
 	@Override
+	public boolean isNodeVariable() {
+		return false;
+	}
+
+	@Override
+	public boolean isDataVariable() {
+		return true;
+	}
+
+	@Override
 	public NodeVariable asNodeVariable() {
 		throw new IllegalStateException("%s is a data variable".formatted(this));
 	}

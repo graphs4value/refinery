@@ -7,10 +7,7 @@ package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.dnf.callback.*;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.ParameterDirection;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.*;
 
 import java.util.*;
 
@@ -60,6 +57,18 @@ public final class DnfBuilder {
 		var variable = Variable.of(name, type);
 		parameter(variable, direction);
 		return variable;
+	}
+
+	public Variable parameter(Parameter parameter) {
+		return parameter(null, parameter);
+	}
+
+	public Variable parameter(String name, Parameter parameter) {
+		var type = parameter.tryGetType();
+		if (type.isPresent()) {
+			return parameter(name, type.get(), parameter.getDirection());
+		}
+		return parameter(name, parameter.getDirection());
 	}
 
 	public DnfBuilder parameter(Variable variable) {
@@ -129,7 +138,7 @@ public final class DnfBuilder {
 	}
 
 	public <T> DnfBuilder clause(Class<T> type1, ClauseCallback1Data1<T> callback) {
-		return clause(callback.toLiterals(Variable.of("v1", type1)));
+		return clause(callback.toLiterals(Variable.of("d1", type1)));
 	}
 
 	public DnfBuilder clause(ClauseCallback2Data0 callback) {

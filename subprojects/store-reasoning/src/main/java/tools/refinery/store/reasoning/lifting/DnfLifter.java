@@ -5,124 +5,181 @@
  */
 package tools.refinery.store.reasoning.lifting;
 
-import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.DnfBuilder;
 import tools.refinery.store.query.dnf.DnfClause;
-import tools.refinery.store.query.literal.CallLiteral;
-import tools.refinery.store.query.literal.CallPolarity;
-import tools.refinery.store.query.literal.Literal;
+import tools.refinery.store.query.equality.DnfEqualityChecker;
+import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.literal.PartialLiterals;
-import tools.refinery.store.util.CycleDetectingMapper;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DnfLifter {
-	private final CycleDetectingMapper<ModalDnf, Dnf> mapper = new CycleDetectingMapper<>(ModalDnf::toString,
-			this::doLift);
+	private final Map<ModalDnf, Dnf> cache = new HashMap<>();
 
-	public Dnf lift(Modality modality, Dnf query) {
-		return mapper.map(new ModalDnf(modality, query));
+	public Dnf lift(Modality modality, Concreteness concreteness, Dnf dnf) {
+		return cache.computeIfAbsent(new ModalDnf(modality, concreteness, dnf), this::doLift);
 	}
 
 	private Dnf doLift(ModalDnf modalDnf) {
 		var modality = modalDnf.modality();
+		var concreteness = modalDnf.concreteness();
 		var dnf = modalDnf.dnf();
-		var builder = Dnf.builder();
+		var builder = Dnf.builder("%s#%s#%s".formatted(dnf.name(), modality, concreteness));
 		builder.symbolicParameters(dnf.getSymbolicParameters());
-		boolean changed = false;
+		builder.functionalDependencies(dnf.getFunctionalDependencies());
 		for (var clause : dnf.getClauses()) {
-			if (liftClause(modality, dnf, clause, builder)) {
-				changed = true;
-			}
+			builder.clause(liftClause(modality, concreteness, dnf, clause));
 		}
-		if (changed) {
-			return builder.build();
+		var liftedDnf = builder.build();
+		if (dnf.equalsWithSubstitution(DnfEqualityChecker.DEFAULT, liftedDnf)) {
+			return dnf;
 		}
-		return dnf;
+		return liftedDnf;
 	}
 
-	private boolean liftClause(Modality modality, Dnf originalDnf, DnfClause clause, DnfBuilder builder) {
-		boolean changed = false;
-		var quantifiedVariables = getQuantifiedDataVariables(originalDnf, clause);
-		var literals = clause.literals();
-		var liftedLiterals = new ArrayList<Literal>(literals.size());
-		for (var literal : literals) {
-			Literal liftedLiteral = liftLiteral(modality, literal);
-			if (liftedLiteral == null) {
-				liftedLiteral = literal;
-			} else {
-				changed = true;
-			}
+	private List<Literal> liftClause(Modality modality, Concreteness concreteness, Dnf dnf, DnfClause clause) {
+		var liftedLiterals = new ArrayList<Literal>();
+		for (var literal : clause.literals()) {
+			var liftedLiteral = liftLiteral(modality, concreteness, clause, literal);
 			liftedLiterals.add(liftedLiteral);
-			var variable = isExistsLiteralForVariable(modality, liftedLiteral);
-			if (variable != null) {
-				// If we already quantify over the existence of the variable with the expected modality,
-				// we don't need to insert quantification manually.
-				quantifiedVariables.remove(variable);
-			}
 		}
+		var quantifiedVariables = getQuantifiedNodeVariables(dnf, clause);
+		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS);
 		for (var quantifiedVariable : quantifiedVariables) {
-			// Quantify over data variables that are not already quantified with the expected modality.
-			liftedLiterals.add(new CallLiteral(CallPolarity.POSITIVE,
-					new ModalConstraint(modality, ReasoningAdapter.EXISTS), List.of(quantifiedVariable)));
+			liftedLiterals.add(existsConstraint.call(quantifiedVariable));
 		}
-		builder.clause(liftedLiterals);
-		return changed || !quantifiedVariables.isEmpty();
+		return liftedLiterals;
 	}
 
-	private static LinkedHashSet<Variable> getQuantifiedDataVariables(Dnf originalDnf, DnfClause clause) {
-		var quantifiedVariables = new LinkedHashSet<>(clause.positiveVariables());
-		for (var symbolicParameter : originalDnf.getSymbolicParameters()) {
-			// The existence of parameters will be checked outside this DNF.
-			quantifiedVariables.remove(symbolicParameter.getVariable());
+	private Literal liftLiteral(Modality modality, Concreteness concreteness, DnfClause clause, Literal literal) {
+		if (literal instanceof CallLiteral callLiteral) {
+			return liftCallLiteral(modality, concreteness, clause, callLiteral);
+		} else if (literal instanceof EquivalenceLiteral equivalenceLiteral) {
+			return liftEquivalenceLiteral(modality, concreteness, equivalenceLiteral);
+		} else if (literal instanceof ConstantLiteral ||
+				literal instanceof AssignLiteral<?> ||
+				literal instanceof CheckLiteral) {
+			return literal;
+		} else if (literal instanceof CountLiteral) {
+			throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(literal));
+		} else if (literal instanceof AggregationLiteral<?,?>) {
+			throw new IllegalArgumentException("Aggregation literal %s cannot be lifted".formatted(literal));
+		} else {
+			throw new IllegalArgumentException("Unknown literal to lift: " + literal);
 		}
-		quantifiedVariables.removeIf(variable -> !(variable instanceof NodeVariable));
+	}
+
+	private Literal liftCallLiteral(Modality modality, Concreteness concreteness, DnfClause clause,
+									CallLiteral callLiteral) {
+		Constraint target = callLiteral.getTarget();
+		var polarity = callLiteral.getPolarity();
+		var arguments = callLiteral.getArguments();
+		return switch (polarity) {
+			case POSITIVE -> ModalConstraint.of(modality, concreteness, target).call(
+					CallPolarity.POSITIVE, arguments);
+			case NEGATIVE -> {
+				var callModality = modality.negate();
+				boolean needsHelper = !polarity.isPositive() &&
+						!callLiteral.getPrivateVariables(clause.positiveVariables()).isEmpty();
+				if (needsHelper) {
+					yield callNegationHelper(callModality, concreteness, clause, callLiteral, target);
+				}
+				yield ModalConstraint.of(callModality, concreteness, target).call(
+						CallPolarity.NEGATIVE, arguments);
+			}
+			case TRANSITIVE -> createTransitiveHelper(modality, concreteness, target).call(
+					CallPolarity.POSITIVE, arguments);
+		};
+	}
+
+	private Literal callNegationHelper(Modality modality, Concreteness concreteness, DnfClause clause,
+									   CallLiteral callLiteral, Constraint target) {
+		var builder = Dnf.builder();
+		var originalArguments = callLiteral.getArguments();
+		var uniqueOriginalArguments = List.copyOf(new LinkedHashSet<>(originalArguments));
+
+		var alwaysInputVariables = callLiteral.getInputVariables(Set.of());
+		for (var variable : uniqueOriginalArguments) {
+			var direction = alwaysInputVariables.contains(variable) ? ParameterDirection.IN : ParameterDirection.OUT;
+			builder.parameter(variable, direction);
+		}
+
+		var literals = new ArrayList<Literal>();
+		var liftedConstraint = ModalConstraint.of(modality, concreteness, target);
+		literals.add(liftedConstraint.call(CallPolarity.POSITIVE, originalArguments));
+
+		var privateVariables = callLiteral.getPrivateVariables(clause.positiveVariables());
+		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS);
+		for (var variable : uniqueOriginalArguments) {
+			if (privateVariables.contains(variable)) {
+				literals.add(existsConstraint.call(variable));
+			}
+		}
+
+		builder.clause(literals);
+		var liftedTarget = builder.build();
+		return liftedTarget.call(CallPolarity.NEGATIVE, uniqueOriginalArguments);
+	}
+
+	private Dnf createTransitiveHelper(Modality modality, Concreteness concreteness, Constraint target) {
+		var liftedTarget = ModalConstraint.of(modality, concreteness, target);
+		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS);
+		var existingEndHelperName = "%s#exisitingEnd#%s#%s".formatted(target.name(), modality, concreteness);
+		var existingEndHelper = Dnf.of(existingEndHelperName, builder -> {
+			var start = builder.parameter("start");
+			var end = builder.parameter("end");
+			builder.clause(
+					liftedTarget.call(start, end),
+					existsConstraint.call(end)
+			);
+		});
+		var transitiveHelperName = "%s#transitive#%s#%s".formatted(target.name(), modality, concreteness);
+		return Dnf.of(transitiveHelperName, builder -> {
+			var start = builder.parameter("start");
+			var end = builder.parameter("end");
+			builder.clause(liftedTarget.call(start, end));
+			builder.clause(middle -> List.of(
+					existingEndHelper.callTransitive(start, middle),
+					liftedTarget.call(middle, end)
+			));
+		});
+	}
+
+	private Literal liftEquivalenceLiteral(Modality modality, Concreteness concreteness,
+										   EquivalenceLiteral equivalenceLiteral) {
+		if (equivalenceLiteral.isPositive()) {
+			return ModalConstraint.of(modality, concreteness, ReasoningAdapter.EQUALS).call(
+					CallPolarity.POSITIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
+		}
+		return ModalConstraint.of(modality.negate(), concreteness, ReasoningAdapter.EQUALS).call(
+				CallPolarity.NEGATIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
+	}
+
+	private static Set<NodeVariable> getQuantifiedNodeVariables(Dnf dnf, DnfClause clause) {
+		var quantifiedVariables = clause.positiveVariables().stream()
+				.filter(Variable::isNodeVariable)
+				.map(Variable::asNodeVariable)
+				.collect(Collectors.toCollection(HashSet::new));
+		for (var symbolicParameter : dnf.getSymbolicParameters()) {
+			if (symbolicParameter.getVariable() instanceof NodeVariable nodeParameter) {
+				quantifiedVariables.remove(nodeParameter);
+			}
+		}
 		return quantifiedVariables;
 	}
 
-	@Nullable
-	private Variable isExistsLiteralForVariable(Modality modality, Literal literal) {
-		if (literal instanceof CallLiteral callLiteral &&
-				callLiteral.getPolarity() == CallPolarity.POSITIVE &&
-				callLiteral.getTarget() instanceof ModalConstraint modalConstraint &&
-				modalConstraint.modality() == modality &&
-				modalConstraint.constraint().equals(ReasoningAdapter.EXISTS)) {
-			return callLiteral.getArguments().get(0);
-		}
-		return null;
-	}
-
-	@Nullable
-	private Literal liftLiteral(Modality modality, Literal literal) {
-		if (!(literal instanceof CallLiteral callLiteral)) {
-			return null;
-		}
-		var target = callLiteral.getTarget();
-		if (target instanceof ModalConstraint modalTarget) {
-			var actualTarget = modalTarget.constraint();
-			if (actualTarget instanceof Dnf dnf) {
-				var targetModality = modalTarget.modality();
-				var liftedTarget = lift(targetModality, dnf);
-				return new CallLiteral(callLiteral.getPolarity(), liftedTarget, callLiteral.getArguments());
-			}
-			// No more lifting to be done, pass any modal call to a partial symbol through.
-			return null;
-		} else if (target instanceof Dnf dnf) {
-			var polarity = callLiteral.getPolarity();
-			var liftedTarget = lift(modality.commute(polarity), dnf);
-			// Use == instead of equals(), because lift will return the same object by reference is there are no
-			// changes made during lifting.
-			return liftedTarget == target ? null : new CallLiteral(polarity, liftedTarget, callLiteral.getArguments());
-		} else {
-			return PartialLiterals.addModality(callLiteral, modality);
+	private record ModalDnf(Modality modality, Concreteness concreteness, Dnf dnf) {
+		@Override
+		public String toString() {
+			return "%s %s %s".formatted(modality, concreteness, dnf.name());
 		}
 	}
 }

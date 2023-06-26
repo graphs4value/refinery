@@ -20,10 +20,6 @@ public final class PartialLiterals {
 		return addModality(literal, Modality.MUST);
 	}
 
-	public static CallLiteral current(CallLiteral literal) {
-		return addModality(literal, Modality.CURRENT);
-	}
-
 	public static CallLiteral addModality(CallLiteral literal, Modality modality) {
 		var target = literal.getTarget();
 		if (target instanceof ModalConstraint) {
