@@ -239,21 +239,21 @@ class DnfLifterTest {
 		)).getDnf();
 		var actual = sut.lift(Modality.MAY, Concreteness.PARTIAL, input);
 
-		var helper = Query.of("Helper", (builder, p1, p2) -> builder.clause(
+		var endExistsHelper = Query.of("EndExistsHelper", (builder, p1, p2) -> builder.clause(
 				friendMustView.call(p1, p2),
 				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, ReasoningAdapter.EXISTS).call(p2)
 		));
-		var helper2 = Query.of("Helper2", (builder, p1, p2) -> {
+		var transitiveHelper = Query.of("TransitiveHelper", (builder, p1, p2) -> {
 			builder.clause(
 					friendMustView.call(p1, p2)
 			);
 			builder.clause((v1) -> List.of(
-					helper.callTransitive(p1, v1),
+					endExistsHelper.callTransitive(p1, v1),
 					friendMustView.call(v1, p2)
 			));
 		});
 		var expected = Query.of("Expected", (builder, p1, p2) -> builder.clause(
-				helper2.call(p1, p2),
+				transitiveHelper.call(p1, p2),
 				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, person).call(p2))
 		)).getDnf();
 
@@ -272,24 +272,35 @@ class DnfLifterTest {
 				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, friend).call(p1, p2),
 				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, ReasoningAdapter.EXISTS).call(p2)
 		));
-		var helper2 = Query.of("Helper2", (builder, p1, p2) -> {
-			builder.clause(
-					ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, friend).call(p1, p2)
-			);
-			builder.clause((v1) -> List.of(
-					helper.callTransitive(p1, v1),
-					ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, friend).call(v1, p2)
-			));
-		});
-		// Possible optimization:
-//		var expected = Query.of("Expected", (builder, p1) -> builder.clause((v1) -> List.of(
-//				helper.callTransitive(p1, v1),
-//				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, person).call(v1)),
-//		))).getDnf();
 		var expected = Query.of("Expected", (builder, p1) -> builder.clause((v1) -> List.of(
-				helper2.call(p1, v1),
-				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, person).call(v1)),
-				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, ReasoningAdapter.EXISTS).call(v1)
+				helper.callTransitive(p1, v1),
+				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, person).call(v1))
+		))).getDnf();
+
+		assertThat(actual, structurallyEqualTo(expected));
+	}
+
+	@Test
+	void liftMultipleTransitiveCallExistsTest() {
+		var input = Query.of("Actual", (builder, p1) -> builder.clause((v1) -> List.of(
+				friend.callTransitive(p1, v1),
+				friendMustView.callTransitive(p1, v1),
+				not(person.call(v1))
+		))).getDnf();
+		var actual = sut.lift(Modality.MAY, Concreteness.PARTIAL, input);
+
+		var helper = Query.of("Helper", (builder, p1, p2) -> builder.clause(
+				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, friend).call(p1, p2),
+				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, ReasoningAdapter.EXISTS).call(p2)
+		));
+		var helper2 = Query.of("Helper2", (builder, p1, p2) -> builder.clause(
+				friendMustView.call(p1, p2),
+				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, ReasoningAdapter.EXISTS).call(p2)
+		));
+		var expected = Query.of("Expected", (builder, p1) -> builder.clause((v1) -> List.of(
+				helper.callTransitive(p1, v1),
+				helper2.callTransitive(p1, v1),
+				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, person).call(v1))
 		))).getDnf();
 
 		assertThat(actual, structurallyEqualTo(expected));
