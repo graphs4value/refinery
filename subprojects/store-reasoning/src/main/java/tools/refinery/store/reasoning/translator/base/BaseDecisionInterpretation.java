@@ -7,7 +7,7 @@ package tools.refinery.store.reasoning.translator.base;
 
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Interpretation;
-import tools.refinery.store.query.ResultSet;
+import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.reasoning.MergeResult;
 import tools.refinery.store.reasoning.PartialInterpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.query;
+package tools.refinery.store.query.literal;
 
 public enum Reduction {
 	/**

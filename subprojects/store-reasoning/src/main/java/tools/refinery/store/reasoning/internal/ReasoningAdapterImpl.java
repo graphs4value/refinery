@@ -10,7 +10,7 @@ import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.PartialInterpretation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.ResultSet;
+import tools.refinery.store.query.resultset.ResultSet;
 
 public class ReasoningAdapterImpl implements ReasoningAdapter {
 	private final Model model;

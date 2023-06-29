@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.tuple;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.store.model.TupleHashProvider;
 
 import java.util.Arrays;
@@ -54,11 +55,23 @@ public final class Tuple1 implements Tuple {
 		return 31 + value0;
 	}
 
+	@Override
+	public int compareTo(@NotNull Tuple other) {
+		if (other instanceof Tuple1 other1) {
+			return Integer.compare(value0, other1.value0);
+		}
+		return Tuple.super.compareTo(other);
+	}
+
 	/**
 	 * This class uses safe double-checked locking, see
 	 * <a href="https://shipilev.net/blog/2014/safe-public-construction/">Safe Publication and Safe Initialization in
 	 * Java</a> for details.
+	 * <p>
+	 * This class implements the singleton pattern to ensure only a single cache exists. This is thread-safe because
+	 * of the locking of the cache.
 	 */
+	@SuppressWarnings("squid:S6548")
 	public static class Cache {
 		private static final int MIN_CACHE_SIZE = 256;
 

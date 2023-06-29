@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.tuple;
 
+import org.jetbrains.annotations.NotNull;
+
 import static tools.refinery.store.tuple.TupleConstants.*;
 
 public record Tuple2(int value0, int value1) implements Tuple {
@@ -40,5 +42,17 @@ public record Tuple2(int value0, int value1) implements Tuple {
 		int hash = 31 + value0;
 		hash = 31 * hash + value1;
 		return hash;
+	}
+
+	@Override
+	public int compareTo(@NotNull Tuple other) {
+		if (other instanceof Tuple2 other2) {
+			int compare0 = Integer.compare(value0, other2.value0);
+			if (compare0 != 0) {
+				return compare0;
+			}
+			return Integer.compare(value1, other2.value1);
+		}
+		return Tuple.super.compareTo(other);
 	}
 }

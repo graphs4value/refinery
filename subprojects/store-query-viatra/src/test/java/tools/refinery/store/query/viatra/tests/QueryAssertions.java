@@ -6,7 +6,7 @@
 package tools.refinery.store.query.viatra.tests;
 
 import org.junit.jupiter.api.function.Executable;
-import tools.refinery.store.query.ResultSet;
+import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.*;

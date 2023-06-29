@@ -7,7 +7,7 @@ package tools.refinery.store.reasoning.literal;
 
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
-import tools.refinery.store.query.Reduction;
+import tools.refinery.store.query.literal.Reduction;
 import tools.refinery.store.query.term.Parameter;
 
 import java.util.List;

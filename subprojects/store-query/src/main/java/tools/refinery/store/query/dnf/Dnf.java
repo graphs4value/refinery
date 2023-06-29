@@ -6,7 +6,7 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.Reduction;
+import tools.refinery.store.query.literal.Reduction;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.term.Parameter;
