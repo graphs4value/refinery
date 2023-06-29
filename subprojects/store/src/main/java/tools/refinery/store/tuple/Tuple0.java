@@ -8,6 +8,10 @@ package tools.refinery.store.tuple;
 import static tools.refinery.store.tuple.TupleConstants.TUPLE_BEGIN;
 import static tools.refinery.store.tuple.TupleConstants.TUPLE_END;
 
+/**
+ * Singleton implementation to ensure only a single empty tuple exists.
+ */
+@SuppressWarnings("squid:S6548")
 public final class Tuple0 implements Tuple {
 	public static final Tuple0 INSTANCE = new Tuple0();
 

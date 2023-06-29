@@ -5,10 +5,28 @@
  */
 package tools.refinery.store.tuple;
 
-public sealed interface Tuple permits Tuple0, Tuple1, Tuple2, Tuple3, Tuple4, TupleN {
+import org.jetbrains.annotations.NotNull;
+
+public sealed interface Tuple extends Comparable<Tuple> permits Tuple0, Tuple1, Tuple2, Tuple3, Tuple4, TupleN {
 	int getSize();
 
 	int get(int element);
+
+	@Override
+	default int compareTo(@NotNull Tuple other) {
+		int size = getSize();
+		int compareSize = Integer.compare(size, other.getSize());
+		if (compareSize != 0) {
+			return compareSize;
+		}
+		for (int i = 0; i < size; i++) {
+			int compareElement = Integer.compare(get(i), other.get(i));
+			if (compareElement != 0) {
+				return compareElement;
+			}
+		}
+		return 0;
+	}
 
 	static Tuple0 of() {
 		return Tuple0.INSTANCE;

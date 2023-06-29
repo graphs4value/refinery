@@ -8,6 +8,8 @@ package tools.refinery.store.query;
 import tools.refinery.store.adapter.ModelAdapter;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.resultset.AnyResultSet;
+import tools.refinery.store.query.resultset.ResultSet;
 
 public interface ModelQueryAdapter extends ModelAdapter {
 	ModelQueryStoreAdapter getStoreAdapter();

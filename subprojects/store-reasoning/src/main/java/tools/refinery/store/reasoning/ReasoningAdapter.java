@@ -6,7 +6,7 @@
 package tools.refinery.store.reasoning;
 
 import tools.refinery.store.adapter.ModelAdapter;
-import tools.refinery.store.query.ResultSet;
+import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;

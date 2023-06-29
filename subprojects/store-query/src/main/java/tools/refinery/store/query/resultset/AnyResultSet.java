@@ -3,8 +3,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.query;
+package tools.refinery.store.query.resultset;
 
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.AnyQuery;
 
 public sealed interface AnyResultSet permits ResultSet {

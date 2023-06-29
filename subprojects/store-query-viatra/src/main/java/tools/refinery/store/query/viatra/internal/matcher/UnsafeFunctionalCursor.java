@@ -46,9 +46,7 @@ class UnsafeFunctionalCursor<T> implements Cursor<Tuple, T> {
 		if (!terminated && tuplesIterator.hasNext()) {
 			var match = tuplesIterator.next();
 			key = MatcherUtils.keyToRefineryTuple(match);
-			@SuppressWarnings("unchecked")
-			var typedValue = (T) match.get(match.getSize() - 1);
-			value = typedValue;
+			value = MatcherUtils.getValue(match);
 			return true;
 		}
 		terminated = true;

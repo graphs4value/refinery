@@ -5,16 +5,12 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
 import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.rete.index.Indexer;
 import org.eclipse.viatra.query.runtime.rete.matcher.RetePatternMatcher;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.Cursors;
-import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.ResultSet;
-import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.tuple.Tuple;
@@ -29,37 +25,22 @@ import tools.refinery.store.tuple.Tuple;
  * implementation for these methods.
  * Using this class with any other runtime context may lead to undefined behavior.
  */
-public class RelationalViatraMatcher implements ResultSet<Boolean> {
-	private final ViatraModelQueryAdapterImpl adapter;
-	private final RelationalQuery query;
+public class RelationalViatraMatcher extends AbstractViatraMatcher<Boolean> {
 	private final TupleMask emptyMask;
 	private final TupleMask identityMask;
-	private final IQueryResultProvider backend;
 	private final Indexer emptyMaskIndexer;
 
 	public RelationalViatraMatcher(ViatraModelQueryAdapterImpl adapter, RelationalQuery query,
 								   RawPatternMatcher rawPatternMatcher) {
-		this.adapter = adapter;
-		this.query = query;
+		super(adapter, query, rawPatternMatcher);
 		int arity = query.arity();
 		emptyMask = TupleMask.empty(arity);
 		identityMask = TupleMask.identity(arity);
-		backend = rawPatternMatcher.getBackend();
 		if (backend instanceof RetePatternMatcher reteBackend) {
 			emptyMaskIndexer = IndexerUtils.getIndexer(reteBackend, emptyMask);
 		} else {
 			emptyMaskIndexer = null;
 		}
-	}
-
-	@Override
-	public ModelQueryAdapter getAdapter() {
-		return adapter;
-	}
-
-	@Override
-	public Query<Boolean> getQuery() {
-		return query;
 	}
 
 	@Override
@@ -89,5 +70,11 @@ public class RelationalViatraMatcher implements ResultSet<Boolean> {
 		}
 		var matches = emptyMaskIndexer.get(Tuples.staticArityFlatTupleOf());
 		return matches == null ? 0 : matches.size();
+	}
+
+	@Override
+	public void update(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple updateElement, boolean isInsertion) {
+		var key = MatcherUtils.toRefineryTuple(updateElement);
+		notifyChange(key, !isInsertion, isInsertion);
 	}
 }

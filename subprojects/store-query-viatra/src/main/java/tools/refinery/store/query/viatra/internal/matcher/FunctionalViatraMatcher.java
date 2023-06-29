@@ -5,16 +5,12 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
 import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.rete.index.IterableIndexer;
 import org.eclipse.viatra.query.runtime.rete.matcher.RetePatternMatcher;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.ResultSet;
 import tools.refinery.store.query.dnf.FunctionalQuery;
-import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.tuple.Tuple;
 
@@ -28,23 +24,18 @@ import tools.refinery.store.tuple.Tuple;
  * implementation for these methods.
  * Using this class with any other runtime context may lead to undefined behavior.
  */
-public class FunctionalViatraMatcher<T> implements ResultSet<T> {
-	private final ViatraModelQueryAdapterImpl adapter;
-	private final FunctionalQuery<T> query;
+public class FunctionalViatraMatcher<T> extends AbstractViatraMatcher<T> {
 	private final TupleMask emptyMask;
 	private final TupleMask omitOutputMask;
-	private final IQueryResultProvider backend;
 	private final IterableIndexer omitOutputIndexer;
 
 	public FunctionalViatraMatcher(ViatraModelQueryAdapterImpl adapter, FunctionalQuery<T> query,
 								   RawPatternMatcher rawPatternMatcher) {
-		this.adapter = adapter;
-		this.query = query;
+		super(adapter, query, rawPatternMatcher);
 		int arity = query.arity();
 		int arityWithOutput = arity + 1;
 		emptyMask = TupleMask.empty(arityWithOutput);
 		omitOutputMask = TupleMask.omit(arity, arityWithOutput);
-		backend = rawPatternMatcher.getBackend();
 		if (backend instanceof RetePatternMatcher reteBackend) {
 			var maybeIterableOmitOutputIndexer = IndexerUtils.getIndexer(reteBackend, omitOutputMask);
 			if (maybeIterableOmitOutputIndexer instanceof IterableIndexer iterableOmitOutputIndexer) {
@@ -55,16 +46,6 @@ public class FunctionalViatraMatcher<T> implements ResultSet<T> {
 		} else {
 			omitOutputIndexer = null;
 		}
-	}
-
-	@Override
-	public ModelQueryAdapter getAdapter() {
-		return adapter;
-	}
-
-	@Override
-	public Query<T> getQuery() {
-		return query;
 	}
 
 	@Override
@@ -92,5 +73,16 @@ public class FunctionalViatraMatcher<T> implements ResultSet<T> {
 			return backend.countMatches(emptyMask, Tuples.staticArityFlatTupleOf());
 		}
 		return omitOutputIndexer.getBucketCount();
+	}
+
+	@Override
+	public void update(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple updateElement, boolean isInsertion) {
+		var key = MatcherUtils.keyToRefineryTuple(updateElement);
+		var value = MatcherUtils.<T>getValue(updateElement);
+		if (isInsertion) {
+			notifyChange(key, null, value);
+		} else {
+			notifyChange(key, value, null);
+		}
 	}
 }

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.query;
+package tools.refinery.store.query.resultset;
 
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.query.dnf.Query;
@@ -15,4 +15,8 @@ public non-sealed interface ResultSet<T> extends AnyResultSet {
 	T get(Tuple parameters);
 
 	Cursor<Tuple, T> getAll();
+
+	void addListener(ResultSetListener<T> listener);
+
+	void removeListener(ResultSetListener<T> listener);
 }

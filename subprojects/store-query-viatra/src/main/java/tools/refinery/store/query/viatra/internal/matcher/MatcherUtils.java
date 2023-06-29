@@ -86,6 +86,13 @@ final class MatcherUtils {
 		return getWrapper(viatraTuple, index).value0();
 	}
 
+	public static <T> T getValue(ITuple match) {
+		// This is only safe if we know for sure that match came from a functional query of type {@code T}.
+		@SuppressWarnings("unchecked")
+		var result = (T) match.get(match.getSize() - 1);
+		return result;
+	}
+
 	public static <T> T getSingleValue(@Nullable Iterable<? extends ITuple> viatraTuples) {
 		if (viatraTuples == null) {
 			return null;
@@ -98,8 +105,7 @@ final class MatcherUtils {
 			return null;
 		}
 		var match = iterator.next();
-		@SuppressWarnings("unchecked")
-		var result = (T) match.get(match.getSize() - 1);
+		var result = MatcherUtils.<T>getValue(match);
 		if (iterator.hasNext()) {
 			var input = keyToRefineryTuple(match);
 			throw new IllegalStateException("Query is not functional for input tuple: " + input);
