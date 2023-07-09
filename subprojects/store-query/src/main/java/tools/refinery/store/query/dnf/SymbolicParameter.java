@@ -24,10 +24,6 @@ public final class SymbolicParameter extends Parameter {
 		return variable;
 	}
 
-	public boolean isUnifiable() {
-		return variable.isUnifiable();
-	}
-
 	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
 		return Objects.hash(super.hashCode(), helper.getVariableHashCode(variable));
 	}

@@ -22,11 +22,6 @@ public final class NodeVariable extends Variable {
 	}
 
 	@Override
-	public boolean isUnifiable() {
-		return true;
-	}
-
-	@Override
 	public NodeVariable renew(@Nullable String name) {
 		return Variable.of(name);
 	}

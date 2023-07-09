@@ -47,11 +47,6 @@ public abstract sealed class AnyDataVariable extends Variable implements AnyTerm
 	}
 
 	@Override
-	public boolean isUnifiable() {
-		return false;
-	}
-
-	@Override
 	public abstract AnyDataVariable renew(@Nullable String name);
 
 	@Override

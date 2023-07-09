@@ -8,6 +8,7 @@ package tools.refinery.store.query.term;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
+import tools.refinery.store.query.literal.EquivalenceLiteral;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.valuation.Valuation;
@@ -89,5 +90,13 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), type);
+	}
+
+	public EquivalenceLiteral isEquivalent(DataVariable<T> other) {
+		return new EquivalenceLiteral(true, this, other);
+	}
+
+	public EquivalenceLiteral notEquivalent(DataVariable<T> other) {
+		return new EquivalenceLiteral(false, this, other);
 	}
 }

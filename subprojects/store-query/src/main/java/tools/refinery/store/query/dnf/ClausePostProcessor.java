@@ -11,7 +11,6 @@ import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.substitution.MapBasedSubstitution;
 import tools.refinery.store.query.substitution.StatelessSubstitution;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
@@ -21,8 +20,8 @@ import java.util.function.Function;
 class ClausePostProcessor {
 	private final Map<Variable, ParameterInfo> parameters;
 	private final List<Literal> literals;
-	private final Map<NodeVariable, NodeVariable> representatives = new LinkedHashMap<>();
-	private final Map<NodeVariable, Set<NodeVariable>> equivalencePartition = new HashMap<>();
+	private final Map<Variable, Variable> representatives = new LinkedHashMap<>();
+	private final Map<Variable, Set<Variable>> equivalencePartition = new HashMap<>();
 	private List<Literal> substitutedLiterals;
 	private final Set<Variable> existentiallyQuantifiedVariables = new LinkedHashSet<>();
 	private Set<Variable> positiveVariables;
@@ -78,7 +77,7 @@ class ClausePostProcessor {
 		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.isPositive();
 	}
 
-	private void mergeVariables(NodeVariable left, NodeVariable right) {
+	private void mergeVariables(Variable left, Variable right) {
 		var leftRepresentative = getRepresentative(left);
 		var rightRepresentative = getRepresentative(right);
 		var leftInfo = parameters.get(leftRepresentative);
@@ -91,7 +90,7 @@ class ClausePostProcessor {
 		}
 	}
 
-	private void doMergeVariables(NodeVariable parentRepresentative, NodeVariable newChildRepresentative) {
+	private void doMergeVariables(Variable parentRepresentative, Variable newChildRepresentative) {
 		var parentSet = getEquivalentVariables(parentRepresentative);
 		var childSet = getEquivalentVariables(newChildRepresentative);
 		parentSet.addAll(childSet);
@@ -101,18 +100,18 @@ class ClausePostProcessor {
 		}
 	}
 
-	private NodeVariable getRepresentative(NodeVariable variable) {
+	private Variable getRepresentative(Variable variable) {
 		return representatives.computeIfAbsent(variable, Function.identity());
 	}
 
-	private Set<NodeVariable> getEquivalentVariables(NodeVariable variable) {
+	private Set<Variable> getEquivalentVariables(Variable variable) {
 		var representative = getRepresentative(variable);
 		if (!representative.equals(variable)) {
 			throw new AssertionError("NodeVariable %s already has a representative %s"
 					.formatted(variable, representative));
 		}
 		return equivalencePartition.computeIfAbsent(variable, key -> {
-			var set = new HashSet<NodeVariable>(1);
+			var set = new HashSet<Variable>(1);
 			set.add(key);
 			return set;
 		});
@@ -123,7 +122,7 @@ class ClausePostProcessor {
 			var left = pair.getKey();
 			var right = pair.getValue();
 			if (!left.equals(right) && parameters.containsKey(left) && parameters.containsKey(right)) {
-				substitutedLiterals.add(left.isEquivalent(right));
+				substitutedLiterals.add(new EquivalenceLiteral(true, left, right));
 			}
 		}
 	}
@@ -149,20 +148,7 @@ class ClausePostProcessor {
 
 	private void computeExistentiallyQuantifiedVariables() {
 		for (var literal : substitutedLiterals) {
-			for (var variable : literal.getOutputVariables()) {
-				boolean added = existentiallyQuantifiedVariables.add(variable);
-				if (!variable.isUnifiable()) {
-					var parameterInfo = parameters.get(variable);
-					if (parameterInfo != null && parameterInfo.direction() == ParameterDirection.IN) {
-						throw new IllegalArgumentException("Trying to bind %s parameter %s"
-								.formatted(ParameterDirection.IN, variable));
-					}
-					if (!added) {
-						throw new IllegalArgumentException("Variable %s has multiple assigned values"
-								.formatted(variable));
-					}
-				}
-			}
+			existentiallyQuantifiedVariables.addAll(literal.getOutputVariables());
 		}
 	}
 

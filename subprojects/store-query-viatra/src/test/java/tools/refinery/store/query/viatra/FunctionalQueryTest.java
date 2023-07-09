@@ -424,6 +424,42 @@ class FunctionalQueryTest {
 	}
 
 	@QueryEngineTest
+	void multipleAssignmentTest(QueryEvaluationHint hint) {
+		var query = Query.of("MultipleAssignment", Integer.class, (builder, p1, p2, output) -> builder
+				.clause(Integer.class, Integer.class, (x1, x2) -> List.of(
+						ageView.call(p1, x1),
+						ageView.call(p2, x2),
+						output.assign(mul(x1, constant(2))),
+						output.assign(mul(x2, constant(3)))
+				)));
+
+		var store = ModelStore.builder()
+				.symbols(age)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
+				.build();
+
+		var model = store.createEmptyModel();
+		var ageInterpretation = model.getInterpretation(age);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var queryResultSet = queryEngine.getResultSet(query);
+
+		ageInterpretation.put(Tuple.of(0), 3);
+		ageInterpretation.put(Tuple.of(1), 2);
+		ageInterpretation.put(Tuple.of(2), 15);
+		ageInterpretation.put(Tuple.of(3), 10);
+
+		queryEngine.flushChanges();
+		assertNullableResults(Map.of(
+				Tuple.of(0, 1), Optional.of(6),
+				Tuple.of(1, 0), Optional.empty(),
+				Tuple.of(2, 3), Optional.of(30),
+				Tuple.of(3, 2), Optional.empty()
+		), queryResultSet);
+	}
+
+	@QueryEngineTest
 	void notFunctionalTest(QueryEvaluationHint hint) {
 		var query = Query.of("NotFunctional", Integer.class, (builder, p1, output) -> builder.clause((p2) -> List.of(
 				personView.call(p1),

@@ -38,8 +38,6 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 		return uniqueName;
 	}
 
-	public abstract boolean isUnifiable();
-
 	public abstract Variable renew(@Nullable String name);
 
 	public abstract Variable renew();

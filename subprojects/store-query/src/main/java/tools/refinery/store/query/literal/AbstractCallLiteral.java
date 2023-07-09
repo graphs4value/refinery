@@ -14,6 +14,8 @@ import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public abstract class AbstractCallLiteral extends AbstractLiteral {
 	private final Constraint target;
 	private final List<Variable> arguments;
@@ -42,35 +44,18 @@ public abstract class AbstractCallLiteral extends AbstractLiteral {
 			}
 			switch (parameter.getDirection()) {
 			case IN -> {
-				if (mutableOutArguments.remove(argument)) {
-					checkInOutUnifiable(argument);
-				}
+				mutableOutArguments.remove(argument);
 				mutableInArguments.add(argument);
 			}
 			case OUT -> {
-				if (mutableInArguments.contains(argument)) {
-					checkInOutUnifiable(argument);
-				} else if (!mutableOutArguments.add(argument)) {
-					checkDuplicateOutUnifiable(argument);
+				if (!mutableInArguments.contains(argument)) {
+					mutableOutArguments.add(argument);
 				}
 			}
 			}
 		}
 		inArguments = Collections.unmodifiableSet(mutableInArguments);
 		outArguments = Collections.unmodifiableSet(mutableOutArguments);
-	}
-
-	private static void checkInOutUnifiable(Variable argument) {
-		if (!argument.isUnifiable()) {
-			throw new IllegalArgumentException("Argument %s cannot appear with both %s and %s direction"
-					.formatted(argument, ParameterDirection.IN, ParameterDirection.OUT));
-		}
-	}
-
-	private static void checkDuplicateOutUnifiable(Variable argument) {
-		if (!argument.isUnifiable()) {
-			throw new IllegalArgumentException("Argument %s cannot be bound multiple times".formatted(argument));
-		}
 	}
 
 	public Constraint getTarget() {

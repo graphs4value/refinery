@@ -88,7 +88,7 @@ public class Dnf2PQuery {
 		List<PParameter> parameterList = new ArrayList<>();
 		for (var parameter : dnfQuery.getSymbolicParameters()) {
 			var direction = switch (parameter.getDirection()) {
-				case OUT -> parameter.isUnifiable() ? PParameterDirection.INOUT : PParameterDirection.OUT;
+				case OUT -> PParameterDirection.INOUT;
 				case IN -> throw new IllegalArgumentException("Query %s with input parameter %s is not supported"
 						.formatted(dnfQuery, parameter.getVariable()));
 			};

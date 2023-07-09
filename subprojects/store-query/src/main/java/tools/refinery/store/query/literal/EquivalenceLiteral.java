@@ -8,18 +8,23 @@ package tools.refinery.store.query.literal;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public final class EquivalenceLiteral extends AbstractLiteral implements CanNegate<EquivalenceLiteral> {
 	private final boolean positive;
-	private final NodeVariable left;
-	private final NodeVariable right;
+	private final Variable left;
+	private final Variable right;
 
-	public EquivalenceLiteral(boolean positive, NodeVariable left, NodeVariable right) {
+	public EquivalenceLiteral(boolean positive, Variable left, Variable right) {
+		if (!left.tryGetType().equals(right.tryGetType())) {
+			throw new IllegalArgumentException("Variables %s and %s of different type cannot be equivalent"
+					.formatted(left, right));
+		}
 		this.positive = positive;
 		this.left = left;
 		this.right = right;
@@ -29,11 +34,11 @@ public final class EquivalenceLiteral extends AbstractLiteral implements CanNega
 		return positive;
 	}
 
-	public NodeVariable getLeft() {
+	public Variable getLeft() {
 		return left;
 	}
 
-	public NodeVariable getRight() {
+	public Variable getRight() {
 		return right;
 	}
 
@@ -59,8 +64,8 @@ public final class EquivalenceLiteral extends AbstractLiteral implements CanNega
 
 	@Override
 	public EquivalenceLiteral substitute(Substitution substitution) {
-		return new EquivalenceLiteral(positive, substitution.getTypeSafeSubstitute(left),
-				substitution.getTypeSafeSubstitute(right));
+		return new EquivalenceLiteral(positive, substitution.getSubstitute(left),
+				substitution.getSubstitute(right));
 	}
 
 	@Override
