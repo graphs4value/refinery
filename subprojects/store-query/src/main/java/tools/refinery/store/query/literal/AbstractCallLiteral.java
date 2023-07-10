@@ -96,6 +96,15 @@ public abstract class AbstractCallLiteral extends AbstractLiteral {
 
 	protected abstract Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments);
 
+	public AbstractCallLiteral withTarget(Constraint newTarget) {
+		if (Objects.equals(target, newTarget)) {
+			return this;
+		}
+		return internalWithTarget(newTarget);
+	}
+
+	protected abstract AbstractCallLiteral internalWithTarget(Constraint newTarget);
+
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
 		if (!super.equalsWithSubstitution(helper, other)) {

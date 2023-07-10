@@ -35,6 +35,10 @@ public class Parameter {
 		return direction;
 	}
 
+	public boolean matches(Parameter other) {
+		return Objects.equals(dataType, other.dataType) && direction == other.direction;
+	}
+
 	public boolean isAssignable(Variable variable) {
 		if (variable instanceof AnyDataVariable dataVariable) {
 			return dataVariable.getType().equals(dataType);
@@ -50,7 +54,7 @@ public class Parameter {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Parameter parameter = (Parameter) o;
-		return Objects.equals(dataType, parameter.dataType) && direction == parameter.direction;
+		return matches(parameter);
 	}
 
 	@Override

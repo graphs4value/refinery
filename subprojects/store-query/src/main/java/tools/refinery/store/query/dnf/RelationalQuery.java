@@ -40,6 +40,11 @@ public final class RelationalQuery extends Query<Boolean> {
 		return false;
 	}
 
+	@Override
+	protected Query<Boolean> withDnfInternal(Dnf newDnf) {
+		return newDnf.asRelation();
+	}
+
 	public CallLiteral call(CallPolarity polarity, List<NodeVariable> arguments) {
 		return getDnf().call(polarity, Collections.unmodifiableList(arguments));
 	}

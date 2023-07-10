@@ -98,6 +98,11 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
+	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
+		return new CallLiteral(polarity, newTarget, getArguments());
+	}
+
+	@Override
 	public String toString() {
 		var builder = new StringBuilder();
 		if (!polarity.isPositive()) {

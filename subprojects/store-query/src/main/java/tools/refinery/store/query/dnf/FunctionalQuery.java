@@ -54,6 +54,11 @@ public final class FunctionalQuery<T> extends Query<T> {
 		return null;
 	}
 
+	@Override
+	protected Query<T> withDnfInternal(Dnf newDnf) {
+		return newDnf.asFunction(type);
+	}
+
 	public AssignedValue<T> call(List<NodeVariable> arguments) {
 		return targetVariable -> {
 			var argumentsWithTarget = new ArrayList<Variable>(arguments.size() + 1);

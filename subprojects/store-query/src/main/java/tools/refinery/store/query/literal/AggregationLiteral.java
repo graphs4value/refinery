@@ -92,6 +92,11 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
+	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
+		return new AggregationLiteral<>(resultVariable, aggregator, inputVariable, newTarget, getArguments());
+	}
+
+	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
 		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;

@@ -62,6 +62,11 @@ public class CountLiteral extends AbstractCallLiteral {
 	}
 
 	@Override
+	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
+		return new CountLiteral(resultVariable, newTarget, getArguments());
+	}
+
+	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
 		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;

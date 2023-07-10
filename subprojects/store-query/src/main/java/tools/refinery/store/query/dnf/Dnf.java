@@ -215,6 +215,13 @@ public final class Dnf implements Constraint {
 		return new DnfBuilder(name);
 	}
 
+	public static DnfBuilder builderFrom(Dnf original) {
+		var builder = builder(original.name());
+		builder.symbolicParameters(original.getSymbolicParameters());
+		builder.functionalDependencies(original.getFunctionalDependencies());
+		return builder;
+	}
+
 	public static Dnf of(Consumer<DnfBuilder> callback) {
 		return of(null, callback);
 	}

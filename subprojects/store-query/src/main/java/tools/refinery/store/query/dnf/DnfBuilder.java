@@ -6,6 +6,9 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.dnf.callback.*;
+import tools.refinery.store.query.equality.DnfEqualityChecker;
+import tools.refinery.store.query.equality.SubstitutingLiteralEqualityHelper;
+import tools.refinery.store.query.equality.SubstitutingLiteralHashCodeHelper;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.term.*;
 
@@ -223,12 +226,12 @@ public final class DnfBuilder {
 
 	private List<DnfClause> postProcessClauses() {
 		var parameterInfoMap = getParameterInfoMap();
-		var postProcessedClauses = new ArrayList<DnfClause>(clauses.size());
+		var postProcessedClauses = new LinkedHashSet<CanonicalClause>(clauses.size());
 		for (var literals : clauses) {
 			var postProcessor = new ClausePostProcessor(parameterInfoMap, literals);
 			var result = postProcessor.postProcessClause();
 			if (result instanceof ClausePostProcessor.ClauseResult clauseResult) {
-				postProcessedClauses.add(clauseResult.clause());
+				postProcessedClauses.add(new CanonicalClause(clauseResult.clause()));
 			} else if (result instanceof ClausePostProcessor.ConstantResult constantResult) {
 				switch (constantResult) {
 				case ALWAYS_TRUE -> {
@@ -245,7 +248,7 @@ public final class DnfBuilder {
 				throw new IllegalStateException("Unexpected ClausePostProcessor.Result: " + result);
 			}
 		}
-		return postProcessedClauses;
+		return postProcessedClauses.stream().map(CanonicalClause::getDnfClause).toList();
 	}
 
 	private Map<Variable, ClausePostProcessor.ParameterInfo> getParameterInfoMap() {
@@ -267,5 +270,36 @@ public final class DnfBuilder {
 			}
 		}
 		return Collections.unmodifiableSet(inputParameters);
+	}
+
+	private class CanonicalClause {
+		private final DnfClause dnfClause;
+
+		public CanonicalClause(DnfClause dnfClause) {
+			this.dnfClause = dnfClause;
+		}
+
+		public DnfClause getDnfClause() {
+			return dnfClause;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			var otherCanonicalClause = (CanonicalClause) obj;
+			var helper = new SubstitutingLiteralEqualityHelper(DnfEqualityChecker.DEFAULT, parameters, parameters);
+			return dnfClause.equalsWithSubstitution(helper, otherCanonicalClause.dnfClause);
+		}
+
+		@Override
+		public int hashCode() {
+			var helper = new SubstitutingLiteralHashCodeHelper(parameters);
+			return dnfClause.hashCodeWithSubstitution(helper);
+		}
 	}
 }

@@ -5,9 +5,11 @@
  */
 package tools.refinery.store.query.equality;
 
+import tools.refinery.store.query.dnf.SymbolicParameter;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SubstitutingLiteralHashCodeHelper implements LiteralHashCodeHelper {
@@ -15,6 +17,16 @@ public class SubstitutingLiteralHashCodeHelper implements LiteralHashCodeHelper 
 
 	// 0 is for {@code null}, so we start with 1.
 	private int next = 1;
+
+	public SubstitutingLiteralHashCodeHelper() {
+		this(List.of());
+	}
+
+	public SubstitutingLiteralHashCodeHelper(List<SymbolicParameter> parameters) {
+		for (var parameter : parameters) {
+			getVariableHashCode(parameter.getVariable());
+		}
+	}
 
 	@Override
 	public int getVariableHashCode(Variable variable) {
