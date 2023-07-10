@@ -131,7 +131,8 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter, Mod
 
 	@Override
 	public <T> ResultSet<T> getResultSet(Query<T> query) {
-		var resultSet = resultSets.get(query);
+		var canonicalQuery = storeAdapter.getCanonicalQuery(query);
+		var resultSet = resultSets.get(canonicalQuery);
 		if (resultSet == null) {
 			throw new IllegalArgumentException("No matcher for query %s in model".formatted(query.name()));
 		}

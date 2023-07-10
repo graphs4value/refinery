@@ -8,6 +8,7 @@ package tools.refinery.store.query;
 import tools.refinery.store.adapter.ModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.AnyQuery;
+import tools.refinery.store.query.rewriter.DnfRewriter;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +25,8 @@ public interface ModelQueryBuilder extends ModelAdapterBuilder {
 	}
 
 	ModelQueryBuilder query(AnyQuery query);
+
+	ModelQueryBuilder rewriter(DnfRewriter rewriter);
 
 	@Override
 	ModelQueryStoreAdapter build(ModelStore store);

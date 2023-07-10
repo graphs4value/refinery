@@ -36,14 +36,12 @@ import tools.refinery.store.util.CycleDetectingMapper;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Dnf2PQuery {
 	private static final Object P_CONSTRAINT_LOCK = new Object();
 	private final CycleDetectingMapper<Dnf, RawPQuery> mapper = new CycleDetectingMapper<>(Dnf::name,
 			this::doTranslate);
 	private final QueryWrapperFactory wrapperFactory = new QueryWrapperFactory(this);
-	private final Map<Dnf, QueryEvaluationHint> hintOverrides = new LinkedHashMap<>();
 	private Function<Dnf, QueryEvaluationHint> computeHint = dnf -> new QueryEvaluationHint(null,
 			(IQueryBackendFactory) null);
 
@@ -59,30 +57,9 @@ public class Dnf2PQuery {
 		return wrapperFactory.getSymbolViews();
 	}
 
-	public void hint(Dnf dnf, QueryEvaluationHint hint) {
-		hintOverrides.compute(dnf, (ignoredKey, existingHint) ->
-				existingHint == null ? hint : existingHint.overrideBy(hint));
-	}
-
-	private QueryEvaluationHint consumeHint(Dnf dnf) {
-		var defaultHint = computeHint.apply(dnf);
-		var existingHint = hintOverrides.remove(dnf);
-		return defaultHint.overrideBy(existingHint);
-	}
-
-	public void assertNoUnusedHints() {
-		if (hintOverrides.isEmpty()) {
-			return;
-		}
-		var unusedHints = hintOverrides.keySet().stream().map(Dnf::name).collect(Collectors.joining(", "));
-		throw new IllegalStateException(
-				"Unused query evaluation hints for %s. Hints must be set before a query is added to the engine"
-						.formatted(unusedHints));
-	}
-
 	private RawPQuery doTranslate(Dnf dnfQuery) {
 		var pQuery = new RawPQuery(dnfQuery.getUniqueName());
-		pQuery.setEvaluationHints(consumeHint(dnfQuery));
+		pQuery.setEvaluationHints(computeHint.apply(dnfQuery));
 
 		Map<SymbolicParameter, PParameter> parameters = new HashMap<>();
 		List<PParameter> parameterList = new ArrayList<>();

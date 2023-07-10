@@ -11,6 +11,7 @@ import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.AnyQuery;
+import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.viatra.ViatraModelQueryStoreAdapter;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.view.AnySymbolView;
@@ -21,17 +22,20 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 	private final ModelStore store;
 	private final ViatraQueryEngineOptions engineOptions;
 	private final Map<AnySymbolView, IInputKey> inputKeys;
+	private final Map<AnyQuery, AnyQuery> canonicalQueryMap;
 	private final Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications;
 	private final Set<AnyQuery> vacuousQueries;
 	private final Set<AnyQuery> allQueries;
 
 	ViatraModelQueryStoreAdapterImpl(ModelStore store, ViatraQueryEngineOptions engineOptions,
 									 Map<AnySymbolView, IInputKey> inputKeys,
+									 Map<AnyQuery, AnyQuery> canonicalQueryMap,
 									 Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications,
 									 Set<AnyQuery> vacuousQueries) {
 		this.store = store;
 		this.engineOptions = engineOptions;
 		this.inputKeys = inputKeys;
+		this.canonicalQueryMap = canonicalQueryMap;
 		this.querySpecifications = querySpecifications;
 		this.vacuousQueries = vacuousQueries;
 		var mutableAllQueries = new LinkedHashSet<AnyQuery>(querySpecifications.size() + vacuousQueries.size());
@@ -56,6 +60,17 @@ public class ViatraModelQueryStoreAdapterImpl implements ViatraModelQueryStoreAd
 	@Override
 	public Collection<AnyQuery> getQueries() {
 		return allQueries;
+	}
+
+	@Override
+	public <T> Query<T> getCanonicalQuery(Query<T> query) {
+		// We know that canonical forms of queries do not change output types.
+		@SuppressWarnings("unchecked")
+		var canonicalQuery = (Query<T>) canonicalQueryMap.get(query);
+		if (canonicalQuery == null) {
+			throw new IllegalArgumentException("Unknown query: " + query);
+		}
+		return canonicalQuery;
 	}
 
 	Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> getQuerySpecifications() {

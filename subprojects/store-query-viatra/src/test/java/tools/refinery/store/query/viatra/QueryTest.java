@@ -9,7 +9,9 @@ import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.tests.QueryEngineTest;
 import tools.refinery.store.query.view.AnySymbolView;
@@ -275,6 +277,53 @@ class QueryTest {
 				personView.call(p2),
 				friendMustView.call(p1, p2)
 		));
+		var predicate = Query.of("PositivePatternCall", (builder, p3, p4) -> builder.clause(
+				personView.call(p3),
+				personView.call(p4),
+				friendPredicate.call(p3, p4)
+		));
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 1), true,
+				Tuple.of(1, 0), true,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 1), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
+	void patternCallInputArgumentTest(QueryEvaluationHint hint) {
+		var friendPredicate = Dnf.of("Friend", builder -> {
+			var p1 = builder.parameter("p1", ParameterDirection.IN);
+			var p2 = builder.parameter("p2", ParameterDirection.IN);
+			builder.clause(
+					personView.call(p1),
+					personView.call(p2),
+					friendMustView.call(p1, p2)
+			);
+		});
 		var predicate = Query.of("PositivePatternCall", (builder, p3, p4) -> builder.clause(
 				personView.call(p3),
 				personView.call(p4),

@@ -18,6 +18,7 @@ import tools.refinery.store.representation.Symbol;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo;
 
@@ -204,5 +205,24 @@ class InputParameterResolverTest {
 		));
 
 		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));
+	}
+
+	@Test
+	void identityWhenNoWorkToDoTest() {
+		var dnf = Dnf.of("SubQuery", builder -> {
+			var x = builder.parameter("x", ParameterDirection.OUT);
+			builder.clause(
+					personView.call(x),
+					not(friendView.call(x, Variable.of()))
+			);
+		});
+		var query = Query.of("Actual", (builder, p1) -> builder.clause(
+				personView.call(p1),
+				not(dnf.call(p1))
+		));
+
+		var actual = sut.rewrite(query);
+
+		assertThat(actual, is(query));
 	}
 }

@@ -53,7 +53,7 @@ class ClauseInputParameterResolver {
 		}
 		boolean hasInputParameter = hasInputParameter(targetDnf);
 		if (!hasInputParameter) {
-			targetDnf = rewriter.doRewrite(targetDnf);
+			targetDnf = rewriter.rewrite(targetDnf);
 		}
 		if (inlinePositiveClause(abstractCallLiteral, targetDnf)) {
 			return;

@@ -17,7 +17,7 @@ public class OrderedResultSet<T> implements AutoCloseable, ResultSet<T> {
 	private final ResultSet<T> resultSet;
 	private final OrderStatisticTree<Tuple> tree = new OrderStatisticTree<>();
 	private final ResultSetListener<T> listener = (key, fromValue, toValue) -> {
-		var defaultValue = getQuery().defaultValue();
+		var defaultValue = getCanonicalQuery().defaultValue();
 		if (Objects.equals(defaultValue, toValue)) {
 			tree.remove(key);
 		} else {
@@ -45,8 +45,8 @@ public class OrderedResultSet<T> implements AutoCloseable, ResultSet<T> {
 	}
 
 	@Override
-	public Query<T> getQuery() {
-		return resultSet.getQuery();
+	public Query<T> getCanonicalQuery() {
+		return resultSet.getCanonicalQuery();
 	}
 
 	@Override

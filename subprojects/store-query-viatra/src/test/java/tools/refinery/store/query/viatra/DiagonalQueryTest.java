@@ -98,6 +98,7 @@ class DiagonalQueryTest {
 				.build();
 
 		var model = store.createEmptyModel();
+
 		var personInterpretation = model.getInterpretation(person);
 		var symbolInterpretation = model.getInterpretation(symbol);
 		var queryEngine = model.getAdapter(ModelQueryAdapter.class);

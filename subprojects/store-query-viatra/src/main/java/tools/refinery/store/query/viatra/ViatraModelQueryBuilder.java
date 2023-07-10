@@ -9,9 +9,10 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.ModelQueryBuilder;
+import tools.refinery.store.query.rewriter.DnfRewriter;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -43,11 +44,10 @@ public interface ViatraModelQueryBuilder extends ModelQueryBuilder {
 	@Override
 	ViatraModelQueryBuilder query(AnyQuery query);
 
-	ViatraModelQueryBuilder query(AnyQuery query, QueryEvaluationHint queryEvaluationHint);
+	@Override
+	ViatraModelQueryBuilder rewriter(DnfRewriter rewriter);
 
 	ViatraModelQueryBuilder computeHint(Function<Dnf, QueryEvaluationHint> computeHint);
-
-	ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint);
 
 	@Override
 	ViatraModelQueryStoreAdapter build(ModelStore store);
