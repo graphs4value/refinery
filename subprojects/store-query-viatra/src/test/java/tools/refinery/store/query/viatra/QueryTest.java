@@ -110,6 +110,44 @@ class QueryTest {
 	}
 
 	@QueryEngineTest
+	void isConstantTest(QueryEvaluationHint hint) {
+		var predicate = Query.of("RelationConstraint", (builder, p1, p2) -> builder.clause(
+				personView.call(p1),
+				p1.isConstant(1),
+				friendMustView.call(p1, p2)
+		));
+
+		var store = ModelStore.builder()
+				.symbols(person, friend)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(predicate))
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var predicateResultSet = queryEngine.getResultSet(predicate);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		assertResults(Map.of(
+				Tuple.of(0, 1), false,
+				Tuple.of(1, 0), true,
+				Tuple.of(1, 2), true,
+				Tuple.of(2, 1), false
+		), predicateResultSet);
+	}
+
+	@QueryEngineTest
 	void existTest(QueryEvaluationHint hint) {
 		var predicate = Query.of("Exists", (builder, p1) -> builder.clause((p2) -> List.of(
 				personView.call(p1),

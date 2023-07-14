@@ -190,7 +190,7 @@ public class Dnf2PQuery {
 
 	private void translateConstantLiteral(ConstantLiteral constantLiteral, PBody body) {
 		var variable = body.getOrCreateVariableByName(constantLiteral.getVariable().getUniqueName());
-		new ConstantValue(body, variable, constantLiteral.getNodeId());
+		new ConstantValue(body, variable, tools.refinery.store.tuple.Tuple.of(constantLiteral.getNodeId()));
 	}
 
 	private <T> void translateAssignLiteral(AssignLiteral<T> assignLiteral, PBody body) {
