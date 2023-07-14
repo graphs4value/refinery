@@ -14,6 +14,10 @@ public final class Cursors {
         return new Empty<>();
     }
 
+	public static <K, V> Cursor<K, V> singleton(K key, V value) {
+		return new Singleton<>(key, value);
+	}
+
     private static class Empty<K, V> implements Cursor<K, V> {
         private boolean terminated = false;
 
@@ -38,4 +42,53 @@ public final class Cursors {
             return false;
         }
     }
+
+	private static class Singleton<K, V> implements Cursor<K, V> {
+		private State state = State.INITIAL;
+		private final K key;
+		private final V value;
+
+		public Singleton(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		@Override
+		public K getKey() {
+			if (state == State.STARTED) {
+				return key;
+			}
+			return null;
+		}
+
+		@Override
+		public V getValue() {
+			if (state == State.STARTED) {
+				return value;
+			}
+			return null;
+		}
+
+		@Override
+		public boolean isTerminated() {
+			return state == State.TERMINATED;
+		}
+
+		@Override
+		public boolean move() {
+			if (state == State.INITIAL) {
+				state = State.STARTED;
+				return true;
+			}
+			state = State.TERMINATED;
+			return false;
+		}
+
+
+		private enum State {
+			INITIAL,
+			STARTED,
+			TERMINATED
+		}
+	}
 }
