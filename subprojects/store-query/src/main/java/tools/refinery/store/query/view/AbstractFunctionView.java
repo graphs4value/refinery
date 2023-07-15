@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.view;
 
+import tools.refinery.store.map.CursorAsIterator;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.dnf.FunctionalDependency;
 import tools.refinery.store.query.term.Parameter;
@@ -80,6 +81,20 @@ public abstract class AbstractFunctionView<T> extends SymbolView<T> {
 		var valueInTuple = tuple[tuple.length - 1];
 		T valueInMap = model.getInterpretation(getSymbol()).get(key);
 		return valueEquals(valueInMap, valueInTuple);
+	}
+
+	@Override
+	public boolean canIndexSlot(int slot) {
+		return slot >= 0 && slot < getSymbol().arity();
+	}
+
+	@Override
+	public Iterable<Object[]> getAdjacent(Model model, int slot, Object value) {
+		if (!(value instanceof Tuple1 tuple1)) {
+			return Set.of();
+		}
+		return (() -> new CursorAsIterator<>(model.getInterpretation(getSymbol()).getAdjacent(slot, tuple1.get(0)),
+				this::forwardMap, this::filter));
 	}
 
 	@Override

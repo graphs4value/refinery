@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.view;
 
+import tools.refinery.store.map.CursorAsIterator;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.representation.Symbol;
@@ -14,6 +15,7 @@ import tools.refinery.store.tuple.Tuple1;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public abstract class TuplePreservingView<T> extends SymbolView<T> {
 	private final List<Parameter> parameters;
@@ -53,6 +55,20 @@ public abstract class TuplePreservingView<T> extends SymbolView<T> {
 		Tuple key = Tuple.of(content);
 		T value = model.getInterpretation(getSymbol()).get(key);
 		return filter(key, value);
+	}
+
+	@Override
+	public boolean canIndexSlot(int slot) {
+		return slot >= 0 && slot < getSymbol().arity();
+	}
+
+	@Override
+	public Iterable<Object[]> getAdjacent(Model model, int slot, Object value) {
+		if (!(value instanceof Tuple1 tuple1)) {
+			return Set.of();
+		}
+		return (() -> new CursorAsIterator<>(model.getInterpretation(getSymbol()).getAdjacent(slot, tuple1.get(0)),
+				this::forwardMap, this::filter));
 	}
 
 	@Override

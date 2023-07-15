@@ -119,8 +119,18 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	private Iterable<Object[]> enumerate(IInputKey key, TupleMask seedMask, ITuple seed) {
 		var relationViewKey = checkKey(key);
-		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
+		Iterable<Object[]> allObjects = getAllObjects(relationViewKey, seedMask, seed);
 		return filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+	}
+
+	private Iterable<Object[]> getAllObjects(AnySymbolView key, TupleMask seedMask, ITuple seed) {
+		for (int i = 0; i < seedMask.indices.length; i++) {
+			int slot = seedMask.indices[i];
+			if (key.canIndexSlot(slot)) {
+				return key.getAdjacent(model, slot, seed.get(i));
+			}
+		}
+		return key.getAll(model);
 	}
 
 	private static boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
