@@ -14,6 +14,7 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
@@ -26,23 +27,18 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 	private final ModelStore store;
 	private final Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters;
 	private final Map<AnyPartialSymbol, PartialInterpretationRefiner.Factory<?, ?>> symbolRefiners;
-	private final Map<AnySymbol, StorageRefiner.Factory<?>> representationRefiners;
-	private final Object initialModelLock = new Object();
-	private final int initialNodeCount;
-	private List<PartialModelInitializer> initializers;
-	private long initialCommitId = Model.NO_STATE_ID;
+	private final Map<AnySymbol, StorageRefiner.Factory<?>> storageRefiners;
+	private final List<PartialModelInitializer> initializers;
 
 	ReasoningStoreAdapterImpl(ModelStore store,
-							  int initialNodeCount,
 							  Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters,
 							  Map<AnyPartialSymbol, PartialInterpretationRefiner.Factory<?, ?>> symbolRefiners,
-							  Map<AnySymbol, StorageRefiner.Factory<?>> representationRefiners,
+							  Map<AnySymbol, StorageRefiner.Factory<?>> storageRefiners,
 							  List<PartialModelInitializer> initializers) {
 		this.store = store;
-		this.initialNodeCount = initialNodeCount;
 		this.symbolInterpreters = symbolInterpreters;
 		this.symbolRefiners = symbolRefiners;
-		this.representationRefiners = representationRefiners;
+		this.storageRefiners = storageRefiners;
 		this.initializers = initializers;
 	}
 
@@ -73,44 +69,32 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 		return symbolRefiners;
 	}
 
-	StorageRefiner[] createRepresentationRefiners(Model model) {
-		var refiners = new StorageRefiner[representationRefiners.size()];
+	StorageRefiner[] createStprageRefiner(Model model) {
+		var refiners = new StorageRefiner[storageRefiners.size()];
 		int i = 0;
-		for (var entry : representationRefiners.entrySet()) {
+		for (var entry : storageRefiners.entrySet()) {
 			var symbol = entry.getKey();
 			var factory = entry.getValue();
-			refiners[i] = createRepresentationRefiner(factory, model, symbol);
+			refiners[i] = createStorageRefiner(factory, model, symbol);
+			i++;
 		}
 		return refiners;
 	}
 
-	private <T> StorageRefiner createRepresentationRefiner(
-			StorageRefiner.Factory<T> factory, Model model, AnySymbol symbol) {
+	private <T> StorageRefiner createStorageRefiner(StorageRefiner.Factory<T> factory, Model model, AnySymbol symbol) {
 		// The builder only allows well-typed assignment of refiners to symbols.
 		@SuppressWarnings("unchecked")
 		var typedSymbol = (Symbol<T>) symbol;
 		return factory.create(typedSymbol, model);
 	}
 
-	@Override
-	public Model createInitialModel() {
-		synchronized (initialModelLock) {
-			if (initialCommitId == Model.NO_STATE_ID) {
-				return doCreateInitialModel();
-			}
-			return store.createModelForState(initialCommitId);
-		}
-	}
-
-	private Model doCreateInitialModel() {
+	public Model createInitialModel(ModelSeed modelSeed) {
 		var model = store.createEmptyModel();
-		model.getInterpretation(ReasoningAdapterImpl.NODE_COUNT_SYMBOL).put(Tuple.of(), initialNodeCount);
+		model.getInterpretation(ReasoningAdapterImpl.NODE_COUNT_SYMBOL).put(Tuple.of(), modelSeed.getNodeCount());
 		for (var initializer : initializers) {
-			initializer.initialize(model, initialNodeCount);
+			initializer.initialize(model, modelSeed);
 		}
 		model.getAdapter(ModelQueryAdapter.class).flushChanges();
-		initialCommitId = model.commit();
-		initializers = null;
 		return model;
 	}
 

@@ -32,11 +32,11 @@ import tools.refinery.store.representation.TruthValue;
 public final class PartialRelationTranslator extends PartialSymbolTranslator<TruthValue, Boolean> {
 	private final PartialRelation partialRelation;
 	private PartialRelationRewriter rewriter;
-	private Query<Boolean> query;
-	private Query<Boolean> may;
-	private Query<Boolean> must;
-	private Query<Boolean> candidateMay;
-	private Query<Boolean> candidateMust;
+	private RelationalQuery query;
+	private RelationalQuery may;
+	private RelationalQuery must;
+	private RelationalQuery candidateMay;
+	private RelationalQuery candidateMust;
 	private RoundingMode roundingMode;
 
 	private PartialRelationTranslator(PartialRelation partialRelation) {
@@ -197,20 +197,41 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	}
 
 	private void liftQueries(ModelStoreBuilder storeBuilder) {
-		if (query != null) {
-			var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
-			if (may == null) {
-				may = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
-			}
-			if (must == null) {
-				must = reasoningBuilder.lift(Modality.MUST, Concreteness.PARTIAL, query);
-			}
-			if (candidateMay == null) {
-				candidateMay = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
-			}
-			if (candidateMust == null) {
-				candidateMust = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
-			}
+		if (rewriter instanceof QueryBasedRelationRewriter queryBasedRelationRewriter) {
+			liftQueriesFromQueryBasedRewriter(queryBasedRelationRewriter);
+		} else if (query != null) {
+			liftQueriesFromFourValuedQuery(storeBuilder);
+		}
+	}
+
+	private void liftQueriesFromQueryBasedRewriter(QueryBasedRelationRewriter queryBasedRelationRewriter) {
+		if (may == null) {
+			may = queryBasedRelationRewriter.getMay();
+		}
+		if (must == null) {
+			must = queryBasedRelationRewriter.getMust();
+		}
+		if (candidateMay == null) {
+			candidateMay = queryBasedRelationRewriter.getCandidateMay();
+		}
+		if (candidateMust == null) {
+			candidateMust = queryBasedRelationRewriter.getCandidateMust();
+		}
+	}
+
+	private void liftQueriesFromFourValuedQuery(ModelStoreBuilder storeBuilder) {
+		var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
+		if (may == null) {
+			may = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
+		}
+		if (must == null) {
+			must = reasoningBuilder.lift(Modality.MUST, Concreteness.PARTIAL, query);
+		}
+		if (candidateMay == null) {
+			candidateMay = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
+		}
+		if (candidateMust == null) {
+			candidateMust = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
 		}
 	}
 

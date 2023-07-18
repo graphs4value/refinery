@@ -42,13 +42,18 @@ public interface Seed<T> {
 	class Builder<T> {
 		private final int arity;
 		private final Class<T> valueType;
-		private final T reducedValue;
+		private T reducedValue;
 		private final Map<Tuple, T> map = new LinkedHashMap<>();
 
 		private Builder(int arity, Class<T> valueType, T reducedValue) {
 			this.arity = arity;
 			this.valueType = valueType;
 			this.reducedValue = reducedValue;
+		}
+
+		public Builder<T> reducedValue(T reducedValue) {
+			this.reducedValue = reducedValue;
+			return this;
 		}
 
 		public Builder<T> put(Tuple key, T value) {

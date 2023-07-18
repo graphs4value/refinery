@@ -6,18 +6,17 @@
 package tools.refinery.store.reasoning.refinement;
 
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.model.Model;
+import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
 public class DefaultStorageRefiner<T> implements StorageRefiner {
-	private static final StorageRefiner.Factory<Object> FACTORY = (symbol, model) -> {
-		var interpretation = model.getInterpretation(symbol);
-		return new DefaultStorageRefiner<>(interpretation);
-	};
+	private static final StorageRefiner.Factory<Object> FACTORY = DefaultStorageRefiner::new;
 
 	private final Interpretation<T> interpretation;
 
-	public DefaultStorageRefiner(Interpretation<T> interpretation) {
-		this.interpretation = interpretation;
+	public DefaultStorageRefiner(Symbol<T> symbol, Model model) {
+		interpretation = model.getInterpretation(symbol);
 	}
 
 	@Override

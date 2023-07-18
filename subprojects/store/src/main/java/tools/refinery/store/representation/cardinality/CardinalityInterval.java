@@ -18,6 +18,8 @@ public sealed interface CardinalityInterval permits NonEmptyCardinalityInterval,
 
 	CardinalityInterval add(CardinalityInterval other);
 
+	CardinalityInterval take(int count);
+
 	CardinalityInterval multiply(CardinalityInterval other);
 
 	CardinalityInterval meet(CardinalityInterval other);

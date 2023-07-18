@@ -13,39 +13,26 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
-public class ConcreteSymbolRefiner<A, C> implements PartialInterpretationRefiner<A, C> {
-	private final ReasoningAdapter adapter;
-	private final PartialSymbol<A, C> partialSymbol;
+public class ConcreteSymbolRefiner<A, C> extends AbstractPartialInterpretationRefiner<A, C> {
 	private final Interpretation<A> interpretation;
 
 	public ConcreteSymbolRefiner(ReasoningAdapter adapter, PartialSymbol<A, C> partialSymbol,
 								 Symbol<A> concreteSymbol) {
-		this.adapter = adapter;
-		this.partialSymbol = partialSymbol;
+		super(adapter, partialSymbol);
 		interpretation = adapter.getModel().getInterpretation(concreteSymbol);
-	}
-
-	@Override
-	public ReasoningAdapter getAdapter() {
-		return adapter;
-	}
-
-	@Override
-	public PartialSymbol<A, C> getPartialSymbol() {
-		return partialSymbol;
 	}
 
 	@Override
 	public boolean merge(Tuple key, A value) {
 		var currentValue = interpretation.get(key);
-		var mergedValue = partialSymbol.abstractDomain().commonRefinement(currentValue, value);
+		var mergedValue = getPartialSymbol().abstractDomain().commonRefinement(currentValue, value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			interpretation.put(key, mergedValue);
 		}
 		return true;
 	}
 
-	public static <A1, C1> PartialInterpretationRefiner.Factory<A1, C1> of(Symbol<A1> concreteSymbol) {
+	public static <A1, C1> Factory<A1, C1> of(Symbol<A1> concreteSymbol) {
 		return (adapter, partialSymbol) -> new ConcreteSymbolRefiner<>(adapter, partialSymbol, concreteSymbol);
 	}
 }

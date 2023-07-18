@@ -6,8 +6,9 @@
 package tools.refinery.store.reasoning.refinement;
 
 import tools.refinery.store.model.Model;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 
 @FunctionalInterface
 public interface PartialModelInitializer {
-	void initialize(Model model, int nodeCount);
+	void initialize(Model model, ModelSeed modelSeed);
 }

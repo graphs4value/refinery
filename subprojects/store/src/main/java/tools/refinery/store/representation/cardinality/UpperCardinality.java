@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.representation.cardinality;
 
+import org.jetbrains.annotations.Nullable;
+
 public sealed interface UpperCardinality extends Comparable<UpperCardinality> permits FiniteUpperCardinality,
 		UnboundedUpperCardinality {
 	default UpperCardinality min(UpperCardinality other) {
@@ -16,6 +18,9 @@ public sealed interface UpperCardinality extends Comparable<UpperCardinality> pe
 	}
 
 	UpperCardinality add(UpperCardinality other);
+
+	@Nullable
+	UpperCardinality take(int count);
 
 	UpperCardinality multiply(UpperCardinality other);
 

@@ -48,7 +48,7 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		refiners = new HashMap<>(refinerFactories.size());
 		createRefiners();
 
-		storageRefiners = storeAdapter.createRepresentationRefiners(model);
+		storageRefiners = storeAdapter.createStprageRefiner(model);
 
 		nodeCountInterpretation = model.getInterpretation(NODE_COUNT_SYMBOL);
 	}

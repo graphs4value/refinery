@@ -12,7 +12,6 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.seed.SeedInitializer;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
@@ -100,20 +99,6 @@ public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartial
 		return this;
 	}
 
-	public <T> PartialSymbolTranslator<A, C> seed(Seed<T> seed) {
-		if (storageSymbol == null) {
-			throw new IllegalArgumentException("Seed requires setting a storage symbol");
-		}
-		if (!seed.valueType().equals(storageSymbol.valueType())) {
-			throw new IllegalArgumentException("Seed type %s does not match storage symbol type %s"
-					.formatted(seed.valueType(), storageSymbol.valueType()));
-		}
-		// The guard clause only allows a well-typed seed.
-		@SuppressWarnings("unchecked")
-		var typedStorageSymbol = (Symbol<T>) storageSymbol;
-		return initializer(new SeedInitializer<>(typedStorageSymbol, seed));
-	}
-
 	@Override
 	public void configure(ModelStoreBuilder storeBuilder) {
 		checkNotConfigured();
@@ -132,6 +117,7 @@ public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartial
 				registerStorageRefiner(reasoningBuilder, storageRefiner);
 			}
 		}
+		createFallbackInitializer();
 		if (initializer != null) {
 			reasoningBuilder.initializer(initializer);
 		}
@@ -142,6 +128,17 @@ public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartial
 		@SuppressWarnings("unchecked")
 		var typedStorageSymbol = (Symbol<T>) storageSymbol;
 		reasoningBuilder.storageRefiner(typedStorageSymbol, factory);
+	}
+
+	private void createFallbackInitializer() {
+		if (initializer == null &&
+				storageSymbol != null &&
+				storageSymbol.valueType().equals(partialSymbol.abstractDomain().abstractType())) {
+			// The guard clause makes this safe.
+			@SuppressWarnings("unchecked")
+			var typedStorageSymbol = (Symbol<A>) storageSymbol;
+			initializer = new SeedInitializer<>(typedStorageSymbol, partialSymbol);
+		}
 	}
 
 	public PartialInterpretation.Factory<A, C> getInterpretationFactory() {

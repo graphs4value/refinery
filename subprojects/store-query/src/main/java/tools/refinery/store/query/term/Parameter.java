@@ -9,10 +9,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Parameter {
-	public static final Parameter NODE_OUT = new Parameter(null, ParameterDirection.OUT);
+	public static final Parameter NODE_OUT = new Parameter(null);
 
 	private final Class<?> dataType;
 	private final ParameterDirection direction;
+
+	public Parameter(Class<?> dataType) {
+		this(dataType, ParameterDirection.OUT);
+	}
 
 	public Parameter(Class<?> dataType, ParameterDirection direction) {
 		this.dataType = dataType;

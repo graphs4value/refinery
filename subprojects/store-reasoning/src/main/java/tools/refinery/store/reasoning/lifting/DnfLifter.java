@@ -5,9 +5,7 @@
  */
 package tools.refinery.store.reasoning.lifting;
 
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.DnfClause;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.dnf.*;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -21,6 +19,16 @@ public class DnfLifter {
 	private final Map<ModalDnf, Dnf> cache = new HashMap<>();
 
 	public <T> Query<T> lift(Modality modality, Concreteness concreteness, Query<T> query) {
+		var liftedDnf = lift(modality, concreteness, query.getDnf());
+		return query.withDnf(liftedDnf);
+	}
+
+	public <T> RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query) {
+		var liftedDnf = lift(modality, concreteness, query.getDnf());
+		return query.withDnf(liftedDnf);
+	}
+
+	public <T> FunctionalQuery<T> lift(Modality modality, Concreteness concreteness, FunctionalQuery<T> query) {
 		var liftedDnf = lift(modality, concreteness, query.getDnf());
 		return query.withDnf(liftedDnf);
 	}

@@ -6,6 +6,7 @@
 package tools.refinery.store.representation.cardinality;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntBinaryOperator;
 
@@ -19,6 +20,15 @@ public record FiniteUpperCardinality(int finiteUpperBound) implements UpperCardi
 	@Override
 	public UpperCardinality add(UpperCardinality other) {
 		return lift(other, Integer::sum);
+	}
+
+	@Override
+	@Nullable
+	public UpperCardinality take(int count) {
+		if (finiteUpperBound < count) {
+			return null;
+		}
+		return new FiniteUpperCardinality(finiteUpperBound - count);
 	}
 
 	@Override

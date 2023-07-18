@@ -53,6 +53,16 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 		return lift(other, Math::min, UpperCardinality::max, this);
 	}
 
+	@Override
+	public CardinalityInterval take(int count) {
+		int newLowerBound = Math.max(lowerBound - count, 0);
+		var newUpperBound = upperBound.take(count);
+		if (newUpperBound == null) {
+			return CardinalityIntervals.ERROR;
+		}
+		return CardinalityIntervals.between(newLowerBound, newUpperBound);
+	}
+
 	private CardinalityInterval lift(CardinalityInterval other, IntBinaryOperator lowerOperator,
 									 BinaryOperator<UpperCardinality> upperOperator,
 									 CardinalityInterval whenEmpty) {

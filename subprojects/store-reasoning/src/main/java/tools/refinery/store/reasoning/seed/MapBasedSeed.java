@@ -75,7 +75,7 @@ record MapBasedSeed<T>(int arity, Class<T> valueType, T reducedValue, Map<Tuple,
 		private boolean moveToNext() {
 			do {
 				increment();
-			} while (!checkValue());
+			} while (state != State.TERMINATED && !checkValue());
 			return state != State.TERMINATED;
 		}
 
@@ -89,16 +89,10 @@ record MapBasedSeed<T>(int arity, Class<T> valueType, T reducedValue, Map<Tuple,
 				counter[i] = 0;
 				i--;
 			}
+			state = State.TERMINATED;
 		}
 
 		private boolean checkValue() {
-			if (state == State.TERMINATED) {
-				return false;
-			}
-			if (counter[0] >= nodeCount) {
-				state = State.TERMINATED;
-				return false;
-			}
 			key = Tuple.of(counter);
 			var valueInMap = map.get(key);
 			if (Objects.equals(valueInMap, defaultValue)) {

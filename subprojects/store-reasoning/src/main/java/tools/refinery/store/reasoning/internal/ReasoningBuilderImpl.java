@@ -10,7 +10,9 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.dnf.FunctionalQuery;
 import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.refinement.DefaultStorageRefiner;
@@ -38,16 +40,6 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 			new LinkedHashMap<>();
 	private final Map<AnySymbol, StorageRefiner.Factory<?>> registeredStorageRefiners = new LinkedHashMap<>();
 	private final List<PartialModelInitializer> initializers = new ArrayList<>();
-	private int initialNodeCount = 0;
-
-	@Override
-	public ReasoningBuilder initialNodeCount(int nodeCount) {
-		if (nodeCount < 0) {
-			throw new IllegalArgumentException("Initial model size must not be negative");
-		}
-		initialNodeCount = nodeCount;
-		return this;
-	}
 
 	@Override
 	public ReasoningBuilder partialSymbol(AnyPartialSymbolTranslator translator) {
@@ -77,6 +69,16 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 
 	@Override
 	public <T> Query<T> lift(Modality modality, Concreteness concreteness, Query<T> query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
+	public RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
+	public <T> FunctionalQuery<T> lift(Modality modality, Concreteness concreteness, FunctionalQuery<T> query) {
 		return lifter.lift(modality, concreteness, query);
 	}
 
@@ -114,7 +116,7 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 
 	@Override
 	public ReasoningStoreAdapterImpl doBuild(ModelStore store) {
-		return new ReasoningStoreAdapterImpl(store, initialNodeCount, Collections.unmodifiableMap(symbolInterpreters),
+		return new ReasoningStoreAdapterImpl(store, Collections.unmodifiableMap(symbolInterpreters),
 				Collections.unmodifiableMap(symbolRefiners), getStorageRefiners(store),
 				Collections.unmodifiableList(initializers));
 	}

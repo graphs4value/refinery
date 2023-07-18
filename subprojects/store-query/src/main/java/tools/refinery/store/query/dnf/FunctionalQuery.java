@@ -55,8 +55,13 @@ public final class FunctionalQuery<T> extends Query<T> {
 	}
 
 	@Override
-	protected Query<T> withDnfInternal(Dnf newDnf) {
+	protected FunctionalQuery<T> withDnfInternal(Dnf newDnf) {
 		return newDnf.asFunction(type);
+	}
+
+	@Override
+	public FunctionalQuery<T> withDnf(Dnf newDnf) {
+		return (FunctionalQuery<T>) super.withDnf(newDnf);
 	}
 
 	public AssignedValue<T> call(List<NodeVariable> arguments) {
