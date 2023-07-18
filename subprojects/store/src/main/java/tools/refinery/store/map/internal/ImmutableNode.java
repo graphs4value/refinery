@@ -15,7 +15,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	 */
 	final int nodeMap;
 	/**
-	 * Stores Keys, Values, and subnodes. Structure: (K,V)*,NODE; NODES are stored
+	 * Stores Keys, Values, and sub-nodes. Structure: (K,V)*,NODE; NODES are stored
 	 * backwards.
 	 */
 	final Object[] content;
@@ -65,24 +65,24 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 		int resultDataMap = 0;
 		int resultNodeMap = 0;
 		final Object[] resultContent = new Object[size];
-		int bitposition = 1;
+		int bitPosition = 1;
 		for (int i = 0; i < FACTOR; i++) {
 			Object key = node.content[i * 2];
 			if (key != null) {
-				resultDataMap |= bitposition;
+				resultDataMap |= bitPosition;
 				resultContent[datas * 2] = key;
 				resultContent[datas * 2 + 1] = node.content[i * 2 + 1];
 				datas++;
 			} else {
 				@SuppressWarnings("unchecked") var subnode = (Node<K, V>) node.content[i * 2 + 1];
 				if (subnode != null) {
-					ImmutableNode<K, V> immutableSubnode = subnode.toImmutable(cache);
-					resultNodeMap |= bitposition;
-					resultContent[size - 1 - nodes] = immutableSubnode;
+					ImmutableNode<K, V> immutableSubNode = subnode.toImmutable(cache);
+					resultNodeMap |= bitPosition;
+					resultContent[size - 1 - nodes] = immutableSubNode;
 					nodes++;
 				}
 			}
-			bitposition <<= 1;
+			bitPosition <<= 1;
 		}
 		final int resultHash = node.hashCode();
 		var newImmutable = new ImmutableNode<K, V>(resultDataMap, resultNodeMap, resultContent, resultHash);
@@ -130,9 +130,9 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	@Override
 	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValue, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
 		int selectedHashFragment = hashFragment(hash, shiftDepth(depth));
-		int bitposition = 1 << selectedHashFragment;
-		if ((dataMap & bitposition) != 0) {
-			int keyIndex = 2 * index(dataMap, bitposition);
+		int bitPosition = 1 << selectedHashFragment;
+		if ((dataMap & bitPosition) != 0) {
+			int keyIndex = 2 * index(dataMap, bitPosition);
 			@SuppressWarnings("unchecked") K keyCandidate = (K) content[keyIndex];
 			if (keyCandidate.equals(key)) {
 				if (value == defaultValue) {
@@ -159,8 +159,8 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 					return mutable.putValue(key, value, oldValue, hashProvider, defaultValue, hash, depth);
 				}
 			}
-		} else if ((nodeMap & bitposition) != 0) {
-			int keyIndex = content.length - 1 - index(nodeMap, bitposition);
+		} else if ((nodeMap & bitPosition) != 0) {
+			int keyIndex = content.length - 1 - index(nodeMap, bitPosition);
 			@SuppressWarnings("unchecked") var subNode = (ImmutableNode<K, V>) content[keyIndex];
 			int newDepth = incrementDepth(depth);
 			int newHash = newHash(hashProvider, key, hash, newDepth);
@@ -250,6 +250,49 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				cursor.value = null;
 				return false;
 			}
+		}
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	boolean moveToNextInorder(InOrderMapCursor<K, V> cursor) {
+		if(cursor.nodeIndexStack.peek()==null) {
+			throw new IllegalStateException("Cursor moved to the next state when the state is empty.");
+		}
+
+		int position = cursor.nodeIndexStack.peek();
+		for (int index = position + 1; index < FACTOR; index++) {
+			final int mask = 1<<index;
+			if((this.dataMap & mask) != 0) {
+				// data found
+				cursor.nodeIndexStack.pop();
+				cursor.nodeIndexStack.push(index);
+
+				cursor.key = (K) this.content[2 * index(dataMap, mask)];
+				cursor.value = (V) this.content[2 * index(dataMap, mask) +1];
+				return true;
+			} else if((this.nodeMap & mask) != 0) {
+				// node found
+				Node<K,V> subnode = (Node<K, V>) this.content[this.content.length - 1 - index(nodeMap, mask)];
+				cursor.nodeIndexStack.pop();
+				cursor.nodeIndexStack.push(index);
+				cursor.nodeIndexStack.push(InOrderMapCursor.INDEX_START);
+				cursor.nodeStack.push(subnode);
+
+				return subnode.moveToNextInorder(cursor);
+			}
+		}
+
+		// nothing found
+		cursor.nodeStack.pop();
+		cursor.nodeIndexStack.pop();
+		if (!cursor.nodeStack.isEmpty()) {
+			Node<K, V> supernode = cursor.nodeStack.peek();
+			return supernode.moveToNextInorder(cursor);
+		} else {
+			cursor.key = null;
+			cursor.value = null;
+			return false;
 		}
 	}
 
@@ -348,8 +391,8 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				var mutableSubnode = (Node<?, ?>) mutable.content[i * 2 + 1];
 				if (mutableSubnode != null) {
 					if (datas * 2 + nodes + 1 <= immutableLength) {
-						Object immutableSubnode = immutable.content[immutableLength - 1 - nodes];
-						if (!mutableSubnode.equals(immutableSubnode)) {
+						Object immutableSubNode = immutable.content[immutableLength - 1 - nodes];
+						if (!mutableSubnode.equals(immutableSubNode)) {
 							return false;
 						}
 						nodes++;
@@ -359,6 +402,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				}
 			}
 		}
-		return true;
+
+		return datas * 2 + nodes == immutable.content.length;
 	}
 }

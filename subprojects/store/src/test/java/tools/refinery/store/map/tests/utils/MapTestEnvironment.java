@@ -57,13 +57,15 @@ public class MapTestEnvironment<K, V> {
 											 VersionedMap<K, V> map2, List<Throwable> errors) {
 		map1.checkIntegrity();
 		map2.checkIntegrity();
+
+		assertContentEqualsList(map1, map2, title + ": map1.contentEquals(map2)", errors);
+		assertContentEqualsList(map2, map1, title + ": map2.contentEquals(map1)", errors);
 		assertEqualsList(map1.getSize(), map2.getSize(), title + ": Sizes not equal", errors);
+
 		for (var mode : ContentHashCode.values()) {
 			assertEqualsList(map1.contentHashCode(mode), map2.contentHashCode(mode),
 					title + ": " + mode + " hashCode check", errors);
 		}
-		assertContentEqualsList(map1, map2, title + ": map1.contentEquals(map2)", errors);
-		assertContentEqualsList(map2, map1, title + ": map2.contentEquals(map1)", errors);
 	}
 
 	private static void assertEqualsList(Object o1, Object o2, String message, List<Throwable> errors) {
@@ -177,7 +179,8 @@ public class MapTestEnvironment<K, V> {
 		K previous = null;
 		Cursor<K, V> cursor = versionedMap.getAll();
 		while (cursor.move()) {
-			System.out.println(cursor.getKey() + " " + ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().getHash(cursor.getKey(), 0));
+			//System.out.println(cursor.getKey() + " " + ((VersionedMapImpl<K, V>) versionedMap).getHashProvider()
+			// .getHash(cursor.getKey(), 0));
 			if (previous != null) {
 				int comparisonResult = ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().compare(previous,
 						cursor.getKey());
@@ -185,7 +188,6 @@ public class MapTestEnvironment<K, V> {
 			}
 			previous = cursor.getKey();
 		}
-		System.out.println();
 	}
 
 	public void printComparison() {

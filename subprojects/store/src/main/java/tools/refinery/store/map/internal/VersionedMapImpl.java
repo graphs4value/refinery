@@ -75,7 +75,9 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 			Iterator<K> keyIterator = keys.iterator();
 			Iterator<V> valueIterator = values.iterator();
 			while (keyIterator.hasNext()) {
-				this.put(keyIterator.next(), valueIterator.next());
+				var key = keyIterator.next();
+				var value = valueIterator.next();
+				this.put(key,value);
 			}
 		} else {
 			while (cursor.move()) {
@@ -109,12 +111,10 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 
 	@Override
 	public DiffCursor<K, V> getDiffCursor(long toVersion) {
-
-		Cursor<K, V> fromCursor = this.getAll();
-		VersionedMap<K, V> toMap = this.store.createMap(toVersion);
-		Cursor<K, V> toCursor = toMap.getAll();
-		return new MapDiffCursor<>(this.hashProvider, this.defaultValue, fromCursor, toCursor);
-
+		InOrderMapCursor<K, V> fromCursor = new InOrderMapCursor<>(this);
+		VersionedMapImpl<K, V> toMap = (VersionedMapImpl<K, V>) this.store.createMap(toVersion);
+		InOrderMapCursor<K, V> toCursor = new InOrderMapCursor<>(toMap);
+		return new MapDiffCursor<>(this.defaultValue, fromCursor, toCursor);
 	}
 
 
@@ -152,7 +152,11 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 	@Override
 	public int contentHashCode(ContentHashCode mode) {
 		// Calculating the root hashCode is always fast, because {@link Node} caches its hashCode.
-		return Objects.hashCode(root);
+		if(root == null) {
+			return 0;
+		} else {
+			return root.hashCode();
+		}
 	}
 
 	@Override

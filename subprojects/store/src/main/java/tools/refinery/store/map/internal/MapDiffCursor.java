@@ -1,7 +1,6 @@
 package tools.refinery.store.map.internal;
 
 import tools.refinery.store.map.AnyVersionedMap;
-import tools.refinery.store.map.ContinousHashProvider;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
 
@@ -14,37 +13,78 @@ import java.util.stream.Stream;
  * A cursor representing the difference between two states of a map.
  *
  * @author Oszkar Semerath
- *
  */
 public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
+	private enum State {
+		/**
+		 * initialized state.
+		 */
+		INIT,
+		/**
+		 * Unstable state.
+		 */
+		MOVING_MOVING_SAME_KEY_SAME_VALUE,
+		/**
+		 * Both cursors are moving, and they are on the same sub-node.
+		 */
+		MOVING_MOVING_SAME_NODE,
+		/**
+		 * Both cursors are moving, cursor 1 is behind.
+		 */
+		MOVING_MOVING_BEHIND1,
+		/**
+		 * Both cursors are moving, cursor 2 is behind.
+		 */
+		MOVING_MOVING_BEHIND2,
+		/**
+		 * Both cursors are moving, cursor 1 is on the same key as cursor 2, values are different
+		 */
+		MOVING_MOVING_SAME_KEY_DIFFERENT_VALUE,
+		/**
+		 * Cursor 1 is moving, Cursor 2 is terminated.
+		 */
+		MOVING_TERMINATED,
+		/**
+		 * Cursor 1 is terminated , Cursor 2 is moving.
+		 */
+		TERMINATED_MOVING,
+		/**
+		 * Both cursors are terminated.
+		 */
+		TERMINATED_TERMINATED,
+		/**
+		 * Both Cursors are moving, and they are on an incomparable position.
+		 * It is resolved by showing Cursor 1.
+		 */
+		MOVING_MOVING_HASH1,
+		/**
+		 * Both Cursors are moving, and they are on an incomparable position.
+		 * It is resolved by showing Cursor 2.
+		 */
+		MOVING_MOVING_HASH2
+	}
+
 	/**
 	 * Default nodeId representing missing elements.
 	 */
 	private final V defaultValue;
-	private final MapCursor<K, V> cursor1;
-	private final MapCursor<K, V> cursor2;
-	private final ContinousHashProvider<? super K> hashProvider;
+	private final InOrderMapCursor<K, V> cursor1;
+	private final InOrderMapCursor<K, V> cursor2;
+
+	// State
+	State state = State.INIT;
 
 	// Values
 	private K key;
 	private V fromValue;
 	private V toValue;
 
-	// State
-	/**
-	 * Positive number if cursor 1 is behind, negative number if cursor 2 is behind,
-	 * and 0 if they are at the same position.
-	 */
-	private int cursorRelation;
-	private HashClash hashClash = HashClash.NONE;
 
-	public MapDiffCursor(ContinousHashProvider<? super K> hashProvider, V defaultValue, Cursor<K, V> cursor1,
-			Cursor<K, V> cursor2) {
+	public MapDiffCursor(V defaultValue, InOrderMapCursor<K, V> cursor1, InOrderMapCursor<K, V> cursor2) {
 		super();
-		this.hashProvider = hashProvider;
 		this.defaultValue = defaultValue;
-		this.cursor1 = (MapCursor<K, V>) cursor1;
-		this.cursor2 = (MapCursor<K, V>) cursor2;
+		this.cursor1 = cursor1;
+		this.cursor2 = cursor2;
 	}
 
 	@Override
@@ -68,7 +108,7 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 	}
 
 	public boolean isTerminated() {
-		return cursor1.isTerminated() && cursor2.isTerminated();
+		return this.state == State.TERMINATED_TERMINATED;
 	}
 
 	@Override
@@ -78,148 +118,142 @@ public class MapDiffCursor<K, V> implements DiffCursor<K, V>, Cursor<K, V> {
 
 	@Override
 	public Set<AnyVersionedMap> getDependingMaps() {
-		return Stream.concat(cursor1.getDependingMaps().stream(), cursor2.getDependingMaps().stream())
-				.map(AnyVersionedMap.class::cast)
-				.collect(Collectors.toUnmodifiableSet());
+		return Stream.concat(cursor1.getDependingMaps().stream(), cursor2.getDependingMaps().stream()).map(AnyVersionedMap.class::cast).collect(Collectors.toUnmodifiableSet());
 	}
 
-	protected void updateState() {
-		if (!isTerminated()) {
-			this.cursorRelation = MapCursor.compare(cursor1, cursor2);
-			if (cursorRelation > 0 || cursor2.isTerminated()) {
-				this.key = cursor1.getKey();
-				this.fromValue = cursor1.getValue();
-				this.toValue = defaultValue;
-			} else if (cursorRelation < 0 || cursor1.isTerminated()) {
-				this.key = cursor2.getKey();
-				this.fromValue = defaultValue;
-				this.toValue = cursor1.getValue();
-			} else {
-				// cursor1 = cursor2
-				if (cursor1.getKey().equals(cursor2.getKey())) {
-					this.key = cursor1.getKey();
-					this.fromValue = cursor1.getValue();
-					this.toValue = defaultValue;
-				} else {
-					resolveHashClashWithFirstEntry();
-				}
+	private boolean isInStableState() {
+		return this.state != State.MOVING_MOVING_SAME_KEY_SAME_VALUE
+				&& this.state != State.MOVING_MOVING_SAME_NODE && this.state != State.INIT;
+	}
+
+	private boolean updateAndReturnWithResult() {
+		return switch (this.state) {
+			case INIT -> throw new IllegalStateException("DiffCursor terminated without starting!");
+			case MOVING_MOVING_SAME_KEY_SAME_VALUE, MOVING_MOVING_SAME_NODE ->
+					throw new IllegalStateException("DiffCursor terminated in unstable state!");
+			case MOVING_MOVING_BEHIND1, MOVING_TERMINATED, MOVING_MOVING_HASH1 -> {
+				this.key = this.cursor1.getKey();
+				this.fromValue = this.cursor1.getValue();
+				this.toValue = this.defaultValue;
+				yield true;
 			}
-		}
-	}
-
-	protected void resolveHashClashWithFirstEntry() {
-		int compareResult = this.hashProvider.compare(cursor1.key, cursor2.key);
-		if (compareResult < 0) {
-			this.hashClash = HashClash.STUCK_CURSOR_2;
-			this.cursorRelation = 0;
-			this.key = cursor1.key;
-			this.fromValue = cursor1.value;
-			this.toValue = defaultValue;
-		} else if (compareResult > 0) {
-			this.hashClash = HashClash.STUCK_CURSOR_1;
-			this.cursorRelation = 0;
-			this.key = cursor2.key;
-			this.fromValue = defaultValue;
-			this.toValue = cursor2.value;
-		} else {
-			throw new IllegalArgumentException("Inconsistent compare result for diffCursor");
-		}
-	}
-
-	protected boolean isInHashClash() {
-		return this.hashClash != HashClash.NONE;
-	}
-
-	protected void resolveHashClashWithSecondEntry() {
-		switch (this.hashClash) {
-		case STUCK_CURSOR_1 -> {
-			this.hashClash = HashClash.NONE;
-			this.cursorRelation = 0;
-			this.key = cursor1.key;
-			this.fromValue = cursor1.value;
-			this.toValue = defaultValue;
-		}
-		case STUCK_CURSOR_2 -> {
-			this.hashClash = HashClash.NONE;
-			this.cursorRelation = 0;
-			this.key = cursor2.key;
-			this.fromValue = defaultValue;
-			this.toValue = cursor2.value;
-		}
-		default -> throw new IllegalArgumentException("Inconsistent compare result for diffCursor");
-		}
-	}
-
-	/**
-	 * Checks if two states has the same values, i.e., there is no difference.
-	 * @return whether two states has the same values
-	 */
-	protected boolean sameValues() {
-		if(cursor1.isTerminated() || cursor2.isTerminated()) return false;
-		else return Objects.equals(this.fromValue, this.toValue);
-	}
-
-	protected boolean moveOne() {
-		if (isTerminated()) {
-			return false;
-		}
-		if (this.cursorRelation > 0 || cursor2.isTerminated()) {
-			return cursor1.move();
-		} else if (this.cursorRelation < 0 || cursor1.isTerminated()) {
-			return cursor2.move();
-		} else {
-			boolean moved1 = cursor1.move();
-			boolean moved2 = cursor2.move();
-			return moved1 && moved2;
-		}
-	}
-
-	private boolean skipNode() {
-		if (isTerminated()) {
-			throw new IllegalStateException("DiffCursor tries to skip when terminated!");
-		}
-		boolean update1 = cursor1.skipCurrentNode();
-		boolean update2 = cursor2.skipCurrentNode();
-		updateState();
-		return update1 && update2;
-	}
-
-	protected boolean moveToConsistentState() {
-		if (!isTerminated()) {
-			boolean changed;
-			boolean lastResult = true;
-			do {
-				changed = false;
-				if (MapCursor.sameSubNode(cursor1, cursor2)) {
-					lastResult = skipNode();
-					changed = true;
-				}
-				if (sameValues()) {
-					lastResult = moveOne();
-					changed = true;
-				}
-				updateState();
-			} while (changed && !isTerminated());
-			return lastResult;
-		} else {
-			return false;
-		}
+			case MOVING_MOVING_BEHIND2, TERMINATED_MOVING, MOVING_MOVING_HASH2 -> {
+				this.key = this.cursor2.getKey();
+				this.fromValue = this.defaultValue;
+				this.toValue = cursor2.getValue();
+				yield true;
+			}
+			case MOVING_MOVING_SAME_KEY_DIFFERENT_VALUE -> {
+				this.key = this.cursor1.getKey();
+				this.fromValue = this.cursor1.getValue();
+				this.toValue = this.cursor2.getValue();
+				yield true;
+			}
+			case TERMINATED_TERMINATED -> {
+				this.key = null;
+				this.fromValue = null;
+				this.toValue = null;
+				yield false;
+			}
+		};
 	}
 
 	public boolean move() {
-		if (!isTerminated()) {
-			if (isInHashClash()) {
-				this.resolveHashClashWithSecondEntry();
-				return true;
-			} else {
-				if (moveOne()) {
-					return moveToConsistentState();
+		do {
+			this.state = moveOne(this.state);
+		} while (!isInStableState());
+		return updateAndReturnWithResult();
+	}
+
+	private State moveOne(State currentState) {
+		return switch (currentState) {
+			case INIT, MOVING_MOVING_HASH2, MOVING_MOVING_SAME_KEY_SAME_VALUE, MOVING_MOVING_SAME_KEY_DIFFERENT_VALUE -> {
+				boolean cursor1Moved = cursor1.move();
+				boolean cursor2Moved = cursor2.move();
+				yield recalculateStateAfterCursorMovement(cursor1Moved, cursor2Moved);
+			}
+			case MOVING_MOVING_SAME_NODE -> {
+				boolean cursor1Moved = cursor1.skipCurrentNode();
+				boolean cursor2Moved = cursor2.skipCurrentNode();
+				yield recalculateStateAfterCursorMovement(cursor1Moved, cursor2Moved);
+			}
+			case MOVING_MOVING_BEHIND1 -> {
+				boolean cursorMoved = cursor1.move();
+				if (cursorMoved) {
+					yield recalculateStateBasedOnCursorRelation();
 				} else {
-					return false;
+					yield State.TERMINATED_MOVING;
 				}
 			}
+			case MOVING_MOVING_BEHIND2 -> {
+				boolean cursorMoved = cursor2.move();
+				if (cursorMoved) {
+					yield recalculateStateBasedOnCursorRelation();
+				} else {
+					yield State.MOVING_TERMINATED;
+				}
+			}
+			case TERMINATED_MOVING -> {
+				boolean cursorMoved = cursor2.move();
+				if (cursorMoved) {
+					yield State.TERMINATED_MOVING;
+				} else {
+					yield State.TERMINATED_TERMINATED;
+				}
+			}
+			case MOVING_TERMINATED -> {
+				boolean cursorMoved = cursor1.move();
+				if (cursorMoved) {
+					yield State.MOVING_TERMINATED;
+				} else {
+					yield State.TERMINATED_TERMINATED;
+				}
+			}
+			case MOVING_MOVING_HASH1 -> State.MOVING_MOVING_HASH2;
+			case TERMINATED_TERMINATED -> throw new IllegalStateException("Trying to move while terminated!");
+		};
+	}
 
-		} else
-			return false;
+	private State recalculateStateAfterCursorMovement(boolean cursor1Moved, boolean cursor2Moved) {
+		if (cursor1Moved && cursor2Moved) {
+			return recalculateStateBasedOnCursorRelation();
+		} else if (cursor1Moved) {
+			return State.MOVING_TERMINATED;
+		} else if (cursor2Moved) {
+			return State.TERMINATED_MOVING;
+		} else {
+			return State.TERMINATED_TERMINATED;
+		}
+	}
+
+	private State recalculateStateBasedOnCursorRelation() {
+		final int relation = InOrderMapCursor.comparePosition(cursor1, cursor2);
+
+		if (relation > 0) {
+			return State.MOVING_MOVING_BEHIND1;
+		} else if (relation < 0) {
+			return State.MOVING_MOVING_BEHIND2;
+		}
+
+		if (InOrderMapCursor.sameSubNode(cursor1, cursor2)) {
+			return State.MOVING_MOVING_SAME_NODE;
+		} else if (Objects.equals(cursor1.getKey(), cursor2.getKey())) {
+			if (Objects.equals(cursor1.getValue(), cursor2.getValue())) {
+				return State.MOVING_MOVING_SAME_KEY_SAME_VALUE;
+			} else {
+				return State.MOVING_MOVING_SAME_KEY_DIFFERENT_VALUE;
+			}
+		}
+
+		final int depth = InOrderMapCursor.compareDepth(cursor1, cursor2);
+
+		if (depth > 0) {
+			return State.MOVING_MOVING_BEHIND1;
+		} else if (depth < 0) {
+			return State.MOVING_MOVING_BEHIND2;
+		} else {
+			return State.MOVING_MOVING_HASH1;
+		}
+
 	}
 }

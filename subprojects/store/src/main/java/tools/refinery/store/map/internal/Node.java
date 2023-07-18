@@ -108,9 +108,11 @@ public abstract class Node<K, V> {
 	 * @return Whether there was a next value to move on.
 	 */
 	abstract boolean moveToNext(MapCursor<K, V> cursor);
+	abstract boolean moveToNextInorder(InOrderMapCursor<K, V> cursor);
 
 	///////// FOR printing
 	public abstract void prettyPrint(StringBuilder builder, int depth, int code);
+
 
 	@Override
 	public String toString() {

@@ -1,9 +1,6 @@
 package tools.refinery.store.map;
 
-import tools.refinery.store.map.internal.ImmutableNode;
-import tools.refinery.store.map.internal.MapDiffCursor;
-import tools.refinery.store.map.internal.Node;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.internal.*;
 
 import java.util.*;
 
@@ -93,7 +90,7 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 		} else {
 			ArrayList<Long> existingKeys = new ArrayList<>(states.keySet());
 			Collections.sort(existingKeys);
-			throw new IllegalArgumentException("Store does not contain state " + state + "! Avaliable states: "
+			throw new IllegalArgumentException("Store does not contain state " + state + "! Available states: "
 					+ Arrays.toString(existingKeys.toArray()));
 		}
 	}
@@ -118,10 +115,10 @@ public class VersionedMapStoreImpl<K, V> implements VersionedMapStore<K, V> {
 
 	@Override
 	public DiffCursor<K, V> getDiffCursor(long fromState, long toState) {
-		VersionedMap<K, V> map1 = createMap(fromState);
-		VersionedMap<K, V> map2 = createMap(toState);
-		Cursor<K, V> cursor1 = map1.getAll();
-		Cursor<K, V> cursor2 = map2.getAll();
-		return new MapDiffCursor<>(this.hashProvider, this.defaultValue, cursor1, cursor2);
+		VersionedMapImpl<K, V> map1 = (VersionedMapImpl<K, V>) createMap(fromState);
+		VersionedMapImpl<K, V> map2 = (VersionedMapImpl<K, V>) createMap(toState);
+		InOrderMapCursor<K, V> cursor1 = new InOrderMapCursor<>(map1);
+		InOrderMapCursor<K, V> cursor2 = new InOrderMapCursor<>(map2);
+		return new MapDiffCursor<>(this.defaultValue, cursor1, cursor2);
 	}
 }

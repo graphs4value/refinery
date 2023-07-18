@@ -4,11 +4,9 @@ import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.internal.MapDiffCursor;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.InterpretationListener;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.model.TupleHashProvider;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
@@ -19,16 +17,13 @@ import java.util.List;
 public class VersionedInterpretation<T> implements Interpretation<T> {
 	private final ModelImpl model;
 	private final Symbol<T> symbol;
-	private final VersionedMapStore<Tuple, T> store;
 	private final VersionedMap<Tuple, T> map;
 	private final List<InterpretationListener<T>> listeners = new ArrayList<>();
 	private final List<InterpretationListener<T>> restoreListeners = new ArrayList<>();
 
-	private VersionedInterpretation(ModelImpl model, Symbol<T> symbol, VersionedMapStore<Tuple, T> store,
-									VersionedMap<Tuple, T> map) {
+	private VersionedInterpretation(ModelImpl model, Symbol<T> symbol, VersionedMap<Tuple, T> map) {
 		this.model = model;
 		this.symbol = symbol;
-		this.store = store;
 		this.map = map;
 	}
 
@@ -111,9 +106,7 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 
 	@Override
 	public DiffCursor<Tuple, T> getDiffCursor(long to) {
-		var fromCursor = getAll();
-		var toCursor = store.createMap(to).getAll();
-		return new MapDiffCursor<>(TupleHashProvider.INSTANCE, symbol.defaultValue(), fromCursor, toCursor);
+		return map.getDiffCursor(to);
 	}
 
 	public long commit() {
@@ -148,7 +141,7 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 		@SuppressWarnings("unchecked")
 		var typedSymbol = (Symbol<T>) symbol;
 		var map = store.createMap();
-		return new VersionedInterpretation<>(model, typedSymbol, store, map);
+		return new VersionedInterpretation<>(model, typedSymbol, map);
 	}
 
 	static <T> VersionedInterpretation<T> of(ModelImpl model, AnySymbol symbol, VersionedMapStore<Tuple, T> store,
@@ -156,6 +149,6 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 		@SuppressWarnings("unchecked")
 		var typedSymbol = (Symbol<T>) symbol;
 		var map = store.createMap(state);
-		return new VersionedInterpretation<>(model, typedSymbol, store, map);
+		return new VersionedInterpretation<>(model, typedSymbol, map);
 	}
 }
