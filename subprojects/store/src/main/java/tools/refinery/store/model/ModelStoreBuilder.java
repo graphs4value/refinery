@@ -29,7 +29,9 @@ public interface ModelStoreBuilder {
 
 	<T> ModelStoreBuilder symbol(Symbol<T> symbol);
 
-	<T extends ModelAdapterBuilder> ModelStoreBuilder with(T adapterBuilder);
+	ModelStoreBuilder with(ModelAdapterBuilder adapterBuilder);
+
+	ModelStoreBuilder with(ModelStoreConfiguration configuration);
 
 	<T extends ModelAdapterBuilder> Optional<T> tryGetAdapter(Class<? extends T> adapterType);
 

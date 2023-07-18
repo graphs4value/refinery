@@ -32,6 +32,16 @@ public final class TupleN implements Tuple {
 	}
 
 	@Override
+	public Tuple set(int element, int value) {
+		int size = getSize();
+		var newValues = new int[size];
+		for (int i = 0; i < size; i++) {
+			newValues[i] = element == i ? value : values[i];
+		}
+		return Tuple.of(newValues);
+	}
+
+	@Override
 	public String toString() {
 		var valuesString = Arrays.stream(values)
 				.mapToObj(Integer::toString)

@@ -3,8 +3,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning;
+package tools.refinery.store.reasoning.interpretation;
 
+import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 
 public sealed interface AnyPartialInterpretation permits PartialInterpretation {
@@ -12,7 +14,5 @@ public sealed interface AnyPartialInterpretation permits PartialInterpretation {
 
 	AnyPartialSymbol getPartialSymbol();
 
-	int countUnfinished();
-
-	int countErrors();
+	Concreteness getConcreteness();
 }

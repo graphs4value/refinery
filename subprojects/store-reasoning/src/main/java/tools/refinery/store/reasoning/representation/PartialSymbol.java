@@ -13,8 +13,6 @@ public sealed interface PartialSymbol<A, C> extends AnyPartialSymbol permits Par
 
 	A defaultValue();
 
-	C defaultConcreteValue();
-
 	static PartialRelation of(String name, int arity) {
 		return new PartialRelation(name, arity);
 	}

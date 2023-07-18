@@ -29,6 +29,11 @@ public final class Tuple0 implements Tuple {
 	}
 
 	@Override
+	public Tuple set(int element, int value) {
+		throw new IndexOutOfBoundsException(element);
+	}
+
+	@Override
 	public String toString() {
 		return TUPLE_BEGIN + TUPLE_END;
 	}

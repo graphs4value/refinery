@@ -15,11 +15,6 @@ public record PartialFunction<A, C>(String name, int arity, AbstractDomain<A, C>
 	}
 
 	@Override
-	public C defaultConcreteValue() {
-		return null;
-	}
-
-	@Override
 	public boolean equals(Object o) {
 		return this == o;
 	}

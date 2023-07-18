@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.representation.TruthValue;
@@ -141,8 +142,8 @@ class TypeAnalyzerTest {
 
 		var expected = new InferredType(Set.of(c3), Set.of(c1, c2, c3), c3);
 		assertAll(
-				() -> assertThat(tester.getInferredType(c3), is(expected)),
-				() -> assertThat(c3Result.merge(sut.getUnknownType(), TruthValue.TRUE), is(expected))
+				() -> assertThat(tester.getInferredType(c3), Matchers.is(expected)),
+				() -> assertThat(c3Result.merge(sut.getUnknownType(), TruthValue.TRUE), Matchers.is(expected))
 		);
 	}
 
@@ -166,7 +167,7 @@ class TypeAnalyzerTest {
 		var a1Result = tester.getPreservedType(a1);
 
 		assertThat(c1Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-				is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c2)));
+				Matchers.is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c2)));
 	}
 
 	@Test
@@ -189,7 +190,7 @@ class TypeAnalyzerTest {
 		var a1Result = tester.getPreservedType(a1);
 
 		assertThat(c1Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-				is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c3)));
+				Matchers.is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c3)));
 	}
 
 	@Test

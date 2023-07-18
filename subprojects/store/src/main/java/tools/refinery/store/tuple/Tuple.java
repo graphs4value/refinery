@@ -12,6 +12,8 @@ public sealed interface Tuple extends Comparable<Tuple> permits Tuple0, Tuple1, 
 
 	int get(int element);
 
+	Tuple set(int element, int value);
+
 	@Override
 	default int compareTo(@NotNull Tuple other) {
 		int size = getSize();

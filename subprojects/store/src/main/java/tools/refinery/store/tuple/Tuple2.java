@@ -25,6 +25,15 @@ public record Tuple2(int value0, int value1) implements Tuple {
 	}
 
 	@Override
+	public Tuple set(int element, int value) {
+		return switch (element) {
+			case 0 -> Tuple.of(value, value1);
+			case 1 -> Tuple.of(value0, value);
+			default -> throw new ArrayIndexOutOfBoundsException(element);
+		};
+	}
+
+	@Override
 	public String toString() {
 		return TUPLE_BEGIN + value0 + TUPLE_SEPARATOR + value1 + TUPLE_END;
 	}

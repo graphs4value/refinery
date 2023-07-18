@@ -7,6 +7,8 @@ package tools.refinery.store.representation;
 
 import java.util.Optional;
 
+// Singleton pattern, because there is only one domain for truth values.
+@SuppressWarnings("squid:S6548")
 public final class TruthValueDomain implements AbstractDomain<TruthValue, Boolean> {
 	public static final TruthValueDomain INSTANCE = new TruthValueDomain();
 
@@ -15,51 +17,50 @@ public final class TruthValueDomain implements AbstractDomain<TruthValue, Boolea
 
 	@Override
 	public Class<TruthValue> abstractType() {
-		return null;
+		return TruthValue.class;
 	}
 
 	@Override
 	public Class<Boolean> concreteType() {
-		return null;
+		return Boolean.class;
 	}
 
 	@Override
 	public TruthValue toAbstract(Boolean concreteValue) {
-		return null;
+		return TruthValue.toTruthValue(concreteValue);
 	}
 
 	@Override
 	public Optional<Boolean> toConcrete(TruthValue abstractValue) {
-		return Optional.empty();
+		return switch (abstractValue) {
+			case TRUE -> Optional.of(true);
+			case FALSE -> Optional.of(false);
+			default -> Optional.empty();
+		};
 	}
 
 	@Override
 	public boolean isConcrete(TruthValue abstractValue) {
-		return AbstractDomain.super.isConcrete(abstractValue);
-	}
-
-	@Override
-	public boolean isRefinement(TruthValue originalValue, TruthValue refinedValue) {
-		return false;
+		return abstractValue.isConcrete();
 	}
 
 	@Override
 	public TruthValue commonRefinement(TruthValue leftValue, TruthValue rightValue) {
-		return null;
+		return leftValue.merge(rightValue);
 	}
 
 	@Override
 	public TruthValue commonAncestor(TruthValue leftValue, TruthValue rightValue) {
-		return null;
+		return leftValue.join(rightValue);
 	}
 
 	@Override
 	public TruthValue unknown() {
-		return null;
+		return TruthValue.UNKNOWN;
 	}
 
 	@Override
 	public boolean isError(TruthValue abstractValue) {
-		return false;
+		return !abstractValue.isConsistent();
 	}
 }

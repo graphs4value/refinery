@@ -7,6 +7,7 @@ package tools.refinery.store.reasoning.lifting;
 
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.DnfClause;
+import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -18,6 +19,11 @@ import java.util.Map;
 
 public class DnfLifter {
 	private final Map<ModalDnf, Dnf> cache = new HashMap<>();
+
+	public <T> Query<T> lift(Modality modality, Concreteness concreteness, Query<T> query) {
+		var liftedDnf = lift(modality, concreteness, query.getDnf());
+		return query.withDnf(liftedDnf);
+	}
 
 	public Dnf lift(Modality modality, Concreteness concreteness, Dnf dnf) {
 		return cache.computeIfAbsent(new ModalDnf(modality, concreteness, dnf), this::doLift);

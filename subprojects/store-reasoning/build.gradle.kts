@@ -11,4 +11,5 @@ plugins {
 dependencies {
 	api(project(":refinery-store-query"))
 	testImplementation(testFixtures(project(":refinery-store-query")))
+	testImplementation(project(":refinery-store-query-viatra"))
 }

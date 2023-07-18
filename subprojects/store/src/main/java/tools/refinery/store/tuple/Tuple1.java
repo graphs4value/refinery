@@ -38,6 +38,14 @@ public final class Tuple1 implements Tuple {
 	}
 
 	@Override
+	public Tuple set(int element, int value) {
+		if (element == 0) {
+			return Tuple.of(value);
+		}
+		throw new IndexOutOfBoundsException(element);
+	}
+
+	@Override
 	public String toString() {
 		return TUPLE_BEGIN + value0 + TUPLE_END;
 	}

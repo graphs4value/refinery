@@ -54,7 +54,7 @@ class ClauseLifter {
 			var liftedLiteral = liftLiteral(literal);
 			liftedLiterals.add(liftedLiteral);
 		}
-		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS);
+		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
 		for (var quantifiedVariable : existentialQuantifiersToAdd) {
 			liftedLiterals.add(existsConstraint.call(quantifiedVariable));
 		}
@@ -117,7 +117,7 @@ class ClauseLifter {
 		var liftedConstraint = ModalConstraint.of(negatedModality, concreteness, target);
 		literals.add(liftedConstraint.call(CallPolarity.POSITIVE, originalArguments));
 
-		var existsConstraint = ModalConstraint.of(negatedModality, concreteness, ReasoningAdapter.EXISTS);
+		var existsConstraint = ModalConstraint.of(negatedModality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
 		for (var variable : uniqueOriginalArguments) {
 			if (privateVariables.contains(variable)) {
 				literals.add(existsConstraint.call(variable));
@@ -134,7 +134,7 @@ class ClauseLifter {
 		var originalArguments = callLiteral.getArguments();
 		var liftedTarget = ModalConstraint.of(modality, concreteness, target);
 
-		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS);
+		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
 		var existingEndHelperName = "%s#exisitingEnd#%s#%s".formatted(target.name(), modality, concreteness);
 		var existingEndHelper = Dnf.of(existingEndHelperName, builder -> {
 			var start = builder.parameter("start");
@@ -171,10 +171,10 @@ class ClauseLifter {
 
 	private Literal liftEquivalenceLiteral(EquivalenceLiteral equivalenceLiteral) {
 		if (equivalenceLiteral.isPositive()) {
-			return ModalConstraint.of(modality, concreteness, ReasoningAdapter.EQUALS)
+			return ModalConstraint.of(modality, concreteness, ReasoningAdapter.EQUALS_SYMBOL)
 					.call(CallPolarity.POSITIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
 		}
-		return ModalConstraint.of(modality.negate(), concreteness, ReasoningAdapter.EQUALS)
+		return ModalConstraint.of(modality.negate(), concreteness, ReasoningAdapter.EQUALS_SYMBOL)
 				.call(CallPolarity.NEGATIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
 	}
 }

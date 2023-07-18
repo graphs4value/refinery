@@ -11,6 +11,7 @@ import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.map.VersionedMapStoreImpl;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.model.TupleHashProvider;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
@@ -26,7 +27,8 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	@Override
 	public <T> ModelStoreBuilder symbol(Symbol<T> symbol) {
 		if (!allSymbols.add(symbol)) {
-			throw new IllegalArgumentException("Symbol %s already added".formatted(symbol));
+			// No need to add symbol twice.
+			return this;
 		}
 		var equivalenceClass = new SymbolEquivalenceClass<>(symbol);
 		var symbolsInEquivalenceClass = equivalenceClasses.computeIfAbsent(equivalenceClass,
@@ -36,7 +38,7 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	}
 
 	@Override
-	public <T extends ModelAdapterBuilder> ModelStoreBuilder with(T adapterBuilder) {
+	public ModelStoreBuilder with(ModelAdapterBuilder adapterBuilder) {
 		for (var existingAdapter : adapters) {
 			if (existingAdapter.getClass().equals(adapterBuilder.getClass())) {
 				throw new IllegalArgumentException("%s adapter was already configured for store builder"
@@ -44,6 +46,12 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 			}
 		}
 		adapters.add(adapterBuilder);
+		return this;
+	}
+
+	@Override
+	public ModelStoreBuilder with(ModelStoreConfiguration configuration) {
+		configuration.apply(this);
 		return this;
 	}
 
@@ -59,12 +67,13 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 
 	@Override
 	public ModelStore build() {
+		// First configure adapters and let them register any symbols we don't know about yet.
+		for (int i = adapters.size() - 1; i >= 0; i--) {
+			adapters.get(i).configure(this);
+		}
 		var stores = new HashMap<AnySymbol, VersionedMapStore<Tuple, ?>>(allSymbols.size());
 		for (var entry : equivalenceClasses.entrySet()) {
 			createStores(stores, entry.getKey(), entry.getValue());
-		}
-		for (int i = adapters.size() - 1; i >= 0; i--) {
-			adapters.get(i).configure(this);
 		}
 		var modelStore = new ModelStoreImpl(stores, adapters.size());
 		for (var adapterBuilder : adapters) {

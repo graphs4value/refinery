@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
@@ -65,16 +66,16 @@ class TypeAnalyzerExampleHierarchyTest {
 	@Test
 	void inferredTypesTest() {
 		assertAll(
-				() -> assertThat(sut.getUnknownType(), is(new InferredType(Set.of(), Set.of(c1, c2, c3, c4), null))),
-				() -> assertThat(tester.getInferredType(a1), is(new InferredType(Set.of(a1, a4), Set.of(c1, c2), c1))),
-				() -> assertThat(tester.getInferredType(a3), is(new InferredType(Set.of(a3), Set.of(c2, c3), c2))),
-				() -> assertThat(tester.getInferredType(a4), is(new InferredType(Set.of(a4), Set.of(c1, c2, c4), c1))),
-				() -> assertThat(tester.getInferredType(a5), is(new InferredType(Set.of(a5), Set.of(), null))),
-				() -> assertThat(tester.getInferredType(c1), is(new InferredType(Set.of(a1, a4, c1), Set.of(c1), c1))),
+				() -> assertThat(sut.getUnknownType(), Matchers.is(new InferredType(Set.of(), Set.of(c1, c2, c3, c4), null))),
+				() -> assertThat(tester.getInferredType(a1), Matchers.is(new InferredType(Set.of(a1, a4), Set.of(c1, c2), c1))),
+				() -> assertThat(tester.getInferredType(a3), Matchers.is(new InferredType(Set.of(a3), Set.of(c2, c3), c2))),
+				() -> assertThat(tester.getInferredType(a4), Matchers.is(new InferredType(Set.of(a4), Set.of(c1, c2, c4), c1))),
+				() -> assertThat(tester.getInferredType(a5), Matchers.is(new InferredType(Set.of(a5), Set.of(), null))),
+				() -> assertThat(tester.getInferredType(c1), Matchers.is(new InferredType(Set.of(a1, a4, c1), Set.of(c1), c1))),
 				() -> assertThat(tester.getInferredType(c2),
-						is(new InferredType(Set.of(a1, a3, a4, c2), Set.of(c2), c2))),
-				() -> assertThat(tester.getInferredType(c3), is(new InferredType(Set.of(a3, c3), Set.of(c3), c3))),
-				() -> assertThat(tester.getInferredType(c4), is(new InferredType(Set.of(a4, c4), Set.of(c4), c4)))
+						Matchers.is(new InferredType(Set.of(a1, a3, a4, c2), Set.of(c2), c2))),
+				() -> assertThat(tester.getInferredType(c3), Matchers.is(new InferredType(Set.of(a3, c3), Set.of(c3), c3))),
+				() -> assertThat(tester.getInferredType(c4), Matchers.is(new InferredType(Set.of(a4, c4), Set.of(c4), c4)))
 		);
 	}
 
@@ -84,8 +85,8 @@ class TypeAnalyzerExampleHierarchyTest {
 		var a3Result = tester.getPreservedType(a3);
 		var expected = new InferredType(Set.of(a1, a3, a4, c2), Set.of(c2), c2);
 		assertAll(
-				() -> assertThat(a1Result.merge(a3Result.asInferredType(), TruthValue.TRUE), is(expected)),
-				() -> assertThat(a3Result.merge(a1Result.asInferredType(), TruthValue.TRUE), is(expected)),
+				() -> assertThat(a1Result.merge(a3Result.asInferredType(), TruthValue.TRUE), Matchers.is(expected)),
+				() -> assertThat(a3Result.merge(a1Result.asInferredType(), TruthValue.TRUE), Matchers.is(expected)),
 				() -> assertThat(a1Result.merge(sut.getUnknownType(), TruthValue.TRUE), is(a1Result.asInferredType())),
 				() -> assertThat(a3Result.merge(sut.getUnknownType(), TruthValue.TRUE), is(a3Result.asInferredType())),
 				() -> assertThat(a1Result.merge(a1Result.asInferredType(), TruthValue.TRUE),
@@ -100,19 +101,19 @@ class TypeAnalyzerExampleHierarchyTest {
 		var a4Result = tester.getPreservedType(a4);
 		assertAll(
 				() -> assertThat(a1Result.merge(a3Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a3, c3), Set.of(c3), c3))),
+						Matchers.is(new InferredType(Set.of(a3, c3), Set.of(c3), c3))),
 				() -> assertThat(a3Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a1, a4, c1), Set.of(c1), c1))),
+						Matchers.is(new InferredType(Set.of(a1, a4, c1), Set.of(c1), c1))),
 				() -> assertThat(a4Result.merge(a3Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a3, c3), Set.of(c3), c3))),
+						Matchers.is(new InferredType(Set.of(a3, c3), Set.of(c3), c3))),
 				() -> assertThat(a3Result.merge(a4Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a4), Set.of(c1, c4), c1))),
+						Matchers.is(new InferredType(Set.of(a4), Set.of(c1, c4), c1))),
 				() -> assertThat(a1Result.merge(sut.getUnknownType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(), Set.of(c3, c4), null))),
+						Matchers.is(new InferredType(Set.of(), Set.of(c3, c4), null))),
 				() -> assertThat(a3Result.merge(sut.getUnknownType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(), Set.of(c1, c4), null))),
+						Matchers.is(new InferredType(Set.of(), Set.of(c1, c4), null))),
 				() -> assertThat(a4Result.merge(sut.getUnknownType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(), Set.of(c3), null)))
+						Matchers.is(new InferredType(Set.of(), Set.of(c3), null)))
 		);
 	}
 
@@ -122,8 +123,8 @@ class TypeAnalyzerExampleHierarchyTest {
 		var a4Result = tester.getPreservedType(a4);
 		var expected = new InferredType(Set.of(c1, a1, a4), Set.of(), null);
 		assertAll(
-				() -> assertThat(c1Result.merge(a4Result.asInferredType(), TruthValue.ERROR), is(expected)),
-				() -> assertThat(a4Result.merge(c1Result.asInferredType(), TruthValue.ERROR), is(expected))
+				() -> assertThat(c1Result.merge(a4Result.asInferredType(), TruthValue.ERROR), Matchers.is(expected)),
+				() -> assertThat(a4Result.merge(c1Result.asInferredType(), TruthValue.ERROR), Matchers.is(expected))
 		);
 	}
 
@@ -145,9 +146,9 @@ class TypeAnalyzerExampleHierarchyTest {
 		var c3Result = tester.getPreservedType(c3);
 		assertAll(
 				() -> assertThat(a1Result.merge(c3Result.asInferredType(), TruthValue.TRUE),
-						is(new InferredType(Set.of(a1, a3, c3), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a3, c3), Set.of(), null))),
 				() -> assertThat(c3Result.merge(a1Result.asInferredType(), TruthValue.TRUE),
-						is(new InferredType(Set.of(a1, a3, a4, c3), Set.of(), null)))
+						Matchers.is(new InferredType(Set.of(a1, a3, a4, c3), Set.of(), null)))
 		);
 	}
 
@@ -158,13 +159,13 @@ class TypeAnalyzerExampleHierarchyTest {
 		var c1Result = tester.getPreservedType(c1);
 		assertAll(
 				() -> assertThat(a4Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a1, a4), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a4), Set.of(), null))),
 				() -> assertThat(a1Result.merge(c1Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a1, a4, c1), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a4, c1), Set.of(), null))),
 				() -> assertThat(a4Result.merge(c1Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a1, a4, c1), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a4, c1), Set.of(), null))),
 				() -> assertThat(a1Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-						is(new InferredType(Set.of(a1, a4), Set.of(), null)))
+						Matchers.is(new InferredType(Set.of(a1, a4), Set.of(), null)))
 		);
 	}
 
@@ -174,9 +175,9 @@ class TypeAnalyzerExampleHierarchyTest {
 		var a5Result = tester.getPreservedType(a5);
 		assertAll(
 				() -> assertThat(c1Result.merge(a5Result.asInferredType(), TruthValue.TRUE),
-						is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null))),
 				() -> assertThat(a5Result.merge(c1Result.asInferredType(), TruthValue.TRUE),
-						is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null)))
+						Matchers.is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null)))
 		);
 	}
 
@@ -198,9 +199,9 @@ class TypeAnalyzerExampleHierarchyTest {
 		var a5Result = tester.getPreservedType(a5);
 		assertAll(
 				() -> assertThat(c1Result.merge(a5Result.asInferredType(), TruthValue.ERROR),
-						is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null))),
 				() -> assertThat(a5Result.merge(c1Result.asInferredType(), TruthValue.ERROR),
-						is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null))),
+						Matchers.is(new InferredType(Set.of(a1, a4, a5, c1), Set.of(), null))),
 				() -> assertThat(a5Result.merge(a5Result.asInferredType(), TruthValue.ERROR),
 						is(a5Result.asInferredType()))
 		);

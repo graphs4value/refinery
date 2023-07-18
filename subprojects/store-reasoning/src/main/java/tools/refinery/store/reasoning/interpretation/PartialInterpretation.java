@@ -3,10 +3,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning;
+package tools.refinery.store.reasoning.interpretation;
 
-import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.tuple.Tuple;
 
 public non-sealed interface PartialInterpretation<A, C> extends AnyPartialInterpretation {
@@ -17,9 +19,8 @@ public non-sealed interface PartialInterpretation<A, C> extends AnyPartialInterp
 
 	Cursor<Tuple, A> getAll();
 
-	MergeResult merge(Tuple key, A value);
-
-	C getConcrete(Tuple key);
-
-	Cursor<Tuple, C> getAllConcrete();
+	interface Factory<A, C> {
+		PartialInterpretation<A, C> create(ReasoningAdapter adapter, Concreteness concreteness,
+										   PartialSymbol<A, C> partialSymbol);
+	}
 }

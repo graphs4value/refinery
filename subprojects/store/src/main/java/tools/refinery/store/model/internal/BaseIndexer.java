@@ -9,14 +9,9 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import tools.refinery.store.map.AnyVersionedMap;
-import tools.refinery.store.map.Cursor;
-import tools.refinery.store.map.Cursors;
-import tools.refinery.store.map.VersionedMap;
+import tools.refinery.store.map.*;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 class BaseIndexer<T> {
@@ -91,40 +86,12 @@ class BaseIndexer<T> {
 		return new IndexCursor<>(adjacentTuples, versionedMap);
 	}
 
-	private static class IndexCursor<T> implements Cursor<Tuple, T> {
+	private static class IndexCursor<T> extends IteratorBasedCursor<Tuple, T> {
 		private final Set<AnyVersionedMap> dependingMaps;
-		private final Iterator<Map.Entry<Tuple, T>> iterator;
-		private Map.Entry<Tuple, T> entry;
-		private boolean terminated;
 
-		public IndexCursor(MutableMap<Tuple, T> adjacentTuples, VersionedMap<Tuple, T> versionedMap) {
+		public IndexCursor(MutableMap<Tuple, T> map, VersionedMap<Tuple, T> versionedMap) {
+			super(map.entrySet().iterator());
 			dependingMaps = versionedMap == null ? Set.of() : Set.of(versionedMap);
-			iterator = adjacentTuples.entrySet().iterator();
-		}
-
-		@Override
-		public Tuple getKey() {
-			return entry.getKey();
-		}
-
-		@Override
-		public T getValue() {
-			return entry.getValue();
-		}
-
-		@Override
-		public boolean isTerminated() {
-			return terminated;
-		}
-
-		@Override
-		public boolean move() {
-			if (!terminated && iterator.hasNext()) {
-				entry = iterator.next();
-				return true;
-			}
-			terminated = true;
-			return false;
 		}
 
 		@Override
