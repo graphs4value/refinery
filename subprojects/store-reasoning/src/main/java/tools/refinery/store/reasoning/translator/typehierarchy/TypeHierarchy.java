@@ -9,14 +9,16 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.*;
 
-class TypeAnalyzer {
+public class TypeHierarchy {
+	private final Set<PartialRelation> allTypes;
 	private final Map<PartialRelation, ExtendedTypeInfo> extendedTypeInfoMap;
 	private final Map<PartialRelation, PartialRelation> replacements = new LinkedHashMap<>();
 	private final InferredType unknownType;
-	private final Map<PartialRelation, TypeAnalysisResult> analysisResults;
+	private final Map<PartialRelation, TypeAnalysisResult> preservedTypes;
 
-	public TypeAnalyzer(Map<PartialRelation, TypeInfo> typeInfoMap) {
+	TypeHierarchy(Map<PartialRelation, TypeInfo> typeInfoMap) {
 		int size = typeInfoMap.size();
+		allTypes = Collections.unmodifiableSet(new LinkedHashSet<>(typeInfoMap.keySet()));
 		extendedTypeInfoMap = new LinkedHashMap<>(size);
 		var concreteTypes = new LinkedHashSet<PartialRelation>();
 		int index = 0;
@@ -34,15 +36,39 @@ class TypeAnalyzer {
 		computeAllAndConcreteSubtypes();
 		computeDirectSubtypes();
 		eliminateTrivialSupertypes();
-		analysisResults = computeAnalysisResults();
+		preservedTypes = computeAnalysisResults();
+	}
+
+	public boolean isEmpty() {
+		return extendedTypeInfoMap.isEmpty();
 	}
 
 	public InferredType getUnknownType() {
 		return unknownType;
 	}
 
-	public Map<PartialRelation, TypeAnalysisResult> getAnalysisResults() {
-		return analysisResults;
+	public Set<PartialRelation> getAllTypes() {
+		return allTypes;
+	}
+
+	public Map<PartialRelation, TypeAnalysisResult> getPreservedTypes() {
+		return preservedTypes;
+	}
+
+	public Map<PartialRelation, PartialRelation> getEliminatedTypes() {
+		return Collections.unmodifiableMap(replacements);
+	}
+
+	public TypeAnalysisResult getAnalysisResult(PartialRelation type) {
+		var preservedResult = preservedTypes.get(type);
+		if (preservedResult != null) {
+			return preservedResult;
+		}
+		var eliminatedResult = replacements.get(type);
+		if (eliminatedResult != null) {
+			return preservedTypes.get(eliminatedResult);
+		}
+		throw new IllegalArgumentException("Unknown type: " + type);
 	}
 
 	private void computeAllSupertypes() {
@@ -156,17 +182,13 @@ class TypeAnalyzer {
 
 	private Map<PartialRelation, TypeAnalysisResult> computeAnalysisResults() {
 		var allExtendedTypeInfoList = sortTypes();
-		var results = new LinkedHashMap<PartialRelation, TypeAnalysisResult>(
-				allExtendedTypeInfoList.size() + replacements.size());
+		var preservedResults = new LinkedHashMap<PartialRelation, TypeAnalysisResult>(
+				allExtendedTypeInfoList.size());
 		for (var extendedTypeInfo : allExtendedTypeInfoList) {
 			var type = extendedTypeInfo.getType();
-			results.put(type, new PreservedType(extendedTypeInfo, allExtendedTypeInfoList));
+			preservedResults.put(type, new TypeAnalysisResult(extendedTypeInfo, allExtendedTypeInfoList));
 		}
-		for (var entry : replacements.entrySet()) {
-			var type = entry.getKey();
-			results.put(type, new EliminatedType(entry.getValue()));
-		}
-		return Collections.unmodifiableMap(results);
+		return Collections.unmodifiableMap(preservedResults);
 	}
 
 	private List<ExtendedTypeInfo> sortTypes() {
@@ -203,5 +225,9 @@ class TypeAnalyzer {
 			}
 		}
 		return Collections.unmodifiableList(sorted);
+	}
+
+	public static TypeHierarchyBuilder builder() {
+		return new TypeHierarchyBuilder();
 	}
 }

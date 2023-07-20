@@ -11,14 +11,13 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.representation.TruthValue;
 
-import java.util.LinkedHashMap;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class TypeAnalyzerExampleHierarchyTest {
+class TypeAnalysisExampleHierarchyTest {
 	private final PartialRelation a1 = new PartialRelation("A1", 1);
 	private final PartialRelation a2 = new PartialRelation("A2", 1);
 	private final PartialRelation a3 = new PartialRelation("A3", 1);
@@ -29,23 +28,23 @@ class TypeAnalyzerExampleHierarchyTest {
 	private final PartialRelation c3 = new PartialRelation("C3", 1);
 	private final PartialRelation c4 = new PartialRelation("C4", 1);
 
-	private TypeAnalyzer sut;
-	private TypeAnalyzerTester tester;
+	private TypeHierarchy sut;
+	private TypeHierarchyTester tester;
 
 	@BeforeEach
 	void beforeEach() {
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(a1, TypeInfo.builder().abstractType().build());
-		typeInfoMap.put(a2, TypeInfo.builder().abstractType().build());
-		typeInfoMap.put(a3, TypeInfo.builder().abstractType().build());
-		typeInfoMap.put(a4, TypeInfo.builder().abstractType().build());
-		typeInfoMap.put(a5, TypeInfo.builder().abstractType().build());
-		typeInfoMap.put(c1, TypeInfo.builder().supertypes(a1, a4).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertypes(a1, a2, a3, a4).build());
-		typeInfoMap.put(c3, TypeInfo.builder().supertype(a3).build());
-		typeInfoMap.put(c4, TypeInfo.builder().supertype(a4).build());
-		sut = new TypeAnalyzer(typeInfoMap);
-		tester = new TypeAnalyzerTester(sut);
+		sut = TypeHierarchy.builder()
+				.type(a1, true)
+				.type(a2, true)
+				.type(a3, true)
+				.type(a4, true)
+				.type(a5, true)
+				.type(c1, a1, a4)
+				.type(c2, a1, a2, a3, a4)
+				.type(c3, a3)
+				.type(c4, a4)
+				.build();
+		tester = new TypeHierarchyTester(sut);
 	}
 
 	@Test

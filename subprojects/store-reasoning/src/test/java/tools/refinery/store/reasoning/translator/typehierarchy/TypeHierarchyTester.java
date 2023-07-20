@@ -11,10 +11,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.is;
 
-class TypeAnalyzerTester {
-	private final TypeAnalyzer sut;
+class TypeHierarchyTester {
+	private final TypeHierarchy sut;
 
-	public TypeAnalyzerTester(TypeAnalyzer sut) {
+	public TypeHierarchyTester(TypeHierarchy sut) {
 		this.sut = sut;
 	}
 
@@ -32,22 +32,21 @@ class TypeAnalyzerTester {
 
 	private void assertPreservedType(PartialRelation partialRelation, boolean isAbstract, boolean isVacuous,
 									 PartialRelation... directSubtypes) {
-		var result = sut.getAnalysisResults().get(partialRelation);
-		assertThat(result, is(instanceOf(PreservedType.class)));
-		var preservedResult = (PreservedType) result;
-		assertThat(preservedResult.isAbstractType(), is(isAbstract));
-		assertThat(preservedResult.isVacuous(), is(isVacuous));
-		assertThat(preservedResult.getDirectSubtypes(), hasItems(directSubtypes));
+		var result = sut.getPreservedTypes().get(partialRelation);
+		assertThat(result, not(nullValue()));
+		assertThat(result.isAbstractType(), is(isAbstract));
+		assertThat(result.isVacuous(), is(isVacuous));
+		assertThat(result.getDirectSubtypes(), hasItems(directSubtypes));
 	}
 
 	public void assertEliminatedType(PartialRelation partialRelation, PartialRelation replacement) {
-		var result = sut.getAnalysisResults().get(partialRelation);
-		assertThat(result, is(instanceOf(EliminatedType.class)));
-		assertThat(((EliminatedType) result).replacement(), is(replacement));
+		var result = sut.getEliminatedTypes().get(partialRelation);
+		assertThat(result, not(nullValue()));
+		assertThat(result, is(replacement));
 	}
 
-	public PreservedType getPreservedType(PartialRelation partialRelation) {
-		return (PreservedType) sut.getAnalysisResults().get(partialRelation);
+	public TypeAnalysisResult getPreservedType(PartialRelation partialRelation) {
+		return sut.getPreservedTypes().get(partialRelation);
 	}
 
 	public InferredType getInferredType(PartialRelation partialRelation) {

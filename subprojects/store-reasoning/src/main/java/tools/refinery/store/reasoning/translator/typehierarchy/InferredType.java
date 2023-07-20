@@ -11,18 +11,18 @@ import java.util.Collections;
 import java.util.Set;
 
 record InferredType(Set<PartialRelation> mustTypes, Set<PartialRelation> mayConcreteTypes,
-					PartialRelation currentType) {
+					PartialRelation candidateType) {
 	public static final InferredType UNTYPED = new InferredType(Set.of(), Set.of(), null);
 
 	public InferredType(Set<PartialRelation> mustTypes, Set<PartialRelation> mayConcreteTypes,
-						PartialRelation currentType) {
+						PartialRelation candidateType) {
 		this.mustTypes = Collections.unmodifiableSet(mustTypes);
 		this.mayConcreteTypes = Collections.unmodifiableSet(mayConcreteTypes);
-		this.currentType = currentType;
+		this.candidateType = candidateType;
 	}
 
 	public boolean isConsistent() {
-		return currentType != null || mustTypes.isEmpty();
+		return candidateType != null || mustTypes.isEmpty();
 	}
 
 	public boolean isMust(PartialRelation partialRelation) {

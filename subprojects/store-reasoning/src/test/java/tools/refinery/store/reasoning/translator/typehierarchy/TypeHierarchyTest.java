@@ -10,27 +10,25 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.representation.TruthValue;
 
-import java.util.LinkedHashMap;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class TypeAnalyzerTest {
+class TypeHierarchyTest {
 	@Test
 	void directSupertypesTest() {
 		var c1 = new PartialRelation("C1", 1);
 		var c2 = new PartialRelation("C2", 1);
 		var c3 = new PartialRelation("C3", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c1, TypeInfo.builder().supertypes(c2, c3).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(c3).build());
-		typeInfoMap.put(c3, TypeInfo.builder().build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(c1, c2, c3)
+				.type(c2, c3)
+				.type(c3)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 
 		assertAll(
 				() -> tester.assertConcreteType(c1),
@@ -48,17 +46,17 @@ class TypeAnalyzerTest {
 		var a21 = new PartialRelation("A21", 1);
 		var a22 = new PartialRelation("A22", 1);
 		var a3 = new PartialRelation("A3", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(a3, TypeInfo.builder().abstractType().build());
-		typeInfoMap.put(a21, TypeInfo.builder().abstractType().supertype(a3).build());
-		typeInfoMap.put(a22, TypeInfo.builder().abstractType().supertype(a3).build());
-		typeInfoMap.put(a11, TypeInfo.builder().abstractType().supertypes(a21, a22).build());
-		typeInfoMap.put(a12, TypeInfo.builder().abstractType().supertypes(a21, a22).build());
-		typeInfoMap.put(c1, TypeInfo.builder().supertypes(a11, a12).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(a3).build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(a3, true)
+				.type(a21, true, a3)
+				.type(a22, true, a3)
+				.type(a11, true, a21, a22)
+				.type(a12, true, a21, a22)
+				.type(c1, a11, a12)
+				.type(c2, a3)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 
 		assertAll(
 				() -> tester.assertConcreteType(c1),
@@ -80,17 +78,17 @@ class TypeAnalyzerTest {
 		var a21 = new PartialRelation("A21", 1);
 		var a22 = new PartialRelation("A22", 1);
 		var a3 = new PartialRelation("A3", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c1, TypeInfo.builder().supertypes(a11, a12).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(a3).build());
-		typeInfoMap.put(a11, TypeInfo.builder().abstractType().supertypes(a21, a22).build());
-		typeInfoMap.put(a12, TypeInfo.builder().abstractType().supertypes(a21, a22).build());
-		typeInfoMap.put(a21, TypeInfo.builder().abstractType().supertype(a3).build());
-		typeInfoMap.put(a22, TypeInfo.builder().abstractType().supertype(a3).build());
-		typeInfoMap.put(a3, TypeInfo.builder().abstractType().build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(c1, a11, a12)
+				.type(c2, a3)
+				.type(a11, true, a21, a22)
+				.type(a12, true, a21, a22)
+				.type(a21, true, a3)
+				.type(a22, true, a3)
+				.type(a3, true)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 
 		assertAll(
 				() -> tester.assertConcreteType(c1),
@@ -109,14 +107,14 @@ class TypeAnalyzerTest {
 		var a1 = new PartialRelation("A1", 1);
 		var c2 = new PartialRelation("C2", 1);
 		var a2 = new PartialRelation("A2", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c1, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(a1, TypeInfo.builder().abstractType().supertype(c2).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(a2).build());
-		typeInfoMap.put(a2, TypeInfo.builder().abstractType().build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(c1, a1)
+				.type(a1, true, c2)
+				.type(c2, a2)
+				.type(a2, true)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 
 		assertAll(
 				() -> tester.assertConcreteType(c1),
@@ -131,13 +129,13 @@ class TypeAnalyzerTest {
 		var c1 = new PartialRelation("C1", 1);
 		var c2 = new PartialRelation("C2", 1);
 		var c3 = new PartialRelation("C3", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c1, TypeInfo.builder().supertype(c3).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(c3).build());
-		typeInfoMap.put(c3, TypeInfo.builder().build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(c1, c3)
+				.type(c2, c3)
+				.type(c3)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 		var c3Result = tester.getPreservedType(c3);
 
 		var expected = new InferredType(Set.of(c3), Set.of(c1, c2, c3), c3);
@@ -154,15 +152,15 @@ class TypeAnalyzerTest {
 		var c2 = new PartialRelation("C2", 1);
 		var c3 = new PartialRelation("C3", 1);
 		var c4 = new PartialRelation("C4", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c1, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(c3, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(c4, TypeInfo.builder().supertype(c3).build());
-		typeInfoMap.put(a1, TypeInfo.builder().abstractType().build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(c1, a1)
+				.type(c2, a1)
+				.type(c3, a1)
+				.type(c4, c3)
+				.type(a1, true)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 		var c1Result = tester.getPreservedType(c1);
 		var a1Result = tester.getPreservedType(a1);
 
@@ -177,15 +175,15 @@ class TypeAnalyzerTest {
 		var c2 = new PartialRelation("C2", 1);
 		var c3 = new PartialRelation("C3", 1);
 		var c4 = new PartialRelation("C4", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c4, TypeInfo.builder().supertype(c3).build());
-		typeInfoMap.put(c3, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(c1, TypeInfo.builder().supertype(a1).build());
-		typeInfoMap.put(a1, TypeInfo.builder().abstractType().build());
 
-		var sut = new TypeAnalyzer(typeInfoMap);
-		var tester = new TypeAnalyzerTester(sut);
+		var sut = TypeHierarchy.builder()
+				.type(c4, c3)
+				.type(c3, a1)
+				.type(c2, a1)
+				.type(c1, a1)
+				.type(a1, true)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
 		var c1Result = tester.getPreservedType(c1);
 		var a1Result = tester.getPreservedType(a1);
 
@@ -197,10 +195,10 @@ class TypeAnalyzerTest {
 	void circularTypeHierarchyTest() {
 		var c1 = new PartialRelation("C1", 1);
 		var c2 = new PartialRelation("C2", 1);
-		var typeInfoMap = new LinkedHashMap<PartialRelation, TypeInfo>();
-		typeInfoMap.put(c1, TypeInfo.builder().supertype(c2).build());
-		typeInfoMap.put(c2, TypeInfo.builder().supertype(c1).build());
+		var builder = TypeHierarchy.builder()
+				.type(c1, c2)
+				.type(c2, c1);
 
-		assertThrows(IllegalArgumentException.class, () -> new TypeAnalyzer(typeInfoMap));
+		assertThrows(IllegalArgumentException.class, builder::build);
 	}
 }
