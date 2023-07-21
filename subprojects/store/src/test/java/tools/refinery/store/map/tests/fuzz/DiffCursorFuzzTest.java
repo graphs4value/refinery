@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreBuilder;
+import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
@@ -21,10 +21,10 @@ import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 class DiffCursorFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean nullDefault,
 							 int commitFrequency, boolean commitBeforeDiffCursor,
-							 VersionedMapStoreBuilder<Integer, String> builder) {
+							 VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
-		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
+		VersionedMapStore<Integer, String> store = builder.defaultValue(values[0]).build().createOne();
 		iterativeRandomPutsAndCommitsThenDiffCursor(scenario, store, steps, maxKey, values, seed, commitFrequency,
 				commitBeforeDiffCursor);
 	}
@@ -109,7 +109,7 @@ class DiffCursorFuzzTest {
 	@Tag("fuzz")
 	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault,
 						  int commitFrequency, int seed, boolean commitBeforeDiffCursor,
-						  VersionedMapStoreBuilder<Integer, String> builder) {
+						  VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("DiffCursorS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
 				noKeys, noValues, nullDefault, commitFrequency, commitBeforeDiffCursor, builder);
 	}
@@ -124,7 +124,7 @@ class DiffCursorFuzzTest {
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-			int seed, boolean commitBeforeDiffCursor, VersionedMapStoreBuilder<Integer, String> builder) {
+			int seed, boolean commitBeforeDiffCursor, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("DiffCursorS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, commitBeforeDiffCursor, builder);
 	}

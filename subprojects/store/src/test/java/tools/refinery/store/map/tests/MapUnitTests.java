@@ -2,7 +2,6 @@ package tools.refinery.store.map.tests;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreBuilder;
 import tools.refinery.store.map.VersionedMapStoreImpl;
 import tools.refinery.store.model.TupleHashProvider;
 import tools.refinery.store.tuple.Tuple;
@@ -23,7 +22,7 @@ class MapUnitTests {
 	@Test
 	void deltaRestoreTest() {
 		VersionedMapStore<Integer,String> store =
-				VersionedMapStoreBuilder.<Integer,String>builder().setDefaultValue("x").buildOne();
+				VersionedMapStore.<Integer,String>builder().defaultValue("x").build().createOne();
 		var map = store.createMap();
 		map.put(1,"val");
 		var version1 = map.commit();
@@ -36,7 +35,7 @@ class MapUnitTests {
 	@Test
 	void deltaRestoreTest2() {
 		VersionedMapStore<Integer,String> store =
-				VersionedMapStoreBuilder.<Integer,String>builder().setDefaultValue("x").buildOne();
+				VersionedMapStore.<Integer,String>builder().defaultValue("x").build().createOne();
 		var map = store.createMap();
 		map.put(1,"x");
 		var version1 = map.commit();
@@ -48,7 +47,7 @@ class MapUnitTests {
 	@Test
 	void deltaRestoreTest3() {
 		VersionedMapStore<Integer,String> store =
-				VersionedMapStoreBuilder.<Integer,String>builder().setDefaultValue("x").buildOne();
+				VersionedMapStore.<Integer,String>builder().defaultValue("x").build().createOne();
 		var map = store.createMap();
 		map.commit();
 		map.put(1,"1");
@@ -71,7 +70,7 @@ class MapUnitTests {
 	@Test
 	void deltaRestoreTest4() {
 		VersionedMapStore<Integer,String> store =
-				VersionedMapStoreBuilder.<Integer,String>builder().setDefaultValue("x").buildOne();
+				VersionedMapStore.<Integer,String>builder().defaultValue("x").build().createOne();
 		var map = store.createMap();
 		map.commit();
 		map.put(1,"1");

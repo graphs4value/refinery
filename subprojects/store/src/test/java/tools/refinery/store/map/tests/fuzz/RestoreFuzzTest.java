@@ -1,31 +1,31 @@
 package tools.refinery.store.map.tests.fuzz;
 
-import static org.junit.jupiter.api.Assertions.fail;
-import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import tools.refinery.store.map.VersionedMap;
+import tools.refinery.store.map.VersionedMapStore;
+import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
+import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
+import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import tools.refinery.store.map.*;
-import tools.refinery.store.map.internal.VersionedMapImpl;
-import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
-import tools.refinery.store.map.tests.utils.MapTestEnvironment;
+import static org.junit.jupiter.api.Assertions.fail;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 class RestoreFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
 							 boolean nullDefault, int commitFrequency,
-							 VersionedMapStoreBuilder<Integer, String> builder) {
+							 VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
-		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
+		VersionedMapStore<Integer, String> store = builder.defaultValue(values[0]).build().createOne();
 
 		iterativeRandomPutsAndCommitsThenRestore(scenario, store, steps, maxKey, values, seed, commitFrequency);
 	}
@@ -84,7 +84,7 @@ class RestoreFuzzTest {
 	@Timeout(value = 10)
 	@Tag("smoke")
 	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
+							  int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, builder);
 	}
@@ -99,7 +99,7 @@ class RestoreFuzzTest {
 	@Tag("smoke")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
+							  int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("RestoreS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, builder);
 	}

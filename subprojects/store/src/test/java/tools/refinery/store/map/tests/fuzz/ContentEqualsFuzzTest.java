@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.store.map.*;
+import tools.refinery.store.map.Cursor;
+import tools.refinery.store.map.VersionedMap;
+import tools.refinery.store.map.VersionedMapStore;
+import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
@@ -16,12 +19,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.fail;
 import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 class ContentEqualsFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
-							 boolean nullDefault, int commitFrequency, VersionedMapStoreBuilder<Integer, String> builder) {
+							 boolean nullDefault, int commitFrequency,
+							 VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
 
@@ -30,10 +34,10 @@ class ContentEqualsFuzzTest {
 		iterativeRandomPutsAndCommitsThenCompare(scenario, builder, steps, maxKey, values, r, commitFrequency);
 	}
 
-	private void iterativeRandomPutsAndCommitsThenCompare(String scenario, VersionedMapStoreBuilder<Integer, String> builder,
+	private void iterativeRandomPutsAndCommitsThenCompare(String scenario, VersionedMapStoreFactoryBuilder<Integer, String> builder,
 														  int steps, int maxKey, String[] values, Random r,
 														  int commitFrequency) {
-		VersionedMapStore<Integer, String> store1 = builder.setDefaultValue(values[0]).buildOne();
+		VersionedMapStore<Integer, String> store1 = builder.defaultValue(values[0]).build().createOne();
 		VersionedMap<Integer, String> sut1 = store1.createMap();
 
 		// Fill one map
@@ -63,7 +67,7 @@ class ContentEqualsFuzzTest {
 		// Randomize the order of the content
 		Collections.shuffle(content, r);
 
-		VersionedMapStore<Integer, String> store2 = builder.setDefaultValue(values[0]).buildOne();
+		VersionedMapStore<Integer, String> store2 = builder.defaultValue(values[0]).build().createOne();
 		VersionedMap<Integer, String> sut2 = store2.createMap();
 		int index2 = 1;
 		for (SimpleEntry<Integer, String> entry : content) {
@@ -88,7 +92,7 @@ class ContentEqualsFuzzTest {
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
+							  int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("CompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, builder);
 	}
@@ -103,7 +107,7 @@ class ContentEqualsFuzzTest {
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull, int commitFrequency,
-							  int seed, VersionedMapStoreBuilder<Integer, String> builder) {
+							  int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("CompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				defaultNull, commitFrequency, builder);
 	}

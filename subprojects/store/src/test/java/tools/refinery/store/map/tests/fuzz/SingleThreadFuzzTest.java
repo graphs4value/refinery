@@ -6,7 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreBuilder;
+import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 class SingleThreadFuzzTest {
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean nullDefault, int commitFrequency, VersionedMapStoreBuilder<Integer, String> builder) {
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean nullDefault, int commitFrequency, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
-		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
+		VersionedMapStore<Integer, String> store = builder.defaultValue(values[0]).build().createOne();
 
 		// initialize runnables
 		MultiThreadTestRunnable runnable = new MultiThreadTestRunnable(scenario, store, steps, maxKey, values, seed, commitFrequency);
@@ -35,7 +35,7 @@ class SingleThreadFuzzTest {
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull,
-							  int commitFrequency, int seed, VersionedMapStoreBuilder<Integer, String> builder) {
+							  int commitFrequency, int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("SingleThreadS" + steps + "K" + noKeys + "V" + noValues + defaultNull + "CF" + commitFrequency +
 				"s" + seed, seed, steps, noKeys, noValues, defaultNull, commitFrequency, builder);
 	}
@@ -50,7 +50,7 @@ class SingleThreadFuzzTest {
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault,
-							  int commitFrequency, int seed, VersionedMapStoreBuilder<Integer, String> builder) {
+							  int commitFrequency, int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("SingleThreadS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, builder);
 	}

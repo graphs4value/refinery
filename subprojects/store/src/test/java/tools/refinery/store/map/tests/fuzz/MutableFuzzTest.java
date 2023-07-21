@@ -18,10 +18,10 @@ import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class MutableFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
-							 boolean nullDefault, VersionedMapStoreBuilder<Integer, String> builder) {
+							 boolean nullDefault, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
-		VersionedMapStore<Integer, String> store = builder.setDefaultValue(values[0]).buildOne();
+		VersionedMapStore<Integer, String> store = builder.defaultValue(values[0]).build().createOne();
 		VersionedMap<Integer, String> sut = store.createMap();
 		MapTestEnvironment<Integer, String> e = new MapTestEnvironment<>(sut);
 
@@ -56,7 +56,7 @@ class MutableFuzzTest {
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull, int seed,
-						  VersionedMapStoreBuilder<Integer, String> builder) {
+						  VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest(
 				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed,
 				seed, steps, noKeys, noValues, defaultNull, builder);
@@ -72,7 +72,7 @@ class MutableFuzzTest {
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int seed,
-							 VersionedMapStoreBuilder<Integer, String> builder) {
+							  VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest(
 				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed,
 				seed, steps, noKeys, noValues, nullDefault, builder);
