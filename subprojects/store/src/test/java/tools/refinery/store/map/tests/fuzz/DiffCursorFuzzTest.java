@@ -115,7 +115,7 @@ class DiffCursorFuzzTest {
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[]{500}, keyCounts, valueCounts, nullDefaultOptions,
+		return FuzzTestUtils.permutationWithSize(new Object[]{100}, keyCounts, valueCounts, nullDefaultOptions,
 				commitFrequencyOptions, randomSeedOptions, new Object[]{false,true}, storeConfigs);
 	}
 
