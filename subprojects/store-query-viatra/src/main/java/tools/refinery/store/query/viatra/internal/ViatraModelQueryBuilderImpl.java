@@ -10,7 +10,6 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
 import org.eclipse.viatra.query.runtime.localsearch.matcher.integration.LocalSearchHintOptions;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
-import org.eclipse.viatra.query.runtime.rete.matcher.ReteBackendFactory;
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.AnyQuery;
@@ -24,6 +23,7 @@ import tools.refinery.store.query.viatra.internal.localsearch.FlatCostFunction;
 import tools.refinery.store.query.viatra.internal.localsearch.RelationalLocalSearchBackendFactory;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.pquery.Dnf2PQuery;
+import tools.refinery.store.query.viatra.internal.rete.RefineryReteBackendFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -41,8 +41,8 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder<Via
 
 	public ViatraModelQueryBuilderImpl() {
 		engineOptionsBuilder = new ViatraQueryEngineOptions.Builder()
-				.withDefaultBackend(ReteBackendFactory.INSTANCE)
-				.withDefaultCachingBackend(ReteBackendFactory.INSTANCE)
+				.withDefaultBackend(RefineryReteBackendFactory.INSTANCE)
+				.withDefaultCachingBackend(RefineryReteBackendFactory.INSTANCE)
 				.withDefaultSearchBackend(RelationalLocalSearchBackendFactory.INSTANCE);
 		rewriter = new CompositeRewriter();
 		rewriter.addFirst(new DuplicateDnfRemover());

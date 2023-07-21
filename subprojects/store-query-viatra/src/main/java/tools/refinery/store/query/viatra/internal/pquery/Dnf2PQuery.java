@@ -23,6 +23,7 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameterDirec
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PQuery;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
 import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
+import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.DnfClause;
 import tools.refinery.store.query.dnf.SymbolicParameter;
@@ -34,7 +35,10 @@ import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.util.CycleDetectingMapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Dnf2PQuery {
@@ -124,6 +128,8 @@ public class Dnf2PQuery {
 			translateCountLiteral(countLiteral, body);
 		} else if (literal instanceof AggregationLiteral<?, ?> aggregationLiteral) {
 			translateAggregationLiteral(aggregationLiteral, body);
+		} else if (literal instanceof RepresentativeElectionLiteral representativeElectionLiteral) {
+			translateRepresentativeElectionLiteral(representativeElectionLiteral, body);
 		} else {
 			throw new IllegalArgumentException("Unknown literal: " + literal.toString());
 		}
@@ -157,15 +163,7 @@ public class Dnf2PQuery {
 		}
 		case TRANSITIVE -> {
 			var substitution = translateSubstitution(callLiteral.getArguments(), body);
-			var constraint = callLiteral.getTarget();
-			PQuery pattern;
-			if (constraint instanceof Dnf dnf) {
-				pattern = translate(dnf);
-			} else if (constraint instanceof AnySymbolView symbolView) {
-				pattern = wrapperFactory.wrapSymbolViewIdentityArguments(symbolView);
-			} else {
-				throw new IllegalArgumentException("Unknown Constraint: " + constraint);
-			}
+			var pattern = wrapConstraintWithIdentityArguments(callLiteral.getTarget());
 			new BinaryTransitiveClosure(body, substitution, pattern);
 		}
 		case NEGATIVE -> {
@@ -175,6 +173,16 @@ public class Dnf2PQuery {
 			new NegativePatternCall(body, substitution, pattern);
 		}
 		default -> throw new IllegalArgumentException("Unknown polarity: " + polarity);
+		}
+	}
+
+	private PQuery wrapConstraintWithIdentityArguments(Constraint constraint) {
+		if (constraint instanceof Dnf dnf) {
+			return translate(dnf);
+		} else if (constraint instanceof AnySymbolView symbolView) {
+			return wrapperFactory.wrapSymbolViewIdentityArguments(symbolView);
+		} else {
+			throw new IllegalArgumentException("Unknown Constraint: " + constraint);
 		}
 	}
 
@@ -239,5 +247,11 @@ public class Dnf2PQuery {
 		var resultVariable = body.getOrCreateVariableByName(aggregationLiteral.getResultVariable().getUniqueName());
 		new AggregatorConstraint(boundAggregator, body, substitution, wrappedCall.pattern(), resultVariable,
 				aggregatedColumn);
+	}
+
+	private void translateRepresentativeElectionLiteral(RepresentativeElectionLiteral literal, PBody body) {
+		var substitution = translateSubstitution(literal.getArguments(), body);
+		var pattern = wrapConstraintWithIdentityArguments(literal.getTarget());
+		new RepresentativeElectionConstraint(body, substitution, pattern, literal.getConnectivity());
 	}
 }

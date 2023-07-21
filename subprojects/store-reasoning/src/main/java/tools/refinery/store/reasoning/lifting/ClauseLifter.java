@@ -74,6 +74,8 @@ class ClauseLifter {
 			throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(literal));
 		} else if (literal instanceof AggregationLiteral<?,?>) {
 			throw new IllegalArgumentException("Aggregation literal %s cannot be lifted".formatted(literal));
+		} else if (literal instanceof RepresentativeElectionLiteral) {
+			throw new IllegalArgumentException("SCC literal %s cannot be lifted".formatted(literal));
 		} else {
 			throw new IllegalArgumentException("Unknown literal to lift: " + literal);
 		}

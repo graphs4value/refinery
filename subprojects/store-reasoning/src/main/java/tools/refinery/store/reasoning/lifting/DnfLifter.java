@@ -23,7 +23,7 @@ public class DnfLifter {
 		return query.withDnf(liftedDnf);
 	}
 
-	public <T> RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query) {
+	public RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query) {
 		var liftedDnf = lift(modality, concreteness, query.getDnf());
 		return query.withDnf(liftedDnf);
 	}

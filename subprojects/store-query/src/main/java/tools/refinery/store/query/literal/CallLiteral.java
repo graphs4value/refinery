@@ -30,6 +30,10 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 			if (parameters.get(0).isDataVariable() || parameters.get(1).isDataVariable()) {
 				throw new IllegalArgumentException("Transitive closures can only be computed over nodes");
 			}
+			if (parameters.get(0).getDirection() != ParameterDirection.OUT ||
+					parameters.get(1).getDirection() != ParameterDirection.OUT) {
+				throw new IllegalArgumentException("Transitive closures cannot take input parameters");
+			}
 		}
 		this.polarity = polarity;
 	}
