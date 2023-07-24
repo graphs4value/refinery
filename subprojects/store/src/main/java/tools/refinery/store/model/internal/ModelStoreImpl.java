@@ -1,8 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.model.internal;
 
-import tools.refinery.store.adapter.AdapterList;
-import tools.refinery.store.adapter.AnyModelAdapterType;
-import tools.refinery.store.adapter.ModelAdapterType;
+import tools.refinery.store.adapter.AdapterUtils;
 import tools.refinery.store.adapter.ModelStoreAdapter;
 import tools.refinery.store.map.DiffCursor;
 import tools.refinery.store.map.VersionedMapStore;
@@ -16,11 +19,11 @@ import java.util.*;
 
 public class ModelStoreImpl implements ModelStore {
 	private final Map<? extends AnySymbol, ? extends VersionedMapStore<Tuple, ?>> stores;
-	private final AdapterList<ModelStoreAdapter> adapters;
+	private final List<ModelStoreAdapter> adapters;
 
 	ModelStoreImpl(Map<? extends AnySymbol, ? extends VersionedMapStore<Tuple, ?>> stores, int adapterCount) {
 		this.stores = stores;
-		adapters = new AdapterList<>(adapterCount);
+		adapters = new ArrayList<>(adapterCount);
 	}
 
 	@Override
@@ -59,9 +62,9 @@ public class ModelStoreImpl implements ModelStore {
 	}
 
 	private void adaptModel(ModelImpl model) {
-		for (var entry : adapters.withAdapterTypes()) {
-			var adapter = entry.adapter().createModelAdapter(model);
-			model.addAdapter(entry.adapterType(), adapter);
+		for (var storeAdapter : adapters) {
+			var adapter = storeAdapter.createModelAdapter(model);
+			model.addAdapter(adapter);
 		}
 	}
 
@@ -86,16 +89,16 @@ public class ModelStoreImpl implements ModelStore {
 	}
 
 	@Override
-	public <T extends ModelStoreAdapter> Optional<T> tryGetAdapter(ModelAdapterType<?, ? extends T, ?> adapterType) {
-		return adapters.tryGet(adapterType, adapterType.getModelStoreAdapterClass());
+	public <T extends ModelStoreAdapter> Optional<T> tryGetAdapter(Class<? extends T> adapterType) {
+		return AdapterUtils.tryGetAdapter(adapters, adapterType);
 	}
 
 	@Override
-	public <T extends ModelStoreAdapter> T getAdapter(ModelAdapterType<?, T, ?> adapterType) {
-		return adapters.get(adapterType, adapterType.getModelStoreAdapterClass());
+	public <T extends ModelStoreAdapter> T getAdapter(Class<T> adapterType) {
+		return AdapterUtils.getAdapter(adapters, adapterType);
 	}
 
-	void addAdapter(AnyModelAdapterType adapterType, ModelStoreAdapter adapter) {
-		adapters.add(adapterType, adapter);
+	void addAdapter(ModelStoreAdapter adapter) {
+		adapters.add(adapter);
 	}
 }

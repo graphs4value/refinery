@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import Portal from '@mui/material/Portal';
 import { observer } from 'mobx-react-lite';
 

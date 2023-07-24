@@ -1,12 +1,17 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.language.web.xtext.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
-import org.eclipse.jetty.ee10.websocket.api.Session;
-import org.eclipse.jetty.ee10.websocket.api.StatusCode;
-import org.eclipse.jetty.ee10.websocket.api.WriteCallback;
-import org.eclipse.jetty.ee10.websocket.api.annotations.*;
+import org.eclipse.jetty.websocket.api.Callback;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.StatusCode;
+import org.eclipse.jetty.websocket.api.annotations.*;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
@@ -20,7 +25,7 @@ import tools.refinery.language.web.xtext.server.message.XtextWebResponse;
 import java.io.Reader;
 
 @WebSocket
-public class XtextWebSocket implements WriteCallback, ResponseHandler {
+public class XtextWebSocket implements ResponseHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(XtextWebSocket.class);
 
 	private final Gson gson = new Gson();
@@ -38,13 +43,13 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 		this(new TransactionExecutor(session, resourceServiceProviderRegistry));
 	}
 
-	@OnWebSocketConnect
-	public void onConnect(Session webSocketSession) {
+	@OnWebSocketOpen
+	public void onOpen(Session webSocketSession) {
 		if (this.webSocketSession != null) {
 			LOG.error("Websocket session onConnect when already connected");
 			return;
 		}
-		LOG.debug("New websocket connection from {}", webSocketSession.getRemoteAddress());
+		LOG.debug("New websocket connection from {}", webSocketSession.getRemoteSocketAddress());
 		this.webSocketSession = webSocketSession;
 	}
 
@@ -55,10 +60,10 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 			return;
 		}
 		if (statusCode == StatusCode.NORMAL || statusCode == StatusCode.SHUTDOWN) {
-			LOG.debug("{} closed connection normally: {}", webSocketSession.getRemoteAddress(), reason);
+			LOG.debug("{} closed connection normally: {}", webSocketSession.getRemoteSocketAddress(), reason);
 		} else {
-			LOG.warn("{} closed connection with status code {}: {}", webSocketSession.getRemoteAddress(), statusCode,
-					reason);
+			LOG.warn("{} closed connection with status code {}: {}", webSocketSession.getRemoteSocketAddress(),
+					statusCode, reason);
 		}
 		webSocketSession = null;
 	}
@@ -68,7 +73,7 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 		if (webSocketSession == null) {
 			return;
 		}
-		LOG.error("Internal websocket error in connection from" + webSocketSession.getRemoteAddress(), error);
+		LOG.error("Internal websocket error in connection from" + webSocketSession.getRemoteSocketAddress(), error);
 	}
 
 	@OnWebSocketMessage
@@ -81,14 +86,14 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 		try {
 			request = gson.fromJson(reader, XtextWebRequest.class);
 		} catch (JsonIOException e) {
-			LOG.error("Cannot read from websocket from" + webSocketSession.getRemoteAddress(), e);
+			LOG.error("Cannot read from websocket from" + webSocketSession.getRemoteSocketAddress(), e);
 			if (webSocketSession.isOpen()) {
-				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot read payload");
+				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot read payload", Callback.NOOP);
 			}
 			return;
 		} catch (JsonParseException e) {
-			LOG.warn("Malformed websocket request from" + webSocketSession.getRemoteAddress(), e);
-			webSocketSession.close(XtextStatusCode.INVALID_JSON, "Invalid JSON payload");
+			LOG.warn("Malformed websocket request from" + webSocketSession.getRemoteSocketAddress(), e);
+			webSocketSession.close(XtextStatusCode.INVALID_JSON, "Invalid JSON payload", Callback.NOOP);
 			return;
 		}
 		try {
@@ -96,7 +101,7 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 		} catch (ResponseHandlerException e) {
 			LOG.warn("Cannot write websocket response", e);
 			if (webSocketSession.isOpen()) {
-				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot write response");
+				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot write response", Callback.NOOP);
 			}
 		}
 	}
@@ -107,15 +112,14 @@ public class XtextWebSocket implements WriteCallback, ResponseHandler {
 			throw new ResponseHandlerException("Trying to send message when websocket is disconnected");
 		}
 		var responseString = gson.toJson(response);
-		webSocketSession.getRemote().sendPartialString(responseString, true, this);
+		webSocketSession.sendText(responseString, Callback.from(() -> {}, this::writeFailed));
 	}
 
-	@Override
 	public void writeFailed(Throwable x) {
 		if (webSocketSession == null) {
 			LOG.error("Cannot complete async write to disconnected websocket", x);
 			return;
 		}
-		LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteAddress(), x);
+		LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteSocketAddress(), x);
 	}
 }

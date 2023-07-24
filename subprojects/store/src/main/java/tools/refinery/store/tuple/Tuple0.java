@@ -1,7 +1,22 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.tuple;
 
-public record Tuple0() implements Tuple {
-	public static Tuple0 INSTANCE = new Tuple0();
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_BEGIN;
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_END;
+
+/**
+ * Singleton implementation to ensure only a single empty tuple exists.
+ */
+@SuppressWarnings("squid:S6548")
+public final class Tuple0 implements Tuple {
+	public static final Tuple0 INSTANCE = new Tuple0();
+
+	private Tuple0() {
+	}
 
 	@Override
 	public int getSize() {
@@ -14,12 +29,7 @@ public record Tuple0() implements Tuple {
 	}
 
 	@Override
-	public int[] toArray() {
-		return new int[]{};
-	}
-
-	@Override
 	public String toString() {
-		return "[]";
+		return TUPLE_BEGIN + TUPLE_END;
 	}
 }

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import {
   closeBrackets,
   closeBracketsKeymap,
@@ -38,8 +44,6 @@ import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
 import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
-import indentationMarkerViewPlugin from './indentationMarkerViewPlugin';
-import scrollbarViewPlugin from './scrollbarViewPlugin';
 import semanticHighlighting from './semanticHighlighting';
 
 export default function createEditorState(
@@ -64,7 +68,6 @@ export default function createEditorState(
       highlightSpecialChars(),
       history(),
       indentOnInput(),
-      indentationMarkerViewPlugin(),
       rectangularSelection(),
       search({
         createPanel(view) {
@@ -123,7 +126,6 @@ export default function createEditorState(
         ...defaultKeymap,
       ]),
       problemLanguageSupport(),
-      scrollbarViewPlugin(store),
     ],
   });
 }

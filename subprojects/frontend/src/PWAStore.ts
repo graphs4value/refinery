@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import { makeAutoObservable, observable } from 'mobx';
 import ms from 'ms';
 // eslint-disable-next-line import/no-unresolved -- Importing virtual module.

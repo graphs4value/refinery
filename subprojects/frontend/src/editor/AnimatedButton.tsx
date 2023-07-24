@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { styled, type SxProps, type Theme } from '@mui/material/styles';

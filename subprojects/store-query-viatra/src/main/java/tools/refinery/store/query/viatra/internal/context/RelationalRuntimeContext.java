@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.context;
 
 import org.eclipse.viatra.query.runtime.matchers.context.*;
@@ -8,9 +13,9 @@ import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
-import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
+import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;
 import tools.refinery.store.query.viatra.internal.update.ModelUpdateListener;
-import tools.refinery.store.query.view.AnyRelationView;
+import tools.refinery.store.query.view.AnySymbolView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -54,8 +59,9 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public boolean isIndexed(IInputKey key, IndexingService service) {
-		if (key instanceof AnyRelationView relationalKey) {
-			return this.modelUpdateListener.containsRelationView(relationalKey);
+		if (key instanceof SymbolViewWrapper wrapper) {
+			var symbolViewKey = wrapper.getWrappedKey();
+			return this.modelUpdateListener.containsSymbolView(symbolViewKey);
 		} else {
 			return false;
 		}
@@ -68,13 +74,13 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 		}
 	}
 
-	AnyRelationView checkKey(IInputKey key) {
-		if (key instanceof RelationViewWrapper wrappedKey) {
-			var relationViewKey = wrappedKey.getWrappedKey();
-			if (modelUpdateListener.containsRelationView(relationViewKey)) {
-				return relationViewKey;
+	AnySymbolView checkKey(IInputKey key) {
+		if (key instanceof SymbolViewWrapper wrappedKey) {
+			var symbolViewKey = wrappedKey.getWrappedKey();
+			if (modelUpdateListener.containsSymbolView(symbolViewKey)) {
+				return symbolViewKey;
 			} else {
-				throw new IllegalStateException("Query is asking for non-indexed key %s".formatted(relationViewKey));
+				throw new IllegalStateException("Query is asking for non-indexed key %s".formatted(symbolViewKey));
 			}
 		} else {
 			throw new IllegalStateException("Query is asking for non-relational key");
@@ -83,10 +89,7 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public int countTuples(IInputKey key, TupleMask seedMask, ITuple seed) {
-		var relationViewKey = checkKey(key);
-		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
-		Iterable<Object[]> filteredBySeed = filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
-		Iterator<Object[]> iterator = filteredBySeed.iterator();
+		Iterator<Object[]> iterator = enumerate(key, seedMask, seed).iterator();
 		int result = 0;
 		while (iterator.hasNext()) {
 			iterator.next();
@@ -102,13 +105,25 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	@Override
 	public Iterable<Tuple> enumerateTuples(IInputKey key, TupleMask seedMask, ITuple seed) {
-		var relationViewKey = checkKey(key);
-		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
-		Iterable<Object[]> filteredBySeed = filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+		var filteredBySeed = enumerate(key, seedMask, seed);
 		return map(filteredBySeed, Tuples::flatTupleOf);
 	}
 
-	private boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
+	@Override
+	public Iterable<?> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
+		var index = seedMask.getFirstOmittedIndex().orElseThrow(
+				() -> new IllegalArgumentException("Seed mask does not omit a value"));
+		var filteredBySeed = enumerate(key, seedMask, seed);
+		return map(filteredBySeed, array -> array[index]);
+	}
+
+	private Iterable<Object[]> enumerate(IInputKey key, TupleMask seedMask, ITuple seed) {
+		var relationViewKey = checkKey(key);
+		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
+		return filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+	}
+
+	private static boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
 		for (int i = 0; i < seedMask.indices.length; i++) {
 			final Object seedElement = seed.get(i);
 			final Object tupleElement = tuple[seedMask.indices[i]];
@@ -117,11 +132,6 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 			}
 		}
 		return true;
-	}
-
-	@Override
-	public Iterable<?> enumerateValues(IInputKey key, TupleMask seedMask, ITuple seed) {
-		return enumerateTuples(key, seedMask, seed);
 	}
 
 	@Override

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.language.semantics.model;
 
 import com.google.inject.Inject;
@@ -39,8 +44,8 @@ public class ModelInitializer {
 			var isEqualsRelation = relation == builtinSymbols.equals();
 			var decisionTree = mergeAssertions(relationInfo, isEqualsRelation);
 			var defaultValue = isEqualsRelation ? TruthValue.FALSE : TruthValue.UNKNOWN;
-			relationTrace.put(relation, new Symbol<>(relationInfo.name(), relationInfo.arity(), TruthValue.class, defaultValue
-			));
+			relationTrace.put(relation, Symbol.of(
+					relationInfo.name(), relationInfo.arity(), TruthValue.class, defaultValue));
 		}
 	}
 

@@ -1,10 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra;
 
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
 import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.DNF;
+import tools.refinery.store.query.dnf.AnyQuery;
+import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.ModelQueryBuilder;
 
 import java.util.Collection;
@@ -23,26 +29,26 @@ public interface ViatraModelQueryBuilder extends ModelQueryBuilder {
 	ViatraModelQueryBuilder searchBackend(IQueryBackendFactory queryBackendFactory);
 
 	@Override
-	default ViatraModelQueryBuilder queries(DNF... queries) {
+	default ViatraModelQueryBuilder queries(AnyQuery... queries) {
 		ModelQueryBuilder.super.queries(queries);
 		return this;
 	}
 
 	@Override
-	default ViatraModelQueryBuilder queries(Collection<DNF> queries) {
+	default ViatraModelQueryBuilder queries(Collection<? extends AnyQuery> queries) {
 		ModelQueryBuilder.super.queries(queries);
 		return this;
 	}
 
 	@Override
-	ViatraModelQueryBuilder query(DNF query);
+	ViatraModelQueryBuilder query(AnyQuery query);
 
-	ViatraModelQueryBuilder query(DNF query, QueryEvaluationHint queryEvaluationHint);
+	ViatraModelQueryBuilder query(AnyQuery query, QueryEvaluationHint queryEvaluationHint);
 
-	ViatraModelQueryBuilder computeHint(Function<DNF, QueryEvaluationHint> computeHint);
+	ViatraModelQueryBuilder computeHint(Function<Dnf, QueryEvaluationHint> computeHint);
 
-	ViatraModelQueryBuilder hint(DNF dnf, QueryEvaluationHint queryEvaluationHint);
+	ViatraModelQueryBuilder hint(Dnf dnf, QueryEvaluationHint queryEvaluationHint);
 
 	@Override
-	ViatraModelQueryStoreAdapter createStoreAdapter(ModelStore store);
+	ViatraModelQueryStoreAdapter build(ModelStore store);
 }

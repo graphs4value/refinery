@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 module tools.refinery.language.GenerateProblem
 
 import org.eclipse.xtext.xtext.generator.*
@@ -11,16 +16,28 @@ Workflow {
 			project = StandardProjectConfig {
 				baseName = 'language'
 				rootPath = rootPath
+				runtime = {
+					// Do not generate new files into src/main/java
+					src = null
+				}
 				runtimeTest = {
 					enabled = true
-					srcGen = 'src/testFixtures/xtext-gen'
+					// Only generate the xtext-gen files and leave the rest of the project alone
+					root = null
+					srcGen = '${rootPath}/language/src/testFixtures/xtext-gen'
 				}
 				genericIde = {
 					name = 'language-ide'
+					// Only generate the xtext-gen files and leave the rest of the project alone
+					root = null
+					srcGen = "${rootPath}/language/build/generated/sources/xtext/ide"
 				}
 				web = {
 					enabled = true
 					name = 'language-web'
+					// Only generate the xtext-gen files and leave the rest of the project alone
+					root = null
+					srcGen = "${rootPath}/language/build/generated/sources/xtext/web"
 				}
 				mavenLayout = true
 			}
@@ -55,7 +72,7 @@ Workflow {
 			}
 			webSupport = {
 				// We only generate the {@code AbstractProblemWebModule},
-				// because we write our own integration code for CodeMirror 6. 
+				// because we write our own integration code for CodeMirror 6.
 				framework = 'codemirror'
 				generateHtmlExample = false
 				generateJettyLauncher = false

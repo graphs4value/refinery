@@ -1,10 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import type { ManifestOptions } from 'vite-plugin-pwa';
 
 const manifest: Partial<ManifestOptions> = {
   lang: 'en-US',
   name: 'Refinery',
   short_name: 'Refinery',
-  description: 'An efficient graph sovler for generating well-formed models',
+  description: 'An efficient graph solver for generating well-formed models',
   theme_color: '#f5f5f5',
   display_override: ['window-controls-overlay'],
   display: 'standalone',

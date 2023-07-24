@@ -1,8 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.model;
 
 import tools.refinery.store.adapter.ModelAdapterBuilder;
-import tools.refinery.store.adapter.ModelAdapterBuilderFactory;
-import tools.refinery.store.adapter.ModelAdapterType;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 
@@ -26,11 +29,11 @@ public interface ModelStoreBuilder {
 
 	<T> ModelStoreBuilder symbol(Symbol<T> symbol);
 
-	<T extends ModelAdapterBuilder> T with(ModelAdapterBuilderFactory<?, ?, T> adapterBuilderFactory);
+	<T extends ModelAdapterBuilder> ModelStoreBuilder with(T adapterBuilder);
 
-	<T extends ModelAdapterBuilder> Optional<T> tryGetAdapter(ModelAdapterType<?, ?, ? extends T> adapterType);
+	<T extends ModelAdapterBuilder> Optional<T> tryGetAdapter(Class<? extends T> adapterType);
 
-	<T extends ModelAdapterBuilder> T getAdapter(ModelAdapterType<?, ?, T> adapterType);
+	<T extends ModelAdapterBuilder> T getAdapter(Class<T> adapterType);
 
 	ModelStore build();
 }

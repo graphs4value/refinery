@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import {
   alpha,
   createTheme,
@@ -6,7 +12,6 @@ import {
   type ThemeOptions,
   ThemeProvider as MaterialUiThemeProvider,
   type TypographyStyle,
-  useTheme,
   type CSSObject,
 } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
@@ -70,7 +75,7 @@ function createResponsiveTheme(
     ...options,
     typography: {
       fontFamily:
-        '"InterVariable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+        '"Inter Variable", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
       fontWeightMedium: 600,
       fontWeightEditorNormal: 400,
       fontWeightEditorBold: 700,
@@ -80,7 +85,7 @@ function createResponsiveTheme(
       },
       editor: {
         fontFamily:
-          '"JetBrains MonoVariable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
+          '"JetBrains Mono Variable", "JetBrains Mono", "Cascadia Code", "Fira Code", monospace',
         fontFeatureSettings: '"liga", "calt"',
         // `rem` for JetBrains MonoVariable make the text too large in Safari.
         fontSize: '16px',
@@ -350,15 +355,14 @@ export function ContrastThemeProvider({
 }: {
   children?: ReactNode;
 }): JSX.Element {
-  const theme = useTheme();
   const contrastTheme = useContext(ContrastThemeContext);
   if (!contrastTheme) {
     throw new Error('ContrastThemeProvider must be used within ThemeProvider');
   }
   return (
-    <ThemeAndContrastThemeProvider theme={contrastTheme} contrastTheme={theme}>
+    <MaterialUiThemeProvider theme={contrastTheme}>
       {children}
-    </ThemeAndContrastThemeProvider>
+    </MaterialUiThemeProvider>
   );
 }
 
@@ -378,7 +382,7 @@ const ThemeProvider = observer(function ThemeProvider({
   return (
     <ThemeAndContrastThemeProvider
       theme={darkMode ? darkTheme : lightTheme}
-      contrastTheme={darkMode ? lightTheme : darkTheme}
+      contrastTheme={darkTheme}
     >
       {children}
     </ThemeAndContrastThemeProvider>

@@ -1,10 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.context;
 
 import org.eclipse.viatra.query.runtime.matchers.context.AbstractQueryMetaContext;
 import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
 import org.eclipse.viatra.query.runtime.matchers.context.InputKeyImplication;
-import tools.refinery.store.query.viatra.internal.pquery.RelationViewWrapper;
-import tools.refinery.store.query.view.AnyRelationView;
+import org.eclipse.viatra.query.runtime.matchers.context.common.JavaTransitiveInstancesKey;
+import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;
+import tools.refinery.store.query.view.AnySymbolView;
 
 import java.util.*;
 
@@ -12,9 +18,9 @@ import java.util.*;
  * The meta context information for String scopes.
  */
 public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
-	private final Map<AnyRelationView, IInputKey> inputKeys;
+	private final Map<AnySymbolView, IInputKey> inputKeys;
 
-	RelationalQueryMetaContext(Map<AnyRelationView, IInputKey> inputKeys) {
+	RelationalQueryMetaContext(Map<AnySymbolView, IInputKey> inputKeys) {
 		this.inputKeys = inputKeys;
 	}
 
@@ -37,19 +43,33 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 
 	@Override
 	public Collection<InputKeyImplication> getImplications(IInputKey implyingKey) {
-		var relationView = checkKey(implyingKey);
-		var relationViewImplications = relationView.getImpliedRelationViews();
+		if (implyingKey instanceof JavaTransitiveInstancesKey) {
+			return List.of();
+		}
+		var symbolView = checkKey(implyingKey);
+		var relationViewImplications = symbolView.getImpliedRelationViews();
 		var inputKeyImplications = new HashSet<InputKeyImplication>(relationViewImplications.size());
 		for (var relationViewImplication : relationViewImplications) {
-			if (!relationView.equals(relationViewImplication.implyingRelationView())) {
+			if (!symbolView.equals(relationViewImplication.implyingView())) {
 				throw new IllegalArgumentException("Relation view %s returned unrelated implication %s".formatted(
-						relationView, relationViewImplication));
+						symbolView, relationViewImplication));
 			}
-			var impliedInputKey = inputKeys.get(relationViewImplication.impliedRelationView());
+			var impliedInputKey = inputKeys.get(relationViewImplication.impliedView());
 			// Ignore implications not relevant for any queries included in the model.
 			if (impliedInputKey != null) {
 				inputKeyImplications.add(new InputKeyImplication(implyingKey, impliedInputKey,
 						relationViewImplication.impliedIndices()));
+			}
+		}
+		var parameters = symbolView.getParameters();
+		int arity = symbolView.arity();
+		for (int i = 0; i < arity; i++) {
+			var parameter = parameters.get(i);
+			var parameterType = parameter.tryGetType();
+			if (parameterType.isPresent()) {
+				var javaTransitiveInstancesKey = new JavaTransitiveInstancesKey(parameterType.get());
+				var javaImplication = new InputKeyImplication(implyingKey, javaTransitiveInstancesKey, List.of(i));
+				inputKeyImplications.add(javaImplication);
 			}
 		}
 		return inputKeyImplications;
@@ -57,6 +77,9 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 
 	@Override
 	public Map<Set<Integer>, Set<Integer>> getFunctionalDependencies(IInputKey key) {
+		if (key instanceof JavaTransitiveInstancesKey) {
+			return Map.of();
+		}
 		var relationView = checkKey(key);
 		var functionalDependencies = relationView.getFunctionalDependencies();
 		var flattened = new HashMap<Set<Integer>, Set<Integer>>(functionalDependencies.size());
@@ -75,20 +98,20 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 		return flattened;
 	}
 
-	private static void checkValidIndices(AnyRelationView relationView, Collection<Integer> indices) {
+	private static void checkValidIndices(AnySymbolView relationView, Collection<Integer> indices) {
 		indices.stream().filter(relationView::invalidIndex).findAny().ifPresent(i -> {
 			throw new IllegalArgumentException("Index %d is invalid for %s".formatted(i, relationView));
 		});
 	}
 
-	public AnyRelationView checkKey(IInputKey key) {
-		if (!(key instanceof RelationViewWrapper wrapper)) {
+	public AnySymbolView checkKey(IInputKey key) {
+		if (!(key instanceof SymbolViewWrapper wrapper)) {
 			throw new IllegalArgumentException("The input key %s is not a valid input key".formatted(key));
 		}
-		var relationView = wrapper.getWrappedKey();
-		if (!inputKeys.containsKey(relationView)) {
+		var symbolView = wrapper.getWrappedKey();
+		if (!inputKeys.containsKey(symbolView)) {
 			throw new IllegalArgumentException("The input key %s is not present in the model".formatted(key));
 		}
-		return relationView;
+		return symbolView;
 	}
 }

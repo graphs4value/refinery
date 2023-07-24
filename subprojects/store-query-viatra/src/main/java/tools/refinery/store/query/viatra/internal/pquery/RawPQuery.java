@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.query.viatra.internal.pquery;
 
 import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
@@ -9,6 +14,7 @@ import org.eclipse.viatra.query.runtime.matchers.psystem.queries.BasePQuery;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
 import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
 import tools.refinery.store.query.viatra.internal.RelationalScope;
+import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 
 import java.util.LinkedHashSet;
 import java.util.List;

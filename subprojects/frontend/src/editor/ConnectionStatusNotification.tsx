@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';

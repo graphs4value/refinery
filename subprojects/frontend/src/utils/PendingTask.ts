@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import TimeoutError from './TimeoutError';
 import getLogger from './getLogger';
 
@@ -20,7 +26,6 @@ export default class PendingTask<T> {
   ) {
     this.resolveCallback = resolveCallback;
     this.rejectCallback = rejectCallback;
-    // @ts-expect-error See https://github.com/mobxjs/mobx/issues/3582 on `@types/node` pollution
     this.timeout = setTimeout(() => {
       if (!this.resolved) {
         this.reject(new TimeoutError());

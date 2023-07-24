@@ -1,3 +1,9 @@
+<!--
+  SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+
+  SPDX-License-Identifier: EPL-2.0
+-->
+
 # Refinery
 
 [![Build](https://github.com/graphs4value/refinery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refinery/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refinery) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=coverage)](https://sonarcloud.io/dashboard?id=graphs4value_refinery)
@@ -6,7 +12,7 @@
 
 ### With Eclipse IDE
 
-1. Download and install a _Java 19_ compatible JDK. For Windows, prefer OpenJDK builds from [Adoptium](https://adoptium.net/).
+1. Download and install a _Java 17_ compatible JDK. For Windows, prefer OpenJDK builds from [Adoptium](https://adoptium.net/).
 
 2. Download and extract the [Eclipse IDE for Java and DSL Developers 2022-09](https://www.eclipse.org/downloads/packages/release/2022-09/r/eclipse-ide-java-and-dsl-developers) package.
 
@@ -17,16 +23,15 @@
 
 5. Open _Help > Eclipse Marketplace_ and install the following software:
     * _EclEmma Java Code Coverage_
-    * _Java 19 Support for Eclipse 2022-09 (4.25)_
     * _SonarLint_
 
 6. Open _Window > Preferences_ and set the following preferences:
     * _General > Workspace > Text file encoding_ should be _UTF-8_.
     * _General > Workspace > New text file line delimiter_ should be _Unix_.
-    * Add the JDK 19 to _Java > Installed JREs_.
-    * Make sure JDK 19 is selected for _JavaSE-19_ at _Java > Installed JREs > Execution Environments_.
+    * Add the JDK 17 to _Java > Installed JREs_.
+    * Make sure JDK 17 is selected for _JavaSE-17_ at _Java > Installed JREs > Execution Environments_.
     * Set _Gradle > Java home_ to the `JAVA_HOME` directory (the directory which contains the `bin` directory) of JDK 17. Here, Buildship will show a yellow warning sign, which can be safely ignored.
-    * Set _Java > Compiler > JDK Compliance > Compiler compliance level_ to _19_. The warning about using Java 16 system libraries during compilation should disappear.
+    * Set _Java > Compiler > JDK Compliance > Compiler compliance level_ to _17_.
 
 7. Clone the project Git repository but do not import it into Eclipse yet.
 
@@ -45,4 +50,9 @@ It is possible to import the project into IntelliJ IDEA, but it gives no editing
 
 ## License
 
-All code in this repository is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
+Copyright (c) 2021-2023 [The Refinery Authors](CONTRIBUTORS.md)
+
+Refinery is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
+
+Refinery complies with the [REUSE Specification – Version 3.0](https://reuse.software/) to provide copyright and licensing information to each file, including files available under other licenses.
+For more information, see the comments headers in each file and the license texts in the [LICENSES](LICENSES/) directory.

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019-present, Yuxi (Evan) You and Vite contributors
+ * Copyright (c) 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: MIT OR EPL-2.0
+ */
+
 interface ImportMeta {
   env: {
     BASE_URL: string;

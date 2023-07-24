@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+#
+# SPDX-License-Identifier: EPL-2.0
+
 root = true
 
 [*]
@@ -8,7 +12,7 @@ insert_final_newline = true
 max_line_length = 80
 ij_wrap_on_typing = true
 
-[*.{gradle,java,mwe2,xtend,xtext}]
+[*.{gradle,java,kts,mwe2,xtend,xtext}]
 indent_style = tab
 indent_size = 4
 # Mimic Eclipse continuation indent style in IntelliJ
@@ -19,3 +23,6 @@ ij_any_indent_case_from_switch = false
 [*.{grammar,html,js,json,jsx,scss,ts,tsx,yml}]
 indent_style = space
 indent_size = 2
+
+[libs.versions.toml]
+max_line_length = 999

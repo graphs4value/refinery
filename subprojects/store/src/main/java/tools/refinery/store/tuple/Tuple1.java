@@ -1,10 +1,29 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.tuple;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.store.model.TupleHashProvider;
 
 import java.util.Arrays;
 
-public record Tuple1(int value0) implements Tuple {
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_BEGIN;
+import static tools.refinery.store.tuple.TupleConstants.TUPLE_END;
+
+public final class Tuple1 implements Tuple {
+	private final int value0;
+
+	private Tuple1(int value0) {
+		this.value0 = value0;
+	}
+
+	public int value0() {
+		return value0;
+	}
+
 	@Override
 	public int getSize() {
 		return 1;
@@ -19,20 +38,40 @@ public record Tuple1(int value0) implements Tuple {
 	}
 
 	@Override
-	public int[] toArray() {
-		return new int[]{value0};
+	public String toString() {
+		return TUPLE_BEGIN + value0 + TUPLE_END;
 	}
 
 	@Override
-	public String toString() {
-		return "[" + value0 + "]";
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Tuple1 tuple1 = (Tuple1) o;
+		return value0 == tuple1.value0;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 + value0;
+	}
+
+	@Override
+	public int compareTo(@NotNull Tuple other) {
+		if (other instanceof Tuple1 other1) {
+			return Integer.compare(value0, other1.value0);
+		}
+		return Tuple.super.compareTo(other);
 	}
 
 	/**
 	 * This class uses safe double-checked locking, see
 	 * <a href="https://shipilev.net/blog/2014/safe-public-construction/">Safe Publication and Safe Initialization in
 	 * Java</a> for details.
+	 * <p>
+	 * This class implements the singleton pattern to ensure only a single cache exists. This is thread-safe because
+	 * of the locking of the cache.
 	 */
+	@SuppressWarnings("squid:S6548")
 	public static class Cache {
 		private static final int MIN_CACHE_SIZE = 256;
 
