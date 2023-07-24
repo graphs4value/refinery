@@ -1,17 +1,20 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map;
+package tools.refinery.store.map.internal.state;
 
-public class VersionedMapStoreConfiguration {
+import tools.refinery.store.map.ContinuousHashProvider;
+import tools.refinery.store.map.VersionedMapStore;
 
-	public VersionedMapStoreConfiguration() {
+public class VersionedMapStoreStateConfiguration {
+
+	public VersionedMapStoreStateConfiguration() {
 
 	}
-	public VersionedMapStoreConfiguration(boolean immutableWhenCommitting, boolean sharedNodeCacheInStore,
-			boolean sharedNodeCacheInStoreGroups) {
+	public VersionedMapStoreStateConfiguration(boolean immutableWhenCommitting, boolean sharedNodeCacheInStore,
+											   boolean sharedNodeCacheInStoreGroups) {
 		super();
 		this.immutableWhenCommitting = immutableWhenCommitting;
 		this.sharedNodeCacheInStore = sharedNodeCacheInStore;
@@ -42,8 +45,8 @@ public class VersionedMapStoreConfiguration {
 
 	/**
 	 * If true, all sub-nodes are cached within a group of
-	 * {@link VersionedMapStoreImpl#createSharedVersionedMapStores(int, ContinousHashProvider, Object, VersionedMapStoreConfiguration)}.
-	 * If {@link VersionedMapStoreConfiguration#sharedNodeCacheInStore} is
+	 * {@link VersionedMapStoreStateImpl#createSharedVersionedMapStores(int, ContinuousHashProvider, Object, VersionedMapStoreStateConfiguration)}.
+	 * If {@link VersionedMapStoreStateConfiguration#sharedNodeCacheInStore} is
 	 * <code>false</code>, then it has currently no impact.
 	 */
 	private boolean sharedNodeCacheInStoreGroups = true;

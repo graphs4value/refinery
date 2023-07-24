@@ -6,7 +6,7 @@
 package tools.refinery.store.map.tests.utils;
 
 import tools.refinery.store.map.*;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.internal.state.VersionedMapStateImpl;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -28,7 +28,7 @@ public class MapTestEnvironment<K, V> {
 		return values;
 	}
 
-	public static ContinousHashProvider<Integer> prepareHashProvider(final boolean evil) {
+	public static ContinuousHashProvider<Integer> prepareHashProvider(final boolean evil) {
 		// Use maxPrime = 2147483629
 
 		return (key, index) -> {
@@ -187,7 +187,7 @@ public class MapTestEnvironment<K, V> {
 			//System.out.println(cursor.getKey() + " " + ((VersionedMapImpl<K, V>) versionedMap).getHashProvider()
 			// .getHash(cursor.getKey(), 0));
 			if (previous != null) {
-				int comparisonResult = ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().compare(previous,
+				int comparisonResult = ((VersionedMapStateImpl<K, V>) versionedMap).getHashProvider().compare(previous,
 						cursor.getKey());
 				assertTrue(comparisonResult < 0, scenario + " Cursor order is not incremental!");
 			}

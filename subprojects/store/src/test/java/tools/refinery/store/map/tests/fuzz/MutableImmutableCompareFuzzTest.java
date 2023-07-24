@@ -17,10 +17,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.map.ContinuousHashProvider;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.internal.state.VersionedMapStoreStateImpl;
+import tools.refinery.store.map.internal.state.VersionedMapStateImpl;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
@@ -28,11 +28,11 @@ class MutableImmutableCompareFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
 							 boolean nullDefault, int commitFrequency, boolean evilHash) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
-		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
+		ContinuousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
-		VersionedMapImpl<Integer, String> immutable = (VersionedMapImpl<Integer, String>) store.createMap();
-		VersionedMapImpl<Integer, String> mutable = (VersionedMapImpl<Integer, String>) store.createMap();
+		VersionedMapStore<Integer, String> store = new VersionedMapStoreStateImpl<>(chp, values[0]);
+		VersionedMapStateImpl<Integer, String> immutable = (VersionedMapStateImpl<Integer, String>) store.createMap();
+		VersionedMapStateImpl<Integer, String> mutable = (VersionedMapStateImpl<Integer, String>) store.createMap();
 
 		Random r = new Random(seed);
 
@@ -40,8 +40,8 @@ class MutableImmutableCompareFuzzTest {
 				commitFrequency);
 	}
 
-	private void iterativeRandomPutsAndCommitsAndCompare(String scenario, VersionedMapImpl<Integer, String> immutable,
-														 VersionedMapImpl<Integer, String> mutable, int steps, int maxKey, String[] values, Random r,
+	private void iterativeRandomPutsAndCommitsAndCompare(String scenario, VersionedMapStateImpl<Integer, String> immutable,
+														 VersionedMapStateImpl<Integer, String> mutable, int steps, int maxKey, String[] values, Random r,
 														 int commitFrequency) {
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;

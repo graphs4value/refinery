@@ -1,13 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map.internal;
+package tools.refinery.store.map.internal.state;
 
 import java.util.Map;
 
-import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.map.ContinuousHashProvider;
 
 public abstract class Node<K, V> {
 	public static final int BRANCHING_FACTOR_BITS = 5;
@@ -77,14 +77,14 @@ public abstract class Node<K, V> {
 	 * @param depth The depth.
 	 * @return The new hash code.
 	 */
-	protected int newHash(final ContinousHashProvider<? super K> hashProvider, K key, int hash, int depth) {
+	protected int newHash(final ContinuousHashProvider<? super K> hashProvider, K key, int hash, int depth) {
 		final int shiftDepth = shiftDepth(depth);
 		if (shiftDepth == 0) {
 			final int hashDepth = hashDepth(depth);
-			if (hashDepth >= ContinousHashProvider.MAX_PRACTICAL_DEPTH) {
+			if (hashDepth >= ContinuousHashProvider.MAX_PRACTICAL_DEPTH) {
 				throw new IllegalArgumentException(
 						"Key " + key + " have the clashing hashcode over the practical depth limitation ("
-								+ ContinousHashProvider.MAX_PRACTICAL_DEPTH + ")!");
+								+ ContinuousHashProvider.MAX_PRACTICAL_DEPTH + ")!");
 			}
 			return hashProvider.getHash(key, hashDepth);
 		} else {
@@ -92,11 +92,11 @@ public abstract class Node<K, V> {
 		}
 	}
 
-	public abstract V getValue(K key, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash,
+	public abstract V getValue(K key, ContinuousHashProvider<? super K> hashProvider, V defaultValue, int hash,
 							   int depth);
 
 	public abstract Node<K, V> putValue(K key, V value, OldValueBox<V> old,
-										ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth);
+										ContinuousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth);
 
 	public abstract long getSize();
 
@@ -126,6 +126,6 @@ public abstract class Node<K, V> {
 		return stringBuilder.toString();
 	}
 
-	public void checkIntegrity(ContinousHashProvider<? super K> hashProvider, V defaultValue, int depth) {
+	public void checkIntegrity(ContinuousHashProvider<? super K> hashProvider, V defaultValue, int depth) {
 	}
 }

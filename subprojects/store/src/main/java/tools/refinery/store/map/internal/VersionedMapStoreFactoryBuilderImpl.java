@@ -5,9 +5,11 @@
  */
 package tools.refinery.store.map.internal;
 
-import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.map.ContinuousHashProvider;
 import tools.refinery.store.map.VersionedMapStoreFactory;
 import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
+import tools.refinery.store.map.internal.delta.DeltaBasedVersionedMapStoreFactory;
+import tools.refinery.store.map.internal.state.StateBasedVersionedMapStoreFactory;
 
 public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapStoreFactoryBuilder<K, V> {
 
@@ -16,14 +18,14 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 	private StoreStrategy strategy = null;
 	private Boolean transformToImmutable = null;
 	private SharingStrategy sharingStrategy = null;
-	private ContinousHashProvider<K> continousHashProvider = null;
+	private ContinuousHashProvider<K> continuousHashProvider = null;
 	private DeltaTransactionStrategy deltaTransactionStrategy = null;
 
 	private StoreStrategy checkStrategy() {
 		StoreStrategy currentStrategy = strategy;
 		currentStrategy = mergeStrategies(currentStrategy, transformToImmutable, StoreStrategy.STATE);
 		currentStrategy = mergeStrategies(currentStrategy, sharingStrategy, StoreStrategy.STATE);
-		currentStrategy = mergeStrategies(currentStrategy, continousHashProvider, StoreStrategy.STATE);
+		currentStrategy = mergeStrategies(currentStrategy, continuousHashProvider, StoreStrategy.STATE);
 		currentStrategy = mergeStrategies(currentStrategy, deltaTransactionStrategy, StoreStrategy.DELTA);
 		return currentStrategy;
 	}
@@ -77,8 +79,8 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 	}
 
 	@Override
-	public VersionedMapStoreFactoryBuilder<K, V> stateBasedHashProvider(ContinousHashProvider<K> hashProvider) {
-		this.continousHashProvider = hashProvider;
+	public VersionedMapStoreFactoryBuilder<K, V> stateBasedHashProvider(ContinuousHashProvider<K> hashProvider) {
+		this.continuousHashProvider = hashProvider;
 		checkStrategy();
 		return this;
 	}
@@ -110,13 +112,13 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 		}
 		return switch (strategyToUse) {
 			case STATE -> {
-				if(continousHashProvider == null) {
+				if(continuousHashProvider == null) {
 					throw new IllegalArgumentException("Continuous hash provider is missing!");
 				}
 				yield new StateBasedVersionedMapStoreFactory<>(defaultValue,
 						getOrDefault(transformToImmutable,true),
 						getOrDefault(sharingStrategy, SharingStrategy.SHARED_NODE_CACHE_IN_GROUP),
-						continousHashProvider);
+						continuousHashProvider);
 			}
 			case DELTA -> new DeltaBasedVersionedMapStoreFactory<>(defaultValue,
 					getOrDefault(deltaTransactionStrategy, DeltaTransactionStrategy.LIST));
@@ -130,7 +132,7 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 				", strategy=" + strategy +
 				", stateBasedImmutableWhenCommitting=" + transformToImmutable +
 				", stateBasedNodeSharingStrategy=" + sharingStrategy +
-				", hashProvider=" + continousHashProvider +
+				", hashProvider=" + continuousHashProvider +
 				", deltaStorageStrategy=" + deltaTransactionStrategy +
 				'}';
 	}

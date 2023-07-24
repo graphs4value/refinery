@@ -22,7 +22,7 @@ public interface VersionedMapStoreFactoryBuilder<K,V> {
 	VersionedMapStoreFactoryBuilder<K,V> strategy(StoreStrategy strategy);
 	VersionedMapStoreFactoryBuilder<K,V> stateBasedImmutableWhenCommitting(boolean transformToImmutable);
 	VersionedMapStoreFactoryBuilder<K,V> stateBasedSharingStrategy(SharingStrategy sharingStrategy);
-	VersionedMapStoreFactoryBuilder<K,V> stateBasedHashProvider(ContinousHashProvider<K> hashProvider);
+	VersionedMapStoreFactoryBuilder<K,V> stateBasedHashProvider(ContinuousHashProvider<K> hashProvider);
 	VersionedMapStoreFactoryBuilder<K,V> deltaTransactionStrategy(DeltaTransactionStrategy deltaStrategy);
 
 	VersionedMapStoreFactory<K,V> build();

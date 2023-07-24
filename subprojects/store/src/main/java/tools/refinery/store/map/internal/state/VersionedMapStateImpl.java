@@ -1,9 +1,9 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map.internal;
+package tools.refinery.store.map.internal.state;
 
 import tools.refinery.store.map.*;
 
@@ -19,18 +19,18 @@ import java.util.Objects;
  * @param <V>
  * @author Oszkar Semerath
  */
-public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
-	protected final VersionedMapStoreImpl<K, V> store;
+public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
+	protected final VersionedMapStoreStateImpl<K, V> store;
 
-	protected final ContinousHashProvider<K> hashProvider;
+	protected final ContinuousHashProvider<K> hashProvider;
 	protected final V defaultValue;
 	protected Node<K, V> root;
 
 	private final OldValueBox<V> oldValueBox = new OldValueBox<>();
 
-	public VersionedMapImpl(
-			VersionedMapStoreImpl<K, V> store,
-			ContinousHashProvider<K> hashProvider,
+	public VersionedMapStateImpl(
+			VersionedMapStoreStateImpl<K, V> store,
+			ContinuousHashProvider<K> hashProvider,
 			V defaultValue) {
 		this.store = store;
 		this.hashProvider = hashProvider;
@@ -38,9 +38,9 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		this.root = null;
 	}
 
-	public VersionedMapImpl(
-			VersionedMapStoreImpl<K, V> store,
-			ContinousHashProvider<K> hashProvider,
+	public VersionedMapStateImpl(
+			VersionedMapStoreStateImpl<K, V> store,
+			ContinuousHashProvider<K> hashProvider,
 			V defaultValue, Node<K, V> data) {
 		this.store = store;
 		this.hashProvider = hashProvider;
@@ -53,7 +53,7 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		return defaultValue;
 	}
 
-	public ContinousHashProvider<K> getHashProvider() {
+	public ContinuousHashProvider<K> getHashProvider() {
 		return hashProvider;
 	}
 
@@ -117,7 +117,7 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 	@Override
 	public DiffCursor<K, V> getDiffCursor(long toVersion) {
 		InOrderMapCursor<K, V> fromCursor = new InOrderMapCursor<>(this);
-		VersionedMapImpl<K, V> toMap = (VersionedMapImpl<K, V>) this.store.createMap(toVersion);
+		VersionedMapStateImpl<K, V> toMap = (VersionedMapStateImpl<K, V>) this.store.createMap(toVersion);
 		InOrderMapCursor<K, V> toCursor = new InOrderMapCursor<>(toMap);
 		return new MapDiffCursor<>(this.defaultValue, fromCursor, toCursor);
 	}
@@ -166,6 +166,6 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 
 	@Override
 	public boolean contentEquals(AnyVersionedMap other) {
-		return other instanceof VersionedMapImpl<?, ?> otherImpl && Objects.equals(root, otherImpl.root);
+		return other instanceof VersionedMapStateImpl<?, ?> otherImpl && Objects.equals(root, otherImpl.root);
 	}
 }
