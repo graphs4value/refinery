@@ -6,6 +6,7 @@
 package tools.refinery.store.map.tests.fuzz;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 import java.util.Random;
 import java.util.stream.Stream;
@@ -16,21 +17,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import tools.refinery.store.map.ContinousHashProvider;
-import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.*;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class MutableFuzzTest {
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean evilHash) {
-		String[] values = MapTestEnvironment.prepareValues(maxValue);
-		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
+							 boolean nullDefault, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
+		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
-		VersionedMapImpl<Integer, String> sut = (VersionedMapImpl<Integer, String>) store.createMap();
-		MapTestEnvironment<Integer, String> e = new MapTestEnvironment<Integer, String>(sut);
+		VersionedMapStore<Integer, String> store = builder.defaultValue(values[0]).build().createOne();
+		VersionedMap<Integer, String> sut = store.createMap();
+		MapTestEnvironment<Integer, String> e = new MapTestEnvironment<>(sut);
 
 		Random r = new Random(seed);
 
@@ -38,24 +36,14 @@ class MutableFuzzTest {
 	}
 
 	private void iterativeRandomPuts(String scenario, int steps, int maxKey, String[] values,
-			MapTestEnvironment<Integer, String> e, Random r) {
-		int stopAt = -1;
+									 MapTestEnvironment<Integer, String> e, Random r) {
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
 			int nextKey = r.nextInt(maxKey);
 			String nextValue = values[r.nextInt(values.length)];
-			if (index == stopAt) {
-				System.out.println("issue!");
-				System.out.println("State before:");
-				e.printComparison();
-				e.sut.prettyPrint();
-				System.out.println("Next: put(" + nextKey + "," + nextValue + ")");
-			}
+
 			try {
 				e.put(nextKey, nextValue);
-				if (index == stopAt) {
-					e.sut.prettyPrint();
-				}
 				e.checkEquivalence(scenario + ":" + index);
 			} catch (Exception exception) {
 				exception.printStackTrace();
@@ -65,30 +53,34 @@ class MutableFuzzTest {
 		}
 	}
 
-	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} seed={4} evil-hash={5}")
+	final String title = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} defaultNull={4} seed={5} " +
+			"config={6}";
+
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
-	void parametrizedFuzz(int test, int steps, int noKeys, int noValues, int seed, boolean evilHash) {
+	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull, int seed,
+						  VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest(
-				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed + "H" + (evilHash ? "Evil" : "Normal"),
-				seed, steps, noKeys, noValues, evilHash);
+				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed,
+				seed, steps, noKeys, noValues, defaultNull, builder);
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT },
-				new Object[] { 3, 32, 32 * 32, 32 * 32 * 32 * 32 }, new Object[] { 2, 3 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
+				randomSeedOptions, storeConfigs);
 	}
-	
-	@ParameterizedTest(name = "Mutable {index}/{0} Steps={1} Keys={2} Values={3} seed={4} evil-hash={5}")
+
+	@ParameterizedTest(name = title)
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int test, int steps, int noKeys, int noValues, int seed, boolean evilHash) {
+	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int seed,
+							  VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest(
-				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed + "H" + (evilHash ? "Evil" : "Normal"),
-				seed, steps, noKeys, noValues, evilHash);
+				"MutableS" + steps + "K" + noKeys + "V" + noValues + "s" + seed,
+				seed, steps, noKeys, noValues, nullDefault, builder);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

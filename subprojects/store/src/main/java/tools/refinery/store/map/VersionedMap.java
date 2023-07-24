@@ -6,6 +6,8 @@
 package tools.refinery.store.map;
 
 public non-sealed interface VersionedMap<K, V> extends AnyVersionedMap {
+	V getDefaultValue();
+
 	V get(K key);
 
 	Cursor<K, V> getAll();

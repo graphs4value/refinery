@@ -6,6 +6,7 @@
 package tools.refinery.store.map.tests.fuzz;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
 
 import java.util.Random;
 import java.util.stream.Stream;
@@ -24,12 +25,12 @@ import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 class MutableImmutableCompareFuzzTest {
-	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, int commitFrequency,
-			boolean evilHash) {
-		String[] values = MapTestEnvironment.prepareValues(maxValue);
+	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue,
+							 boolean nullDefault, int commitFrequency, boolean evilHash) {
+		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 		ContinousHashProvider<Integer> chp = MapTestEnvironment.prepareHashProvider(evilHash);
 
-		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<Integer, String>(chp, values[0]);
+		VersionedMapStore<Integer, String> store = new VersionedMapStoreImpl<>(chp, values[0]);
 		VersionedMapImpl<Integer, String> immutable = (VersionedMapImpl<Integer, String>) store.createMap();
 		VersionedMapImpl<Integer, String> mutable = (VersionedMapImpl<Integer, String>) store.createMap();
 
@@ -40,8 +41,8 @@ class MutableImmutableCompareFuzzTest {
 	}
 
 	private void iterativeRandomPutsAndCommitsAndCompare(String scenario, VersionedMapImpl<Integer, String> immutable,
-			VersionedMapImpl<Integer, String> mutable, int steps, int maxKey, String[] values, Random r,
-			int commitFrequency) {
+														 VersionedMapImpl<Integer, String> mutable, int steps, int maxKey, String[] values, Random r,
+														 int commitFrequency) {
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
 			int nextKey = r.nextInt(maxKey);
@@ -62,30 +63,31 @@ class MutableImmutableCompareFuzzTest {
 		}
 	}
 
-	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
+			"commit frequency={5} seed={6} evil-hash={7}")
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
-	void parametrizedFastFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+							  int seed, boolean evilHash) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
-				noKeys, noValues, commitFrequency, evilHash);
+				noKeys, noValues, nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedFastFuzz() {
-		return FuzzTestUtils.permutationWithSize(new Object[] { FuzzTestUtils.FAST_STEP_COUNT }, new Object[] { 3, 32, 32 * 32 },
-				new Object[] { 2, 3 }, new Object[] { 1, 10, 100 }, new Object[] { 1, 2, 3 },
-				new Object[] { false, true });
+		return FuzzTestUtils.permutationWithSize(stepCounts, keyCounts, valueCounts, nullDefaultOptions,
+				commitFrequencyOptions, randomSeedOptions, new Object[]{false, true});
 	}
 
-	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} commit frequency={4} seed={5} evil-hash={6}")
+	@ParameterizedTest(name = "Mutable-Immutable Compare {index}/{0} Steps={1} Keys={2} Values={3} nullDefault={4} " +
+			"commit frequency={5} seed={6} evil-hash={7}")
 	@MethodSource
 	@Tag("fuzz")
 	@Tag("slow")
-	void parametrizedSlowFuzz(int tests, int steps, int noKeys, int noValues, int commitFrequency, int seed,
-			boolean evilHash) {
+	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
+							  int seed, boolean evilHash) {
 		runFuzzTest("MutableImmutableCompareS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
-				noKeys, noValues, commitFrequency, evilHash);
+				noKeys, noValues, nullDefault, commitFrequency, evilHash);
 	}
 
 	static Stream<Arguments> parametrizedSlowFuzz() {

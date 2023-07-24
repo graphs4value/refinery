@@ -23,7 +23,6 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 	protected final VersionedMapStoreImpl<K, V> store;
 
 	protected final ContinousHashProvider<K> hashProvider;
-
 	protected final V defaultValue;
 	protected Node<K, V> root;
 
@@ -49,6 +48,7 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		this.root = data;
 	}
 
+	@Override
 	public V getDefaultValue() {
 		return defaultValue;
 	}
@@ -80,7 +80,9 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 			Iterator<K> keyIterator = keys.iterator();
 			Iterator<V> valueIterator = values.iterator();
 			while (keyIterator.hasNext()) {
-				this.put(keyIterator.next(), valueIterator.next());
+				var key = keyIterator.next();
+				var value = valueIterator.next();
+				this.put(key,value);
 			}
 		} else {
 			while (cursor.move()) {
@@ -114,11 +116,10 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 
 	@Override
 	public DiffCursor<K, V> getDiffCursor(long toVersion) {
-		Cursor<K, V> fromCursor = this.getAll();
-		VersionedMap<K, V> toMap = this.store.createMap(toVersion);
-		Cursor<K, V> toCursor = toMap.getAll();
-		return new MapDiffCursor<>(this.hashProvider, this.defaultValue, fromCursor, toCursor);
-
+		InOrderMapCursor<K, V> fromCursor = new InOrderMapCursor<>(this);
+		VersionedMapImpl<K, V> toMap = (VersionedMapImpl<K, V>) this.store.createMap(toVersion);
+		InOrderMapCursor<K, V> toCursor = new InOrderMapCursor<>(toMap);
+		return new MapDiffCursor<>(this.defaultValue, fromCursor, toCursor);
 	}
 
 
@@ -136,16 +137,17 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 		root = this.store.revert(state);
 	}
 
-	public void prettyPrint() {
-		StringBuilder s = new StringBuilder();
+	public String prettyPrint() {
 		if (this.root != null) {
+			StringBuilder s = new StringBuilder();
 			this.root.prettyPrint(s, 0, -1);
-			System.out.println(s.toString());
+			return s.toString();
 		} else {
-			System.out.println("empty tree");
+			return "empty tree";
 		}
 	}
 
+	@Override
 	public void checkIntegrity() {
 		if (this.root != null) {
 			this.root.checkIntegrity(hashProvider, defaultValue, 0);
@@ -155,7 +157,11 @@ public class VersionedMapImpl<K, V> implements VersionedMap<K, V> {
 	@Override
 	public int contentHashCode(ContentHashCode mode) {
 		// Calculating the root hashCode is always fast, because {@link Node} caches its hashCode.
-		return Objects.hashCode(root);
+		if(root == null) {
+			return 0;
+		} else {
+			return root.hashCode();
+		}
 	}
 
 	@Override

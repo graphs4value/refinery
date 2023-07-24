@@ -40,7 +40,7 @@ public class ImmutablePutExecutionPlan {
 	@Setup(Level.Trial)
 	public void setUpTrial() {
 		random = new Random();
-		values = MapTestEnvironment.prepareValues(nValues);
+		values = MapTestEnvironment.prepareValues(nValues, true);
 	}
 
 	public VersionedMapImpl<Integer, String> createSut() {

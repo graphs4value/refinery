@@ -6,7 +6,6 @@
 package tools.refinery.store.query.viatra;
 
 import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -283,7 +282,6 @@ class QueryTransactionTest {
 		assertResults(Map.of(Tuple.of(0), false), queryResultSet);
 	}
 
-	@Disabled("TODO Fix DiffCursor")
 	@Test
 	void commitAfterFlushTest() {
 		var store = ModelStore.builder()
@@ -332,7 +330,6 @@ class QueryTransactionTest {
 		), predicateResultSet);
 	}
 
-	@Disabled("TODO Fix DiffCursor")
 	@Test
 	void commitWithoutFlushTest() {
 		var store = ModelStore.builder()

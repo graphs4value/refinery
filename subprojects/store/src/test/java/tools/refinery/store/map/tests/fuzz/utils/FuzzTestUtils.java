@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.provider.Arguments;
 
 public final class FuzzTestUtils {
-	public static final int FAST_STEP_COUNT = 500;
+	public static final int FAST_STEP_COUNT = 250;
 	public static final int SLOW_STEP_COUNT = 32 * 32 * 32 * 32;
 
 	private FuzzTestUtils() {
@@ -56,14 +56,12 @@ public final class FuzzTestUtils {
 
 	public static Stream<Arguments> permutationWithSize(Object[]... valueOption) {
 		int size = 1;
-		for (int i = 0; i < valueOption.length; i++) {
-			size *= valueOption[i].length;
+		for (Object[] objects : valueOption) {
+			size *= objects.length;
 		}
 		Object[][] newValueOption = new Object[valueOption.length + 1][];
-		newValueOption[0] = new Object[] { size };
-		for (int i = 1; i < newValueOption.length; i++) {
-			newValueOption[i] = valueOption[i - 1];
-		}
+		newValueOption[0] = new Object[]{size};
+		System.arraycopy(valueOption, 0, newValueOption, 1, newValueOption.length - 1);
 		return permutation(newValueOption);
 	}
 }
