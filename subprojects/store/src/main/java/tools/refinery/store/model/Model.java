@@ -7,9 +7,11 @@ package tools.refinery.store.model;
 
 import tools.refinery.store.adapter.ModelAdapter;
 import tools.refinery.store.map.Versioned;
+import tools.refinery.store.model.internal.VersionedInterpretation;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 
+import java.util.Map;
 import java.util.Optional;
 
 public interface Model extends Versioned {
@@ -26,6 +28,8 @@ public interface Model extends Versioned {
 	}
 
 	<T> Interpretation<T> getInterpretation(Symbol<T> symbol);
+
+	public Map<? extends AnySymbol, ? extends Interpretation<?>> getInterpretations();
 
 	ModelDiffCursor getDiffCursor(long to);
 

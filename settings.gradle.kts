@@ -17,6 +17,7 @@ include(
 		"store-query",
 		"store-query-viatra",
 		"store-reasoning",
+		"visualization",
 )
 
 for (project in rootProject.children) {

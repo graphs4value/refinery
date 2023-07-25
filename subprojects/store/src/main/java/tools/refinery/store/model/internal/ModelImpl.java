@@ -187,4 +187,8 @@ public class ModelImpl implements Model {
 	public void removeListener(ModelListener listener) {
 		listeners.remove(listener);
 	}
+
+	public Map<? extends AnySymbol, ? extends Interpretation<?>> getInterpretations() {
+		return interpretations;
+	}
 }
