@@ -14,6 +14,8 @@ import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.function.Function;
 
 public class TypeHierarchyInitializer implements PartialModelInitializer {
 	private final TypeHierarchy typeHierarchy;
@@ -32,8 +34,10 @@ public class TypeHierarchyInitializer implements PartialModelInitializer {
 			initializeType(type, inferredTypes, modelSeed);
 		}
 		var typeInterpretation = model.getInterpretation(typeSymbol);
+		var uniqueTable = new HashMap<InferredType, InferredType>();
 		for (int i = 0; i < inferredTypes.length; i++) {
-			typeInterpretation.put(Tuple.of(i), inferredTypes[i]);
+			var uniqueType = uniqueTable.computeIfAbsent(inferredTypes[i], Function.identity());
+			typeInterpretation.put(Tuple.of(i), uniqueType);
 		}
 	}
 

@@ -17,6 +17,8 @@ import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.function.Function;
 
 class MultiObjectInitializer implements PartialModelInitializer {
 	private final Symbol<CardinalityInterval> countSymbol;
@@ -31,12 +33,14 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		initializeExists(intervals, modelSeed);
 		initializeEquals(intervals, modelSeed);
 		var countInterpretation = model.getInterpretation(countSymbol);
+		var uniqueTable = new HashMap<CardinalityInterval, CardinalityInterval>();
 		for (int i = 0; i < intervals.length; i++) {
 			var interval = intervals[i];
 			if (interval.isEmpty()) {
 				throw new IllegalArgumentException("Inconsistent existence or equality for node " + i);
 			}
-			countInterpretation.put(Tuple.of(i), intervals[i]);
+			var uniqueInterval = uniqueTable.computeIfAbsent(intervals[i], Function.identity());
+			countInterpretation.put(Tuple.of(i), uniqueInterval);
 		}
 	}
 
