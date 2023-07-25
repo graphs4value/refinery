@@ -59,7 +59,7 @@ public record FiniteUpperCardinality(int finiteUpperBound) implements UpperCardi
 
 	private UpperCardinality lift(@NotNull UpperCardinality other, IntBinaryOperator operator) {
 		if (other instanceof FiniteUpperCardinality finiteUpperCardinality) {
-			return UpperCardinalities.valueOf(operator.applyAsInt(finiteUpperBound,
+			return UpperCardinalities.atMost(operator.applyAsInt(finiteUpperBound,
 					finiteUpperCardinality.finiteUpperBound));
 		}
 		if (other instanceof UnboundedUpperCardinality) {

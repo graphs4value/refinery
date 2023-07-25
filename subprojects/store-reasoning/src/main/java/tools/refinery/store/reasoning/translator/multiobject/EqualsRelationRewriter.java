@@ -11,6 +11,7 @@ import tools.refinery.store.query.literal.AbstractCallLiteral;
 import tools.refinery.store.query.literal.CallLiteral;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.interpretation.QueryBasedRelationRewriter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -67,7 +68,7 @@ class EqualsRelationRewriter extends QueryBasedRelationRewriter {
 		};
 	}
 
-	public static EqualsRelationRewriter of(UpperCardinalityView upperCardinalityView) {
+	public static EqualsRelationRewriter of(AnySymbolView upperCardinalityView) {
 		var may = Query.of("MAY_EQUALS", (builder, p1, p2) -> builder
 				.clause(
 						p1.isEquivalent(p2),

@@ -27,6 +27,6 @@ public sealed interface UpperCardinality extends Comparable<UpperCardinality> pe
 	int compareToInt(int value);
 
 	static UpperCardinality of(int upperBound) {
-		return UpperCardinalities.valueOf(upperBound);
+		return UpperCardinalities.atMost(upperBound);
 	}
 }

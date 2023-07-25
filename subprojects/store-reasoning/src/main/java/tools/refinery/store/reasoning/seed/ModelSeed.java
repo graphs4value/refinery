@@ -39,6 +39,10 @@ public class ModelSeed {
 		return typedSeed;
 	}
 
+	public boolean containsSeed(AnyPartialSymbol symbol) {
+		return seeds.containsKey(symbol);
+	}
+
 	public <A> Cursor<Tuple, A> getCursor(PartialSymbol<A, ?> partialSymbol, A defaultValue) {
 		return getSeed(partialSymbol).getCursor(defaultValue, nodeCount);
 	}

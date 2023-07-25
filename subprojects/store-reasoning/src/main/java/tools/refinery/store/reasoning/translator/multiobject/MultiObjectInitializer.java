@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.multiobject;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
@@ -26,8 +27,7 @@ class MultiObjectInitializer implements PartialModelInitializer {
 
 	@Override
 	public void initialize(Model model, ModelSeed modelSeed) {
-		var intervals = new CardinalityInterval[modelSeed.getNodeCount()];
-		Arrays.fill(intervals, CardinalityIntervals.SET);
+		var intervals = initializeIntervals(modelSeed);
 		initializeExists(intervals, modelSeed);
 		initializeEquals(intervals, modelSeed);
 		var countInterpretation = model.getInterpretation(countSymbol);
@@ -40,7 +40,33 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		}
 	}
 
+	@NotNull
+	private CardinalityInterval[] initializeIntervals(ModelSeed modelSeed) {
+		var intervals = new CardinalityInterval[modelSeed.getNodeCount()];
+		if (modelSeed.containsSeed(MultiObjectTranslator.COUNT_SYMBOL)) {
+			Arrays.fill(intervals, CardinalityIntervals.ONE);
+			var cursor = modelSeed.getCursor(MultiObjectTranslator.COUNT_SYMBOL, CardinalityIntervals.ONE);
+			while (cursor.move()) {
+				int i = cursor.getKey().get(0);
+				checkNodeId(intervals, i);
+				intervals[i] = cursor.getValue();
+			}
+		} else {
+			Arrays.fill(intervals, CardinalityIntervals.SET);
+			if (!modelSeed.containsSeed(ReasoningAdapter.EXISTS_SYMBOL) ||
+				!modelSeed.containsSeed(ReasoningAdapter.EQUALS_SYMBOL)) {
+				throw new IllegalArgumentException("Seed for %s and %s is required if there is no seed for %s"
+						.formatted(ReasoningAdapter.EXISTS_SYMBOL, ReasoningAdapter.EQUALS_SYMBOL,
+								MultiObjectTranslator.COUNT_SYMBOL));
+			}
+		}
+		return intervals;
+	}
+
 	private void initializeExists(CardinalityInterval[] intervals, ModelSeed modelSeed) {
+		if (!modelSeed.containsSeed(ReasoningAdapter.EXISTS_SYMBOL)) {
+			return;
+		}
 		var cursor = modelSeed.getCursor(ReasoningAdapter.EXISTS_SYMBOL, TruthValue.UNKNOWN);
 		while (cursor.move()) {
 			int i = cursor.getKey().get(0);
@@ -56,6 +82,9 @@ class MultiObjectInitializer implements PartialModelInitializer {
 	}
 
 	private void initializeEquals(CardinalityInterval[] intervals, ModelSeed modelSeed) {
+		if (!modelSeed.containsSeed(ReasoningAdapter.EQUALS_SYMBOL)) {
+			return;
+		}
 		var seed = modelSeed.getSeed(ReasoningAdapter.EQUALS_SYMBOL);
 		var cursor = seed.getCursor(TruthValue.FALSE, modelSeed.getNodeCount());
 		while (cursor.move()) {

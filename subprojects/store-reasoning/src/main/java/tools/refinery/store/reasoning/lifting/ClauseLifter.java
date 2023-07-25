@@ -70,9 +70,9 @@ class ClauseLifter {
 				literal instanceof AssignLiteral<?> ||
 				literal instanceof CheckLiteral) {
 			return literal;
-		} else if (literal instanceof CountLiteral) {
+		} else if (literal instanceof AbstractCountLiteral<?>) {
 			throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(literal));
-		} else if (literal instanceof AggregationLiteral<?,?>) {
+		} else if (literal instanceof AggregationLiteral<?, ?>) {
 			throw new IllegalArgumentException("Aggregation literal %s cannot be lifted".formatted(literal));
 		} else if (literal instanceof RepresentativeElectionLiteral) {
 			throw new IllegalArgumentException("SCC literal %s cannot be lifted".formatted(literal));
