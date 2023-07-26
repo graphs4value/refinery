@@ -1,16 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map.internal;
+package tools.refinery.store.map.internal.state;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.map.ContinuousHashProvider;
+import tools.refinery.store.map.Version;
 
-public class ImmutableNode<K, V> extends Node<K, V> {
+public class ImmutableNode<K, V> extends Node<K, V> implements Version {
 	/**
 	 * Bitmap defining the stored key and values.
 	 */
@@ -104,7 +105,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public V getValue(K key, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
+	public V getValue(K key, ContinuousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
 		int selectedHashFragment = hashFragment(hash, shiftDepth(depth));
 		int bitposition = 1 << selectedHashFragment;
 		// If the key is stored as a data
@@ -133,7 +134,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValue, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
+	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValue, ContinuousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
 		int selectedHashFragment = hashFragment(hash, shiftDepth(depth));
 		int bitPosition = 1 << selectedHashFragment;
 		if ((dataMap & bitPosition) != 0) {
@@ -145,7 +146,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 					MutableNode<K, V> mutable = this.toMutable();
 					return mutable.removeEntry(selectedHashFragment, oldValue);
 				} else if (value == content[keyIndex + 1]) {
-					// dont change
+					// don't change
 					oldValue.setOldValue(value);
 					return this;
 				} else {
@@ -155,7 +156,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 				}
 			} else {
 				if (value == defaultValue) {
-					// dont change
+					// don't change
 					oldValue.setOldValue(defaultValue);
 					return this;
 				} else {
@@ -339,7 +340,7 @@ public class ImmutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public void checkIntegrity(ContinousHashProvider<? super K> hashProvider, V defaultValue, int depth) {
+	public void checkIntegrity(ContinuousHashProvider<? super K> hashProvider, V defaultValue, int depth) {
 		if (depth > 0) {
 			boolean orphaned = Integer.bitCount(dataMap) == 1 && nodeMap == 0;
 			if (orphaned) {

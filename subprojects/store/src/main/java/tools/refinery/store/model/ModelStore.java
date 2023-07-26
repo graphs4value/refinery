@@ -6,23 +6,21 @@
 package tools.refinery.store.model;
 
 import tools.refinery.store.adapter.ModelStoreAdapter;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.model.internal.ModelStoreBuilderImpl;
 import tools.refinery.store.representation.AnySymbol;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 public interface ModelStore {
 	Collection<AnySymbol> getSymbols();
 
 	Model createEmptyModel();
 
-	Model createModelForState(long state);
+	Model createModelForState(Version state);
 
-	Set<Long> getStates();
-
-	ModelDiffCursor getDiffCursor(long from, long to);
+	ModelDiffCursor getDiffCursor(Version from, Version to);
 
 	<T extends ModelStoreAdapter> Optional<T> tryGetAdapter(Class<? extends T> adapterType);
 

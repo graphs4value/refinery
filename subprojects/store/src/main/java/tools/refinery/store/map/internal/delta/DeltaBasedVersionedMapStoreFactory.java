@@ -1,12 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map.internal;
+package tools.refinery.store.map.internal.delta;
 
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreDeltaImpl;
 import tools.refinery.store.map.VersionedMapStoreFactory;
 import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 

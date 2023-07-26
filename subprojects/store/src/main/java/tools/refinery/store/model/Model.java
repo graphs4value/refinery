@@ -6,6 +6,7 @@
 package tools.refinery.store.model;
 
 import tools.refinery.store.adapter.ModelAdapter;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.map.Versioned;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
@@ -13,11 +14,10 @@ import tools.refinery.store.representation.Symbol;
 import java.util.Optional;
 
 public interface Model extends Versioned {
-	long NO_STATE_ID = -1;
-
+	Version NO_STATE_ID = null;
 	ModelStore getStore();
 
-	long getState();
+	Version getState();
 
 	boolean hasUncommittedChanges();
 
@@ -27,7 +27,7 @@ public interface Model extends Versioned {
 
 	<T> Interpretation<T> getInterpretation(Symbol<T> symbol);
 
-	ModelDiffCursor getDiffCursor(long to);
+	ModelDiffCursor getDiffCursor(Version to);
 
 	<T extends ModelAdapter> Optional<T> tryGetAdapter(Class<? extends T> adapterType);
 

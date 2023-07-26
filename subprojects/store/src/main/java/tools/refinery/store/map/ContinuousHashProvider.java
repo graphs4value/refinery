@@ -5,17 +5,17 @@
  */
 package tools.refinery.store.map;
 
-import tools.refinery.store.map.internal.Node;
+import tools.refinery.store.map.internal.state.Node;
 
 /**
  * A class representing an equivalence relation for a type {@code K} with a
  * continuous hash function.
- * 
+ *
  * @author Oszkar Semerath
  *
  * @param <K> Target java type.
  */
-public interface ContinousHashProvider<K> {
+public interface ContinuousHashProvider<K> {
 	public static final int EFFECTIVE_BITS = Node.EFFECTIVE_BITS;
 	public static final int EFFECTIVE_BIT_MASK = (1 << (EFFECTIVE_BITS)) - 1;
 
@@ -38,9 +38,9 @@ public interface ContinousHashProvider<K> {
 	 * {@link #EFFECTIVE_BITS}
 	 * </ul>
 	 * Check {@link #equals} for further details.
-	 * 
+	 *
 	 * @param key   The target data object.
-	 * @param index The depth of the the hash code. Needs to be non-negative.
+	 * @param index The depth of the hash code. Needs to be non-negative.
 	 * @return A hash code.
 	 */
 	public int getHash(K key, int index);
@@ -53,7 +53,7 @@ public interface ContinousHashProvider<K> {
 		if (key1.equals(key2)) {
 			return 0;
 		} else {
-			for (int i = 0; i < ContinousHashProvider.MAX_PRACTICAL_DEPTH; i++) {
+			for (int i = 0; i < ContinuousHashProvider.MAX_PRACTICAL_DEPTH; i++) {
 				int hash1 = getEffectiveHash(key1, i);
 				int hash2 = getEffectiveHash(key2, i);
 				for(int j = 0; j<Integer.SIZE/Node.BRANCHING_FACTOR_BITS; j++) {
@@ -68,7 +68,7 @@ public interface ContinousHashProvider<K> {
 			}
 			throw new IllegalArgumentException("Two different keys (" + key1 + " and " + key2
 					+ ") have the same hashcode over the practical depth limitation ("
-					+ ContinousHashProvider.MAX_PRACTICAL_DEPTH + ")!");
+					+ ContinuousHashProvider.MAX_PRACTICAL_DEPTH + ")!");
 		}
 	}
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
@@ -40,7 +41,7 @@ class RestoreFuzzTest {
 		// 1. build a map with versions
 		Random r = new Random(seed);
 		VersionedMap<Integer, String> versioned = store.createMap();
-		Map<Integer, Long> index2Version = new HashMap<>();
+		Map<Integer, Version> index2Version = new HashMap<>();
 
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
@@ -53,7 +54,7 @@ class RestoreFuzzTest {
 				fail(scenario + ":" + index + ": exception happened: " + exception);
 			}
 			if (index % commitFrequency == 0) {
-				long version = versioned.commit();
+				Version version = versioned.commit();
 				index2Version.put(i, version);
 			}
 			MapTestEnvironment.printStatus(scenario, index, steps, "building");

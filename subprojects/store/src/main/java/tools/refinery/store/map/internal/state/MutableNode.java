@@ -1,11 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map.internal;
+package tools.refinery.store.map.internal.state;
 
-import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.map.ContinuousHashProvider;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 		invalidateHash();
 	}
 
-	public static <K, V> MutableNode<K, V> initialize(K key, V value, ContinousHashProvider<? super K> hashProvider, V defaultValue) {
+	public static <K, V> MutableNode<K, V> initialize(K key, V value, ContinuousHashProvider<? super K> hashProvider, V defaultValue) {
 		if (value == defaultValue) {
 			return null;
 		} else {
@@ -58,7 +58,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public V getValue(K key, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
+	public V getValue(K key, ContinuousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
 		int selectedHashFragment = hashFragment(hash, shiftDepth(depth));
 		@SuppressWarnings("unchecked") K keyCandidate = (K) this.content[2 * selectedHashFragment];
 		if (keyCandidate != null) {
@@ -81,7 +81,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValueBox, ContinousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
+	public Node<K, V> putValue(K key, V value, OldValueBox<V> oldValueBox, ContinuousHashProvider<? super K> hashProvider, V defaultValue, int hash, int depth) {
 		int selectedHashFragment = hashFragment(hash, shiftDepth(depth));
 		@SuppressWarnings("unchecked") K keyCandidate = (K) content[2 * selectedHashFragment];
 		if (keyCandidate != null) {
@@ -217,7 +217,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Node<K, V> moveDownAndSplit(ContinousHashProvider<? super K> hashProvider, K newKey, V newValue, K previousKey, int hashOfNewKey, int depth, int selectedHashFragmentOfCurrentDepth) {
+	private Node<K, V> moveDownAndSplit(ContinuousHashProvider<? super K> hashProvider, K newKey, V newValue, K previousKey, int hashOfNewKey, int depth, int selectedHashFragmentOfCurrentDepth) {
 		V previousValue = (V) content[2 * selectedHashFragmentOfCurrentDepth + 1];
 
 		MutableNode<K, V> newSubNode = newNodeWithTwoEntries(hashProvider, previousKey, previousValue, hashProvider.getHash(previousKey, hashDepth(depth)), newKey, newValue, hashOfNewKey, incrementDepth(depth));
@@ -230,7 +230,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 
 	// Pass everything as parameters for performance.
 	@SuppressWarnings("squid:S107")
-	private MutableNode<K, V> newNodeWithTwoEntries(ContinousHashProvider<? super K> hashProvider, K key1, V value1, int oldHash1, K key2, V value2, int oldHash2, int newDepth) {
+	private MutableNode<K, V> newNodeWithTwoEntries(ContinuousHashProvider<? super K> hashProvider, K key1, V value1, int oldHash1, K key2, V value2, int oldHash2, int newDepth) {
 		int newHash1 = newHash(hashProvider, key1, oldHash1, newDepth);
 		int newHash2 = newHash(hashProvider, key2, oldHash2, newDepth);
 		int newFragment1 = hashFragment(newHash1, shiftDepth(newDepth));
@@ -418,7 +418,7 @@ public class MutableNode<K, V> extends Node<K, V> {
 	}
 
 	@Override
-	public void checkIntegrity(ContinousHashProvider<? super K> hashProvider, V defaultValue, int depth) {
+	public void checkIntegrity(ContinuousHashProvider<? super K> hashProvider, V defaultValue, int depth) {
 		// check for orphan nodes
 		if (depth > 0) {
 			int orphaned = isOrphaned();

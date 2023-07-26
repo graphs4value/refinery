@@ -8,8 +8,8 @@ package tools.refinery.store.map.tests;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
-import tools.refinery.store.map.internal.InOrderMapCursor;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.internal.state.InOrderMapCursor;
+import tools.refinery.store.map.internal.state.VersionedMapStateImpl;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +26,7 @@ class InOrderCursorTest {
 				.build()
 				.createOne();
 
-		VersionedMapImpl<Integer,String> map = (VersionedMapImpl<Integer,String>) store.createMap();
+		VersionedMapStateImpl<Integer,String> map = (VersionedMapStateImpl<Integer,String>) store.createMap();
 		checkMove(map,0);
 
 		map.put(1,"A");
@@ -44,7 +44,7 @@ class InOrderCursorTest {
 
 	}
 
-	private void checkMove(VersionedMapImpl<Integer,String> map, int num) {
+	private void checkMove(VersionedMapStateImpl<Integer,String> map, int num) {
 		InOrderMapCursor<Integer,String> cursor = new InOrderMapCursor<>(map);
 		for(int i=0; i<num; i++) {
 			assertTrue(cursor.move());

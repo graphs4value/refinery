@@ -16,5 +16,5 @@ public non-sealed interface VersionedMap<K, V> extends AnyVersionedMap {
 
 	void putAll(Cursor<K, V> cursor);
 
-	DiffCursor<K, V> getDiffCursor(long state);
+	DiffCursor<K, V> getDiffCursor(Version state);
 }
