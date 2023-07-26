@@ -42,7 +42,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private boolean isNewState = false;
 
 	public List<Long> getTrajectory() {
-		return trajectory;
+		return new LinkedList<>(trajectory);
 	}
 
 	public DesignSpaceExplorationAdapterImpl(Model model, DesignSpaceExplorationStoreAdapterImpl storeAdapter) {
