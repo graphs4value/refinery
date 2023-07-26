@@ -9,8 +9,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 import tools.refinery.store.map.ContinuousHashProvider;
+import tools.refinery.store.map.Version;
 
-public class ImmutableNode<K, V> extends Node<K, V> {
+public class ImmutableNode<K, V> extends Node<K, V> implements Version {
 	/**
 	 * Bitmap defining the stored key and values.
 	 */

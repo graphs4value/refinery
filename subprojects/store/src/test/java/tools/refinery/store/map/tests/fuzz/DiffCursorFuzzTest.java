@@ -10,13 +10,12 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
+import tools.refinery.store.map.*;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -39,6 +38,7 @@ class DiffCursorFuzzTest {
 															 int commitFrequency, boolean commitBeforeDiffCursor) {
 
 		int largestCommit = -1;
+		Map<Integer,Version> index2Version = new HashMap<>();
 
 		{
 			// 1. build a map with versions
@@ -55,8 +55,9 @@ class DiffCursorFuzzTest {
 					fail(scenario + ":" + index + ": exception happened: " + exception);
 				}
 				if (index % commitFrequency == 0) {
-					long version = versioned.commit();
-					largestCommit = (int) version;
+					Version version = versioned.commit();
+					index2Version.put(index,version);
+					largestCommit = index;
 				}
 				if (index % 10000 == 0)
 					System.out.println(scenario + ":" + index + "/" + steps + " building finished");
@@ -73,20 +74,20 @@ class DiffCursorFuzzTest {
 				int index = i + 1;
 				if (index % diffTravelFrequency == 0) {
 					// diff-travel
-					long travelToVersion = r2.nextInt(largestCommit + 1);
+					int travelToVersion = r2.nextInt(largestCommit + 1);
 
-					VersionedMap<Integer, String> oracle = store.createMap(travelToVersion);
+					VersionedMap<Integer, String> oracle = store.createMap(index2Version.get(travelToVersion));
 
 					if(commitBeforeDiffCursor) {
 						moving.commit();
 					}
-					DiffCursor<Integer, String> diffCursor = moving.getDiffCursor(travelToVersion);
+					DiffCursor<Integer, String> diffCursor = moving.getDiffCursor(index2Version.get(travelToVersion));
 					moving.putAll(diffCursor);
 					moving.commit();
 
 					MapTestEnvironment.compareTwoMaps(scenario + ":c" + index, oracle, moving);
 
-					moving.restore(travelToVersion);
+					moving.restore(index2Version.get(travelToVersion));
 
 				} else {
 					// random puts

@@ -18,6 +18,7 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 	private StoreStrategy strategy = null;
 	private Boolean transformToImmutable = null;
 	private SharingStrategy sharingStrategy = null;
+	private Boolean enableVersionFreeing = null;
 	private ContinuousHashProvider<K> continuousHashProvider = null;
 	private DeltaTransactionStrategy deltaTransactionStrategy = null;
 
@@ -60,6 +61,13 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 	@Override
 	public VersionedMapStoreFactoryBuilder<K, V> strategy(StoreStrategy strategy) {
 		this.strategy = strategy;
+		checkStrategy();
+		return this;
+	}
+
+	@Override
+	public VersionedMapStoreFactoryBuilder<K, V> versionFreeing(boolean enabled) {
+		this.enableVersionFreeing = enabled;
 		checkStrategy();
 		return this;
 	}
@@ -118,6 +126,7 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 				yield new StateBasedVersionedMapStoreFactory<>(defaultValue,
 						getOrDefault(transformToImmutable,true),
 						getOrDefault(sharingStrategy, SharingStrategy.SHARED_NODE_CACHE_IN_GROUP),
+						getOrDefault(enableVersionFreeing, true),
 						continuousHashProvider);
 			}
 			case DELTA -> new DeltaBasedVersionedMapStoreFactory<>(defaultValue,
@@ -127,13 +136,15 @@ public class VersionedMapStoreFactoryBuilderImpl<K, V> implements VersionedMapSt
 
 	@Override
 	public String toString() {
-		return "VersionedMapStoreBuilder{" +
-				"defaultValue=" + defaultValue +
+		return "VersionedMapStoreFactoryBuilderImpl{" +
+				"defaultSet=" + defaultSet +
+				", defaultValue=" + defaultValue +
 				", strategy=" + strategy +
-				", stateBasedImmutableWhenCommitting=" + transformToImmutable +
-				", stateBasedNodeSharingStrategy=" + sharingStrategy +
-				", hashProvider=" + continuousHashProvider +
-				", deltaStorageStrategy=" + deltaTransactionStrategy +
+				", transformToImmutable=" + transformToImmutable +
+				", sharingStrategy=" + sharingStrategy +
+				", enableVersionFreeing=" + enableVersionFreeing +
+				", continuousHashProvider=" + continuousHashProvider +
+				", deltaTransactionStrategy=" + deltaTransactionStrategy +
 				'}';
 	}
 }

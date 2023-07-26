@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import tools.refinery.store.map.ContinuousHashProvider;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.map.internal.state.VersionedMapStoreStateImpl;
 import tools.refinery.store.map.internal.state.VersionedMapStateImpl;
@@ -47,7 +48,7 @@ class SharedStoreFuzzTest {
 			versioneds.add((VersionedMapStateImpl<Integer, String>) store.createMap());
 		}
 
-		List<Map<Integer, Long>> index2Version = new LinkedList<>();
+		List<Map<Integer, Version>> index2Version = new LinkedList<>();
 		for (int i = 0; i < stores.size(); i++) {
 			index2Version.add(new HashMap<>());
 		}
@@ -59,7 +60,7 @@ class SharedStoreFuzzTest {
 				String nextValue = values[r.nextInt(values.length)];
 				versioneds.get(storeIndex).put(nextKey, nextValue);
 				if (stepIndex % commitFrequency == 0) {
-					long version = versioneds.get(storeIndex).commit();
+					Version version = versioneds.get(storeIndex).commit();
 					index2Version.get(storeIndex).put(i, version);
 				}
 				MapTestEnvironment.printStatus(scenario, stepIndex, steps, "building");

@@ -115,7 +115,7 @@ public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
 	}
 
 	@Override
-	public DiffCursor<K, V> getDiffCursor(long toVersion) {
+	public DiffCursor<K, V> getDiffCursor(Version toVersion) {
 		InOrderMapCursor<K, V> fromCursor = new InOrderMapCursor<>(this);
 		VersionedMapStateImpl<K, V> toMap = (VersionedMapStateImpl<K, V>) this.store.createMap(toVersion);
 		InOrderMapCursor<K, V> toCursor = new InOrderMapCursor<>(toMap);
@@ -124,7 +124,7 @@ public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
 
 
 	@Override
-	public long commit() {
+	public Version commit() {
 		return this.store.commit(root, this);
 	}
 
@@ -133,7 +133,7 @@ public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
 	}
 
 	@Override
-	public void restore(long state) {
+	public void restore(Version state) {
 		root = this.store.revert(state);
 	}
 

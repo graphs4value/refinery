@@ -19,8 +19,8 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.*;
 
 public class ModelStoreBuilderImpl implements ModelStoreBuilder {
-	private final Set<AnySymbol> allSymbols = new HashSet<>();
-	private final Map<SymbolEquivalenceClass<?>, List<AnySymbol>> equivalenceClasses = new HashMap<>();
+	private final LinkedHashSet<AnySymbol> allSymbols = new LinkedHashSet<>();
+	private final LinkedHashMap<SymbolEquivalenceClass<?>, List<AnySymbol>> equivalenceClasses = new LinkedHashMap<>();
 	private final List<ModelAdapterBuilder> adapters = new ArrayList<>();
 
 	@Override
@@ -59,7 +59,7 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 
 	@Override
 	public ModelStore build() {
-		var stores = new HashMap<AnySymbol, VersionedMapStore<Tuple, ?>>(allSymbols.size());
+		var stores = new LinkedHashMap<AnySymbol, VersionedMapStore<Tuple, ?>>(allSymbols.size());
 		for (var entry : equivalenceClasses.entrySet()) {
 			createStores(stores, entry.getKey(), entry.getValue());
 		}

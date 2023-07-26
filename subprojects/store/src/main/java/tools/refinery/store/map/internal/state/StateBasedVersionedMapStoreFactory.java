@@ -14,14 +14,19 @@ public class StateBasedVersionedMapStoreFactory<K, V> implements VersionedMapSto
 	private final ContinuousHashProvider<K> continuousHashProvider;
 	private final VersionedMapStoreStateConfiguration config;
 
-	public StateBasedVersionedMapStoreFactory(V defaultValue, Boolean transformToImmutable, VersionedMapStoreFactoryBuilder.SharingStrategy sharingStrategy, ContinuousHashProvider<K> continuousHashProvider) {
+	public StateBasedVersionedMapStoreFactory(V defaultValue, Boolean transformToImmutable,
+											  VersionedMapStoreFactoryBuilder.SharingStrategy sharingStrategy,
+											  boolean versionFreeingEnabled,
+											  ContinuousHashProvider<K> continuousHashProvider) {
 		this.defaultValue = defaultValue;
 		this.continuousHashProvider = continuousHashProvider;
 
 		this.config = new VersionedMapStoreStateConfiguration(
 				transformToImmutable,
-				sharingStrategy == VersionedMapStoreFactoryBuilder.SharingStrategy.SHARED_NODE_CACHE || sharingStrategy == VersionedMapStoreFactoryBuilder.SharingStrategy.SHARED_NODE_CACHE_IN_GROUP,
-				sharingStrategy == VersionedMapStoreFactoryBuilder.SharingStrategy.SHARED_NODE_CACHE_IN_GROUP);
+				sharingStrategy == VersionedMapStoreFactoryBuilder.SharingStrategy.SHARED_NODE_CACHE
+						|| sharingStrategy == VersionedMapStoreFactoryBuilder.SharingStrategy.SHARED_NODE_CACHE_IN_GROUP,
+				sharingStrategy == VersionedMapStoreFactoryBuilder.SharingStrategy.SHARED_NODE_CACHE_IN_GROUP,
+				versionFreeingEnabled);
 	}
 
 	@Override

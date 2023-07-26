@@ -38,15 +38,15 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 	}
 
 	@Override
-	public long commit() {
+	public Version commit() {
 		MapDelta<K, V>[] deltas = uncommittedStore.extractAndDeleteDeltas();
-		long[] versionContainer = new long[1];
-		this.previous = this.store.appendTransaction(deltas, previous, versionContainer);
-		return versionContainer[0];
+		final MapTransaction<K,V> committedTransaction = this.store.appendTransaction(deltas, previous);
+		this.previous = committedTransaction;
+		return committedTransaction;
 	}
 
 	@Override
-	public void restore(long state) {
+	public void restore(Version state) {
 		// 1. restore uncommitted states
 		MapDelta<K, V>[] uncommitted = this.uncommittedStore.extractAndDeleteDeltas();
 		if (uncommitted != null) {
@@ -61,7 +61,7 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 			this.forward(forward);
 		} else {
 			List<MapDelta<K, V>[]> backward = new ArrayList<>();
-			parent = this.store.getPath(this.previous.version(), state, backward, forward);
+			parent = this.store.getPath(this.previous, state, backward, forward);
 			this.backward(backward);
 			this.forward(forward);
 		}
@@ -75,12 +75,16 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 	}
 
 	protected void backward(List<MapDelta<K, V>[]> changes) {
+		//Currently, this loop statement is faster.
+		//noinspection ForLoopReplaceableByForEach
 		for (int i = 0; i < changes.size(); i++) {
 			backward(changes.get(i));
 		}
 	}
 
 	protected void forward(MapDelta<K, V>[] changes) {
+		//Currently, this loop statement is faster.
+		//noinspection ForLoopReplaceableByForEach
 		for (int i = 0; i < changes.length; i++) {
 			final MapDelta<K, V> change = changes[i];
 			K key = change.getKey();
@@ -168,7 +172,7 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 	}
 
 	@Override
-	public DiffCursor<K, V> getDiffCursor(long state) {
+	public DiffCursor<K, V> getDiffCursor(Version state) {
 		MapDelta<K, V>[] backward = this.uncommittedStore.extractDeltas();
 		List<MapDelta<K, V>[]> backwardTransactions = new ArrayList<>();
 		List<MapDelta<K, V>[]> forwardTransactions = new ArrayList<>();
@@ -178,7 +182,7 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 		}
 
 		if (this.previous != null) {
-			store.getPath(this.previous.version(), state, backwardTransactions, forwardTransactions);
+			store.getPath(this.previous, state, backwardTransactions, forwardTransactions);
 		} else {
 			store.getPath(state, forwardTransactions);
 		}
@@ -215,6 +219,20 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 			} else if (value == null) {
 				throw new IllegalStateException("null value stored in map!");
 			}
+		}
+		MapTransaction<K,V> transaction = this.previous;
+		while(transaction != null) {
+			MapTransaction<K,V> parent = transaction.parent();
+			if(parent != null) {
+				if(parent.depth() != transaction.depth()-1) {
+					throw new IllegalStateException("Parent depths are inconsistent!");
+				}
+			} else {
+				if(transaction.depth() != 0) {
+					throw new IllegalArgumentException("Root depth is not 0!");
+				}
+			}
+			transaction = transaction.parent();
 		}
 	}
 }

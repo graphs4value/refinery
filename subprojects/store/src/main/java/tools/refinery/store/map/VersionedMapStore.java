@@ -7,17 +7,13 @@ package tools.refinery.store.map;
 
 import tools.refinery.store.map.internal.VersionedMapStoreFactoryBuilderImpl;
 
-import java.util.Set;
-
 public interface VersionedMapStore<K, V> {
 
 	VersionedMap<K, V> createMap();
 
-	VersionedMap<K, V> createMap(long state);
+	VersionedMap<K, V> createMap(Version state);
 
-	Set<Long> getStates();
-
-	DiffCursor<K,V> getDiffCursor(long fromState, long toState);
+	DiffCursor<K,V> getDiffCursor(Version fromState, Version toState);
 
 	static <K,V> VersionedMapStoreFactoryBuilder<K,V> builder() {
 		return new VersionedMapStoreFactoryBuilderImpl<>();

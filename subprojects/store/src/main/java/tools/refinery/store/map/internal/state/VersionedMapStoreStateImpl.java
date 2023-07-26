@@ -17,10 +17,7 @@ public class VersionedMapStoreStateImpl<K, V> implements VersionedMapStore<K, V>
 	protected final ContinuousHashProvider<K> hashProvider;
 	protected final V defaultValue;
 
-	// Dynamic data
-	protected final Map<Long, ImmutableNode<K, V>> states = new HashMap<>();
 	protected final Map<Node<K, V>, ImmutableNode<K, V>> nodeCache;
-	protected long nextID = 0;
 
 	public VersionedMapStoreStateImpl(ContinuousHashProvider<K> hashProvider, V defaultValue,
 									  VersionedMapStoreStateConfiguration config) {
@@ -28,7 +25,7 @@ public class VersionedMapStoreStateImpl<K, V> implements VersionedMapStore<K, V>
 		this.hashProvider = hashProvider;
 		this.defaultValue = defaultValue;
 		if (config.isSharedNodeCacheInStore()) {
-			nodeCache = new HashMap<>();
+			nodeCache = createNoteCache(config);
 		} else {
 			nodeCache = null;
 		}
@@ -53,7 +50,7 @@ public class VersionedMapStoreStateImpl<K, V> implements VersionedMapStore<K, V>
 		if (config.isSharedNodeCacheInStoreGroups()) {
 			Map<Node<K, V>, ImmutableNode<K, V>> nodeCache;
 			if (config.isSharedNodeCacheInStore()) {
-				nodeCache = new HashMap<>();
+				nodeCache = createNoteCache(config);
 			} else {
 				nodeCache = null;
 			}
@@ -68,14 +65,17 @@ public class VersionedMapStoreStateImpl<K, V> implements VersionedMapStore<K, V>
 		return result;
 	}
 
+	private static <K,V> Map<K,V> createNoteCache(VersionedMapStoreStateConfiguration config) {
+		if(config.isVersionFreeingEnabled()) {
+			return new WeakHashMap<>();
+		} else {
+			return new HashMap<>();
+		}
+	}
+
 	public static <K, V> List<VersionedMapStore<K, V>> createSharedVersionedMapStores(int amount,
 																					  ContinuousHashProvider<K> hashProvider, V defaultValue) {
 		return createSharedVersionedMapStores(amount, hashProvider, defaultValue, new VersionedMapStoreStateConfiguration());
-	}
-
-	@Override
-	public synchronized Set<Long> getStates() {
-		return new HashSet<>(states.keySet());
 	}
 
 	@Override
@@ -84,23 +84,17 @@ public class VersionedMapStoreStateImpl<K, V> implements VersionedMapStore<K, V>
 	}
 
 	@Override
-	public VersionedMap<K, V> createMap(long state) {
+	public VersionedMap<K, V> createMap(Version state) {
 		ImmutableNode<K, V> data = revert(state);
 		return new VersionedMapStateImpl<>(this, hashProvider, defaultValue, data);
 	}
 
-	public synchronized ImmutableNode<K, V> revert(long state) {
-		if (states.containsKey(state)) {
-			return states.get(state);
-		} else {
-			ArrayList<Long> existingKeys = new ArrayList<>(states.keySet());
-			Collections.sort(existingKeys);
-			throw new IllegalArgumentException("Store does not contain state " + state + "! Available states: "
-					+ Arrays.toString(existingKeys.toArray()));
-		}
+	@SuppressWarnings("unchecked")
+	public synchronized ImmutableNode<K, V> revert(Version state) {
+		return (ImmutableNode<K, V>) state;
 	}
 
-	public synchronized long commit(Node<K, V> data, VersionedMapStateImpl<K, V> mapToUpdateRoot) {
+	public synchronized Version commit(Node<K, V> data, VersionedMapStateImpl<K, V> mapToUpdateRoot) {
 		ImmutableNode<K, V> immutable;
 		if (data != null) {
 			immutable = data.toImmutable(this.nodeCache);
@@ -108,18 +102,14 @@ public class VersionedMapStoreStateImpl<K, V> implements VersionedMapStore<K, V>
 			immutable = null;
 		}
 
-		if (nextID == Long.MAX_VALUE)
-			throw new IllegalStateException("Map store run out of Id-s");
-		long id = nextID++;
-		this.states.put(id, immutable);
 		if (this.immutableWhenCommitting) {
 			mapToUpdateRoot.setRoot(immutable);
 		}
-		return id;
+		return immutable;
 	}
 
 	@Override
-	public DiffCursor<K, V> getDiffCursor(long fromState, long toState) {
+	public DiffCursor<K, V> getDiffCursor(Version fromState, Version toState) {
 		VersionedMapStateImpl<K, V> map1 = (VersionedMapStateImpl<K, V>) createMap(fromState);
 		VersionedMapStateImpl<K, V> map2 = (VersionedMapStateImpl<K, V>) createMap(toState);
 		InOrderMapCursor<K, V> cursor1 = new InOrderMapCursor<>(map1);

@@ -14,11 +14,12 @@ public class VersionedMapStoreStateConfiguration {
 
 	}
 	public VersionedMapStoreStateConfiguration(boolean immutableWhenCommitting, boolean sharedNodeCacheInStore,
-											   boolean sharedNodeCacheInStoreGroups) {
+											   boolean sharedNodeCacheInStoreGroups, boolean versionFreeingEnabled) {
 		super();
 		this.immutableWhenCommitting = immutableWhenCommitting;
 		this.sharedNodeCacheInStore = sharedNodeCacheInStore;
 		this.sharedNodeCacheInStoreGroups = sharedNodeCacheInStoreGroups;
+		this.versionFreeingEnabled = versionFreeingEnabled;
 	}
 
 	/**
@@ -52,5 +53,10 @@ public class VersionedMapStoreStateConfiguration {
 	private boolean sharedNodeCacheInStoreGroups = true;
 	public boolean isSharedNodeCacheInStoreGroups() {
 		return sharedNodeCacheInStoreGroups;
+	}
+
+	private boolean versionFreeingEnabled = true;
+	public boolean isVersionFreeingEnabled() {
+		return versionFreeingEnabled;
 	}
 }

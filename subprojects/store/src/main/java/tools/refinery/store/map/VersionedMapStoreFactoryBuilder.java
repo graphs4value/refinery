@@ -20,6 +20,7 @@ public interface VersionedMapStoreFactoryBuilder<K,V> {
 
 	VersionedMapStoreFactoryBuilder<K,V> defaultValue(V defaultValue);
 	VersionedMapStoreFactoryBuilder<K,V> strategy(StoreStrategy strategy);
+	VersionedMapStoreFactoryBuilder<K,V> versionFreeing(boolean enabled);
 	VersionedMapStoreFactoryBuilder<K,V> stateBasedImmutableWhenCommitting(boolean transformToImmutable);
 	VersionedMapStoreFactoryBuilder<K,V> stateBasedSharingStrategy(SharingStrategy sharingStrategy);
 	VersionedMapStoreFactoryBuilder<K,V> stateBasedHashProvider(ContinuousHashProvider<K> hashProvider);

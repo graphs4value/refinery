@@ -125,7 +125,7 @@ public class MapTestEnvironment<K, V> {
 		}
 	}
 
-	public long commit(){
+	public Version commit(){
 		return sut.commit();
 	}
 
