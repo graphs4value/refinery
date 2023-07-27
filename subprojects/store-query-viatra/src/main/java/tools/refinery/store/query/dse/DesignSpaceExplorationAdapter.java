@@ -10,6 +10,7 @@ import tools.refinery.store.tuple.Tuple1;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 	@Override
@@ -52,4 +53,8 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 	public ObjectiveComparatorHelper getObjectiveComparatorHelper();
 
 	public void restoreTrajectory(List<Long>  trajectory);
+
+	public void setRandom(Random random);
+
+	public void setRandom(long seed);
 }

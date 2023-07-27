@@ -142,6 +142,16 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
+	public void setRandom(Random random) {
+		this.random = random;
+	}
+
+	@Override
+	public void setRandom(long seed) {
+		this.random = new Random(seed);
+	}
+
+	@Override
 	public Fitness calculateFitness() {
 		Fitness result = new Fitness();
 		boolean satisfiesHardObjectives = true;
