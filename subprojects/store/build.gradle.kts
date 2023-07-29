@@ -8,3 +8,8 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 	id("tools.refinery.gradle.jmh")
 }
+
+dependencies {
+	implementation(libs.eclipseCollections)
+	implementation(libs.eclipseCollections.api)
+}
