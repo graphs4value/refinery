@@ -10,15 +10,6 @@ import java.util.Collection;
 import java.util.List;
 
 public interface DesignSpaceExplorationBuilder extends ModelAdapterBuilder {
-	default DesignSpaceExplorationBuilder stopConditions(AnyQuery... stopConditions) {
-		return stopConditions(List.of(stopConditions));
-	}
-
-	default DesignSpaceExplorationBuilder stopConditions(Collection<? extends AnyQuery> stopConditions) {
-		stopConditions.forEach(this::stopCondition);
-		return this;
-	}
-
 	default DesignSpaceExplorationBuilder transformations(TransformationRule... transformationRules) {
 		return transformations(List.of(transformationRules));
 	}
@@ -45,8 +36,6 @@ public interface DesignSpaceExplorationBuilder extends ModelAdapterBuilder {
 		objectives.forEach(this::objective);
 		return this;
 	}
-
-	DesignSpaceExplorationBuilder stopCondition(AnyQuery stopCondition);
 
 	DesignSpaceExplorationBuilder transformation(TransformationRule transformationRule);
 	DesignSpaceExplorationBuilder globalConstraint(RelationalQuery globalConstraint);

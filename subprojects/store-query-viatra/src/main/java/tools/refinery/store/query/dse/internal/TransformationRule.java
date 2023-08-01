@@ -9,9 +9,8 @@ import tools.refinery.store.query.resultset.OrderedResultSet;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Random;
-import java.util.Set;
 
 public class TransformationRule {
 
@@ -66,8 +65,8 @@ public class TransformationRule {
 		return activations;
 	}
 
-	public Set<Activation> getAllActivations() {
-		var result = new HashSet<Activation>();
+	public LinkedHashSet<Activation> getAllActivations() {
+		var result = new LinkedHashSet<Activation>();
 		var cursor = activations.getAll();
 		while (cursor.move()) {
 			result.add(new Activation(this, cursor.getKey()));

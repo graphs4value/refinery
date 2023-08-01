@@ -24,20 +24,19 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private final Model model;
 	private final ModelQueryAdapter queryEngine;
 	private final DesignSpaceExplorationStoreAdapterImpl storeAdapter;
-	private final Set<TransformationRule> transformationRules;
-	private final Set<RelationalQuery> globalConstraints;
+	private final LinkedHashSet<TransformationRule> transformationRules;
+	private final LinkedHashSet<RelationalQuery> globalConstraints;
 	private final List<Objective> objectives;
-	private final Set<ResultSet<Boolean>> globalConstraintResultSets = new HashSet<>();
+	private final LinkedHashSet<ResultSet<Boolean>> globalConstraintResultSets = new LinkedHashSet<>();
 	private final Interpretation<Integer> sizeInterpretation;
 	private final Strategy strategy;
 
 	private ObjectiveComparatorHelper objectiveComparatorHelper;
 	private List<Long> trajectory = new LinkedList<>();
 	private Fitness lastFitness;
-	private final Set<Long> solutions = new HashSet<>();
-//	private Map<Long, Collection<Activation>> statesAndActivations;
-	private Map<Long, Collection<Activation>> statesAndUntraversedActivations;
-	private Map<Long, Collection<Activation>> statesAndTraversedActivations;
+	private final LinkedHashSet<Long> solutions = new LinkedHashSet<>();
+	private Map<Long, LinkedHashSet<Activation>> statesAndUntraversedActivations;
+	private Map<Long, LinkedHashSet<Activation>> statesAndTraversedActivations;
 	private Random random = new Random();
 	private Objective[][] leveledObjectives;
 	private boolean isNewState = false;
@@ -85,11 +84,11 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
-	public Collection<Long> explore() {
+	public LinkedHashSet<Long> explore() {
 		var state = model.commit();
 		trajectory.add(state);
 		statesAndUntraversedActivations.put(state, getAllActivations());
-		statesAndTraversedActivations.put(state, new HashSet<>());
+		statesAndTraversedActivations.put(state, new LinkedHashSet<>());
 		strategy.initStrategy(this);
 		strategy.explore();
 		return solutions;
@@ -196,9 +195,9 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		return trajectory.size() - 1;
 	}
 
-	public Collection<Activation> getUntraversedActivations() {
+	public LinkedHashSet<Activation> getUntraversedActivations() {
 //		return statesAndUntraversedActivations.get(model.getState());
-		List<Activation> untraversedActivations = new ArrayList<>();
+		LinkedHashSet<Activation> untraversedActivations = new LinkedHashSet<>();
 		for (Activation activation : getAllActivations()) {
 			if (!statesAndTraversedActivations.get(model.getState()).contains(activation)) {
 				untraversedActivations.add(activation);
@@ -227,7 +226,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		trajectory.add(newState);
 		isNewState = !statesAndUntraversedActivations.containsKey(newState);
 		statesAndUntraversedActivations.put(newState, getAllActivations());
-		statesAndTraversedActivations.put(newState, new HashSet<>());
+		statesAndTraversedActivations.put(newState, new LinkedHashSet<>());
 		if (isVisualizationEnabled) {
 			modelVisualizerAdapter.addTransition(trajectory.get(trajectory.size() - 2),
 					trajectory.get(trajectory.size() - 1), activation.transformationRule().getName(),
@@ -257,8 +256,8 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		return trajectory.contains(model.getState());
 	}
 
-	public Collection<Activation> getAllActivations() {
-		Collection<Activation> result = new HashSet<>();
+	public LinkedHashSet<Activation> getAllActivations() {
+		LinkedHashSet<Activation> result = new LinkedHashSet<>();
 		for (var rule : transformationRules) {
 			result.addAll(rule.getAllActivations());
 		}
