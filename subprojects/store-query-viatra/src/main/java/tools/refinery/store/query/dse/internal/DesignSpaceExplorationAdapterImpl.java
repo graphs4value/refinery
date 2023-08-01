@@ -15,6 +15,7 @@ import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
+import tools.refinery.visualization.ModelVisualizerAdapter;
 
 import java.util.*;
 
@@ -40,6 +41,8 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private Random random = new Random();
 	private Objective[][] leveledObjectives;
 	private boolean isNewState = false;
+	private final boolean isVisualizationEnabled;
+	private final ModelVisualizerAdapter modelVisualizerAdapter;
 
 	public List<Long> getTrajectory() {
 		return new LinkedList<>(trajectory);
@@ -66,6 +69,8 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		statesAndUntraversedActivations = new HashMap<>();
 		statesAndTraversedActivations = new HashMap<>();
 		strategy = storeAdapter.getStrategy();
+		modelVisualizerAdapter = model.tryGetAdapter(ModelVisualizerAdapter.class).orElse(null);
+		isVisualizationEnabled = modelVisualizerAdapter != null;
 
 	}
 
@@ -129,6 +134,10 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		if (trajectory.size() < 2) {
 			return false;
 		}
+		if (isVisualizationEnabled) {
+			modelVisualizerAdapter.addTransition(trajectory.get(trajectory.size() - 1),
+					trajectory.get(trajectory.size() - 2), "backtrack");
+		}
 		model.restore(trajectory.get(trajectory.size() - 2));
 		trajectory.remove(trajectory.size() - 1);
 		return true;
@@ -137,6 +146,10 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	@Override
 	public void restoreTrajectory(List<Long> trajectory) {
 		model.restore(trajectory.get(trajectory.size() - 1));
+//		if (isVisualizationEnabled) {
+//			modelVisualizerAdapter.addTransition(this.trajectory.get(trajectory.size() - 1),
+//					trajectory.get(trajectory.size() - 1), "restore");
+//		}
 		this.trajectory = trajectory;
 
 	}
@@ -173,6 +186,9 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	public void newSolution() {
 		var state = model.getState();
 		solutions.add(state);
+		if (isVisualizationEnabled) {
+			modelVisualizerAdapter.addSolution(state);
+		}
 	}
 
 	@Override
@@ -212,6 +228,11 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		isNewState = !statesAndUntraversedActivations.containsKey(newState);
 		statesAndUntraversedActivations.put(newState, getAllActivations());
 		statesAndTraversedActivations.put(newState, new HashSet<>());
+		if (isVisualizationEnabled) {
+			modelVisualizerAdapter.addTransition(trajectory.get(trajectory.size() - 2),
+					trajectory.get(trajectory.size() - 1), activation.transformationRule().getName(),
+					activation.activation());
+		}
 		return true;
 	}
 

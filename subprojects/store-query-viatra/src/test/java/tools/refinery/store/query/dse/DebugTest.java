@@ -5,6 +5,7 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dse.internal.TransformationRule;
+import tools.refinery.store.query.dse.strategy.BestFirstStrategy;
 import tools.refinery.store.query.dse.strategy.DepthFirstStrategy;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
@@ -12,6 +13,7 @@ import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.visualization.ModelVisualizerAdapter;
+import tools.refinery.visualization.internal.FileFormat;
 
 public class DebugTest {
 	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
@@ -83,30 +85,31 @@ public class DebugTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition, createFeaturePrecondition))
+				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
 						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
 //						.strategy(new BestFirstStrategy(4).continueIfHardObjectivesFulfilled()
 //								.goOnOnlyIfFitnessIsBetter()
 						))
-				.with(ModelVisualizerAdapter.builder())
 				.build();
 
 		var model = store.createEmptyModel();
 		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+//		dseAdapter.setRandom(1);
 		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 
 		var modelElementInterpretation = model.getInterpretation(classModel);
-		modelElementInterpretation.put(dseAdapter.createObject(), true);
+		var classElementInterpretation = model.getInterpretation(classElement);
+		var modelElement = dseAdapter.createObject();
+		modelElementInterpretation.put(modelElement, true);
+		classElementInterpretation.put(modelElement, true);
 		queryEngine.flushChanges();
 
 
 		var states = dseAdapter.explore();
 		var visualizer = model.getAdapter(ModelVisualizerAdapter.class);
-		for (var state : states) {
-			var visualization = visualizer.createVisualizationForModelState(state);
-			visualizer.saveVisualization(visualization, "test_output" + state.hashCode() + ".png");
-		}
+		visualizer.renderDesignSpace("test_output", FileFormat.SVG);
 		System.out.println("states size: " + states.size());
 		System.out.println("states: " + states);
 

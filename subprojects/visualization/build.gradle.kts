@@ -9,6 +9,5 @@ plugins {
 }
 
 dependencies {
-	implementation ("guru.nidi:graphviz-java:0.18.1")
 	api(project(":refinery-store-query"))
 }
