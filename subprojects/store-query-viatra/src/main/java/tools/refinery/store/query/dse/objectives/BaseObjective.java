@@ -24,7 +24,6 @@ public abstract class BaseObjective implements Objective {
 
 	protected final String name;
 	protected Comparator<Double> comparator = Comparators.HIGHER_IS_BETTER;
-	protected int level = 0;
 
 	protected double fitnessConstraint;
 	protected boolean isThereFitnessConstraint = false;
@@ -48,21 +47,6 @@ public abstract class BaseObjective implements Objective {
 	@Override
 	public Comparator<Double> getComparator() {
 		return comparator;
-	}
-
-	@Override
-	public void setLevel(int level) {
-		this.level = level;
-	}
-
-	@Override
-	public int getLevel() {
-		return level;
-	}
-
-	public BaseObjective withLevel(int level) {
-		setLevel(level);
-		return this;
 	}
 
 	public BaseObjective withComparator(Comparator<Double> comparator) {

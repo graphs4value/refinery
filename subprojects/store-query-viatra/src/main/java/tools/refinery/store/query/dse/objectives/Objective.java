@@ -97,14 +97,4 @@ public interface Objective {
 	 */
 	boolean satisfiesHardObjective(Double fitness);
 
-	/**
-	 * Set the level of the objective.
-	 */
-	void setLevel(int level);
-
-	/**
-	 * Gets the level of the objective.
-	 */
-	int getLevel();
-
 }

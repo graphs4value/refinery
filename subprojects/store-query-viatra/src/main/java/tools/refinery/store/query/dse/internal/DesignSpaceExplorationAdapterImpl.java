@@ -8,7 +8,6 @@ import tools.refinery.store.query.dse.DesignSpaceExplorationAdapter;
 import tools.refinery.store.query.dse.DesignSpaceExplorationStoreAdapter;
 import tools.refinery.store.query.dse.Strategy;
 import tools.refinery.store.query.dse.objectives.Fitness;
-import tools.refinery.store.query.dse.objectives.LeveledObjectivesHelper;
 import tools.refinery.store.query.dse.objectives.Objective;
 import tools.refinery.store.query.dse.objectives.ObjectiveComparatorHelper;
 import tools.refinery.store.query.resultset.ResultSet;
@@ -38,7 +37,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private Map<Long, LinkedHashSet<Activation>> statesAndUntraversedActivations;
 	private Map<Long, LinkedHashSet<Activation>> statesAndTraversedActivations;
 	private Random random = new Random();
-	private Objective[][] leveledObjectives;
 	private boolean isNewState = false;
 	private final boolean isVisualizationEnabled;
 	private final ModelVisualizerAdapter modelVisualizerAdapter;
@@ -64,7 +62,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		}
 
 		objectives = storeAdapter.getObjectives();
-		leveledObjectives = new LeveledObjectivesHelper(objectives).initLeveledObjectives();
 		statesAndUntraversedActivations = new HashMap<>();
 		statesAndTraversedActivations = new HashMap<>();
 		strategy = storeAdapter.getStrategy();
@@ -275,12 +272,8 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 
 	public ObjectiveComparatorHelper getObjectiveComparatorHelper() {
 		if (objectiveComparatorHelper == null) {
-			objectiveComparatorHelper = new ObjectiveComparatorHelper(leveledObjectives);
+			objectiveComparatorHelper = new ObjectiveComparatorHelper(objectives);
 		}
 		return objectiveComparatorHelper;
-	}
-
-	public Objective[][] getLeveledObjectives() {
-		return leveledObjectives;
 	}
 }
