@@ -1,6 +1,7 @@
 package tools.refinery.store.query.dse;
 
 import tools.refinery.store.adapter.ModelAdapter;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.query.dse.internal.Activation;
 import tools.refinery.store.query.dse.internal.DesignSpaceExplorationBuilderImpl;
 import tools.refinery.store.query.dse.objectives.Fitness;
@@ -20,7 +21,7 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 		return new DesignSpaceExplorationBuilderImpl();
 	}
 
-	Collection<Long> explore();
+	Collection<Version> explore();
 
 	public int getModelSize();
 
@@ -46,13 +47,13 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 
 	public boolean isCurrentInTrajectory();
 
-	public List<Long> getTrajectory();
+	public List<Version> getTrajectory();
 
 	public boolean isCurrentStateAlreadyTraversed();
 
 	public ObjectiveComparatorHelper getObjectiveComparatorHelper();
 
-	public void restoreTrajectory(List<Long>  trajectory);
+	public void restoreTrajectory(List<Version>  trajectory);
 
 	public void setRandom(Random random);
 

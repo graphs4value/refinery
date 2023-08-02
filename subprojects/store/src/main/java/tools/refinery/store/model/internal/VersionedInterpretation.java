@@ -5,10 +5,7 @@
  */
 package tools.refinery.store.model.internal;
 
-import tools.refinery.store.map.Cursor;
-import tools.refinery.store.map.DiffCursor;
-import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.VersionedMapStore;
+import tools.refinery.store.map.*;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.InterpretationListener;
 import tools.refinery.store.model.Model;
@@ -110,15 +107,14 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 	}
 
 	@Override
-	public DiffCursor<Tuple, T> getDiffCursor(long to) {
+	public DiffCursor<Tuple, T> getDiffCursor(Version to) {
 		return map.getDiffCursor(to);
 	}
 
-	public long commit() {
+	Version commit() {
 		return map.commit();
 	}
-
-	public void restore(long state) {
+	void restore(Version state) {
 		if (!restoreListeners.isEmpty()) {
 			var diffCursor = getDiffCursor(state);
 			while (diffCursor.move()) {
@@ -150,7 +146,7 @@ public class VersionedInterpretation<T> implements Interpretation<T> {
 	}
 
 	static <T> VersionedInterpretation<T> of(ModelImpl model, AnySymbol symbol, VersionedMapStore<Tuple, T> store,
-											 long state) {
+											 Version state) {
 		@SuppressWarnings("unchecked")
 		var typedSymbol = (Symbol<T>) symbol;
 		var map = store.createMap(state);

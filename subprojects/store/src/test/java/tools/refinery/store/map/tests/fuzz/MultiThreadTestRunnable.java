@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import tools.refinery.store.map.Version;
 import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
@@ -61,7 +62,7 @@ public class MultiThreadTestRunnable implements Runnable {
 		// 1. build a map with versions
 		Random r = new Random(seed);
 		VersionedMap<Integer, String> versioned =  store.createMap();
-		Map<Integer, Long> index2Version = new HashMap<>();
+		Map<Integer, Version> index2Version = new HashMap<>();
 
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
@@ -74,7 +75,7 @@ public class MultiThreadTestRunnable implements Runnable {
 				logAndThrowError(scenario + ":" + index + ": exception happened: " + exception);
 			}
 			if (index % commitFrequency == 0) {
-				long version = versioned.commit();
+				Version version = versioned.commit();
 				index2Version.put(i, version);
 			}
 			MapTestEnvironment.printStatus(scenario, index, steps, "building");
@@ -100,13 +101,12 @@ public class MultiThreadTestRunnable implements Runnable {
 				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned, null);
 
 				// go back to a random state (probably created by another thread)
-				List<Long> states = new ArrayList<>(store.getStates());
-				states.sort(Long::compare);
+				List<Version> states = new ArrayList<>(index2Version.values());
+				//states.sort(Long::compare);
 				Collections.shuffle(states, r2);
-				for (Long state : states.subList(0, Math.min(states.size(), 100))) {
-					long x = state;
-					versioned.restore(x);
-					var clean = store.createMap(x);
+				for (Version state : states.subList(0, Math.min(states.size(), 100))) {
+					versioned.restore(state);
+					var clean = store.createMap(state);
 					MapTestEnvironment.compareTwoMaps(scenario + ":" + index, clean, versioned, null);
 				}
 				versioned.restore(index2Version.get(i));

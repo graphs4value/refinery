@@ -6,6 +6,7 @@
 package tools.refinery.store.model.tests;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.representation.Symbol;
@@ -120,7 +121,7 @@ class ModelTest {
 		assertTrue(model.hasUncommittedChanges());
 		assertEquals(Model.NO_STATE_ID, model.getState());
 
-		long state1 = model.commit();
+		Version state1 = model.commit();
 
 		assertFalse(model.hasUncommittedChanges());
 		assertEquals(state1, model.getState());
@@ -134,7 +135,7 @@ class ModelTest {
 		assertTrue(model.hasUncommittedChanges());
 		assertEquals(state1, model.getState());
 
-		long state2 = model.commit();
+		Version state2 = model.commit();
 
 		assertFalse(model.hasUncommittedChanges());
 		assertEquals(state2, model.getState());

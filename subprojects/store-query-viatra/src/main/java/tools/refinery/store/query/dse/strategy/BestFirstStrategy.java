@@ -1,5 +1,6 @@
 package tools.refinery.store.query.dse.strategy;
 
+import tools.refinery.store.map.Version;
 import tools.refinery.store.query.dse.DesignSpaceExplorationAdapter;
 import tools.refinery.store.query.dse.Strategy;
 import tools.refinery.store.query.dse.internal.Activation;
@@ -23,10 +24,10 @@ public class BestFirstStrategy implements Strategy {
 
 	private static class TrajectoryWithFitness {
 
-		public List<Long> trajectory;
+		public List<Version> trajectory;
 		public Fitness fitness;
 
-		public TrajectoryWithFitness(List<Long> trajectory, Fitness fitness) {
+		public TrajectoryWithFitness(List<Version> trajectory, Fitness fitness) {
 			super();
 			this.trajectory = trajectory;
 			this.fitness = fitness;
@@ -93,7 +94,7 @@ public class BestFirstStrategy implements Strategy {
 			return;
 		}
 
-		final List<Long> firstTrajectory = dseAdapter.getTrajectory();
+		final List<Version> firstTrajectory = dseAdapter.getTrajectory();
 		TrajectoryWithFitness currentTrajectoryWithFitness = new TrajectoryWithFitness(firstTrajectory, firstFitness);
 		trajectoriesToExplore.add(currentTrajectoryWithFitness);
 

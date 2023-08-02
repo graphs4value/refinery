@@ -1,5 +1,6 @@
 package tools.refinery.visualization.internal;
 
+import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.representation.AnySymbol;
@@ -16,7 +17,9 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	private final ModelVisualizerStoreAdapter storeAdapter;
 	private final Map<AnySymbol, Interpretation<?>> interpretations;
 	private final StringBuilder designSpaceBuilder = new StringBuilder();
+	private final Map<Version, Integer> states = new HashMap<>();
 	private int transitionCounter = 0;
+	private Integer numberOfStates = 0;
 
 	public ModelVisualizerAdapterImpl(Model model, ModelVisualizerStoreAdapter storeAdapter) {
 		this.model = model;
@@ -81,7 +84,7 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	}
 
 	@Override
-	public String createDotForModelState(Long version) {
+	public String createDotForModelState(Version version) {
 		var currentVersion = model.getState();
 		model.restore(version);
 		var graph = createDotForCurrentModelState();
@@ -125,15 +128,15 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	}
 
 	@Override
-	public void addTransition(Long from, Long to, String action) {
-		designSpaceBuilder.append(from).append(" -> ").append(to).append(" [label=\"").append(transitionCounter++)
-				.append(": ").append(action).append("\"]\n");
+	public void addTransition(Version from, Version to, String action) {
+		designSpaceBuilder.append(states.get(from)).append(" -> ").append(states.get(to)).append(" [label=\"")
+				.append(transitionCounter++).append(": ").append(action).append("\"]\n");
 
 	}
 
 	@Override
-	public void addTransition(Long from, Long to, String action, Tuple activation) {
-		designSpaceBuilder.append(from).append(" -> ").append(to).append(" [label=\"").append(transitionCounter++)
+	public void addTransition(Version from, Version to, String action, Tuple activation) {
+		designSpaceBuilder.append(states.get(from)).append(" -> ").append(states.get(to)).append(" [label=\"").append(transitionCounter++)
 				.append(": ").append(action).append(" / ");
 
 
@@ -147,14 +150,17 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	}
 
 	@Override
-	public void addSolution(Long state) {
-		designSpaceBuilder.append(state).append(" [shape = doublecircle]\n");
+	public void addState(Version state) {
+		states.put(state, numberOfStates++);
+		designSpaceBuilder.append(states.get(state)).append(" [URL=\"./").append(states.get(state)).append(".svg\"]\n");
+	}
+
+	@Override
+	public void addSolution(Version state) {
+		designSpaceBuilder.append(states.get(state)).append(" [shape = doublecircle]\n");
 	}
 
 	private String buildDesignSpaceDot() {
-		for (var state : storeAdapter.getStore().getStates()) {
-			designSpaceBuilder.append(state).append(" [URL=\"./").append(state).append(".svg\"]\n");
-		}
 		designSpaceBuilder.append("}");
 		return designSpaceBuilder.toString();
 	}
@@ -162,8 +168,8 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	@Override
 	public boolean saveDesignSpace(String path) {
 		saveDot(buildDesignSpaceDot(), path + "/designSpace.dot");
-		for (var state : storeAdapter.getStore().getStates()) {
-			saveDot(createDotForModelState(state), path + "/" + state + ".dot");
+		for (var state : states.keySet()) {
+			saveDot(createDotForModelState(state), path + "/" + states.get(state) + ".dot");
 		}
 		return true;
 	}
@@ -175,10 +181,12 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 
 	@Override
 	public boolean renderDesignSpace(String path, FileFormat format) {
-		for (var state : storeAdapter.getStore().getStates()) {
+		for (var entry : states.entrySet()) {
+			var state = entry.getKey();
+			var stateId = entry.getValue();
 			var stateDot = createDotForModelState(state);
-			saveDot(stateDot, path + "/" + state + ".dot");
-			renderDot(stateDot, path + "/" + state + "." + format.getFormat());
+			saveDot(stateDot, path + "/" + stateId + ".dot");
+			renderDot(stateDot, path + "/" + stateId + "." + format.getFormat());
 		}
 		var designSpaceDot = buildDesignSpaceDot();
 		saveDot(designSpaceDot, path + "/designSpace.dot");

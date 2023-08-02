@@ -8,10 +8,10 @@ package tools.refinery.store.model.internal;
 import tools.refinery.store.adapter.AdapterUtils;
 import tools.refinery.store.adapter.ModelAdapterBuilder;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.VersionedMapStoreImpl;
+import tools.refinery.store.map.VersionedMapStoreFactory;
+import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.model.TupleHashProvider;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
@@ -19,8 +19,8 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.*;
 
 public class ModelStoreBuilderImpl implements ModelStoreBuilder {
-	private final Set<AnySymbol> allSymbols = new HashSet<>();
-	private final Map<SymbolEquivalenceClass<?>, List<AnySymbol>> equivalenceClasses = new HashMap<>();
+	private final LinkedHashSet<AnySymbol> allSymbols = new LinkedHashSet<>();
+	private final LinkedHashMap<SymbolEquivalenceClass<?>, List<AnySymbol>> equivalenceClasses = new LinkedHashMap<>();
 	private final List<ModelAdapterBuilder> adapters = new ArrayList<>();
 
 	@Override
@@ -62,7 +62,7 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 		for (int i = adapters.size() - 1; i >= 0; i--) {
 			adapters.get(i).configure(this);
 		}
-		var stores = new HashMap<AnySymbol, VersionedMapStore<Tuple, ?>>(allSymbols.size());
+		var stores = new LinkedHashMap<AnySymbol, VersionedMapStore<Tuple, ?>>(allSymbols.size());
 		for (var entry : equivalenceClasses.entrySet()) {
 			createStores(stores, entry.getKey(), entry.getValue());
 		}
@@ -77,8 +77,12 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	private <T> void createStores(Map<AnySymbol, VersionedMapStore<Tuple, ?>> stores,
 								  SymbolEquivalenceClass<T> equivalenceClass, List<AnySymbol> symbols) {
 		int size = symbols.size();
-		var storeGroup = VersionedMapStoreImpl.createSharedVersionedMapStores(size, TupleHashProvider.INSTANCE,
-				equivalenceClass.defaultValue());
+		VersionedMapStoreFactory<Tuple,T> mapFactory = VersionedMapStore
+				.<Tuple,T>builder()
+				.strategy(VersionedMapStoreFactoryBuilder.StoreStrategy.DELTA)
+				.defaultValue(equivalenceClass.defaultValue())
+				.build();
+		var storeGroup = mapFactory.createGroup(size);
 		for (int i = 0; i < size; i++) {
 			stores.put(symbols.get(i), storeGroup.get(i));
 		}

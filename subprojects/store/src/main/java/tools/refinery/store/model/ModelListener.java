@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.model;
 
+import tools.refinery.store.map.Version;
+
 public interface ModelListener {
 	default void beforeCommit() {
 	}
@@ -12,7 +14,7 @@ public interface ModelListener {
 	default void afterCommit() {
 	}
 
-	default void beforeRestore(long state) {
+	default void beforeRestore(Version state) {
 	}
 
 	default void afterRestore() {

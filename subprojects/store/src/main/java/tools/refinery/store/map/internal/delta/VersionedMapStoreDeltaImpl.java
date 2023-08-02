@@ -1,13 +1,16 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.map;
+package tools.refinery.store.map.internal.delta;
+
+import tools.refinery.store.map.DiffCursor;
+import tools.refinery.store.map.Version;
+import tools.refinery.store.map.VersionedMap;
+import tools.refinery.store.map.VersionedMapStore;
 
 import java.util.*;
-
-import tools.refinery.store.map.internal.*;
 
 public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V> {
 	// Configuration
@@ -15,10 +18,6 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 
 	// Static data
 	protected final V defaultValue;
-
-	// Dynamic data
-	protected final Map<Long, MapTransaction<K, V>> states = new HashMap<>();
-	protected long nextID = 0;
 
 	public VersionedMapStoreDeltaImpl(boolean summarizeChanges, V defaultValue) {
 		this.summarizeChanges = summarizeChanges;
@@ -31,30 +30,32 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 	}
 
 	@Override
-	public VersionedMap<K, V> createMap(long state) {
+	public VersionedMap<K, V> createMap(Version state) {
 		VersionedMapDeltaImpl<K, V> result = new VersionedMapDeltaImpl<>(this, this.summarizeChanges, this.defaultValue);
 		result.restore(state);
 		return result;
 	}
 
-	public synchronized MapTransaction<K, V> appendTransaction(MapDelta<K, V>[] deltas, MapTransaction<K, V> previous, long[] versionContainer) {
-		long version = nextID++;
-		versionContainer[0] = version;
+	public MapTransaction<K, V> appendTransaction(MapDelta<K, V>[] deltas, MapTransaction<K, V> previous) {
 		if (deltas == null) {
-			states.put(version, previous);
 			return previous;
 		} else {
-			MapTransaction<K, V> transaction = new MapTransaction<>(deltas, version, previous);
-			states.put(version, transaction);
-			return transaction;
+			final int depth;
+			if(previous != null) {
+				depth = previous.depth()+1;
+			} else {
+				depth = 0;
+			}
+			return new MapTransaction<>(deltas, previous, depth);
 		}
 	}
 
-	private synchronized MapTransaction<K, V> getState(long state) {
-		return states.get(state);
+	@SuppressWarnings("unchecked")
+	private MapTransaction<K, V> getState(Version state) {
+		return (MapTransaction<K, V>) state;
 	}
 
-	public MapTransaction<K, V> getPath(long to, List<MapDelta<K, V>[]> forwardTransactions) {
+	public MapTransaction<K, V> getPath(Version to, List<MapDelta<K, V>[]> forwardTransactions) {
 		final MapTransaction<K, V> target = getState(to);
 		MapTransaction<K, V> toTransaction = target;
 		while (toTransaction != null) {
@@ -64,7 +65,7 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 		return target;
 	}
 
-	public MapTransaction<K, V> getPath(long from, long to,
+	public MapTransaction<K, V> getPath(Version from, Version to,
 						List<MapDelta<K, V>[]> backwardTransactions,
 						List<MapDelta<K, V>[]> forwardTransactions) {
 		MapTransaction<K, V> fromTransaction = getState(from);
@@ -72,7 +73,7 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 		MapTransaction<K, V> toTransaction = target;
 
 		while (fromTransaction != toTransaction) {
-			if (fromTransaction == null || (toTransaction != null && fromTransaction.version() < toTransaction.version())) {
+			if (fromTransaction == null || (toTransaction != null && fromTransaction.depth() < toTransaction.depth())) {
 				forwardTransactions.add(toTransaction.deltas());
 				toTransaction = toTransaction.parent();
 			} else {
@@ -83,14 +84,8 @@ public class VersionedMapStoreDeltaImpl<K, V> implements VersionedMapStore<K, V>
 		return target;
 	}
 
-
 	@Override
-	public synchronized Set<Long> getStates() {
-		return new HashSet<>(states.keySet());
-	}
-
-	@Override
-	public DiffCursor<K, V> getDiffCursor(long fromState, long toState) {
+	public DiffCursor<K, V> getDiffCursor(Version fromState, Version toState) {
 		List<MapDelta<K, V>[]> backwardTransactions = new ArrayList<>();
 		List<MapDelta<K, V>[]> forwardTransactions = new ArrayList<>();
 		getPath(fromState, toState, backwardTransactions, forwardTransactions);

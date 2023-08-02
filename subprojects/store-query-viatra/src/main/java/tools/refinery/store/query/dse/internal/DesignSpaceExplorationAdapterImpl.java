@@ -1,5 +1,6 @@
 package tools.refinery.store.query.dse.internal;
 
+import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -31,17 +32,17 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private final Strategy strategy;
 
 	private ObjectiveComparatorHelper objectiveComparatorHelper;
-	private List<Long> trajectory = new LinkedList<>();
+	private List<Version> trajectory = new LinkedList<>();
 	private Fitness lastFitness;
-	private final LinkedHashSet<Long> solutions = new LinkedHashSet<>();
-	private Map<Long, LinkedHashSet<Activation>> statesAndUntraversedActivations;
-	private Map<Long, LinkedHashSet<Activation>> statesAndTraversedActivations;
+	private final LinkedHashSet<Version> solutions = new LinkedHashSet<>();
+	private Map<Version, LinkedHashSet<Activation>> statesAndUntraversedActivations;
+	private Map<Version, LinkedHashSet<Activation>> statesAndTraversedActivations;
 	private Random random = new Random();
 	private boolean isNewState = false;
 	private final boolean isVisualizationEnabled;
 	private final ModelVisualizerAdapter modelVisualizerAdapter;
 
-	public List<Long> getTrajectory() {
+	public List<Version> getTrajectory() {
 		return new LinkedList<>(trajectory);
 	}
 
@@ -81,7 +82,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
-	public LinkedHashSet<Long> explore() {
+	public LinkedHashSet<Version> explore() {
 		var state = model.commit();
 		trajectory.add(state);
 		statesAndUntraversedActivations.put(state, getAllActivations());
@@ -140,7 +141,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
-	public void restoreTrajectory(List<Long> trajectory) {
+	public void restoreTrajectory(List<Version> trajectory) {
 		model.restore(trajectory.get(trajectory.size() - 1));
 //		if (isVisualizationEnabled) {
 //			modelVisualizerAdapter.addTransition(this.trajectory.get(trajectory.size() - 1),
@@ -209,7 +210,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		if (activation == null) {
 			return false;
 		}
-		long previousState = model.getState();
+		var previousState = model.getState();
 		if (!statesAndUntraversedActivations.get(previousState).contains(activation)) {
 //			TODO: throw exception?
 			return false;
@@ -219,12 +220,15 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		}
 		statesAndUntraversedActivations.get(previousState).remove(activation);
 		statesAndTraversedActivations.get(previousState).add(activation);
-		long newState = model.commit();
+		var newState = model.commit();
 		trajectory.add(newState);
 		isNewState = !statesAndUntraversedActivations.containsKey(newState);
 		statesAndUntraversedActivations.put(newState, getAllActivations());
 		statesAndTraversedActivations.put(newState, new LinkedHashSet<>());
 		if (isVisualizationEnabled) {
+			if (isNewState) {
+				modelVisualizerAdapter.addState(newState);
+			}
 			modelVisualizerAdapter.addTransition(trajectory.get(trajectory.size() - 2),
 					trajectory.get(trajectory.size() - 1), activation.transformationRule().getName(),
 					activation.activation());
