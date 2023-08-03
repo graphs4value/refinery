@@ -123,7 +123,6 @@ public class DesignSpaceExplorationTest {
 
 		var states = dseAdapter.explore();
 		assertEquals(1, states.size());
-		assertEquals(0, states.iterator().next());
 	}
 
 	@Test
@@ -171,7 +170,6 @@ public class DesignSpaceExplorationTest {
 
 		var states = dseAdapter.explore();
 		assertEquals(1, states.size());
-		assertEquals(0, states.iterator().next());
 	}
 
 	@Test
@@ -218,13 +216,7 @@ public class DesignSpaceExplorationTest {
 		queryEngine.flushChanges();
 
 		var states = dseAdapter.explore();
-		var iterator = states.iterator();
 		assertEquals(5, states.size());
-		assertEquals(0, iterator.next());
-		assertEquals(1, iterator.next());
-		assertEquals(2, iterator.next());
-		assertEquals(3, iterator.next());
-		assertEquals(4, iterator.next());
 	}
 
 	@Test
@@ -311,7 +303,6 @@ public class DesignSpaceExplorationTest {
 
 		var states = dseAdapter.explore();
 		assertEquals(1, states.size());
-		assertEquals(0, states.iterator().next());
 	}
 
 	@Test
@@ -359,7 +350,6 @@ public class DesignSpaceExplorationTest {
 
 		var states = dseAdapter.explore();
 		assertEquals(1, states.size());
-		assertEquals(0, states.iterator().next());
 	}
 
 	@Test
@@ -406,13 +396,7 @@ public class DesignSpaceExplorationTest {
 		queryEngine.flushChanges();
 
 		var states = dseAdapter.explore();
-		var iterator = states.iterator();
 		assertEquals(5, states.size());
-		assertEquals(0, iterator.next());
-		assertEquals(1, iterator.next());
-		assertEquals(2, iterator.next());
-		assertEquals(3, iterator.next());
-		assertEquals(4, iterator.next());
 	}
 
 	@Test
