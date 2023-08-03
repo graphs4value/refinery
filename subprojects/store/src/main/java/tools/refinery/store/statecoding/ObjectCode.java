@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.statecoding;
 
-public interface StateCodeCalculator {
-	StateCoderResult calculateCodes();
+public interface ObjectCode {
+	long get(int object);
+	int getSize();
 }

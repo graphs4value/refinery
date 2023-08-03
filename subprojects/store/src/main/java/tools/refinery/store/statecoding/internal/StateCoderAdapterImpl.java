@@ -9,8 +9,10 @@ import tools.refinery.store.adapter.ModelStoreAdapter;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.statecoding.StateCodeCalculator;
 import tools.refinery.store.statecoding.StateCoderAdapter;
-import tools.refinery.store.statecoding.neighbourhood.NeighbourhoodCalculator;
+import tools.refinery.store.statecoding.StateCoderResult;
+import tools.refinery.store.statecoding.neighbourhood.LazyNeighbourhoodCalculator;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,14 +20,14 @@ import java.util.List;
 public class StateCoderAdapterImpl implements StateCoderAdapter {
 	final ModelStoreAdapter storeAdapter;
 	final Model model;
-	final NeighbourhoodCalculator calculator;
+	final StateCodeCalculator calculator;
 
 	StateCoderAdapterImpl(ModelStoreAdapter storeAdapter, Model model, Collection<Symbol<?>> symbols) {
 		this.storeAdapter = storeAdapter;
 		this.model = model;
 
 		List<? extends Interpretation<?>> interpretations = symbols.stream().map(model::getInterpretation).toList();
-		calculator = new NeighbourhoodCalculator(interpretations);
+		calculator = new LazyNeighbourhoodCalculator(interpretations);
 	}
 
 	@Override
@@ -39,9 +41,7 @@ public class StateCoderAdapterImpl implements StateCoderAdapter {
 	}
 
 	@Override
-	public int calculateHashCode() {
-		return calculator.calculate();
+	public StateCoderResult calculateStateCode() {
+		return calculator.calculateCodes();
 	}
-
-
 }

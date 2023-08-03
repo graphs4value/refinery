@@ -6,7 +6,18 @@
 package tools.refinery.store.statecoding;
 
 import tools.refinery.store.adapter.ModelAdapter;
+import tools.refinery.store.statecoding.internal.StateCoderBuilderImpl;
 
 public interface StateCoderAdapter extends ModelAdapter {
-	int calculateHashCode();
+	StateCoderResult calculateStateCode();
+	default int calculateModelCode() {
+		return calculateStateCode().modelCode();
+	}
+	default ObjectCode calculateObjectCode() {
+		return calculateStateCode().objectCode();
+	}
+
+	static StateCoderBuilderImpl builder() {
+		return new StateCoderBuilderImpl();
+	}
 }

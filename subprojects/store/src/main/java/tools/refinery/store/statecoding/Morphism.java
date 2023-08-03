@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.statecoding;
 
-public interface StateCodeCalculator {
-	StateCoderResult calculateCodes();
+public interface Morphism {
+	int get(int object);
+	int getSize();
 }

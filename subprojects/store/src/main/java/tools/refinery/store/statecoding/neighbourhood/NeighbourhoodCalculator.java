@@ -8,6 +8,8 @@ package tools.refinery.store.statecoding.neighbourhood;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
 import org.eclipse.collections.impl.set.mutable.primitive.LongHashSet;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.statecoding.StateCodeCalculator;
+import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple0;
 
@@ -16,9 +18,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 
-public class NeighbourhoodCalculator {
-	final List<Interpretation<?>> nullImpactValues;
-	final LinkedHashMap<Interpretation<?>, long[]> impactValues;
+public class NeighbourhoodCalculator implements StateCodeCalculator {
+	protected final List<Interpretation<?>> nullImpactValues;
+	protected final LinkedHashMap<Interpretation<?>, long[]> impactValues;
 
 	public NeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations) {
 		this.nullImpactValues = new ArrayList<>();
@@ -39,9 +41,10 @@ public class NeighbourhoodCalculator {
 		}
 	}
 
-	public int calculate() {
-		ObjectCode previous = new ObjectCode();
-		ObjectCode next = new ObjectCode();
+	@Override
+	public StateCoderResult calculateCodes() {
+		ObjectCodeImpl previous = new ObjectCodeImpl();
+		ObjectCodeImpl next = new ObjectCodeImpl();
 
 		int previousSize = 1;
 		long lastSum;
@@ -77,7 +80,7 @@ public class NeighbourhoodCalculator {
 			previousSize = nextSize;
 
 			if(grows) {
-				next = new ObjectCode(previous);
+				next = new ObjectCodeImpl(previous);
 			}
 		} while (grows);
 
@@ -87,43 +90,43 @@ public class NeighbourhoodCalculator {
 		}
 		result += lastSum;
 
-		return (int) result;
+		return new StateCoderResult((int) result, previous);
 	}
 
-	protected long getTupleHash(Tuple tuple, Object value, ObjectCode objectCode) {
-		long result = (long) value;
+	protected long getTupleHash(Tuple tuple, Object value, ObjectCodeImpl objectCodeImpl) {
+		long result = value.hashCode();
 		int arity = tuple.getSize();
 		if (arity == 1) {
-			result = result * 31 + objectCode.get(tuple.get(0));
+			result = result * 31 + objectCodeImpl.get(tuple.get(0));
 		} else if (arity == 2) {
-			result = result * 31 + objectCode.get(tuple.get(0));
-			result = result * 31 + objectCode.get(tuple.get(1));
+			result = result * 31 + objectCodeImpl.get(tuple.get(0));
+			result = result * 31 + objectCodeImpl.get(tuple.get(1));
 			if (tuple.get(0) == tuple.get(1)) {
 				result++;
 			}
 		} else if (arity > 2) {
 			for (int i = 0; i < arity; i++) {
-				result = result * 31 + objectCode.get(tuple.get(i));
+				result = result * 31 + objectCodeImpl.get(tuple.get(i));
 			}
 		}
 		return result;
 	}
 
-	protected void addHash(ObjectCode objectCode, Tuple tuple, long[] impact, long tupleHashCode) {
+	protected void addHash(ObjectCodeImpl objectCodeImpl, Tuple tuple, long[] impact, long tupleHashCode) {
 		if (tuple.getSize() == 1) {
-			addHash(objectCode, tuple.get(0), impact[0], tupleHashCode);
+			addHash(objectCodeImpl, tuple.get(0), impact[0], tupleHashCode);
 		} else if (tuple.getSize() == 2) {
-			addHash(objectCode, tuple.get(0), impact[0], tupleHashCode);
-			addHash(objectCode, tuple.get(1), impact[1], tupleHashCode);
+			addHash(objectCodeImpl, tuple.get(0), impact[0], tupleHashCode);
+			addHash(objectCodeImpl, tuple.get(1), impact[1], tupleHashCode);
 		} else if (tuple.getSize() > 2) {
 			for (int i = 0; i < tuple.getSize(); i++) {
-				addHash(objectCode, tuple.get(i), impact[i], tupleHashCode);
+				addHash(objectCodeImpl, tuple.get(i), impact[i], tupleHashCode);
 			}
 		}
 	}
 
-	protected void addHash(ObjectCode objectCode, int o, long impact, long tupleHash) {
-		objectCode.set(o, objectCode.get(o) + tupleHash * impact);
+	protected void addHash(ObjectCodeImpl objectCodeImpl, int o, long impact, long tupleHash) {
+		objectCodeImpl.set(o, objectCodeImpl.get(o) + tupleHash * impact);
 	}
 
 }

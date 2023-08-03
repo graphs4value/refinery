@@ -5,21 +5,25 @@
  */
 package tools.refinery.store.statecoding.neighbourhood;
 
-public class ObjectCode {
+import tools.refinery.store.statecoding.ObjectCode;
+
+import java.util.Arrays;
+
+public class ObjectCodeImpl implements ObjectCode {
 	private long[] vector;
 	private int size;
 
-	public ObjectCode() {
+	public ObjectCodeImpl() {
 		vector = new long[10];
 		size = 0;
 	}
 
-	public ObjectCode(ObjectCode sameSize) {
+	public ObjectCodeImpl(ObjectCodeImpl sameSize) {
 		this.vector = new long[sameSize.size];
 		this.size = sameSize.size;
 	}
 
-	private void ensureSize(int object) {
+	public void ensureSize(int object) {
 		if(object >= size) {
 			size = object+1;
 		}
@@ -51,5 +55,12 @@ public class ObjectCode {
 
 	public int getSize() {
 		return this.size;
+	}
+
+	@Override
+	public String toString() {
+		return "ObjectCodeImpl{" +
+				"vector=" + Arrays.toString(Arrays.copyOf(vector,this.size)) +
+				'}';
 	}
 }

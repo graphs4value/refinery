@@ -5,6 +5,5 @@
  */
 package tools.refinery.store.statecoding;
 
-public interface StateCodeCalculator {
-	StateCoderResult calculateCodes();
+public record StateCoderResult(int modelCode, ObjectCode objectCode) {
 }
