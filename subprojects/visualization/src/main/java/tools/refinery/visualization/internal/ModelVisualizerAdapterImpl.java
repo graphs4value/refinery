@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.visualization.internal;
 
 import tools.refinery.store.map.Version;
@@ -201,7 +206,7 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 		return null;
 	}
 
-	private Integer[] typePredicateColor(String name) {
+	private Integer[] typeColor(String name) {
 		var random = new Random(name.hashCode());
 		return new Integer[] { random.nextInt(128) + 128, random.nextInt(128) + 128, random.nextInt(128) + 128 };
 	}
@@ -212,7 +217,7 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 		}
 		// TODO: Only use interpretations where the value is not false (or unknown)
 		var symbols = interpretations.stream()
-				.map(i -> typePredicateColor(i.getSymbol().name())).toArray(Integer[][]::new);
+				.map(i -> typeColor(i.getSymbol().name())).toArray(Integer[][]::new);
 
 
 
