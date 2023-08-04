@@ -14,9 +14,11 @@ include(
 		"language-semantics",
 		"language-web",
 		"store",
+		"store-dse",
 		"store-query",
 		"store-query-viatra",
 		"store-reasoning",
+		"visualization",
 )
 
 for (project in rootProject.children) {

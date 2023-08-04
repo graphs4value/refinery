@@ -59,12 +59,12 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 
 	@Override
 	public ModelStore build() {
+		for (int i = adapters.size() - 1; i >= 0; i--) {
+			adapters.get(i).configure(this);
+		}
 		var stores = new LinkedHashMap<AnySymbol, VersionedMapStore<Tuple, ?>>(allSymbols.size());
 		for (var entry : equivalenceClasses.entrySet()) {
 			createStores(stores, entry.getKey(), entry.getValue());
-		}
-		for (int i = adapters.size() - 1; i >= 0; i--) {
-			adapters.get(i).configure(this);
 		}
 		var modelStore = new ModelStoreImpl(stores, adapters.size());
 		for (var adapterBuilder : adapters) {
