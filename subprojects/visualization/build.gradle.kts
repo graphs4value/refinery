@@ -9,9 +9,5 @@ plugins {
 }
 
 dependencies {
-	implementation(libs.ecore)
-	api(libs.viatra)
 	api(project(":refinery-store-query"))
-	api(project(":refinery-store-reasoning"))
-	api(project(":refinery-visualization"))
 }
