@@ -105,7 +105,7 @@ public class ModelImpl implements Model {
 			// Doing the commit on the interpretations
 			Version[] interpretationVersions = new Version[interpretations.size()];
 			int j = 0;
-			for(var interpretationEntry : interpretations.entrySet()) {
+			for (var interpretationEntry : interpretations.entrySet()) {
 				interpretationVersions[j++] = interpretationEntry.getValue().commit();
 			}
 			ModelVersion modelVersion = new ModelVersion(interpretationVersions);
@@ -140,7 +140,7 @@ public class ModelImpl implements Model {
 			}
 			int j = 0;
 			for (var interpretation : interpretations.values()) {
-				interpretation.restore(ModelVersion.getInternalVersion(version,j++));
+				interpretation.restore(ModelVersion.getInternalVersion(version, j++));
 			}
 
 			setState(version);
@@ -186,9 +186,5 @@ public class ModelImpl implements Model {
 	@Override
 	public void removeListener(ModelListener listener) {
 		listeners.remove(listener);
-	}
-
-	public Map<? extends AnySymbol, ? extends Interpretation<?>> getInterpretations() {
-		return interpretations;
 	}
 }
