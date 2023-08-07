@@ -11,10 +11,7 @@ package tools.refinery.store.dse.strategy;
 
 import tools.refinery.store.dse.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.Strategy;
-import tools.refinery.store.dse.internal.Activation;
 import tools.refinery.store.dse.objectives.Fitness;
-
-import java.util.Collection;
 
 public class DepthFirstStrategy implements Strategy {
 
@@ -60,69 +57,55 @@ public class DepthFirstStrategy implements Strategy {
 		if (maxSolutions == 0) {
 			return;
 		}
-		mainloop: while (true) {
-			var globalConstraintsAreSatisfied = dseAdapter.checkGlobalConstraints();
-			if (!globalConstraintsAreSatisfied) {
-				var isSuccessfulUndo = dseAdapter.backtrack();
-				if (!isSuccessfulUndo) {
-					// Global constraint is not satisfied and cannot backtrack.
-					break;
-				}
-				else {
-					// Global constraint is not satisfied, backtrack.
-					continue;
-				}
+		while (dseAdapter.getSolutions().size() < maxSolutions) {
+			if (!checkAndHandleGlobalConstraints()) {
+				// Global constraint is not satisfied and cannot backtrack.
+				return;
 			}
+			// Global constraint is not satisfied, backtrack.
 
 			Fitness fitness = dseAdapter.getFitness();
 			if (fitness.isSatisfiesHardObjectives()) {
 				dseAdapter.newSolution();
-				var solutions = dseAdapter.getSolutions().size();
-				if (solutions >= maxSolutions) {
+				if (backTrackIfSolution && !dseAdapter.backtrack()) {
+					// Found a solution but cannot backtrack.
 					return;
 				}
-				if (backTrackIfSolution) {
-					var isSuccessfulUndo = dseAdapter.backtrack();
-					if (!isSuccessfulUndo) {
-						// Found a solution but cannot backtrack.
-						break;
-					} else {
-						// Found a solution, backtrack.
-						continue;
-					}
-				}
 			}
 
-			if (dseAdapter.getDepth() >= maxDepth) {
-				var isSuccessfulUndo = dseAdapter.backtrack();
-				if (!isSuccessfulUndo) {
-					// Reached max depth but cannot backtrack.
-					break;
-				}
+			if (!checkAndHandleDepth()) {
+				// Reached max depth but cannot backtrack.
+				return;
 			}
 
-			Collection<Activation> activations;
-			do {
-				activations = dseAdapter.getUntraversedActivations();
-				if (activations.isEmpty() && !dseAdapter.backtrack()) {
-					// No more transitions from current state and cannot backtrack.
-					break mainloop;
-				}
-				// No more transitions from current state, backtrack.
-			} while (activations.isEmpty());
+			if (!backtrackToLastUntraversed()) {
+				return;
+			}
 
 			dseAdapter.fireRandomActivation();
-//			if (dseAdapter.isCurrentInTrajectory()) {
-//				if (!dseAdapter.backtrack()) {
-////					TODO: throw exception
-////					"The new state is present in the trajectory but cannot backtrack. Should never happen!"
-//					break;
-//				}
-//				else {
-////					"The new state is already visited in the trajectory, backtrack."
-//					continue;
-//				}
-//			}
 		}
+	}
+
+	private boolean checkAndHandleGlobalConstraints() {
+		// Global constraint is not satisfied and cannot backtrack.
+		return dseAdapter.checkGlobalConstraints() || dseAdapter.backtrack();
+		// Global constraint is satisfied or backtrack.
+	}
+
+	private boolean checkAndHandleDepth() {
+		// Reached max depth but cannot backtrack.
+		return dseAdapter.getDepth() < maxDepth || dseAdapter.backtrack();
+		// Reached max depth or backtrack.
+	}
+
+	private boolean backtrackToLastUntraversed() {
+		while (dseAdapter.getUntraversedActivations().isEmpty()) {
+			if (!dseAdapter.backtrack()) {
+				// No more transitions from current state and cannot backtrack.
+				return false;
+			}
+			// No more transitions from current state, backtrack.
+		}
+		return true;
 	}
 }
