@@ -96,6 +96,9 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		trajectory.add(state);
 		strategy.initStrategy(this);
 		strategy.explore();
+		if (isVisualizationEnabled) {
+			modelVisualizerAdapter.visualize();
+		}
 		return solutions;
 	}
 
@@ -247,7 +250,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		isNewState = !statesAndTraversedActivations.containsKey(newState);
 		if (isVisualizationEnabled) {
 			if (isNewState) {
-				modelVisualizerAdapter.addState(newState);
+				modelVisualizerAdapter.addState(newState, getFitness().values());
 			}
 			// TODO: Change to this:
 			modelVisualizerAdapter.addTransition(previousState, newState, activation.transformationRule().getName(),
@@ -270,11 +273,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		}
 		var activationId = iterator.next();
 		fireActivation(activationId);
-	}
-
-	@Override
-	public boolean isCurrentInTrajectory() {
-		return trajectory.contains(model.getState());
 	}
 
 	public List<Activation> getAllActivations() {

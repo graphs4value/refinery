@@ -90,7 +90,13 @@ class DebugTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition, createFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder())
+				.with(ModelVisualizerAdapter.builder()
+						.withOutputpath("test_output")
+						.withFormat(FileFormat.DOT)
+						.withFormat(FileFormat.SVG)
+						.saveStates()
+						.saveDesignSpace()
+				)
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
 						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
@@ -113,10 +119,7 @@ class DebugTest {
 
 
 		var states = dseAdapter.explore();
-		var visualizer = model.getAdapter(ModelVisualizerAdapter.class);
-		visualizer.renderDesignSpace("test_output", FileFormat.SVG);
 		System.out.println("states size: " + states.size());
-		System.out.println("states: " + states);
 
 	}
 }

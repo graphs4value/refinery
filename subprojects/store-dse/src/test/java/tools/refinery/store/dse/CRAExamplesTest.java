@@ -188,7 +188,13 @@ class CRAExamplesTest {
 						.queries(feature, assignFeaturePreconditionHelper, assignFeaturePrecondition,
 								deleteEmptyClassPrecondition, createClassPreconditionHelper, createClassPrecondition,
 								moveFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder())
+				.with(ModelVisualizerAdapter.builder()
+						.withOutputpath("test_output")
+						.withFormat(FileFormat.DOT)
+						.withFormat(FileFormat.SVG)
+						.saveStates()
+						.saveDesignSpace()
+				)
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
 //						.strategy(new DepthFirstStrategy(3).continueIfHardObjectivesFulfilled()
@@ -271,9 +277,6 @@ class CRAExamplesTest {
 
 		var states = dseAdapter.explore();
 		System.out.println("states size: " + states.size());
-		System.out.println("states: " + states);
-		var visualizer = model.getAdapter(ModelVisualizerAdapter.class);
-		visualizer.renderDesignSpace("test_output", FileFormat.SVG);
 	}
 
 }
