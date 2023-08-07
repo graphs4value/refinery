@@ -6,6 +6,7 @@
 package tools.refinery.store.dse;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
@@ -99,6 +100,7 @@ class DebugTest {
 				)
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
+						.objectives(new AlwaysSatisfiedRandomHardObjective())
 						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
 //						.strategy(new BestFirstStrategy(4).continueIfHardObjectivesFulfilled()
 //								.goOnOnlyIfFitnessIsBetter()
