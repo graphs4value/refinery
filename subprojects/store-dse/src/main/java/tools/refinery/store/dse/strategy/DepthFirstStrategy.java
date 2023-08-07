@@ -21,6 +21,7 @@ public class DepthFirstStrategy implements Strategy {
 	private DesignSpaceExplorationAdapter dseAdapter;
 
 	private int maxDepth;
+	private int maxSolutions;
 	private boolean backTrackIfSolution = true;
 
 	public DepthFirstStrategy() {
@@ -28,10 +29,19 @@ public class DepthFirstStrategy implements Strategy {
 	}
 
 	public DepthFirstStrategy(int maxDepth) {
+		this(maxDepth, -1);
+	}
+
+	public DepthFirstStrategy(int maxDepth, int maxSolutions) {
 		if (maxDepth < 0) {
 			this.maxDepth = Integer.MAX_VALUE;
 		} else {
 			this.maxDepth = maxDepth;
+		}
+		if (maxSolutions < 0) {
+			this.maxSolutions = Integer.MAX_VALUE;
+		} else {
+			this.maxSolutions = maxSolutions;
 		}
 	}
 
@@ -47,6 +57,9 @@ public class DepthFirstStrategy implements Strategy {
 
 	@Override
 	public void explore() {
+		if (maxSolutions == 0) {
+			return;
+		}
 		mainloop: while (true) {
 			var globalConstraintsAreSatisfied = dseAdapter.checkGlobalConstraints();
 			if (!globalConstraintsAreSatisfied) {
@@ -61,9 +74,13 @@ public class DepthFirstStrategy implements Strategy {
 				}
 			}
 
-			Fitness fitness = dseAdapter.calculateFitness();
+			Fitness fitness = dseAdapter.getFitness();
 			if (fitness.isSatisfiesHardObjectives()) {
 				dseAdapter.newSolution();
+				var solutions = dseAdapter.getSolutions().size();
+				if (solutions >= maxSolutions) {
+					return;
+				}
 				if (backTrackIfSolution) {
 					var isSuccessfulUndo = dseAdapter.backtrack();
 					if (!isSuccessfulUndo) {
@@ -76,7 +93,6 @@ public class DepthFirstStrategy implements Strategy {
 				}
 			}
 
-			var depth = dseAdapter.getDepth();
 			if (dseAdapter.getDepth() >= maxDepth) {
 				var isSuccessfulUndo = dseAdapter.backtrack();
 				if (!isSuccessfulUndo) {

@@ -26,6 +26,7 @@ public class BestFirstStrategy implements Strategy {
 	private DesignSpaceExplorationAdapter dseAdapter;
 
 	private int maxDepth;
+	private int maxSolutions;
 	private boolean backTrackIfSolution = true;
 	private boolean onlyBetterFirst = false;
 
@@ -54,10 +55,19 @@ public class BestFirstStrategy implements Strategy {
 	}
 
 	public BestFirstStrategy(int maxDepth) {
+		this(maxDepth, -1);
+	}
+
+	public BestFirstStrategy(int maxDepth, int maxSolutions) {
 		if (maxDepth < 0) {
 			this.maxDepth = Integer.MAX_VALUE;
 		} else {
 			this.maxDepth = maxDepth;
+		}
+		if (maxSolutions < 0) {
+			this.maxSolutions = Integer.MAX_VALUE;
+		} else {
+			this.maxSolutions = maxSolutions;
 		}
 	}
 
@@ -76,12 +86,15 @@ public class BestFirstStrategy implements Strategy {
 		this.dseAdapter = designSpaceExplorationAdapter;
 		final ObjectiveComparatorHelper objectiveComparatorHelper = dseAdapter.getObjectiveComparatorHelper();
 
-		trajectoriesToExplore = new PriorityQueue<TrajectoryWithFitness>(11,
+		trajectoriesToExplore = new PriorityQueue<>(11,
 				(o1, o2) -> objectiveComparatorHelper.compare(o2.fitness, o1.fitness));
 	}
 
 	@Override
 	public void explore() {
+		if (maxSolutions == 0) {
+			return;
+		}
 		final ObjectiveComparatorHelper objectiveComparatorHelper = dseAdapter.getObjectiveComparatorHelper();
 
 		boolean globalConstraintsAreSatisfied = dseAdapter.checkGlobalConstraints();
@@ -90,7 +103,7 @@ public class BestFirstStrategy implements Strategy {
 			return;
 		}
 
-		final Fitness firstFitness = dseAdapter.calculateFitness();
+		final Fitness firstFitness = dseAdapter.getFitness();
 		if (firstFitness.isSatisfiesHardObjectives()) {
 			dseAdapter.newSolution();
 			// "First state is a solution. Terminate.");
@@ -103,9 +116,16 @@ public class BestFirstStrategy implements Strategy {
 			return;
 		}
 
-		final List<Version> firstTrajectory = dseAdapter.getTrajectory();
-		TrajectoryWithFitness currentTrajectoryWithFitness = new TrajectoryWithFitness(firstTrajectory, firstFitness);
-		trajectoriesToExplore.add(currentTrajectoryWithFitness);
+//		final List<Version> firstTrajectory = dseAdapter.getTrajectory();
+
+//		TrajectoryWithFitness currentTrajectoryWithFitness = new TrajectoryWithFitness(dseAdapter.getTrajectory(),
+//				firstFitness);
+//		trajectoriesToExplore.add(currentTrajectoryWithFitness);
+
+
+		var firstTrajectoryWithFitness = new TrajectoryWithFitness(dseAdapter.getTrajectory(), firstFitness);
+		trajectoriesToExplore.add(firstTrajectoryWithFitness);
+		TrajectoryWithFitness currentTrajectoryWithFitness = null;
 
 		mainLoop: while (true) {
 
@@ -145,9 +165,13 @@ public class BestFirstStrategy implements Strategy {
 					// "Global constraint is not satisfied.");
 					dseAdapter.backtrack();
 				} else {
-					final Fitness nextFitness = dseAdapter.calculateFitness();
+					final Fitness nextFitness = dseAdapter.getFitness();
 					if (nextFitness.isSatisfiesHardObjectives()) {
 						dseAdapter.newSolution();
+						var solutions = dseAdapter.getSolutions().size();
+						if (solutions >= maxSolutions) {
+							return;
+						}
 						// "Found a solution.");
 						if (backTrackIfSolution) {
 							dseAdapter.backtrack();

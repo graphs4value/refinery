@@ -5,27 +5,26 @@
  */
 package tools.refinery.store.dse.internal;
 
-import tools.refinery.store.adapter.ModelAdapter;
-import tools.refinery.store.model.Model;
-import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.dse.DesignSpaceExplorationStoreAdapter;
 import tools.refinery.store.dse.Strategy;
 import tools.refinery.store.dse.objectives.Objective;
+import tools.refinery.store.model.Model;
+import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.query.dnf.RelationalQuery;
 
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DesignSpaceExplorationStoreAdapterImpl implements DesignSpaceExplorationStoreAdapter {
 	private final ModelStore store;
-	private final LinkedHashSet<TransformationRule> transformationSpecifications;
-	private final LinkedHashSet<RelationalQuery> globalConstraints;
+	private final Set<TransformationRule> transformationSpecifications;
+	private final Set<RelationalQuery> globalConstraints;
 	private final List<Objective> objectives;
 	private final Strategy strategy;
 
 	public DesignSpaceExplorationStoreAdapterImpl(ModelStore store,
-												  LinkedHashSet<TransformationRule> transformationSpecifications,
-												  LinkedHashSet<RelationalQuery> globalConstraints,
+												  Set<TransformationRule> transformationSpecifications,
+												  Set<RelationalQuery> globalConstraints,
 												  List<Objective> objectives, Strategy strategy) {
 			this.store = store;
 			this.transformationSpecifications = transformationSpecifications;
@@ -40,22 +39,26 @@ public class DesignSpaceExplorationStoreAdapterImpl implements DesignSpaceExplor
 	}
 
 	@Override
-	public ModelAdapter createModelAdapter(Model model) {
+	public DesignSpaceExplorationAdapterImpl createModelAdapter(Model model) {
 		return new DesignSpaceExplorationAdapterImpl(model, this);
 	}
 
-	public LinkedHashSet<TransformationRule> getTransformationSpecifications() {
+	@Override
+	public Set<TransformationRule> getTransformationSpecifications() {
 		return transformationSpecifications;
 	}
 
-	public LinkedHashSet<RelationalQuery> getGlobalConstraints() {
+	@Override
+	public Set<RelationalQuery> getGlobalConstraints() {
 		return globalConstraints;
 	}
 
+	@Override
 	public List<Objective> getObjectives() {
 		return objectives;
 	}
 
+	@Override
 	public Strategy getStrategy() {
 		return strategy;
 	}

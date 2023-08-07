@@ -137,8 +137,8 @@ public class TransformationRuleTest {
 
 		queryEngine.flushChanges();
 
-		var assignFeatureRuleActivations = assignFeatureRule.getAllActivationsAsSets();
-		var deleteEmptyClassRuleActivations = deleteEmptyClassRule.getAllActivationsAsSets();
+		var assignFeatureRuleActivations = assignFeatureRule.getAllActivationsAsResultSet();
+		var deleteEmptyClassRuleActivations = deleteEmptyClassRule.getAllActivationsAsResultSet();
 
 		assertResults(Map.of(
 				Tuple.of(newClass1Id, newFieldId), true,
@@ -236,12 +236,12 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule0.getAllActivationsAsSets());
+		), deleteEmptyClassRule0.getAllActivationsAsResultSet());
 
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule1.getAllActivationsAsSets());
+		), deleteEmptyClassRule1.getAllActivationsAsResultSet());
 
 		assertEquals(Tuple.of(newModelId, newClass2Id), activation0);
 		assertEquals(Tuple.of(newModelId, newClass1Id), activation1);
@@ -312,7 +312,7 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 
 		deleteEmptyClassRule.fireActivation(Tuple.of(0, 1));
@@ -320,7 +320,7 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), false,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 	}
 
 	@Test
@@ -388,21 +388,21 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 		deleteEmptyClassRule.fireRandomActivation();
 
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), false
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 		deleteEmptyClassRule.fireRandomActivation();
 
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), false,
 				Tuple.of(newModelId, newClass2Id), false
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 	}
 }
