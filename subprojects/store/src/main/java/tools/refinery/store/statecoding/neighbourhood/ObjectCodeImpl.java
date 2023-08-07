@@ -50,7 +50,8 @@ public class ObjectCodeImpl implements ObjectCode {
 
 	public void set(int object, long value) {
 		ensureSize(object);
-		vector[object]=value;
+		final long valueToPut = value == 0 ? 1 : value;
+		vector[object]=valueToPut;
 	}
 
 	public int getSize() {

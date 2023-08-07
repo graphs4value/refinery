@@ -13,10 +13,7 @@ import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple0;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public abstract class AbstractNeighbourhoodCalculator {
 	protected final List<Interpretation<?>> nullImpactValues;
@@ -56,13 +53,13 @@ public abstract class AbstractNeighbourhoodCalculator {
 	}
 
 	protected long getTupleHash1(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
-		long result = value.hashCode();
+		long result = Objects.hashCode(value);
 		result = result * 31 + objectCodeImpl.get(tuple.get(0));
 		return result;
 	}
 
 	protected long getTupleHash2(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
-		long result = value.hashCode();
+		long result = Objects.hashCode(value);
 		result = result * 31 + objectCodeImpl.get(tuple.get(0));
 		result = result * 31 + objectCodeImpl.get(tuple.get(1));
 		if (tuple.get(0) == tuple.get(1)) {
@@ -72,7 +69,7 @@ public abstract class AbstractNeighbourhoodCalculator {
 	}
 
 	protected long getTupleHashN(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
-		long result = value.hashCode();
+		long result = Objects.hashCode(value);
 		for (int i = 0; i < tuple.getSize(); i++) {
 			result = result * 31 + objectCodeImpl.get(tuple.get(i));
 		}
@@ -85,9 +82,9 @@ public abstract class AbstractNeighbourhoodCalculator {
 	}
 
 	protected long calculateModelCode(long lastSum) {
-		long result = 1;
+		long result = 0;
 		for (var nullImpactValue : nullImpactValues) {
-			result = result * 31 + nullImpactValue.get(Tuple0.INSTANCE).hashCode();
+			result = result * 31 + Objects.hashCode(nullImpactValue.get(Tuple0.INSTANCE));
 		}
 		result += lastSum;
 		return result;

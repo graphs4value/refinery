@@ -29,11 +29,8 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 												List<? extends Interpretation<?>> interpretations1,
 												ObjectCode code1,
 												List<? extends Interpretation<?>> interpretations2,
-												ObjectCode code2) {
-		if (code1.getSize() != code2.getSize()) {
-			return EquivalenceResult.DIFFERENT;
-		}
-
+												ObjectCode code2)
+	{
 		IntIntHashMap object2PermutationGroup = new IntIntHashMap();
 		List<List<IntIntMap>> permutationsGroups = new ArrayList<>();
 
@@ -69,12 +66,14 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 		for (int o = 0; o < code.getSize(); o++) {
 			if(! individuals.contains(o)){
 				long hash = code.get(o);
-				var equivalenceClass = result.get(hash);
-				if (equivalenceClass == null) {
-					equivalenceClass = new IntHashSet();
-					result.put(hash, equivalenceClass);
+				if(hash != 0) {
+					var equivalenceClass = result.get(hash);
+					if (equivalenceClass == null) {
+						equivalenceClass = new IntHashSet();
+						result.put(hash, equivalenceClass);
+					}
+					equivalenceClass.add(o);
 				}
-				equivalenceClass.add(o);
 			}
 		}
 		return result;
