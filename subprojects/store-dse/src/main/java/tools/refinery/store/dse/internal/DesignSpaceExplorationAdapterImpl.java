@@ -43,7 +43,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private ObjectiveComparatorHelper objectiveComparatorHelper;
 	private List<Version> trajectory = new ArrayList<>();
 	private Map<Version, Version> parents = new HashMap<>();
-	private Fitness lastFitness;
 	private final List<Version> solutions = new ArrayList<>();
 	private Map<Version, List<Activation>> statesAndTraversedActivations;
 	private Random random = new Random();
@@ -184,9 +183,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 
 	@Override
 	public Fitness getFitness() {
-		var result = fitnessCache.computeIfAbsent(model.getState(), s -> calculateFitness());
-		lastFitness = result;
-		return result;
+        return fitnessCache.computeIfAbsent(model.getState(), s -> calculateFitness());
 	}
 
 	private Fitness calculateFitness() {
@@ -200,8 +197,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 			}
 		}
 		result.setSatisfiesHardObjectives(satisfiesHardObjectives);
-
-		lastFitness = result;
 
 		return result;
 	}

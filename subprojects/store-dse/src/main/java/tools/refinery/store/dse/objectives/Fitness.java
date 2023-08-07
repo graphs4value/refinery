@@ -27,4 +27,19 @@ public class Fitness extends HashMap<String, Double> {
 	public String toString() {
 		return super.toString() + " hardObjectives=" + satisfiesHardObjectives;
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other == null) return false;
+		if (getClass() != other.getClass()) return false;
+		return satisfiesHardObjectives == ((Fitness) other).satisfiesHardObjectives;
+	}
+
+	@Override
+	public int hashCode() {
+		int h = super.hashCode();
+		h = h * 31 + (satisfiesHardObjectives ? 1 : 0);
+		return h;
+	}
+
 }

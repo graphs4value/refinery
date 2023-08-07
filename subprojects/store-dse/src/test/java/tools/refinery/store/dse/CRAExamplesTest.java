@@ -25,7 +25,7 @@ import java.util.List;
 
 import static tools.refinery.store.query.literal.Literals.not;
 
-public class CRAExamplesTest {
+class CRAExamplesTest {
 	private static final Symbol<String> name = Symbol.of("Name", 1, String.class);
 
 //	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);

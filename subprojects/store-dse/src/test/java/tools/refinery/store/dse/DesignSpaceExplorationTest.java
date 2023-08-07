@@ -21,7 +21,7 @@ import tools.refinery.visualization.ModelVisualizerAdapter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DesignSpaceExplorationTest {
+class DesignSpaceExplorationTest {
 //	private static final Symbol<Boolean> namedElement = Symbol.of("NamedElement", 1);
 //	private static final Symbol<Boolean> attribute = Symbol.of("Attribute", 1);
 //	private static final Symbol<Boolean> method = Symbol.of("Method", 1);

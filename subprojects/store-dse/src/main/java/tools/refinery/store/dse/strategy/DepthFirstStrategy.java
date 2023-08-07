@@ -65,11 +65,11 @@ public class DepthFirstStrategy implements Strategy {
 			if (!globalConstraintsAreSatisfied) {
 				var isSuccessfulUndo = dseAdapter.backtrack();
 				if (!isSuccessfulUndo) {
-//					"Global constraint is not satisfied and cannot backtrack."
+					// Global constraint is not satisfied and cannot backtrack.
 					break;
 				}
 				else {
-//					"Global constraint is not satisfied, backtrack."
+					// Global constraint is not satisfied, backtrack.
 					continue;
 				}
 			}
@@ -84,10 +84,10 @@ public class DepthFirstStrategy implements Strategy {
 				if (backTrackIfSolution) {
 					var isSuccessfulUndo = dseAdapter.backtrack();
 					if (!isSuccessfulUndo) {
-//					"Found a solution but cannot backtrack."
+						// Found a solution but cannot backtrack.
 						break;
 					} else {
-//					"Found a solution, backtrack."
+						// Found a solution, backtrack.
 						continue;
 					}
 				}
@@ -96,7 +96,7 @@ public class DepthFirstStrategy implements Strategy {
 			if (dseAdapter.getDepth() >= maxDepth) {
 				var isSuccessfulUndo = dseAdapter.backtrack();
 				if (!isSuccessfulUndo) {
-//					"Reached max depth but cannot backtrack."
+					// Reached max depth but cannot backtrack.
 					break;
 				}
 			}
@@ -104,16 +104,11 @@ public class DepthFirstStrategy implements Strategy {
 			Collection<Activation> activations;
 			do {
 				activations = dseAdapter.getUntraversedActivations();
-				if (activations.isEmpty()) {
-					if (!dseAdapter.backtrack()) {
-	//					"No more transitions from current state and cannot backtrack."
-						break mainloop;
-					}
-					else {
-	//					"No more transitions from current state, backtrack."
-						continue;
-					}
+				if (activations.isEmpty() && !dseAdapter.backtrack()) {
+					// No more transitions from current state and cannot backtrack.
+					break mainloop;
 				}
+				// No more transitions from current state, backtrack.
 			} while (activations.isEmpty());
 
 			dseAdapter.fireRandomActivation();

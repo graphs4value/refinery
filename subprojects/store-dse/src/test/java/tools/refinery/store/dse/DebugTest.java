@@ -20,7 +20,7 @@ import tools.refinery.store.tuple.Tuple;
 import tools.refinery.visualization.ModelVisualizerAdapter;
 import tools.refinery.visualization.internal.FileFormat;
 
-public class DebugTest {
+class DebugTest {
 	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
 	private static final Symbol<Boolean> classElement = Symbol.of("ClassElement", 1);
 	private static final Symbol<Boolean> feature = Symbol.of("Feature", 1);

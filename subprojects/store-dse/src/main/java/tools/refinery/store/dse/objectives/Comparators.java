@@ -15,7 +15,7 @@ public class Comparators {
 
 	private Comparators() { /*Utility class constructor*/ }
 
-	public static final Comparator<Double> HIGHER_IS_BETTER = (o1, o2) -> o1.compareTo(o2);
+	public static final Comparator<Double> HIGHER_IS_BETTER = Double::compareTo;
 
 	public static final Comparator<Double> LOWER_IS_BETTER = (o1, o2) -> o2.compareTo(o1);
 

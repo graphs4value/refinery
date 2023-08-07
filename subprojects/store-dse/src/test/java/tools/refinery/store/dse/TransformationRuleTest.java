@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.dse.tests.QueryAssertions.assertResults;
 
-public class TransformationRuleTest {
+class TransformationRuleTest {
 
 	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
 	private static final Symbol<Boolean> classElement = Symbol.of("ClassElement", 1);

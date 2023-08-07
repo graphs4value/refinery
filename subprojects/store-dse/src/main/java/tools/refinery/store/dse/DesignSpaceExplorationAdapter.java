@@ -52,8 +52,6 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 
 	public void fireRandomActivation();
 
-	public boolean isCurrentInTrajectory();
-
 	public List<Version> getTrajectory();
 
 	public boolean isCurrentStateAlreadyTraversed();

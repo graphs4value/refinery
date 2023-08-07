@@ -21,38 +21,39 @@ import java.util.stream.Collectors;
 public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	private final Model model;
 	private final ModelVisualizerStoreAdapter storeAdapter;
-	private final Map<AnySymbol, Interpretation<?>> interpretations;
+	private final Map<AnySymbol, Interpretation<?>> allInterpretations;
 	private final StringBuilder designSpaceBuilder = new StringBuilder();
 	private final Map<Version, Integer> states = new HashMap<>();
 	private int transitionCounter = 0;
 	private Integer numberOfStates = 0;
-	private static final Map<Object, String> truthValueToDot = new HashMap<>()
-	{{
-		put(TruthValue.TRUE, "1");
-		put(TruthValue.FALSE, "0");
-		put(TruthValue.UNKNOWN, "½");
-		put(TruthValue.ERROR, "E");
-		put(true, "1");
-		put(false, "0");
-	}};
+	private static final Map<Object, String> truthValueToDot = Map.of(
+			TruthValue.TRUE, "1",
+			TruthValue.FALSE, "0",
+			TruthValue.UNKNOWN, "½",
+			TruthValue.ERROR, "E",
+			true, "1",
+			false, "0"
+	);
 
 	public ModelVisualizerAdapterImpl(Model model, ModelVisualizerStoreAdapter storeAdapter) {
 		this.model = model;
 		this.storeAdapter = storeAdapter;
-		this.interpretations = new HashMap<>();
+		this.allInterpretations = new HashMap<>();
 		for (var symbol : storeAdapter.getStore().getSymbols()) {
 			var arity = symbol.arity();
 			if (arity < 1 || arity > 2) {
 				continue;
 			}
 			var interpretation = (Interpretation<?>) model.getInterpretation(symbol);
-			interpretations.put(symbol, interpretation);
+			allInterpretations.put(symbol, interpretation);
 		}
 		designSpaceBuilder.append("digraph designSpace {\n");
 		designSpaceBuilder.append("""
+				nodesep=0
+				ranksep=5
 				node[
-					style=filled
-					fillcolor=white
+				\tstyle=filled
+				\tfillcolor=white
 				]
 				""");
 	}
@@ -90,7 +91,7 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 				]
 				""");
 
-		for (var entry : interpretations.entrySet()) {
+		for (var entry : allInterpretations.entrySet()) {
 			var key = entry.getKey();
 			var arity = key.arity();
 			var cursor = entry.getValue().getAll();
@@ -303,6 +304,20 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	}
 
 	@Override
+	public void addState(Version state, Collection<Double> fitness) {
+		if (states.containsKey(state)) {
+			return;
+		}
+		states.put(state, numberOfStates++);
+		designSpaceBuilder.append(states.get(state)).append(" [label = \"").append(states.get(state)).append(" (");
+
+		for (var f : fitness) {
+			designSpaceBuilder.append(f).append(", ");
+		}
+		designSpaceBuilder.append(")\"\n").append("URL=\"./").append(states.get(state)).append(".svg\"]\n");
+	}
+
+	@Override
 	public void addSolution(Version state) {
 		addState(state);
 		designSpaceBuilder.append(states.get(state)).append(" [shape = doublecircle]\n");
@@ -329,12 +344,12 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 
 	@Override
 	public boolean renderDesignSpace(String path, FileFormat format) {
-		for (var entry : states.entrySet()) {
-			var stateId = entry.getValue();
-			var stateDot = createDotForModelState(entry.getKey());
-			saveDot(stateDot, path + "/" + stateId + ".dot");
-			renderDot(stateDot, format, path + "/" + stateId + "." + format.getFormat());
-		}
+//		for (var entry : states.entrySet()) {
+//			var stateId = entry.getValue();
+//			var stateDot = createDotForModelState(entry.getKey());
+//			saveDot(stateDot, path + "/" + stateId + ".dot");
+//			renderDot(stateDot, format, path + "/" + stateId + "." + format.getFormat());
+//		}
 		var designSpaceDot = buildDesignSpaceDot();
 		saveDot(designSpaceDot, path + "/designSpace.dot");
 		return renderDot(designSpaceDot, format, path + "/designSpace." + format.getFormat());
