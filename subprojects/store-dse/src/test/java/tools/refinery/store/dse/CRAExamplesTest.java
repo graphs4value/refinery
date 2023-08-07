@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.dse;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
 import tools.refinery.store.model.ModelStore;
@@ -181,6 +182,7 @@ class CRAExamplesTest {
 			});
 
 	@Test
+	@Disabled("This test is only for debugging purposes")
 	void craTest() {
 		var store = ModelStore.builder()
 				.symbols(classElement, encapsulates, classes, features, attribute, method, dataDependency,

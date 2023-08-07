@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.dse;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
 import tools.refinery.store.model.ModelStore;
@@ -42,6 +43,7 @@ class DebugTest {
 
 
 	@Test
+	@Disabled("This test is only for debugging purposes")
 	void BFSTest() {
 		var createClassPrecondition = Query.of("CreateClassPrecondition",
 				(builder, model) -> builder.clause(
