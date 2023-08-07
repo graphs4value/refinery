@@ -17,7 +17,6 @@ import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.visualization.ModelVisualizerAdapter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -118,7 +117,6 @@ class DesignSpaceExplorationTest {
 		var store = ModelStore.builder()
 				.symbols(classModel)
 				.with(ViatraModelQueryAdapter.builder())
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.strategy(new DepthFirstStrategy(0)))
 				.build();
@@ -158,7 +156,6 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel, classElement, classes)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition))
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule)
 						.strategy(new DepthFirstStrategy(4)
@@ -205,7 +202,6 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel, classElement, classes)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition))
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule)
 						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
@@ -274,7 +270,6 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel, classElement, classes, feature, features, isEncapsulatedBy, encapsulates)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition, createFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
 						.strategy(new DepthFirstStrategy(10).continueIfHardObjectivesFulfilled()
@@ -298,7 +293,6 @@ class DesignSpaceExplorationTest {
 		var store = ModelStore.builder()
 				.symbols(classModel)
 				.with(ViatraModelQueryAdapter.builder())
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.strategy(new BestFirstStrategy(0)))
 				.build();
@@ -338,7 +332,6 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel, classElement, classes)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition))
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule)
 						.strategy(new BestFirstStrategy(4)
@@ -385,7 +378,6 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel, classElement, classes)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition))
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule)
 						.strategy(new BestFirstStrategy(4).continueIfHardObjectivesFulfilled()
@@ -454,7 +446,6 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel, classElement, classes, feature, features, isEncapsulatedBy, encapsulates)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition, createFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
 						.strategy(new BestFirstStrategy(10).continueIfHardObjectivesFulfilled()
