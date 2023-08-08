@@ -24,6 +24,7 @@ public abstract class AbstractNeighbourhoodCalculator {
 	protected AbstractNeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
 		this.nullImpactValues = new ArrayList<>();
 		this.impactValues = new LinkedHashMap<>();
+		@SuppressWarnings("squid:S2245")
 		Random random = new Random(1);
 
 		individualHashValues = new IntLongHashMap();
