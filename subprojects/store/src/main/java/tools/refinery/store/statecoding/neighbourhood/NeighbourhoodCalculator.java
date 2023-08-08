@@ -5,128 +5,108 @@
  */
 package tools.refinery.store.statecoding.neighbourhood;
 
-import org.eclipse.collections.api.set.primitive.MutableLongSet;
-import org.eclipse.collections.impl.set.mutable.primitive.LongHashSet;
+import org.eclipse.collections.api.set.primitive.IntSet;
+import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.statecoding.StateCodeCalculator;
 import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple0;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 
-public class NeighbourhoodCalculator implements StateCodeCalculator {
-	protected final List<Interpretation<?>> nullImpactValues;
-	protected final LinkedHashMap<Interpretation<?>, long[]> impactValues;
-
-	public NeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations) {
-		this.nullImpactValues = new ArrayList<>();
-		this.impactValues = new LinkedHashMap<>();
-		Random random = new Random(1);
-
-		for (Interpretation<?> interpretation : interpretations) {
-			int arity = interpretation.getSymbol().arity();
-			if (arity == 0) {
-				nullImpactValues.add(interpretation);
-			} else {
-				long[] impact = new long[arity];
-				for (int i = 0; i < arity; i++) {
-					impact[i] = random.nextLong();
-				}
-				impactValues.put(interpretation, impact);
-			}
-		}
+public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator implements StateCodeCalculator {
+	public NeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
+		super(interpretations, individuals);
 	}
 
-	@Override
 	public StateCoderResult calculateCodes() {
-		ObjectCodeImpl previous = new ObjectCodeImpl();
-		ObjectCodeImpl next = new ObjectCodeImpl();
+		ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
+		initializeWithIndividuals(previousObjectCode);
 
-		int previousSize = 1;
-		long lastSum;
-		boolean grows;
+		int rounds = 0;
+		do {
+			final ObjectCodeImpl nextObjectCode = rounds == 0 ? new ObjectCodeImpl() :
+					new ObjectCodeImpl(previousObjectCode.getSize());
 
-		do{
-			for (var impactValueEntry : this.impactValues.entrySet()) {
-				Interpretation<?> interpretation = impactValueEntry.getKey();
-				long[] impact = impactValueEntry.getValue();
-				var cursor = interpretation.getAll();
-				while (cursor.move()) {
-					Tuple tuple = cursor.getKey();
-					Object value = cursor.getValue();
-					long tupleHash = getTupleHash(tuple, value, previous);
-					addHash(next, tuple, impact, tupleHash);
-				}
-			}
+			constructNextObjectCodes(previousObjectCode, nextObjectCode);
+			previousObjectCode = nextObjectCode;
+			rounds++;
+		} while (rounds <= 7 && rounds <= previousObjectCode.getEffectiveSize());
 
-			previous = next;
-			next = null;
-			lastSum = 0;
-			MutableLongSet codes = new LongHashSet();
-			for (int i = 0; i < previous.getSize(); i++) {
-				long objectHash = previous.get(i);
-				codes.add(objectHash);
-
-				final long shifted1 = objectHash>>> 32;
-				final long shifted2 = objectHash << 32;
-				lastSum += shifted1 + shifted2;
-			}
-			int nextSize = codes.size();
-			grows = previousSize < nextSize;
-			previousSize = nextSize;
-
-			if(grows) {
-				next = new ObjectCodeImpl(previous);
-			}
-		} while (grows);
-
-		long result = 1;
-		for (var nullImpactValue : nullImpactValues) {
-			result = result * 31 + nullImpactValue.get(Tuple0.INSTANCE).hashCode();
-		}
-		result += lastSum;
-
-		return new StateCoderResult((int) result, previous);
+		long result = calculateLastSum(previousObjectCode);
+		return new StateCoderResult((int) result, previousObjectCode);
 	}
 
-	protected long getTupleHash(Tuple tuple, Object value, ObjectCodeImpl objectCodeImpl) {
-		long result = value.hashCode();
-		int arity = tuple.getSize();
-		if (arity == 1) {
-			result = result * 31 + objectCodeImpl.get(tuple.get(0));
-		} else if (arity == 2) {
-			result = result * 31 + objectCodeImpl.get(tuple.get(0));
-			result = result * 31 + objectCodeImpl.get(tuple.get(1));
-			if (tuple.get(0) == tuple.get(1)) {
-				result++;
-			}
-		} else if (arity > 2) {
-			for (int i = 0; i < arity; i++) {
-				result = result * 31 + objectCodeImpl.get(tuple.get(i));
-			}
+	private long calculateLastSum(ObjectCode codes) {
+		long result = 0;
+		for (var nullImpactValue : nullImpactValues) {
+			result = result * 31 + Objects.hashCode(nullImpactValue.get(Tuple0.INSTANCE));
 		}
+
+		for (int i = 0; i < codes.getSize(); i++) {
+			final long hash = codes.get(i);
+			result += hash*PRIME;
+		}
+
 		return result;
 	}
 
-	protected void addHash(ObjectCodeImpl objectCodeImpl, Tuple tuple, long[] impact, long tupleHashCode) {
-		if (tuple.getSize() == 1) {
-			addHash(objectCodeImpl, tuple.get(0), impact[0], tupleHashCode);
-		} else if (tuple.getSize() == 2) {
-			addHash(objectCodeImpl, tuple.get(0), impact[0], tupleHashCode);
-			addHash(objectCodeImpl, tuple.get(1), impact[1], tupleHashCode);
-		} else if (tuple.getSize() > 2) {
-			for (int i = 0; i < tuple.getSize(); i++) {
-				addHash(objectCodeImpl, tuple.get(i), impact[i], tupleHashCode);
+	private void constructNextObjectCodes(ObjectCodeImpl previous, ObjectCodeImpl next) {
+		for (var impactValueEntry : this.impactValues.entrySet()) {
+			Interpretation<?> interpretation = impactValueEntry.getKey();
+			var cursor = interpretation.getAll();
+			int arity = interpretation.getSymbol().arity();
+			long[] impactValue = impactValueEntry.getValue();
+
+			if (arity == 1) {
+				while (cursor.move()) {
+					impactCalculation1(previous, next, impactValue, cursor);
+				}
+			} else if (arity == 2) {
+				while (cursor.move()) {
+					impactCalculation2(previous, next, impactValue, cursor);
+				}
+			} else {
+				while (cursor.move()) {
+					impactCalculationN(previous, next, impactValue, cursor);
+				}
 			}
 		}
 	}
 
-	protected void addHash(ObjectCodeImpl objectCodeImpl, int o, long impact, long tupleHash) {
-		objectCodeImpl.set(o, objectCodeImpl.get(o) + tupleHash * impact);
+
+	private void impactCalculation1(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues, Cursor<Tuple, ?> cursor) {
+
+		Tuple tuple = cursor.getKey();
+		int o = tuple.get(0);
+		Object value = cursor.getValue();
+		long tupleHash = getTupleHash1(tuple, value, previous);
+		addHash(next, o, impactValues[0], tupleHash);
 	}
 
+	private void impactCalculation2(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues, Cursor<Tuple, ?> cursor) {
+		final Tuple tuple = cursor.getKey();
+		final int o1 = tuple.get(0);
+		final int o2 = tuple.get(1);
+
+		Object value = cursor.getValue();
+		long tupleHash = getTupleHash2(tuple, value, previous);
+
+		addHash(next, o1, impactValues[0], tupleHash);
+		addHash(next, o2, impactValues[1], tupleHash);
+	}
+
+	private void impactCalculationN(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues, Cursor<Tuple, ?> cursor) {
+		final Tuple tuple = cursor.getKey();
+
+		Object value = cursor.getValue();
+		long tupleHash = getTupleHashN(tuple, value, previous);
+
+		for (int i = 0; i < tuple.getSize(); i++) {
+			addHash(next, tuple.get(i), impactValues[i], tupleHash);
+		}
+	}
 }
