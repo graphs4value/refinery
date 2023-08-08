@@ -49,7 +49,8 @@ class DesignSpaceExplorationTest {
 	void createObjectTest() {
 		var store = ModelStore.builder()
 				.with(ViatraModelQueryAdapter.builder())
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -77,7 +78,8 @@ class DesignSpaceExplorationTest {
 	void deleteMiddleObjectTest() {
 		var store = ModelStore.builder()
 				.with(ViatraModelQueryAdapter.builder())
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy()))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -118,7 +120,7 @@ class DesignSpaceExplorationTest {
 				.symbols(classModel)
 				.with(ViatraModelQueryAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
-						.strategy(new DepthFirstStrategy(0)))
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -158,7 +160,7 @@ class DesignSpaceExplorationTest {
 						.queries(createClassPrecondition))
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule)
-						.strategy(new DepthFirstStrategy(4)
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)
 						))
 				.build();
 
@@ -204,7 +206,7 @@ class DesignSpaceExplorationTest {
 						.queries(createClassPrecondition))
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule)
-						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
+						.strategy(new DepthFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
 						))
 				.build();
 
@@ -272,7 +274,7 @@ class DesignSpaceExplorationTest {
 						.queries(createClassPrecondition, createFeaturePrecondition))
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
-						.strategy(new DepthFirstStrategy(10).continueIfHardObjectivesFulfilled()
+						.strategy(new DepthFirstStrategy().withDepthLimit(10).continueIfHardObjectivesFulfilled()
 						))
 				.build();
 
@@ -289,115 +291,7 @@ class DesignSpaceExplorationTest {
 	}
 
 	@Test
-	void BFSTrivialTest() {
-		var store = ModelStore.builder()
-				.symbols(classModel)
-				.with(ViatraModelQueryAdapter.builder())
-				.with(DesignSpaceExplorationAdapter.builder()
-						.strategy(new BestFirstStrategy(0)))
-				.build();
-
-		var model = store.createEmptyModel();
-		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-
-		var states = dseAdapter.explore();
-		assertEquals(1, states.size());
-	}
-
-	@Test
-	void BFSOneRuleTest() {
-		var createClassPrecondition = Query.of("CreateClassPrecondition",
-				(builder, model) -> builder.clause(
-						classModelView.call(model)
-				));
-
-		var createClassRule = new TransformationRule("CreateClass",
-				createClassPrecondition,
-				(model) -> {
-					var classesInterpretation = model.getInterpretation(classes);
-					var classElementInterpretation = model.getInterpretation(classElement);
-					return ((Tuple activation) -> {
-						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-						var modelElement = activation.get(0);
-
-						var newClassElement = dseAdapter.createObject();
-						var newClassElementId = newClassElement.get(0);
-
-						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
-						classElementInterpretation.put(Tuple.of(newClassElementId), true);
-					});
-				});
-
-		var store = ModelStore.builder()
-				.symbols(classModel, classElement, classes)
-				.with(ViatraModelQueryAdapter.builder()
-						.queries(createClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder()
-						.transformations(createClassRule)
-						.strategy(new BestFirstStrategy(4)
-						))
-				.build();
-
-		var model = store.createEmptyModel();
-		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-
-		var modelElementInterpretation = model.getInterpretation(classModel);
-		modelElementInterpretation.put(dseAdapter.createObject(), true);
-		queryEngine.flushChanges();
-
-		var states = dseAdapter.explore();
-		assertEquals(1, states.size());
-	}
-
-	@Test
-	void BFSContinueTest() {
-		var createClassPrecondition = Query.of("CreateClassPrecondition",
-				(builder, model) -> builder.clause(
-						classModelView.call(model)
-				));
-
-		var createClassRule = new TransformationRule("CreateClass",
-				createClassPrecondition,
-				(model) -> {
-					var classesInterpretation = model.getInterpretation(classes);
-					var classElementInterpretation = model.getInterpretation(classElement);
-					return ((Tuple activation) -> {
-						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-						var modelElement = activation.get(0);
-
-						var newClassElement = dseAdapter.createObject();
-						var newClassElementId = newClassElement.get(0);
-
-						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
-						classElementInterpretation.put(Tuple.of(newClassElementId), true);
-					});
-				});
-
-		var store = ModelStore.builder()
-				.symbols(classModel, classElement, classes)
-				.with(ViatraModelQueryAdapter.builder()
-						.queries(createClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder()
-						.transformations(createClassRule)
-						.strategy(new BestFirstStrategy(4).continueIfHardObjectivesFulfilled()
-						))
-				.build();
-
-		var model = store.createEmptyModel();
-		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-
-		var modelElementInterpretation = model.getInterpretation(classModel);
-		modelElementInterpretation.put(dseAdapter.createObject(), true);
-		queryEngine.flushChanges();
-
-		var states = dseAdapter.explore();
-		assertEquals(5, states.size());
-	}
-
-	@Test
-	void BFSCompletenessTest() {
+	void DFSSolutionLimitTest() {
 		var createClassPrecondition = Query.of("CreateClassPrecondition",
 				(builder, model) -> builder.clause(
 						classModelView.call(model)
@@ -448,7 +342,184 @@ class DesignSpaceExplorationTest {
 						.queries(createClassPrecondition, createFeaturePrecondition))
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
-						.strategy(new BestFirstStrategy(10).continueIfHardObjectivesFulfilled()
+						.strategy(new DepthFirstStrategy().withSolutionLimit(222)
+								.continueIfHardObjectivesFulfilled()
+						))
+				.build();
+
+		var model = store.createEmptyModel();
+		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+
+		var modelElementInterpretation = model.getInterpretation(classModel);
+		modelElementInterpretation.put(dseAdapter.createObject(), true);
+		queryEngine.flushChanges();
+
+		var states = dseAdapter.explore();
+		assertEquals(222, states.size());
+	}
+
+	@Test
+	void BeFSTrivialTest() {
+		var store = ModelStore.builder()
+				.symbols(classModel)
+				.with(ViatraModelQueryAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new BestFirstStrategy().withDepthLimit(0)))
+				.build();
+
+		var model = store.createEmptyModel();
+		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+
+		var states = dseAdapter.explore();
+		assertEquals(1, states.size());
+	}
+
+	@Test
+	void BeFSOneRuleTest() {
+		var createClassPrecondition = Query.of("CreateClassPrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createClassRule = new TransformationRule("CreateClass",
+				createClassPrecondition,
+				(model) -> {
+					var classesInterpretation = model.getInterpretation(classes);
+					var classElementInterpretation = model.getInterpretation(classElement);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						classElementInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var store = ModelStore.builder()
+				.symbols(classModel, classElement, classes)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(createClassPrecondition))
+				.with(DesignSpaceExplorationAdapter.builder()
+						.transformations(createClassRule)
+						.strategy(new BestFirstStrategy().withDepthLimit(4)
+						))
+				.build();
+
+		var model = store.createEmptyModel();
+		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+
+		var modelElementInterpretation = model.getInterpretation(classModel);
+		modelElementInterpretation.put(dseAdapter.createObject(), true);
+		queryEngine.flushChanges();
+
+		var states = dseAdapter.explore();
+		assertEquals(1, states.size());
+	}
+
+	@Test
+	void BeFSContinueTest() {
+		var createClassPrecondition = Query.of("CreateClassPrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createClassRule = new TransformationRule("CreateClass",
+				createClassPrecondition,
+				(model) -> {
+					var classesInterpretation = model.getInterpretation(classes);
+					var classElementInterpretation = model.getInterpretation(classElement);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						classElementInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var store = ModelStore.builder()
+				.symbols(classModel, classElement, classes)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(createClassPrecondition))
+				.with(DesignSpaceExplorationAdapter.builder()
+						.transformations(createClassRule)
+						.strategy(new BestFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
+						))
+				.build();
+
+		var model = store.createEmptyModel();
+		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+
+		var modelElementInterpretation = model.getInterpretation(classModel);
+		modelElementInterpretation.put(dseAdapter.createObject(), true);
+		queryEngine.flushChanges();
+
+		var states = dseAdapter.explore();
+		assertEquals(5, states.size());
+	}
+
+	@Test
+	void BeFSCompletenessTest() {
+		var createClassPrecondition = Query.of("CreateClassPrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createClassRule = new TransformationRule("CreateClass",
+				createClassPrecondition,
+				(model) -> {
+					var classesInterpretation = model.getInterpretation(classes);
+					var classElementInterpretation = model.getInterpretation(classElement);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						classElementInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var createFeaturePrecondition = Query.of("CreateFeaturePrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createFeatureRule = new TransformationRule("CreateFeature",
+				createFeaturePrecondition,
+				(model) -> {
+					var featuresInterpretation = model.getInterpretation(features);
+					var featureInterpretation = model.getInterpretation(feature);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						featuresInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						featureInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var store = ModelStore.builder()
+				.symbols(classModel, classElement, classes, feature, features, isEncapsulatedBy, encapsulates)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(createClassPrecondition, createFeaturePrecondition))
+				.with(DesignSpaceExplorationAdapter.builder()
+						.transformations(createClassRule, createFeatureRule)
+						.strategy(new BestFirstStrategy().withDepthLimit(10).continueIfHardObjectivesFulfilled()
 						))
 				.build();
 
@@ -462,6 +533,75 @@ class DesignSpaceExplorationTest {
 
 		var states = dseAdapter.explore();
 		assertEquals(2047, states.size());
+	}
+
+	@Test
+	void BeFSSolutionLimitTest() {
+		var createClassPrecondition = Query.of("CreateClassPrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createClassRule = new TransformationRule("CreateClass",
+				createClassPrecondition,
+				(model) -> {
+					var classesInterpretation = model.getInterpretation(classes);
+					var classElementInterpretation = model.getInterpretation(classElement);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						classElementInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var createFeaturePrecondition = Query.of("CreateFeaturePrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createFeatureRule = new TransformationRule("CreateFeature",
+				createFeaturePrecondition,
+				(model) -> {
+					var featuresInterpretation = model.getInterpretation(features);
+					var featureInterpretation = model.getInterpretation(feature);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						featuresInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						featureInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var store = ModelStore.builder()
+				.symbols(classModel, classElement, classes, feature, features, isEncapsulatedBy, encapsulates)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(createClassPrecondition, createFeaturePrecondition))
+				.with(DesignSpaceExplorationAdapter.builder()
+						.transformations(createClassRule, createFeatureRule)
+						.strategy(new BestFirstStrategy().withSolutionLimit(222)
+								.continueIfHardObjectivesFulfilled()
+						))
+				.build();
+
+		var model = store.createEmptyModel();
+		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+
+		var modelElementInterpretation = model.getInterpretation(classModel);
+		modelElementInterpretation.put(dseAdapter.createObject(), true);
+		queryEngine.flushChanges();
+
+		var states = dseAdapter.explore();
+		assertEquals(222, states.size());
 	}
 
 }

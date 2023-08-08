@@ -22,8 +22,8 @@ public class BestFirstStrategy implements Strategy {
 
 	private DesignSpaceExplorationAdapter dseAdapter;
 
-	private final int maxDepth;
-	private final int maxSolutions;
+	private int maxDepth = Integer.MAX_VALUE;
+	private int maxSolutions = Integer.MAX_VALUE;
 	private boolean backTrackIfSolution = true;
 	private boolean onlyBetterFirst = false;
 
@@ -50,25 +50,18 @@ public class BestFirstStrategy implements Strategy {
 		}
 	}
 
-	public BestFirstStrategy() {
-		this(-1);
-	}
-
-	public BestFirstStrategy(int maxDepth) {
-		this(maxDepth, -1);
-	}
-
-	public BestFirstStrategy(int maxDepth, int maxSolutions) {
-		if (maxDepth < 0) {
-			this.maxDepth = Integer.MAX_VALUE;
-		} else {
+	public BestFirstStrategy withDepthLimit(int maxDepth) {
+		if (maxDepth >= 0) {
 			this.maxDepth = maxDepth;
 		}
-		if (maxSolutions < 0) {
-			this.maxSolutions = Integer.MAX_VALUE;
-		} else {
+		return this;
+	}
+
+	public BestFirstStrategy withSolutionLimit(int maxSolutions) {
+		if (maxSolutions >= 0) {
 			this.maxSolutions = maxSolutions;
 		}
+		return this;
 	}
 
 	public BestFirstStrategy continueIfHardObjectivesFulfilled() {
@@ -82,7 +75,7 @@ public class BestFirstStrategy implements Strategy {
 	}
 
 	@Override
-	public void initStrategy(DesignSpaceExplorationAdapter designSpaceExplorationAdapter) {
+	public void initialize(DesignSpaceExplorationAdapter designSpaceExplorationAdapter) {
 		this.dseAdapter = designSpaceExplorationAdapter;
 		final ObjectiveComparatorHelper objectiveComparatorHelper = dseAdapter.getObjectiveComparatorHelper();
 

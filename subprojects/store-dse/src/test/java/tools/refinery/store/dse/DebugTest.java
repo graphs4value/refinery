@@ -103,8 +103,8 @@ class DebugTest {
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
 						.objectives(new AlwaysSatisfiedRandomHardObjective())
-						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
-//						.strategy(new BestFirstStrategy(4).continueIfHardObjectivesFulfilled()
+						.strategy(new DepthFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
+//						.strategy(new BestFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
 //								.goOnOnlyIfFitnessIsBetter()
 						))
 				.build();

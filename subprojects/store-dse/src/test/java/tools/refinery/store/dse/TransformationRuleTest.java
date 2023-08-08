@@ -6,6 +6,7 @@
 package tools.refinery.store.dse;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.strategy.DepthFirstStrategy;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
@@ -103,7 +104,8 @@ class TransformationRuleTest {
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(assignFeaturePrecondition, assignFeaturePreconditionHelper,
 								deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -195,7 +197,8 @@ class TransformationRuleTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -276,7 +279,8 @@ class TransformationRuleTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -352,7 +356,8 @@ class TransformationRuleTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();

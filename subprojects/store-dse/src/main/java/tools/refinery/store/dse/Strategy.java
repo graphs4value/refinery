@@ -7,7 +7,7 @@ package tools.refinery.store.dse;
 
 public interface Strategy {
 
-	void initStrategy(DesignSpaceExplorationAdapter designSpaceExplorationAdapter);
+	void initialize(DesignSpaceExplorationAdapter designSpaceExplorationAdapter);
 
 	void explore();
 }

@@ -201,8 +201,8 @@ class CRAExamplesTest {
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
 						.objectives(new AlwaysSatisfiedRandomHardObjective())
-//						.strategy(new DepthFirstStrategy(3).continueIfHardObjectivesFulfilled()
-						.strategy(new BestFirstStrategy(6).continueIfHardObjectivesFulfilled()
+//						.strategy(new DepthFirstStrategy().withDepthLimit(3).continueIfHardObjectivesFulfilled()
+						.strategy(new BestFirstStrategy().withDepthLimit(6).continueIfHardObjectivesFulfilled()
 //								.goOnOnlyIfFitnessIsBetter()
 						))
 				.build();

@@ -52,10 +52,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 
 	private final Map<Version, Fitness> fitnessCache = new HashMap<>();
 
-	public List<Version> getTrajectory() {
-		return new ArrayList<>(trajectory);
-	}
-
 	public DesignSpaceExplorationAdapterImpl(Model model, DesignSpaceExplorationStoreAdapterImpl storeAdapter) {
 		this.model = model;
 		this.storeAdapter = storeAdapter;
@@ -75,9 +71,14 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		objectives = storeAdapter.getObjectives();
 		statesAndTraversedActivations = new HashMap<>();
 		strategy = storeAdapter.getStrategy();
+		strategy.initialize(this);
 		modelVisualizerAdapter = model.tryGetAdapter(ModelVisualizerAdapter.class).orElse(null);
 		isVisualizationEnabled = modelVisualizerAdapter != null;
 
+	}
+
+	public List<Version> getTrajectory() {
+		return new ArrayList<>(trajectory);
 	}
 
 	@Override
@@ -94,7 +95,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	public List<Version> explore() {
 		var state = model.commit();
 		trajectory.add(state);
-		strategy.initStrategy(this);
 		strategy.explore();
 		if (isVisualizationEnabled) {
 			modelVisualizerAdapter.visualize();
