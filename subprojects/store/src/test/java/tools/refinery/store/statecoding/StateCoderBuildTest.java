@@ -58,14 +58,14 @@ class StateCoderBuildTest {
 
 		int code = stateCoder.calculateStateCode().modelCode();
 
-		ageI.put(Tuple.of(1),3);
-		assertEquals(code,stateCoder.calculateStateCode().modelCode());
+		ageI.put(Tuple.of(1), 3);
+		assertEquals(code, stateCoder.calculateStateCode().modelCode());
 
-		ageI.put(Tuple.of(1),null);
-		assertEquals(code,stateCoder.calculateStateCode().modelCode());
+		ageI.put(Tuple.of(1), null);
+		assertEquals(code, stateCoder.calculateStateCode().modelCode());
 
-		personI.put(Tuple.of(2),false);
-		assertEquals(code,stateCoder.calculateStateCode().modelCode());
+		personI.put(Tuple.of(2), false);
+		assertEquals(code, stateCoder.calculateStateCode().modelCode());
 	}
 
 	@Test
@@ -80,14 +80,14 @@ class StateCoderBuildTest {
 
 		var friendI = model.getInterpretation(friend);
 
-		friendI.put(Tuple.of(1,2),true);
+		friendI.put(Tuple.of(1, 2), true);
 		int code1 = stateCoder.calculateModelCode();
 
-		friendI.put(Tuple.of(1,2),false);
-		friendI.put(Tuple.of(2,1),true);
+		friendI.put(Tuple.of(1, 2), false);
+		friendI.put(Tuple.of(2, 1), true);
 		int code2 = stateCoder.calculateModelCode();
 
-		assertEquals(code1,code2);
+		assertEquals(code1, code2);
 	}
 
 	@Test
@@ -103,15 +103,61 @@ class StateCoderBuildTest {
 
 		var friendI = model.getInterpretation(friend);
 
-		friendI.put(Tuple.of(1,2),true);
+		friendI.put(Tuple.of(1, 2), true);
 		int code1 = stateCoder.calculateModelCode();
 
-		friendI.put(Tuple.of(1,2),false);
-		friendI.put(Tuple.of(2,1),true);
+		friendI.put(Tuple.of(1, 2), false);
+		friendI.put(Tuple.of(2, 1), true);
 		int code2 = stateCoder.calculateModelCode();
 
-		assertNotEquals(code1,code2);
+		assertNotEquals(code1, code2);
 	}
+
+	@Test
+	void customStateCoderTest() {
+		final boolean[] called = new boolean[]{false};
+		StateCodeCalculator mock = () -> {
+			called[0] = true;
+			return null;
+		};
+
+		var store = ModelStore.builder()
+				.symbols(friend)
+				.with(StateCoderAdapter.builder()
+						.stateCodeCalculatorFactory((interpretations, individuals) -> mock))
+				.build();
+
+		var model = store.createEmptyModel();
+		var stateCoder = model.getAdapter(StateCoderAdapter.class);
+
+		stateCoder.calculateStateCode();
+
+		assertTrue(called[0]);
+	}
+
+	@Test
+	void customEquivalenceCheckerTest() {
+		final boolean[] called = new boolean[]{false};
+		StateEquivalenceChecker mock = (p1, p2, p3, p4, p5) -> {
+			called[0] = true;
+			return StateEquivalenceChecker.EquivalenceResult.UNKNOWN;
+		};
+
+		var store = ModelStore.builder()
+				.symbols(friend)
+				.with(StateCoderAdapter.builder()
+						.stateEquivalenceChecker(mock))
+				.build();
+
+		var model = store.createEmptyModel();
+		var v1 = model.commit();
+		var v2 = model.commit();
+
+		store.getAdapter(StateCoderStoreAdapter.class).checkEquivalence(v1, v2);
+
+		assertTrue(called[0]);
+	}
+
 
 	private static void fill(Interpretation<Boolean> personI, Interpretation<Boolean> friendI, Interpretation<Integer> ageI) {
 		personI.put(Tuple.of(1), true);
