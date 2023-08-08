@@ -58,7 +58,11 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 			tried++;
 		} while (hasNext);
 
-		return EquivalenceResult.DIFFERENT;
+		if(permutations == EquivalenceResult.UNKNOWN) {
+			return EquivalenceResult.UNKNOWN;
+		} else {
+			return EquivalenceResult.DIFFERENT;
+		}
 	}
 
 	private LongObjectHashMap<IntHashSet> indexByHash(ObjectCode code, IntSet individuals) {

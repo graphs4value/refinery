@@ -10,6 +10,7 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.statecoding.neighbourhood.ObjectCodeImpl;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -174,5 +175,43 @@ class EquivalenceTest {
 		Version v4 = model.commit();
 
 		assertEquals(StateEquivalenceChecker.EquivalenceResult.ISOMORPHIC, stateCoder.checkEquivalence(v2, v4));
+	}
+
+	@Test
+	void largeUnknownTest() {
+		final int limit = 100;
+
+		StateCodeCalculator calculator = () -> {
+			var code = new ObjectCodeImpl();
+			for (int i = 0; i < limit; i++) {
+				code.set(i, 1);
+			}
+			return new StateCoderResult(1, code);
+		};
+
+		ModelStore store = ModelStore.builder()
+				.symbols(person, age, friend, parents, population)
+				.with(StateCoderAdapter.builder()
+						.stateCodeCalculatorFactory((p1, p2) -> calculator))
+				.build();
+
+		var stateCoder = store.getAdapter(StateCoderStoreAdapter.class);
+		Model model = createStore().createEmptyModel();
+
+		var personI = model.getInterpretation(person);
+		var friendI = model.getInterpretation(friend);
+
+		for (int i = 0; i < limit; i++) {
+			personI.put(Tuple.of(i), true);
+		}
+
+		friendI.put(Tuple.of(11,12),true);
+		var v1 = model.commit();
+
+		friendI.put(Tuple.of(11,12),false);
+		friendI.put(Tuple.of(21,22),false);
+		var v2 = model.commit();
+
+		assertEquals(StateEquivalenceChecker.EquivalenceResult.UNKNOWN, stateCoder.checkEquivalence(v1,v2));
 	}
 }
