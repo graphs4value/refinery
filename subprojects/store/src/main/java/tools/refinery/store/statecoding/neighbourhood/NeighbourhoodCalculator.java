@@ -34,7 +34,7 @@ public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator imp
 			constructNextObjectCodes(previousObjectCode, nextObjectCode);
 			previousObjectCode = nextObjectCode;
 			rounds++;
-		} while (rounds <= 7 && rounds <= previousObjectCode.getSize());
+		} while (rounds <= 7 && rounds <= previousObjectCode.getEffectiveSize());
 
 		long result = calculateLastSum(previousObjectCode);
 		return new StateCoderResult((int) result, previousObjectCode);
