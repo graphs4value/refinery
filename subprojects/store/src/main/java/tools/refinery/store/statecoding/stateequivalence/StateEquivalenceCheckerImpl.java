@@ -5,7 +5,9 @@
  */
 package tools.refinery.store.statecoding.stateequivalence;
 
+import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.set.primitive.IntSet;
 import org.eclipse.collections.impl.map.mutable.primitive.IntIntHashMap;
 import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
@@ -23,18 +25,17 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 	public static final int LIMIT = 1000;
 
 	@Override
-	public EquivalenceResult constructMorphism(List<? extends Interpretation<?>> interpretations1,
+	public EquivalenceResult constructMorphism(IntSet individuals,
+												List<? extends Interpretation<?>> interpretations1,
 												ObjectCode code1,
 												List<? extends Interpretation<?>> interpretations2,
-												ObjectCode code2) {
-		if (code1.getSize() != code2.getSize()) {
-			return EquivalenceResult.DIFFERENT;
-		}
-
+												ObjectCode code2)
+	{
 		IntIntHashMap object2PermutationGroup = new IntIntHashMap();
 		List<List<IntIntMap>> permutationsGroups = new ArrayList<>();
 
-		final EquivalenceResult permutations = constructPermutationNavigation(indexByHash(code1), indexByHash(code2),
+		final EquivalenceResult permutations = constructPermutationNavigation(individuals,
+				indexByHash(code1, individuals), indexByHash(code2, individuals),
 				object2PermutationGroup, permutationsGroups);
 
 		if (permutations == EquivalenceResult.DIFFERENT) {
@@ -57,27 +58,36 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 			tried++;
 		} while (hasNext);
 
-		return EquivalenceResult.DIFFERENT;
+		if(permutations == EquivalenceResult.UNKNOWN) {
+			return EquivalenceResult.UNKNOWN;
+		} else {
+			return EquivalenceResult.DIFFERENT;
+		}
 	}
 
-	private LongObjectHashMap<IntHashSet> indexByHash(ObjectCode code) {
+	private LongObjectHashMap<IntHashSet> indexByHash(ObjectCode code, IntSet individuals) {
 		LongObjectHashMap<IntHashSet> result = new LongObjectHashMap<>();
 		for (int o = 0; o < code.getSize(); o++) {
-			long hash = code.get(o);
-			var equivalenceClass = result.get(hash);
-			if (equivalenceClass == null) {
-				equivalenceClass = new IntHashSet();
-				result.put(hash, equivalenceClass);
+			if(! individuals.contains(o)){
+				long hash = code.get(o);
+				if(hash != 0) {
+					var equivalenceClass = result.get(hash);
+					if (equivalenceClass == null) {
+						equivalenceClass = new IntHashSet();
+						result.put(hash, equivalenceClass);
+					}
+					equivalenceClass.add(o);
+				}
 			}
-			equivalenceClass.add(o);
 		}
 		return result;
 	}
 
-	private EquivalenceResult constructPermutationNavigation(LongObjectHashMap<IntHashSet> map1,
-												   LongObjectHashMap<IntHashSet> map2,
-												   IntIntHashMap emptyMapToListOfOptions,
-												   List<List<IntIntMap>> emptyListOfOptions) {
+	private EquivalenceResult constructPermutationNavigation(IntSet individuals,
+															 LongObjectHashMap<IntHashSet> map1,
+															 LongObjectHashMap<IntHashSet> map2,
+															 IntIntHashMap object2OptionIndex,
+															 List<List<IntIntMap>> listOfOptions) {
 		if (map1.size() != map2.size()) {
 			return EquivalenceResult.DIFFERENT;
 		}
@@ -101,10 +111,13 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 
 			allComplete &= pairing.isComplete();
 
-			final int optionIndex = emptyListOfOptions.size();
-			set1.forEach(key -> emptyMapToListOfOptions.put(key, optionIndex));
-			emptyListOfOptions.add(pairing.permutations());
+			final int optionIndex = listOfOptions.size();
+			set1.forEach(key -> object2OptionIndex.put(key, optionIndex));
+			listOfOptions.add(pairing.permutations());
 		}
+
+		individuals.forEach(o -> listOfOptions.add(o,List.of(IntIntMaps.immutable.of(o,o))));
+
 		if(allComplete) {
 			return EquivalenceResult.ISOMORPHIC;
 		} else {

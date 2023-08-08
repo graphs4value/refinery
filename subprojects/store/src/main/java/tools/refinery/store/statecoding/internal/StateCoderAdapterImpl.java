@@ -6,28 +6,20 @@
 package tools.refinery.store.statecoding.internal;
 
 import tools.refinery.store.adapter.ModelStoreAdapter;
-import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.statecoding.StateCodeCalculator;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.statecoding.StateCoderResult;
-import tools.refinery.store.statecoding.neighbourhood.LazyNeighbourhoodCalculator;
-
-import java.util.Collection;
-import java.util.List;
 
 public class StateCoderAdapterImpl implements StateCoderAdapter {
 	final ModelStoreAdapter storeAdapter;
 	final Model model;
 	final StateCodeCalculator calculator;
 
-	StateCoderAdapterImpl(ModelStoreAdapter storeAdapter, Model model, Collection<Symbol<?>> symbols) {
+	StateCoderAdapterImpl(ModelStoreAdapter storeAdapter, StateCodeCalculator calculator,  Model model) {
 		this.storeAdapter = storeAdapter;
 		this.model = model;
-
-		List<? extends Interpretation<?>> interpretations = symbols.stream().map(model::getInterpretation).toList();
-		calculator = new LazyNeighbourhoodCalculator(interpretations);
+		this.calculator = calculator;
 	}
 
 	@Override

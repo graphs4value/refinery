@@ -57,8 +57,7 @@ public class CombinationNodePairing implements NodePairing {
 		for (var permutation : previousPermutations) {
 			for (int pos = 0; pos <= max; pos++) {
 				int[] newPermutation = new int[max + 1];
-				if (pos >= 0)
-					System.arraycopy(permutation, 0, newPermutation, 0, pos);
+				System.arraycopy(permutation, 0, newPermutation, 0, pos);
 				newPermutation[pos] = max;
 				if (max - (pos + 1) >= 0)
 					System.arraycopy(permutation, pos + 1, newPermutation, pos + 1 + 1, max - (pos + 1));

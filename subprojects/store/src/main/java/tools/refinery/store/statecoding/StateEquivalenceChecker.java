@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.statecoding;
 
+import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.model.Interpretation;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public interface StateEquivalenceChecker {
 	}
 
 	EquivalenceResult constructMorphism(
+			IntSet individuals,
 			List<? extends Interpretation<?>> interpretations1,
 			ObjectCode code1, List<?
 			extends Interpretation<?>> interpretations2,
