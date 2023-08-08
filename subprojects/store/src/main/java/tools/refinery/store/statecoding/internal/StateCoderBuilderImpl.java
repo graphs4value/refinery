@@ -10,11 +10,8 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
-import tools.refinery.store.statecoding.StateCoderBuilder;
-import tools.refinery.store.statecoding.StateCoderStoreAdapter;
-import tools.refinery.store.statecoding.StateEquivalenceChecker;
-import tools.refinery.store.statecoding.neighbourhood.LazyNeighbourhoodCalculatorFactory;
+import tools.refinery.store.statecoding.*;
+import tools.refinery.store.statecoding.neighbourhood.NeighbourhoodCalculator;
 import tools.refinery.store.statecoding.stateequivalence.StateEquivalenceCheckerImpl;
 import tools.refinery.store.tuple.Tuple1;
 
@@ -24,7 +21,7 @@ public class StateCoderBuilderImpl implements StateCoderBuilder {
 	Set<AnySymbol> excluded = new HashSet<>();
 	IntHashSet individuals = new IntHashSet();
 
-	StateCodeCalculatorFactory calculator = new LazyNeighbourhoodCalculatorFactory();
+	StateCodeCalculatorFactory calculator = NeighbourhoodCalculator::new;
 	StateEquivalenceChecker checker = new StateEquivalenceCheckerImpl();
 
 	@Override

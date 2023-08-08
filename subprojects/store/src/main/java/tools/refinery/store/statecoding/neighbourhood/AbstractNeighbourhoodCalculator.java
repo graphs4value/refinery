@@ -7,7 +7,6 @@ package tools.refinery.store.statecoding.neighbourhood;
 
 import org.eclipse.collections.api.set.primitive.IntSet;
 import org.eclipse.collections.impl.map.mutable.primitive.IntLongHashMap;
-import org.eclipse.collections.impl.map.mutable.primitive.LongIntHashMap;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.tuple.Tuple;
@@ -19,6 +18,8 @@ public abstract class AbstractNeighbourhoodCalculator {
 	protected final List<Interpretation<?>> nullImpactValues;
 	protected final LinkedHashMap<Interpretation<?>, long[]> impactValues;
 	protected final IntLongHashMap individualHashValues;
+
+	protected static final long PRIME = 31;
 
 	protected AbstractNeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
 		this.nullImpactValues = new ArrayList<>();
@@ -45,25 +46,25 @@ public abstract class AbstractNeighbourhoodCalculator {
 		}
 	}
 
-	protected void initializeWithIndividuals(ObjectCodeImpl previous, LongIntHashMap hash2Amount) {
+	protected void initializeWithIndividuals(ObjectCodeImpl previous) {
 		for (var entry : individualHashValues.keyValuesView()) {
 			previous.set(entry.getOne(), entry.getTwo());
-			hash2Amount.put(entry.getTwo(), 1);
 		}
 	}
 
 	protected long getTupleHash1(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
 		long result = Objects.hashCode(value);
-		result = result * 31 + objectCodeImpl.get(tuple.get(0));
+		result = result * PRIME + objectCodeImpl.get(tuple.get(0));
 		return result;
 	}
 
 	protected long getTupleHash2(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
 		long result = Objects.hashCode(value);
-		result = result * 31 + objectCodeImpl.get(tuple.get(0));
-		result = result * 31 + objectCodeImpl.get(tuple.get(1));
+		result = result * PRIME + objectCodeImpl.get(tuple.get(0));
+		result = result * PRIME + objectCodeImpl.get(tuple.get(1));
 		if (tuple.get(0) == tuple.get(1)) {
-			result *= 31;
+			result += PRIME;
+			result *= PRIME;
 		}
 		return result;
 	}
@@ -71,7 +72,7 @@ public abstract class AbstractNeighbourhoodCalculator {
 	protected long getTupleHashN(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
 		long result = Objects.hashCode(value);
 		for (int i = 0; i < tuple.getSize(); i++) {
-			result = result * 31 + objectCodeImpl.get(tuple.get(i));
+			result = result * PRIME + objectCodeImpl.get(tuple.get(i));
 		}
 		return result;
 	}
@@ -84,7 +85,7 @@ public abstract class AbstractNeighbourhoodCalculator {
 	protected long calculateModelCode(long lastSum) {
 		long result = 0;
 		for (var nullImpactValue : nullImpactValues) {
-			result = result * 31 + Objects.hashCode(nullImpactValue.get(Tuple0.INSTANCE));
+			result = result * PRIME + Objects.hashCode(nullImpactValue.get(Tuple0.INSTANCE));
 		}
 		result += lastSum;
 		return result;

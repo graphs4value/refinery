@@ -22,34 +22,41 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 	}
 
 	public StateCoderResult calculateCodes() {
-		ObjectCodeImpl previous = new ObjectCodeImpl();
-		LongIntHashMap hash2Amount = new LongIntHashMap();
-
-		initializeWithIndividuals(previous, hash2Amount);
+		ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
+		LongIntHashMap prevHash2Amount = new LongIntHashMap();
 
 		long lastSum;
 		// All hash code is 0, except to the individuals.
-		int lastSize = hash2Amount.size() + 1;
+		int lastSize = 1;
+		boolean first = true;
 
 		boolean grows;
+		int rounds = 0;
 		do {
-			ObjectCodeImpl next = new ObjectCodeImpl();
-			constructNextObjectCodes(previous, next, hash2Amount);
+			final ObjectCodeImpl nextObjectCode;
+			if (first) {
+				nextObjectCode = new ObjectCodeImpl();
+				initializeWithIndividuals(nextObjectCode);
+			} else {
+				nextObjectCode = new ObjectCodeImpl(previousObjectCode);
+			}
+			constructNextObjectCodes(previousObjectCode, nextObjectCode, prevHash2Amount);
 
 			LongIntHashMap nextHash2Amount = new LongIntHashMap();
-			lastSum = calculateLastSum(previous, next, hash2Amount, nextHash2Amount);
+			lastSum = calculateLastSum(previousObjectCode, nextObjectCode, prevHash2Amount, nextHash2Amount);
 
 			int nextSize = nextHash2Amount.size();
 			grows = nextSize > lastSize;
 			lastSize = nextSize;
+			first = false;
 
-			previous = next;
-			hash2Amount = nextHash2Amount;
-		} while (grows);
+			previousObjectCode = nextObjectCode;
+			prevHash2Amount = nextHash2Amount;
+		} while (grows && rounds++ < 4/*&& lastSize < previousObjectCode.getSize()*/);
 
 		long result = calculateModelCode(lastSum);
 
-		return new StateCoderResult((int) result, previous);
+		return new StateCoderResult((int) result, previousObjectCode);
 	}
 
 	private long calculateLastSum(ObjectCodeImpl previous, ObjectCodeImpl next, LongIntMap hash2Amount,

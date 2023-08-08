@@ -18,9 +18,14 @@ public class ObjectCodeImpl implements ObjectCode {
 		size = 0;
 	}
 
-	public ObjectCodeImpl(ObjectCodeImpl sameSize) {
-		this.vector = new long[sameSize.size];
-		this.size = sameSize.size;
+	public ObjectCodeImpl(int size) {
+		this.vector = new long[size];
+		this.size = size;
+	}
+
+	public ObjectCodeImpl(ObjectCodeImpl copy) {
+		this.vector = Arrays.copyOf(copy.vector,copy.size);
+		this.size = copy.size;
 	}
 
 	public void ensureSize(int object) {
