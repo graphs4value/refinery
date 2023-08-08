@@ -32,6 +32,7 @@ public class Fitness extends HashMap<String, Double> {
 	public boolean equals(Object other) {
 		if (other == null) return false;
 		if (getClass() != other.getClass()) return false;
+		if (!super.equals(other)) return false;
 		return satisfiesHardObjectives == ((Fitness) other).satisfiesHardObjectives;
 	}
 

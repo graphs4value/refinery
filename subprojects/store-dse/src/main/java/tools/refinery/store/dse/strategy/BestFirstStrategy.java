@@ -16,10 +16,7 @@ import tools.refinery.store.dse.internal.Activation;
 import tools.refinery.store.dse.objectives.Fitness;
 import tools.refinery.store.dse.objectives.ObjectiveComparatorHelper;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class BestFirstStrategy implements Strategy {
 
@@ -37,6 +34,20 @@ public class BestFirstStrategy implements Strategy {
 		public String toString() {
 				return trajectory.toString() + fitness.toString();
 			}
+
+		@Override
+		public int hashCode() {
+			return trajectory.get(trajectory.size() - 1).hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof TrajectoryWithFitness other) {
+				return Objects.equals(trajectory.get(trajectory.size() - 1), other.trajectory.get(other.trajectory.size() - 1));
+//				return trajectory.equals(((TrajectoryWithFitness) obj).trajectory);
+			}
+			return false;
+		}
 	}
 
 	public BestFirstStrategy() {
