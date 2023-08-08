@@ -252,7 +252,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 			if (isNewState) {
 				modelVisualizerAdapter.addState(newState, getFitness().values());
 			}
-			// TODO: Change to this:
 			modelVisualizerAdapter.addTransition(previousState, newState, activation.transformationRule().getName(),
 					activation.activation());
 		}
@@ -260,11 +259,10 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
-	public void fireRandomActivation() {
+	public boolean fireRandomActivation() {
 		var activations = getUntraversedActivations();
 		if (activations.isEmpty()) {
-//			TODO: throw exception
-			return;
+			return false;
 		}
 		int index = random.nextInt(activations.size());
 		var iterator = activations.iterator();
@@ -272,7 +270,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 			iterator.next();
 		}
 		var activationId = iterator.next();
-		fireActivation(activationId);
+		return fireActivation(activationId);
 	}
 
 	public List<Activation> getAllActivations() {
@@ -284,7 +282,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	public boolean isCurrentStateAlreadyTraversed() {
-//		TODO: check isomorphism?
 		return !isNewState;
 	}
 

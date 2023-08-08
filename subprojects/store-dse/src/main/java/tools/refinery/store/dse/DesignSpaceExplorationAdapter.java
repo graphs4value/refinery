@@ -50,7 +50,7 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 
 	public boolean fireActivation(Activation activation);
 
-	public void fireRandomActivation();
+	public boolean fireRandomActivation();
 
 	public List<Version> getTrajectory();
 

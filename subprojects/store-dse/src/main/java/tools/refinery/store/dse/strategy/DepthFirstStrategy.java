@@ -67,7 +67,9 @@ public class DepthFirstStrategy implements Strategy {
 				return;
 			}
 
-			dseAdapter.fireRandomActivation();
+			if (!dseAdapter.fireRandomActivation()) {
+				return;
+			}
 		}
 	}
 
