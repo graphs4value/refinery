@@ -9,25 +9,27 @@ import tools.refinery.store.map.Version;
 
 import java.util.Arrays;
 
-public record ModelVersion(Version[] mapVersions) implements Version{
+public class ModelVersion implements Version {
+	final Version[] mapVersions;
+	final int hash;
+
+	public ModelVersion(Version[] mapVersions) {
+		this.mapVersions = mapVersions;
+		this.hash = Arrays.hashCode(mapVersions);
+	}
 
 	public static Version getInternalVersion(Version modelVersion, int interpretationIndex) {
-		return ((ModelVersion)modelVersion).mapVersions()[interpretationIndex];
+		return ((ModelVersion) modelVersion).mapVersions[interpretationIndex];
 	}
 
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(mapVersions);
+		return hash;
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-
-		ModelVersion that = (ModelVersion) o;
-
-		return Arrays.equals(mapVersions, that.mapVersions);
+	public boolean equals(Object obj) {
+		return super.equals(obj);
 	}
 
 	@Override
