@@ -14,8 +14,7 @@ import tools.refinery.store.query.resultset.OrderedResultSet;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.LinkedHashSet;
-import java.util.Random;
+import java.util.*;
 
 public class TransformationRule {
 
@@ -66,12 +65,21 @@ public class TransformationRule {
 		return precondition;
 	}
 
-	public ResultSet<Boolean> getAllActivationsAsSets() {
+	public ResultSet<Boolean> getAllActivationsAsResultSet() {
 		return activations;
 	}
 
-	public LinkedHashSet<Activation> getAllActivations() {
+	public Set<Activation> getAllActivations() {
 		var result = new LinkedHashSet<Activation>();
+		var cursor = activations.getAll();
+		while (cursor.move()) {
+			result.add(new Activation(this, cursor.getKey()));
+		}
+		return result;
+	}
+
+	public List<Activation> getAllActivationsAsList() {
+		var result = new ArrayList<Activation>();
 		var cursor = activations.getAll();
 		while (cursor.move()) {
 			result.add(new Activation(this, cursor.getKey()));

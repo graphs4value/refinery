@@ -49,6 +49,7 @@ public class ObjectiveComparatorHelper {
 			}
 		}
 		if (o2HasBetterFitness) {
+			return -1;
 		} else if (o1HasBetterFitness) {
 			return 1;
 		}

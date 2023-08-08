@@ -38,7 +38,9 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 
 	public boolean backtrack();
 
-	public Fitness calculateFitness();
+	public boolean backtrack(String reason);
+
+	public Fitness getFitness();
 
 	public void newSolution();
 
@@ -48,9 +50,7 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 
 	public boolean fireActivation(Activation activation);
 
-	public void fireRandomActivation();
-
-	public boolean isCurrentInTrajectory();
+	public boolean fireRandomActivation();
 
 	public List<Version> getTrajectory();
 
@@ -63,4 +63,6 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 	public void setRandom(Random random);
 
 	public void setRandom(long seed);
+
+	public List<Version> getSolutions();
 }

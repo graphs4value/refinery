@@ -5,7 +5,9 @@
  */
 package tools.refinery.store.dse;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
@@ -25,7 +27,7 @@ import java.util.List;
 
 import static tools.refinery.store.query.literal.Literals.not;
 
-public class CRAExamplesTest {
+class CRAExamplesTest {
 	private static final Symbol<String> name = Symbol.of("Name", 1, String.class);
 
 //	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
@@ -180,6 +182,7 @@ public class CRAExamplesTest {
 			});
 
 	@Test
+	@Disabled("This test is only for debugging purposes")
 	void craTest() {
 		var store = ModelStore.builder()
 				.symbols(classElement, encapsulates, classes, features, attribute, method, dataDependency,
@@ -188,11 +191,18 @@ public class CRAExamplesTest {
 						.queries(feature, assignFeaturePreconditionHelper, assignFeaturePrecondition,
 								deleteEmptyClassPrecondition, createClassPreconditionHelper, createClassPrecondition,
 								moveFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder())
+				.with(ModelVisualizerAdapter.builder()
+						.withOutputpath("test_output")
+						.withFormat(FileFormat.DOT)
+						.withFormat(FileFormat.SVG)
+						.saveStates()
+						.saveDesignSpace()
+				)
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
-//						.strategy(new DepthFirstStrategy(3).continueIfHardObjectivesFulfilled()
-						.strategy(new BestFirstStrategy(6).continueIfHardObjectivesFulfilled()
+						.objectives(new AlwaysSatisfiedRandomHardObjective())
+//						.strategy(new DepthFirstStrategy().withDepthLimit(3).continueIfHardObjectivesFulfilled()
+						.strategy(new BestFirstStrategy().withDepthLimit(6).continueIfHardObjectivesFulfilled()
 //								.goOnOnlyIfFitnessIsBetter()
 						))
 				.build();
@@ -271,9 +281,6 @@ public class CRAExamplesTest {
 
 		var states = dseAdapter.explore();
 		System.out.println("states size: " + states.size());
-		System.out.println("states: " + states);
-		var visualizer = model.getAdapter(ModelVisualizerAdapter.class);
-		visualizer.renderDesignSpace("test_output", FileFormat.SVG);
 	}
 
 }

@@ -33,27 +33,24 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private final Model model;
 	private final ModelQueryAdapter queryEngine;
 	private final DesignSpaceExplorationStoreAdapterImpl storeAdapter;
-	private final LinkedHashSet<TransformationRule> transformationRules;
-	private final LinkedHashSet<RelationalQuery> globalConstraints;
+	private final Set<TransformationRule> transformationRules;
+	private final Set<RelationalQuery> globalConstraints;
 	private final List<Objective> objectives;
 	private final LinkedHashSet<ResultSet<Boolean>> globalConstraintResultSets = new LinkedHashSet<>();
 	private final Interpretation<Integer> sizeInterpretation;
 	private final Strategy strategy;
 
 	private ObjectiveComparatorHelper objectiveComparatorHelper;
-	private List<Version> trajectory = new LinkedList<>();
-	private Fitness lastFitness;
-	private final LinkedHashSet<Version> solutions = new LinkedHashSet<>();
-	private Map<Version, LinkedHashSet<Activation>> statesAndUntraversedActivations;
-	private Map<Version, LinkedHashSet<Activation>> statesAndTraversedActivations;
+	private List<Version> trajectory = new ArrayList<>();
+	private Map<Version, Version> parents = new HashMap<>();
+	private final List<Version> solutions = new ArrayList<>();
+	private Map<Version, List<Activation>> statesAndTraversedActivations;
 	private Random random = new Random();
 	private boolean isNewState = false;
 	private final boolean isVisualizationEnabled;
 	private final ModelVisualizerAdapter modelVisualizerAdapter;
 
-	public List<Version> getTrajectory() {
-		return new LinkedList<>(trajectory);
-	}
+	private final Map<Version, Fitness> fitnessCache = new HashMap<>();
 
 	public DesignSpaceExplorationAdapterImpl(Model model, DesignSpaceExplorationStoreAdapterImpl storeAdapter) {
 		this.model = model;
@@ -72,12 +69,16 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		}
 
 		objectives = storeAdapter.getObjectives();
-		statesAndUntraversedActivations = new HashMap<>();
 		statesAndTraversedActivations = new HashMap<>();
 		strategy = storeAdapter.getStrategy();
+		strategy.initialize(this);
 		modelVisualizerAdapter = model.tryGetAdapter(ModelVisualizerAdapter.class).orElse(null);
 		isVisualizationEnabled = modelVisualizerAdapter != null;
 
+	}
+
+	public List<Version> getTrajectory() {
+		return new ArrayList<>(trajectory);
 	}
 
 	@Override
@@ -91,13 +92,13 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
-	public LinkedHashSet<Version> explore() {
+	public List<Version> explore() {
 		var state = model.commit();
 		trajectory.add(state);
-		statesAndUntraversedActivations.put(state, getAllActivations());
-		statesAndTraversedActivations.put(state, new LinkedHashSet<>());
-		strategy.initStrategy(this);
 		strategy.explore();
+		if (isVisualizationEnabled) {
+			modelVisualizerAdapter.visualize();
+		}
 		return solutions;
 	}
 
@@ -137,14 +138,22 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 
 	@Override
 	public boolean backtrack() {
+		return backtrack("");
+	}
+	@Override
+	public boolean backtrack(String reason) {
 		if (trajectory.size() < 2) {
+			return false;
+		}
+		var currentState = model.getState();
+		if (!parents.containsKey(currentState)) {
 			return false;
 		}
 		if (isVisualizationEnabled) {
 			modelVisualizerAdapter.addTransition(trajectory.get(trajectory.size() - 1),
-					trajectory.get(trajectory.size() - 2), "backtrack");
+					trajectory.get(trajectory.size() - 2), "backtrack(" + reason + ")");
 		}
-		model.restore(trajectory.get(trajectory.size() - 2));
+		model.restore(parents.get(model.getState()));
 		trajectory.remove(trajectory.size() - 1);
 		return true;
 	}
@@ -156,7 +165,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 //			modelVisualizerAdapter.addTransition(this.trajectory.get(trajectory.size() - 1),
 //					trajectory.get(trajectory.size() - 1), "restore");
 //		}
-		this.trajectory = trajectory;
+		this.trajectory = new ArrayList<>(trajectory);
 
 	}
 
@@ -171,7 +180,16 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
-	public Fitness calculateFitness() {
+	public List<Version> getSolutions() {
+		return solutions;
+	}
+
+	@Override
+	public Fitness getFitness() {
+        return fitnessCache.computeIfAbsent(model.getState(), s -> calculateFitness());
+	}
+
+	private Fitness calculateFitness() {
 		Fitness result = new Fitness();
 		boolean satisfiesHardObjectives = true;
 		for (Objective objective : objectives) {
@@ -182,8 +200,6 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 			}
 		}
 		result.setSatisfiesHardObjectives(satisfiesHardObjectives);
-
-		lastFitness = result;
 
 		return result;
 	}
@@ -203,15 +219,19 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	public LinkedHashSet<Activation> getUntraversedActivations() {
-//		return statesAndUntraversedActivations.get(model.getState());
-		LinkedHashSet<Activation> untraversedActivations = new LinkedHashSet<>();
-		for (Activation activation : getAllActivations()) {
-			if (!statesAndTraversedActivations.get(model.getState()).contains(activation)) {
-				untraversedActivations.add(activation);
-			}
+		var traversedActivations = statesAndTraversedActivations.get(model.getState());
+		if (traversedActivations == null) {
+			return new LinkedHashSet<>(getAllActivations());
 		}
-
-		return untraversedActivations;
+		else {
+			LinkedHashSet<Activation> untraversedActivations = new LinkedHashSet<>();
+			for (Activation activation : getAllActivations()) {
+				if (!traversedActivations.contains(activation)) {
+					untraversedActivations.add(activation);
+				}
+			}
+			return untraversedActivations;
+		}
 	}
 
 	@Override
@@ -220,37 +240,29 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 			return false;
 		}
 		var previousState = model.getState();
-		if (!statesAndUntraversedActivations.get(previousState).contains(activation)) {
-//			TODO: throw exception?
-			return false;
-		}
 		if (!activation.fire()) {
 			return false;
 		}
-		statesAndUntraversedActivations.get(previousState).remove(activation);
-		statesAndTraversedActivations.get(previousState).add(activation);
+		statesAndTraversedActivations.computeIfAbsent(previousState, s -> new ArrayList<>()).add(activation);
 		var newState = model.commit();
 		trajectory.add(newState);
-		isNewState = !statesAndUntraversedActivations.containsKey(newState);
-		statesAndUntraversedActivations.put(newState, getAllActivations());
-		statesAndTraversedActivations.put(newState, new LinkedHashSet<>());
+		parents.put(newState, previousState);
+		isNewState = !statesAndTraversedActivations.containsKey(newState);
 		if (isVisualizationEnabled) {
 			if (isNewState) {
-				modelVisualizerAdapter.addState(newState);
+				modelVisualizerAdapter.addState(newState, getFitness().values());
 			}
-			modelVisualizerAdapter.addTransition(trajectory.get(trajectory.size() - 2),
-					trajectory.get(trajectory.size() - 1), activation.transformationRule().getName(),
+			modelVisualizerAdapter.addTransition(previousState, newState, activation.transformationRule().getName(),
 					activation.activation());
 		}
 		return true;
 	}
 
 	@Override
-	public void fireRandomActivation() {
+	public boolean fireRandomActivation() {
 		var activations = getUntraversedActivations();
 		if (activations.isEmpty()) {
-//			TODO: throw exception
-			return;
+			return false;
 		}
 		int index = random.nextInt(activations.size());
 		var iterator = activations.iterator();
@@ -258,29 +270,19 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 			iterator.next();
 		}
 		var activationId = iterator.next();
-		fireActivation(activationId);
+		return fireActivation(activationId);
 	}
 
-	@Override
-	public boolean isCurrentInTrajectory() {
-		return trajectory.contains(model.getState());
-	}
-
-	public LinkedHashSet<Activation> getAllActivations() {
-		LinkedHashSet<Activation> result = new LinkedHashSet<>();
+	public List<Activation> getAllActivations() {
+		List<Activation> result = new LinkedList<>();
 		for (var rule : transformationRules) {
-			result.addAll(rule.getAllActivations());
+			result.addAll(rule.getAllActivationsAsList());
 		}
 		return result;
 	}
 
 	public boolean isCurrentStateAlreadyTraversed() {
-//		TODO: check isomorphism?
 		return !isNewState;
-	}
-
-	public Fitness getLastFitness() {
-		return lastFitness;
 	}
 
 	public ObjectiveComparatorHelper getObjectiveComparatorHelper() {

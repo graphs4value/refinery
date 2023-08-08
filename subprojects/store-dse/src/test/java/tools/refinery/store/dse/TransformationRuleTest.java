@@ -6,6 +6,7 @@
 package tools.refinery.store.dse;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.strategy.DepthFirstStrategy;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
@@ -23,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.dse.tests.QueryAssertions.assertResults;
 
-public class TransformationRuleTest {
+class TransformationRuleTest {
 
 	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
 	private static final Symbol<Boolean> classElement = Symbol.of("ClassElement", 1);
@@ -103,7 +104,8 @@ public class TransformationRuleTest {
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(assignFeaturePrecondition, assignFeaturePreconditionHelper,
 								deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -137,8 +139,8 @@ public class TransformationRuleTest {
 
 		queryEngine.flushChanges();
 
-		var assignFeatureRuleActivations = assignFeatureRule.getAllActivationsAsSets();
-		var deleteEmptyClassRuleActivations = deleteEmptyClassRule.getAllActivationsAsSets();
+		var assignFeatureRuleActivations = assignFeatureRule.getAllActivationsAsResultSet();
+		var deleteEmptyClassRuleActivations = deleteEmptyClassRule.getAllActivationsAsResultSet();
 
 		assertResults(Map.of(
 				Tuple.of(newClass1Id, newFieldId), true,
@@ -195,7 +197,8 @@ public class TransformationRuleTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -236,12 +239,12 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule0.getAllActivationsAsSets());
+		), deleteEmptyClassRule0.getAllActivationsAsResultSet());
 
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule1.getAllActivationsAsSets());
+		), deleteEmptyClassRule1.getAllActivationsAsResultSet());
 
 		assertEquals(Tuple.of(newModelId, newClass2Id), activation0);
 		assertEquals(Tuple.of(newModelId, newClass1Id), activation1);
@@ -276,7 +279,8 @@ public class TransformationRuleTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -312,7 +316,7 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 
 		deleteEmptyClassRule.fireActivation(Tuple.of(0, 1));
@@ -320,7 +324,7 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), false,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 	}
 
 	@Test
@@ -352,7 +356,8 @@ public class TransformationRuleTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(deleteEmptyClassPrecondition))
-				.with(DesignSpaceExplorationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.strategy(new DepthFirstStrategy().withDepthLimit(0)))
 				.build();
 
 		var model = store.createEmptyModel();
@@ -388,21 +393,21 @@ public class TransformationRuleTest {
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), true
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 		deleteEmptyClassRule.fireRandomActivation();
 
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), true,
 				Tuple.of(newModelId, newClass2Id), false
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 		deleteEmptyClassRule.fireRandomActivation();
 
 		assertResults(Map.of(
 				Tuple.of(newModelId, newClass1Id), false,
 				Tuple.of(newModelId, newClass2Id), false
-		), deleteEmptyClassRule.getAllActivationsAsSets());
+		), deleteEmptyClassRule.getAllActivationsAsResultSet());
 
 	}
 }

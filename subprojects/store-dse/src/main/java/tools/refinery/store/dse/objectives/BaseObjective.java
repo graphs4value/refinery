@@ -30,7 +30,7 @@ public abstract class BaseObjective implements Objective {
 	protected boolean isThereFitnessConstraint = false;
 	protected Comparator<Double> fitnessConstraintComparator;
 
-	public BaseObjective(String name) {
+	protected BaseObjective(String name) {
 		Objects.requireNonNull(name, "Name of the objective cannot be null.");
 		this.name = name;
 	}

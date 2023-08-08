@@ -5,7 +5,9 @@
  */
 package tools.refinery.store.dse;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
@@ -20,7 +22,7 @@ import tools.refinery.store.tuple.Tuple;
 import tools.refinery.visualization.ModelVisualizerAdapter;
 import tools.refinery.visualization.internal.FileFormat;
 
-public class DebugTest {
+class DebugTest {
 	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
 	private static final Symbol<Boolean> classElement = Symbol.of("ClassElement", 1);
 	private static final Symbol<Boolean> feature = Symbol.of("Feature", 1);
@@ -41,6 +43,7 @@ public class DebugTest {
 
 
 	@Test
+	@Disabled("This test is only for debugging purposes")
 	void BFSTest() {
 		var createClassPrecondition = Query.of("CreateClassPrecondition",
 				(builder, model) -> builder.clause(
@@ -90,11 +93,18 @@ public class DebugTest {
 				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(createClassPrecondition, createFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder())
+				.with(ModelVisualizerAdapter.builder()
+						.withOutputpath("test_output")
+						.withFormat(FileFormat.DOT)
+						.withFormat(FileFormat.SVG)
+						.saveStates()
+						.saveDesignSpace()
+				)
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(createClassRule, createFeatureRule)
-						.strategy(new DepthFirstStrategy(4).continueIfHardObjectivesFulfilled()
-//						.strategy(new BestFirstStrategy(4).continueIfHardObjectivesFulfilled()
+						.objectives(new AlwaysSatisfiedRandomHardObjective())
+						.strategy(new DepthFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
+//						.strategy(new BestFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
 //								.goOnOnlyIfFitnessIsBetter()
 						))
 				.build();
@@ -113,10 +123,7 @@ public class DebugTest {
 
 
 		var states = dseAdapter.explore();
-		var visualizer = model.getAdapter(ModelVisualizerAdapter.class);
-		visualizer.renderDesignSpace("test_output", FileFormat.SVG);
 		System.out.println("states size: " + states.size());
-		System.out.println("states: " + states);
 
 	}
 }

@@ -16,49 +16,52 @@ import tools.refinery.store.dse.internal.Activation;
 import tools.refinery.store.dse.objectives.Fitness;
 import tools.refinery.store.dse.objectives.ObjectiveComparatorHelper;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class BestFirstStrategy implements Strategy {
 
 	private DesignSpaceExplorationAdapter dseAdapter;
 
-	private int maxDepth;
+	private int maxDepth = Integer.MAX_VALUE;
+	private int maxSolutions = Integer.MAX_VALUE;
 	private boolean backTrackIfSolution = true;
 	private boolean onlyBetterFirst = false;
 
 	private PriorityQueue<TrajectoryWithFitness> trajectoriesToExplore;
 
-	private static class TrajectoryWithFitness {
+	private record TrajectoryWithFitness(List<Version> trajectory, Fitness fitness) {
+		@Override
+		public String toString() {
+				return trajectory.toString() + fitness.toString();
+			}
 
-		public List<Version> trajectory;
-		public Fitness fitness;
-
-		public TrajectoryWithFitness(List<Version> trajectory, Fitness fitness) {
-			super();
-			this.trajectory = trajectory;
-			this.fitness = fitness;
+		@Override
+		public int hashCode() {
+			return trajectory.get(trajectory.size() - 1).hashCode();
 		}
 
 		@Override
-		public String toString() {
-			return trajectory.toString() + fitness.toString();
+		public boolean equals(Object obj) {
+			if (obj instanceof TrajectoryWithFitness other) {
+				return Objects.equals(trajectory.get(trajectory.size() - 1), other.trajectory.get(other.trajectory.size() - 1));
+//				return trajectory.equals(((TrajectoryWithFitness) obj).trajectory);
+			}
+			return false;
 		}
-
 	}
 
-	public BestFirstStrategy() {
-		this(-1);
-	}
-
-	public BestFirstStrategy(int maxDepth) {
-		if (maxDepth < 0) {
-			this.maxDepth = Integer.MAX_VALUE;
-		} else {
+	public BestFirstStrategy withDepthLimit(int maxDepth) {
+		if (maxDepth >= 0) {
 			this.maxDepth = maxDepth;
 		}
+		return this;
+	}
+
+	public BestFirstStrategy withSolutionLimit(int maxSolutions) {
+		if (maxSolutions >= 0) {
+			this.maxSolutions = maxSolutions;
+		}
+		return this;
 	}
 
 	public BestFirstStrategy continueIfHardObjectivesFulfilled() {
@@ -72,28 +75,31 @@ public class BestFirstStrategy implements Strategy {
 	}
 
 	@Override
-	public void initStrategy(DesignSpaceExplorationAdapter designSpaceExplorationAdapter) {
+	public void initialize(DesignSpaceExplorationAdapter designSpaceExplorationAdapter) {
 		this.dseAdapter = designSpaceExplorationAdapter;
 		final ObjectiveComparatorHelper objectiveComparatorHelper = dseAdapter.getObjectiveComparatorHelper();
 
-		trajectoriesToExplore = new PriorityQueue<TrajectoryWithFitness>(11,
+		trajectoriesToExplore = new PriorityQueue<>(11,
 				(o1, o2) -> objectiveComparatorHelper.compare(o2.fitness, o1.fitness));
 	}
 
 	@Override
 	public void explore() {
+		if (maxSolutions == 0) {
+			return;
+		}
 		final ObjectiveComparatorHelper objectiveComparatorHelper = dseAdapter.getObjectiveComparatorHelper();
 
 		boolean globalConstraintsAreSatisfied = dseAdapter.checkGlobalConstraints();
 		if (!globalConstraintsAreSatisfied) {
-			// "Global constraint is not satisfied in the first state. Terminate.");
+			// Global constraint is not satisfied in the first state. Terminate.
 			return;
 		}
 
-		final Fitness firstFitness = dseAdapter.calculateFitness();
+		final Fitness firstFitness = dseAdapter.getFitness();
 		if (firstFitness.isSatisfiesHardObjectives()) {
 			dseAdapter.newSolution();
-			// "First state is a solution. Terminate.");
+			// First state is a solution. Terminate.
 			if (backTrackIfSolution) {
 				return;
 			}
@@ -103,21 +109,20 @@ public class BestFirstStrategy implements Strategy {
 			return;
 		}
 
-		final List<Version> firstTrajectory = dseAdapter.getTrajectory();
-		TrajectoryWithFitness currentTrajectoryWithFitness = new TrajectoryWithFitness(firstTrajectory, firstFitness);
-		trajectoriesToExplore.add(currentTrajectoryWithFitness);
+
+		var firstTrajectoryWithFitness = new TrajectoryWithFitness(dseAdapter.getTrajectory(), firstFitness);
+		trajectoriesToExplore.add(firstTrajectoryWithFitness);
+		TrajectoryWithFitness currentTrajectoryWithFitness = null;
 
 		mainLoop: while (true) {
 
 			if (currentTrajectoryWithFitness == null) {
 				if (trajectoriesToExplore.isEmpty()) {
-					// "State space is fully traversed.");
+					// State space is fully traversed.
 					return;
 				} else {
 					currentTrajectoryWithFitness = trajectoriesToExplore.element();
-//					if (logger.isDebugEnabled()) {
-//						 "New trajectory is chosen: " + currentTrajectoryWithFitness);
-//					}
+					// New trajectory is chosen: " + currentTrajectoryWithFitness
 					dseAdapter.restoreTrajectory(currentTrajectoryWithFitness.trajectory);
 				}
 			}
@@ -130,32 +135,34 @@ public class BestFirstStrategy implements Strategy {
 			while (iterator.hasNext()) {
 				final Activation nextActivation = iterator.next();
 				if (!iterator.hasNext()) {
-					// "Last untraversed activation of the state.");
+					// Last untraversed activation of the state.
 					trajectoriesToExplore.remove(currentTrajectoryWithFitness);
 				}
 
-//				if (logger.isDebugEnabled()) {
-//					 "Executing new activation: " + nextActivation);
-//				}
+				// Executing new activation
 				dseAdapter.fireActivation(nextActivation);
 				if (dseAdapter.isCurrentStateAlreadyTraversed()) {
-					// "The new state is already visited.");
+					// The new state is already visited.
 					dseAdapter.backtrack();
 				} else if (!dseAdapter.checkGlobalConstraints()) {
-					// "Global constraint is not satisfied.");
+					// Global constraint is not satisfied.
 					dseAdapter.backtrack();
 				} else {
-					final Fitness nextFitness = dseAdapter.calculateFitness();
+					final Fitness nextFitness = dseAdapter.getFitness();
 					if (nextFitness.isSatisfiesHardObjectives()) {
 						dseAdapter.newSolution();
-						// "Found a solution.");
+						var solutions = dseAdapter.getSolutions().size();
+						if (solutions >= maxSolutions) {
+							return;
+						}
+						// Found a solution.
 						if (backTrackIfSolution) {
 							dseAdapter.backtrack();
 							continue;
 						}
 					}
 					if (dseAdapter.getDepth() >= maxDepth) {
-						// "Reached max depth.");
+						// Reached max depth.
 						dseAdapter.backtrack();
 						continue;
 					}
@@ -167,33 +174,30 @@ public class BestFirstStrategy implements Strategy {
 					int compare = objectiveComparatorHelper.compare(currentTrajectoryWithFitness.fitness,
 							nextTrajectoryWithFitness.fitness);
 					if (compare < 0) {
-						// "Better fitness, moving on: " + nextFitness);
+						// Better fitness, moving on
 						currentTrajectoryWithFitness = nextTrajectoryWithFitness;
 						continue mainLoop;
 					} else if (compare == 0) {
 						if (onlyBetterFirst) {
-							// "Equally good fitness, backtrack: " + nextFitness);
+							// Equally good fitness, backtrack
 							dseAdapter.backtrack();
-							continue;
 						} else {
-							// "Equally good fitness, moving on: " + nextFitness);
+							// Equally good fitness, moving on
 							currentTrajectoryWithFitness = nextTrajectoryWithFitness;
 							continue mainLoop;
 						}
 					} else {
-						// "Worse fitness.");
+						//"Worse fitness
 						currentTrajectoryWithFitness = null;
 						continue mainLoop;
 					}
 				}
 			}
 
-			// "State is fully traversed.");
-			trajectoriesToExplore.remove(currentTrajectoryWithFitness);
+			// State is fully traversed.
 			currentTrajectoryWithFitness = null;
 
 		}
-		// "Interrupted.");
-
+		// Interrupted.
 	}
 }

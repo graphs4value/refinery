@@ -6,6 +6,11 @@
 package tools.refinery.visualization;
 
 import tools.refinery.store.adapter.ModelAdapterBuilder;
+import tools.refinery.visualization.internal.FileFormat;
 
 public interface ModelVisualizerBuilder extends ModelAdapterBuilder {
+	ModelVisualizerBuilder withOutputpath(String outputpath);
+	ModelVisualizerBuilder withFormat(FileFormat format);
+	ModelVisualizerBuilder saveDesignSpace();
+	ModelVisualizerBuilder saveStates();
 }
