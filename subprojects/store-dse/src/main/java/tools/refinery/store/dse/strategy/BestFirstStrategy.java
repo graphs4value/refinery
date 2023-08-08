@@ -195,7 +195,6 @@ public class BestFirstStrategy implements Strategy {
 			}
 
 			// State is fully traversed.
-			trajectoriesToExplore.remove(currentTrajectoryWithFitness);
 			currentTrajectoryWithFitness = null;
 
 		}
