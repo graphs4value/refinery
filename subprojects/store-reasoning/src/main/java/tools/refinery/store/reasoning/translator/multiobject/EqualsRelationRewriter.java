@@ -69,12 +69,12 @@ class EqualsRelationRewriter extends QueryBasedRelationRewriter {
 	}
 
 	public static EqualsRelationRewriter of(AnySymbolView upperCardinalityView) {
-		var may = Query.of("MAY_EQUALS", (builder, p1, p2) -> builder
+		var may = Query.of("equals#may", (builder, p1, p2) -> builder
 				.clause(
 						p1.isEquivalent(p2),
 						upperCardinalityView.call(p1, Variable.of(UpperCardinality.class))
 				));
-		var must = Query.of("MUST_EQUALS", (builder, p1, p2) -> builder
+		var must = Query.of("equals#must", (builder, p1, p2) -> builder
 				.clause(UpperCardinality.class, upper -> List.of(
 						p1.isEquivalent(p2),
 						upperCardinalityView.call(p1, upper),

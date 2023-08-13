@@ -49,7 +49,7 @@ class PartialModelTest {
 						.symbol(personStorage))
 				.with(PartialRelationTranslator.of(friend)
 						.symbol(friendStorage)
-						.may(Query.of("mayPerson", (builder, p1, p2) -> builder.clause(
+						.may(Query.of("mayFriend", (builder, p1, p2) -> builder.clause(
 								may(person.call(p1)),
 								may(person.call(p2)),
 								not(must(EQUALS_SYMBOL.call(p1, p2))),

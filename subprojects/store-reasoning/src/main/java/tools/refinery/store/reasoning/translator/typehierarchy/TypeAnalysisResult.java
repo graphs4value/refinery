@@ -10,7 +10,7 @@ import tools.refinery.store.representation.TruthValue;
 
 import java.util.*;
 
-final class TypeAnalysisResult {
+public final class TypeAnalysisResult {
 	private final ExtendedTypeInfo extendedTypeInfo;
 	private final List<PartialRelation> directSubtypes;
 	private final List<ExtendedTypeInfo> allExternalTypeInfoList;
@@ -42,6 +42,10 @@ final class TypeAnalysisResult {
 
 	public InferredType asInferredType() {
 		return inferredType;
+	}
+
+	public boolean isSubtypeOf(TypeAnalysisResult other) {
+		return extendedTypeInfo.getAllSubtypes().contains(other.type());
 	}
 
 	public InferredType merge(InferredType inferredType, TruthValue value) {

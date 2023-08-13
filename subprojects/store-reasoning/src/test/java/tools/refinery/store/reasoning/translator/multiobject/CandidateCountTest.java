@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning;
+package tools.refinery.store.reasoning.translator.multiobject;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
@@ -12,18 +12,16 @@ import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
-import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
-import tools.refinery.store.reasoning.literal.CountUpperBoundLiteral;
+import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.ReasoningStoreAdapter;
+import tools.refinery.store.reasoning.literal.CountCandidateLowerBoundLiteral;
+import tools.refinery.store.reasoning.literal.CountCandidateUpperBoundLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
-import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
@@ -33,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 
-class ConcreteCountTest {
+class CandidateCountTest {
 	private static final PartialRelation person = new PartialRelation("Person", 1);
 	private static final PartialRelation friend = new PartialRelation("friend", 2);
 
@@ -42,7 +40,7 @@ class ConcreteCountTest {
 		var query = Query.of("LowerBound", Integer.class, (builder, p1, p2, output) -> builder.clause(
 				must(person.call(p1)),
 				must(person.call(p2)),
-				new CountLowerBoundLiteral(output, Concreteness.PARTIAL, friend, List.of(p1, p2))
+				new CountCandidateLowerBoundLiteral(output, friend, List.of(p1, p2))
 		));
 
 		var modelSeed = ModelSeed.builder(2)
@@ -65,10 +63,10 @@ class ConcreteCountTest {
 
 	@Test
 	void upperBoundZeroTest() {
-		var query = Query.of("UpperBound", UpperCardinality.class, (builder, p1, p2, output) -> builder.clause(
+		var query = Query.of("UpperBound", Integer.class, (builder, p1, p2, output) -> builder.clause(
 				must(person.call(p1)),
 				must(person.call(p2)),
-				new CountUpperBoundLiteral(output, Concreteness.PARTIAL, friend, List.of(p1, p2))
+				new CountCandidateUpperBoundLiteral(output, friend, List.of(p1, p2))
 		));
 
 		var modelSeed = ModelSeed.builder(2)
@@ -83,17 +81,17 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0, 0)), is(UpperCardinalities.ZERO));
-		assertThat(resultSet.get(Tuple.of(0, 1)), is(UpperCardinalities.ONE));
-		assertThat(resultSet.get(Tuple.of(1, 0)), is(UpperCardinalities.ONE));
-		assertThat(resultSet.get(Tuple.of(1, 1)), is(UpperCardinalities.ZERO));
+		assertThat(resultSet.get(Tuple.of(0, 0)), is(0));
+		assertThat(resultSet.get(Tuple.of(0, 1)), is(1));
+		assertThat(resultSet.get(Tuple.of(1, 0)), is(0));
+		assertThat(resultSet.get(Tuple.of(1, 1)), is(1));
 	}
 
 	@Test
 	void lowerBoundOneTest() {
 		var query = Query.of("LowerBound", Integer.class, (builder, p1, output) -> builder.clause(
 				must(person.call(p1)),
-				new CountLowerBoundLiteral(output, Concreteness.PARTIAL, friend, List.of(p1, Variable.of()))
+				new CountCandidateLowerBoundLiteral(output, friend, List.of(p1, Variable.of()))
 		));
 
 		var modelSeed = ModelSeed.builder(4)
@@ -114,17 +112,17 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0)), is(4));
+		assertThat(resultSet.get(Tuple.of(0)), is(2));
 		assertThat(resultSet.get(Tuple.of(1)), is(1));
-		assertThat(resultSet.get(Tuple.of(2)), is(4));
+		assertThat(resultSet.get(Tuple.of(2)), is(2));
 		assertThat(resultSet.get(Tuple.of(3)), is(0));
 	}
 
 	@Test
 	void upperBoundOneTest() {
-		var query = Query.of("UpperBound", UpperCardinality.class, (builder, p1, output) -> builder.clause(
+		var query = Query.of("UpperBound", Integer.class, (builder, p1, output) -> builder.clause(
 				must(person.call(p1)),
-				new CountUpperBoundLiteral(output, Concreteness.PARTIAL, friend, List.of(p1, Variable.of()))
+				new CountCandidateUpperBoundLiteral(output, friend, List.of(p1, Variable.of()))
 		));
 
 		var modelSeed = ModelSeed.builder(4)
@@ -145,10 +143,10 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0)), is(UpperCardinalities.UNBOUNDED));
-		assertThat(resultSet.get(Tuple.of(1)), is(UpperCardinalities.atMost(9)));
-		assertThat(resultSet.get(Tuple.of(2)), is(UpperCardinalities.ONE));
-		assertThat(resultSet.get(Tuple.of(3)), is(UpperCardinalities.ZERO));
+		assertThat(resultSet.get(Tuple.of(0)), is(2));
+		assertThat(resultSet.get(Tuple.of(1)), is(1));
+		assertThat(resultSet.get(Tuple.of(2)), is(2));
+		assertThat(resultSet.get(Tuple.of(3)), is(0));
 	}
 
 	@Test
@@ -160,7 +158,7 @@ class ConcreteCountTest {
 		));
 		var query = Query.of("LowerBound", Integer.class, (builder, p1, output) -> builder.clause(
 				must(person.call(p1)),
-				new CountLowerBoundLiteral(output, Concreteness.PARTIAL, subQuery.getDnf(),
+				new CountCandidateLowerBoundLiteral(output, subQuery.getDnf(),
 						List.of(p1, Variable.of(), Variable.of()))
 		));
 
@@ -183,9 +181,9 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0)), is(3));
-		assertThat(resultSet.get(Tuple.of(1)), is(5));
-		assertThat(resultSet.get(Tuple.of(2)), is(30));
+		assertThat(resultSet.get(Tuple.of(0)), is(1));
+		assertThat(resultSet.get(Tuple.of(1)), is(1));
+		assertThat(resultSet.get(Tuple.of(2)), is(2));
 		assertThat(resultSet.get(Tuple.of(3)), is(0));
 	}
 
@@ -196,9 +194,9 @@ class ConcreteCountTest {
 				friend.call(p1, p3),
 				friend.call(p2, p3)
 		));
-		var query = Query.of("UpperBound", UpperCardinality.class, (builder, p1, output) -> builder.clause(
+		var query = Query.of("UpperBound", Integer.class, (builder, p1, output) -> builder.clause(
 				must(person.call(p1)),
-				new CountUpperBoundLiteral(output, Concreteness.PARTIAL, subQuery.getDnf(),
+				new CountCandidateUpperBoundLiteral(output, subQuery.getDnf(),
 						List.of(p1, Variable.of(), Variable.of()))
 		));
 
@@ -221,10 +219,10 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0)), is(UpperCardinalities.UNBOUNDED));
-		assertThat(resultSet.get(Tuple.of(1)), is(UpperCardinalities.atMost(135)));
-		assertThat(resultSet.get(Tuple.of(2)), is(UpperCardinalities.ZERO));
-		assertThat(resultSet.get(Tuple.of(3)), is(UpperCardinalities.ZERO));
+		assertThat(resultSet.get(Tuple.of(0)), is(0));
+		assertThat(resultSet.get(Tuple.of(1)), is(0));
+		assertThat(resultSet.get(Tuple.of(2)), is(2));
+		assertThat(resultSet.get(Tuple.of(3)), is(0));
 	}
 
 	@Test
@@ -236,7 +234,7 @@ class ConcreteCountTest {
 		));
 		var query = Query.of("LowerBound", Integer.class, (builder, p1, output) -> builder.clause(v1 -> List.of(
 				must(person.call(p1)),
-				new CountLowerBoundLiteral(output, Concreteness.PARTIAL, subQuery.getDnf(), List.of(p1, v1, v1))
+				new CountCandidateLowerBoundLiteral(output, subQuery.getDnf(), List.of(p1, v1, v1))
 		)));
 
 		var modelSeed = ModelSeed.builder(4)
@@ -258,9 +256,9 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0)), is(4));
-		assertThat(resultSet.get(Tuple.of(1)), is(5));
-		assertThat(resultSet.get(Tuple.of(2)), is(8));
+		assertThat(resultSet.get(Tuple.of(0)), is(2));
+		assertThat(resultSet.get(Tuple.of(1)), is(1));
+		assertThat(resultSet.get(Tuple.of(2)), is(2));
 		assertThat(resultSet.get(Tuple.of(3)), is(0));
 	}
 
@@ -271,11 +269,10 @@ class ConcreteCountTest {
 				friend.call(p1, p3),
 				not(friend.call(p2, p3))
 		));
-		var query = Query.of("UpperBound", UpperCardinality.class, (builder, p1, output) -> builder
+		var query = Query.of("UpperBound", Integer.class, (builder, p1, output) -> builder
 				.clause(v1 -> List.of(
 						must(person.call(p1)),
-						new CountUpperBoundLiteral(output, Concreteness.PARTIAL, subQuery.getDnf(),
-								List.of(p1, v1, v1))
+						new CountCandidateUpperBoundLiteral(output, subQuery.getDnf(), List.of(p1, v1, v1))
 				)));
 
 		var modelSeed = ModelSeed.builder(4)
@@ -297,10 +294,10 @@ class ConcreteCountTest {
 				.build();
 
 		var resultSet = getResultSet(query, modelSeed);
-		assertThat(resultSet.get(Tuple.of(0)), is(UpperCardinalities.UNBOUNDED));
-		assertThat(resultSet.get(Tuple.of(1)), is(UpperCardinalities.atMost(17)));
-		assertThat(resultSet.get(Tuple.of(2)), is(UpperCardinalities.atMost(9)));
-		assertThat(resultSet.get(Tuple.of(3)), is(UpperCardinalities.ZERO));
+		assertThat(resultSet.get(Tuple.of(0)), is(2));
+		assertThat(resultSet.get(Tuple.of(1)), is(1));
+		assertThat(resultSet.get(Tuple.of(2)), is(2));
+		assertThat(resultSet.get(Tuple.of(3)), is(0));
 	}
 
 	private static <T> ResultSet<T> getResultSet(Query<T> query, ModelSeed modelSeed) {

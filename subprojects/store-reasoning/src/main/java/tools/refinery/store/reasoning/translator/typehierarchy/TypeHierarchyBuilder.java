@@ -7,18 +7,19 @@ package tools.refinery.store.reasoning.translator.typehierarchy;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+@SuppressWarnings("UnusedReturnValue")
 public class TypeHierarchyBuilder {
-	private final Map<PartialRelation, TypeInfo> typeInfoMap = new LinkedHashMap<>();
+	protected final Map<PartialRelation, TypeInfo> typeInfoMap = new LinkedHashMap<>();
+
+	protected TypeHierarchyBuilder() {
+	}
 
 	public TypeHierarchyBuilder type(PartialRelation partialRelation, TypeInfo typeInfo) {
 		if (partialRelation.arity() != 1) {
-			throw new IllegalArgumentException("Only types of arity 1 are supported, hot %d instead"
-					.formatted(partialRelation.arity()));
+			throw new IllegalArgumentException("Only types of arity 1 are supported, got %s with %d instead"
+					.formatted(partialRelation, partialRelation.arity()));
 		}
 		var putResult = typeInfoMap.put(partialRelation, typeInfo);
 		if (putResult != null && !putResult.equals(typeInfo)) {
@@ -29,7 +30,7 @@ public class TypeHierarchyBuilder {
 
 	public TypeHierarchyBuilder type(PartialRelation partialRelation, boolean abstractType,
 									 PartialRelation... supertypes) {
-		return type(partialRelation, abstractType, List.of(supertypes));
+		return type(partialRelation, abstractType, Set.of(supertypes));
 	}
 
 	public TypeHierarchyBuilder type(PartialRelation partialRelation, boolean abstractType,

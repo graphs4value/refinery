@@ -100,10 +100,10 @@ public abstract class AbstractCallLiteral extends AbstractLiteral {
 		if (Objects.equals(target, newTarget)) {
 			return this;
 		}
-		return internalWithTarget(newTarget);
+		return withArguments(newTarget, arguments);
 	}
 
-	protected abstract AbstractCallLiteral internalWithTarget(Constraint newTarget);
+	public abstract AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments);
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {

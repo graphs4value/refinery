@@ -77,8 +77,8 @@ public class RepresentativeElectionLiteral extends AbstractCallLiteral {
 	}
 
 	@Override
-	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
-		return new RepresentativeElectionLiteral(connectivity, newTarget, getArguments());
+	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new RepresentativeElectionLiteral(connectivity, newTarget, newArguments);
 	}
 
 	@Override

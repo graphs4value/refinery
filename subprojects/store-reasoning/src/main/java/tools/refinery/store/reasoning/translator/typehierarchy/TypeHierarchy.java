@@ -79,7 +79,12 @@ public class TypeHierarchy {
 				var found = new HashSet<PartialRelation>();
 				var allSupertypes = extendedTypeInfo.getAllSupertypes();
 				for (var supertype : allSupertypes) {
-					found.addAll(extendedTypeInfoMap.get(supertype).getAllSupertypes());
+					var supertypeInfo = extendedTypeInfoMap.get(supertype);
+					if (supertypeInfo == null) {
+						throw new IllegalArgumentException("Supertype %s of %s is missing from the type hierarchy"
+								.formatted(supertype, extendedTypeInfo.getType()));
+					}
+					found.addAll(supertypeInfo.getAllSupertypes());
 				}
 				if (allSupertypes.addAll(found)) {
 					changed = true;

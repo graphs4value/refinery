@@ -9,6 +9,7 @@ import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.dnf.QueryBuilder;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.MayView;
@@ -18,15 +19,19 @@ import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
 import tools.refinery.store.reasoning.interpretation.QueryBasedRelationInterpretationFactory;
 import tools.refinery.store.reasoning.interpretation.QueryBasedRelationRewriter;
+import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
+import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
+
+import java.util.function.BiConsumer;
 
 @SuppressWarnings("UnusedReturnValue")
 public final class PartialRelationTranslator extends PartialSymbolTranslator<TruthValue, Boolean> {
@@ -84,6 +89,12 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		return this;
 	}
 
+	@Override
+	public PartialRelationTranslator initializer(PartialModelInitializer initializer) {
+		super.initializer(initializer);
+		return this;
+	}
+
 	public PartialRelationTranslator query(RelationalQuery query) {
 		checkNotConfigured();
 		if (this.query != null) {
@@ -99,6 +110,12 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 			throw new IllegalArgumentException("May query was already set");
 		}
 		this.may = may;
+		return this;
+	}
+
+	public PartialRelationTranslator mayNever() {
+		var never = createQuery(partialRelation.name() + "#never", (builder, parameters) -> {});
+		may(never);
 		return this;
 	}
 
@@ -163,20 +180,24 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		}
 	}
 
-	private RelationalQuery createQuery(Constraint constraint) {
+	private RelationalQuery createQuery(String name, BiConsumer<QueryBuilder, Variable[]> callback) {
 		int arity = partialRelation.arity();
-		var queryBuilder = Query.builder(partialRelation.name());
+		var queryBuilder = Query.builder(name);
 		var parameters = new Variable[arity];
 		for (int i = 0; i < arity; i++) {
 			parameters[i] = queryBuilder.parameter("p" + 1);
 		}
-		queryBuilder.clause(constraint.call(parameters));
+		callback.accept(queryBuilder, parameters);
 		return queryBuilder.build();
+	}
+
+	private RelationalQuery createQuery(String name, Constraint constraint) {
+		return createQuery(name, (builder, parameters) -> builder.clause(constraint.call(parameters)));
 	}
 
 	private void createFallbackQueryFromRewriter() {
 		if (rewriter != null && query == null) {
-			query = createQuery(partialRelation);
+			query = createQuery(partialRelation.name(), partialRelation);
 		}
 	}
 
@@ -189,10 +210,12 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		var typedStorageSymbol = (Symbol<TruthValue>) storageSymbol;
 		var defaultValue = typedStorageSymbol.defaultValue();
 		if (may == null && !defaultValue.may()) {
-			may = createQuery(new MayView(typedStorageSymbol));
+			may = createQuery(DnfLifter.decorateName(partialRelation.name(), Modality.MAY, Concreteness.PARTIAL),
+					new MayView(typedStorageSymbol));
 		}
 		if (must == null && !defaultValue.must()) {
-			must = createQuery(new MustView(typedStorageSymbol));
+			must = createQuery(DnfLifter.decorateName(partialRelation.name(), Modality.MUST, Concreteness.PARTIAL),
+					new MustView(typedStorageSymbol));
 		}
 	}
 

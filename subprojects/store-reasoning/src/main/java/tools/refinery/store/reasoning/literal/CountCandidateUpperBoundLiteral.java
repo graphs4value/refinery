@@ -12,40 +12,38 @@ import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.List;
 
-public class CountUpperBoundLiteral extends AbstractCountLiteral<UpperCardinality> {
-	public CountUpperBoundLiteral(DataVariable<UpperCardinality> resultVariable, Constraint target,
-								  List<Variable> arguments) {
-		super(UpperCardinality.class, resultVariable, target, arguments);
+public class CountCandidateUpperBoundLiteral extends AbstractCountLiteral<Integer> {
+	public CountCandidateUpperBoundLiteral(DataVariable<Integer> resultVariable, Constraint target,
+										   List<Variable> arguments) {
+		super(Integer.class, resultVariable, target, arguments);
 	}
 
 	@Override
-	protected UpperCardinality zero() {
-		return UpperCardinalities.ZERO;
+	protected Integer zero() {
+		return 0;
 	}
 
 	@Override
-	protected UpperCardinality one() {
-		return UpperCardinalities.UNBOUNDED;
+	protected Integer one() {
+		return 1;
 	}
 
 	@Override
 	protected Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments) {
-		return new CountUpperBoundLiteral(substitution.getTypeSafeSubstitute(getResultVariable()), getTarget(),
+		return new CountCandidateUpperBoundLiteral(substitution.getTypeSafeSubstitute(getResultVariable()), getTarget(),
 				substitutedArguments);
 	}
 
 	@Override
 	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
-		return new CountUpperBoundLiteral(getResultVariable(), newTarget, newArguments);
+		return new CountCandidateUpperBoundLiteral(getResultVariable(), newTarget, newArguments);
 	}
 
 	@Override
 	protected String operatorName() {
-		return "@UpperBound(\"partial\") count";
+		return "@UpperBound(\"candidate\") count";
 	}
 }

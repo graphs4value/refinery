@@ -102,8 +102,8 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
-	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
-		return new CallLiteral(polarity, newTarget, getArguments());
+	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new CallLiteral(polarity, newTarget, newArguments);
 	}
 
 	@Override

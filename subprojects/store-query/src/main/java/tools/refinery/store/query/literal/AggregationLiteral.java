@@ -92,8 +92,8 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
-		return new AggregationLiteral<>(resultVariable, aggregator, inputVariable, newTarget, getArguments());
+	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new AggregationLiteral<>(resultVariable, aggregator, inputVariable, newTarget, newArguments);
 	}
 
 	@Override

@@ -34,8 +34,8 @@ public class CountLiteral extends AbstractCountLiteral<Integer> {
 	}
 
 	@Override
-	protected AbstractCallLiteral internalWithTarget(Constraint newTarget) {
-		return new CountLiteral(getResultVariable(), newTarget, getArguments());
+	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new CountLiteral(getResultVariable(), newTarget, newArguments);
 	}
 
 	@Override

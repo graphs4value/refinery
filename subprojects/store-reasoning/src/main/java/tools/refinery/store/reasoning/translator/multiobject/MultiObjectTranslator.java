@@ -41,12 +41,12 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		storeBuilder.symbol(COUNT_STORAGE);
 
 		storeBuilder.with(PartialRelationTranslator.of(ReasoningAdapter.EXISTS_SYMBOL)
-				.may(Query.of("MAY_EXISTS", (builder, p1) -> builder
+				.may(Query.of("exists#may", (builder, p1) -> builder
 						.clause(UpperCardinality.class, upper -> List.of(
 								UPPER_CARDINALITY_VIEW.call(p1, upper),
 								check(greaterEq(upper, constant(UpperCardinalities.ONE)))
 						))))
-				.must(Query.of("MUST_EXISTS", (builder, p1) -> builder
+				.must(Query.of("exists#must", (builder, p1) -> builder
 						.clause(Integer.class, lower -> List.of(
 								LOWER_CARDINALITY_VIEW.call(p1, lower),
 								check(greaterEq(lower, constant(1)))

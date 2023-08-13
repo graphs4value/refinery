@@ -41,7 +41,7 @@ public class DnfLifter {
 		var modality = modalDnf.modality();
 		var concreteness = modalDnf.concreteness();
 		var dnf = modalDnf.dnf();
-		var builder = Dnf.builder("%s#%s#%s".formatted(dnf.name(), modality, concreteness));
+		var builder = Dnf.builder(decorateName(dnf.name(), modality, concreteness));
 		builder.symbolicParameters(dnf.getSymbolicParameters());
 		builder.functionalDependencies(dnf.getFunctionalDependencies());
 		for (var clause : dnf.getClauses()) {
@@ -64,5 +64,9 @@ public class DnfLifter {
 		public String toString() {
 			return "%s %s %s".formatted(modality, concreteness, dnf.name());
 		}
+	}
+
+	public static String decorateName(String name, Modality modality, Concreteness concreteness) {
+		return "%s#%s#%s".formatted(name, modality, concreteness);
 	}
 }
