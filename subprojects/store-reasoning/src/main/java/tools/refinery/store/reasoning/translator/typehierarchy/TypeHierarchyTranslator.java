@@ -45,12 +45,11 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 
 	private ModelStoreConfiguration createPreservedTypeTranslator(PartialRelation type, TypeAnalysisResult result) {
 		var may = Query.of(type.name() + "#partial#may", (builder, p1) -> {
-			if (result.isAbstractType()) {
-				for (var subtype : result.getDirectSubtypes()) {
-					builder.clause(PartialLiterals.may(subtype.call(p1)));
-				}
-			} else {
+			if (!result.isAbstractType()) {
 				builder.clause(new MayTypeView(typeSymbol, type).call(p1));
+			}
+			for (var subtype : result.getDirectSubtypes()) {
+				builder.clause(PartialLiterals.may(subtype.call(p1)));
 			}
 		});
 
