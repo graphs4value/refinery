@@ -37,7 +37,10 @@ export default class XtextClient {
 
   private readonly occurrencesService: OccurrencesService;
 
-  constructor(store: EditorStore, private readonly pwaStore: PWAStore) {
+  constructor(
+    store: EditorStore,
+    private readonly pwaStore: PWAStore,
+  ) {
     this.webSocketClient = new XtextWebSocketClient(
       () => this.onReconnect(),
       () => this.onDisconnect(),

@@ -14,6 +14,7 @@ export default class DiagnosticValue extends RangeValue {
     error: new DiagnosticValue('error'),
     warning: new DiagnosticValue('warning'),
     info: new DiagnosticValue('info'),
+    hint: new DiagnosticValue('hint'),
   };
 
   private constructor(public readonly severity: Severity) {

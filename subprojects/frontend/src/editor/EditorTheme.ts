@@ -64,7 +64,7 @@ export default styled('div', {
     },
     '.cm-focused': {
       outline: 'none',
-      '.cm-selectionBackground': {
+      '& > .cm-scroller > .cm-selectionLayer .cm-selectionBackground': {
         background: theme.palette.highlight.selection,
       },
     },

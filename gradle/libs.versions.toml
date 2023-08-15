@@ -3,15 +3,15 @@
 # SPDX-License-Identifier: EPL-2.0
 
 [versions]
-eclipseCollections = "12.0.0.M1"
+eclipseCollections = "12.0.0.M2"
 ecore = "2.34.0"
-jetty = "12.0.0.beta1"
-jmh = "1.36"
-junit = "5.10.0-M1"
+jetty = "12.0.0"
+jmh = "1.37"
+junit = "5.10.0"
 mockito = "5.4.0"
-mwe2 = "2.15.0.M0"
+mwe2 = "2.15.0.M2"
 slf4j = "2.0.7"
-xtext = "2.31.0"
+xtext = "2.32.0.M2"
 
 [libraries]
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
@@ -22,7 +22,7 @@ ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", ver
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecore" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", version = "8.1.1" }
-gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.2.1.3168" }
+gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.3.0.3225" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty.ee10", name = "jetty-ee10-servlet", version.ref = "jetty" }
@@ -36,7 +36,7 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.9.0.M0" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.9.0.M2" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }

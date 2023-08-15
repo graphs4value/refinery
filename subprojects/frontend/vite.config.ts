@@ -29,8 +29,8 @@ const { mode, isDevelopment, devModePlugins, serverOptions } =
 process.env['NODE_ENV'] ??= mode;
 
 const fontsGlob = [
-  'inter-latin-variable-wghtOnly-normal-*.woff2',
-  'jetbrains-mono-latin-variable-wghtOnly-{normal,italic}-*.woff2',
+  'inter-latin-wght-normal-*.woff2',
+  'jetbrains-mono-latin-wght-{normal,italic}-*.woff2',
 ];
 
 const viteConfig: ViteConfig = {

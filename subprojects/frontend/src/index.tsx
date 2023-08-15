@@ -16,8 +16,8 @@ class Person {
 }
 
 class Post {
-    Person author
-    Post[0..1] replyTo
+    Person[1] author
+    Post replyTo
 }
 
 // Constraints
@@ -27,7 +27,7 @@ error replyToNotFriend(Post x, Post y) <->
     author(y, yAuthor),
     !friend(xAuthor, yAuthor).
 
-error replyToCycle(Post x) <-> replyTo+(x,x).
+error replyToCycle(Post x) <-> replyTo+(x, x).
 
 // Instance model
 Person(a).
@@ -40,7 +40,7 @@ Post(p2).
 author(p2, b).
 replyTo(p2, p1).
 
-!author(Post::new, a). // Automatically inferred: author(Post::new, b).
+!author(Post::new, a).
 
 // Scope
 scope Post = 10..15, Person += 0.
