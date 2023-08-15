@@ -31,7 +31,6 @@ class ProblemParsingTest {
 				class Person {
 					Person[0..*] children opposite parent
 					Person[0..1] parent opposite children
-					int age
 					TaxStatus taxStatus
 				}
 
@@ -51,8 +50,6 @@ class ProblemParsingTest {
 				children(anne, ciri).
 				?children(bob, ciri).
 				taxStatus(anne, ADULT).
-				age(bob): 21..35.
-				age(ciri): 10.
 				""");
 		assertThat(problem.errors(), empty());
 	}

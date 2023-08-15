@@ -18,6 +18,7 @@ import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
 import org.eclipse.xtext.resource.XtextResource;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
 import java.util.function.Function;
@@ -58,7 +59,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	}
 
 	protected void installDerivedProblemState(Problem problem, Adapter adapter, boolean preLinkingPhase) {
-		installNewNodes(problem, adapter);
+		installDerivedClassDeclarationState(problem, adapter);
 		if (preLinkingPhase) {
 			return;
 		}
@@ -66,12 +67,55 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		derivedVariableComputer.installDerivedVariables(problem, nodeNames);
 	}
 
-	protected void installNewNodes(Problem problem, Adapter adapter) {
-		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration declaration && !declaration.isAbstract()
-					&& declaration.getNewNode() == null) {
+	protected void installDerivedClassDeclarationState(Problem problem, Adapter adapter) {
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof ClassDeclaration classDeclaration) {
+				installOrRemoveNewNode(adapter, classDeclaration);
+				for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
+					if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
+						installOrRemoveInvalidMultiplicityPredicate(adapter, classDeclaration, referenceDeclaration);
+					}
+				}
+			}
+		}
+	}
+
+	protected void installOrRemoveNewNode(Adapter adapter, ClassDeclaration declaration) {
+		if (declaration.isAbstract()) {
+			var newNode = declaration.getNewNode();
+			if (newNode != null) {
+				declaration.setNewNode(null);
+				adapter.removeNewNode(declaration);
+			}
+		} else {
+			if (declaration.getNewNode() == null) {
 				var newNode = adapter.createNewNodeIfAbsent(declaration, key -> createNode(NEW_NODE));
 				declaration.setNewNode(newNode);
+			}
+		}
+	}
+
+	protected void installOrRemoveInvalidMultiplicityPredicate(
+			Adapter adapter, ClassDeclaration containingClassDeclaration, ReferenceDeclaration declaration) {
+		if (ProblemUtil.hasMultiplicityConstraint(declaration)) {
+			if (declaration.getInvalidMultiplicity() == null) {
+				var invalidMultiplicity = adapter.createInvalidMultiplicityPredicateIfAbsent(declaration, key -> {
+					var predicate = ProblemFactory.eINSTANCE.createPredicateDefinition();
+					predicate.setError(true);
+					predicate.setName("invalidMultiplicity");
+					var parameter = ProblemFactory.eINSTANCE.createParameter();
+					parameter.setParameterType(containingClassDeclaration);
+					parameter.setName("node");
+					predicate.getParameters().add(parameter);
+					return predicate;
+				});
+				declaration.setInvalidMultiplicity(invalidMultiplicity);
+			}
+		} else {
+			var invalidMultiplicity = declaration.getInvalidMultiplicity();
+			if (invalidMultiplicity != null) {
+				declaration.setInvalidMultiplicity(null);
+				adapter.removeInvalidMultiplicityPredicate(declaration);
 			}
 		}
 	}
@@ -80,10 +124,10 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		var collector = nodeNameCollectorProvider.get();
 		collector.collectNodeNames(problem);
 		Set<String> nodeNames = collector.getNodeNames();
-		List<Node> grapNodes = problem.getNodes();
+		List<Node> graphNodes = problem.getNodes();
 		for (String nodeName : nodeNames) {
 			var graphNode = createNode(nodeName);
-			grapNodes.add(graphNode);
+			graphNodes.add(graphNode);
 		}
 		return nodeNames;
 	}
@@ -104,15 +148,24 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	}
 
 	protected void discardDerivedProblemState(Problem problem, Adapter adapter) {
-		Set<ClassDeclaration> classDeclarations = new HashSet<>();
+		var abstractClassDeclarations = new HashSet<ClassDeclaration>();
+		var referenceDeclarationsWithMultiplicity = new HashSet<ReferenceDeclaration>();
 		problem.getNodes().clear();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
 				classDeclaration.setNewNode(null);
-				classDeclarations.add(classDeclaration);
+				if (classDeclaration.isAbstract()) {
+					abstractClassDeclarations.add(classDeclaration);
+				}
+				for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
+					if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration &&
+							ProblemUtil.hasMultiplicityConstraint(referenceDeclaration)) {
+						referenceDeclarationsWithMultiplicity.add(referenceDeclaration);
+					}
+				}
 			}
 		}
-		adapter.retainAll(classDeclarations);
+		adapter.retainAll(abstractClassDeclarations, referenceDeclarationsWithMultiplicity);
 		derivedVariableComputer.discardDerivedVariables(problem);
 	}
 
@@ -134,14 +187,31 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 
 	protected static class Adapter extends AdapterImpl {
 		private final Map<ClassDeclaration, Node> newNodes = new HashMap<>();
+		private final Map<ReferenceDeclaration, PredicateDefinition> invalidMultiplicityPredicates = new HashMap<>();
 
 		public Node createNewNodeIfAbsent(ClassDeclaration classDeclaration,
-				Function<ClassDeclaration, Node> createNode) {
+										  Function<ClassDeclaration, Node> createNode) {
 			return newNodes.computeIfAbsent(classDeclaration, createNode);
 		}
 
-		public void retainAll(Collection<ClassDeclaration> classDeclarations) {
-			newNodes.keySet().retainAll(classDeclarations);
+		public void removeNewNode(ClassDeclaration classDeclaration) {
+			newNodes.remove(classDeclaration);
+		}
+
+		public PredicateDefinition createInvalidMultiplicityPredicateIfAbsent(
+				ReferenceDeclaration referenceDeclaration,
+				Function<ReferenceDeclaration, PredicateDefinition> createPredicate) {
+			return invalidMultiplicityPredicates.computeIfAbsent(referenceDeclaration, createPredicate);
+		}
+
+		public void removeInvalidMultiplicityPredicate(ReferenceDeclaration referenceDeclaration) {
+			invalidMultiplicityPredicates.remove(referenceDeclaration);
+		}
+
+		public void retainAll(Collection<ClassDeclaration> abstractClassDeclarations,
+							  Collection<ReferenceDeclaration> referenceDeclarationsWithMultiplicity) {
+			newNodes.keySet().retainAll(abstractClassDeclarations);
+			invalidMultiplicityPredicates.keySet().retainAll(referenceDeclarationsWithMultiplicity);
 		}
 
 		@Override

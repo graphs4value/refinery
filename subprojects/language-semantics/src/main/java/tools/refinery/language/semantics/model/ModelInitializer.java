@@ -9,9 +9,7 @@ import com.google.inject.Inject;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.semantics.model.internal.DecisionTree;
 import tools.refinery.language.utils.ProblemDesugarer;
-import tools.refinery.language.utils.RelationInfo;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
@@ -30,7 +28,7 @@ public class ModelInitializer {
 
 	private int nodeCount = 0;
 
-	public void createModel(Problem problem) {
+	/*public void createModel(Problem problem) {
 		var builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalArgumentException(
 				"Problem has no builtin library"));
 		var collectedSymbols = desugarer.collectSymbols(problem);
@@ -70,7 +68,7 @@ public class ModelInitializer {
 			defaultAssertions.setAllMissing(TruthValue.FALSE);
 		}
 		return defaultAssertions;
-	}
+	}*/
 
 	private Tuple getTuple(Assertion assertion) {
 		var arguments = assertion.getArguments();

@@ -14,7 +14,7 @@ Problem:
 
 Statement:
 	Assertion | ClassDeclaration | EnumDeclaration |
-	PredicateDefinition | FunctionDefinition | /* RuleDefinition | */
+	PredicateDefinition | /* FunctionDefinition | RuleDefinition | */
 	ScopeDeclaration | IndividualDeclaration;
 
 ClassDeclaration:
@@ -32,7 +32,7 @@ EnumLiteral returns Node:
 	name=Identifier;
 
 FeatureDeclaration:
-	ReferenceDeclaration | AttributeDeclaration | FlagDeclaration;
+	ReferenceDeclaration /* | AttributeDeclaration | FlagDeclaration */;
 
 enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
@@ -44,23 +44,17 @@ ReferenceDeclaration:
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
 
-enum PrimitiveType:
-	INT="int" | REAL="real" | STRING="string";
-
-AttributeDeclaration:
-	attributeType=PrimitiveType name=Identifier;
-
-FlagDeclaration:
-	"bool" name=Identifier;
-
-enum ErrorKind returns PredicateKind:
-	ERROR="error";
-
-enum PredicateKind:
-	ERROR="error" | CONTAINED="contained" | CONTAINMENT="containment";
+//enum PrimitiveType:
+//	INT="int" | REAL="real" | STRING="string";
+//
+//AttributeDeclaration:
+//	attributeType=PrimitiveType name=Identifier;
+//
+//FlagDeclaration:
+//	"bool" name=Identifier;
 
 PredicateDefinition:
-	(kind=ErrorKind | kind=PredicateKind? "pred")
+	("pred" | error?="error" "pred"?)
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
@@ -69,14 +63,14 @@ PredicateDefinition:
 Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
-FunctionDefinition:
-	"fn" functionType=PrimitiveType name=Identifier
-	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-	("=" cases+=Case (";" cases+=Case)*)?
-	".";
-
-Case:
-	Conjunction ({Match.condition=current} "->" value=Expr)?;
+//FunctionDefinition:
+//	"fn" functionType=PrimitiveType name=Identifier
+//	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+//	("=" cases+=Case (";" cases+=Case)*)?
+//	".";
+//
+//Case:
+//	Conjunction ({Match.condition=current} "->" value=Expr)?;
 
 //RuleDefinition:
 //	"rule"
@@ -87,7 +81,7 @@ Case:
 //	".";
 
 Parameter:
-	(modality=Modality? parameterType=[Relation|QualifiedName])? name=Identifier;
+	parameterType=[Relation|QualifiedName]? name=Identifier;
 
 //Consequent:
 //	actions+=Action ("," actions+=Action)*;
@@ -268,7 +262,7 @@ NonContainmentQualifiedName hidden():
 	NonContainmentIdentifier ("::" Identifier)*;
 
 Identifier:
-	NonContainmentIdentifier | "contains";
+	NonContainmentIdentifier | "contains" | "container";
 
 NonContainmentIdentifier:
 	ID | "contained" | "sum" | "prod" | "min" | "max";
