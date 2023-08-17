@@ -12,11 +12,12 @@ import RootStore from './RootStore';
 
 const initialValue = `// Metamodel
 class Person {
+    contains Post[] posts opposite author
     Person[] friend opposite friend
 }
 
 class Post {
-    Person[1] author
+    container Person[1] author opposite posts
     Post replyTo
 }
 
@@ -30,15 +31,9 @@ error replyToNotFriend(Post x, Post y) <->
 error replyToCycle(Post x) <-> replyTo+(x, x).
 
 // Instance model
-Person(a).
-Person(b).
 friend(a, b).
-friend(b, a).
-Post(p1).
 author(p1, a).
-Post(p2).
 author(p2, b).
-replyTo(p2, p1).
 
 !author(Post::new, a).
 

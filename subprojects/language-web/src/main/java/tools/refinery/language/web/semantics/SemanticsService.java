@@ -84,7 +84,7 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			return new SemanticsSuccessResult(nodeTrace, partialInterpretation);
 		} catch (RuntimeException e) {
 			LOG.error("Error while computing semantics", e);
-			return new SemanticsErrorResult(e.toString());
+			return new SemanticsErrorResult(e.getMessage());
 		}
 	}
 

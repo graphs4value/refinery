@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.metamodel;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -52,13 +53,6 @@ class MetamodelTest {
 						ConstrainedMultiplicity.of(CardinalityIntervals.SOME, invalidStudentCount), student)
 				.build();
 
-		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
-				.with(ReasoningAdapter.builder())
-				.with(new MultiObjectTranslator())
-				.with(new MetamodelTranslator(metamodel))
-				.build();
-
 		var seed = ModelSeed.builder(5)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
@@ -87,7 +81,7 @@ class MetamodelTest {
 				.seed(enrolledStudents, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
+		var model = createModel(metamodel, seed);
 		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 
 		var coursesInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, courses);
@@ -114,12 +108,6 @@ class MetamodelTest {
 				.reference(courses, university, true, course)
 				.build();
 
-		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
-				.with(ReasoningAdapter.builder())
-				.with(new MultiObjectTranslator())
-				.with(new MetamodelTranslator(metamodel))
-				.build();
 
 		var seed = ModelSeed.builder(4)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
@@ -141,7 +129,7 @@ class MetamodelTest {
 						.put(Tuple.of(2, 3), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
+		var model = createModel(metamodel, seed);
 		var coursesInterpretation = model.getAdapter(ReasoningAdapter.class)
 				.getPartialInterpretation(Concreteness.PARTIAL, courses);
 
@@ -149,5 +137,16 @@ class MetamodelTest {
 		assertThat(coursesInterpretation.get(Tuple.of(0, 3)), is(TruthValue.FALSE));
 		assertThat(coursesInterpretation.get(Tuple.of(2, 1)), is(TruthValue.UNKNOWN));
 		assertThat(coursesInterpretation.get(Tuple.of(2, 3)), is(TruthValue.TRUE));
+	}
+
+	private static Model createModel(Metamodel metamodel, ModelSeed seed) {
+		var store = ModelStore.builder()
+				.with(ViatraModelQueryAdapter.builder())
+				.with(ReasoningAdapter.builder())
+				.with(new MultiObjectTranslator())
+				.with(new MetamodelTranslator(metamodel))
+				.build();
+
+		return store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
 	}
 }

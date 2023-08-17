@@ -203,15 +203,15 @@ public class MetamodelBuilder {
 			throw new IllegalArgumentException("Opposite %s of %s is not defined"
 					.formatted(opposite, linkType));
 		}
-		if (!oppositeInfo.opposite().equals(linkType)) {
+		if (!linkType.equals(oppositeInfo.opposite())) {
 			throw new IllegalArgumentException("Expected %s to have opposite %s, got %s instead"
 					.formatted(opposite, linkType, oppositeInfo.opposite()));
 		}
-		if (!oppositeInfo.sourceType().equals(targetType)) {
+		if (!targetType.equals(oppositeInfo.sourceType())) {
 			throw new IllegalArgumentException("Expected %s to have source type %s, got %s instead"
 					.formatted(opposite, targetType, oppositeInfo.sourceType()));
 		}
-		if (!oppositeInfo.targetType().equals(sourceType)) {
+		if (!sourceType.equals(oppositeInfo.targetType())) {
 			throw new IllegalArgumentException("Expected %s to have target type %s, got %s instead"
 					.formatted(opposite, sourceType, oppositeInfo.targetType()));
 		}
