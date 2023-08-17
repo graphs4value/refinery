@@ -5,16 +5,28 @@
  */
 package tools.refinery.language.web.xtext.server.push;
 
+import com.google.inject.Inject;
 import org.eclipse.xtext.web.server.IServiceContext;
 import org.eclipse.xtext.web.server.XtextServiceDispatcher;
+import org.eclipse.xtext.web.server.model.PrecomputedServiceRegistry;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 
 import com.google.inject.Singleton;
 
+import tools.refinery.language.web.semantics.SemanticsService;
 import tools.refinery.language.web.xtext.server.SubscribingServiceContext;
 
 @Singleton
 public class PushServiceDispatcher extends XtextServiceDispatcher {
+	@Inject
+	private SemanticsService semanticsService;
+
+	@Override
+	@Inject
+	protected void registerPreComputedServices(PrecomputedServiceRegistry registry) {
+		super.registerPreComputedServices(registry);
+		registry.addPrecomputedService(semanticsService);
+	}
 
 	@Override
 	protected XtextWebDocument getFullTextDocument(String fullText, String resourceId, IServiceContext context) {

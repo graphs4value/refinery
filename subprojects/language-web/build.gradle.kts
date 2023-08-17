@@ -17,6 +17,8 @@ val webapp: Configuration by configurations.creating {
 dependencies {
 	implementation(project(":refinery-language"))
 	implementation(project(":refinery-language-ide"))
+	implementation(project(":refinery-language-semantics"))
+	implementation(project(":refinery-store-query-viatra"))
 	implementation(libs.jetty.server)
 	implementation(libs.jetty.servlet)
 	implementation(libs.jetty.websocket.api)

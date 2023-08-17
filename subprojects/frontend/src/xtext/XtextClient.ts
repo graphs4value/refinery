@@ -38,7 +38,7 @@ export default class XtextClient {
   private readonly occurrencesService: OccurrencesService;
 
   constructor(
-    store: EditorStore,
+    private readonly store: EditorStore,
     private readonly pwaStore: PWAStore,
   ) {
     this.webSocketClient = new XtextWebSocketClient(
@@ -113,6 +113,9 @@ export default class XtextClient {
         return;
       case 'validate':
         this.validationService.onPush(push);
+        return;
+      case 'semantics':
+        this.store.setSemantics(push);
         return;
       default:
         throw new Error('Unknown service');

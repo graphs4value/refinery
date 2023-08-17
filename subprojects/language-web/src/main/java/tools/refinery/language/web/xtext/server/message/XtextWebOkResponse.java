@@ -5,12 +5,11 @@
  */
 package tools.refinery.language.web.xtext.server.message;
 
-import java.util.Objects;
-
+import com.google.gson.annotations.SerializedName;
 import org.eclipse.xtext.web.server.IServiceResult;
 import org.eclipse.xtext.web.server.IUnwrappableServiceResult;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
 
 public final class XtextWebOkResponse implements XtextWebResponse {
 	private String id;
@@ -19,7 +18,6 @@ public final class XtextWebOkResponse implements XtextWebResponse {
 	private Object responseData;
 
 	public XtextWebOkResponse(String id, Object responseData) {
-		super();
 		this.id = id;
 		this.responseData = responseData;
 	}

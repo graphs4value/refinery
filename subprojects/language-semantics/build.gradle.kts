@@ -13,5 +13,7 @@ dependencies {
 	implementation(libs.eclipseCollections.api)
 	api(project(":refinery-language"))
 	api(project(":refinery-store"))
+	api(project(":refinery-store-query"))
+	api(project(":refinery-store-reasoning"))
 	testImplementation(testFixtures(project(":refinery-language")))
 }

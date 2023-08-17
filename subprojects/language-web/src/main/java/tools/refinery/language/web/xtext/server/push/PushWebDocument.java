@@ -5,11 +5,7 @@
  */
 package tools.refinery.language.web.xtext.server.push;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.web.server.IServiceResult;
 import org.eclipse.xtext.web.server.model.AbstractCachedService;
@@ -17,10 +13,12 @@ import org.eclipse.xtext.web.server.model.DocumentSynchronizer;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
-
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PushWebDocument extends XtextWebDocument {
 	private static final Logger LOG = LoggerFactory.getLogger(PushWebDocument.class);
@@ -36,37 +34,31 @@ public class PushWebDocument extends XtextWebDocument {
 		}
 	}
 
-	public boolean addPrecomputationListener(PrecomputationListener listener) {
+	public void addPrecomputationListener(PrecomputationListener listener) {
 		synchronized (precomputationListeners) {
 			if (precomputationListeners.contains(listener)) {
-				return false;
+				return;
 			}
 			precomputationListeners.add(listener);
 			listener.onSubscribeToPrecomputationEvents(getResourceId(), this);
-			return true;
 		}
 	}
 
-	public boolean removePrecomputationListener(PrecomputationListener listener) {
+	public void removePrecomputationListener(PrecomputationListener listener) {
 		synchronized (precomputationListeners) {
-			return precomputationListeners.remove(listener);
+			precomputationListeners.remove(listener);
 		}
 	}
 
 	public <T extends IServiceResult> void precomputeServiceResult(AbstractCachedService<T> service, String serviceName,
 			CancelIndicator cancelIndicator, boolean logCacheMiss) {
-		var result = getCachedServiceResult(service, cancelIndicator, logCacheMiss);
-		if (result == null) {
-			LOG.error("{} service returned null result", serviceName);
-			return;
-		}
 		var serviceClass = service.getClass();
 		var previousResult = precomputedServices.get(serviceClass);
-		if (previousResult != null && previousResult.equals(result)) {
-			return;
-		}
+		var result = getCachedServiceResult(service, cancelIndicator, logCacheMiss);
 		precomputedServices.put(serviceClass, result);
-		notifyPrecomputationListeners(serviceName, result);
+		if (result != null && !result.equals(previousResult)) {
+			notifyPrecomputationListeners(serviceName, result);
+		}
 	}
 
 	private <T extends IServiceResult> void notifyPrecomputationListeners(String serviceName, T result) {

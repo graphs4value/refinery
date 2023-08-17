@@ -39,7 +39,7 @@ export default observer(function EditorPane(): JSX.Element {
   const { editorStore } = useRootStore();
 
   return (
-    <Stack direction="column" flexGrow={1} flexShrink={1} overflow="auto">
+    <Stack direction="column" height="100%" overflow="auto">
       <Toolbar variant="dense">
         <EditorButtons editorStore={editorStore} />
       </Toolbar>

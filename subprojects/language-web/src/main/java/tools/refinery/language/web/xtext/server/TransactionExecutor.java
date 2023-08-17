@@ -134,7 +134,7 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 	 * @throws UnknownLanguageException if the Xtext language cannot be determined
 	 */
 	protected Injector getInjector(IServiceContext context) {
-		IResourceServiceProvider resourceServiceProvider = null;
+		IResourceServiceProvider resourceServiceProvider;
 		var resourceName = context.getParameter("resource");
 		if (resourceName == null) {
 			resourceName = "";

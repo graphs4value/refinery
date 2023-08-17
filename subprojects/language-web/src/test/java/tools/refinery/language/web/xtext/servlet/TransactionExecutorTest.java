@@ -95,7 +95,7 @@ class TransactionExecutorTest {
 						"0")));
 
 		var captor = newCaptor();
-		verify(responseHandler, times(2)).onResponse(captor.capture());
+		verify(responseHandler, times(3)).onResponse(captor.capture());
 		var newStateId = getStateId("bar", captor.getAllValues().get(0));
 		assertHighlightingResponse(newStateId, captor.getAllValues().get(1));
 	}
@@ -126,7 +126,7 @@ class TransactionExecutorTest {
 	private String updateFullText(ArgumentCaptor<XtextWebResponse> captor) throws ResponseHandlerException {
 		var responseHandler = sendRequestAndWaitForAllResponses(new XtextWebRequest("foo", UPDATE_FULL_TEXT_PARAMS));
 
-		verify(responseHandler, times(3)).onResponse(captor.capture());
+		verify(responseHandler, times(4)).onResponse(captor.capture());
 		return getStateId("foo", captor.getAllValues().get(0));
 	}
 

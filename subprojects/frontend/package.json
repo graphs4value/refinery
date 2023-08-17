@@ -49,6 +49,7 @@
     "ansi-styles": "^6.2.1",
     "csstype": "^3.1.2",
     "escape-string-regexp": "^5.0.0",
+    "json-stringify-pretty-compact": "^4.0.0",
     "lodash-es": "^4.17.21",
     "loglevel": "^1.8.1",
     "loglevel-plugin-prefix": "^0.8.4",
@@ -59,6 +60,7 @@
     "notistack": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-resize-detector": "^9.1.0",
     "xstate": "^4.38.2",
     "zod": "^3.22.0"
   },

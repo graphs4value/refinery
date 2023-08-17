@@ -2144,6 +2144,7 @@ __metadata:
     eslint-plugin-react: "npm:^7.33.1"
     eslint-plugin-react-hooks: "npm:^4.6.0"
     html-minifier-terser: "npm:^7.2.0"
+    json-stringify-pretty-compact: "npm:^4.0.0"
     lodash-es: "npm:^4.17.21"
     loglevel: "npm:^1.8.1"
     loglevel-plugin-prefix: "npm:^0.8.4"
@@ -2156,6 +2157,7 @@ __metadata:
     prettier: "npm:^3.0.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
+    react-resize-detector: "npm:^9.1.0"
     typescript: "npm:5.1.6"
     vite: "npm:^4.4.9"
     vite-plugin-pwa: "npm:^0.16.4"
@@ -5206,6 +5208,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-stringify-pretty-compact@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "json-stringify-pretty-compact@npm:4.0.0"
+  checksum: 505781b4be7c72047ae8dfa667b520d20461ceac451b6516cb8ac5e12a758fbd7491d99d5e3f7e60423ce9d26ed4e4bcaccab3420bf651298901635c849017cf
+  languageName: node
+  linkType: hard
+
 "json5@npm:^1.0.2":
   version: 1.0.2
   resolution: "json5@npm:1.0.2"
@@ -5335,7 +5344,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.20":
+"lodash@npm:^4.17.20, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
@@ -6127,6 +6136,18 @@ __metadata:
   version: 18.2.0
   resolution: "react-is@npm:18.2.0"
   checksum: 6eb5e4b28028c23e2bfcf73371e72cd4162e4ac7ab445ddae2afe24e347a37d6dc22fae6e1748632cd43c6d4f9b8f86dcf26bf9275e1874f436d129952528ae0
+  languageName: node
+  linkType: hard
+
+"react-resize-detector@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "react-resize-detector@npm:9.1.0"
+  dependencies:
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: ebd45b54ce68368a8d8b6b32ff3b7949e8f56d5cce21fb18b5044612b16ae9adfdd2eefa6494a700aaf6c64b2cec4c3c33d86c464d1772042dbb4d87dd3dafc6
   languageName: node
   linkType: hard
 

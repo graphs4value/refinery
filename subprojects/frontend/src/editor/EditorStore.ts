@@ -58,6 +58,8 @@ export default class EditorStore {
 
   disposed = false;
 
+  semantics: unknown = {};
+
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
     this.state = createEditorState(initialValue, this);
@@ -280,6 +282,10 @@ export default class EditorStore {
     }
     this.client.formatText();
     return true;
+  }
+
+  setSemantics(semantics: unknown) {
+    this.semantics = semantics;
   }
 
   dispose(): void {

@@ -7,10 +7,11 @@ package tools.refinery.language.semantics.model.internal;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.representation.TruthValue;
 
-public class DecisionTree {
+public class DecisionTree implements Seed<TruthValue> {
 	private final int levels;
 
 	private final DecisionTreeNode root;
@@ -29,6 +30,22 @@ public class DecisionTree {
 		this(levels, null);
 	}
 
+	@Override
+	public int arity() {
+		return levels;
+	}
+
+	@Override
+	public Class<TruthValue> valueType() {
+		return TruthValue.class;
+	}
+
+	@Override
+	public TruthValue reducedValue() {
+		return root.getReducedValue().getTruthValue();
+	}
+
+	@Override
 	public TruthValue get(Tuple tuple) {
 		return root.getValue(levels - 1, tuple).getTruthValue();
 	}
@@ -60,6 +77,7 @@ public class DecisionTree {
 		return reducedValue == null ? null : reducedValue.getTruthValue();
 	}
 
+	@Override
 	public Cursor<Tuple, TruthValue> getCursor(TruthValue defaultValue, int nodeCount) {
 		return new DecisionTreeCursor(levels, defaultValue, nodeCount, root);
 	}

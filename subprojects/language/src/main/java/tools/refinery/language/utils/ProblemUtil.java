@@ -66,6 +66,10 @@ public final class ProblemUtil {
 	}
 
 	public static boolean hasMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
+		var opposite = referenceDeclaration.getOpposite();
+		if (opposite != null && opposite.getKind() == ReferenceKind.CONTAINMENT) {
+			return false;
+		}
 		var multiplicity = referenceDeclaration.getMultiplicity();
 		if (multiplicity instanceof UnboundedMultiplicity) {
 			return false;

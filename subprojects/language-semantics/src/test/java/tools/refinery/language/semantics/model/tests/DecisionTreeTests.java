@@ -134,6 +134,17 @@ class DecisionTreeTests {
 	}
 
 	@Test
+	void overwriteIterationTest() {
+		var sut = new DecisionTree(1, TruthValue.TRUE);
+		var overwrite = new DecisionTree(1, null);
+		overwrite.mergeValue(Tuple.of(0), TruthValue.UNKNOWN);
+		sut.overwriteValues(overwrite);
+		var map = iterateAll(sut, TruthValue.UNKNOWN, 2);
+		assertThat(map.keySet(), hasSize(1));
+		assertThat(map, hasEntry(Tuple.of(1), TruthValue.TRUE));
+	}
+
+	@Test
 	void overwriteNothingTest() {
 		var sut = new DecisionTree(2, TruthValue.UNKNOWN);
 		var values = new DecisionTree(2, null);

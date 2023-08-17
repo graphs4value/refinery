@@ -35,7 +35,7 @@ public class RestartableCachedThreadPool implements ExecutorService {
 	public void waitForTermination() {
 		boolean result = false;
 		try {
-			result = delegate.awaitTermination(1, TimeUnit.SECONDS);
+			result = delegate.awaitTermination(10, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			LOG.warn("Interrupted while waiting for delegate executor to stop", e);
 		}
