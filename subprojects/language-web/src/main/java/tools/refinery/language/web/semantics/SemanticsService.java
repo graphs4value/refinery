@@ -54,7 +54,10 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 
 	@Override
 	public SemanticsResult compute(IXtextWebDocument doc, CancelIndicator cancelIndicator) {
-		long start = System.currentTimeMillis();
+		long start = 0;
+		if (LOG.isTraceEnabled()) {
+			start = System.currentTimeMillis();
+		}
 		Problem problem = getProblem(doc, cancelIndicator);
 		if (problem == null) {
 			return null;
@@ -73,8 +76,11 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
 			operationCanceledManager.checkCanceled(cancelIndicator);
 			var partialInterpretation = getPartialInterpretation(initializer, model, cancelIndicator);
-			long end = System.currentTimeMillis();
-			LOG.info("Computed semantics for {} ({}) in {}ms", doc.getResourceId(), doc.getStateId(), end - start);
+			if (LOG.isTraceEnabled()) {
+				long end = System.currentTimeMillis();
+				LOG.trace("Computed semantics for {} ({}) in {}ms", doc.getResourceId(), doc.getStateId(),
+						end - start);
+			}
 			return new SemanticsSuccessResult(nodeTrace, partialInterpretation);
 		} catch (RuntimeException e) {
 			LOG.error("Error while computing semantics", e);

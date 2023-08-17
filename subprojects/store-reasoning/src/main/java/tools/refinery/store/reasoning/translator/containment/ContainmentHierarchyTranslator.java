@@ -156,7 +156,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				)
 				.clause(representative -> List.of(
 						mayNewHelper.call(parent, child),
-						weakComponents.call(child, representative),
+						weakComponents.call(parent, representative),
 						// Violation of para-consistency:
 						// If there is a surely existing node with at least two containers, its (transitive) containers
 						// will end up in the same weakly connected component, and we will spuriously mark the
@@ -178,7 +178,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				.clause(representative -> List.of(
 						mayExistingHelper.call(parent, child),
 						strongComponents.call(parent, representative),
-						not(strongComponents.call(parent, representative))
+						not(strongComponents.call(child, representative))
 				)));
 
 		storeBuilder.with(PartialRelationTranslator.of(linkType)

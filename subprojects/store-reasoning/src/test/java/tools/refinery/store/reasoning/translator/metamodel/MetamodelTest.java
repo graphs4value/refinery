@@ -105,4 +105,49 @@ class MetamodelTest {
 		assertThat(enrolledStudentsInterpretation.get(Tuple.of(1, 3)), is(TruthValue.FALSE));
 		assertThat(enrolledStudentsInterpretation.get(Tuple.of(1, 4)), is(TruthValue.UNKNOWN));
 	}
+
+	@Test
+	void simpleContainmentTest() {
+		var metamodel = Metamodel.builder()
+				.type(university)
+				.type(course)
+				.reference(courses, university, true, course)
+				.build();
+
+		var store = ModelStore.builder()
+				.with(ViatraModelQueryAdapter.builder())
+				.with(ReasoningAdapter.builder())
+				.with(new MultiObjectTranslator())
+				.with(new MetamodelTranslator(metamodel))
+				.build();
+
+		var seed = ModelSeed.builder(4)
+				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
+						.reducedValue(CardinalityIntervals.ONE)
+						.put(Tuple.of(0), CardinalityIntervals.SET)
+						.put(Tuple.of(1), CardinalityIntervals.SET))
+				.seed(ContainmentHierarchyTranslator.CONTAINED_SYMBOL, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN))
+				.seed(ContainmentHierarchyTranslator.CONTAINS_SYMBOL, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN))
+				.seed(university, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN)
+						.put(Tuple.of(0), TruthValue.TRUE))
+				.seed(course, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN)
+						.put(Tuple.of(1), TruthValue.TRUE))
+				.seed(courses, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN)
+						.put(Tuple.of(2, 3), TruthValue.TRUE))
+				.build();
+
+		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
+		var coursesInterpretation = model.getAdapter(ReasoningAdapter.class)
+				.getPartialInterpretation(Concreteness.PARTIAL, courses);
+
+		assertThat(coursesInterpretation.get(Tuple.of(0, 1)), is(TruthValue.UNKNOWN));
+		assertThat(coursesInterpretation.get(Tuple.of(0, 3)), is(TruthValue.FALSE));
+		assertThat(coursesInterpretation.get(Tuple.of(2, 1)), is(TruthValue.UNKNOWN));
+		assertThat(coursesInterpretation.get(Tuple.of(2, 3)), is(TruthValue.TRUE));
+	}
 }

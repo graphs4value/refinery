@@ -6,6 +6,8 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.ParameterDirection;
@@ -79,6 +81,20 @@ public class RepresentativeElectionLiteral extends AbstractCallLiteral {
 	@Override
 	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
 		return new RepresentativeElectionLiteral(connectivity, newTarget, newArguments);
+	}
+
+	@Override
+	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
+		if (!super.equalsWithSubstitution(helper, other)) {
+			return false;
+		}
+		var otherRepresentativeElectionLiteral = (RepresentativeElectionLiteral) other;
+		return connectivity.equals(otherRepresentativeElectionLiteral.connectivity);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return super.hashCodeWithSubstitution(helper) * 31 + connectivity.hashCode();
 	}
 
 	@Override
