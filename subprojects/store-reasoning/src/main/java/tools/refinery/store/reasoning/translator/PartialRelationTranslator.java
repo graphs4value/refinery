@@ -7,7 +7,6 @@ package tools.refinery.store.reasoning.translator;
 
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.QueryBuilder;
 import tools.refinery.store.query.dnf.RelationalQuery;
@@ -169,7 +168,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		createFallbackQueriesFromSymbol();
 		setFallbackCandidateQueries();
 		createFallbackRewriter();
-		createFallbackInterpretation(storeBuilder);
+		createFallbackInterpretation();
 		createFallbackRefiner();
 		super.doConfigure(storeBuilder);
 	}
@@ -279,11 +278,9 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		}
 	}
 
-	private void createFallbackInterpretation(ModelStoreBuilder storeBuilder) {
+	private void createFallbackInterpretation() {
 		if (interpretationFactory == null) {
-			var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
 			interpretationFactory = new QueryBasedRelationInterpretationFactory(may, must, candidateMay, candidateMust);
-			queryBuilder.queries(may, must, candidateMay, candidateMust);
 		}
 	}
 

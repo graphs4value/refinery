@@ -8,6 +8,7 @@ package tools.refinery.store.reasoning.translator;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
@@ -15,6 +16,8 @@ import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.SeedInitializer;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
+
+import java.util.Set;
 
 @SuppressWarnings("UnusedReturnValue")
 public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartialSymbolTranslator

@@ -18,8 +18,17 @@ import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.translator.AnyPartialSymbolTranslator;
 import tools.refinery.store.representation.Symbol;
 
+import java.util.Collection;
+import java.util.List;
+
 @SuppressWarnings("UnusedReturnValue")
 public interface ReasoningBuilder extends ModelAdapterBuilder {
+	ReasoningBuilder requiredInterpretations(Collection<Concreteness> requiredInterpretations);
+
+	default ReasoningBuilder requiredInterpretations(Concreteness... requiredInterpretations) {
+		return requiredInterpretations(List.of(requiredInterpretations));
+	}
+
 	ReasoningBuilder partialSymbol(AnyPartialSymbolTranslator translator);
 
 	<T> ReasoningBuilder storageRefiner(Symbol<T> symbol, StorageRefiner.Factory<T> refiner);

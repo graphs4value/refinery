@@ -6,7 +6,9 @@
 package tools.refinery.store.reasoning.interpretation;
 
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -14,6 +16,8 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
+
+import java.util.Set;
 
 public class QueryBasedRelationInterpretationFactory implements PartialInterpretation.Factory<TruthValue, Boolean> {
 	private final Query<Boolean> may;
@@ -51,6 +55,17 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 		} else {
 			return new FourValuedInterpretation(
 					adapter, concreteness, partialSymbol, mayResultSet, mustResultSet);
+		}
+	}
+
+	@Override
+	public void configure(ModelStoreBuilder storeBuilder, Set<Concreteness> requiredInterpretations) {
+		var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
+		if (requiredInterpretations.contains(Concreteness.PARTIAL)) {
+			queryBuilder.queries(may, must);
+		}
+		if (requiredInterpretations.contains(Concreteness.CANDIDATE)) {
+			queryBuilder.queries(candidateMay, candidateMust);
 		}
 	}
 

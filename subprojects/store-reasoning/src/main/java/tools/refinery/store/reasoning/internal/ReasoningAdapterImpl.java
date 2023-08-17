@@ -48,16 +48,20 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		refiners = new HashMap<>(refinerFactories.size());
 		createRefiners();
 
-		storageRefiners = storeAdapter.createStprageRefiner(model);
+		storageRefiners = storeAdapter.createStorageRefiner(model);
 
 		nodeCountInterpretation = model.getInterpretation(NODE_COUNT_SYMBOL);
 	}
 
 	private void createPartialInterpretations() {
+		var supportedInterpretations = storeAdapter.getSupportedInterpretations();
 		int concretenessLength = Concreteness.values().length;
 		var interpretationFactories = storeAdapter.getSymbolInterpreters();
 		for (int i = 0; i < concretenessLength; i++) {
-			partialInterpretations[i] = new HashMap<>(interpretationFactories.size());
+			var concreteness = Concreteness.values()[i];
+			if (supportedInterpretations.contains(concreteness)) {
+				partialInterpretations[i] = new HashMap<>(interpretationFactories.size());
+			}
 		}
 		// Create the partial interpretations in order so that factories may refer to interpretations of symbols
 		// preceding them in the ordered {@code interpretationFactories} map, e.g., for opposite interpretations.
@@ -65,9 +69,11 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 			var partialSymbol = entry.getKey();
 			var factory = entry.getValue();
 			for (int i = 0; i < concretenessLength; i++) {
-				var concreteness = Concreteness.values()[i];
-				var interpretation = createPartialInterpretation(concreteness, factory, partialSymbol);
-				partialInterpretations[i].put(partialSymbol, interpretation);
+				if (partialInterpretations[i] != null) {
+					var concreteness = Concreteness.values()[i];
+					var interpretation = createPartialInterpretation(concreteness, factory, partialSymbol);
+					partialInterpretations[i].put(partialSymbol, interpretation);
+				}
 			}
 		}
 	}
@@ -114,6 +120,9 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(Concreteness concreteness,
 																	   PartialSymbol<A, C> partialSymbol) {
 		var map = partialInterpretations[concreteness.ordinal()];
+		if (map == null) {
+			throw new IllegalArgumentException("No interpretation for concreteness: " + concreteness);
+		}
 		var interpretation = map.get(partialSymbol);
 		if (interpretation == null) {
 			throw new IllegalArgumentException("No interpretation for partial symbol: " + partialSymbol);

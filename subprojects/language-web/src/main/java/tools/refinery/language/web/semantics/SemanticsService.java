@@ -65,7 +65,8 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		var initializer = initializerProvider.get();
 		var builder = ModelStore.builder()
 				.with(ViatraModelQueryAdapter.builder())
-				.with(ReasoningAdapter.builder());
+				.with(ReasoningAdapter.builder()
+						.requiredInterpretations(Concreteness.PARTIAL));
 		operationCanceledManager.checkCanceled(cancelIndicator);
 		try {
 			var modelSeed = initializer.createModel(problem, builder);
@@ -84,7 +85,7 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			}
 			return new SemanticsSuccessResult(nodeTrace, partialInterpretation);
 		} catch (RuntimeException e) {
-			LOG.error("Error while computing semantics", e);
+			LOG.debug("Error while computing semantics", e);
 			return new SemanticsErrorResult(e.getMessage());
 		}
 	}

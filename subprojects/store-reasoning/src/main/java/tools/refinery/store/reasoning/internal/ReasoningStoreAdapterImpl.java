@@ -10,6 +10,7 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
@@ -22,20 +23,23 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 	private final ModelStore store;
+	private final Set<Concreteness> supportedInterpretations;
 	private final Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters;
 	private final Map<AnyPartialSymbol, PartialInterpretationRefiner.Factory<?, ?>> symbolRefiners;
 	private final Map<AnySymbol, StorageRefiner.Factory<?>> storageRefiners;
 	private final List<PartialModelInitializer> initializers;
 
-	ReasoningStoreAdapterImpl(ModelStore store,
+	ReasoningStoreAdapterImpl(ModelStore store, Set<Concreteness> supportedInterpretations,
 							  Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters,
 							  Map<AnyPartialSymbol, PartialInterpretationRefiner.Factory<?, ?>> symbolRefiners,
 							  Map<AnySymbol, StorageRefiner.Factory<?>> storageRefiners,
 							  List<PartialModelInitializer> initializers) {
 		this.store = store;
+		this.supportedInterpretations = supportedInterpretations;
 		this.symbolInterpreters = symbolInterpreters;
 		this.symbolRefiners = symbolRefiners;
 		this.storageRefiners = storageRefiners;
@@ -45,6 +49,11 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 	@Override
 	public ModelStore getStore() {
 		return store;
+	}
+
+	@Override
+	public Set<Concreteness> getSupportedInterpretations() {
+		return supportedInterpretations;
 	}
 
 	@Override
@@ -69,7 +78,7 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 		return symbolRefiners;
 	}
 
-	StorageRefiner[] createStprageRefiner(Model model) {
+	StorageRefiner[] createStorageRefiner(Model model) {
 		var refiners = new StorageRefiner[storageRefiners.size()];
 		int i = 0;
 		for (var entry : storageRefiners.entrySet()) {

@@ -34,12 +34,19 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 		implements ReasoningBuilder {
 	private final DnfLifter lifter = new DnfLifter();
 	private final PartialQueryRewriter queryRewriter = new PartialQueryRewriter(lifter);
+	private Set<Concreteness> requiredInterpretations = Set.of(Concreteness.values());
 	private final Map<AnyPartialSymbol, AnyPartialSymbolTranslator> translators = new LinkedHashMap<>();
 	private final Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters = new LinkedHashMap<>();
 	private final Map<AnyPartialSymbol, PartialInterpretationRefiner.Factory<?, ?>> symbolRefiners =
 			new LinkedHashMap<>();
 	private final Map<AnySymbol, StorageRefiner.Factory<?>> registeredStorageRefiners = new LinkedHashMap<>();
 	private final List<PartialModelInitializer> initializers = new ArrayList<>();
+
+	@Override
+	public ReasoningBuilder requiredInterpretations(Collection<Concreteness> requiredInterpretations) {
+		this.requiredInterpretations = Set.copyOf(requiredInterpretations);
+		return this;
+	}
 
 	@Override
 	public ReasoningBuilder partialSymbol(AnyPartialSymbolTranslator translator) {
@@ -93,7 +100,7 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 		for (var translator : translators.values()) {
 			translator.configure(storeBuilder);
 			if (translator instanceof PartialRelationTranslator relationConfiguration) {
-				doConfigure(relationConfiguration);
+				doConfigure(storeBuilder, relationConfiguration);
 			} else {
 				throw new IllegalArgumentException("Unknown partial symbol translator %s for partial symbol %s"
 						.formatted(translator, translator.getPartialSymbol()));
@@ -104,10 +111,12 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 		queryBuilder.rewriter(queryRewriter);
 	}
 
-	private void doConfigure(PartialRelationTranslator relationConfiguration) {
+	private void doConfigure(ModelStoreBuilder storeBuilder, PartialRelationTranslator relationConfiguration) {
 		var partialRelation = relationConfiguration.getPartialRelation();
 		queryRewriter.addRelationRewriter(partialRelation, relationConfiguration.getRewriter());
-		symbolInterpreters.put(partialRelation, relationConfiguration.getInterpretationFactory());
+		var interpretationFactory = relationConfiguration.getInterpretationFactory();
+		interpretationFactory.configure(storeBuilder, requiredInterpretations);
+		symbolInterpreters.put(partialRelation, interpretationFactory);
 		var refiner = relationConfiguration.getInterpretationRefiner();
 		if (refiner != null) {
 			symbolRefiners.put(partialRelation, refiner);
@@ -116,9 +125,9 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 
 	@Override
 	public ReasoningStoreAdapterImpl doBuild(ModelStore store) {
-		return new ReasoningStoreAdapterImpl(store, Collections.unmodifiableMap(symbolInterpreters),
-				Collections.unmodifiableMap(symbolRefiners), getStorageRefiners(store),
-				Collections.unmodifiableList(initializers));
+		return new ReasoningStoreAdapterImpl(store, requiredInterpretations,
+				Collections.unmodifiableMap(symbolInterpreters), Collections.unmodifiableMap(symbolRefiners),
+				getStorageRefiners(store), Collections.unmodifiableList(initializers));
 	}
 
 	private Map<AnySymbol, StorageRefiner.Factory<?>> getStorageRefiners(ModelStore store) {

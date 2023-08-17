@@ -6,10 +6,13 @@
 package tools.refinery.store.reasoning.interpretation;
 
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.tuple.Tuple;
+
+import java.util.Set;
 
 public non-sealed interface PartialInterpretation<A, C> extends AnyPartialInterpretation {
 	@Override
@@ -19,8 +22,13 @@ public non-sealed interface PartialInterpretation<A, C> extends AnyPartialInterp
 
 	Cursor<Tuple, A> getAll();
 
+	@FunctionalInterface
 	interface Factory<A, C> {
 		PartialInterpretation<A, C> create(ReasoningAdapter adapter, Concreteness concreteness,
 										   PartialSymbol<A, C> partialSymbol);
+
+		default void configure(ModelStoreBuilder storeBuilder, Set<Concreteness> requiredInterpretations) {
+			// Nothing to configure by default.
+		}
 	}
 }
