@@ -53,9 +53,13 @@ public class ModelInitializer {
 
 	private final Map<Relation, RelationInfo> relationInfoMap = new LinkedHashMap<>();
 
+	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new LinkedHashMap<>();
+
 	private Map<Relation, PartialRelation> relationTrace;
 
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
+
+	private Metamodel metamodel;
 
 	public int getNodeCount() {
 		return nodeTrace.size();
@@ -75,13 +79,15 @@ public class ModelInitializer {
 				"Problem has no builtin library"));
 		var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
 		nodeRelation = nodeInfo.partialRelation();
-		metamodelBuilder.type(nodeRelation, true);
+		metamodelBuilder.type(nodeRelation);
 		relationInfoMap.put(builtinSymbols.exists(), new RelationInfo(ReasoningAdapter.EXISTS_SYMBOL, null,
 				TruthValue.TRUE));
-		relationInfoMap.put(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL, (TruthValue) null,
+		relationInfoMap.put(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL,
+				(TruthValue) null,
 				null));
-		relationInfoMap.put(builtinSymbols.contained(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
-				null, TruthValue.UNKNOWN));
+		relationInfoMap.put(builtinSymbols.contained(),
+				new RelationInfo(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
+						null, TruthValue.UNKNOWN));
 		relationInfoMap.put(builtinSymbols.contains(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,
 				null, TruthValue.UNKNOWN));
 		relationInfoMap.put(builtinSymbols.invalidNumberOfContainers(),
@@ -89,9 +95,9 @@ public class ModelInitializer {
 						TruthValue.FALSE));
 		collectNodes();
 		collectPartialSymbols();
+		collectMetamodel();
+		metamodel = metamodelBuilder.build();
 		collectAssertions();
-		var metamodel = metamodelBuilder.build();
-		builder.with(ReasoningAdapter.builder());
 		builder.with(new MultiObjectTranslator());
 		builder.with(new MetamodelTranslator(metamodel));
 		relationTrace = new LinkedHashMap<>(relationInfoMap.size());
@@ -160,11 +166,18 @@ public class ModelInitializer {
 		}
 	}
 
+	private void putRelationInfo(Relation relation, RelationInfo info) {
+		relationInfoMap.put(relation, info);
+		partialRelationInfoMap.put(info.partialRelation(), info);
+	}
+
 	private RelationInfo collectPartialRelation(Relation relation, int arity, TruthValue value,
 												TruthValue defaultValue) {
 		return relationInfoMap.computeIfAbsent(relation, key -> {
 			var name = getName(relation);
-			return new RelationInfo(name, arity, value, defaultValue);
+			var info = new RelationInfo(name, arity, value, defaultValue);
+			partialRelationInfoMap.put(info.partialRelation(), info);
+			return info;
 		});
 	}
 
@@ -172,23 +185,22 @@ public class ModelInitializer {
 		return semanticsUtils.getName(relation).orElseGet(() -> "#" + relationInfoMap.size());
 	}
 
-	private void collectAssertions() {
+	private void collectMetamodel() {
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
-				collectClassDeclarationAssertions(classDeclaration);
+				collectClassDeclarationMetamodel(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
-				collectEnumAssertions(enumDeclaration);
-			} else if (statement instanceof IndividualDeclaration individualDeclaration) {
-				for (var individual : individualDeclaration.getNodes()) {
-					collectIndividualAssertions(individual);
-				}
-			} else if (statement instanceof Assertion assertion) {
-				collectAssertion(assertion);
+				collectEnumMetamodel(enumDeclaration);
 			}
 		}
 	}
 
-	private void collectClassDeclarationAssertions(ClassDeclaration classDeclaration) {
+	private void collectEnumMetamodel(EnumDeclaration enumDeclaration) {
+		var info = getRelationInfo(enumDeclaration);
+		metamodelBuilder.type(info.partialRelation(), nodeRelation);
+	}
+
+	private void collectClassDeclarationMetamodel(ClassDeclaration classDeclaration) {
 		var superTypes = classDeclaration.getSuperTypes();
 		var partialSuperTypes = new ArrayList<PartialRelation>(superTypes.size() + 1);
 		partialSuperTypes.add(nodeRelation);
@@ -198,23 +210,17 @@ public class ModelInitializer {
 		var info = getRelationInfo(classDeclaration);
 		metamodelBuilder.type(info.partialRelation(), classDeclaration.isAbstract(),
 				partialSuperTypes);
-		var newNode = classDeclaration.getNewNode();
-		if (newNode != null) {
-			var newNodeId = getNodeId(newNode);
-			collectCardinalityAssertions(newNodeId, TruthValue.UNKNOWN);
-			mergeValue(classDeclaration, Tuple.of(newNodeId), TruthValue.TRUE);
-		}
 		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
 			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-				collectReferenceDeclarationAssertions(classDeclaration, referenceDeclaration);
+				collectReferenceDeclarationMetamodel(classDeclaration, referenceDeclaration);
 			} else {
 				throw new IllegalArgumentException("Unknown feature declaration: " + featureDeclaration);
 			}
 		}
 	}
 
-	private void collectReferenceDeclarationAssertions(ClassDeclaration classDeclaration,
-													   ReferenceDeclaration referenceDeclaration) {
+	private void collectReferenceDeclarationMetamodel(ClassDeclaration classDeclaration,
+													  ReferenceDeclaration referenceDeclaration) {
 		var relation = getRelationInfo(referenceDeclaration).partialRelation();
 		var source = getRelationInfo(classDeclaration).partialRelation();
 		var target = getRelationInfo(referenceDeclaration.getReferenceType()).partialRelation();
@@ -249,15 +255,47 @@ public class ModelInitializer {
 		return ConstrainedMultiplicity.of(interval, constraint);
 	}
 
+
+	private void collectAssertions() {
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof ClassDeclaration classDeclaration) {
+				collectClassDeclarationAssertions(classDeclaration);
+			} else if (statement instanceof EnumDeclaration enumDeclaration) {
+				collectEnumAssertions(enumDeclaration);
+			} else if (statement instanceof IndividualDeclaration individualDeclaration) {
+				for (var individual : individualDeclaration.getNodes()) {
+					collectIndividualAssertions(individual);
+				}
+			} else if (statement instanceof Assertion assertion) {
+				collectAssertion(assertion);
+			}
+		}
+	}
+
+	private void collectClassDeclarationAssertions(ClassDeclaration classDeclaration) {
+		var newNode = classDeclaration.getNewNode();
+		if (newNode == null) {
+			return;
+		}
+		var newNodeId = getNodeId(newNode);
+		collectCardinalityAssertions(newNodeId, TruthValue.UNKNOWN);
+		var info = getRelationInfo(classDeclaration);
+		var tuple = Tuple.of(newNodeId);
+		mergeValue(classDeclaration, tuple, TruthValue.TRUE);
+		var typeInfo = metamodel.typeHierarchy().getAnalysisResult(info.partialRelation());
+		for (var subType : typeInfo.getDirectSubtypes()) {
+			partialRelationInfoMap.get(subType).assertions().mergeValue(tuple, TruthValue.FALSE);
+		}
+	}
+
 	private void collectEnumAssertions(EnumDeclaration enumDeclaration) {
-		var info = getRelationInfo(enumDeclaration);
-		metamodelBuilder.type(info.partialRelation(), nodeRelation);
 		var overlay = new DecisionTree(1, null);
 		for (var literal : enumDeclaration.getLiterals()) {
 			collectIndividualAssertions(literal);
 			var nodeId = getNodeId(literal);
 			overlay.mergeValue(Tuple.of(nodeId), TruthValue.TRUE);
 		}
+		var info = getRelationInfo(enumDeclaration);
 		info.assertions().overwriteValues(overlay);
 	}
 

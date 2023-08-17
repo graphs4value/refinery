@@ -64,7 +64,8 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		}
 		var initializer = initializerProvider.get();
 		var builder = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder());
+				.with(ViatraModelQueryAdapter.builder())
+				.with(ReasoningAdapter.builder());
 		operationCanceledManager.checkCanceled(cancelIndicator);
 		try {
 			var modelSeed = initializer.createModel(problem, builder);
