@@ -62,9 +62,8 @@ tasks {
 		classpath(mainRuntimeClasspath)
 		mainClass.set(application.mainClass)
 		standardInput = System.`in`
-		val baseResource = webapp.incoming.artifacts.artifactFiles.first()
-		environment("BASE_RESOURCE", baseResource)
+		environment("BASE_RESOURCE", webapp.singleFile)
 		group = "run"
-		description = "Start a Jetty web server serving the Xtex API and assets."
+		description = "Start a Jetty web server serving the Xtext API and assets."
 	}
 }
