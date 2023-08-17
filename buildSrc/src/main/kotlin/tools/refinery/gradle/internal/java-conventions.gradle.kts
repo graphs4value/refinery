@@ -35,6 +35,7 @@ dependencies {
 	testImplementation(libs.hamcrest)
 	testImplementation(libs.junit.api)
 	testRuntimeOnly(libs.junit.engine)
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation(libs.junit.params)
 	testImplementation(libs.mockito.core)
 	testImplementation(libs.mockito.junit)
