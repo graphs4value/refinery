@@ -14,6 +14,12 @@ import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.store.query.literal.*;
+import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -26,15 +32,14 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
+import tools.refinery.store.reasoning.translator.predicate.PredicateTranslator;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.cardinality.CardinalityInterval;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.representation.cardinality.UpperCardinalities;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ModelInitializer {
 	@Inject
@@ -44,6 +49,8 @@ public class ModelInitializer {
 	private SemanticsUtils semanticsUtils;
 
 	private Problem problem;
+
+	private ModelStoreBuilder storeBuilder;
 
 	private BuiltinSymbols builtinSymbols;
 
@@ -61,6 +68,8 @@ public class ModelInitializer {
 
 	private Metamodel metamodel;
 
+	private ModelSeed modelSeed;
+
 	public int getNodeCount() {
 		return nodeTrace.size();
 	}
@@ -73,24 +82,24 @@ public class ModelInitializer {
 		return relationTrace;
 	}
 
-	public ModelSeed createModel(Problem problem, ModelStoreBuilder builder) {
+	public ModelSeed createModel(Problem problem, ModelStoreBuilder storeBuilder) {
 		this.problem = problem;
+		this.storeBuilder = storeBuilder;
 		builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalArgumentException(
 				"Problem has no builtin library"));
 		var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
 		nodeRelation = nodeInfo.partialRelation();
 		metamodelBuilder.type(nodeRelation);
-		relationInfoMap.put(builtinSymbols.exists(), new RelationInfo(ReasoningAdapter.EXISTS_SYMBOL, null,
+		putRelationInfo(builtinSymbols.exists(), new RelationInfo(ReasoningAdapter.EXISTS_SYMBOL, null,
 				TruthValue.TRUE));
-		relationInfoMap.put(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL,
+		putRelationInfo(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL,
 				(TruthValue) null,
 				null));
-		relationInfoMap.put(builtinSymbols.contained(),
-				new RelationInfo(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
-						null, TruthValue.UNKNOWN));
-		relationInfoMap.put(builtinSymbols.contains(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,
+		putRelationInfo(builtinSymbols.contained(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
 				null, TruthValue.UNKNOWN));
-		relationInfoMap.put(builtinSymbols.invalidNumberOfContainers(),
+		putRelationInfo(builtinSymbols.contains(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,
+				null, TruthValue.UNKNOWN));
+		putRelationInfo(builtinSymbols.invalidNumberOfContainers(),
 				new RelationInfo(ContainmentHierarchyTranslator.INVALID_NUMBER_OF_CONTAINERS, TruthValue.FALSE,
 						TruthValue.FALSE));
 		collectNodes();
@@ -98,8 +107,8 @@ public class ModelInitializer {
 		collectMetamodel();
 		metamodel = metamodelBuilder.build();
 		collectAssertions();
-		builder.with(new MultiObjectTranslator());
-		builder.with(new MetamodelTranslator(metamodel));
+		storeBuilder.with(new MultiObjectTranslator());
+		storeBuilder.with(new MetamodelTranslator(metamodel));
 		relationTrace = new LinkedHashMap<>(relationInfoMap.size());
 		int nodeCount = getNodeCount();
 		var modelSeedBuilder = ModelSeed.builder(nodeCount);
@@ -110,7 +119,9 @@ public class ModelInitializer {
 			relationTrace.put(relation, partialRelation);
 			modelSeedBuilder.seed(partialRelation, info.toSeed(nodeCount));
 		}
-		return modelSeedBuilder.build();
+		modelSeed = modelSeedBuilder.build();
+		collectPredicates();
+		return modelSeed;
 	}
 
 	private void collectNodes() {
@@ -142,16 +153,16 @@ public class ModelInitializer {
 	private void collectPartialSymbols() {
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
-				collectClassDeclaration(classDeclaration);
+				collectClassDeclarationSymbols(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
 				collectPartialRelation(enumDeclaration, 1, null, TruthValue.FALSE);
 			} else if (statement instanceof PredicateDefinition predicateDefinition) {
-				// TODO Implement predicate definitions
+				collectPredicateDefinitionSymbol(predicateDefinition);
 			}
 		}
 	}
 
-	private void collectClassDeclaration(ClassDeclaration classDeclaration) {
+	private void collectClassDeclarationSymbols(ClassDeclaration classDeclaration) {
 		collectPartialRelation(classDeclaration, 1, null, TruthValue.UNKNOWN);
 		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
 			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
@@ -163,6 +174,15 @@ public class ModelInitializer {
 			} else {
 				throw new IllegalArgumentException("Unknown feature declaration: " + featureDeclaration);
 			}
+		}
+	}
+
+	private void collectPredicateDefinitionSymbol(PredicateDefinition predicateDefinition) {
+		int arity = predicateDefinition.getParameters().size();
+		if (predicateDefinition.isError()) {
+			collectPartialRelation(predicateDefinition, arity, TruthValue.FALSE, TruthValue.FALSE);
+		} else {
+			collectPartialRelation(predicateDefinition, arity, null, TruthValue.UNKNOWN);
 		}
 	}
 
@@ -196,8 +216,7 @@ public class ModelInitializer {
 	}
 
 	private void collectEnumMetamodel(EnumDeclaration enumDeclaration) {
-		var info = getRelationInfo(enumDeclaration);
-		metamodelBuilder.type(info.partialRelation(), nodeRelation);
+		metamodelBuilder.type(getPartialRelation(enumDeclaration), nodeRelation);
 	}
 
 	private void collectClassDeclarationMetamodel(ClassDeclaration classDeclaration) {
@@ -205,10 +224,9 @@ public class ModelInitializer {
 		var partialSuperTypes = new ArrayList<PartialRelation>(superTypes.size() + 1);
 		partialSuperTypes.add(nodeRelation);
 		for (var superType : superTypes) {
-			partialSuperTypes.add(getRelationInfo(superType).partialRelation());
+			partialSuperTypes.add(getPartialRelation(superType));
 		}
-		var info = getRelationInfo(classDeclaration);
-		metamodelBuilder.type(info.partialRelation(), classDeclaration.isAbstract(),
+		metamodelBuilder.type(getPartialRelation(classDeclaration), classDeclaration.isAbstract(),
 				partialSuperTypes);
 		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
 			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
@@ -221,14 +239,14 @@ public class ModelInitializer {
 
 	private void collectReferenceDeclarationMetamodel(ClassDeclaration classDeclaration,
 													  ReferenceDeclaration referenceDeclaration) {
-		var relation = getRelationInfo(referenceDeclaration).partialRelation();
-		var source = getRelationInfo(classDeclaration).partialRelation();
-		var target = getRelationInfo(referenceDeclaration.getReferenceType()).partialRelation();
+		var relation = getPartialRelation(referenceDeclaration);
+		var source = getPartialRelation(classDeclaration);
+		var target = getPartialRelation(referenceDeclaration.getReferenceType());
 		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 		var opposite = referenceDeclaration.getOpposite();
 		PartialRelation oppositeRelation = null;
 		if (opposite != null) {
-			oppositeRelation = getRelationInfo(opposite).partialRelation();
+			oppositeRelation = getPartialRelation(opposite);
 		}
 		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
 		metamodelBuilder.reference(relation, source, containment, multiplicity, target, oppositeRelation);
@@ -279,10 +297,9 @@ public class ModelInitializer {
 		}
 		var newNodeId = getNodeId(newNode);
 		collectCardinalityAssertions(newNodeId, TruthValue.UNKNOWN);
-		var info = getRelationInfo(classDeclaration);
 		var tuple = Tuple.of(newNodeId);
 		mergeValue(classDeclaration, tuple, TruthValue.TRUE);
-		var typeInfo = metamodel.typeHierarchy().getAnalysisResult(info.partialRelation());
+		var typeInfo = metamodel.typeHierarchy().getAnalysisResult(getPartialRelation(classDeclaration));
 		for (var subType : typeInfo.getDirectSubtypes()) {
 			partialRelationInfoMap.get(subType).assertions().mergeValue(tuple, TruthValue.FALSE);
 		}
@@ -336,6 +353,10 @@ public class ModelInitializer {
 		return info;
 	}
 
+	private PartialRelation getPartialRelation(Relation relation) {
+		return getRelationInfo(relation).partialRelation();
+	}
+
 	private int getNodeId(Node node) {
 		return nodeTrace.getOrThrow(node);
 	}
@@ -367,6 +388,151 @@ public class ModelInitializer {
 			case UNKNOWN -> TruthValue.UNKNOWN;
 			case ERROR -> TruthValue.ERROR;
 		};
+	}
+
+	private void collectPredicates() {
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof PredicateDefinition predicateDefinition) {
+				collectPredicateDefinition(predicateDefinition);
+			}
+		}
+	}
+
+	private void collectPredicateDefinition(PredicateDefinition predicateDefinition) {
+		var partialRelation = getPartialRelation(predicateDefinition);
+		var query = toQuery(partialRelation.name(), predicateDefinition);
+		boolean mutable;
+		TruthValue defaultValue;
+		if (predicateDefinition.isError()) {
+			mutable = false;
+			defaultValue = TruthValue.FALSE;
+		} else {
+			var seed = modelSeed.getSeed(partialRelation);
+			defaultValue = seed.reducedValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+			var cursor = seed.getCursor(defaultValue, getNodeCount());
+			// The symbol should be mutable if there is at least one non-default entry in the seed.
+			mutable = cursor.move();
+		}
+		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
+		storeBuilder.with(translator);
+	}
+
+	private RelationalQuery toQuery(String name, PredicateDefinition predicateDefinition) {
+		var problemParameters = predicateDefinition.getParameters();
+		int arity = problemParameters.size();
+		var parameters = new NodeVariable[arity];
+		var parameterMap = new HashMap<tools.refinery.language.model.problem.Variable, Variable>(arity);
+		var commonLiterals = new ArrayList<Literal>();
+		for (int i = 0; i < arity; i++) {
+			var problemParameter = problemParameters.get(i);
+			var parameter = Variable.of(problemParameter.getName());
+			parameters[i] = parameter;
+			parameterMap.put(problemParameter, parameter);
+			var parameterType = problemParameter.getParameterType();
+			if (parameterType != null) {
+				var partialType = getPartialRelation(parameterType);
+				commonLiterals.add(partialType.call(parameter));
+			}
+		}
+		var builder = Query.builder(name).parameters(parameters);
+		for (var body : predicateDefinition.getBodies()) {
+			var localScope = extendScope(parameterMap, body.getImplicitVariables());
+			var problemLiterals = body.getLiterals();
+			var literals = new ArrayList<Literal>(commonLiterals);
+			for (var problemLiteral : problemLiterals) {
+				toLiterals(problemLiteral, localScope, literals);
+			}
+			builder.clause(literals);
+		}
+		return builder.build();
+	}
+
+	private Map<tools.refinery.language.model.problem.Variable, Variable> extendScope(
+			Map<tools.refinery.language.model.problem.Variable, Variable> existing,
+			Collection<? extends tools.refinery.language.model.problem.Variable> newVariables) {
+		if (newVariables.isEmpty()) {
+			return existing;
+		}
+		int localScopeSize = existing.size() + newVariables.size();
+		var localScope = new HashMap<tools.refinery.language.model.problem.Variable, Variable>(localScopeSize);
+		localScope.putAll(existing);
+		for (var newVariable : newVariables) {
+			localScope.put(newVariable, Variable.of(newVariable.getName()));
+		}
+		return localScope;
+	}
+
+	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
+							List<Literal> literals) {
+		if (expr instanceof LogicConstant logicConstant) {
+			switch (logicConstant.getLogicValue()) {
+				case TRUE -> literals.add(BooleanLiteral.TRUE);
+				case FALSE -> literals.add(BooleanLiteral.FALSE);
+				default -> throw new IllegalArgumentException("Unsupported literal: " + expr);
+			}
+		} else if (expr instanceof Atom atom) {
+			var target = getPartialRelation(atom.getRelation());
+			var polarity = atom.isTransitiveClosure() ? CallPolarity.TRANSITIVE : CallPolarity.POSITIVE;
+			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
+			literals.add(target.call(polarity, argumentList));
+		} else if (expr instanceof NegationExpr negationExpr) {
+			var body = negationExpr.getBody();
+			if (!(body instanceof Atom atom)) {
+				throw new IllegalArgumentException("Cannot negate literal: " + body);
+			}
+			var target = getPartialRelation(atom.getRelation());
+			Constraint constraint;
+			if (atom.isTransitiveClosure()) {
+				constraint = Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
+						target.callTransitive(p1, p2)
+				)).getDnf();
+			} else {
+				constraint = target;
+			}
+			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
+			var argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
+			literals.add(constraint.call(CallPolarity.NEGATIVE, argumentList));
+		} else if (expr instanceof ComparisonExpr comparisonExpr) {
+			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
+					localScope, literals);
+			boolean positive = switch (comparisonExpr.getOp()) {
+				case EQ -> true;
+				case NOT_EQ -> false;
+				default -> throw new IllegalArgumentException("Unsupported operator: " + comparisonExpr.getOp());
+			};
+			literals.add(new EquivalenceLiteral(positive, argumentList.get(0), argumentList.get(1)));
+		} else {
+			throw new IllegalArgumentException("Unsupported literal: " + expr);
+		}
+	}
+
+	private List<Variable> toArgumentList(
+			List<Expr> expressions, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
+			List<Literal> literals) {
+		var argumentList = new ArrayList<Variable>(expressions.size());
+		for (var expr : expressions) {
+			if (!(expr instanceof VariableOrNodeExpr variableOrNodeExpr)) {
+				throw new IllegalArgumentException("Unsupported argument: " + expr);
+			}
+			var variableOrNode = variableOrNodeExpr.getVariableOrNode();
+			if (variableOrNode instanceof Node node) {
+				int nodeId = getNodeId(node);
+				var tempVariable = Variable.of(semanticsUtils.getName(node).orElse("_" + nodeId));
+				literals.add(new ConstantLiteral(tempVariable, nodeId));
+				argumentList.add(tempVariable);
+			} else if (variableOrNode instanceof tools.refinery.language.model.problem.Variable problemVariable) {
+				if (variableOrNodeExpr.getSingletonVariable() == problemVariable) {
+					argumentList.add(Variable.of(problemVariable.getName()));
+				} else {
+					var variable = localScope.get(problemVariable);
+					if (variable == null) {
+						throw new IllegalArgumentException("Unknown variable: " + problemVariable.getName());
+					}
+					argumentList.add(variable);
+				}
+			}
+		}
+		return argumentList;
 	}
 
 	private record RelationInfo(PartialRelation partialRelation, DecisionTree assertions,

@@ -17,7 +17,7 @@ class Person {
 }
 
 class Post {
-    container Person[1] author opposite posts
+    container Person author opposite posts
     Post replyTo
 }
 
@@ -26,6 +26,7 @@ error replyToNotFriend(Post x, Post y) <->
     replyTo(x, y),
     author(x, xAuthor),
     author(y, yAuthor),
+    xAuthor != yAuthor,
     !friend(xAuthor, yAuthor).
 
 error replyToCycle(Post x) <-> replyTo+(x, x).
