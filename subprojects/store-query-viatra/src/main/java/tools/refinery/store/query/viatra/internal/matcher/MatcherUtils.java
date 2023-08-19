@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
+import tools.refinery.viatra.runtime.matchers.tuple.ITuple;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.tuple.*;
 
@@ -17,7 +17,7 @@ final class MatcherUtils {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public static org.eclipse.viatra.query.runtime.matchers.tuple.Tuple toViatraTuple(Tuple refineryTuple) {
+	public static tools.refinery.viatra.runtime.matchers.tuple.Tuple toViatraTuple(Tuple refineryTuple) {
 		if (refineryTuple instanceof Tuple0) {
 			return Tuples.staticArityFlatTupleOf();
 		} else if (refineryTuple instanceof Tuple1) {

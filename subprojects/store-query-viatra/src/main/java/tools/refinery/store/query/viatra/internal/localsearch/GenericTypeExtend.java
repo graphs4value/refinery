@@ -8,15 +8,15 @@
  *******************************************************************************/
 package tools.refinery.store.query.viatra.internal.localsearch;
 
-import org.eclipse.viatra.query.runtime.localsearch.MatchingFrame;
-import org.eclipse.viatra.query.runtime.localsearch.matcher.ISearchContext;
-import org.eclipse.viatra.query.runtime.localsearch.operations.IIteratingSearchOperation;
-import org.eclipse.viatra.query.runtime.localsearch.operations.ISearchOperation;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.tuple.VolatileMaskedTuple;
-import org.eclipse.viatra.query.runtime.matchers.util.Preconditions;
+import tools.refinery.viatra.runtime.localsearch.MatchingFrame;
+import tools.refinery.viatra.runtime.localsearch.matcher.ISearchContext;
+import tools.refinery.viatra.runtime.localsearch.operations.IIteratingSearchOperation;
+import tools.refinery.viatra.runtime.localsearch.operations.ISearchOperation;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.tuple.VolatileMaskedTuple;
+import tools.refinery.viatra.runtime.matchers.util.Preconditions;
 
 import java.util.*;
 import java.util.function.Function;

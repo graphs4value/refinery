@@ -5,9 +5,9 @@
  */
 package tools.refinery.store.query.viatra.internal.update;
 
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContextListener;
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.context.IQueryRuntimeContextListener;
+import tools.refinery.viatra.runtime.matchers.tuple.ITuple;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.SymbolView;

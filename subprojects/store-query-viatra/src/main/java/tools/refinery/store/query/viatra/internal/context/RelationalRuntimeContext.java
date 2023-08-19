@@ -5,12 +5,12 @@
  */
 package tools.refinery.store.query.viatra.internal.context;
 
-import org.eclipse.viatra.query.runtime.matchers.context.*;
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
+import tools.refinery.viatra.runtime.matchers.context.*;
+import tools.refinery.viatra.runtime.matchers.tuple.ITuple;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
+import tools.refinery.viatra.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;

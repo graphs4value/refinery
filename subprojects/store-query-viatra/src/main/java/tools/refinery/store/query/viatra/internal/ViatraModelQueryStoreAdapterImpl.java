@@ -5,9 +5,9 @@
  */
 package tools.refinery.store.query.viatra.internal;
 
-import org.eclipse.viatra.query.runtime.api.IQuerySpecification;
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngineOptions;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.api.IQuerySpecification;
+import tools.refinery.viatra.runtime.api.ViatraQueryEngineOptions;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.AnyQuery;

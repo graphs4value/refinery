@@ -17,9 +17,6 @@ plugins {
 
 repositories {
 	mavenCentral()
-	maven {
-		url = uri("https://repo.eclipse.org/content/groups/releases/")
-	}
 }
 
 // Use log4j-over-slf4j instead of log4j 1.x in the tests.

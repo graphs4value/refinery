@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.tests;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
 
 /**
  * Overrides {@link QueryEvaluationHint#toString()} for pretty names in parametric test names.

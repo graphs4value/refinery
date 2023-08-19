@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
-import org.eclipse.viatra.query.runtime.matchers.backend.IUpdateable;
+import tools.refinery.viatra.runtime.matchers.backend.IQueryResultProvider;
+import tools.refinery.viatra.runtime.matchers.backend.IUpdateable;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.resultset.AbstractResultSet;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;

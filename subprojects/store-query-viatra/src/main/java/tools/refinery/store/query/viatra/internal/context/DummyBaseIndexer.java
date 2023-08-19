@@ -5,16 +5,16 @@
  */
 package tools.refinery.store.query.viatra.internal.context;
 
-import org.eclipse.viatra.query.runtime.api.scope.IBaseIndex;
-import org.eclipse.viatra.query.runtime.api.scope.IIndexingErrorListener;
-import org.eclipse.viatra.query.runtime.api.scope.IInstanceObserver;
-import org.eclipse.viatra.query.runtime.api.scope.ViatraBaseIndexChangeListener;
+import tools.refinery.viatra.runtime.api.scope.IBaseIndex;
+import tools.refinery.viatra.runtime.api.scope.IIndexingErrorListener;
+import tools.refinery.viatra.runtime.api.scope.IInstanceObserver;
+import tools.refinery.viatra.runtime.api.scope.ViatraBaseIndexChangeListener;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 
 /**
- * Copied from <code>org.eclipse.viatra.query.runtime.tabular.TabularEngineContext</code>
+ * Copied from <code>tools.refinery.viatra.runtime.tabular.TabularEngineContext</code>
  */
 public class DummyBaseIndexer implements IBaseIndex {
 	DummyBaseIndexer() {

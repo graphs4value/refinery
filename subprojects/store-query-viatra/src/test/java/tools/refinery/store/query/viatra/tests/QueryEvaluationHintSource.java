@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.tests;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;

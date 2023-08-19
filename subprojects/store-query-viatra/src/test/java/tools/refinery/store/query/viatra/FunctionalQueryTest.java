@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;

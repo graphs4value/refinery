@@ -5,17 +5,17 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
-import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.ExportedParameter;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PQuery;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.psystem.PBody;
+import tools.refinery.viatra.runtime.matchers.psystem.PVariable;
+import tools.refinery.viatra.runtime.matchers.psystem.basicdeferred.ExportedParameter;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.TypeConstraint;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PParameter;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PQuery;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PVisibility;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.DnfUtils;

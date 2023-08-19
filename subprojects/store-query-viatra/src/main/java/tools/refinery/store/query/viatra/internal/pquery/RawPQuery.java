@@ -5,14 +5,14 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
-import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
-import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
-import org.eclipse.viatra.query.runtime.matchers.psystem.annotations.PAnnotation;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.BasePQuery;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PVisibility;
+import tools.refinery.viatra.runtime.api.GenericQuerySpecification;
+import tools.refinery.viatra.runtime.api.ViatraQueryEngine;
+import tools.refinery.viatra.runtime.api.scope.QueryScope;
+import tools.refinery.viatra.runtime.matchers.psystem.PBody;
+import tools.refinery.viatra.runtime.matchers.psystem.annotations.PAnnotation;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.BasePQuery;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PParameter;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PVisibility;
 import tools.refinery.store.query.viatra.internal.RelationalScope;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 

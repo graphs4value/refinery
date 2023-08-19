@@ -5,14 +5,14 @@
  */
 package tools.refinery.store.query.viatra.internal.localsearch;
 
-import org.eclipse.viatra.query.runtime.localsearch.matcher.integration.AbstractLocalSearchResultProvider;
-import org.eclipse.viatra.query.runtime.localsearch.matcher.integration.LocalSearchBackend;
-import org.eclipse.viatra.query.runtime.localsearch.matcher.integration.LocalSearchHints;
-import org.eclipse.viatra.query.runtime.localsearch.plan.IPlanProvider;
-import org.eclipse.viatra.query.runtime.localsearch.planner.compiler.IOperationCompiler;
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryBackendContext;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PQuery;
+import tools.refinery.viatra.runtime.localsearch.matcher.integration.AbstractLocalSearchResultProvider;
+import tools.refinery.viatra.runtime.localsearch.matcher.integration.LocalSearchBackend;
+import tools.refinery.viatra.runtime.localsearch.matcher.integration.LocalSearchHints;
+import tools.refinery.viatra.runtime.localsearch.plan.IPlanProvider;
+import tools.refinery.viatra.runtime.localsearch.planner.compiler.IOperationCompiler;
+import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
+import tools.refinery.viatra.runtime.matchers.context.IQueryBackendContext;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PQuery;
 
 class RelationalLocalSearchResultProvider extends AbstractLocalSearchResultProvider {
 	public RelationalLocalSearchResultProvider(LocalSearchBackend backend, IQueryBackendContext context, PQuery query,

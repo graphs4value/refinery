@@ -5,24 +5,6 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.IQueryBackendFactory;
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.psystem.PBody;
-import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
-import org.eclipse.viatra.query.runtime.matchers.psystem.aggregations.BoundAggregator;
-import org.eclipse.viatra.query.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
-import org.eclipse.viatra.query.runtime.matchers.psystem.annotations.PAnnotation;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicdeferred.*;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.BinaryTransitiveClosure;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.ConstantValue;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameter;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PParameterDirection;
-import org.eclipse.viatra.query.runtime.matchers.psystem.queries.PQuery;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.DnfClause;
@@ -34,6 +16,22 @@ import tools.refinery.store.query.term.StatelessAggregator;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.util.CycleDetectingMapper;
+import tools.refinery.viatra.runtime.matchers.backend.IQueryBackendFactory;
+import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.psystem.PBody;
+import tools.refinery.viatra.runtime.matchers.psystem.PVariable;
+import tools.refinery.viatra.runtime.matchers.psystem.aggregations.BoundAggregator;
+import tools.refinery.viatra.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
+import tools.refinery.viatra.runtime.matchers.psystem.annotations.PAnnotation;
+import tools.refinery.viatra.runtime.matchers.psystem.basicdeferred.*;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.*;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.Connectivity;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PParameter;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PParameterDirection;
+import tools.refinery.viatra.runtime.matchers.psystem.queries.PQuery;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +40,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class Dnf2PQuery {
-	private static final Object P_CONSTRAINT_LOCK = new Object();
 	private final CycleDetectingMapper<Dnf, RawPQuery> mapper = new CycleDetectingMapper<>(Dnf::name,
 			this::doTranslate);
 	private final QueryWrapperFactory wrapperFactory = new QueryWrapperFactory(this);
@@ -91,22 +88,17 @@ public class Dnf2PQuery {
 			pQuery.addAnnotation(functionalDependencyAnnotation);
 		}
 
-		// The constructor of {@link org.eclipse.viatra.query.runtime.matchers.psystem.BasePConstraint} mutates
-		// global static state (<code>nextID</code>) without locking. Therefore, we need to synchronize before creating
-		// any query literals to avoid a data race.
-		synchronized (P_CONSTRAINT_LOCK) {
-			for (DnfClause clause : dnfQuery.getClauses()) {
-				PBody body = new PBody(pQuery);
-				List<ExportedParameter> parameterExports = new ArrayList<>();
-				for (var parameter : dnfQuery.getSymbolicParameters()) {
-					PVariable pVar = body.getOrCreateVariableByName(parameter.getVariable().getUniqueName());
-					parameterExports.add(new ExportedParameter(body, pVar, parameters.get(parameter)));
-				}
-				body.setSymbolicParameters(parameterExports);
-				pQuery.addBody(body);
-				for (Literal literal : clause.literals()) {
-					translateLiteral(literal, body);
-				}
+		for (DnfClause clause : dnfQuery.getClauses()) {
+			PBody body = new PBody(pQuery);
+			List<ExportedParameter> parameterExports = new ArrayList<>();
+			for (var parameter : dnfQuery.getSymbolicParameters()) {
+				PVariable pVar = body.getOrCreateVariableByName(parameter.getVariable().getUniqueName());
+				parameterExports.add(new ExportedParameter(body, pVar, parameters.get(parameter)));
+			}
+			body.setSymbolicParameters(parameterExports);
+			pQuery.addBody(body);
+			for (Literal literal : clause.literals()) {
+				translateLiteral(literal, body);
 			}
 		}
 
@@ -252,6 +244,10 @@ public class Dnf2PQuery {
 	private void translateRepresentativeElectionLiteral(RepresentativeElectionLiteral literal, PBody body) {
 		var substitution = translateSubstitution(literal.getArguments(), body);
 		var pattern = wrapConstraintWithIdentityArguments(literal.getTarget());
-		new RepresentativeElectionConstraint(body, substitution, pattern, literal.getConnectivity());
+		var connectivity = switch (literal.getConnectivity()) {
+			case WEAK -> Connectivity.WEAK;
+			case STRONG -> Connectivity.STRONG;
+		};
+		new RepresentativeElectionConstraint(body, substitution, pattern, connectivity);
 	}
 }

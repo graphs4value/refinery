@@ -5,12 +5,12 @@
  */
 package tools.refinery.store.query.viatra.internal.localsearch;
 
-import org.eclipse.viatra.query.runtime.localsearch.planner.cost.IConstraintEvaluationContext;
-import org.eclipse.viatra.query.runtime.localsearch.planner.cost.impl.StatisticsBasedConstraintCostFunction;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
+import tools.refinery.viatra.runtime.localsearch.planner.cost.IConstraintEvaluationContext;
+import tools.refinery.viatra.runtime.localsearch.planner.cost.impl.StatisticsBasedConstraintCostFunction;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.TypeConstraint;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.util.Accuracy;
 
 import java.util.Optional;
 

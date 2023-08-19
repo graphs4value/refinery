@@ -5,16 +5,16 @@
  */
 package tools.refinery.store.query.viatra.internal.localsearch;
 
-import org.eclipse.viatra.query.runtime.localsearch.operations.generic.GenericTypeExtendSingleValue;
-import org.eclipse.viatra.query.runtime.localsearch.operations.util.CallInformation;
-import org.eclipse.viatra.query.runtime.localsearch.planner.compiler.GenericOperationCompiler;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContext;
-import org.eclipse.viatra.query.runtime.matchers.psystem.PVariable;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
-import org.eclipse.viatra.query.runtime.matchers.psystem.basicenumerables.TypeConstraint;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.localsearch.operations.generic.GenericTypeExtendSingleValue;
+import tools.refinery.viatra.runtime.localsearch.operations.util.CallInformation;
+import tools.refinery.viatra.runtime.localsearch.planner.compiler.GenericOperationCompiler;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.context.IQueryRuntimeContext;
+import tools.refinery.viatra.runtime.matchers.psystem.PVariable;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.PositivePatternCall;
+import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.TypeConstraint;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
 
 import java.util.*;
 
@@ -52,7 +52,7 @@ public class RelationalOperationCompiler extends GenericOperationCompiler  {
 					unboundVariables.iterator().next()));
 		} else {
 			// Use a fixed version of
-			// {@code org.eclipse.viatra.query.runtime.localsearch.operations.generic.GenericTypeExtend} that handles
+			// {@code tools.refinery.viatra.runtime.localsearch.operations.generic.GenericTypeExtend} that handles
 			// failed unification of variables correctly.
 			operations.add(new GenericTypeExtend(inputKey, positions, callMask, indexerMask, unboundVariables));
 		}
@@ -62,7 +62,7 @@ public class RelationalOperationCompiler extends GenericOperationCompiler  {
 	protected void createExtend(PositivePatternCall pCall, Map<PVariable, Integer> variableMapping) {
 		CallInformation information = CallInformation.create(pCall, variableMapping, variableBindings.get(pCall));
 		// Use a fixed version of
-		// {@code org.eclipse.viatra.query.runtime.localsearch.operations.extend.ExtendPositivePatternCall} that handles
+		// {@code tools.refinery.viatra.runtime.localsearch.operations.extend.ExtendPositivePatternCall} that handles
 		// failed unification of variables correctly.
 		operations.add(new ExtendPositivePatternCall(information));
 		dependencies.add(information.getCallWithAdornment());

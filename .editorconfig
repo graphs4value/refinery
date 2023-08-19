@@ -26,3 +26,9 @@ indent_size = 2
 
 [libs.versions.toml]
 max_line_length = 999
+
+[*.{ecore,genmodel}]
+max_line_length = 999
+
+[*.mwe2]
+max_line_length = 999

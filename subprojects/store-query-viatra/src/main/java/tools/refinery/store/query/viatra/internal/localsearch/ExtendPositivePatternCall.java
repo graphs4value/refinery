@@ -8,15 +8,15 @@
  *******************************************************************************/
 package tools.refinery.store.query.viatra.internal.localsearch;
 
-import org.eclipse.viatra.query.runtime.localsearch.MatchingFrame;
-import org.eclipse.viatra.query.runtime.localsearch.matcher.ISearchContext;
-import org.eclipse.viatra.query.runtime.localsearch.operations.IPatternMatcherOperation;
-import org.eclipse.viatra.query.runtime.localsearch.operations.ISearchOperation;
-import org.eclipse.viatra.query.runtime.localsearch.operations.util.CallInformation;
-import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.tuple.VolatileModifiableMaskedTuple;
+import tools.refinery.viatra.runtime.localsearch.MatchingFrame;
+import tools.refinery.viatra.runtime.localsearch.matcher.ISearchContext;
+import tools.refinery.viatra.runtime.localsearch.operations.IPatternMatcherOperation;
+import tools.refinery.viatra.runtime.localsearch.operations.ISearchOperation;
+import tools.refinery.viatra.runtime.localsearch.operations.util.CallInformation;
+import tools.refinery.viatra.runtime.matchers.backend.IQueryResultProvider;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.tuple.VolatileModifiableMaskedTuple;
 
 import java.util.Iterator;
 import java.util.List;

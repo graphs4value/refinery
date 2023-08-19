@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.matchers.psystem.IExpressionEvaluator;
-import org.eclipse.viatra.query.runtime.matchers.psystem.IValueProvider;
+import tools.refinery.viatra.runtime.matchers.psystem.IExpressionEvaluator;
+import tools.refinery.viatra.runtime.matchers.psystem.IValueProvider;
 import tools.refinery.store.query.term.Term;
 import tools.refinery.store.query.term.Variable;
 

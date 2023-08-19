@@ -9,11 +9,11 @@ plugins {
 }
 
 dependencies {
-	implementation(libs.eclipseCollections)
-	implementation(libs.eclipseCollections.api)
+	api(libs.eclipseCollections.api)
 	api(project(":refinery-language"))
 	api(project(":refinery-store"))
 	api(project(":refinery-store-query"))
 	api(project(":refinery-store-reasoning"))
+	implementation(libs.eclipseCollections)
 	testImplementation(testFixtures(project(":refinery-language")))
 }

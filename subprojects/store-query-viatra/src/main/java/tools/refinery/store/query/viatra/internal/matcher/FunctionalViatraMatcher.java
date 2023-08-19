@@ -5,10 +5,10 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import org.eclipse.viatra.query.runtime.rete.index.IterableIndexer;
-import org.eclipse.viatra.query.runtime.rete.matcher.RetePatternMatcher;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
+import tools.refinery.viatra.runtime.rete.index.IterableIndexer;
+import tools.refinery.viatra.runtime.rete.matcher.RetePatternMatcher;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.query.dnf.FunctionalQuery;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
@@ -17,9 +17,9 @@ import tools.refinery.store.tuple.Tuple;
 /**
  * Directly access the tuples inside a VIATRA pattern matcher.<p>
  * This class neglects calling
- * {@link org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContext#wrapTuple(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple)}
+ * {@link tools.refinery.viatra.runtime.matchers.context.IQueryRuntimeContext#wrapTuple(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple)}
  * and
- * {@link org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContext#unwrapTuple(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple)},
+ * {@link tools.refinery.viatra.runtime.matchers.context.IQueryRuntimeContext#unwrapTuple(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple)},
  * because {@link tools.refinery.store.query.viatra.internal.context.RelationalRuntimeContext} provides a trivial
  * implementation for these methods.
  * Using this class with any other runtime context may lead to undefined behavior.
@@ -37,7 +37,7 @@ public class FunctionalViatraMatcher<T> extends AbstractViatraMatcher<T> {
 		emptyMask = TupleMask.empty(arityWithOutput);
 		omitOutputMask = TupleMask.omit(arity, arityWithOutput);
 		if (backend instanceof RetePatternMatcher reteBackend) {
-			var maybeIterableOmitOutputIndexer = IndexerUtils.getIndexer(reteBackend, omitOutputMask);
+			var maybeIterableOmitOutputIndexer = reteBackend.getInternalIndexer(omitOutputMask);
 			if (maybeIterableOmitOutputIndexer instanceof IterableIndexer iterableOmitOutputIndexer) {
 				omitOutputIndexer = iterableOmitOutputIndexer;
 			} else {
@@ -76,7 +76,7 @@ public class FunctionalViatraMatcher<T> extends AbstractViatraMatcher<T> {
 	}
 
 	@Override
-	public void update(org.eclipse.viatra.query.runtime.matchers.tuple.Tuple updateElement, boolean isInsertion) {
+	public void update(tools.refinery.viatra.runtime.matchers.tuple.Tuple updateElement, boolean isInsertion) {
 		var key = MatcherUtils.keyToRefineryTuple(updateElement);
 		var value = MatcherUtils.<T>getValue(updateElement);
 		if (isInsertion) {

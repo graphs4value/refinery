@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.rete.index.IterableIndexer;
+import tools.refinery.viatra.runtime.rete.index.IterableIndexer;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.tuple.Tuple;
 
@@ -13,7 +13,7 @@ import java.util.Iterator;
 
 class FunctionalCursor<T> implements Cursor<Tuple, T> {
 	private final IterableIndexer indexer;
-	private final Iterator<org.eclipse.viatra.query.runtime.matchers.tuple.Tuple> iterator;
+	private final Iterator<tools.refinery.viatra.runtime.matchers.tuple.Tuple> iterator;
 	private boolean terminated;
 	private Tuple key;
 	private T value;

@@ -5,9 +5,9 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.api.GenericPatternMatcher;
-import org.eclipse.viatra.query.runtime.api.GenericQuerySpecification;
-import org.eclipse.viatra.query.runtime.matchers.backend.IQueryResultProvider;
+import tools.refinery.viatra.runtime.api.GenericPatternMatcher;
+import tools.refinery.viatra.runtime.api.GenericQuerySpecification;
+import tools.refinery.viatra.runtime.matchers.backend.IQueryResultProvider;
 
 public class RawPatternMatcher extends GenericPatternMatcher {
     public RawPatternMatcher(GenericQuerySpecification<? extends GenericPatternMatcher> specification) {

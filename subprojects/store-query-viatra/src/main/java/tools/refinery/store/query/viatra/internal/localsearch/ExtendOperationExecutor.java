@@ -8,9 +8,9 @@
  *******************************************************************************/
 package tools.refinery.store.query.viatra.internal.localsearch;
 
-import org.eclipse.viatra.query.runtime.localsearch.MatchingFrame;
-import org.eclipse.viatra.query.runtime.localsearch.matcher.ISearchContext;
-import org.eclipse.viatra.query.runtime.localsearch.operations.ISearchOperation.ISearchOperationExecutor;
+import tools.refinery.viatra.runtime.localsearch.MatchingFrame;
+import tools.refinery.viatra.runtime.localsearch.matcher.ISearchContext;
+import tools.refinery.viatra.runtime.localsearch.operations.ISearchOperation.ISearchOperationExecutor;
 
 import java.util.Iterator;
 
@@ -57,7 +57,7 @@ abstract class ExtendOperationExecutor<T> implements ISearchOperationExecutor {
     }
 
 	/**
-	 * Fixed version of {@link org.eclipse.viatra.query.runtime.localsearch.operations.ExtendOperationExecutor#execute}
+	 * Fixed version of {@link tools.refinery.viatra.runtime.localsearch.operations.ExtendOperationExecutor#execute}
 	 * that handles failed unification of variables correctly.
 	 * @param frame The matching frame to extend.
 	 * @param context The search context.
