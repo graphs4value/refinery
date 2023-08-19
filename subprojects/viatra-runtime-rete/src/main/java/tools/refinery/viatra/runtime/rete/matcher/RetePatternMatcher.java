@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2004-2008 Gabor Bergmann and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
