@@ -7,11 +7,10 @@ package tools.refinery.language.semantics.model.internal;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.reasoning.seed.Seed;
-import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.representation.TruthValue;
+import tools.refinery.store.tuple.Tuple;
 
-public class DecisionTree implements Seed<TruthValue> {
+class DecisionTree implements MutableSeed<TruthValue> {
 	private final int levels;
 
 	private final DecisionTreeNode root;
@@ -50,26 +49,33 @@ public class DecisionTree implements Seed<TruthValue> {
 		return root.getValue(levels - 1, tuple).getTruthValue();
 	}
 
+	@Override
 	public void mergeValue(Tuple tuple, TruthValue truthValue) {
 		if (truthValue != null) {
 			root.mergeValue(levels - 1, tuple, truthValue);
 		}
 	}
 
+	@Override
 	public void setIfMissing(Tuple tuple, TruthValue truthValue) {
 		if (truthValue != null) {
 			root.setIfMissing(levels - 1, tuple, truthValue);
 		}
 	}
 
+	@Override
 	public void setAllMissing(TruthValue truthValue) {
 		if (truthValue != null) {
 			root.setAllMissing(truthValue);
 		}
 	}
 
-	public void overwriteValues(DecisionTree values) {
-		root.overwriteValues(values.root);
+	@Override
+	public void overwriteValues(MutableSeed<TruthValue> values) {
+		if (!(values instanceof DecisionTree decisionTree)) {
+			throw new IllegalArgumentException("Incompatible overwrite: " + values);
+		}
+		root.overwriteValues(decisionTree.root);
 	}
 
 	public TruthValue getReducedValue() {

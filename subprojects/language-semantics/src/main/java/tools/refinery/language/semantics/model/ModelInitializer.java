@@ -9,7 +9,7 @@ import com.google.inject.Inject;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.semantics.model.internal.DecisionTree;
+import tools.refinery.language.semantics.model.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
@@ -306,7 +306,7 @@ public class ModelInitializer {
 	}
 
 	private void collectEnumAssertions(EnumDeclaration enumDeclaration) {
-		var overlay = new DecisionTree(1, null);
+		var overlay = MutableSeed.of(1, null);
 		for (var literal : enumDeclaration.getLiterals()) {
 			collectIndividualAssertions(literal);
 			var nodeId = getNodeId(literal);
@@ -535,15 +535,15 @@ public class ModelInitializer {
 		return argumentList;
 	}
 
-	private record RelationInfo(PartialRelation partialRelation, DecisionTree assertions,
-								DecisionTree defaultAssertions) {
+	private record RelationInfo(PartialRelation partialRelation, MutableSeed<TruthValue> assertions,
+								MutableSeed<TruthValue> defaultAssertions) {
 		public RelationInfo(String name, int arity, TruthValue value, TruthValue defaultValue) {
 			this(new PartialRelation(name, arity), value, defaultValue);
 		}
 
 		public RelationInfo(PartialRelation partialRelation, TruthValue value, TruthValue defaultValue) {
-			this(partialRelation, new DecisionTree(partialRelation.arity(), value),
-					new DecisionTree(partialRelation.arity(), defaultValue));
+			this(partialRelation, MutableSeed.of(partialRelation.arity(), value),
+					MutableSeed.of(partialRelation.arity(), defaultValue));
 		}
 
 		public Seed<TruthValue> toSeed(int nodeCount) {
