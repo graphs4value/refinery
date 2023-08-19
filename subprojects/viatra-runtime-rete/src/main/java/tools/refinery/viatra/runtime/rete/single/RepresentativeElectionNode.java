@@ -8,9 +8,9 @@
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.single;
 
-import tools.refinery.viatra.runtime.base.itc.alg.representative.RepresentativeElectionAlgorithm;
-import tools.refinery.viatra.runtime.base.itc.alg.representative.RepresentativeObserver;
-import tools.refinery.viatra.runtime.base.itc.graphimpl.Graph;
+import tools.refinery.viatra.runtime.rete.itc.alg.representative.RepresentativeElectionAlgorithm;
+import tools.refinery.viatra.runtime.rete.itc.alg.representative.RepresentativeObserver;
+import tools.refinery.viatra.runtime.rete.itc.graphimpl.Graph;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 import tools.refinery.viatra.runtime.matchers.util.Clearable;

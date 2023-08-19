@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.index;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import tools.refinery.viatra.runtime.base.itc.alg.incscc.IncSCCAlg;
+import tools.refinery.viatra.runtime.rete.itc.alg.incscc.IncSCCAlg;
 import tools.refinery.viatra.runtime.matchers.tuple.MaskedTuple;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
@@ -86,21 +86,21 @@ public class TransitiveClosureNodeIndexer extends StandardIndexer implements Ite
     public int getBucketCount() {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Collection<Tuple> getSignatures() {
         return asTupleCollection(tcAlg.getTcRelation());
     }
-    
+
     @Override
     public Iterator<Tuple> iterator() {
         return asTupleCollection(tcAlg.getTcRelation()).iterator();
     }
 
     private Collection<Tuple> asTupleCollection(
-            Collection<tools.refinery.viatra.runtime.base.itc.alg.misc.Tuple<Object>> tuples) {
+            Collection<tools.refinery.viatra.runtime.rete.itc.alg.misc.Tuple<Object>> tuples) {
         Set<Tuple> retSet = CollectionsFactory.createSet();
-        for (tools.refinery.viatra.runtime.base.itc.alg.misc.Tuple<Object> tuple : tuples) {
+        for (tools.refinery.viatra.runtime.rete.itc.alg.misc.Tuple<Object> tuple : tuples) {
             retSet.add(Tuples.staticArityFlatTupleOf(tuple.getSource(), tuple.getTarget()));
         }
         return retSet;
@@ -117,5 +117,5 @@ public class TransitiveClosureNodeIndexer extends StandardIndexer implements Ite
     public Receiver getActiveNode() {
         return tcNode;
     }
-    
+
 }

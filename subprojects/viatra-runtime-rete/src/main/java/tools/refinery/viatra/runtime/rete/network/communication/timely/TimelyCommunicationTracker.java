@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.network.communication.timely;
@@ -15,8 +15,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 
-import tools.refinery.viatra.runtime.base.itc.alg.misc.topsort.TopologicalSorting;
-import tools.refinery.viatra.runtime.base.itc.graphimpl.Graph;
+import tools.refinery.viatra.runtime.rete.itc.alg.misc.topsort.TopologicalSorting;
+import tools.refinery.viatra.runtime.rete.itc.graphimpl.Graph;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
 import tools.refinery.viatra.runtime.rete.index.IndexerListener;
 import tools.refinery.viatra.runtime.rete.index.SpecializedProjectionIndexer;
@@ -37,7 +37,7 @@ import tools.refinery.viatra.runtime.rete.single.DiscriminatorDispatcherNode;
 
 /**
  * Timely (DDF) implementation of the {@link CommunicationTracker}.
- * 
+ *
  * @author Tamas Szabo
  * @since 2.3
  */

@@ -8,11 +8,11 @@
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.single;
 
-import tools.refinery.viatra.runtime.base.itc.alg.incscc.IncSCCAlg;
-import tools.refinery.viatra.runtime.base.itc.alg.misc.Tuple;
-import tools.refinery.viatra.runtime.base.itc.graphimpl.Graph;
-import tools.refinery.viatra.runtime.base.itc.igraph.ITcDataSource;
-import tools.refinery.viatra.runtime.base.itc.igraph.ITcObserver;
+import tools.refinery.viatra.runtime.rete.itc.alg.incscc.IncSCCAlg;
+import tools.refinery.viatra.runtime.rete.itc.alg.misc.Tuple;
+import tools.refinery.viatra.runtime.rete.itc.graphimpl.Graph;
+import tools.refinery.viatra.runtime.rete.itc.igraph.ITcDataSource;
+import tools.refinery.viatra.runtime.rete.itc.igraph.ITcObserver;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 import tools.refinery.viatra.runtime.matchers.util.Clearable;
 import tools.refinery.viatra.runtime.matchers.util.Direction;

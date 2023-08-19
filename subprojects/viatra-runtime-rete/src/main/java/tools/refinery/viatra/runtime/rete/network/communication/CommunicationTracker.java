@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.network.communication;
@@ -16,9 +16,9 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
-import tools.refinery.viatra.runtime.base.itc.alg.incscc.IncSCCAlg;
-import tools.refinery.viatra.runtime.base.itc.alg.misc.topsort.TopologicalSorting;
-import tools.refinery.viatra.runtime.base.itc.graphimpl.Graph;
+import tools.refinery.viatra.runtime.rete.itc.alg.incscc.IncSCCAlg;
+import tools.refinery.viatra.runtime.rete.itc.alg.misc.topsort.TopologicalSorting;
+import tools.refinery.viatra.runtime.rete.itc.graphimpl.Graph;
 import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
 import tools.refinery.viatra.runtime.rete.aggregation.IAggregatorNode;
 import tools.refinery.viatra.runtime.rete.boundary.ExternalInputEnumeratorNode;
@@ -52,7 +52,7 @@ import tools.refinery.viatra.runtime.rete.single.TrimmerNode;
  * precisely, the mailboxes that contain the messages) for the associated {@link ReteContainer}. The ordering is
  * governed by the strongly connected components in the dependency network and follows a topological sorting scheme;
  * those mailboxes will be emptied first whose owner nodes do not depend on other undelivered messages.
- * 
+ *
  * @author Tamas Szabo
  * @since 1.6
  *
@@ -186,7 +186,7 @@ public abstract class CommunicationTracker {
                         // or true trimming in its sole parent
                                 directParents.size() == 1 && trueTrimming(directParents.iterator().next())))) &&
                         // disallow fallthrough: external updates should be stored (if updates are delayed)
-                                (!(node instanceof ExternalInputEnumeratorNode)) && 
+                                (!(node instanceof ExternalInputEnumeratorNode)) &&
                         // disallow fallthrough: RelationEvaluatorNode needs to be notified in batch-style, and the batching is done by the mailbox
                         // however, it is not the RelationEvaluatorNode itself that is interesting here, as that indirectly uses the BatchingReceiver
                         // so we need to disable fall-through for the BatchingReceiver
@@ -375,7 +375,7 @@ public abstract class CommunicationTracker {
 
     /**
      * Unregisters a dependency between source and target.
-     * 
+     *
      * @param source
      *            the source node
      * @param target
@@ -416,10 +416,10 @@ public abstract class CommunicationTracker {
     }
 
     /**
-     * Returns true if the given source-target edge in the communication network acts as a recursion cut point. 
+     * Returns true if the given source-target edge in the communication network acts as a recursion cut point.
      * The current implementation considers edges leading into {@link ProductionNode}s as cut point iff
-     * both source and target belong to the same group. 
-     * 
+     * both source and target belong to the same group.
+     *
      * @param source the source node
      * @param target the target node
      * @return true if the edge is a cut point, false otherwise

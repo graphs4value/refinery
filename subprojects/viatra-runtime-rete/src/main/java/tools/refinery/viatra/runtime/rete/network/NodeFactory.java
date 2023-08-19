@@ -11,9 +11,9 @@ package tools.refinery.viatra.runtime.rete.network;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EMap;
-import tools.refinery.viatra.runtime.base.itc.alg.representative.RepresentativeElectionAlgorithm;
-import tools.refinery.viatra.runtime.base.itc.alg.representative.StronglyConnectedComponentAlgorithm;
-import tools.refinery.viatra.runtime.base.itc.alg.representative.WeaklyConnectedComponentAlgorithm;
+import tools.refinery.viatra.runtime.rete.itc.alg.representative.RepresentativeElectionAlgorithm;
+import tools.refinery.viatra.runtime.rete.itc.alg.representative.StronglyConnectedComponentAlgorithm;
+import tools.refinery.viatra.runtime.rete.itc.alg.representative.WeaklyConnectedComponentAlgorithm;
 import tools.refinery.viatra.runtime.matchers.context.IPosetComparator;
 import tools.refinery.viatra.runtime.matchers.psystem.IExpressionEvaluator;
 import tools.refinery.viatra.runtime.matchers.psystem.IRelationEvaluator;
