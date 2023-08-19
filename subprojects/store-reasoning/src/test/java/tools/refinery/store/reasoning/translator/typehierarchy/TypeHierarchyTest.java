@@ -13,6 +13,7 @@ import tools.refinery.store.representation.TruthValue;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -200,5 +201,23 @@ class TypeHierarchyTest {
 				.type(c2, c1);
 
 		assertThrows(IllegalArgumentException.class, builder::build);
+	}
+
+	@Test
+	void chainedEliminationTest() {
+		var a1 = new PartialRelation("A1", 1);
+		var a2 = new PartialRelation("A2", 1);
+		var c1 = new PartialRelation("C1", 1);
+
+		var sut = TypeHierarchy.builder()
+				.type(a1, true)
+				.type(a2, true, a1)
+				.type(c1, a2)
+				.build();
+
+		assertAll(
+				() -> assertThat(sut.getEliminatedTypes(), hasEntry(a1, c1)),
+				() -> assertThat(sut.getEliminatedTypes(), hasEntry(a2, c1))
+		);
 	}
 }

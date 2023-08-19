@@ -126,25 +126,37 @@ public class TypeHierarchy {
 	}
 
 	private void eliminateTrivialSupertypes() {
-		boolean changed;
-		do {
+		Set<PartialRelation> toInspect = new HashSet<>(extendedTypeInfoMap.keySet());
+		while (!toInspect.isEmpty()) {
 			var toRemove = new ArrayList<PartialRelation>();
-			for (var entry : extendedTypeInfoMap.entrySet()) {
-				var extendedTypeInfo = entry.getValue();
-				boolean isAbstract = extendedTypeInfo.isAbstractType();
-				// Do not eliminate abstract types with 0 subtypes, because they can be used para-consistently, i.e.,
-				// an object determined to <b>must</b> have an abstract type with 0 subtypes <b>may not</b> ever exist.
-				boolean hasSingleDirectSubtype = extendedTypeInfo.getDirectSubtypes().size() == 1;
-				if (isAbstract && hasSingleDirectSubtype) {
-					toRemove.add(entry.getKey());
+			for (var partialRelation : toInspect) {
+				var extendedTypeInfo = extendedTypeInfoMap.get(partialRelation);
+				if (extendedTypeInfo != null && isTrivialSupertype(extendedTypeInfo)) {
+					toRemove.add(partialRelation);
 				}
 			}
-			toRemove.forEach(this::removeTrivialType);
-			changed = !toRemove.isEmpty();
-		} while (changed);
+			toInspect.clear();
+			for (var partialRelation : toRemove) {
+				removeTrivialType(partialRelation, toInspect);
+			}
+		}
 	}
 
-	private void removeTrivialType(PartialRelation trivialType) {
+	private boolean isTrivialSupertype(ExtendedTypeInfo extendedTypeInfo) {
+		if (!extendedTypeInfo.isAbstractType()) {
+			return false;
+		}
+		var subtypeIterator = extendedTypeInfo.getDirectSubtypes().iterator();
+		if (!subtypeIterator.hasNext()) {
+			// Do not eliminate abstract types with 0 subtypes, because they can be used para-consistently, i.e.,
+			// an object determined to <b>must</b> have an abstract type with 0 subtypes <b>may not</b> ever exist.
+			return false;
+		}
+		var directSubtype = subtypeIterator.next();
+		return !extendedTypeInfoMap.get(directSubtype).isAbstractType() && !subtypeIterator.hasNext();
+	}
+
+	private void removeTrivialType(PartialRelation trivialType, Set<PartialRelation> toInspect) {
 		var extendedTypeInfo = extendedTypeInfoMap.get(trivialType);
 		var iterator = extendedTypeInfo.getDirectSubtypes().iterator();
 		if (!iterator.hasNext()) {
@@ -156,7 +168,6 @@ public class TypeHierarchy {
 			throw new AssertionError("Expected trivial supertype %s to have at most 1 direct subtype"
 					.formatted(trivialType));
 		}
-		replacements.put(trivialType, replacement);
 		for (var supertype : extendedTypeInfo.getAllSupertypes()) {
 			var extendedSupertypeInfo = extendedTypeInfoMap.get(supertype);
 			if (!extendedSupertypeInfo.getAllSubtypes().remove(trivialType)) {
@@ -165,6 +176,9 @@ public class TypeHierarchy {
 			var directSubtypes = extendedSupertypeInfo.getDirectSubtypes();
 			if (directSubtypes.remove(trivialType)) {
 				directSubtypes.add(replacement);
+				if (extendedSupertypeInfo.isAbstractType() && directSubtypes.size() == 1) {
+					toInspect.add(supertype);
+				}
 			}
 		}
 		for (var subtype : extendedTypeInfo.getAllSubtypes()) {
