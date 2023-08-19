@@ -27,12 +27,7 @@ public class PushWebDocumentProvider implements IWebDocumentProvider {
 
 	@Override
 	public XtextWebDocument get(String resourceId, IServiceContext serviceContext) {
-		if (resourceId == null) {
-			return new XtextWebDocument(null, synchronizerProvider.get());
-		} else {
-			// We only need to send push messages if a resourceId is specified.
-			return new PushWebDocument(resourceId,
-					serviceContext.getSession().get(DocumentSynchronizer.class, () -> this.synchronizerProvider.get()));
-		}
+		return new PushWebDocument(resourceId,
+				serviceContext.getSession().get(DocumentSynchronizer.class, () -> this.synchronizerProvider.get()));
 	}
 }

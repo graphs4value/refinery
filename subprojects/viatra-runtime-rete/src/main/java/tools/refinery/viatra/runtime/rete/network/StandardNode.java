@@ -1,18 +1,14 @@
 /*******************************************************************************
  * Copyright (c) 2004-2008 Gabor Bergmann and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
 package tools.refinery.viatra.runtime.rete.network;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
@@ -24,11 +20,16 @@ import tools.refinery.viatra.runtime.rete.network.communication.Timestamp;
 import tools.refinery.viatra.runtime.rete.network.mailbox.Mailbox;
 import tools.refinery.viatra.runtime.rete.traceability.TraceInfo;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Base implementation for a supplier node.
- * 
+ *
  * @author Gabor Bergmann
- * 
+ *
  */
 public abstract class StandardNode extends BaseNode implements Supplier, NetworkStructureChangeSensitiveNode {
     protected final List<Receiver> children = CollectionsFactory.createObserverList();
@@ -45,6 +46,7 @@ public abstract class StandardNode extends BaseNode implements Supplier, Network
      * @since 2.4
      */
     protected void propagateUpdate(final Direction direction, final Tuple updateElement, final Timestamp timestamp) {
+		reteContainer.checkCancelled();
         for (final Mailbox childMailbox : childMailboxes) {
             childMailbox.postMessage(direction, updateElement, timestamp);
         }

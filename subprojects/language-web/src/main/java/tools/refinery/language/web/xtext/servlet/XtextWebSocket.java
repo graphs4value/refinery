@@ -70,10 +70,11 @@ public class XtextWebSocket implements ResponseHandler {
 
 	@OnWebSocketError
 	public void onError(Throwable error) {
+		executor.dispose();
 		if (webSocketSession == null) {
 			return;
 		}
-		LOG.error("Internal websocket error in connection from" + webSocketSession.getRemoteSocketAddress(), error);
+		LOG.error("Internal websocket error in connection from " + webSocketSession.getRemoteSocketAddress(), error);
 	}
 
 	@OnWebSocketMessage
@@ -86,14 +87,18 @@ public class XtextWebSocket implements ResponseHandler {
 		try {
 			request = gson.fromJson(reader, XtextWebRequest.class);
 		} catch (JsonIOException e) {
-			LOG.error("Cannot read from websocket from" + webSocketSession.getRemoteSocketAddress(), e);
+			LOG.error("Cannot read from websocket from " + webSocketSession.getRemoteSocketAddress(), e);
 			if (webSocketSession.isOpen()) {
+				executor.dispose();
 				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot read payload", Callback.NOOP);
 			}
 			return;
 		} catch (JsonParseException e) {
-			LOG.warn("Malformed websocket request from" + webSocketSession.getRemoteSocketAddress(), e);
-			webSocketSession.close(XtextStatusCode.INVALID_JSON, "Invalid JSON payload", Callback.NOOP);
+			LOG.warn("Malformed websocket request from " + webSocketSession.getRemoteSocketAddress(), e);
+			if (webSocketSession.isOpen()) {
+				executor.dispose();
+				webSocketSession.close(XtextStatusCode.INVALID_JSON, "Invalid JSON payload", Callback.NOOP);
+			}
 			return;
 		}
 		try {
@@ -101,6 +106,7 @@ public class XtextWebSocket implements ResponseHandler {
 		} catch (ResponseHandlerException e) {
 			LOG.warn("Cannot write websocket response", e);
 			if (webSocketSession.isOpen()) {
+				executor.dispose();
 				webSocketSession.close(StatusCode.SERVER_ERROR, "Cannot write response", Callback.NOOP);
 			}
 		}

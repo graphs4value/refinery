@@ -1,26 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2004-2008 Gabor Bergmann and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
 package tools.refinery.viatra.runtime.rete.network;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
 import org.apache.log4j.Logger;
+import tools.refinery.viatra.runtime.CancellationToken;
 import tools.refinery.viatra.runtime.matchers.context.IQueryBackendContext;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.util.Clearable;
@@ -41,6 +32,9 @@ import tools.refinery.viatra.runtime.rete.remote.Address;
 import tools.refinery.viatra.runtime.rete.single.SingleInputNode;
 import tools.refinery.viatra.runtime.rete.single.TrimmerNode;
 import tools.refinery.viatra.runtime.rete.util.Options;
+
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author Gabor Bergmann
@@ -79,6 +73,8 @@ public final class ReteContainer {
 
     protected final TimelyConfiguration timelyConfiguration;
 
+	private final CancellationToken cancellationToken;
+
     /**
      * @param threaded
      *            false if operating in a single-threaded environment
@@ -88,6 +84,7 @@ public final class ReteContainer {
         this.network = network;
         this.backendContext = network.getEngine().getBackendContext();
         this.timelyConfiguration = network.getEngine().getTimelyConfiguration();
+		cancellationToken = backendContext.getRuntimeContext().getCancellationToken();
 
         this.delayedCommandQueue = new LinkedHashSet<DelayedCommand>();
         this.delayedCommandBuffer = new LinkedHashSet<DelayedCommand>();
@@ -395,10 +392,10 @@ public final class ReteContainer {
 
     /**
      * Retrieves a safe copy of the contents of a supplier.
-     * 
+     *
      * <p> Note that there may be multiple copies of a Tuple in case of a {@link TrimmerNode}, so the result is not always a set.
-     * 
-     * @param flush if true, a flush is performed before pulling the contents 
+     *
+     * @param flush if true, a flush is performed before pulling the contents
      * @since 2.3
      */
     public Collection<Tuple> pullContents(final Supplier supplier, final boolean flush) {
@@ -424,7 +421,7 @@ public final class ReteContainer {
 
     /**
      * Retrieves the contents of a SingleInputNode's parentage.
-     * 
+     *
      * @since 2.3
      */
     public Collection<Tuple> pullPropagatedContents(final SingleInputNode supplier, final boolean flush) {
@@ -438,7 +435,7 @@ public final class ReteContainer {
 
     /**
      * Retrieves the timestamp-aware contents of a SingleInputNode's parentage.
-     * 
+     *
      * @since 2.3
      */
     public Map<Tuple, Timeline<Timestamp>> pullPropagatedContentsWithTimestamp(final SingleInputNode supplier,
@@ -541,7 +538,7 @@ public final class ReteContainer {
 
     /**
      * Sends out all pending messages to their receivers. The delivery is governed by the communication tracker.
-     * 
+     *
      * @since 1.6
      */
     public void deliverMessagesSingleThreaded() {
@@ -620,7 +617,7 @@ public final class ReteContainer {
 
     /**
      * Returns an addressed node at this container.
-     * 
+     *
      * @pre: address.container == this, e.g. address MUST be local
      * @throws IllegalArgumentException
      *             if address is non-local
@@ -726,4 +723,7 @@ public final class ReteContainer {
         return network.getInputConnector();
     }
 
+	public void checkCancelled() {
+		cancellationToken.checkCancelled();
+	}
 }

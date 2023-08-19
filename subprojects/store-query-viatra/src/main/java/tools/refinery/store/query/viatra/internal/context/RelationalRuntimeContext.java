@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.context;
 
+import tools.refinery.viatra.runtime.CancellationToken;
 import tools.refinery.viatra.runtime.matchers.context.*;
 import tools.refinery.viatra.runtime.matchers.tuple.ITuple;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
@@ -32,10 +33,13 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	private final Model model;
 
+	private final CancellationToken cancellationToken;
+
 	RelationalRuntimeContext(ViatraModelQueryAdapterImpl adapter) {
 		model = adapter.getModel();
 		metaContext = new RelationalQueryMetaContext(adapter.getStoreAdapter().getInputKeys());
 		modelUpdateListener = new ModelUpdateListener(adapter);
+		cancellationToken = adapter.getCancellationToken();
 	}
 
 	@Override
@@ -191,5 +195,10 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public void executeAfterTraversal(Runnable runnable) {
 		runnable.run();
+	}
+
+	@Override
+	public CancellationToken getCancellationToken() {
+		return cancellationToken;
 	}
 }

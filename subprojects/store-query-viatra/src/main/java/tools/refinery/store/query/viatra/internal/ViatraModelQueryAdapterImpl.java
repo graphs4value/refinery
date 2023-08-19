@@ -18,6 +18,7 @@ import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.query.viatra.internal.matcher.FunctionalViatraMatcher;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.matcher.RelationalViatraMatcher;
+import tools.refinery.viatra.runtime.CancellationToken;
 import tools.refinery.viatra.runtime.api.AdvancedViatraQueryEngine;
 import tools.refinery.viatra.runtime.api.GenericQueryGroup;
 import tools.refinery.viatra.runtime.api.IQuerySpecification;
@@ -79,6 +80,10 @@ public class ViatraModelQueryAdapterImpl implements ViatraModelQueryAdapter, Mod
 	@Override
 	public ViatraModelQueryStoreAdapterImpl getStoreAdapter() {
 		return storeAdapter;
+	}
+
+	public CancellationToken getCancellationToken() {
+		return storeAdapter.getCancellationToken();
 	}
 
 	@Override

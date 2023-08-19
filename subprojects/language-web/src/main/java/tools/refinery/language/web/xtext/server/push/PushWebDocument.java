@@ -27,11 +27,11 @@ public class PushWebDocument extends XtextWebDocument {
 
 	private final Map<Class<?>, IServiceResult> precomputedServices = new HashMap<>();
 
+	private final DocumentSynchronizer synchronizer;
+
 	public PushWebDocument(String resourceId, DocumentSynchronizer synchronizer) {
 		super(resourceId, synchronizer);
-		if (resourceId == null) {
-			throw new IllegalArgumentException("resourceId must not be null");
-		}
+		this.synchronizer = synchronizer;
 	}
 
 	public void addPrecomputationListener(PrecomputationListener listener) {
@@ -63,6 +63,9 @@ public class PushWebDocument extends XtextWebDocument {
 
 	private <T extends IServiceResult> void notifyPrecomputationListeners(String serviceName, T result) {
 		var resourceId = getResourceId();
+		if (resourceId == null) {
+			return;
+		}
 		var stateId = getStateId();
 		List<PrecomputationListener> copyOfListeners;
 		synchronized (precomputationListeners) {
@@ -82,5 +85,9 @@ public class PushWebDocument extends XtextWebDocument {
 				precomputationListeners.removeAll(toRemove);
 			}
 		}
+	}
+
+	public void cancelBackgroundWork() {
+		synchronizer.setCanceled(true);
 	}
 }
