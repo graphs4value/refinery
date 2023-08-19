@@ -15,11 +15,11 @@ import tools.refinery.store.query.rewriter.DuplicateDnfRemover;
 import tools.refinery.store.query.rewriter.InputParameterResolver;
 import tools.refinery.store.query.viatra.ViatraModelQueryBuilder;
 import tools.refinery.store.query.viatra.internal.localsearch.FlatCostFunction;
-import tools.refinery.store.query.viatra.internal.localsearch.RelationalLocalSearchBackendFactory;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.pquery.Dnf2PQuery;
 import tools.refinery.viatra.runtime.api.IQuerySpecification;
 import tools.refinery.viatra.runtime.api.ViatraQueryEngineOptions;
+import tools.refinery.viatra.runtime.localsearch.matcher.integration.LocalSearchGenericBackendFactory;
 import tools.refinery.viatra.runtime.localsearch.matcher.integration.LocalSearchHintOptions;
 import tools.refinery.viatra.runtime.matchers.backend.IQueryBackendFactory;
 import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
@@ -43,7 +43,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder<Via
 		engineOptionsBuilder = new ViatraQueryEngineOptions.Builder()
 				.withDefaultBackend(ReteBackendFactory.INSTANCE)
 				.withDefaultCachingBackend(ReteBackendFactory.INSTANCE)
-				.withDefaultSearchBackend(RelationalLocalSearchBackendFactory.INSTANCE);
+				.withDefaultSearchBackend(LocalSearchGenericBackendFactory.INSTANCE);
 		rewriter = new CompositeRewriter();
 		rewriter.addFirst(new DuplicateDnfRemover());
 		rewriter.addFirst(new InputParameterResolver());

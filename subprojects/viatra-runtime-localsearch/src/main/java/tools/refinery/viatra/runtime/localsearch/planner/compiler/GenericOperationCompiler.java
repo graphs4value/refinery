@@ -1,18 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2010-2017, Zoltan Ujhelyi, IncQuery Labs Ltd.
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.localsearch.planner.compiler;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import tools.refinery.viatra.runtime.localsearch.operations.generic.GenericTypeCheck;
 import tools.refinery.viatra.runtime.localsearch.operations.generic.GenericTypeExtend;
@@ -24,6 +19,8 @@ import tools.refinery.viatra.runtime.matchers.psystem.basicdeferred.TypeFilterCo
 import tools.refinery.viatra.runtime.matchers.psystem.basicenumerables.TypeConstraint;
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+
+import java.util.*;
 
 /**
  * @author Zoltan Ujhelyi
@@ -46,9 +43,9 @@ public class GenericOperationCompiler extends AbstractOperationCompiler {
             positions[i] = variableMapping.get(variable);
         }
         operations.add(new GenericTypeCheck(inputKey, positions, TupleMask.fromSelectedIndices(variableMapping.size(), positions)));
-        
+
     }
-    
+
     @Override
     protected void createCheck(TypeConstraint typeConstraint, Map<PVariable, Integer> variableMapping) {
         IInputKey inputKey = typeConstraint.getSupplierKey();
@@ -60,7 +57,7 @@ public class GenericOperationCompiler extends AbstractOperationCompiler {
         }
         operations.add(new GenericTypeCheck(inputKey, positions, TupleMask.fromSelectedIndices(variableMapping.size(), positions)));
     }
-    
+
     @Override
     protected void createUnaryTypeCheck(IInputKey inputKey, int position) {
         int[] positions = new int[] {position};
@@ -71,7 +68,7 @@ public class GenericOperationCompiler extends AbstractOperationCompiler {
     protected void createExtend(TypeConstraint typeConstraint, Map<PVariable, Integer> variableMapping) {
         IInputKey inputKey = typeConstraint.getSupplierKey();
         Tuple tuple = typeConstraint.getVariablesTuple();
-        
+
         int[] positions = new int[tuple.getSize()];
         List<Integer> boundVariableIndices = new ArrayList<>();
         List<Integer> boundVariables = new ArrayList<>();
@@ -89,7 +86,9 @@ public class GenericOperationCompiler extends AbstractOperationCompiler {
         }
         TupleMask indexerMask = TupleMask.fromSelectedIndices(inputKey.getArity(), boundVariableIndices);
         TupleMask callMask = TupleMask.fromSelectedIndices(variableMapping.size(), boundVariables);
-        if (unboundVariables.size() == 1) {
+		// If multiple tuple elements from the indexer should be bound to the same variable, we must use a
+		// {@link GenericTypeExtend} check whether the tuple elements have the same value.
+		if (unboundVariables.size() == 1 && indexerMask.getSize() + 1 == indexerMask.getSourceWidth()) {
             operations.add(new GenericTypeExtendSingleValue(inputKey, positions, callMask, indexerMask, unboundVariables.iterator().next()));
         } else {
             operations.add(new GenericTypeExtend(inputKey, positions, callMask, indexerMask, unboundVariables));
