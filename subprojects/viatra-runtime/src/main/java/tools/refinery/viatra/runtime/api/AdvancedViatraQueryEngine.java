@@ -3,32 +3,27 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.api;
 
+import tools.refinery.viatra.runtime.api.scope.QueryScope;
+import tools.refinery.viatra.runtime.internal.apiimpl.ViatraQueryEngineImpl;
+import tools.refinery.viatra.runtime.matchers.ViatraQueryRuntimeException;
+import tools.refinery.viatra.runtime.matchers.backend.*;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 
-import tools.refinery.viatra.runtime.api.scope.QueryScope;
-import tools.refinery.viatra.runtime.emf.EMFScope;
-import tools.refinery.viatra.runtime.internal.apiimpl.ViatraQueryEngineImpl;
-import tools.refinery.viatra.runtime.matchers.ViatraQueryRuntimeException;
-import tools.refinery.viatra.runtime.matchers.backend.IMatcherCapability;
-import tools.refinery.viatra.runtime.matchers.backend.IQueryBackend;
-import tools.refinery.viatra.runtime.matchers.backend.IQueryBackendFactory;
-import tools.refinery.viatra.runtime.matchers.backend.IQueryResultProvider;
-import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
-
 /**
  * Advanced interface to a VIATRA incremental evaluation engine.
- * 
+ *
  * <p>
  * You can create a new, private, unmanaged {@link AdvancedViatraQueryEngine} instance using
  * {@link #createUnmanagedEngine(QueryScope)}. Additionally, you can access the advanced interface on any
  * {@link ViatraQueryEngine} by {@link AdvancedViatraQueryEngine#from(ViatraQueryEngine)}.
- * 
+ *
  * <p>
  * While the default interface {@link ViatraQueryEngine}, is suitable for most users, this advanced interface provides more
  * control over the engine. The most important added functionality is the following:
@@ -45,29 +40,29 @@ import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
  * register a callback using {@link #addLifecycleListener(ViatraQueryEngineLifecycleListener)} to learn when another client
  * has called the destructive methods {@link #dispose()} or {@link #wipe()}.
  * </ul>
- * 
+ *
  * @author Bergmann Gabor
  * @noextend This class is not intended to be subclassed by clients.
  */
 public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
-   
+
     /**
      * Creates a new unmanaged VIATRA Query engine to evaluate queries over a given scope specified by an {@link QueryScope}.
-     * 
-     * <p> Repeated invocations will return different instances, so other clients are unable to independently access 
-     * and influence the returned engine. Note that unmanaged engines do not benefit from some performance improvements 
-     * that stem from sharing incrementally maintained indices and caches between multiple clients using the same managed 
+     *
+     * <p> Repeated invocations will return different instances, so other clients are unable to independently access
+     * and influence the returned engine. Note that unmanaged engines do not benefit from some performance improvements
+     * that stem from sharing incrementally maintained indices and caches between multiple clients using the same managed
      * engine instance.
-     * 
+     *
      * <p>
      * Client is responsible for the lifecycle of the returned engine, hence the usage of the advanced interface
      * {@link AdvancedViatraQueryEngine}.
-     * 
+     *
      * <p>
      * The match set of any patterns will be incrementally refreshed upon updates from this scope.
-     * 
-     * @param scope 
-     * 		the scope of query evaluation; the definition of the set of model elements that this engine is operates on. 
+     *
+     * @param scope
+     * 		the scope of query evaluation; the definition of the set of model elements that this engine is operates on.
      * 		Provide e.g. a {@link EMFScope} for evaluating queries on an EMF model.
      * @return the advanced interface to a newly created unmanaged engine
      * @since 0.9
@@ -75,24 +70,24 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
     public static AdvancedViatraQueryEngine createUnmanagedEngine(QueryScope scope) {
         return new ViatraQueryEngineImpl(null, scope);
     }
-    
+
     /**
      * Creates a new unmanaged VIATRA Query engine to evaluate queries over a given scope specified by an {@link QueryScope}.
-     * 
-     * <p> Repeated invocations will return different instances, so other clients are unable to independently access 
-     * and influence the returned engine. Note that unmanaged engines do not benefit from some performance improvements 
-     * that stem from sharing incrementally maintained indices and caches between multiple clients using the same managed 
+     *
+     * <p> Repeated invocations will return different instances, so other clients are unable to independently access
+     * and influence the returned engine. Note that unmanaged engines do not benefit from some performance improvements
+     * that stem from sharing incrementally maintained indices and caches between multiple clients using the same managed
      * engine instance.
-     * 
+     *
      * <p>
      * Client is responsible for the lifecycle of the returned engine, hence the usage of the advanced interface
      * {@link AdvancedViatraQueryEngine}.
-     * 
+     *
      * <p>
      * The match set of any patterns will be incrementally refreshed upon updates from this scope.
-     * 
-     * @param scope 
-     *      the scope of query evaluation; the definition of the set of model elements that this engine is operates on. 
+     *
+     * @param scope
+     *      the scope of query evaluation; the definition of the set of model elements that this engine is operates on.
      *      Provide e.g. a {@link EMFScope} for evaluating queries on an EMF model.
      * @return the advanced interface to a newly created unmanaged engine
      * @since 1.4
@@ -103,11 +98,11 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
 
     /**
      * Provides access to a given existing engine through the advanced interface.
-     * 
+     *
      * <p>
      * Caveat: if the referenced engine is managed (i.e. created via {@link ViatraQueryEngine#on(QueryScope)}), the advanced
      * methods {@link #dispose()} and {@link #wipe()} will not be allowed.
-     * 
+     *
      * @param engine
      *            the engine to access using the advanced interface
      * @return a reference to the same engine conforming to the advanced interface
@@ -118,7 +113,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
 
     /**
      * Add an engine lifecycle listener to this engine instance.
-     * 
+     *
      * @param listener
      *            the {@link ViatraQueryEngineLifecycleListener} that should listen to lifecycle events from this engine
      */
@@ -126,7 +121,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
 
     /**
      * Remove an existing lifecycle listener from this engine instance.
-     * 
+     *
      * @param listener
      *            the {@link ViatraQueryEngineLifecycleListener} that should not listen to lifecycle events from this
      *            engine anymore
@@ -136,7 +131,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
     /**
      * Add an model update event listener to this engine instance (that fires its callbacks according to its
      * notification level).
-     * 
+     *
      * @param listener
      *            the {@link ViatraQueryModelUpdateListener} that should listen to model update events from this engine.
      */
@@ -144,7 +139,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
 
     /**
      * Remove an existing model update event listener to this engine instance.
-     * 
+     *
      * @param listener
      *            the {@link ViatraQueryModelUpdateListener} that should not listen to model update events from this engine
      *            anymore
@@ -153,20 +148,20 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
 
     /**
      * Registers low-level callbacks for match appearance and disappearance on this pattern matcher.
-     * 
+     *
      * <p>
      * <b>Caution: </b> This is a low-level callback that is invoked when the pattern matcher is not necessarily in a
      * consistent state yet. Importantly, no model modification permitted during the callback. Most users should use the
      * databinding support ({@link org.eclipse.viatra.addon.databinding.runtime.api.ViatraObservables ViatraObservables}) or the event-driven API
      * ({@link org.eclipse.viatra.transformation.evm.api.EventDrivenVM EventDrivenVM}) instead.
-     * 
+     *
      * <p>
      * Performance note: expected to be much more efficient than polling at {@link #addCallbackAfterUpdates(Runnable)},
      * but prone to "signal hazards", e.g. spurious match appearances that will disappear immediately afterwards.
-     * 
+     *
      * <p>
      * The callback can be unregistered via {@link #removeCallbackOnMatchUpdate(IMatchUpdateListener)}.
-     * 
+     *
      * @param fireNow
      *            if true, appearCallback will be immediately invoked on all current matches as a one-time effect. See
      *            also {@link ViatraQueryMatcher#forEachMatch(IMatchProcessor)}.
@@ -180,7 +175,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
 
     /**
      * Remove an existing match update event listener to this engine instance.
-     * 
+     *
      * @param matcher
      *            the {@link ViatraQueryMatcher} for which this listener should not be active anymore
      * @param listener
@@ -189,15 +184,15 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
     public abstract <Match extends IPatternMatch> void removeMatchUpdateListener(ViatraQueryMatcher<Match> matcher,
             IMatchUpdateListener<? super Match> listener);
 
-    
+
     /**
-     * Access a pattern matcher based on a {@link IQuerySpecification}, overriding some of the default query evaluation hints. 
-     * Multiple calls may return the same matcher depending on the actual evaluation hints. 
-     * 
-     * <p> It is guaranteed that this method will always return a matcher instance which is functionally compatible 
-     *   with the requested functionality (see {@link IMatcherCapability}). 
+     * Access a pattern matcher based on a {@link IQuerySpecification}, overriding some of the default query evaluation hints.
+     * Multiple calls may return the same matcher depending on the actual evaluation hints.
+     *
+     * <p> It is guaranteed that this method will always return a matcher instance which is functionally compatible
+     *   with the requested functionality (see {@link IMatcherCapability}).
      *   Otherwise, the query evaluator is free to ignore any hints.
-     * 
+     *
      * <p> For stateful query backends (Rete), hints may be effective only the first time a matcher is created.
      * @param querySpecification a {@link IQuerySpecification} that describes a VIATRA query
      * @return a pattern matcher corresponding to the specification
@@ -206,20 +201,20 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
      * @since 0.9
      */
     public abstract <Matcher extends ViatraQueryMatcher<? extends IPatternMatch>> Matcher getMatcher(
-            IQuerySpecification<Matcher> querySpecification, 
+            IQuerySpecification<Matcher> querySpecification,
             QueryEvaluationHint optionalEvaluationHints);
 
     /**
-     * Initializes matchers for a group of patterns as one step (optionally overriding some of the default query evaluation hints). 
+     * Initializes matchers for a group of patterns as one step (optionally overriding some of the default query evaluation hints).
      * If some of the pattern matchers are already
      * constructed in the engine, no task is performed for them.
-     * 
+     *
      * <p>
      * This preparation step has the advantage that it prepares pattern matchers for an arbitrary number of patterns in a
-     * single-pass traversal of the model. 
-     * This is typically more efficient than traversing the model each time an individual pattern matcher is initialized on demand. 
+     * single-pass traversal of the model.
+     * This is typically more efficient than traversing the model each time an individual pattern matcher is initialized on demand.
      * The performance benefit only manifests itself if the engine is not in wildcard mode.
-     * 
+     *
      * @param queryGroup a {@link IQueryGroup} identifying a set of VIATRA queries
      * @param optionalEvaluationHints additional / overriding options on query evaluation; passing null means default options associated with each query
      * @throws ViatraQueryRuntimeException
@@ -227,23 +222,23 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
      * @since 0.9
      */
     public abstract void prepareGroup(IQueryGroup queryGroup, QueryEvaluationHint optionalEvaluationHints);
- 
+
     /**
      * Indicates whether the engine is managed, i.e. the default engine assigned to the given scope root by
      * {@link ViatraQueryEngine#on(QueryScope)}.
-     * 
+     *
      * <p>
      * If the engine is managed, there may be other clients using it, as all calls to
      * {@link ViatraQueryEngine#on(QueryScope)} return the same managed engine instance for a given scope root. Therefore the
      * destructive methods {@link #wipe()} and {@link #dispose()} are not allowed.
-     * 
+     *
      * <p>
      * On the other hand, if the engine is unmanaged (i.e. a private instance created using
      * {@link #createUnmanagedEngine(QueryScope)}), then {@link #wipe()} and {@link #dispose()} can be called. If you
      * explicitly share a private, unmanaged engine between multiple sites, register a callback using
      * {@link #addLifecycleListener(ViatraQueryEngineLifecycleListener)} to learn when another client has called these
      * destructive methods.
-     * 
+     *
      * @return true if the engine is managed, and therefore potentially shared with other clients querying the same EMF
      *         model
      */
@@ -252,11 +247,11 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
     /**
      * Indicates whether the engine is in a tainted, inconsistent state due to some internal errors. If true, results
      * are no longer reliable; engine should be disposed.
-     * 
+     *
      * <p>
      * The engine is in a tainted state if any of its internal processes report back a fatal error. The
      * {@link ViatraQueryEngineLifecycleListener} interface provides a callback method for entering the tainted state.
-     * 
+     *
      * @return the tainted state
      */
     public abstract boolean isTainted();
@@ -265,7 +260,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
      * Discards any pattern matcher caches and forgets known patterns. The base index built directly on the underlying
      * EMF model, however, is kept in memory to allow reuse when new pattern matchers are built. Use this method if you
      * have e.g. new versions of the same patterns, to be matched on the same model.
-     * 
+     *
      * <p>
      * Matcher objects will continue to return stale results. If no references are retained to the matchers, they can
      * eventually be GC'ed.
@@ -275,7 +270,7 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
      * If you explicitly share a private, unmanaged engine between multiple sites, register a callback using
      * {@link #addLifecycleListener(ViatraQueryEngineLifecycleListener)} to learn when another client has called this
      * destructive method.
-     * 
+     *
      * @throws UnsupportedOperationException
      *             if engine is managed
      */
@@ -295,12 +290,12 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
      * If you explicitly share a private, unmanaged engine between multiple sites, register a callback using
      * {@link #addLifecycleListener(ViatraQueryEngineLifecycleListener)} to learn when another client has called this
      * destructive method.
-     * 
+     *
      * @throws UnsupportedOperationException
      *             if engine is managed
      */
     public abstract void dispose();
- 
+
     /**
      * Provides access to the selected query backend component of the VIATRA Query engine.
      * @noreference for internal use only
@@ -316,45 +311,45 @@ public abstract class AdvancedViatraQueryEngine extends ViatraQueryEngine {
      * @since 1.4
      */
     public abstract <Matcher extends ViatraQueryMatcher<? extends IPatternMatch>> Matcher getExistingMatcher(IQuerySpecification<Matcher> querySpecification, QueryEvaluationHint optionalOverrideHints);
-    
+
     /**
      * Returns the immutable {@link ViatraQueryEngineOptions} of the engine.
-     * 
+     *
      * @return the engine options
      * @since 1.4
      */
     public abstract ViatraQueryEngineOptions getEngineOptions();
-    
+
     /**
      * Return the underlying result provider for the given matcher.
-     * 
+     *
      * @beta This method may change in future versions
      * @since 1.4
      * @noreference This method is considered internal API
      */
     public abstract IQueryResultProvider getResultProviderOfMatcher(ViatraQueryMatcher<? extends IPatternMatch> matcher);
-    
+
     /**
-     * The given callable will be executed, and all update propagation in stateful query backends 
+     * The given callable will be executed, and all update propagation in stateful query backends
      * will be delayed until the execution is done. Within the callback, these backends will provide stale results.
-     * 
-     * <p> It is optional for a {@link IQueryBackend} to support the delaying of update propagation; stateless backends will display up-to-date results. 
-     * In this case, the given callable shall be executed, and the update propagation shall happen just like in non-delayed execution. 
-     * 
-     * <p> Example: in the Rete network, no messages will be propagated until the given callable is executed. 
-     * After the execution of the callable, all accumulated messages will be delivered. 
-     * 
+     *
+     * <p> It is optional for a {@link IQueryBackend} to support the delaying of update propagation; stateless backends will display up-to-date results.
+     * In this case, the given callable shall be executed, and the update propagation shall happen just like in non-delayed execution.
+     *
+     * <p> Example: in the Rete network, no messages will be propagated until the given callable is executed.
+     * After the execution of the callable, all accumulated messages will be delivered.
+     *
      * <p> The purpose of this method is that stateful query backends may save work when multiple model modifications are performed within the callback that partially cancel each other out.
-     * 
+     *
      * @param callable the callable to be executed
      * @return the result of the callable
      * @since 1.6
      */
     public abstract <V> V delayUpdatePropagation(Callable<V> callable) throws InvocationTargetException;
-    
+
     /**
-     * Returns true if the update propagation in this engine is currently delayed, false otherwise. 
-     * 
+     * Returns true if the update propagation in this engine is currently delayed, false otherwise.
+     *
      * @see {@link #delayUpdatePropagation(Callable)}
      * @since 1.6
      */

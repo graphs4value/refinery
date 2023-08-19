@@ -10,6 +10,5 @@ plugins {
 
 dependencies {
 	implementation(project(":refinery-viatra-runtime"))
-	implementation(libs.ecore)
 	implementation(libs.slf4j.log4j)
 }

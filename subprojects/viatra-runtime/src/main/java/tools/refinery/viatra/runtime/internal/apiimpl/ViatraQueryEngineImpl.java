@@ -34,9 +34,6 @@ import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory.MemoryType;
 import tools.refinery.viatra.runtime.matchers.util.IMultiLookup;
 import tools.refinery.viatra.runtime.matchers.util.Preconditions;
-import tools.refinery.viatra.runtime.registry.IDefaultRegistryView;
-import tools.refinery.viatra.runtime.registry.IQuerySpecificationRegistry;
-import tools.refinery.viatra.runtime.registry.QuerySpecificationRegistry;
 import tools.refinery.viatra.runtime.util.ViatraQueryLoggingUtil;
 
 import java.lang.ref.WeakReference;
@@ -227,17 +224,7 @@ public final class ViatraQueryEngineImpl extends AdvancedViatraQueryEngine
 
     @Override
     public ViatraQueryMatcher<? extends IPatternMatch> getMatcher(String patternFQN) {
-        IQuerySpecificationRegistry registry = QuerySpecificationRegistry.getInstance();
-        IDefaultRegistryView view = registry.getDefaultView();
-        IQuerySpecification<? extends ViatraQueryMatcher<? extends IPatternMatch>> querySpecification = view
-                .getEntry(patternFQN).get();
-        if (querySpecification != null) {
-            return getMatcher(querySpecification);
-        } else {
-            throw new ViatraQueryException(String.format(
-                    "No matcher could be constructed for the pattern with FQN %s; if the generated matcher class is not available, please access for the first time using getMatcher(IQuerySpecification)",
-                    patternFQN), "No matcher could be constructed for given pattern FQN.");
-        }
+		throw new UnsupportedOperationException("Query specification registry is not available");
     }
 
     @Override

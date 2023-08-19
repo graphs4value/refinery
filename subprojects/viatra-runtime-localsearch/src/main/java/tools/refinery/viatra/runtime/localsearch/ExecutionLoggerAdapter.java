@@ -3,41 +3,40 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.localsearch;
-
-import java.util.Optional;
-import java.util.function.Consumer;
 
 import tools.refinery.viatra.runtime.localsearch.matcher.ILocalSearchAdapter;
 import tools.refinery.viatra.runtime.localsearch.matcher.LocalSearchMatcher;
 import tools.refinery.viatra.runtime.localsearch.operations.IPatternMatcherOperation;
 import tools.refinery.viatra.runtime.localsearch.operations.ISearchOperation;
-import tools.refinery.viatra.runtime.localsearch.operations.check.nobase.ScopeCheck;
 import tools.refinery.viatra.runtime.localsearch.plan.SearchPlan;
+
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * @since 2.0
  */
 public final class ExecutionLoggerAdapter implements ILocalSearchAdapter {
-    
+
     volatile String indentation = "";
     private final Consumer<String> outputConsumer;
-    
+
     public ExecutionLoggerAdapter(Consumer<String> outputConsumer) {
         this.outputConsumer = outputConsumer;
     }
-    
+
     private void logMessage(String message) {
         outputConsumer.accept(message);
     }
-    
+
     private void logMessage(String message, Object...args) {
         outputConsumer.accept(String.format(message, args));
     }
-    
+
     @Override
     public void patternMatchingStarted(LocalSearchMatcher lsMatcher) {
         logMessage(indentation + "[ START] " + lsMatcher.getQuerySpecification().getFullyQualifiedName());
@@ -56,7 +55,7 @@ public final class ExecutionLoggerAdapter implements ILocalSearchAdapter {
 
     @Override
     public void operationSelected(SearchPlan plan, ISearchOperation operation, MatchingFrame frame, boolean isBacktrack) {
-        String category = isBacktrack ? "[  BACK] "  : "[SELECT] "; 
+        String category = isBacktrack ? "[  BACK] "  : "[SELECT] ";
        logMessage(indentation + category + operation.toString());
         if (operation instanceof IPatternMatcherOperation) {
             indentation = indentation + "\t";
@@ -66,7 +65,6 @@ public final class ExecutionLoggerAdapter implements ILocalSearchAdapter {
     @Override
     public void operationExecuted(SearchPlan plan, ISearchOperation operation, MatchingFrame frame,
             boolean isSuccessful) {
-        if (operation instanceof ScopeCheck) return;
         if (operation instanceof IPatternMatcherOperation && indentation.length() > 0) {
             indentation = indentation.substring(1);
         }
@@ -77,7 +75,7 @@ public final class ExecutionLoggerAdapter implements ILocalSearchAdapter {
     public void matchFound(SearchPlan plan, MatchingFrame frame) {
         logMessage(indentation + "[ MATCH] " + plan.getSourceBody().getPattern().getFullyQualifiedName() + " " + frame.toString());
     }
-    
+
     @Override
     public void duplicateMatchFound(MatchingFrame frame) {
         logMessage(indentation + "[ DUPL.] " + frame.toString());

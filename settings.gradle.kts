@@ -18,7 +18,6 @@ include(
 		"store-query-viatra",
 		"store-reasoning",
 		"viatra-runtime",
-		"viatra-runtime-base",
 		"viatra-runtime-base-itc",
 		"viatra-runtime-localsearch",
 		"viatra-runtime-matchers",

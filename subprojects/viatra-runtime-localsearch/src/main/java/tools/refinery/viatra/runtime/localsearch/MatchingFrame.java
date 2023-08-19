@@ -3,20 +3,18 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
 package tools.refinery.viatra.runtime.localsearch;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import tools.refinery.viatra.runtime.matchers.tuple.IModifiableTuple;
 import tools.refinery.viatra.runtime.matchers.tuple.VolatileTuple;
 import tools.refinery.viatra.runtime.matchers.util.Preconditions;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * A MatchingFrame is a Volatile Tuple implementation used by the local search engine internally.
@@ -34,7 +32,7 @@ public class MatchingFrame extends VolatileTuple implements IModifiableTuple {
     public MatchingFrame(int frameSize) {
         this.frame = new Object[frameSize];
     }
-    
+
     /**
      * Creates a copy of another matching frame; the two frames can be updated separately
      * @param other
@@ -48,7 +46,7 @@ public class MatchingFrame extends VolatileTuple implements IModifiableTuple {
 
     /**
      * Returns the value stored inside the matching frame.
-     * 
+     *
      * @param position
      * @return the element stored in the selected position in the frame, or null if it is not yet set
      * @throws IndexOutOfBoundsException
@@ -60,10 +58,10 @@ public class MatchingFrame extends VolatileTuple implements IModifiableTuple {
         Preconditions.checkElementIndex(position, frame.length);
         return frame[position];
     }
-    
+
     /**
      * Sets the value of the variable at the given position. For internal use in LS matching only.
-     * 
+     *
      * @param position the position of the variable within the frame
      * @param value the value to be set for the variable
      */
@@ -71,7 +69,7 @@ public class MatchingFrame extends VolatileTuple implements IModifiableTuple {
         Preconditions.checkElementIndex(position, frame.length);
         frame[position] = value;
     }
-    
+
     public boolean testAndSetValue(Integer position, Object value) {
         Preconditions.checkElementIndex(position, frame.length);
         if (frame[position] == null) {
@@ -86,20 +84,14 @@ public class MatchingFrame extends VolatileTuple implements IModifiableTuple {
     public String toString() {
         return Arrays.stream(frame).map(this::stringRepresentation).collect(Collectors.joining(", ", "[", "]"));
     }
-    
+
     private String stringRepresentation(Object obj) {
         if (obj == null) {
             return "_";
-        } else if (obj instanceof EObject) {
-            EObject eObject = (EObject) obj;
-            final EStructuralFeature feature = eObject.eClass().getEStructuralFeature("identifier");
-            if (feature != null) {
-                return String.format("%s : %s", eObject.eGet(feature), eObject.eClass().getName());
-            }
         }
         return obj.toString();
     }
-    
+
     @Override
     public int getSize() {
         return frame.length;
@@ -109,7 +101,7 @@ public class MatchingFrame extends VolatileTuple implements IModifiableTuple {
     public Object get(int index) {
         return getValue(index);
     }
-    
+
     @Override
     public Object[] getElements() {
         return Arrays.copyOf(frame, frame.length);
