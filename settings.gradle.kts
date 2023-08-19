@@ -18,9 +18,7 @@ include(
 		"store-query-viatra",
 		"store-reasoning",
 		"viatra-runtime",
-		"viatra-runtime-base-itc",
 		"viatra-runtime-localsearch",
-		"viatra-runtime-matchers",
 		"viatra-runtime-rete",
 		"viatra-runtime-rete-recipes",
 )

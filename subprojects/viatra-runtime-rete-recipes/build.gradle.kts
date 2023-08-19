@@ -13,7 +13,7 @@ plugins {
 }
 
 dependencies {
-	api(project(":refinery-viatra-runtime-matchers"))
+	api(project(":refinery-viatra-runtime"))
 	api(libs.ecore)
 	mwe2(libs.ecore.codegen)
 	mwe2(libs.mwe.utils)

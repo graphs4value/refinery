@@ -3,13 +3,12 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.network.mailbox.timeless;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
@@ -28,7 +27,7 @@ import tools.refinery.viatra.runtime.rete.network.mailbox.Mailbox;
  * <p>
  * Usually, the mailbox performs counting of messages so that they can cancel each other out. However, if marked as a
  * fall-through mailbox, than update messages are delivered directly to the receiver node to reduce overhead.
- * 
+ *
  * @author Tamas Szabo
  * @since 2.0
  */

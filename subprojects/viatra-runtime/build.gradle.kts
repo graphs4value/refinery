@@ -9,7 +9,7 @@ plugins {
 }
 
 dependencies {
-	api(project(":refinery-viatra-runtime-matchers"))
-	api(project(":refinery-viatra-runtime-base-itc"))
 	implementation(libs.slf4j.log4j)
+	implementation(libs.eclipseCollections.api)
+	implementation(libs.eclipseCollections)
 }

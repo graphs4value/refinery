@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
@@ -19,15 +19,15 @@ import java.util.Objects;
 import java.util.Set;
 
 import tools.refinery.viatra.runtime.base.itc.alg.counting.CountingAlg;
+import tools.refinery.viatra.runtime.base.itc.alg.misc.bfs.BFS;
+import tools.refinery.viatra.runtime.base.itc.alg.misc.scc.SCC;
+import tools.refinery.viatra.runtime.base.itc.alg.misc.scc.SCCResult;
+import tools.refinery.viatra.runtime.base.itc.alg.util.CollectionHelper;
 import tools.refinery.viatra.runtime.base.itc.alg.dred.DRedTcRelation;
 import tools.refinery.viatra.runtime.base.itc.alg.misc.DFSPathFinder;
 import tools.refinery.viatra.runtime.base.itc.alg.misc.GraphHelper;
 import tools.refinery.viatra.runtime.base.itc.alg.misc.IGraphPathFinder;
 import tools.refinery.viatra.runtime.base.itc.alg.misc.Tuple;
-import tools.refinery.viatra.runtime.base.itc.alg.misc.bfs.BFS;
-import tools.refinery.viatra.runtime.base.itc.alg.misc.scc.SCC;
-import tools.refinery.viatra.runtime.base.itc.alg.misc.scc.SCCResult;
-import tools.refinery.viatra.runtime.base.itc.alg.util.CollectionHelper;
 import tools.refinery.viatra.runtime.base.itc.graphimpl.Graph;
 import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalGraphDataSource;
 import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalWrapper;
@@ -42,9 +42,9 @@ import tools.refinery.viatra.runtime.matchers.util.IMemoryView;
 
 /**
  * Incremental SCC maintenance + counting algorithm.
- * 
+ *
  * @author Tamas Szabo
- * 
+ *
  * @param <V>
  *            the type parameter of the nodes in the graph data source
  */
@@ -135,8 +135,8 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
                     for (V sourceSCC : sourceSCCs) {
                         targetLoop: for (V targetSCC : targetSCCs) {
                             if (counting.isReachable(sourceSCC, targetSCC)) continue targetLoop;
-                            
-                            boolean needsNotification = 
+
+                            boolean needsNotification =
                                 // Case 1. sourceSCC and targetSCC are the same and it is a one sized scc.
                                 // Issue notifications only if there is no self-loop present at the moment
                                 (sourceSCC.equals(targetSCC) && sccs.getPartition(sourceSCC).size() == 1 && GraphHelper
@@ -219,7 +219,7 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
             }
         }
     }
-    
+
     @Override
     public void edgeDeleted(V source, V target) {
         V sourceRoot = sccs.find(source);
@@ -301,12 +301,12 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
 
                     Set<V> targetSCCs = createSetNullTolerant(counting.getAllReachableTargets(newTargetRoot));
                     targetSCCs.add(newTargetRoot);
-                    
+
                     for (V sourceSCC : sourceSCCs) {
                         targetLoop: for (V targetSCC : targetSCCs) {
                             if (counting.isReachable(sourceSCC, targetSCC)) continue targetLoop;
-                            
-                            boolean needsNotification = 
+
+                            boolean needsNotification =
                                 // Case 1. sourceSCC and targetSCC are the same and it is a one sized scc.
                                 // Issue notifications only if there is no self-loop present at the moment
                                 (sourceSCC.equals(targetSCC) && sccs.getPartition(sourceSCC).size() == 1 && GraphHelper
@@ -465,7 +465,7 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
     /**
      * Return the SCCs from which the SCC represented by the root node is reachable. Note that an SCC can be present
      * multiple times in the returned list (multiple edges between the two SCCs).
-     * 
+     *
      * @param root
      * @return the list of reachable target SCCs
      */
@@ -481,11 +481,11 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
 
         return sourceSCCs;
     }
-    
+
     /**
-     * Returns true if the SCC represented by the given root node has incoming edges in the reduced graph, 
-     * false otherwise (if this SCC is a source in the reduced graph). 
-     * 
+     * Returns true if the SCC represented by the given root node has incoming edges in the reduced graph,
+     * false otherwise (if this SCC is a source in the reduced graph).
+     *
      * @param root the root node of an SCC
      * @return true if it has incoming edges, false otherwise
      * @since 1.6
@@ -502,11 +502,11 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
         }
         return false;
     }
-    
+
     /**
      * Return the SCCs which are reachable from the SCC represented by the root node. Note that an SCC can be present
      * multiple times in the returned list (multiple edges between the two SCCs).
-     * 
+     *
      * @param root
      * @return the list of reachable target SCCs
      */
@@ -522,11 +522,11 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
 
         return targetSCCs;
     }
-    
+
     /**
-     * Returns true if the SCC represented by the given root node has outgoing edges in the reduced graph, 
-     * false otherwise (if this SCC is a sink in the reduced graph). 
-     * 
+     * Returns true if the SCC represented by the given root node has outgoing edges in the reduced graph,
+     * false otherwise (if this SCC is a sink in the reduced graph).
+     *
      * @param root the root node of an SCC
      * @return true if it has outgoing edges, false otherwise
      * @since 1.6
@@ -553,7 +553,7 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
     /**
      * Call this method to notify the observers of the transitive closure relation. The tuples used in the notification
      * will be the Descartes product of the two sets given.
-     * 
+     *
      * @param sources
      *            the source nodes
      * @param targets
@@ -633,11 +633,11 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
     public Graph<V> getReducedGraph() {
         return reducedGraph;
     }
-    
+
     private static <V> Set<V> createSetNullTolerant(Set<V> initial) {
         if (initial != null)
             return CollectionsFactory.createSet(initial);
-        else 
+        else
             return CollectionsFactory.createSet();
     }
 

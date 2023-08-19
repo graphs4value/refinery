@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.aggregation.timely;
@@ -25,14 +25,13 @@ import tools.refinery.viatra.runtime.matchers.util.Signed;
 import tools.refinery.viatra.runtime.matchers.util.timeline.Diff;
 import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulSequentialTimelyColumnAggregatorNode.CumulativeAggregate;
 import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulSequentialTimelyColumnAggregatorNode.FoldingState;
-import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulTimelyColumnAggregatorNode.MergeableFoldingState;
 import tools.refinery.viatra.runtime.rete.network.ReteContainer;
 import tools.refinery.viatra.runtime.rete.network.communication.Timestamp;
 import tools.refinery.viatra.runtime.rete.network.communication.timely.ResumableNode;
 
 /**
  * Faithful column aggregator with sequential aggregation architecture.
- * 
+ *
  * @author Tamas Szabo
  * @since 2.4
  *

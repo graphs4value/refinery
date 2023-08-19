@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tools.refinery.viatra.runtime.base.itc.alg.dred.DRedTcRelation;
-import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalGraphDataSource;
-import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalWrapper;
 import tools.refinery.viatra.runtime.base.itc.igraph.IGraphDataSource;
 import tools.refinery.viatra.runtime.base.itc.igraph.IGraphObserver;
+import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalGraphDataSource;
+import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalWrapper;
 import tools.refinery.viatra.runtime.matchers.util.IMemoryView;
 
 public class FloydWarshallAlg<V> implements IGraphObserver<V> {

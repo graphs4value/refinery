@@ -3,10 +3,21 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.aggregation.timely;
+
+import tools.refinery.viatra.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.util.*;
+import tools.refinery.viatra.runtime.matchers.util.timeline.Diff;
+import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode.CumulativeAggregate;
+import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode.FoldingState;
+import tools.refinery.viatra.runtime.rete.network.ReteContainer;
+import tools.refinery.viatra.runtime.rete.network.communication.Timestamp;
+import tools.refinery.viatra.runtime.rete.network.communication.timely.ResumableNode;
 
 import java.util.Collections;
 import java.util.Map;
@@ -14,25 +25,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
 
-import tools.refinery.viatra.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
-import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
-import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
-import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
-import tools.refinery.viatra.runtime.matchers.util.Direction;
-import tools.refinery.viatra.runtime.matchers.util.IDeltaBag;
-import tools.refinery.viatra.runtime.matchers.util.Preconditions;
-import tools.refinery.viatra.runtime.matchers.util.Signed;
-import tools.refinery.viatra.runtime.matchers.util.timeline.Diff;
-import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode.CumulativeAggregate;
-import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode.FoldingState;
-import tools.refinery.viatra.runtime.rete.aggregation.timely.FaithfulTimelyColumnAggregatorNode.MergeableFoldingState;
-import tools.refinery.viatra.runtime.rete.network.ReteContainer;
-import tools.refinery.viatra.runtime.rete.network.communication.Timestamp;
-import tools.refinery.viatra.runtime.rete.network.communication.timely.ResumableNode;
-
 /**
  * Faithful column aggregator with parallel aggregation architecture.
- * 
+ *
  * @author Tamas Szabo
  * @since 2.4
  *

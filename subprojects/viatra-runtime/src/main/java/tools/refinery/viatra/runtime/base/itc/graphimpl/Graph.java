@@ -9,9 +9,9 @@
 
 package tools.refinery.viatra.runtime.base.itc.graphimpl;
 
-import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalGraphDataSource;
 import tools.refinery.viatra.runtime.base.itc.igraph.IGraphDataSource;
 import tools.refinery.viatra.runtime.base.itc.igraph.IGraphObserver;
+import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalGraphDataSource;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory.MemoryType;
 import tools.refinery.viatra.runtime.matchers.util.IMemoryView;

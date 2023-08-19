@@ -9,7 +9,6 @@
 
 package tools.refinery.viatra.runtime.api;
 
-import org.eclipse.emf.common.notify.Notifier;
 import tools.refinery.viatra.runtime.api.scope.IBaseIndex;
 import tools.refinery.viatra.runtime.api.scope.QueryScope;
 import tools.refinery.viatra.runtime.matchers.ViatraQueryRuntimeException;

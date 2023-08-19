@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
@@ -13,8 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import tools.refinery.viatra.runtime.base.itc.alg.misc.ITcRelation;
 import tools.refinery.viatra.runtime.base.itc.alg.misc.topsort.TopologicalSorting;
+import tools.refinery.viatra.runtime.base.itc.alg.misc.ITcRelation;
 import tools.refinery.viatra.runtime.base.itc.igraph.IBiDirectionalGraphDataSource;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory.MemoryType;
@@ -24,9 +24,9 @@ import tools.refinery.viatra.runtime.matchers.util.IMultiLookup.ChangeGranularit
 
 /**
  * Transitive closure relation implementation for the Counting algorithm.
- * 
+ *
  * @author Tamas Szabo
- * 
+ *
  * @param <V>
  */
 public class CountingTcRelation<V> implements ITcRelation<V> {
@@ -39,7 +39,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
         if (backwardIndexing)
             tuplesBackward = CollectionsFactory.createMultiLookup(Object.class, MemoryType.MULTISETS, Object.class);
     }
-    
+
     protected boolean isEmpty() {
         return 0 == this.tuplesForward.countKeys();
     }
@@ -70,7 +70,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
     /**
      * Returns true if the tc relation did not contain previously such a tuple that is defined by (source,target), false
      * otherwise (in this case count is incremented with the given count parameter).
-     * 
+     *
      * @param source
      *            the source of the tuple
      * @param target
@@ -83,13 +83,13 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
         if (tuplesBackward != null) {
             tuplesBackward.addPairPositiveMultiplicity(target, source, count);
         }
-        
-        ChangeGranularity change = 
+
+        ChangeGranularity change =
                 tuplesForward.addPairPositiveMultiplicity(source, target, count);
-        
+
         return change != ChangeGranularity.DUPLICATE;
     }
-    
+
     /**
      * Derivation count of the tuple  (source,target) is incremented or decremented.
      * Returns true iff updated to / from zero derivation count.
@@ -100,14 +100,14 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
             if (tuplesBackward != null) {
                 tuplesBackward.addPair(target, source);
             }
-            ChangeGranularity change = 
+            ChangeGranularity change =
                     tuplesForward.addPair(source, target);
             return change != ChangeGranularity.DUPLICATE;
         } else {
             if (tuplesBackward != null) {
                 tuplesBackward.removePair(target, source);
             }
-            ChangeGranularity change = 
+            ChangeGranularity change =
                     tuplesForward.removePair(source, target);
             return change != ChangeGranularity.DUPLICATE;
         }
@@ -116,7 +116,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
     public void deleteTupleEnd(V deleted) {
         Set<V> sourcesToDelete = CollectionsFactory.createSet();
         Set<V> targetsToDelete = CollectionsFactory.createSet();
-        
+
         for (V target : tuplesForward.lookupOrEmpty(deleted).distinctValues()) {
             targetsToDelete.add(target);
         }
@@ -130,7 +130,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
                     sourcesToDelete.add(sourceCandidate);
             }
         }
-        
+
         for (V source : sourcesToDelete) {
             int count = tuplesForward.lookupOrEmpty(source).getCount(deleted);
             for (int i=0; i< count; ++i) tuplesForward.removePair(source, deleted);
@@ -139,7 +139,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
             int count = tuplesForward.lookupOrEmpty(deleted).getCount(target);
             for (int i=0; i< count; ++i) tuplesForward.removePair(deleted, target);
         }
-        
+
         if (tuplesBackward != null) {
             for (V source : sourcesToDelete) {
                 int count = tuplesBackward.lookupOrEmpty(deleted).getCount(source);
@@ -162,7 +162,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
                 sb.append("{(" + source + "," + target + ")," + targets.getCount(target) + "} ");
             }
         }
-        
+
         return sb.toString();
     }
 
@@ -176,7 +176,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
 
     /**
      * Returns the set of nodes from which the target node is reachable, if already computed.
-     * 
+     *
      * @param target
      *            the target node
      * @return the set of source nodes
@@ -204,7 +204,7 @@ public class CountingTcRelation<V> implements ITcRelation<V> {
 
     /**
      * Returns true if a (source, target) node is present in the transitive closure relation, false otherwise.
-     * 
+     *
      * @param source
      *            the source node
      * @param target
