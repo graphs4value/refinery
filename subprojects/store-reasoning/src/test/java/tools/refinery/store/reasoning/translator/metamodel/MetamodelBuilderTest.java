@@ -7,6 +7,7 @@ package tools.refinery.store.reasoning.translator.metamodel;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 
@@ -26,7 +27,7 @@ class MetamodelBuilderTest {
 				.reference(courses, university, course, location)
 				.reference(location, course, university);
 
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(TranslationException.class, builder::build);
 	}
 
 	@Test
@@ -37,7 +38,7 @@ class MetamodelBuilderTest {
 				.reference(courses, university, course, location)
 				.reference(location, course, course, courses);
 
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(TranslationException.class, builder::build);
 	}
 
 	@Test
@@ -52,6 +53,6 @@ class MetamodelBuilderTest {
 						ConstrainedMultiplicity.of(CardinalityIntervals.atLeast(2), invalidMultiplicity),
 						university,	courses);
 
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(TranslationException.class, builder::build);
 	}
 }

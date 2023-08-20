@@ -7,5 +7,6 @@ package tools.refinery.language.web.semantics;
 
 import org.eclipse.xtext.web.server.IServiceResult;
 
-public sealed interface SemanticsResult extends IServiceResult permits SemanticsSuccessResult, SemanticsErrorResult {
+public sealed interface SemanticsResult extends IServiceResult permits SemanticsSuccessResult,
+		SemanticsInternalErrorResult, SemanticsIssuesResult {
 }

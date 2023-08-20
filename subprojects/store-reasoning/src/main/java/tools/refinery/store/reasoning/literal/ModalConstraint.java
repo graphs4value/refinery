@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.literal.Reduction;
 import tools.refinery.store.query.term.Parameter;
@@ -17,7 +18,7 @@ public record ModalConstraint(Modality modality, Concreteness concreteness, Cons
 		implements Constraint {
 	public ModalConstraint {
 		if (constraint instanceof AnySymbolView || constraint instanceof ModalConstraint) {
-			throw new IllegalArgumentException("Already concrete constraints cannot be abstracted");
+			throw new InvalidQueryException("Already concrete constraints cannot be abstracted");
 		}
 	}
 

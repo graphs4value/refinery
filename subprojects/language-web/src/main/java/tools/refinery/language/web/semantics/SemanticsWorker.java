@@ -8,13 +8,19 @@ package tools.refinery.language.web.semantics;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
+import org.eclipse.emf.common.util.Diagnostic;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.xtext.validation.CheckType;
+import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
+import org.eclipse.xtext.validation.IDiagnosticConverter;
+import org.eclipse.xtext.validation.Issue;
+import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.language.semantics.model.SemanticsUtils;
+import tools.refinery.language.semantics.model.TracedException;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
@@ -22,23 +28,28 @@ import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.viatra.runtime.CancellationToken;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 class SemanticsWorker implements Callable<SemanticsResult> {
-	private static final Logger LOG = LoggerFactory.getLogger(SemanticsWorker.class);
+	private static final String DIAGNOSTIC_ID = "tools.refinery.language.semantics.SemanticError";
 
 	@Inject
 	private SemanticsUtils semanticsUtils;
 
 	@Inject
 	private OperationCanceledManager operationCanceledManager;
+
+	@Inject
+	private IDiagnosticConverter diagnosticConverter;
 
 	@Inject
 	private ModelInitializer initializer;
@@ -71,15 +82,17 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			cancellationToken.checkCancelled();
 			var store = builder.build();
 			cancellationToken.checkCancelled();
-			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+			var cancellableModelSeed = CancellableSeed.wrap(cancellationToken, modelSeed);
+			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(cancellableModelSeed);
 			cancellationToken.checkCancelled();
 			var partialInterpretation = getPartialInterpretation(initializer, model);
 
 			return new SemanticsSuccessResult(nodeTrace, partialInterpretation);
-		} catch (RuntimeException e) {
-			LOG.debug("Error while computing semantics", e);
-			var message = e.getMessage();
-			return new SemanticsErrorResult(message == null ? "Partial interpretation error" : e.getMessage());
+		} catch (TracedException e) {
+			return getTracedErrorResult(e.getSourceElement(), e.getMessage());
+		} catch (TranslationException e) {
+			var sourceElement = initializer.getInverseTrace(e.getPartialSymbol());
+			return getTracedErrorResult(sourceElement, e.getMessage());
 		}
 	}
 
@@ -129,5 +142,20 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		}
 		json.add(value.toString());
 		return json;
+	}
+
+	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {
+		if (sourceElement == null || !problem.eResource().equals(sourceElement.eResource())) {
+			return new SemanticsInternalErrorResult(message);
+		}
+		var diagnostic = new FeatureBasedDiagnostic(Diagnostic.ERROR, message, sourceElement, null, 0,
+				CheckType.EXPENSIVE, DIAGNOSTIC_ID);
+		var xtextIssues = new ArrayList<Issue>();
+		diagnosticConverter.convertValidatorDiagnostic(diagnostic, xtextIssues::add);
+		var issues = xtextIssues.stream()
+				.map(issue -> new ValidationResult.Issue(issue.getMessage(), "error", issue.getLineNumber(),
+						issue.getColumn(), issue.getOffset(), issue.getLength()))
+				.toList();
+		return new SemanticsIssuesResult(issues);
 	}
 }

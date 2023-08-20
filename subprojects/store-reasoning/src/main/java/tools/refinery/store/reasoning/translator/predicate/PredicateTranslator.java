@@ -17,6 +17,7 @@ import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 
@@ -33,11 +34,11 @@ public class PredicateTranslator implements ModelStoreConfiguration {
 	public PredicateTranslator(PartialRelation relation, RelationalQuery query, boolean mutable,
 							   TruthValue defaultValue) {
 		if (relation.arity() != query.arity()) {
-			throw new IllegalArgumentException("Expected arity %d query for partial relation %s, got %d instead"
+			throw new TranslationException(relation, "Expected arity %d query for partial relation %s, got %d instead"
 					.formatted(relation.arity(), relation, query.arity()));
 		}
 		if (defaultValue.must()) {
-			throw new IllegalArgumentException("Default value must be UNKNOWN or FALSE");
+			throw new TranslationException(relation, "Default value must be UNKNOWN or FALSE");
 		}
 		this.relation = relation;
 		this.query = query;

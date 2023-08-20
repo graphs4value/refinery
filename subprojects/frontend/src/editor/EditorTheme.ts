@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import errorSVG from '@material-icons/svg/svg/error/baseline.svg?raw';
+import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
@@ -331,7 +331,7 @@ export default styled('div', {
     '.cm-lintRange-active': {
       background: theme.palette.highlight.activeLintRange,
     },
-    ...lintSeverityStyle('error', errorSVG, 120),
+    ...lintSeverityStyle('error', cancelSVG, 120),
     ...lintSeverityStyle('warning', warningSVG, 110),
     ...lintSeverityStyle('info', infoSVG, 100),
   };

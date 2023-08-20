@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -25,14 +26,14 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 		int arity = target.arity();
 		if (polarity.isTransitive()) {
 			if (arity != 2) {
-				throw new IllegalArgumentException("Transitive closures can only take binary relations");
+				throw new InvalidQueryException("Transitive closures can only take binary relations");
 			}
 			if (parameters.get(0).isDataVariable() || parameters.get(1).isDataVariable()) {
-				throw new IllegalArgumentException("Transitive closures can only be computed over nodes");
+				throw new InvalidQueryException("Transitive closures can only be computed over nodes");
 			}
 			if (parameters.get(0).getDirection() != ParameterDirection.OUT ||
 					parameters.get(1).getDirection() != ParameterDirection.OUT) {
-				throw new IllegalArgumentException("Transitive closures cannot take input parameters");
+				throw new InvalidQueryException("Transitive closures cannot take input parameters");
 			}
 		}
 		this.polarity = polarity;

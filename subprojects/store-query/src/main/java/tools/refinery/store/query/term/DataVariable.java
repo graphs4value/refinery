@@ -6,6 +6,7 @@
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.literal.EquivalenceLiteral;
@@ -41,8 +42,8 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public <U> DataVariable<U> asDataVariable(Class<U> newType) {
 		if (!getType().equals(newType)) {
-			throw new IllegalStateException("%s is not of type %s but of type %s".formatted(this, newType.getName(),
-					getType().getName()));
+			throw new InvalidQueryException("%s is not of type %s but of type %s"
+					.formatted(this, newType.getName(), getType().getName()));
 		}
 		@SuppressWarnings("unchecked")
 		var result = (DataVariable<U>) this;

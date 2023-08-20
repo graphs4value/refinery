@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.literal;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -18,12 +19,14 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLiteral> {
 	private final Term<Boolean> term;
 
 	public CheckLiteral(Term<Boolean> term) {
 		if (!term.getType().equals(Boolean.class)) {
-			throw new IllegalArgumentException("Term %s must be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Term %s must be of type %s, got %s instead".formatted(
 					term, Boolean.class.getName(), term.getType().getName()));
 		}
 		this.term = term;

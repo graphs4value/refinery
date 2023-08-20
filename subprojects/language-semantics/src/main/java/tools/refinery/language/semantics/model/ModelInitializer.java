@@ -15,12 +15,14 @@ import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.dnf.InvalidClauseException;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
@@ -60,7 +62,9 @@ public class ModelInitializer {
 
 	private final Map<Relation, RelationInfo> relationInfoMap = new LinkedHashMap<>();
 
-	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new LinkedHashMap<>();
+	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new HashMap<>();
+
+	private Map<AnyPartialSymbol, Relation> inverseTrace = new HashMap<>();
 
 	private Map<Relation, PartialRelation> relationTrace;
 
@@ -80,6 +84,10 @@ public class ModelInitializer {
 
 	public Map<Relation, PartialRelation> getRelationTrace() {
 		return relationTrace;
+	}
+
+	public Relation getInverseTrace(AnyPartialSymbol partialRelation) {
+		return inverseTrace.get(partialRelation);
 	}
 
 	public ModelSeed createModel(Problem problem, ModelStoreBuilder storeBuilder) {
@@ -172,7 +180,7 @@ public class ModelInitializer {
 					collectPartialRelation(invalidMultiplicityConstraint, 1, TruthValue.FALSE, TruthValue.FALSE);
 				}
 			} else {
-				throw new IllegalArgumentException("Unknown feature declaration: " + featureDeclaration);
+				throw new TracedException(featureDeclaration, "Unknown feature declaration");
 			}
 		}
 	}
@@ -189,6 +197,7 @@ public class ModelInitializer {
 	private void putRelationInfo(Relation relation, RelationInfo info) {
 		relationInfoMap.put(relation, info);
 		partialRelationInfoMap.put(info.partialRelation(), info);
+		inverseTrace.put(info.partialRelation(), relation);
 	}
 
 	private RelationInfo collectPartialRelation(Relation relation, int arity, TruthValue value,
@@ -197,6 +206,7 @@ public class ModelInitializer {
 			var name = getName(relation);
 			var info = new RelationInfo(name, arity, value, defaultValue);
 			partialRelationInfoMap.put(info.partialRelation(), info);
+			inverseTrace.put(info.partialRelation(), relation);
 			return info;
 		});
 	}
@@ -216,7 +226,11 @@ public class ModelInitializer {
 	}
 
 	private void collectEnumMetamodel(EnumDeclaration enumDeclaration) {
-		metamodelBuilder.type(getPartialRelation(enumDeclaration), nodeRelation);
+		try {
+			metamodelBuilder.type(getPartialRelation(enumDeclaration), nodeRelation);
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(enumDeclaration, e);
+		}
 	}
 
 	private void collectClassDeclarationMetamodel(ClassDeclaration classDeclaration) {
@@ -226,13 +240,15 @@ public class ModelInitializer {
 		for (var superType : superTypes) {
 			partialSuperTypes.add(getPartialRelation(superType));
 		}
-		metamodelBuilder.type(getPartialRelation(classDeclaration), classDeclaration.isAbstract(),
-				partialSuperTypes);
+		try {
+			metamodelBuilder.type(getPartialRelation(classDeclaration), classDeclaration.isAbstract(),
+					partialSuperTypes);
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(classDeclaration, e);
+		}
 		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
 			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
 				collectReferenceDeclarationMetamodel(classDeclaration, referenceDeclaration);
-			} else {
-				throw new IllegalArgumentException("Unknown feature declaration: " + featureDeclaration);
 			}
 		}
 	}
@@ -249,7 +265,11 @@ public class ModelInitializer {
 			oppositeRelation = getPartialRelation(opposite);
 		}
 		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
-		metamodelBuilder.reference(relation, source, containment, multiplicity, target, oppositeRelation);
+		try {
+			metamodelBuilder.reference(relation, source, containment, multiplicity, target, oppositeRelation);
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(classDeclaration, e);
+		}
 	}
 
 	private Multiplicity getMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
@@ -267,7 +287,7 @@ public class ModelInitializer {
 			interval = CardinalityIntervals.between(rangeMultiplicity.getLowerBound(),
 					upperBound < 0 ? UpperCardinalities.UNBOUNDED : UpperCardinalities.atMost(upperBound));
 		} else {
-			throw new IllegalArgumentException("Unknown multiplicity: " + problemMultiplicity);
+			throw new TracedException(problemMultiplicity, "Unknown multiplicity");
 		}
 		var constraint = getRelationInfo(referenceDeclaration.getInvalidMultiplicity()).partialRelation();
 		return ConstrainedMultiplicity.of(interval, constraint);
@@ -327,22 +347,24 @@ public class ModelInitializer {
 	}
 
 	private void collectAssertion(Assertion assertion) {
-		var relation = assertion.getRelation();
 		var tuple = getTuple(assertion);
 		var value = getTruthValue(assertion.getValue());
+		var relation = assertion.getRelation();
+		var info = getRelationInfo(relation);
+		var partialRelation = info.partialRelation();
+		if (partialRelation.arity() != tuple.getSize()) {
+			throw new TracedException(assertion, "Expected %d arguments for %s, got %d instead"
+					.formatted(partialRelation.arity(), partialRelation, tuple.getSize()));
+		}
 		if (assertion.isDefault()) {
-			mergeDefaultValue(relation, tuple, value);
+			info.defaultAssertions().mergeValue(tuple, value);
 		} else {
-			mergeValue(relation, tuple, value);
+			info.assertions().mergeValue(tuple, value);
 		}
 	}
 
 	private void mergeValue(Relation relation, Tuple key, TruthValue value) {
 		getRelationInfo(relation).assertions().mergeValue(key, value);
-	}
-
-	private void mergeDefaultValue(Relation relation, Tuple key, TruthValue value) {
-		getRelationInfo(relation).defaultAssertions().mergeValue(key, value);
 	}
 
 	private RelationInfo getRelationInfo(Relation relation) {
@@ -372,7 +394,7 @@ public class ModelInitializer {
 			} else if (argument instanceof WildcardAssertionArgument) {
 				nodes[i] = -1;
 			} else {
-				throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+				throw new TracedException(argument, "Unsupported assertion argument");
 			}
 		}
 		return Tuple.of(nodes);
@@ -393,8 +415,24 @@ public class ModelInitializer {
 	private void collectPredicates() {
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof PredicateDefinition predicateDefinition) {
-				collectPredicateDefinition(predicateDefinition);
+				collectPredicateDefinitionTraced(predicateDefinition);
 			}
+		}
+	}
+
+	private void collectPredicateDefinitionTraced(PredicateDefinition predicateDefinition) {
+		try {
+			collectPredicateDefinition(predicateDefinition);
+		} catch (InvalidClauseException e) {
+			int clauseIndex = e.getClauseIndex();
+			var bodies = predicateDefinition.getBodies();
+			if (clauseIndex < bodies.size()) {
+				throw new TracedException(bodies.get(clauseIndex), e);
+			} else {
+				throw new TracedException(predicateDefinition, e);
+			}
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(predicateDefinition, e);
 		}
 	}
 
@@ -436,13 +474,17 @@ public class ModelInitializer {
 		}
 		var builder = Query.builder(name).parameters(parameters);
 		for (var body : predicateDefinition.getBodies()) {
-			var localScope = extendScope(parameterMap, body.getImplicitVariables());
-			var problemLiterals = body.getLiterals();
-			var literals = new ArrayList<Literal>(commonLiterals);
-			for (var problemLiteral : problemLiterals) {
-				toLiterals(problemLiteral, localScope, literals);
+			try {
+				var localScope = extendScope(parameterMap, body.getImplicitVariables());
+				var problemLiterals = body.getLiterals();
+				var literals = new ArrayList<>(commonLiterals);
+				for (var problemLiteral : problemLiterals) {
+					toLiteralsTraced(problemLiteral, localScope, literals);
+				}
+				builder.clause(literals);
+			} catch (RuntimeException e) {
+				throw TracedException.addTrace(body, e);
 			}
-			builder.clause(literals);
 		}
 		return builder.build();
 	}
@@ -462,13 +504,23 @@ public class ModelInitializer {
 		return localScope;
 	}
 
-	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
+	private void toLiteralsTraced(Expr expr, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
+								  List<Literal> literals) {
+		try {
+			toLiterals(expr, localScope, literals);
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(expr, e);
+		}
+	}
+
+	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable,
+			Variable> localScope,
 							List<Literal> literals) {
 		if (expr instanceof LogicConstant logicConstant) {
 			switch (logicConstant.getLogicValue()) {
-				case TRUE -> literals.add(BooleanLiteral.TRUE);
-				case FALSE -> literals.add(BooleanLiteral.FALSE);
-				default -> throw new IllegalArgumentException("Unsupported literal: " + expr);
+			case TRUE -> literals.add(BooleanLiteral.TRUE);
+			case FALSE -> literals.add(BooleanLiteral.FALSE);
+			default -> throw new TracedException(logicConstant, "Unsupported literal");
 			}
 		} else if (expr instanceof Atom atom) {
 			var target = getPartialRelation(atom.getRelation());
@@ -478,7 +530,7 @@ public class ModelInitializer {
 		} else if (expr instanceof NegationExpr negationExpr) {
 			var body = negationExpr.getBody();
 			if (!(body instanceof Atom atom)) {
-				throw new IllegalArgumentException("Cannot negate literal: " + body);
+				throw new TracedException(body, "Cannot negate literal");
 			}
 			var target = getPartialRelation(atom.getRelation());
 			Constraint constraint;
@@ -498,11 +550,12 @@ public class ModelInitializer {
 			boolean positive = switch (comparisonExpr.getOp()) {
 				case EQ -> true;
 				case NOT_EQ -> false;
-				default -> throw new IllegalArgumentException("Unsupported operator: " + comparisonExpr.getOp());
+				default -> throw new TracedException(
+						comparisonExpr, "Unsupported operator");
 			};
 			literals.add(new EquivalenceLiteral(positive, argumentList.get(0), argumentList.get(1)));
 		} else {
-			throw new IllegalArgumentException("Unsupported literal: " + expr);
+			throw new TracedException(expr, "Unsupported literal");
 		}
 	}
 
@@ -512,7 +565,7 @@ public class ModelInitializer {
 		var argumentList = new ArrayList<Variable>(expressions.size());
 		for (var expr : expressions) {
 			if (!(expr instanceof VariableOrNodeExpr variableOrNodeExpr)) {
-				throw new IllegalArgumentException("Unsupported argument: " + expr);
+				throw new TracedException(expr, "Unsupported argument");
 			}
 			var variableOrNode = variableOrNodeExpr.getVariableOrNode();
 			if (variableOrNode instanceof Node node) {
@@ -526,10 +579,12 @@ public class ModelInitializer {
 				} else {
 					var variable = localScope.get(problemVariable);
 					if (variable == null) {
-						throw new IllegalArgumentException("Unknown variable: " + problemVariable.getName());
+						throw new TracedException(variableOrNode, "Unknown variable: " + problemVariable.getName());
 					}
 					argumentList.add(variable);
 				}
+			} else {
+				throw new TracedException(variableOrNode, "Unknown argument");
 			}
 		}
 		return argumentList;

@@ -7,15 +7,16 @@ package tools.refinery.store.query.literal;
 
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.dnf.Dnf;
+import tools.refinery.store.query.dnf.InvalidClauseException;
 import tools.refinery.store.query.term.*;
 
 import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static tools.refinery.store.query.literal.Literals.not;
@@ -57,13 +58,13 @@ class AggregationLiteralTest {
 	@Test
 	void missingAggregationVariableTest() {
 		var aggregation = fakeConstraint.aggregateBy(y, INT_SUM, p, z);
-		assertThrows(IllegalArgumentException.class, () -> x.assign(aggregation));
+		assertThrows(InvalidQueryException.class, () -> x.assign(aggregation));
 	}
 
 	@Test
 	void circularAggregationVariableTest() {
 		var aggregation = fakeConstraint.aggregateBy(x, INT_SUM, p, x);
-		assertThrows(IllegalArgumentException.class, () -> x.assign(aggregation));
+		assertThrows(InvalidQueryException.class, () -> x.assign(aggregation));
 	}
 
 	@Test
@@ -73,7 +74,7 @@ class AggregationLiteralTest {
 						not(fakeConstraint.call(p, y)),
 						x.assign(fakeConstraint.aggregateBy(y, INT_SUM, p, y))
 				);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@Test
@@ -83,6 +84,6 @@ class AggregationLiteralTest {
 						y.assign(constant(27)),
 						x.assign(fakeConstraint.aggregateBy(y, INT_SUM, p, y))
 				);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 }

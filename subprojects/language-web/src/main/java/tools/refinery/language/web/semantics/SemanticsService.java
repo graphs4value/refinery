@@ -5,9 +5,11 @@
  */
 package tools.refinery.language.web.semantics;
 
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import org.eclipse.xtext.ide.ExecutorServiceProvider;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.web.server.model.AbstractCachedService;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
 
+import java.util.List;
 import java.util.concurrent.*;
 
 @Singleton
@@ -34,7 +37,12 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 	@Inject
 	private ValidationService validationService;
 
-	private final ExecutorService executorService = Executors.newCachedThreadPool();
+	private ExecutorService executorService;
+
+	@Inject
+	public void setExecutorServiceProvider(ExecutorServiceProvider provider) {
+		executorService = provider.get(this.getClass().getName());
+	}
 
 	@Override
 	public SemanticsResult compute(IXtextWebDocument doc, CancelIndicator cancelIndicator) {
@@ -42,12 +50,15 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		if (LOG.isTraceEnabled()) {
 			start = System.currentTimeMillis();
 		}
-		var problem = getProblem(doc, cancelIndicator);
-		if (problem == null) {
+		if (hasError(doc, cancelIndicator)) {
 			return null;
 		}
+		var problem = getProblem(doc);
+		if (problem == null) {
+			return new SemanticsSuccessResult(List.of(), new JsonObject());
+		}
 		var worker = workerProvider.get();
-		worker.setProblem(problem,cancelIndicator);
+		worker.setProblem(problem, cancelIndicator);
 		var future = executorService.submit(worker);
 		SemanticsResult result = null;
 		try {
@@ -58,11 +69,19 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			Thread.currentThread().interrupt();
 		} catch (ExecutionException e) {
 			operationCanceledManager.propagateAsErrorIfCancelException(e.getCause());
-			throw new IllegalStateException(e);
+			LOG.debug("Error while computing semantics", e);
+			if (e.getCause() instanceof Error error) {
+				throw error;
+			}
+			String message = e.getMessage();
+			if (message == null) {
+				message = "Partial interpretation error";
+			}
+			return new SemanticsInternalErrorResult(message);
 		} catch (TimeoutException e) {
 			future.cancel(true);
 			LOG.trace("Semantics service timeout", e);
-			return new SemanticsErrorResult("Partial interpretation timed out");
+			return new SemanticsInternalErrorResult("Partial interpretation timed out");
 		}
 		if (LOG.isTraceEnabled()) {
 			long end = System.currentTimeMillis();
@@ -72,17 +91,17 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		return result;
 	}
 
-	@Nullable
-	private Problem getProblem(IXtextWebDocument doc, CancelIndicator cancelIndicator) {
+	private boolean hasError(IXtextWebDocument doc, CancelIndicator cancelIndicator) {
 		if (!(doc instanceof PushWebDocument pushDoc)) {
 			throw new IllegalArgumentException("Unexpected IXtextWebDocument: " + doc);
 		}
 		var validationResult = pushDoc.getCachedServiceResult(validationService, cancelIndicator, true);
-		boolean hasError = validationResult.getIssues().stream()
+		return validationResult.getIssues().stream()
 				.anyMatch(issue -> "error".equals(issue.getSeverity()));
-		if (hasError) {
-			return null;
-		}
+	}
+
+	@Nullable
+	private Problem getProblem(IXtextWebDocument doc) {
 		var contents = doc.getResource().getContents();
 		if (contents.isEmpty()) {
 			return null;

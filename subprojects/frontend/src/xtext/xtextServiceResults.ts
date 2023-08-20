@@ -125,3 +125,10 @@ export const FormattingResult = DocumentStateResult.extend({
 });
 
 export type FormattingResult = z.infer<typeof FormattingResult>;
+
+export const SemanticsResult = z.object({
+  error: z.string().optional(),
+  issues: Issue.array().optional(),
+});
+
+export type SemanticsResult = z.infer<typeof SemanticsResult>;

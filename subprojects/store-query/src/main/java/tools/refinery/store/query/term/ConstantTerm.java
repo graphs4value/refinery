@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.term;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -21,7 +22,7 @@ public final class ConstantTerm<T> extends AbstractTerm<T> {
 	public ConstantTerm(Class<T> type, T value) {
 		super(type);
 		if (value != null && !type.isInstance(value)) {
-			throw new IllegalArgumentException("Value %s is not an instance of %s".formatted(value, type.getName()));
+			throw new InvalidQueryException("Value %s is not an instance of %s".formatted(value, type.getName()));
 		}
 		this.value = value;
 	}

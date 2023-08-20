@@ -5,5 +5,5 @@
  */
 package tools.refinery.language.web.semantics;
 
-public record SemanticsErrorResult(String error) implements SemanticsResult {
+public record SemanticsInternalErrorResult(String error) implements SemanticsResult {
 }

@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.literal;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.literal.CallLiteral;
 
 public final class PartialLiterals {
@@ -31,7 +32,7 @@ public final class PartialLiterals {
 	public static CallLiteral addModality(CallLiteral literal, Modality modality, Concreteness concreteness) {
 		var target = literal.getTarget();
 		if (target instanceof ModalConstraint) {
-			throw new IllegalArgumentException("Literal %s already has modality".formatted(literal));
+			throw new InvalidQueryException("Literal %s already has modality".formatted(literal));
 		}
 		var polarity = literal.getPolarity();
 		var modalTarget = new ModalConstraint(modality.commute(polarity), concreteness, target);

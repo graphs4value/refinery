@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -27,7 +28,7 @@ public abstract class AbstractCallLiteral extends AbstractLiteral {
 	protected AbstractCallLiteral(Constraint target, List<Variable> arguments) {
 		int arity = target.arity();
 		if (arguments.size() != arity) {
-			throw new IllegalArgumentException("%s needs %d arguments, but got %s".formatted(target.name(),
+			throw new InvalidQueryException("%s needs %d arguments, but got %s".formatted(target.name(),
 					target.arity(), arguments.size()));
 		}
 		this.target = target;
@@ -39,7 +40,7 @@ public abstract class AbstractCallLiteral extends AbstractLiteral {
 			var argument = arguments.get(i);
 			var parameter = parameters.get(i);
 			if (!parameter.isAssignable(argument)) {
-				throw new IllegalArgumentException("Argument %d of %s is not assignable to parameter %s"
+				throw new InvalidQueryException("Argument %d of %s is not assignable to parameter %s"
 						.formatted(i, target, parameter));
 			}
 			switch (parameter.getDirection()) {

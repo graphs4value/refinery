@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.metamodel;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyBuilder;
 
@@ -23,7 +24,7 @@ public class ContainedTypeHierarchyBuilder extends TypeHierarchyBuilder {
 		for (var containedType : containedTypes) {
 			var currentInfo = typeInfoMap.get(containedType);
 			if (currentInfo == null) {
-				throw new IllegalArgumentException("Invalid contained type: " + containedType);
+				throw new TranslationException(containedType, "Invalid contained type: " + containedType);
 			}
 			var newInfo = currentInfo.addSupertype(ContainmentHierarchyTranslator.CONTAINED_SYMBOL);
 			typeInfoMap.put(containedType, newInfo);

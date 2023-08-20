@@ -29,6 +29,7 @@ import type PWAStore from '../PWAStore';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
 
+import EditorErrors from './EditorErrors';
 import LintPanelStore from './LintPanelStore';
 import SearchPanelStore from './SearchPanelStore';
 import createEditorState from './createEditorState';
@@ -54,15 +55,22 @@ export default class EditorStore {
 
   readonly lintPanel: LintPanelStore;
 
+  readonly delayedErrors: EditorErrors;
+
   showLineNumbers = false;
 
   disposed = false;
+
+  analyzing = false;
+
+  semanticsError: string | undefined;
 
   semantics: unknown = {};
 
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
     this.state = createEditorState(initialValue, this);
+    this.delayedErrors = new EditorErrors(this);
     this.searchPanel = new SearchPanelStore(this);
     this.lintPanel = new LintPanelStore(this);
     (async () => {
@@ -82,6 +90,7 @@ export default class EditorStore {
       state: observable.ref,
       client: observable.ref,
       view: observable.ref,
+      semantics: observable.ref,
       searchPanel: false,
       lintPanel: false,
       contentAssist: false,
@@ -215,19 +224,6 @@ export default class EditorStore {
     this.doCommand(nextDiagnostic);
   }
 
-  get highestDiagnosticLevel(): Diagnostic['severity'] | undefined {
-    if (this.errorCount > 0) {
-      return 'error';
-    }
-    if (this.warningCount > 0) {
-      return 'warning';
-    }
-    if (this.infoCount > 0) {
-      return 'info';
-    }
-    return undefined;
-  }
-
   updateSemanticHighlighting(ranges: IHighlightRange[]): void {
     this.dispatch(setSemanticHighlighting(ranges));
   }
@@ -284,12 +280,29 @@ export default class EditorStore {
     return true;
   }
 
+  analysisStarted() {
+    this.analyzing = true;
+  }
+
+  analysisCompleted(semanticAnalysisSkipped = false) {
+    this.analyzing = false;
+    if (semanticAnalysisSkipped) {
+      this.semanticsError = undefined;
+    }
+  }
+
+  setSemanticsError(semanticsError: string) {
+    this.semanticsError = semanticsError;
+  }
+
   setSemantics(semantics: unknown) {
+    this.semanticsError = undefined;
     this.semantics = semantics;
   }
 
   dispose(): void {
     this.client?.dispose();
+    this.delayedErrors.dispose();
     this.disposed = true;
   }
 }

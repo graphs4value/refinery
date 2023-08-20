@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.literal;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -16,18 +17,20 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public class AssignLiteral<T> extends AbstractLiteral {
 	private final DataVariable<T> variable;
 	private final Term<T> term;
 
 	public AssignLiteral(DataVariable<T> variable, Term<T> term) {
 		if (!term.getType().equals(variable.getType())) {
-			throw new IllegalArgumentException("Term %s must be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Term %s must be of type %s, got %s instead".formatted(
 					term, variable.getType().getName(), term.getType().getName()));
 		}
 		var inputVariables = term.getInputVariables();
 		if (inputVariables.contains(variable)) {
-			throw new IllegalArgumentException("Result variable %s must not appear in the term %s".formatted(
+			throw new InvalidQueryException("Result variable %s must not appear in the term %s".formatted(
 					variable, term));
 		}
 		this.variable = variable;

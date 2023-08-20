@@ -6,6 +6,7 @@
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 
 import java.util.Optional;
@@ -33,7 +34,7 @@ public abstract sealed class AnyDataVariable extends Variable implements AnyTerm
 
 	@Override
 	public NodeVariable asNodeVariable() {
-		throw new IllegalStateException("%s is a data variable".formatted(this));
+		throw new InvalidQueryException("%s is a data variable".formatted(this));
 	}
 
 	@Override

@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.view;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.representation.Symbol;
 
@@ -66,7 +67,7 @@ public class FilteredView<T> extends TuplePreservingView<T> {
 			// The predicate doesn't need to handle the default value if it is null.
 		}
 		if (matchesDefaultValue) {
-			throw new IllegalArgumentException("Tuples with default value %s cannot be enumerated in %s"
+			throw new InvalidQueryException("Tuples with default value %s cannot be enumerated in %s"
 					.formatted(defaultValue, getSymbol()));
 		}
 	}

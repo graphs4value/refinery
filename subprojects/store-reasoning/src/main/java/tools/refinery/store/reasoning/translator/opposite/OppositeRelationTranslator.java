@@ -17,6 +17,7 @@ import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.refinement.RefinementBasedInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.TranslationException;
 
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,16 @@ public class OppositeRelationTranslator implements ModelStoreConfiguration, Part
 	private final PartialRelation opposite;
 
 	public OppositeRelationTranslator(PartialRelation linkType, PartialRelation opposite) {
+		if (linkType.arity() != 2) {
+			throw new TranslationException(linkType,
+					"Expected relation with opposite %s to have arity 2, got %d instead"
+							.formatted(linkType, linkType.arity()));
+		}
+		if (opposite.arity() != 2) {
+			throw new TranslationException(linkType,
+					"Expected opposite %s of %s to have arity 2, got %d instead"
+							.formatted(opposite, linkType, opposite.arity()));
+		}
 		this.linkType = linkType;
 		this.opposite = opposite;
 	}

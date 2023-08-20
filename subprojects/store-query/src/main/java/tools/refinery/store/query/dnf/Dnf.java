@@ -6,6 +6,7 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.SubstitutingLiteralEqualityHelper;
@@ -55,7 +56,7 @@ public final class Dnf implements Constraint {
 										   FunctionalDependency<Variable> functionalDependency) {
 		for (var variable : toValidate) {
 			if (!parameterSet.contains(variable)) {
-				throw new IllegalArgumentException(
+				throw new InvalidQueryException(
 						"Variable %s of functional dependency %s does not appear in the parameter list %s"
 								.formatted(variable, functionalDependency, symbolicParameters));
 			}

@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.literal;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -22,7 +23,7 @@ public final class EquivalenceLiteral extends AbstractLiteral implements CanNega
 
 	public EquivalenceLiteral(boolean positive, Variable left, Variable right) {
 		if (!left.tryGetType().equals(right.tryGetType())) {
-			throw new IllegalArgumentException("Variables %s and %s of different type cannot be equivalent"
+			throw new InvalidQueryException("Variables %s and %s of different type cannot be equivalent"
 					.formatted(left, right));
 		}
 		this.positive = positive;

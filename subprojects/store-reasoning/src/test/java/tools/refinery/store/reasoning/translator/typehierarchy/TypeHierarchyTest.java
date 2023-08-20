@@ -8,6 +8,7 @@ package tools.refinery.store.reasoning.translator.typehierarchy;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.TruthValue;
 
 import java.util.Set;
@@ -200,7 +201,7 @@ class TypeHierarchyTest {
 				.type(c1, c2)
 				.type(c2, c1);
 
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(TranslationException.class, builder::build);
 	}
 
 	@Test

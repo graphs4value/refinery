@@ -10,6 +10,7 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.seed.ModelSeed;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.cardinality.CardinalityInterval;
@@ -37,7 +38,8 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		for (int i = 0; i < intervals.length; i++) {
 			var interval = intervals[i];
 			if (interval.isEmpty()) {
-				throw new IllegalArgumentException("Inconsistent existence or equality for node " + i);
+				throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
+						"Inconsistent existence or equality for node " + i);
 			}
 			var uniqueInterval = uniqueTable.computeIfAbsent(intervals[i], Function.identity());
 			countInterpretation.put(Tuple.of(i), uniqueInterval);
@@ -58,9 +60,10 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		} else {
 			Arrays.fill(intervals, CardinalityIntervals.SET);
 			if (!modelSeed.containsSeed(ReasoningAdapter.EXISTS_SYMBOL) ||
-				!modelSeed.containsSeed(ReasoningAdapter.EQUALS_SYMBOL)) {
-				throw new IllegalArgumentException("Seed for %s and %s is required if there is no seed for %s"
-						.formatted(ReasoningAdapter.EXISTS_SYMBOL, ReasoningAdapter.EQUALS_SYMBOL,
+					!modelSeed.containsSeed(ReasoningAdapter.EQUALS_SYMBOL)) {
+				throw new TranslationException(MultiObjectTranslator.COUNT_SYMBOL,
+						"Seed for %s and %s is required if there is no seed for %s".formatted(
+								ReasoningAdapter.EXISTS_SYMBOL, ReasoningAdapter.EQUALS_SYMBOL,
 								MultiObjectTranslator.COUNT_SYMBOL));
 			}
 		}
@@ -78,9 +81,10 @@ class MultiObjectInitializer implements PartialModelInitializer {
 			switch (cursor.getValue()) {
 			case TRUE -> intervals[i] = intervals[i].meet(CardinalityIntervals.SOME);
 			case FALSE -> intervals[i] = intervals[i].meet(CardinalityIntervals.NONE);
-			case ERROR -> throw new IllegalArgumentException("Inconsistent existence for node " + i);
-			default -> throw new IllegalArgumentException("Invalid existence truth value %s for node %d"
-					.formatted(cursor.getValue(), i));
+			case ERROR -> throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
+					"Inconsistent existence for node " + i);
+			default -> throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
+					"Invalid existence truth value %s for node %d".formatted(cursor.getValue(), i));
 			}
 		}
 	}
@@ -96,8 +100,8 @@ class MultiObjectInitializer implements PartialModelInitializer {
 			int i = key.get(0);
 			int otherIndex = key.get(1);
 			if (i != otherIndex) {
-				throw new IllegalArgumentException("Off-diagonal equivalence (%d, %d) is not permitted"
-						.formatted(i, otherIndex));
+				throw new TranslationException(ReasoningAdapter.EQUALS_SYMBOL,
+						"Off-diagonal equivalence (%d, %d) is not permitted".formatted(i, otherIndex));
 			}
 			checkNodeId(intervals, i);
 			switch (cursor.getValue()) {
@@ -105,14 +109,15 @@ class MultiObjectInitializer implements PartialModelInitializer {
 			case UNKNOWN -> {
 				// Nothing do to, {@code intervals} is initialized with unknown equality.
 			}
-			case ERROR -> throw new IllegalArgumentException("Inconsistent equality for node " + i);
-			default -> throw new IllegalArgumentException("Invalid equality truth value %s for node %d"
-					.formatted(cursor.getValue(), i));
+			case ERROR -> throw new TranslationException(ReasoningAdapter.EQUALS_SYMBOL,
+					"Inconsistent equality for node " + i);
+			default -> throw new TranslationException(ReasoningAdapter.EQUALS_SYMBOL,
+					"Invalid equality truth value %s for node %d".formatted(cursor.getValue(), i));
 			}
 		}
 		for (int i = 0; i < intervals.length; i++) {
 			if (seed.get(Tuple.of(i, i)) == TruthValue.FALSE) {
-				throw new IllegalArgumentException("Inconsistent equality for node " + i);
+				throw new TranslationException(ReasoningAdapter.EQUALS_SYMBOL, "Inconsistent equality for node " + i);
 			}
 		}
 	}

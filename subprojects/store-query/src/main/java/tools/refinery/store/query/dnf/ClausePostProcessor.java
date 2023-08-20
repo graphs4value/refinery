@@ -7,6 +7,7 @@ package tools.refinery.store.query.dnf;
 
 import org.jetbrains.annotations.NotNull;
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.substitution.MapBasedSubstitution;
 import tools.refinery.store.query.substitution.StatelessSubstitution;
@@ -160,7 +161,7 @@ class ClausePostProcessor {
 				// Inputs count as positive, because they are already bound when we evaluate literals.
 				positiveVariables.add(variable);
 			} else if (!existentiallyQuantifiedVariables.contains(variable)) {
-				throw new IllegalArgumentException("Unbound %s parameter %s"
+				throw new InvalidQueryException("Unbound %s parameter %s"
 						.formatted(ParameterDirection.OUT, variable));
 			}
 		}
@@ -172,7 +173,7 @@ class ClausePostProcessor {
 			var representative = pair.getKey();
 			if (!positiveVariables.contains(representative)) {
 				var variableSet = pair.getValue();
-				throw new IllegalArgumentException("Variables %s were merged by equivalence but are not bound"
+				throw new InvalidQueryException("Variables %s were merged by equivalence but are not bound"
 						.formatted(variableSet));
 			}
 		}
@@ -184,7 +185,7 @@ class ClausePostProcessor {
 			for (var variable : literal.getPrivateVariables(positiveVariables)) {
 				var oldLiteral = negativeVariablesMap.put(variable, literal);
 				if (oldLiteral != null) {
-					throw new IllegalArgumentException("Unbound variable %s appears in multiple literals %s and %s"
+					throw new InvalidQueryException("Unbound variable %s appears in multiple literals %s and %s"
 							.formatted(variable, oldLiteral, literal));
 				}
 			}
@@ -206,7 +207,7 @@ class ClausePostProcessor {
 			variable.addToSortedLiterals();
 		}
 		if (!variableToLiteralInputMap.isEmpty()) {
-			throw new IllegalArgumentException("Unbound input variables %s"
+			throw new InvalidQueryException("Unbound input variables %s"
 					.formatted(variableToLiteralInputMap.keySet()));
 		}
 	}

@@ -4,10 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
+import CancelIcon from '@mui/icons-material/Cancel';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import Button from '@mui/material/Button';
-import type { SxProps, Theme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 
 import AnimatedButton from './AnimatedButton';
@@ -18,26 +16,45 @@ const GENERATE_LABEL = 'Generate';
 const GenerateButton = observer(function GenerateButton({
   editorStore,
   hideWarnings,
-  sx,
 }: {
   editorStore: EditorStore | undefined;
   hideWarnings?: boolean | undefined;
-  sx?: SxProps<Theme> | undefined;
 }): JSX.Element {
   if (editorStore === undefined) {
     return (
-      <Button
-        color="inherit"
-        className="rounded shaded"
-        disabled
-        {...(sx === undefined ? {} : { sx })}
-      >
+      <AnimatedButton color="inherit" disabled>
         Loading&hellip;
-      </Button>
+      </AnimatedButton>
     );
   }
 
-  const { errorCount, warningCount } = editorStore;
+  const { analyzing, errorCount, warningCount, semanticsError } =
+    editorStore.delayedErrors;
+
+  if (analyzing) {
+    return (
+      <AnimatedButton color="inherit" disabled>
+        Analyzing&hellip;
+      </AnimatedButton>
+    );
+  }
+
+  if (semanticsError !== undefined && editorStore.opened) {
+    return (
+      <AnimatedButton
+        color="error"
+        disabled
+        startIcon={<CancelIcon />}
+        sx={(theme) => ({
+          '&.Mui-disabled': {
+            color: `${theme.palette.error.main} !important`,
+          },
+        })}
+      >
+        Analysis error
+      </AnimatedButton>
+    );
+  }
 
   const diagnostics: string[] = [];
   if (errorCount > 0) {
@@ -54,8 +71,7 @@ const GenerateButton = observer(function GenerateButton({
         aria-label={`Select next diagnostic out of ${summary}`}
         onClick={() => editorStore.nextDiagnostic()}
         color="error"
-        startIcon={<DangerousOutlinedIcon />}
-        {...(sx === undefined ? {} : { sx })}
+        startIcon={<CancelIcon />}
       >
         {summary}
       </AnimatedButton>
@@ -67,7 +83,6 @@ const GenerateButton = observer(function GenerateButton({
       disabled={!editorStore.opened}
       color={warningCount > 0 ? 'warning' : 'primary'}
       startIcon={<PlayArrowIcon />}
-      {...(sx === undefined ? {} : { sx })}
     >
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}
     </AnimatedButton>
@@ -76,7 +91,6 @@ const GenerateButton = observer(function GenerateButton({
 
 GenerateButton.defaultProps = {
   hideWarnings: false,
-  sx: undefined,
 };
 
 export default GenerateButton;

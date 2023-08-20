@@ -6,6 +6,7 @@
 package tools.refinery.store.query.dnf;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
@@ -80,7 +81,7 @@ class TopologicalSortTest {
 						example.call(r, t, q, s),
 						friendView.call(r, t)
 				);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidQueryException.class, builder::build);
 	}
 
 	@Test
@@ -93,7 +94,7 @@ class TopologicalSortTest {
 						example.call(p, q, r, s),
 						example.call(r, t, q, s)
 				);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidQueryException.class, builder::build);
 	}
 
 	@Test
@@ -107,6 +108,6 @@ class TopologicalSortTest {
 						example.call(r, t, q, s),
 						example.call(p, q, r, t)
 				);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidQueryException.class, builder::build);
 	}
 }

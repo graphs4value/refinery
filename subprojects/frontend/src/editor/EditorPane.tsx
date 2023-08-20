@@ -13,6 +13,7 @@ import { useState } from 'react';
 
 import { useRootStore } from '../RootStoreProvider';
 
+import AnalysisErrorNotification from './AnalysisErrorNotification';
 import ConnectionStatusNotification from './ConnectionStatusNotification';
 import EditorArea from './EditorArea';
 import EditorButtons from './EditorButtons';
@@ -48,6 +49,7 @@ export default observer(function EditorPane(): JSX.Element {
           <EditorLoading />
         ) : (
           <>
+            <AnalysisErrorNotification editorStore={editorStore} />
             <ConnectionStatusNotification editorStore={editorStore} />
             <SearchPanelPortal editorStore={editorStore} />
             <EditorArea editorStore={editorStore} />

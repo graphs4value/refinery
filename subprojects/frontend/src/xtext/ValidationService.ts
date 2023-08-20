@@ -9,7 +9,7 @@ import type { Diagnostic } from '@codemirror/lint';
 import type EditorStore from '../editor/EditorStore';
 
 import type UpdateService from './UpdateService';
-import { ValidationResult } from './xtextServiceResults';
+import { Issue, ValidationResult } from './xtextServiceResults';
 
 export default class ValidationService {
   constructor(
@@ -17,11 +17,41 @@ export default class ValidationService {
     private readonly updateService: UpdateService,
   ) {}
 
+  private lastValidationIssues: Issue[] = [];
+
+  private lastSemanticsIssues: Issue[] = [];
+
   onPush(push: unknown): void {
-    const { issues } = ValidationResult.parse(push);
+    ({ issues: this.lastValidationIssues } = ValidationResult.parse(push));
+    this.lastSemanticsIssues = [];
+    this.updateDiagnostics();
+    if (
+      this.lastValidationIssues.some(({ severity }) => severity === 'error')
+    ) {
+      this.store.analysisCompleted(true);
+    }
+  }
+
+  onDisconnect(): void {
+    this.store.updateDiagnostics([]);
+    this.lastValidationIssues = [];
+    this.lastSemanticsIssues = [];
+  }
+
+  setSemanticsIssues(issues: Issue[]): void {
+    this.lastSemanticsIssues = issues;
+    this.updateDiagnostics();
+  }
+
+  private updateDiagnostics(): void {
     const allChanges = this.updateService.computeChangesSinceLastUpdate();
     const diagnostics: Diagnostic[] = [];
-    issues.forEach(({ offset, length, severity, description }) => {
+    function createDiagnostic({
+      offset,
+      length,
+      severity,
+      description,
+    }: Issue): void {
       if (severity === 'ignore') {
         return;
       }
@@ -31,11 +61,9 @@ export default class ValidationService {
         severity,
         message: description,
       });
-    });
+    }
+    this.lastValidationIssues.forEach(createDiagnostic);
+    this.lastSemanticsIssues.forEach(createDiagnostic);
     this.store.updateDiagnostics(diagnostics);
-  }
-
-  onDisconnect(): void {
-    this.store.updateDiagnostics([]);
   }
 }

@@ -93,7 +93,7 @@ class ProblemWebSocketServletIntegrationTest {
 		clientSocket.waitForTestResult();
 		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
 		var responses = clientSocket.getResponses();
-		assertThat(responses, hasSize(7));
+		assertThat(responses, hasSize(8));
 		assertThat(responses.get(0), equalTo("{\"id\":\"foo\",\"response\":{\"stateId\":\"-80000000\"}}"));
 		assertThat(responses.get(1), startsWith(
 				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"highlight\"," +
@@ -108,7 +108,10 @@ class ProblemWebSocketServletIntegrationTest {
 		assertThat(responses.get(5), startsWith(
 				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"highlight\"," +
 						"\"push\":{\"regions\":["));
-		assertThat(responses.get(6), startsWith(
+		assertThat(responses.get(6), equalTo(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"validate\"," +
+						"\"push\":{\"issues\":[]}}"));
+		assertThat(responses.get(7), startsWith(
 				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"semantics\"," +
 						"\"push\":{"));
 	}
@@ -130,7 +133,7 @@ class ProblemWebSocketServletIntegrationTest {
 							"\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}",
 					Callback.NOOP
 			);
-			case 7 -> session.close();
+			case 8 -> session.close();
 			}
 		}
 	}

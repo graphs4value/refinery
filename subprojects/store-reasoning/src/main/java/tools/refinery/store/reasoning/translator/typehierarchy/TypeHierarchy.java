@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 
 import java.util.*;
 
@@ -81,8 +82,9 @@ public class TypeHierarchy {
 				for (var supertype : allSupertypes) {
 					var supertypeInfo = extendedTypeInfoMap.get(supertype);
 					if (supertypeInfo == null) {
-						throw new IllegalArgumentException("Supertype %s of %s is missing from the type hierarchy"
-								.formatted(supertype, extendedTypeInfo.getType()));
+						throw new TranslationException(extendedTypeInfo.getType(),
+								"Supertype %s of %s is missing from the type hierarchy"
+										.formatted(supertype, extendedTypeInfo.getType()));
 					}
 					found.addAll(supertypeInfo.getAllSupertypes());
 				}
@@ -101,7 +103,7 @@ public class TypeHierarchy {
 			}
 			for (var supertype : extendedTypeInfo.getAllSupertypes()) {
 				if (type.equals(supertype)) {
-					throw new IllegalArgumentException("%s cannot be a supertype of itself".formatted(type));
+					throw new TranslationException(type, "%s cannot be a supertype of itself".formatted(type));
 				}
 				var supertypeInfo = extendedTypeInfoMap.get(supertype);
 				supertypeInfo.getAllSubtypes().add(type);

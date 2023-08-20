@@ -48,7 +48,7 @@ class VariableDirectionTest {
 	@MethodSource("clausesWithVariableInput")
 	void unboundOutVariableTest(List<? extends Literal> clause) {
 		var builder = Dnf.builder().parameter(p, ParameterDirection.OUT).clause(clause);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@ParameterizedTest
@@ -100,7 +100,7 @@ class VariableDirectionTest {
 		var clauseWithEquivalence = new ArrayList<Literal>(clause);
 		clauseWithEquivalence.add(r.isEquivalent(p));
 		var builder = Dnf.builder().clause(clauseWithEquivalence);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	static Stream<Arguments> clausesNotBindingVariable() {
@@ -118,7 +118,7 @@ class VariableDirectionTest {
 	@MethodSource("literalsWithPrivateVariable")
 	void unboundTwicePrivateVariableTest(Literal literal) {
 		var builder = Dnf.builder().clause(not(personView.call(p)), literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@ParameterizedTest
@@ -126,7 +126,7 @@ class VariableDirectionTest {
 	void unboundTwiceByEquivalencePrivateVariableTest(Literal literal) {
 		var r = Variable.of("r");
 		var builder = Dnf.builder().clause(not(personView.call(r)), r.isEquivalent(p), literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	static Stream<Arguments> literalsWithPrivateVariable() {
@@ -159,7 +159,7 @@ class VariableDirectionTest {
 	@MethodSource("literalsWithRequiredVariableInput")
 	void unboundPrivateVariableTest(Literal literal) {
 		var builder = Dnf.builder().clause(literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@ParameterizedTest

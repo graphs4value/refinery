@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 
 import java.util.*;
 
@@ -18,12 +19,14 @@ public class TypeHierarchyBuilder {
 
 	public TypeHierarchyBuilder type(PartialRelation partialRelation, TypeInfo typeInfo) {
 		if (partialRelation.arity() != 1) {
-			throw new IllegalArgumentException("Only types of arity 1 are supported, got %s with %d instead"
-					.formatted(partialRelation, partialRelation.arity()));
+			throw new TranslationException(partialRelation,
+					"Only types of arity 1 are supported, got %s with %d instead"
+							.formatted(partialRelation, partialRelation.arity()));
 		}
 		var putResult = typeInfoMap.put(partialRelation, typeInfo);
 		if (putResult != null && !putResult.equals(typeInfo)) {
-			throw new IllegalArgumentException("Duplicate type info for partial relation: " + partialRelation);
+			throw new TranslationException(partialRelation,
+					"Duplicate type info for partial relation: " + partialRelation);
 		}
 		return this;
 	}

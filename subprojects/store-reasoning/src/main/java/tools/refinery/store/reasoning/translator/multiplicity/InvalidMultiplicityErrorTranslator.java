@@ -14,6 +14,7 @@ import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
 import tools.refinery.store.representation.cardinality.UpperCardinalities;
 import tools.refinery.store.representation.cardinality.UpperCardinality;
@@ -36,11 +37,11 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 	public InvalidMultiplicityErrorTranslator(PartialRelation nodeType, PartialRelation linkType,
 											  boolean inverse, Multiplicity multiplicity) {
 		if (nodeType.arity() != 1) {
-			throw new IllegalArgumentException("Node type must be of arity 1, got %s with arity %d instead"
+			throw new TranslationException(linkType, "Node type must be of arity 1, got %s with arity %d instead"
 					.formatted(nodeType, nodeType.arity()));
 		}
 		if (linkType.arity() != 2) {
-			throw new IllegalArgumentException("Link type must be of arity 2, got %s with arity %d instead"
+			throw new TranslationException(linkType, "Link type must be of arity 2, got %s with arity %d instead"
 					.formatted(linkType, linkType.arity()));
 		}
 		this.nodeType = nodeType;

@@ -53,10 +53,9 @@ public class PushWebDocument extends XtextWebDocument {
 	public <T extends IServiceResult> void precomputeServiceResult(AbstractCachedService<T> service, String serviceName,
 			CancelIndicator cancelIndicator, boolean logCacheMiss) {
 		var serviceClass = service.getClass();
-		var previousResult = precomputedServices.get(serviceClass);
 		var result = getCachedServiceResult(service, cancelIndicator, logCacheMiss);
 		precomputedServices.put(serviceClass, result);
-		if (result != null && !result.equals(previousResult)) {
+		if (result != null) {
 			notifyPrecomputationListeners(serviceName, result);
 		}
 	}

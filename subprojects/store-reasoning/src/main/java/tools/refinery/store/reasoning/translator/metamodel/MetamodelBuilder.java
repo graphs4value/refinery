@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.metamodel;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.containment.ContainmentInfo;
 import tools.refinery.store.reasoning.translator.crossreference.DirectedCrossReferenceInfo;
@@ -13,7 +14,6 @@ import tools.refinery.store.reasoning.translator.crossreference.UndirectedCrossR
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeInfo;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 
 import java.util.*;
 
@@ -70,12 +70,13 @@ public class MetamodelBuilder {
 
 	public MetamodelBuilder reference(PartialRelation linkType, ReferenceInfo info) {
 		if (linkType.arity() != 2) {
-			throw new IllegalArgumentException("Only references of arity 2 are supported, got %s with %d instead"
-					.formatted(linkType, linkType.arity()));
+			throw new TranslationException(linkType,
+					"Only references of arity 2 are supported, got %s with %d instead".formatted(
+							linkType, linkType.arity()));
 		}
 		var putResult = referenceInfoMap.put(linkType, info);
 		if (putResult != null && !putResult.equals(info)) {
-			throw new IllegalArgumentException("Duplicate reference info for partial relation: " + linkType);
+			throw new TranslationException(linkType, "Duplicate reference info for partial relation: " + linkType);
 		}
 		return this;
 	}
@@ -154,11 +155,11 @@ public class MetamodelBuilder {
 		var sourceType = info.sourceType();
 		var targetType = info.targetType();
 		if (typeHierarchyBuilder.isInvalidType(sourceType)) {
-			throw new IllegalArgumentException("Source type %s of %s is not in type hierarchy"
+			throw new TranslationException(linkType, "Source type %s of %s is not in type hierarchy"
 					.formatted(sourceType, linkType));
 		}
 		if (typeHierarchyBuilder.isInvalidType(targetType)) {
-			throw new IllegalArgumentException("Target type %s of %s is not in type hierarchy"
+			throw new TranslationException(linkType, "Target type %s of %s is not in type hierarchy"
 					.formatted(targetType, linkType));
 		}
 		var opposite = info.opposite();
@@ -173,8 +174,9 @@ public class MetamodelBuilder {
 			}
 			if (opposite.equals(linkType)) {
 				if (!sourceType.equals(targetType)) {
-					throw new IllegalArgumentException("Target %s of undirected reference %s differs from source %s"
-							.formatted(targetType, linkType, sourceType));
+					throw new TranslationException(linkType,
+							"Target %s of undirected reference %s differs from source %s".formatted(
+									targetType, linkType, sourceType));
 				}
 				undirectedCrossReferences.put(linkType, new UndirectedCrossReferenceInfo(sourceType,
 						info.multiplicity()));
@@ -183,8 +185,8 @@ public class MetamodelBuilder {
 			oppositeReferences.put(opposite, linkType);
 		}
 		if (info.containment()) {
-			if (targetMultiplicity.multiplicity().meet(CardinalityIntervals.ONE).isEmpty()) {
-				throw new IllegalArgumentException("Invalid opposite %s with multiplicity %s of containment %s"
+			if (!UnconstrainedMultiplicity.INSTANCE.equals(targetMultiplicity)) {
+				throw new TranslationException(opposite, "Invalid opposite %s with multiplicity %s of containment %s"
 						.formatted(opposite, targetMultiplicity, linkType));
 			}
 			containedTypes.add(targetType);
@@ -200,23 +202,23 @@ public class MetamodelBuilder {
 		var sourceType = info.sourceType();
 		var targetType = info.targetType();
 		if (oppositeInfo == null) {
-			throw new IllegalArgumentException("Opposite %s of %s is not defined"
+			throw new TranslationException(linkType, "Opposite %s of %s is not defined"
 					.formatted(opposite, linkType));
 		}
 		if (!linkType.equals(oppositeInfo.opposite())) {
-			throw new IllegalArgumentException("Expected %s to have opposite %s, got %s instead"
+			throw new TranslationException(opposite, "Expected %s to have opposite %s, got %s instead"
 					.formatted(opposite, linkType, oppositeInfo.opposite()));
 		}
 		if (!targetType.equals(oppositeInfo.sourceType())) {
-			throw new IllegalArgumentException("Expected %s to have source type %s, got %s instead"
+			throw new TranslationException(linkType, "Expected %s to have source type %s, got %s instead"
 					.formatted(opposite, targetType, oppositeInfo.sourceType()));
 		}
 		if (!sourceType.equals(oppositeInfo.targetType())) {
-			throw new IllegalArgumentException("Expected %s to have target type %s, got %s instead"
+			throw new TranslationException(linkType, "Expected %s to have target type %s, got %s instead"
 					.formatted(opposite, sourceType, oppositeInfo.targetType()));
 		}
 		if (oppositeInfo.containment() && info.containment()) {
-			throw new IllegalArgumentException("Opposite %s of containment %s cannot be containment"
+			throw new TranslationException(opposite, "Opposite %s of containment %s cannot be containment"
 					.formatted(opposite, linkType));
 		}
 	}

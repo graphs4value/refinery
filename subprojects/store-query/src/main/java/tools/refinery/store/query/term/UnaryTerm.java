@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.term;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -22,7 +23,7 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	protected UnaryTerm(Class<R> type, Class<T> bodyType, Term<T> body) {
 		super(type);
 		if (!body.getType().equals(bodyType)) {
-			throw new IllegalArgumentException("Expected body %s to be of type %s, got %s instead".formatted(body,
+			throw new InvalidQueryException("Expected body %s to be of type %s, got %s instead".formatted(body,
 					bodyType.getName(), body.getType().getName()));
 		}
 		this.bodyType = bodyType;

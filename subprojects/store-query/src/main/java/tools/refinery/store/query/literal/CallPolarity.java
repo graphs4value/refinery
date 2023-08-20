@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.query.literal;
 
+import tools.refinery.store.query.InvalidQueryException;
+
 public enum CallPolarity {
 	POSITIVE(true, false),
 	NEGATIVE(false, false),
@@ -31,7 +33,7 @@ public enum CallPolarity {
 		return switch (this) {
 			case POSITIVE -> NEGATIVE;
 			case NEGATIVE -> POSITIVE;
-			case TRANSITIVE -> throw new IllegalArgumentException("Transitive polarity cannot be negated");
+			case TRANSITIVE -> throw new InvalidQueryException("Transitive polarity cannot be negated");
 		};
 	}
 }

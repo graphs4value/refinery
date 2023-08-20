@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.term;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -26,11 +27,11 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 	protected BinaryTerm(Class<R> type, Class<T1> leftType, Class<T2> rightType, Term<T1> left, Term<T2> right) {
 		super(type);
 		if (!left.getType().equals(leftType)) {
-			throw new IllegalArgumentException("Expected left %s to be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Expected left %s to be of type %s, got %s instead".formatted(
 					left, leftType.getName(), left.getType().getName()));
 		}
 		if (!right.getType().equals(rightType)) {
-			throw new IllegalArgumentException("Expected right %s to be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Expected right %s to be of type %s, got %s instead".formatted(
 					right, rightType.getName(), right.getType().getName()));
 		}
 		this.leftType = leftType;

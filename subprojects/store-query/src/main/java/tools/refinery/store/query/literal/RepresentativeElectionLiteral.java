@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
@@ -32,14 +33,14 @@ public class RepresentativeElectionLiteral extends AbstractCallLiteral {
 		var parameters = target.getParameters();
 		int arity = target.arity();
 		if (arity != 2) {
-			throw new IllegalArgumentException("SCCs can only take binary relations");
+			throw new InvalidQueryException("SCCs can only take binary relations");
 		}
 		if (parameters.get(0).isDataVariable() || parameters.get(1).isDataVariable()) {
-			throw new IllegalArgumentException("SCCs can only be computed over nodes");
+			throw new InvalidQueryException("SCCs can only be computed over nodes");
 		}
 		if (parameters.get(0).getDirection() != ParameterDirection.OUT ||
 				parameters.get(1).getDirection() != ParameterDirection.OUT) {
-			throw new IllegalArgumentException("SCCs cannot take input parameters");
+			throw new InvalidQueryException("SCCs cannot take input parameters");
 		}
 	}
 
@@ -72,7 +73,7 @@ public class RepresentativeElectionLiteral extends AbstractCallLiteral {
 		var reduction = getTarget().getReduction();
 		return switch (reduction) {
 			case ALWAYS_FALSE -> BooleanLiteral.FALSE;
-			case ALWAYS_TRUE -> throw new IllegalArgumentException(
+			case ALWAYS_TRUE -> throw new InvalidQueryException(
 					"Trying to elect representatives over an infinite set");
 			case NOT_REDUCIBLE -> this;
 		};

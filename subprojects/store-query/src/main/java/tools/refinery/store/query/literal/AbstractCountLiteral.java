@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
 import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.term.ConstantTerm;
@@ -26,11 +27,11 @@ public abstract class AbstractCountLiteral<T> extends AbstractCallLiteral {
 								   List<Variable> arguments) {
 		super(target, arguments);
 		if (!resultVariable.getType().equals(resultType)) {
-			throw new IllegalArgumentException("Count result variable %s must be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Count result variable %s must be of type %s, got %s instead".formatted(
 					resultVariable, resultType, resultVariable.getType().getName()));
 		}
 		if (arguments.contains(resultVariable)) {
-			throw new IllegalArgumentException("Count result variable %s must not appear in the argument list"
+			throw new InvalidQueryException("Count result variable %s must not appear in the argument list"
 					.formatted(resultVariable));
 		}
 		this.resultType = resultType;

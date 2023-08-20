@@ -13,6 +13,7 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class ModelSeed {
@@ -41,6 +42,10 @@ public class ModelSeed {
 
 	public boolean containsSeed(AnyPartialSymbol symbol) {
 		return seeds.containsKey(symbol);
+	}
+
+	public Set<AnyPartialSymbol> getSeededSymbols() {
+		return Collections.unmodifiableSet(seeds.keySet());
 	}
 
 	public <A> Cursor<Tuple, A> getCursor(PartialSymbol<A, ?> partialSymbol, A defaultValue) {

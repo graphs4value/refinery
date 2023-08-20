@@ -133,6 +133,7 @@ export default class UpdateService {
       return;
     }
     log.trace('Editor delta', delta);
+    this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'update',
@@ -157,6 +158,7 @@ export default class UpdateService {
   private async updateFullTextExclusive(): Promise<void> {
     log.debug('Performing full text update');
     this.tracker.prepareFullTextUpdateExclusive();
+    this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'update',

@@ -5,8 +5,8 @@
  */
 
 import type { Diagnostic } from '@codemirror/lint';
+import CancelIcon from '@mui/icons-material/Cancel';
 import CheckIcon from '@mui/icons-material/Check';
-import ErrorIcon from '@mui/icons-material/Error';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import FormatPaint from '@mui/icons-material/FormatPaint';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -28,7 +28,7 @@ import type EditorStore from './EditorStore';
 function getLintIcon(severity: Diagnostic['severity'] | undefined) {
   switch (severity) {
     case 'error':
-      return <ErrorIcon fontSize="small" />;
+      return <CancelIcon fontSize="small" />;
     case 'warning':
       return <WarningIcon fontSize="small" />;
     case 'info':
@@ -95,7 +95,7 @@ export default observer(function EditorButtons({
             })}
           value="show-lint-panel"
         >
-          {getLintIcon(editorStore?.highestDiagnosticLevel)}
+          {getLintIcon(editorStore?.delayedErrors?.highestDiagnosticLevel)}
         </ToggleButton>
       </ToggleButtonGroup>
       <IconButton

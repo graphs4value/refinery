@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.multiplicity;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.cardinality.CardinalityInterval;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.representation.cardinality.NonEmptyCardinalityInterval;
@@ -14,17 +15,17 @@ public record ConstrainedMultiplicity(NonEmptyCardinalityInterval multiplicity, 
 		implements Multiplicity {
 	public ConstrainedMultiplicity {
 		if (multiplicity.equals(CardinalityIntervals.SET)) {
-			throw new IllegalArgumentException("Expected a constrained cardinality interval");
+			throw new TranslationException(errorSymbol, "Expected a constrained cardinality interval");
 		}
 		if (errorSymbol.arity() != 1) {
-			throw new IllegalArgumentException("Expected error symbol %s to have arity 1, got %d instead"
+			throw new TranslationException(errorSymbol, "Expected error symbol %s to have arity 1, got %d instead"
 					.formatted(errorSymbol, errorSymbol.arity()));
 		}
 	}
 
 	public static ConstrainedMultiplicity of(CardinalityInterval multiplicity, PartialRelation errorSymbol) {
 		if (!(multiplicity instanceof NonEmptyCardinalityInterval nonEmptyCardinalityInterval)) {
-			throw new IllegalArgumentException("Inconsistent multiplicity");
+			throw new TranslationException(errorSymbol, "Inconsistent multiplicity");
 		}
 		return new ConstrainedMultiplicity(nonEmptyCardinalityInterval, errorSymbol);
 	}

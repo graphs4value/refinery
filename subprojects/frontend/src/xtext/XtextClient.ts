@@ -17,6 +17,7 @@ import getLogger from '../utils/getLogger';
 import ContentAssistService from './ContentAssistService';
 import HighlightingService from './HighlightingService';
 import OccurrencesService from './OccurrencesService';
+import SemanticsService from './SemanticsService';
 import UpdateService from './UpdateService';
 import ValidationService from './ValidationService';
 import XtextWebSocketClient from './XtextWebSocketClient';
@@ -37,6 +38,8 @@ export default class XtextClient {
 
   private readonly occurrencesService: OccurrencesService;
 
+  private readonly semanticsService: SemanticsService;
+
   constructor(
     private readonly store: EditorStore,
     private readonly pwaStore: PWAStore,
@@ -54,6 +57,7 @@ export default class XtextClient {
     );
     this.validationService = new ValidationService(store, this.updateService);
     this.occurrencesService = new OccurrencesService(store, this.updateService);
+    this.semanticsService = new SemanticsService(store, this.validationService);
   }
 
   start(): void {
@@ -67,6 +71,7 @@ export default class XtextClient {
   }
 
   private onDisconnect(): void {
+    this.store.analysisCompleted(true);
     this.highlightingService.onDisconnect();
     this.validationService.onDisconnect();
     this.occurrencesService.onDisconnect();
@@ -115,7 +120,7 @@ export default class XtextClient {
         this.validationService.onPush(push);
         return;
       case 'semantics':
-        this.store.setSemantics(push);
+        this.semanticsService.onPush(push);
         return;
       default:
         throw new Error('Unknown service');
