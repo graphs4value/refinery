@@ -41,7 +41,7 @@ class DecisionTree implements MutableSeed<TruthValue> {
 
 	@Override
 	public TruthValue reducedValue() {
-		return root.getReducedValue().getTruthValue();
+		return root.getOtherwiseReducedValue().getTruthValue();
 	}
 
 	@Override

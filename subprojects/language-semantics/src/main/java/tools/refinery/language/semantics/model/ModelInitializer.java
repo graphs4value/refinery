@@ -163,7 +163,7 @@ public class ModelInitializer {
 			if (statement instanceof ClassDeclaration classDeclaration) {
 				collectClassDeclarationSymbols(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
-				collectPartialRelation(enumDeclaration, 1, null, TruthValue.FALSE);
+				collectPartialRelation(enumDeclaration, 1, TruthValue.FALSE, TruthValue.FALSE);
 			} else if (statement instanceof PredicateDefinition predicateDefinition) {
 				collectPredicateDefinitionSymbol(predicateDefinition);
 			}
