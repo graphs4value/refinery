@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import AddIcon from '@mui/icons-material/Add';
+import CropFreeIcon from '@mui/icons-material/CropFree';
+import RemoveIcon from '@mui/icons-material/Remove';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
 import * as d3 from 'd3';
 import { type Graphviz, graphviz } from 'd3-graphviz';
 import type { BaseType, Selection } from 'd3-selection';
@@ -79,11 +85,13 @@ interface Transform {
 
 export default function GraphArea(): JSX.Element {
   const { editorStore } = useRootStore();
+  const theme = useTheme();
   const disposerRef = useRef<IReactionDisposer | undefined>();
   const graphvizRef = useRef<
     Graphviz<BaseType, unknown, null, undefined> | undefined
   >();
   const canvasRef = useRef<HTMLDivElement | undefined>();
+  const elementRef = useRef<HTMLDivElement | undefined>();
   const zoomRef = useRef<
     d3.ZoomBehavior<HTMLDivElement, unknown> | undefined
   >();
@@ -109,12 +117,13 @@ export default function GraphArea(): JSX.Element {
     zoomBehavior.on('zoom', (event: d3.D3ZoomEvent<HTMLDivElement, unknown>) =>
       setZoom(event.transform),
     );
-    d3.select(element).call(zoomBehavior);
+    d3.select(element).call(zoomBehavior).on('dblclick.zoom', null);
     zoomRef.current = zoomBehavior;
   }, []);
 
   const setElement = useCallback(
     (element: HTMLDivElement | null) => {
+      elementRef.current = element ?? undefined;
       if (disposerRef.current !== undefined) {
         disposerRef.current();
         disposerRef.current = undefined;
@@ -204,9 +213,57 @@ export default function GraphArea(): JSX.Element {
     [editorStore],
   );
 
+  const {
+    transitions: {
+      duration: { short: zoomDuration },
+    },
+  } = theme;
+  const changeZoom = useCallback(
+    (event: React.MouseEvent, factor: number) => {
+      if (canvasRef.current === undefined || zoomRef.current === undefined) {
+        return;
+      }
+      const selection = d3.select(canvasRef.current);
+      const zoomTransition = selection.transition().duration(zoomDuration);
+      const center: [number, number] = [0, 0];
+      zoomRef.current.scaleBy(zoomTransition, factor, center);
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    [zoomDuration],
+  );
+
+  const fitZoom = useCallback((event: React.MouseEvent) => {
+    if (
+      canvasRef.current === undefined ||
+      zoomRef.current === undefined ||
+      elementRef.current === undefined
+    ) {
+      return;
+    }
+    const { width: canvasWidth, height: canvasHeight } =
+      canvasRef.current.getBoundingClientRect();
+    const { width: scaledWidth, height: scaledHeight } =
+      elementRef.current.getBoundingClientRect();
+    const currentFactor = d3.zoomTransform(canvasRef.current).k;
+    const width = scaledWidth / currentFactor;
+    const height = scaledHeight / currentFactor;
+    if (width > 0 && height > 0) {
+      const factor = Math.min(
+        1.0,
+        (canvasWidth - 64) / width,
+        (canvasHeight - 64) / height,
+      );
+      const selection = d3.select(canvasRef.current);
+      zoomRef.current.transform(selection, d3.zoomIdentity.scale(factor));
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
   return (
     <Box
-      sx={(theme) => ({
+      sx={{
         width: '100%',
         height: '100%',
         position: 'relative',
@@ -267,7 +324,7 @@ export default function GraphArea(): JSX.Element {
             },
           },
         },
-      })}
+      }}
       ref={setCanvas}
     >
       <Box
@@ -284,6 +341,27 @@ export default function GraphArea(): JSX.Element {
         }}
         ref={setElement}
       />
+      <Stack
+        direction="column"
+        p={1}
+        sx={{ position: 'absolute', bottom: 0, right: 0 }}
+      >
+        <IconButton
+          aria-label="Zoom in"
+          onClick={(event) => changeZoom(event, 2)}
+        >
+          <AddIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          aria-label="Zoom out"
+          onClick={(event) => changeZoom(event, 0.5)}
+        >
+          <RemoveIcon fontSize="small" />
+        </IconButton>
+        <IconButton aria-label="Fit screen" onClick={fitZoom}>
+          <CropFreeIcon fontSize="small" />
+        </IconButton>
+      </Stack>
     </Box>
   );
 }
