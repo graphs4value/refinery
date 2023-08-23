@@ -1,0 +1,14 @@
+Copyright 2017, Magnus Jacobsson
+Copyright 2023, The Refinery Authors <https://refinery.tools/>
+
+SPDX-License-Identifier: BSD-3-Clause
+
+This file Incorporates patches from the Refinery authors.
+
+However, but redistribution and use is only permitted if neither
+the name of the copyright holder Magnus Jacobsson nor the names of other
+contributors to the d3-graphviz project are used to endorse or promote
+products derived from this software as per the 3rd clause of the
+3-clause BSD license.
+
+See LICENSES/BSD-3-Clause.txt for more details.

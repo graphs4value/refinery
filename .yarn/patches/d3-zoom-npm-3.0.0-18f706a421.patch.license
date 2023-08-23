@@ -1,0 +1,11 @@
+Copyright 2010-2021 Mike Bostock
+Copyright 2020-2023 Philippe Rivière
+Copyright 2023 The Refinery Authors <https://refinery.tools/>
+
+SPDX-License-Identifier: ISC OR EPL-2.0
+
+This file ncorporates patches from
+https://github.com/d3/d3-zoom/tree/3afbe2ae2dfb3129231c5567db56dafb2d6a56a6
+by Philippe Rivière.
+
+Morevoer, it includes other modifications by the Refinery authors.

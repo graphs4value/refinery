@@ -56,8 +56,9 @@ export default styled('div', {
     '.cm-activeLineGutter': {
       background: 'transparent',
     },
-    '.cm-cursor, .cm-cursor-primary': {
+    '.cm-cursor, .cm-dropCursor, .cm-cursor-primary': {
       borderLeft: `2px solid ${theme.palette.info.main}`,
+      marginLeft: -1,
     },
     '.cm-selectionBackground': {
       background: theme.palette.highlight.selection,

@@ -124,7 +124,16 @@ export default observer(function TopBar(): JSX.Element {
                 href="https://www.mcgill.ca/ece/daniel-varro"
                 target="_blank"
               >
-                McGill ECE
+                M<span style={{ textTransform: 'none' }}>c</span>Gill ECE
+              </Button>
+              <Button
+                aria-label="Linkönping University, Department of Computer and Information Science"
+                className="rounded"
+                color="inherit"
+                href="https://liu.se/en/employee/danva91"
+                target="_blank"
+              >
+                L<span style={{ textTransform: 'none' }}>i</span>U IDA
               </Button>
               <Button
                 aria-label="2022 Amazon Research Awards recipent"

@@ -1708,17 +1708,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource-variable/inter@npm:^5.0.8":
-  version: 5.0.8
-  resolution: "@fontsource-variable/inter@npm:5.0.8"
-  checksum: 74175d6051584d7b50410eefc5d454de5ff96d809aeaf6ae46ff4c7f2b04f2d412025ac241cd7a082f93d7456b644e324eeb7089418bd9e39800d92e33ac3225
-  languageName: node
-  linkType: hard
-
 "@fontsource-variable/jetbrains-mono@npm:^5.0.9":
   version: 5.0.9
   resolution: "@fontsource-variable/jetbrains-mono@npm:5.0.9"
   checksum: db377e934e25743ab22063901a76a5b0f685c15206ddcea956918d057cb0a019b8cc8d8272665c453c47b0adc8a238e0bdc0c42d8b5ebd1c7719775042a96d82
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/open-sans@npm:^5.0.9":
+  version: 5.0.9
+  resolution: "@fontsource-variable/open-sans@npm:5.0.9"
+  checksum: 320f4dfa3ed58e42d3f3b895fd620d8d4f1eff0226b05273a18edf50dcb3617ceb6bc00827db72c83904c665bde163130a9374b3756706e775ecefb34d22d89c
   languageName: node
   linkType: hard
 
@@ -2117,8 +2117,8 @@ __metadata:
     "@codemirror/view": "npm:^6.16.0"
     "@emotion/react": "npm:^11.11.1"
     "@emotion/styled": "npm:^11.11.0"
-    "@fontsource-variable/inter": "npm:^5.0.8"
     "@fontsource-variable/jetbrains-mono": "npm:^5.0.9"
+    "@fontsource-variable/open-sans": "npm:^5.0.9"
     "@hpcc-js/wasm": "npm:^2.13.1"
     "@lezer/common": "npm:^1.0.3"
     "@lezer/generator": "npm:^1.4.0"
@@ -2165,7 +2165,6 @@ __metadata:
     eslint-plugin-react: "npm:^7.33.1"
     eslint-plugin-react-hooks: "npm:^4.6.0"
     html-minifier-terser: "npm:^7.2.0"
-    json-stringify-pretty-compact: "npm:^4.0.0"
     lodash-es: "npm:^4.17.21"
     loglevel: "npm:^1.8.1"
     loglevel-plugin-prefix: "npm:^0.8.4"
@@ -5974,13 +5973,6 @@ __metadata:
   version: 1.0.1
   resolution: "json-stable-stringify-without-jsonify@npm:1.0.1"
   checksum: cb168b61fd4de83e58d09aaa6425ef71001bae30d260e2c57e7d09a5fd82223e2f22a042dedaab8db23b7d9ae46854b08bb1f91675a8be11c5cffebef5fb66a5
-  languageName: node
-  linkType: hard
-
-"json-stringify-pretty-compact@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "json-stringify-pretty-compact@npm:4.0.0"
-  checksum: 505781b4be7c72047ae8dfa667b520d20461ceac451b6516cb8ac5e12a758fbd7491d99d5e3f7e60423ce9d26ed4e4bcaccab3420bf651298901635c849017cf
   languageName: node
   linkType: hard
 

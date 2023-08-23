@@ -30,7 +30,7 @@ const { mode, isDevelopment, devModePlugins, serverOptions } =
 process.env['NODE_ENV'] ??= mode;
 
 const fontsGlob = [
-  'inter-latin-wght-normal-*.woff2',
+  'open-sans-latin-wdth-normal-*.woff2',
   'jetbrains-mono-latin-wght-{normal,italic}-*.woff2',
 ];
 
