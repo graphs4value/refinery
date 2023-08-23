@@ -2663,13 +2663,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-zoom@npm:*":
-  version: 3.0.3
-  resolution: "@types/d3-zoom@npm:3.0.3"
+"@types/d3-zoom@npm:*, @types/d3-zoom@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@types/d3-zoom@npm:3.0.4"
   dependencies:
     "@types/d3-interpolate": "npm:*"
     "@types/d3-selection": "npm:*"
-  checksum: 7b48870cadf18ba1104613605fc6157dc230f71ecac7f2f0d7e689b44a62ab29377edf98e935a6eee8b87c32456effe3cf6aab321cc20bb31695d21f62fdb311
+  checksum: 52d1b5f2a1490c25c69b03dcd71601f908ea1e3dedf79e379be4ff23e3a6be85d0694d04c1b23686343a74117e86683a61433ed926637aea545268fd55aa634f
   languageName: node
   linkType: hard
 
@@ -2680,16 +2680,6 @@ __metadata:
     "@types/d3-interpolate": "npm:^1"
     "@types/d3-selection": "npm:^1"
   checksum: 3135d2e01ec2eb633a5104025e719d989cdd9d203eeb97fc749128d60c2d19de9693e058e92ea1eb2f63aa0fa47cd4e4a994dc7df614b00eda650952c92f2c8a
-  languageName: node
-  linkType: hard
-
-"@types/d3-zoom@npm:^3.0.4":
-  version: 3.0.4
-  resolution: "@types/d3-zoom@npm:3.0.4"
-  dependencies:
-    "@types/d3-interpolate": "npm:*"
-    "@types/d3-selection": "npm:*"
-  checksum: 52d1b5f2a1490c25c69b03dcd71601f908ea1e3dedf79e379be4ff23e3a6be85d0694d04c1b23686343a74117e86683a61433ed926637aea545268fd55aa634f
   languageName: node
   linkType: hard
 
@@ -4154,7 +4144,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-zoom@npm:3, d3-zoom@npm:^3.0.0":
+"d3-zoom@git@github.com:d3/d3-zoom.git#commit=3afbe2ae2dfb3129231c5567db56dafb2d6a56a6":
+  version: 3.0.0
+  resolution: "d3-zoom@git@github.com:d3/d3-zoom.git#commit=3afbe2ae2dfb3129231c5567db56dafb2d6a56a6"
+  dependencies:
+    d3-dispatch: "npm:1 - 3"
+    d3-drag: "npm:2 - 3"
+    d3-interpolate: "npm:1 - 3"
+    d3-selection: "npm:2 - 3"
+    d3-transition: "npm:2 - 3"
+  checksum: 0cca9382fd9cf7383ecd89ae2f4a828b5088e7801eb89da0656c1d3512cda03bfade727db936721b8004a3142dbbf955a408c99cf370539e3a985da9161c6d54
+  languageName: node
+  linkType: hard
+
+"d3-zoom@npm:3":
   version: 3.0.0
   resolution: "d3-zoom@npm:3.0.0"
   dependencies:

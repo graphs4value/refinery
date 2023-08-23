@@ -8,9 +8,9 @@ import Box from '@mui/material/Box';
 import * as d3 from 'd3';
 import { type Graphviz, graphviz } from 'd3-graphviz';
 import type { BaseType, Selection } from 'd3-selection';
+import { zoom as d3Zoom } from 'd3-zoom';
 import { reaction, type IReactionDisposer } from 'mobx';
 import { useCallback, useRef, useState } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
 
 import { useRootStore } from '../RootStoreProvider';
 import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
@@ -88,59 +88,30 @@ export default function GraphArea(): JSX.Element {
     d3.ZoomBehavior<HTMLDivElement, unknown> | undefined
   >();
   const [zoom, setZoom] = useState<Transform>({ x: 0, y: 0, k: 1 });
-  const widthRef = useRef<number | undefined>();
-  const heightRef = useRef<number | undefined>();
 
-  const onResize = useCallback(
-    (width: number | undefined, height: number | undefined) => {
-      if (canvasRef.current === undefined || zoomRef.current === undefined) {
-        return;
+  const setCanvas = useCallback((element: HTMLDivElement | null) => {
+    canvasRef.current = element ?? undefined;
+    if (element === null) {
+      return;
+    }
+    const zoomBehavior = d3Zoom<HTMLDivElement, unknown>();
+    // `@types/d3-zoom` does not contain the `center` function, because it is
+    // only available as a pull request for `d3-zoom`.
+    (
+      zoomBehavior as unknown as {
+        center(callback: (event: MouseEvent) => [number, number]): unknown;
       }
-      let moveX = 0;
-      let moveY = 0;
-      if (widthRef.current !== undefined && width !== undefined) {
-        moveX = (width - widthRef.current) / 2;
-      }
-      if (heightRef.current !== undefined && height !== undefined) {
-        moveY = (height - heightRef.current) / 2;
-      }
-      widthRef.current = width;
-      heightRef.current = height;
-      if (moveX === 0 && moveY === 0) {
-        return;
-      }
-      const currentTransform = d3.zoomTransform(canvasRef.current);
-      zoomRef.current.translateBy(
-        d3.select(canvasRef.current),
-        moveX / currentTransform.k - moveX,
-        moveY / currentTransform.k - moveY,
-      );
-    },
-    [],
-  );
-
-  const { ref: setCanvasResize } = useResizeDetector({
-    onResize,
-  });
-
-  const setCanvas = useCallback(
-    (element: HTMLDivElement | null) => {
-      canvasRef.current = element ?? undefined;
-      setCanvasResize(element);
-      if (element === null) {
-        return;
-      }
-      const zoomBehavior = d3.zoom<HTMLDivElement, unknown>();
-      zoomBehavior.on(
-        'zoom',
-        (event: d3.D3ZoomEvent<HTMLDivElement, unknown>) =>
-          setZoom(event.transform),
-      );
-      d3.select(element).call(zoomBehavior);
-      zoomRef.current = zoomBehavior;
-    },
-    [setCanvasResize],
-  );
+    ).center((event: MouseEvent) => {
+      const { width, height } = element.getBoundingClientRect();
+      const [x, y] = d3.pointer(event, element);
+      return [x - width / 2, y - height / 2];
+    });
+    zoomBehavior.on('zoom', (event: d3.D3ZoomEvent<HTMLDivElement, unknown>) =>
+      setZoom(event.transform),
+    );
+    d3.select(element).call(zoomBehavior);
+    zoomRef.current = zoomBehavior;
+  }, []);
 
   const setElement = useCallback(
     (element: HTMLDivElement | null) => {
@@ -210,8 +181,8 @@ export default function GraphArea(): JSX.Element {
                 rect.setAttribute('width', String(xmax - xmin));
                 rect.setAttribute('height', String(ymax - ymin));
                 rect.setAttribute('height', String(ymax - ymin));
-                rect.setAttribute('rx', '12');
-                rect.setAttribute('ry', '12');
+                rect.setAttribute('rx', '8');
+                rect.setAttribute('ry', '8');
                 node.replaceChild(rect, path);
               });
             });
@@ -302,8 +273,8 @@ export default function GraphArea(): JSX.Element {
       <Box
         sx={{
           position: 'absolute',
-          top: `${50 * zoom.k}%`,
-          left: `${50 * zoom.k}%`,
+          top: '50%',
+          left: '50%',
           transform: `
               translate(${zoom.x}px, ${zoom.y}px)
               scale(${zoom.k})
