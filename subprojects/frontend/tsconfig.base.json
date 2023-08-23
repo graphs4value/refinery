@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation.
  * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  *
- * SPDX-License-Identifier: MIT OR EPL-2.0
+ * SPDX-License-Identifier: MIT
  *
  * This file is based on
  * https://github.com/tsconfig/bases/blob/7db25a41bc5a9c0f66d91f6f3aa28438afcb2f18/bases/strictest.json

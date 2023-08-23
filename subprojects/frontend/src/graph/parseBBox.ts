@@ -2,7 +2,7 @@
  * Copyright 2017, Magnus Jacobsson
  * Copyright 2023, The Refinery Authors <https://refinery.tools/>
  *
- * SPDX-License-Identifier: BSD-3-Clause AND EPL-2.0
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * This file Incorporates patches from the Refinery authors.
  *
