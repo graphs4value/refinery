@@ -126,9 +126,20 @@ export const FormattingResult = DocumentStateResult.extend({
 
 export type FormattingResult = z.infer<typeof FormattingResult>;
 
-export const SemanticsResult = z.object({
-  error: z.string().optional(),
-  issues: Issue.array().optional(),
+export const SemanticsSuccessResult = z.object({
+  nodes: z.string().nullable().array(),
+  partialInterpretation: z.record(
+    z.string(),
+    z.union([z.number(), z.string()]).array().array(),
+  ),
 });
+
+export type SemanticsSuccessResult = z.infer<typeof SemanticsSuccessResult>;
+
+export const SemanticsResult = z.union([
+  z.object({ error: z.string() }),
+  z.object({ issues: Issue.array() }),
+  SemanticsSuccessResult,
+]);
 
 export type SemanticsResult = z.infer<typeof SemanticsResult>;

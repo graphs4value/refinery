@@ -17,11 +17,15 @@ export default class SemanticsService {
 
   onPush(push: unknown): void {
     const result = SemanticsResult.parse(push);
-    this.validationService.setSemanticsIssues(result.issues ?? []);
-    if (result.error !== undefined) {
-      this.store.setSemanticsError(result.error);
+    if ('issues' in result) {
+      this.validationService.setSemanticsIssues(result.issues);
     } else {
-      this.store.setSemantics(push);
+      this.validationService.setSemanticsIssues([]);
+      if ('error' in result) {
+        this.store.setSemanticsError(result.error);
+      } else {
+        this.store.setSemantics(result);
+      }
     }
     this.store.analysisCompleted();
   }

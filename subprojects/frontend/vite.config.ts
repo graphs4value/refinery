@@ -17,6 +17,7 @@ import detectDevModeOptions, {
   API_ENDPOINT,
 } from './config/detectDevModeOptions';
 import fetchPackageMetadata from './config/fetchPackageMetadata';
+import graphvizUMDVitePlugin from './config/graphvizUMDVitePlugin';
 import manifest from './config/manifest';
 import minifyHTMLVitePlugin from './config/minifyHTMLVitePlugin';
 import preloadFontsVitePlugin from './config/preloadFontsVitePlugin';
@@ -43,6 +44,7 @@ const viteConfig: ViteConfig = {
     lezer(),
     preloadFontsVitePlugin(fontsGlob),
     minifyHTMLVitePlugin(),
+    graphvizUMDVitePlugin(),
     VitePWA({
       strategies: 'generateSW',
       registerType: 'prompt',

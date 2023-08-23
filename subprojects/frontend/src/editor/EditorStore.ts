@@ -28,6 +28,7 @@ import { nanoid } from 'nanoid';
 import type PWAStore from '../PWAStore';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
+import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
 import LintPanelStore from './LintPanelStore';
@@ -65,7 +66,7 @@ export default class EditorStore {
 
   semanticsError: string | undefined;
 
-  semantics: unknown = {};
+  semantics: SemanticsSuccessResult | undefined;
 
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
@@ -295,7 +296,7 @@ export default class EditorStore {
     this.semanticsError = semanticsError;
   }
 
-  setSemantics(semantics: unknown) {
+  setSemantics(semantics: SemanticsSuccessResult) {
     this.semanticsError = undefined;
     this.semantics = semantics;
   }

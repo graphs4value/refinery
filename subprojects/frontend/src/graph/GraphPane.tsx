@@ -5,24 +5,24 @@
  */
 
 import Stack from '@mui/material/Stack';
-import { styled } from '@mui/material/styles';
-import stringify from 'json-stringify-pretty-compact';
-import { observer } from 'mobx-react-lite';
+import { Suspense, lazy } from 'react';
 
-import { useRootStore } from '../RootStoreProvider';
+import Loading from '../Loading';
 
-const StyledCode = styled('code')(({ theme }) => ({
-  ...theme.typography.editor,
-  fontWeight: theme.typography.fontWeightEditorNormal,
-  margin: theme.spacing(2),
-  whiteSpace: 'pre',
-}));
+const GraphArea = lazy(() => import('./GraphArea'));
 
-export default observer(function GraphPane(): JSX.Element {
-  const { editorStore } = useRootStore();
+export default function GraphPane(): JSX.Element {
   return (
-    <Stack direction="column" height="100%" overflow="auto">
-      <StyledCode>{stringify(editorStore?.semantics ?? {})}</StyledCode>
+    <Stack
+      direction="column"
+      height="100%"
+      overflow="auto"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Suspense fallback={<Loading />}>
+        <GraphArea />
+      </Suspense>
     </Stack>
   );
-});
+}

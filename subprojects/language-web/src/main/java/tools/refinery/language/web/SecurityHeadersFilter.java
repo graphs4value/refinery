@@ -16,7 +16,7 @@ public class SecurityHeadersFilter implements Filter {
 			ServletException {
 		if (response instanceof HttpServletResponse httpResponse) {
 			httpResponse.setHeader("Content-Security-Policy", "default-src 'none'; " +
-					"script-src 'self'; " +
+					"script-src 'self' 'wasm-unsafe-eval'; " +
 					// CodeMirror needs inline styles, see e.g.,
 					// https://discuss.codemirror.net/t/inline-styles-and-content-security-policy/1311/2
 					"style-src 'self' 'unsafe-inline'; " +
@@ -25,7 +25,7 @@ public class SecurityHeadersFilter implements Filter {
 					"font-src 'self'; " +
 					"connect-src 'self'; " +
 					"manifest-src 'self'; " +
-					"worker-src 'self';");
+					"worker-src 'self' blob:;");
 			httpResponse.setHeader("X-Content-Type-Options", "nosniff");
 			httpResponse.setHeader("X-Frame-Options", "DENY");
 			httpResponse.setHeader("Referrer-Policy", "strict-origin");
