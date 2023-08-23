@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
+import { CSSProperties } from '@mui/material/styles/createTypography';
 import * as d3 from 'd3';
 import { type Graphviz, graphviz } from 'd3-graphviz';
 import type { BaseType, Selection } from 'd3-selection';
@@ -109,15 +110,21 @@ export default function GraphArea(): JSX.Element {
       zoomBehavior as unknown as {
         center(callback: (event: MouseEvent) => [number, number]): unknown;
       }
-    ).center((event: MouseEvent) => {
+    ).center((event: MouseEvent | Touch) => {
       const { width, height } = element.getBoundingClientRect();
       const [x, y] = d3.pointer(event, element);
       return [x - width / 2, y - height / 2];
     });
+    // Custom `centroid` method added via patch.
+    (
+      zoomBehavior as unknown as {
+        centroid(centroid: [number, number]): unknown;
+      }
+    ).centroid([0, 0]);
     zoomBehavior.on('zoom', (event: d3.D3ZoomEvent<HTMLDivElement, unknown>) =>
       setZoom(event.transform),
     );
-    d3.select(element).call(zoomBehavior).on('dblclick.zoom', null);
+    d3.select(element).call(zoomBehavior);
     zoomRef.current = zoomBehavior;
   }, []);
 
@@ -213,25 +220,17 @@ export default function GraphArea(): JSX.Element {
     [editorStore],
   );
 
-  const {
-    transitions: {
-      duration: { short: zoomDuration },
-    },
-  } = theme;
-  const changeZoom = useCallback(
-    (event: React.MouseEvent, factor: number) => {
-      if (canvasRef.current === undefined || zoomRef.current === undefined) {
-        return;
-      }
-      const selection = d3.select(canvasRef.current);
-      const zoomTransition = selection.transition().duration(zoomDuration);
-      const center: [number, number] = [0, 0];
-      zoomRef.current.scaleBy(zoomTransition, factor, center);
-      event.preventDefault();
-      event.stopPropagation();
-    },
-    [zoomDuration],
-  );
+  const changeZoom = useCallback((event: React.MouseEvent, factor: number) => {
+    if (canvasRef.current === undefined || zoomRef.current === undefined) {
+      return;
+    }
+    const selection = d3.select(canvasRef.current);
+    const zoomTransition = selection.transition().duration(250);
+    const center: [number, number] = [0, 0];
+    zoomRef.current.scaleBy(zoomTransition, factor, center);
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
 
   const fitZoom = useCallback((event: React.MouseEvent) => {
     if (
@@ -255,7 +254,8 @@ export default function GraphArea(): JSX.Element {
         (canvasHeight - 64) / height,
       );
       const selection = d3.select(canvasRef.current);
-      zoomRef.current.transform(selection, d3.zoomIdentity.scale(factor));
+      const zoomTransition = selection.transition().duration(250);
+      zoomRef.current.transform(zoomTransition, d3.zoomIdentity.scale(factor));
     }
     event.preventDefault();
     event.stopPropagation();
@@ -268,79 +268,96 @@ export default function GraphArea(): JSX.Element {
         height: '100%',
         position: 'relative',
         overflow: 'hidden',
-        '& svg': {
-          userSelect: 'none',
-          '& .node': {
-            '& text': {
-              ...theme.typography.body2,
-              fill: theme.palette.text.primary,
-            },
-            '& [stroke="black"]': {
-              stroke: theme.palette.text.primary,
-            },
-            '& [fill="green"]': {
-              fill:
-                theme.palette.mode === 'dark'
-                  ? theme.palette.primary.dark
-                  : theme.palette.primary.light,
-            },
-            '& [fill="white"]': {
-              fill: theme.palette.background.default,
-              stroke: theme.palette.background.default,
-            },
-          },
-          '& .edge': {
-            '& text': {
-              ...theme.typography.caption,
-              fill: theme.palette.text.primary,
-            },
-            '& [stroke="black"]': {
-              stroke: theme.palette.text.primary,
-            },
-            '& [fill="black"]': {
-              fill: theme.palette.text.primary,
-            },
-          },
-          '& .edge-UNKNOWN': {
-            '& text': {
-              fill: theme.palette.text.secondary,
-            },
-            '& [stroke="black"]': {
-              stroke: theme.palette.text.secondary,
-            },
-            '& [fill="black"]': {
-              fill: theme.palette.text.secondary,
-            },
-          },
-          '& .edge-ERROR': {
-            '& text': {
-              fill: theme.palette.error.main,
-            },
-            '& [stroke="black"]': {
-              stroke: theme.palette.error.main,
-            },
-            '& [fill="black"]': {
-              fill: theme.palette.error.main,
-            },
-          },
-        },
       }}
-      ref={setCanvas}
     >
       <Box
         sx={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: `
+          overflow: 'hidden',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+        ref={setCanvas}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: `
               translate(${zoom.x}px, ${zoom.y}px)
               scale(${zoom.k})
               translate(-50%, -50%)
             `,
-          transformOrigin: '0 0',
-        }}
-        ref={setElement}
-      />
+            transformOrigin: '0 0',
+            '& svg': {
+              userSelect: 'none',
+              '& .node': {
+                '& text': {
+                  ...(theme.typography.body2 as Omit<
+                    CSSProperties,
+                    '@font-face'
+                  >),
+                  fill: theme.palette.text.primary,
+                },
+                '& [stroke="black"]': {
+                  stroke: theme.palette.text.primary,
+                },
+                '& [fill="green"]': {
+                  fill:
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.dark
+                      : theme.palette.primary.light,
+                },
+                '& [fill="white"]': {
+                  fill: theme.palette.background.default,
+                  stroke: theme.palette.background.default,
+                },
+              },
+              '& .edge': {
+                '& text': {
+                  ...(theme.typography.caption as Omit<
+                    CSSProperties,
+                    '@font-face'
+                  >),
+                  fill: theme.palette.text.primary,
+                },
+                '& [stroke="black"]': {
+                  stroke: theme.palette.text.primary,
+                },
+                '& [fill="black"]': {
+                  fill: theme.palette.text.primary,
+                },
+              },
+              '& .edge-UNKNOWN': {
+                '& text': {
+                  fill: theme.palette.text.secondary,
+                },
+                '& [stroke="black"]': {
+                  stroke: theme.palette.text.secondary,
+                },
+                '& [fill="black"]': {
+                  fill: theme.palette.text.secondary,
+                },
+              },
+              '& .edge-ERROR': {
+                '& text': {
+                  fill: theme.palette.error.main,
+                },
+                '& [stroke="black"]': {
+                  stroke: theme.palette.error.main,
+                },
+                '& [fill="black"]': {
+                  fill: theme.palette.error.main,
+                },
+              },
+            },
+          }}
+          ref={setElement}
+        />
+      </Box>
       <Stack
         direction="column"
         p={1}

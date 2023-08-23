@@ -29,6 +29,7 @@
     "typescript": "5.1.6"
   },
   "resolutions": {
-    "d3-zoom@npm:^3.0.0": "git@github.com:d3/d3-zoom.git#commit=3afbe2ae2dfb3129231c5567db56dafb2d6a56a6"
+    "d3-zoom@npm:^3.0.0": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch",
+    "d3-zoom@npm:3": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch"
   }
 }

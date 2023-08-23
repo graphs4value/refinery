@@ -51,7 +51,7 @@
     "d3": "^7.8.5",
     "d3-graphviz": "patch:d3-graphviz@npm%3A5.1.0#~/.yarn/patches/d3-graphviz-npm-5.1.0-ba6bed3fec.patch",
     "d3-selection": "^3.0.0",
-    "d3-zoom": "^3.0.0",
+    "d3-zoom": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch",
     "escape-string-regexp": "^5.0.0",
     "json-stringify-pretty-compact": "^4.0.0",
     "lodash-es": "^4.17.21",
