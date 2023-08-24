@@ -14,6 +14,7 @@ import { useRootStore } from '../RootStoreProvider';
 import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
 
 import GraphTheme from './GraphTheme';
+import { FitZoomCallback } from './ZoomCanvas';
 import postProcessSvg from './postProcessSVG';
 
 function toGraphviz(
@@ -72,7 +73,20 @@ function toGraphviz(
   return lines.join('\n');
 }
 
-export default function DotGraphVisualizer(): JSX.Element {
+function ptToPx(pt: number): number {
+  return (pt * 4) / 3;
+}
+
+export default function DotGraphVisualizer({
+  fitZoom,
+  transitionTime,
+}: {
+  fitZoom?: FitZoomCallback;
+  transitionTime?: number;
+}): JSX.Element {
+  const transitionTimeOrDefault =
+    transitionTime ?? DotGraphVisualizer.defaultProps.transitionTime;
+
   const { editorStore } = useRootStore();
   const disposerRef = useRef<IReactionDisposer | undefined>();
   const graphvizRef = useRef<
@@ -104,12 +118,13 @@ export default function DotGraphVisualizer(): JSX.Element {
         renderer.tweenShapes(false);
         renderer.convertEqualSidedPolygons(false);
         const transition = () =>
-          d3.transition().duration(300).ease(d3.easeCubic);
+          d3.transition().duration(transitionTimeOrDefault).ease(d3.easeCubic);
         /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument,
           @typescript-eslint/no-explicit-any --
           Workaround for error in `@types/d3-graphviz`.
         */
         renderer.transition(transition as any);
+        let newViewBox = { width: 0, height: 0 };
         renderer.on(
           'postProcessSVG',
           // @ts-expect-error Custom `d3-graphviz` hook not covered by typings.
@@ -119,9 +134,18 @@ export default function DotGraphVisualizer(): JSX.Element {
             const svg = svgSelection.node();
             if (svg !== null) {
               postProcessSvg(svg);
+              newViewBox = {
+                width: ptToPx(svg.viewBox.baseVal.width),
+                height: ptToPx(svg.viewBox.baseVal.height),
+              };
+            } else {
+              newViewBox = { width: 0, height: 0 };
             }
           },
         );
+        if (fitZoom !== undefined) {
+          renderer.on('transitionStart', () => fitZoom(newViewBox));
+        }
         disposerRef.current = reaction(
           () => editorStore?.semantics,
           (semantics) => {
@@ -135,8 +159,13 @@ export default function DotGraphVisualizer(): JSX.Element {
         graphvizRef.current = renderer;
       }
     },
-    [editorStore],
+    [editorStore, fitZoom, transitionTimeOrDefault],
   );
 
   return <GraphTheme ref={setElement} />;
 }
+
+DotGraphVisualizer.defaultProps = {
+  fitZoom: undefined,
+  transitionTime: 250,
+};

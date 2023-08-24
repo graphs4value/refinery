@@ -10,7 +10,7 @@ import ZoomCanvas from './ZoomCanvas';
 export default function GraphArea(): JSX.Element {
   return (
     <ZoomCanvas>
-      <DotGraphVisualizer />
+      {(fitZoom) => <DotGraphVisualizer fitZoom={fitZoom} />}
     </ZoomCanvas>
   );
 }
