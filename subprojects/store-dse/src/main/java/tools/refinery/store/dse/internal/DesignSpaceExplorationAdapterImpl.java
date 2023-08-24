@@ -13,6 +13,7 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.dse.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.DesignSpaceExplorationStoreAdapter;
@@ -75,6 +76,12 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		modelVisualizerAdapter = model.tryGetAdapter(ModelVisualizerAdapter.class).orElse(null);
 		isVisualizationEnabled = modelVisualizerAdapter != null;
 
+	}
+
+	@Override
+	public void addTransformationRule(TransformationRule rule) {
+		transformationRules.add(rule);
+		rule.prepare(model, queryEngine);
 	}
 
 	public List<Version> getTrajectory() {

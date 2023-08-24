@@ -6,6 +6,7 @@
 package tools.refinery.store.dse;
 
 import tools.refinery.store.adapter.ModelAdapter;
+import tools.refinery.store.dse.internal.TransformationRule;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.dse.internal.Activation;
 import tools.refinery.store.dse.internal.DesignSpaceExplorationBuilderImpl;
@@ -65,4 +66,6 @@ public interface DesignSpaceExplorationAdapter extends ModelAdapter {
 	public void setRandom(long seed);
 
 	public List<Version> getSolutions();
+
+	void addTransformationRule(TransformationRule transformationRule);
 }
