@@ -6,16 +6,16 @@ import tools.refinery.store.tuple.Tuple;
 
 public class DeleteAction implements AtomicAction {
 
-	private final ActionSymbol symbol;
+	private final ActionVariable variable;
 	private DesignSpaceExplorationAdapter dseAdapter;
 
-	public DeleteAction(ActionSymbol symbol) {
-		this.symbol = symbol;
+	public DeleteAction(ActionVariable variable) {
+		this.variable = variable;
 	}
 
 	@Override
 	public void fire(Tuple activation) {
-		dseAdapter.deleteObject(symbol.getValue(activation));
+		dseAdapter.deleteObject(variable.getValue());
 	}
 
 	@Override
@@ -25,20 +25,11 @@ public class DeleteAction implements AtomicAction {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
-			return true;
-		}
-		if (!(obj instanceof DeleteAction other)) {
+	public boolean equalsWithSubstitution(AtomicAction other) {
+		if (other == null || getClass() != other.getClass()) {
 			return false;
 		}
-		return this.symbol.getClass() == other.symbol.getClass();
-	}
-
-	@Override
-	public int hashCode() {
-		int result = 17;
-		result = 31 * result + symbol.getClass().hashCode();
-		return result;
+		var otherAction = (DeleteAction) other;
+		return this.variable.getClass() == otherAction.variable.getClass();
 	}
 }

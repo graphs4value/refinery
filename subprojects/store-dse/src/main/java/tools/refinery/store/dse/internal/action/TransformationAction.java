@@ -7,15 +7,15 @@ import tools.refinery.store.tuple.Tuple2;
 import java.util.*;
 
 public class TransformationAction {
-	private final List<ActionSymbol> actionSymbols = new ArrayList<>();
+	private final List<ActionVariable> actionVariables = new ArrayList<>();
 	private final List<InsertAction<?>> insertActions = new ArrayList<>();
 	private final List<DeleteAction> deleteActions = new ArrayList<>();
 	private boolean configured = false;
-	private final Map<Integer, List<Tuple2>> activationSymbolUsageMap = new LinkedHashMap<>();
+	private final Map<Integer, List<Tuple2>> actionVariableUsageMap = new LinkedHashMap<>();
 
-	public TransformationAction add(ActionSymbol action) {
+	public TransformationAction add(ActionVariable action) {
 		checkConfigured();
-		actionSymbols.add(action);
+		actionVariables.add(action);
 		return this;
 	}
 
@@ -38,7 +38,7 @@ public class TransformationAction {
 	}
 
 	public TransformationAction prepare(Model model) {
-		for (ActionSymbol action : actionSymbols) {
+		for (ActionVariable action : actionVariables) {
 			action.prepare(model);
 		}
 		for (InsertAction<?> action : insertActions) {
@@ -50,11 +50,11 @@ public class TransformationAction {
 
 		for (var insertAction : insertActions) {
 			var actionIndex = insertActions.indexOf(insertAction);
-			var symbols = insertAction.getSymbols();
-			for (var i = 0; i < symbols.length; i++) {
-				var symbolGlobalIndex = actionSymbols.indexOf(symbols[i]);
-				activationSymbolUsageMap.computeIfAbsent(symbolGlobalIndex, k -> new ArrayList<>());
-				activationSymbolUsageMap.get(symbolGlobalIndex).add(Tuple.of(actionIndex, i));
+			var variables = insertAction.getVariables();
+			for (var i = 0; i < variables.length; i++) {
+				var variablelGlobalIndex = actionVariables.indexOf(variables[i]);
+				actionVariableUsageMap.computeIfAbsent(variablelGlobalIndex, k -> new ArrayList<>());
+				actionVariableUsageMap.get(variablelGlobalIndex).add(Tuple.of(actionIndex, i));
 			}
 		}
 
@@ -63,7 +63,7 @@ public class TransformationAction {
 	}
 
 	public boolean fire(Tuple activation) {
-		for (ActionSymbol action : actionSymbols) {
+		for (ActionVariable action : actionVariables) {
 			action.fire(activation);
 		}
 		for (InsertAction<?> action : insertActions) {
@@ -75,36 +75,50 @@ public class TransformationAction {
 		return true;
 	}
 
-	// True if Symbols and InsertActions are inserted in same order, ActivationSymbols are equal (they have the same
-	// index for getting the value from the activation Tuple) and InsertActions are equal (they have the same arity
-	// and value to be set).
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
+	// Returns true if ActionVariables and InsertActions are inserted in same order, ActionVariables are equal (they
+	// have the same index for getting the value from the activation Tuple) and InsertActions are equal (they have
+	// the same arity and value to be set).
+	public boolean equalsWithSubstitution(TransformationAction other) {
+		if (other == this) {
 			return true;
 		}
-		if (!(obj instanceof TransformationAction other)) {
-			return false;
-		}
-		if (!actionSymbols.equals(other.actionSymbols)) {
-			return false;
-		}
-		if (!insertActions.equals(other.insertActions)) {
-			return false;
-		}
-		if (!deleteActions.equals(other.deleteActions)) {
-			return false;
-		}
-		return this.activationSymbolUsageMap.equals(other.activationSymbolUsageMap);
 
-	}
+		if (actionVariables.size() != other.actionVariables.size()) {
+			return false;
+		}
 
-	@Override
-	public int hashCode() {
-		var result = 17;
-		result = 31 * result + actionSymbols.hashCode();
-		result = 31 * result + insertActions.hashCode();
-		result = 31 * result + deleteActions.hashCode();
-		return result;
+		if (insertActions.size() != other.insertActions.size()) {
+			return false;
+		}
+
+		if (deleteActions.size() != other.deleteActions.size()) {
+			return false;
+		}
+
+		for (var i = 0; i < actionVariables.size(); i++) {
+			var variable = actionVariables.get(i);
+			var otherVariable = other.actionVariables.get(i);
+			if (!variable.equalsWithSubstitution(otherVariable)) {
+				return false;
+			}
+		}
+
+		for (var i = 0; i < insertActions.size(); i++) {
+			var insertAction = insertActions.get(i);
+			var otherInsertAction = other.insertActions.get(i);
+			if (!insertAction.equalsWithSubstitution(otherInsertAction)) {
+				return false;
+			}
+		}
+
+		for (var i = 0; i < deleteActions.size(); i++) {
+			var deleteAction = deleteActions.get(i);
+			var otherDeleteAction = other.deleteActions.get(i);
+			if (!deleteAction.equalsWithSubstitution(otherDeleteAction)) {
+				return false;
+			}
+		}
+		return this.actionVariableUsageMap.equals(other.actionVariableUsageMap);
+
 	}
 }

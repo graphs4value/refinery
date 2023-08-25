@@ -5,7 +5,7 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 
-public class NewItemSymbol extends ActionSymbol {
+public class NewItemVariable implements ActionVariable {
 	private DesignSpaceExplorationAdapter dseAdapter;
 	private Tuple1 value;
 
@@ -15,34 +15,26 @@ public class NewItemSymbol extends ActionSymbol {
 	}
 
 	@Override
-	public NewItemSymbol prepare(Model model) {
+	public NewItemVariable prepare(Model model) {
 		dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 		return this;
 	}
 
 	@Override
-	public Tuple1 getValue(Tuple activation) {
+	public Tuple1 getValue() {
 		return value;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
-			return true;
-		}
-		if (!(obj instanceof NewItemSymbol other)) {
+	public boolean equalsWithSubstitution(AtomicAction other) {
+		if (other == null || getClass() != other.getClass()) {
 			return false;
 		}
+		var otherAction = (NewItemVariable) other;
 		if (value == null) {
-			return other.value == null;
+			return otherAction.value == null;
 		}
-		return value.equals(other.value);
-    }
+		return value.equals(otherAction.value);
 
-	@Override
-	public int hashCode() {
-		int result = 17;
-		result = 31 * result + value.hashCode();
-		return result;
 	}
 }

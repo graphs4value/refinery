@@ -8,4 +8,6 @@ public interface AtomicAction {
 	void fire(Tuple activation);
 
 	AtomicAction prepare(Model model);
+
+	boolean equalsWithSubstitution(AtomicAction other);
 }
