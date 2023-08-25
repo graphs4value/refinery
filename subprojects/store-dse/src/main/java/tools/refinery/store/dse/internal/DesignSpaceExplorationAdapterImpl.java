@@ -46,6 +46,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private Map<Version, Version> parents = new HashMap<>();
 	private final List<Version> solutions = new ArrayList<>();
 	private Map<Version, List<Activation>> statesAndTraversedActivations;
+	@SuppressWarnings("squid:S2245")
 	private Random random = new Random();
 	private boolean isNewState = false;
 	private final boolean isVisualizationEnabled;
@@ -182,6 +183,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
+	@SuppressWarnings("squid:S2245")
 	public void setRandom(long seed) {
 		this.random = new Random(seed);
 	}
