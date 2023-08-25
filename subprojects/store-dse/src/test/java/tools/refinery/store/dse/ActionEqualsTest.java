@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.dse;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -7,46 +12,37 @@ import tools.refinery.store.dse.strategy.DepthFirstStrategy;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
-import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ActionEqualsTest {
 
 	private static Model model;
-	private static DesignSpaceExplorationAdapter dseAdapter;
 	private static Symbol<Boolean> type1;
-	private static Symbol<Boolean> type2;
-	private static Symbol<TruthValue> type3;
 	private static Symbol<Boolean> relation1;
 	private static Symbol<Boolean> relation2;
-	private static RelationalQuery precondition1;
-	private static RelationalQuery precondition2;
 
 	@BeforeAll
 	public static void init() {
 		type1 = Symbol.of("type1", 1);
-		type2 = Symbol.of("type2", 1);
-		type3 = Symbol.of("type3", 1, TruthValue.class);
 		relation1 = Symbol.of("relation1", 2);
 		relation2 = Symbol.of("relation2", 2);
-		AnySymbolView type1View = new KeyOnlyView<>(type1);
-		precondition1 = Query.of("CreateClassPrecondition",
+		var type1View = new KeyOnlyView<>(type1);
+		var precondition1 = Query.of("CreateClassPrecondition",
 				(builder, model) -> builder.clause(
 						type1View.call(model)
 				));
 
-		precondition2 = Query.of("CreateFeaturePrecondition",
+		var precondition2 = Query.of("CreateFeaturePrecondition",
 				(builder, model) -> builder.clause(
 						type1View.call(model)
 				));
 		var store = ModelStore.builder()
-				.symbols(type1, type2, type3, relation2, relation1)
+				.symbols(type1, relation2, relation1)
 				.with(ViatraModelQueryAdapter.builder()
 						.queries(precondition1, precondition2))
 				.with(DesignSpaceExplorationAdapter.builder()
@@ -55,7 +51,6 @@ public class ActionEqualsTest {
 
 
 		model = store.createEmptyModel();
-		dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 	}
 
 	@Test
