@@ -51,13 +51,26 @@ public class InsertAction<T> implements AtomicAction {
 		if (!interpretation.equals(other.interpretation)) {
 			return false;
 		}
-		return value.equals(other.value);
+		if (value == null) {
+			if (other.value != null) {
+				return false;
+			}
+		}
+        else if (!value.equals(other.value)) {
+			return false;
+		}
+		for (var i = 0; i < symbols.length; i++) {
+			if (!symbols[i].equals(other.symbols[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public int hashCode() {
 		int result = 17;
-		result = 31 * result + Integer.hashCode(symbols.length);
+		result = 31 * result + Arrays.hashCode(symbols);
 		result = 31 * result + interpretation.hashCode();
 		result = 31 * result + value.hashCode();
 		return result;

@@ -18,10 +18,27 @@ public class DeleteAction implements AtomicAction {
 		dseAdapter.deleteObject(symbol.getValue(activation));
 	}
 
-
 	@Override
 	public DeleteAction prepare(Model model) {
 		dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 		return this;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof DeleteAction other)) {
+			return false;
+		}
+		return this.symbol.getClass() == other.symbol.getClass();
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 31 * result + symbol.getClass().hashCode();
+		return result;
 	}
 }

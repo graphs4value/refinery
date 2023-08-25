@@ -9,6 +9,7 @@ import java.util.*;
 public class TransformationAction {
 	private final List<ActionSymbol> actionSymbols = new ArrayList<>();
 	private final List<InsertAction<?>> insertActions = new ArrayList<>();
+	private final List<DeleteAction> deleteActions = new ArrayList<>();
 	private boolean configured = false;
 	private final Map<Integer, List<Tuple2>> activationSymbolUsageMap = new LinkedHashMap<>();
 
@@ -24,6 +25,12 @@ public class TransformationAction {
 		return this;
 	}
 
+	public TransformationAction add(DeleteAction action) {
+		checkConfigured();
+		deleteActions.add(action);
+		return this;
+	}
+
 	private void checkConfigured() {
 		if (configured) {
 			throw new IllegalStateException("Action already configured.");
@@ -35,6 +42,9 @@ public class TransformationAction {
 			action.prepare(model);
 		}
 		for (InsertAction<?> action : insertActions) {
+			action.prepare(model);
+		}
+		for (DeleteAction action : deleteActions) {
 			action.prepare(model);
 		}
 
@@ -59,6 +69,9 @@ public class TransformationAction {
 		for (InsertAction<?> action : insertActions) {
 			action.fire(activation);
 		}
+		for (DeleteAction action : deleteActions) {
+			action.fire(activation);
+		}
 		return true;
 	}
 
@@ -79,6 +92,9 @@ public class TransformationAction {
 		if (!insertActions.equals(other.insertActions)) {
 			return false;
 		}
+		if (!deleteActions.equals(other.deleteActions)) {
+			return false;
+		}
 		return this.activationSymbolUsageMap.equals(other.activationSymbolUsageMap);
 
 	}
@@ -88,6 +104,7 @@ public class TransformationAction {
 		var result = 17;
 		result = 31 * result + actionSymbols.hashCode();
 		result = 31 * result + insertActions.hashCode();
+		result = 31 * result + deleteActions.hashCode();
 		return result;
 	}
 }

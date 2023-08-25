@@ -124,7 +124,8 @@ public class ActionEqualsTest {
 	void actionSymbolGlobalOrderTest() {
 		var newItemSymbol1 = new NewItemSymbol();
 		var activationSymbol1 = new ActivationSymbol();
-		var insertAction1 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol1, activationSymbol1);
+		var insertAction1 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol1,
+				activationSymbol1);
 
 		var action1 = new TransformationAction();
 		action1.add(newItemSymbol1);
@@ -385,6 +386,249 @@ public class ActionEqualsTest {
 		action2.add(activationSymbol2);
 		action2.add(insertAction2);
 		action2.prepare(model);
+
+		assertNotEquals(action1, action2);
+	}
+
+	@Test
+	void deleteActionTest() {
+		var newItemSymbol = new NewItemSymbol();
+		var activationSymbol = new ActivationSymbol(0);
+		var insertAction = new InsertAction<>(model.getInterpretation(type1), false, newItemSymbol,
+				activationSymbol);
+		var deleteAction = new DeleteAction(activationSymbol);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol);
+		action1.add(activationSymbol);
+		action1.add(insertAction);
+		action1.add(deleteAction);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(newItemSymbol);
+		action2.add(activationSymbol);
+		action2.add(insertAction);
+		action2.add(deleteAction);
+		action2.prepare(model);
+
+		assertEquals(action1, action2);
+	}
+
+	@Test
+	void deleteActionMissingTest() {
+		var newItemSymbol = new NewItemSymbol();
+		var activationSymbol = new ActivationSymbol(0);
+		var insertAction = new InsertAction<>(model.getInterpretation(type1), false, newItemSymbol,
+				activationSymbol);
+		var deleteAction = new DeleteAction(activationSymbol);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol);
+		action1.add(activationSymbol);
+		action1.add(insertAction);
+		action1.add(deleteAction);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(newItemSymbol);
+		action2.add(activationSymbol);
+		action2.add(insertAction);
+		action2.prepare(model);
+
+		assertNotEquals(action1, action2);
+	}
+
+	@Test
+	void deleteActionIdenticalTest() {
+		var newItemSymbol = new NewItemSymbol();
+		var activationSymbol = new ActivationSymbol(0);
+		var insertAction = new InsertAction<>(model.getInterpretation(type1), false, newItemSymbol,
+				activationSymbol);
+		var deleteAction1 = new DeleteAction(activationSymbol);
+		var deleteAction2 = new DeleteAction(activationSymbol);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol);
+		action1.add(activationSymbol);
+		action1.add(insertAction);
+		action1.add(deleteAction1);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(newItemSymbol);
+		action2.add(activationSymbol);
+		action2.add(insertAction);
+		action2.add(deleteAction2);
+		action2.prepare(model);
+
+		assertEquals(action1, action2);
+	}
+
+	@Test
+	void deleteActionSymbolTypeTest() {
+		var newItemSymbol = new NewItemSymbol();
+		var activationSymbol = new ActivationSymbol(0);
+		var insertAction = new InsertAction<>(model.getInterpretation(type1), false, newItemSymbol,
+				activationSymbol);
+		var deleteAction1 = new DeleteAction(activationSymbol);
+		var deleteAction2 = new DeleteAction(newItemSymbol);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol);
+		action1.add(activationSymbol);
+		action1.add(insertAction);
+		action1.add(deleteAction1);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(newItemSymbol);
+		action2.add(activationSymbol);
+		action2.add(insertAction);
+		action2.add(deleteAction2);
+		action2.prepare(model);
+
+		assertNotEquals(action1, action2);
+	}
+
+	@Test
+	void deleteActionOrderTest() {
+		var newItemSymbol = new NewItemSymbol();
+		var activationSymbol = new ActivationSymbol(0);
+		var insertAction = new InsertAction<>(model.getInterpretation(type1), false, newItemSymbol,
+				activationSymbol);
+		var deleteAction1 = new DeleteAction(activationSymbol);
+		var deleteAction2 = new DeleteAction(newItemSymbol);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol);
+		action1.add(activationSymbol);
+		action1.add(insertAction);
+		action1.add(deleteAction1);
+		action1.add(deleteAction2);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(newItemSymbol);
+		action2.add(activationSymbol);
+		action2.add(insertAction);
+		action2.add(deleteAction2);
+		action2.add(deleteAction1);
+		action2.prepare(model);
+
+		assertNotEquals(action1, action2);
+	}
+
+	@Test
+	void actionsMixedOrderTest() {
+		var newItemSymbol1 = new NewItemSymbol();
+		var activationSymbol1 = new ActivationSymbol();
+		var insertAction1 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol1,
+				activationSymbol1);
+		var deleteAction1 = new DeleteAction(newItemSymbol1);
+
+		var newItemSymbol2 = new NewItemSymbol();
+		var activationSymbol2 = new ActivationSymbol();
+		var insertAction2 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol2,
+				activationSymbol2);
+		var deleteAction2 = new DeleteAction(activationSymbol2);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol1);
+		action1.add(newItemSymbol2);
+		action1.add(activationSymbol1);
+		action1.add(activationSymbol2);
+		action1.add(insertAction1);
+		action1.add(insertAction2);
+		action1.add(deleteAction1);
+		action1.add(deleteAction2);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(deleteAction1);
+		action2.add(newItemSymbol1);
+		action2.add(insertAction1);
+		action2.add(newItemSymbol2);
+		action2.add(deleteAction2);
+		action2.add(activationSymbol1);
+		action2.add(insertAction2);
+		action2.add(activationSymbol2);
+		action2.prepare(model);
+
+		assertEquals(action1, action2);
+	}
+
+	@Test
+	void twoUnpreparedActionsTest() {
+		var newItemSymbol1 = new NewItemSymbol();
+		var activationSymbol1 = new ActivationSymbol();
+		var insertAction1 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol1,
+				activationSymbol1);
+		var deleteAction1 = new DeleteAction(newItemSymbol1);
+
+		var newItemSymbol2 = new NewItemSymbol();
+		var activationSymbol2 = new ActivationSymbol();
+		var insertAction2 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol2,
+				activationSymbol2);
+		var deleteAction2 = new DeleteAction(activationSymbol2);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol1);
+		action1.add(newItemSymbol2);
+		action1.add(activationSymbol1);
+		action1.add(activationSymbol2);
+		action1.add(insertAction1);
+		action1.add(insertAction2);
+		action1.add(deleteAction1);
+		action1.add(deleteAction2);
+
+		var action2 = new TransformationAction();
+		action2.add(deleteAction1);
+		action2.add(newItemSymbol1);
+		action2.add(insertAction1);
+		action2.add(newItemSymbol2);
+		action2.add(deleteAction2);
+		action2.add(activationSymbol1);
+		action2.add(insertAction2);
+		action2.add(activationSymbol2);
+
+		assertEquals(action1, action2);
+	}
+
+	@Test
+	void oneUnpreparedActionTest() {
+		var newItemSymbol1 = new NewItemSymbol();
+		var activationSymbol1 = new ActivationSymbol();
+		var insertAction1 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol1,
+				activationSymbol1);
+		var deleteAction1 = new DeleteAction(newItemSymbol1);
+
+		var newItemSymbol2 = new NewItemSymbol();
+		var activationSymbol2 = new ActivationSymbol();
+		var insertAction2 = new InsertAction<>(model.getInterpretation(type1), true, newItemSymbol2,
+				activationSymbol2);
+		var deleteAction2 = new DeleteAction(activationSymbol2);
+
+		var action1 = new TransformationAction();
+		action1.add(newItemSymbol1);
+		action1.add(newItemSymbol2);
+		action1.add(activationSymbol1);
+		action1.add(activationSymbol2);
+		action1.add(insertAction1);
+		action1.add(insertAction2);
+		action1.add(deleteAction1);
+		action1.add(deleteAction2);
+		action1.prepare(model);
+
+		var action2 = new TransformationAction();
+		action2.add(deleteAction1);
+		action2.add(newItemSymbol1);
+		action2.add(insertAction1);
+		action2.add(newItemSymbol2);
+		action2.add(deleteAction2);
+		action2.add(activationSymbol1);
+		action2.add(insertAction2);
+		action2.add(activationSymbol2);
 
 		assertNotEquals(action1, action2);
 	}

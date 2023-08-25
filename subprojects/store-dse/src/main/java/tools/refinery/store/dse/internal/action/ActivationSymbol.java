@@ -6,7 +6,7 @@ import tools.refinery.store.tuple.Tuple;
 public class ActivationSymbol extends ActionSymbol {
 
 	private final int index;
-	private Tuple value = null;
+	private Tuple value;
 
 	public ActivationSymbol() {
 		this(0);
@@ -36,16 +36,24 @@ public class ActivationSymbol extends ActionSymbol {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof ActivationSymbol)) {
+		if (!(obj instanceof ActivationSymbol other)) {
 			return false;
 		}
-        return index == ((ActivationSymbol) obj).index;
+
+		if (index != other.index) {
+			return false;
+		}
+		if (value == null) {
+			return other.value == null;
+		}
+		return value.equals(other.value);
     }
 
 	@Override
 	public int hashCode() {
 		int result = 17;
 		result = 31 * result + Integer.hashCode(index);
+		result = 31 * result + value.hashCode();
 		return result;
 	}
 }

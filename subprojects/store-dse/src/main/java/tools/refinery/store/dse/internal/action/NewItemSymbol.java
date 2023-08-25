@@ -30,11 +30,19 @@ public class NewItemSymbol extends ActionSymbol {
 		if (obj == this) {
 			return true;
 		}
-        return obj instanceof NewItemSymbol;
+		if (!(obj instanceof NewItemSymbol other)) {
+			return false;
+		}
+		if (value == null) {
+			return other.value == null;
+		}
+		return value.equals(other.value);
     }
 
 	@Override
 	public int hashCode() {
-		return 42;
+		int result = 17;
+		result = 31 * result + value.hashCode();
+		return result;
 	}
 }
