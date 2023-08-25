@@ -22,6 +22,7 @@ import java.util.Random;
 public class AlwaysSatisfiedRandomHardObjective extends BaseObjective {
 
 	private static final String DEFAULT_NAME = "AlwaysSatisfiedDummyHardObjective";
+	@SuppressWarnings("squid:S2245")
 	private static final Random random = new Random(0);
 
 	public AlwaysSatisfiedRandomHardObjective() {

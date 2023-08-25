@@ -26,10 +26,12 @@ public class TransformationRule {
 	private Random random;
 	private ModelQueryAdapter queryEngine;
 
+	@SuppressWarnings("squid:S2245")
 	public TransformationRule(String name, RelationalQuery precondition, ActionFactory actionFactory) {
 		this(name, precondition, actionFactory, new Random());
 	}
 
+	@SuppressWarnings("squid:S2245")
 	public TransformationRule(String name, RelationalQuery precondition, ActionFactory actionFactory, long seed) {
 		this(name, precondition, actionFactory, new Random(seed));
 	}

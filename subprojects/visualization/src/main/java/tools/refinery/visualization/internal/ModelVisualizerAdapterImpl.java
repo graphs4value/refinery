@@ -220,6 +220,7 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	}
 
 	private Integer[] typeColor(String name) {
+		@SuppressWarnings("squid:S2245")
 		var random = new Random(name.hashCode());
 		return new Integer[] { random.nextInt(128) + 128, random.nextInt(128) + 128, random.nextInt(128) + 128 };
 	}

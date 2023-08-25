@@ -13,6 +13,7 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.dse.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.DesignSpaceExplorationStoreAdapter;
@@ -45,6 +46,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	private Map<Version, Version> parents = new HashMap<>();
 	private final List<Version> solutions = new ArrayList<>();
 	private Map<Version, List<Activation>> statesAndTraversedActivations;
+	@SuppressWarnings("squid:S2245")
 	private Random random = new Random();
 	private boolean isNewState = false;
 	private final boolean isVisualizationEnabled;
@@ -75,6 +77,12 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		modelVisualizerAdapter = model.tryGetAdapter(ModelVisualizerAdapter.class).orElse(null);
 		isVisualizationEnabled = modelVisualizerAdapter != null;
 
+	}
+
+	@Override
+	public void addTransformationRule(TransformationRule rule) {
+		transformationRules.add(rule);
+		rule.prepare(model, queryEngine);
 	}
 
 	public List<Version> getTrajectory() {
@@ -175,6 +183,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	}
 
 	@Override
+	@SuppressWarnings("squid:S2245")
 	public void setRandom(long seed) {
 		this.random = new Random(seed);
 	}
