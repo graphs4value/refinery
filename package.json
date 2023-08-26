@@ -23,10 +23,10 @@
   "scripts": {
     "frontend": "yarn workspace @refinery/frontend"
   },
-  "packageManager": "yarn@4.0.0-rc.48",
+  "packageManager": "yarn@4.0.0-rc.50",
   "devDependencies": {
-    "eslint": "^8.47.0",
-    "typescript": "5.1.6"
+    "eslint": "^8.48.0",
+    "typescript": "5.2.2"
   },
   "resolutions": {
     "d3-zoom@npm:^3.0.0": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch",
