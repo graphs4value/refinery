@@ -6,8 +6,11 @@
 package tools.refinery.language.web.semantics;
 
 import com.google.gson.JsonObject;
+import tools.refinery.language.semantics.metadata.NodeMetadata;
+import tools.refinery.language.semantics.metadata.RelationMetadata;
 
 import java.util.List;
 
-public record SemanticsSuccessResult(List<String> nodes, JsonObject partialInterpretation) implements SemanticsResult {
+public record SemanticsSuccessResult(List<NodeMetadata> nodes, List<RelationMetadata> relations,
+									 JsonObject partialInterpretation) implements SemanticsResult {
 }

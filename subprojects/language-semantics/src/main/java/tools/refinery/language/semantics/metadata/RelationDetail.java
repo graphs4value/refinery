@@ -5,14 +5,6 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public enum RelationKind {
-	BUILTIN,
-	CLASS,
-	ENUM,
-	REFERENCE,
-	OPPOSITE,
-	CONTAINMENT,
-	CONTAINER,
-	PREDICATE,
-	ERROR
+public sealed interface RelationDetail permits ClassDetail, ReferenceDetail, PredicateDetail, OppositeReferenceDetail,
+		BuiltInDetail {
 }

@@ -6,7 +6,7 @@
 package tools.refinery.language.semantics.metadata;
 
 public sealed interface Metadata permits NodeMetadata, RelationMetadata {
-	String fullyQualifiedName();
+	String name();
 
 	String simpleName();
 }

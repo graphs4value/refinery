@@ -10,9 +10,7 @@ import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
-function svgURL(svg: string): string {
-  return `url('data:image/svg+xml;utf8,${svg}')`;
-}
+import svgURL from '../utils/svgURL';
 
 export default styled('div', {
   name: 'EditorTheme',

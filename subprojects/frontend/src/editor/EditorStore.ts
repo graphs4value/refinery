@@ -26,6 +26,7 @@ import { makeAutoObservable, observable, runInAction } from 'mobx';
 import { nanoid } from 'nanoid';
 
 import type PWAStore from '../PWAStore';
+import GraphStore from '../graph/GraphStore';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
 import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
@@ -66,7 +67,7 @@ export default class EditorStore {
 
   semanticsError: string | undefined;
 
-  semantics: SemanticsSuccessResult | undefined;
+  graph: GraphStore;
 
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
@@ -86,12 +87,12 @@ export default class EditorStore {
     })().catch((error) => {
       log.error('Failed to load XtextClient', error);
     });
+    this.graph = new GraphStore();
     makeAutoObservable<EditorStore, 'client'>(this, {
       id: false,
       state: observable.ref,
       client: observable.ref,
       view: observable.ref,
-      semantics: observable.ref,
       searchPanel: false,
       lintPanel: false,
       contentAssist: false,
@@ -298,7 +299,7 @@ export default class EditorStore {
 
   setSemantics(semantics: SemanticsSuccessResult) {
     this.semanticsError = undefined;
-    this.semantics = semantics;
+    this.graph.setSemantics(semantics);
   }
 
   dispose(): void {

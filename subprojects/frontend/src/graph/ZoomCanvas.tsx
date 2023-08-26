@@ -148,7 +148,8 @@ export default function ZoomCanvas({
           const [x, y] = d3.pointer(event, canvas);
           return [x - width / 2, y - height / 2];
         })
-        .centroid([0, 0]);
+        .centroid([0, 0])
+        .scaleExtent([1 / 32, 8]);
       zoomBehavior.on(
         'zoom',
         (event: d3.D3ZoomEvent<HTMLDivElement, unknown>) => {
@@ -214,6 +215,6 @@ export default function ZoomCanvas({
 
 ZoomCanvas.defaultProps = {
   children: undefined,
-  fitPadding: 16,
+  fitPadding: 8,
   transitionTime: 250,
 };

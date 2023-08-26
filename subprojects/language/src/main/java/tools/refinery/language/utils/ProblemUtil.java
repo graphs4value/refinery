@@ -7,7 +7,6 @@ package tools.refinery.language.utils;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-
 import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
@@ -48,6 +47,10 @@ public final class ProblemUtil {
 		} else {
 			return false;
 		}
+	}
+
+	public static boolean isError(EObject eObject) {
+		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
 	}
 
 	public static boolean isIndividualNode(Node node) {

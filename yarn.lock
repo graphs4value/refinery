@@ -4004,7 +4004,7 @@ __metadata:
 
 "d3-graphviz@patch:d3-graphviz@npm%3A5.1.0#~/.yarn/patches/d3-graphviz-npm-5.1.0-ba6bed3fec.patch":
   version: 5.1.0
-  resolution: "d3-graphviz@patch:d3-graphviz@npm%3A5.1.0#~/.yarn/patches/d3-graphviz-npm-5.1.0-ba6bed3fec.patch::version=5.1.0&hash=d00cb5"
+  resolution: "d3-graphviz@patch:d3-graphviz@npm%3A5.1.0#~/.yarn/patches/d3-graphviz-npm-5.1.0-ba6bed3fec.patch::version=5.1.0&hash=dcacac"
   dependencies:
     "@hpcc-js/wasm": "npm:2.13.1"
     d3-dispatch: "npm:^3.0.1"
@@ -4016,7 +4016,7 @@ __metadata:
     d3-zoom: "npm:^3.0.0"
   peerDependencies:
     d3-selection: ^3.0.0
-  checksum: 23e56b979950ff19f12321e9c23e56e55e791950f42ced3613581f4ac6a70e7b78b4bf3c600377df0766ee20f967741c939011b7a4d192a9eb3e2e07fa45833d
+  checksum: 47ac96385ebee243fa44898f0f4cd25dce49683d66955511adaf94a584ae7261a485cbcec8910709dd5a6fe857ae7b7e05abe5b1ce0f0e9b69d2691ff0b13d81
   languageName: node
   linkType: hard
 

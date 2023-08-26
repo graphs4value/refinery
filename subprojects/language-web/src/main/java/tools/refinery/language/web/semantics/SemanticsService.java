@@ -55,7 +55,7 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		}
 		var problem = getProblem(doc);
 		if (problem == null) {
-			return new SemanticsSuccessResult(List.of(), new JsonObject());
+			return new SemanticsSuccessResult(List.of(), List.of(), new JsonObject());
 		}
 		var worker = workerProvider.get();
 		worker.setProblem(problem, cancelIndicator);

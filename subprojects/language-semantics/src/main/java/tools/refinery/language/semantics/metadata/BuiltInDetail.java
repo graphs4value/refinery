@@ -5,8 +5,6 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public enum NodeKind {
-	IMPLICIT,
-	INDIVIDUAL,
-	NEW
+public record BuiltInDetail() implements RelationDetail {
+	public static final BuiltInDetail INSTANCE = new BuiltInDetail();
 }

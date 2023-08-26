@@ -5,5 +5,5 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public record NodeMetadata(String fullyQualifiedName, String simpleName, NodeKind kind) implements Metadata {
+public record NodeMetadata(String name, String simpleName, NodeKind kind) implements Metadata {
 }

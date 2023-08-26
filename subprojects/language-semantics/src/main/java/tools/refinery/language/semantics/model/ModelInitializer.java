@@ -64,7 +64,7 @@ public class ModelInitializer {
 
 	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new HashMap<>();
 
-	private Map<AnyPartialSymbol, Relation> inverseTrace = new HashMap<>();
+	private final Map<AnyPartialSymbol, Relation> inverseTrace = new HashMap<>();
 
 	private Map<Relation, PartialRelation> relationTrace;
 
@@ -73,6 +73,10 @@ public class ModelInitializer {
 	private Metamodel metamodel;
 
 	private ModelSeed modelSeed;
+
+	public Problem getProblem() {
+		return problem;
+	}
 
 	public int getNodeCount() {
 		return nodeTrace.size();
@@ -88,6 +92,10 @@ public class ModelInitializer {
 
 	public Relation getInverseTrace(AnyPartialSymbol partialRelation) {
 		return inverseTrace.get(partialRelation);
+	}
+
+	public Metamodel getMetamodel() {
+		return metamodel;
 	}
 
 	public ModelSeed createModel(Problem problem, ModelStoreBuilder storeBuilder) {

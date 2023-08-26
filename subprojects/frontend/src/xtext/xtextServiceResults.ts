@@ -126,8 +126,36 @@ export const FormattingResult = DocumentStateResult.extend({
 
 export type FormattingResult = z.infer<typeof FormattingResult>;
 
+export const NodeMetadata = z.object({
+  name: z.string(),
+  simpleName: z.string(),
+  kind: z.enum(['IMPLICIT', 'INDIVIDUAL', 'NEW']),
+});
+
+export type NodeMetadata = z.infer<typeof NodeMetadata>;
+
+export const RelationMetadata = z.object({
+  name: z.string(),
+  simpleName: z.string(),
+  arity: z.number().nonnegative(),
+  detail: z.union([
+    z.object({ type: z.literal('class'), abstractClass: z.boolean() }),
+    z.object({ type: z.literal('reference'), containment: z.boolean() }),
+    z.object({
+      type: z.literal('opposite'),
+      container: z.boolean(),
+      opposite: z.string(),
+    }),
+    z.object({ type: z.literal('predicate'), error: z.boolean() }),
+    z.object({ type: z.literal('builtin') }),
+  ]),
+});
+
+export type RelationMetadata = z.infer<typeof RelationMetadata>;
+
 export const SemanticsSuccessResult = z.object({
-  nodes: z.string().nullable().array(),
+  nodes: NodeMetadata.array(),
+  relations: RelationMetadata.array(),
   partialInterpretation: z.record(
     z.string(),
     z.union([z.number(), z.string()]).array().array(),

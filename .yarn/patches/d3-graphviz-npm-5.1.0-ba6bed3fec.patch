@@ -49,6 +49,19 @@ index 96ae02b6edd947ac9086f3108986c08d91470cba..c4422b08d73f7fe73dc52ad905cf981d
      var data = extractAllElementsData(newSvg);
      this._dispatch.call('dataExtractEnd', this);
      postProcessDataPass1Local(data);
+diff --git a/src/element.js b/src/element.js
+index 5aa398a6cf2550e15f642aea4eaa5a1c69af69ad..5d799e38566e8f847aa1ba80f4c575911e9851cf 100644
+--- a/src/element.js
++++ b/src/element.js
+@@ -108,6 +108,8 @@ export function createElement(data) {
+         return document.createTextNode("");
+     } else if (data.tag == '#comment') {
+         return document.createComment(data.comment);
++    } else if (data.tag == 'div' || data.tag == 'DIV') {
++        return document.createElement('div');
+     } else {
+         return document.createElementNS('http://www.w3.org/2000/svg', data.tag);
+     }
 diff --git a/src/graphviz.js b/src/graphviz.js
 index c4638cb0e4042844c59c52dfe4749e13999fef6e..28dcfb71ad787c78645c460a29e9c52295c5f6bf 100644
 --- a/src/graphviz.js

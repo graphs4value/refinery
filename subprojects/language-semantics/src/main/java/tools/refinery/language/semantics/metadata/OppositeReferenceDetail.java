@@ -5,8 +5,5 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public enum NodeKind {
-	IMPLICIT,
-	INDIVIDUAL,
-	NEW
+public record OppositeReferenceDetail(boolean container, String opposite) implements RelationDetail {
 }

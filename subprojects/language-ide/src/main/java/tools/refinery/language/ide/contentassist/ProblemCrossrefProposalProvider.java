@@ -36,7 +36,10 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		var eObjectDescriptionsByName = new HashMap<QualifiedName, List<IEObjectDescription>>();
 		for (var candidate : super.queryScope(scope, crossReference, context)) {
 			if (isExistingObject(candidate, crossReference, context)) {
-				var qualifiedName = candidate.getQualifiedName();
+				// {@code getQualifiedName()} will refer to the full name for objects that are loaded from the global
+				// scope, but {@code getName()} returns the qualified name that we set in
+				// {@code ProblemResourceDescriptionStrategy}.
+				var qualifiedName = candidate.getName();
 				var candidateList = eObjectDescriptionsByName.computeIfAbsent(qualifiedName,
 						ignored -> new ArrayList<>());
 				candidateList.add(candidate);

@@ -18,6 +18,7 @@ import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.language.semantics.model.SemanticsUtils;
 import tools.refinery.language.semantics.model.TracedException;
@@ -34,8 +35,6 @@ import tools.refinery.store.tuple.Tuple;
 import tools.refinery.viatra.runtime.CancellationToken;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
@@ -53,6 +52,9 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	@Inject
 	private ModelInitializer initializer;
+
+	@Inject
+	private MetadataCreator metadataCreator;
 
 	private Problem problem;
 
@@ -78,7 +80,11 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		try {
 			var modelSeed = initializer.createModel(problem, builder);
 			cancellationToken.checkCancelled();
-			var nodeTrace = getNodeTrace(initializer);
+			metadataCreator.setInitializer(initializer);
+			cancellationToken.checkCancelled();
+			var nodesMetadata = metadataCreator.getNodesMetadata();
+			cancellationToken.checkCancelled();
+			var relationsMetadata = metadataCreator.getRelationsMetadata();
 			cancellationToken.checkCancelled();
 			var store = builder.build();
 			cancellationToken.checkCancelled();
@@ -87,23 +93,13 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			cancellationToken.checkCancelled();
 			var partialInterpretation = getPartialInterpretation(initializer, model);
 
-			return new SemanticsSuccessResult(nodeTrace, partialInterpretation);
+			return new SemanticsSuccessResult(nodesMetadata, relationsMetadata, partialInterpretation);
 		} catch (TracedException e) {
 			return getTracedErrorResult(e.getSourceElement(), e.getMessage());
 		} catch (TranslationException e) {
 			var sourceElement = initializer.getInverseTrace(e.getPartialSymbol());
 			return getTracedErrorResult(sourceElement, e.getMessage());
 		}
-	}
-
-	private List<String> getNodeTrace(ModelInitializer initializer) {
-		var nodeTrace = new String[initializer.getNodeCount()];
-		for (var entry : initializer.getNodeTrace().keyValuesView()) {
-			var node = entry.getOne();
-			var index = entry.getTwo();
-			nodeTrace[index] = semanticsUtils.getName(node).orElse(null);
-		}
-		return Arrays.asList(nodeTrace);
 	}
 
 	private JsonObject getPartialInterpretation(ModelInitializer initializer, Model model) {

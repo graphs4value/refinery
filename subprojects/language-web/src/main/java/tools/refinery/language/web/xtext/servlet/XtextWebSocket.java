@@ -6,6 +6,7 @@
 package tools.refinery.language.web.xtext.servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import org.eclipse.jetty.websocket.api.Callback;
@@ -16,6 +17,7 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.refinery.language.semantics.metadata.*;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;
@@ -28,7 +30,15 @@ import java.io.Reader;
 public class XtextWebSocket implements ResponseHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(XtextWebSocket.class);
 
-	private final Gson gson = new Gson();
+	private final Gson gson = new GsonBuilder()
+			.disableJdkUnsafe()
+			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RelationDetail.class, "type")
+					.registerSubtype(ClassDetail.class, "class")
+					.registerSubtype(ReferenceDetail.class, "reference")
+					.registerSubtype(OppositeReferenceDetail.class, "opposite")
+					.registerSubtype(PredicateDetail.class, "predicate")
+					.registerSubtype(BuiltInDetail.class, "builtin"))
+			.create();
 
 	private final TransactionExecutor executor;
 

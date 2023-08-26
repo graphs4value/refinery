@@ -4,19 +4,28 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { styled, type CSSObject } from '@mui/material/styles';
+import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
+import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
+import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
+import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
-function createEdgeColor(suffix: string, color: string): CSSObject {
+import svgURL from '../utils/svgURL';
+
+function createEdgeColor(
+  suffix: string,
+  stroke: string,
+  fill?: string,
+): CSSObject {
   return {
-    [`& .edge-${suffix}`]: {
+    [`.edge-${suffix}`]: {
       '& text': {
-        fill: color,
+        fill: stroke,
       },
       '& [stroke="black"]': {
-        stroke: color,
+        stroke,
       },
       '& [fill="black"]': {
-        fill: color,
+        fill: fill ?? stroke,
       },
     },
   };
@@ -27,7 +36,7 @@ export default styled('div', {
 })(({ theme }) => ({
   '& svg': {
     userSelect: 'none',
-    '& .node': {
+    '.node': {
       '& text': {
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
@@ -43,10 +52,32 @@ export default styled('div', {
       },
       '& [fill="white"]': {
         fill: theme.palette.background.default,
-        stroke: theme.palette.background.default,
       },
     },
-    '& .edge': {
+    '.node-INDIVIDUAL': {
+      '& [stroke="black"]': {
+        strokeWidth: 2,
+      },
+    },
+    '.node-shadow[fill="white"]': {
+      fill: alpha(
+        theme.palette.text.primary,
+        theme.palette.mode === 'dark' ? 0.32 : 0.24,
+      ),
+    },
+    '.node-exists-UNKNOWN [stroke="black"]': {
+      strokeDasharray: '5 2',
+    },
+    '.node-exists-FALSE': {
+      '& [fill="green"]': {
+        fill: theme.palette.background.default,
+      },
+      '& [stroke="black"]': {
+        strokeDasharray: '1 3',
+        stroke: theme.palette.text.secondary,
+      },
+    },
+    '.edge': {
       '& text': {
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
@@ -58,7 +89,32 @@ export default styled('div', {
         fill: theme.palette.text.primary,
       },
     },
-    ...createEdgeColor('UNKNOWN', theme.palette.text.secondary),
+    ...createEdgeColor('UNKNOWN', theme.palette.text.secondary, 'none'),
     ...createEdgeColor('ERROR', theme.palette.error.main),
+    '.icon': {
+      maskSize: '12px 12px',
+      maskPosition: '50% 50%',
+      maskRepeat: 'no-repeat',
+      width: '100%',
+      height: '100%',
+    },
+    '.icon-TRUE': {
+      maskImage: svgURL(labelSVG),
+      background: theme.palette.text.primary,
+    },
+    '.icon-UNKNOWN': {
+      maskImage: svgURL(labelOutlinedSVG),
+      background: theme.palette.text.secondary,
+    },
+    '.icon-ERROR': {
+      maskImage: svgURL(cancelSVG),
+      background: theme.palette.error.main,
+    },
+    'text.label-UNKNOWN': {
+      fill: theme.palette.text.secondary,
+    },
+    'text.label-ERROR': {
+      fill: theme.palette.error.main,
+    },
   },
 }));

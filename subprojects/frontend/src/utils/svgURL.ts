@@ -3,10 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.semantics.metadata;
 
-public enum NodeKind {
-	IMPLICIT,
-	INDIVIDUAL,
-	NEW
+export default function svgURL(svg: string): string {
+  return `url('data:image/svg+xml;utf8,${svg}')`;
 }
