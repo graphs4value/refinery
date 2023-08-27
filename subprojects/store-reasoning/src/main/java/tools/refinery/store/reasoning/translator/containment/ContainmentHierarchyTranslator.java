@@ -209,9 +209,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				}))
 				.must(Query.of(mustName, (builder, parent, child) -> builder.clause(
 						new MustContainsView(containsStorage).call(parent, child)
-				)))
-				.refiner(ContainsRefiner.of(containsStorage))
-				.initializer(new RefinementBasedInitializer<>(CONTAINS_SYMBOL)));
+				))));
 	}
 
 	private void translateInvalidNumberOfContainers(ModelStoreBuilder storeBuilder) {
