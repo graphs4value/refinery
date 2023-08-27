@@ -12,10 +12,7 @@ package tools.refinery.viatra.runtime.rete.itc.alg.misc.bfs;
 import tools.refinery.viatra.runtime.rete.itc.igraph.IBiDirectionalGraphDataSource;
 import tools.refinery.viatra.runtime.rete.itc.igraph.IGraphDataSource;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BFS<V> {
 
@@ -35,7 +32,7 @@ public class BFS<V> {
      * @return true if source is reachable from target, false otherwise
      */
     public static <V> boolean isReachable(V source, V target, IGraphDataSource<V> graph) {
-        List<V> nodeQueue = new ArrayList<V>();
+        Deque<V> nodeQueue = new ArrayDeque<V>();
         Set<V> visited = new HashSet<V>();
 
         nodeQueue.add(source);
@@ -45,17 +42,17 @@ public class BFS<V> {
         return ret;
     }
 
-    private static <V> boolean _isReachable(V target, IGraphDataSource<V> graph, List<V> nodeQueue, Set<V> visited) {
+    private static <V> boolean _isReachable(V target, IGraphDataSource<V> graph, Deque<V> nodeQueue, Set<V> visited) {
 
         while (!nodeQueue.isEmpty()) {
-            V node = nodeQueue.remove(0);
+            V node = nodeQueue.removeFirst();
             for (V t : graph.getTargetNodes(node).distinctValues()){
                 if (t.equals(target)) {
                     return true;
                 }
                 if (!visited.contains(t)) {
                     visited.add(t);
-                    nodeQueue.add(t);
+                    nodeQueue.addLast(t);
                 }
             }
         }
@@ -65,7 +62,7 @@ public class BFS<V> {
     public static <V> Set<V> reachableSources(IBiDirectionalGraphDataSource<V> graph, V target) {
         Set<V> retSet = new HashSet<V>();
         retSet.add(target);
-        List<V> nodeQueue = new ArrayList<V>();
+        Deque<V> nodeQueue = new ArrayDeque<V>();
         nodeQueue.add(target);
 
         _reachableSources(graph, nodeQueue, retSet);
@@ -73,14 +70,14 @@ public class BFS<V> {
         return retSet;
     }
 
-    private static <V> void _reachableSources(IBiDirectionalGraphDataSource<V> graph, List<V> nodeQueue,
+    private static <V> void _reachableSources(IBiDirectionalGraphDataSource<V> graph, Deque<V> nodeQueue,
             Set<V> retSet) {
         while (!nodeQueue.isEmpty()) {
-            V node = nodeQueue.remove(0);
+            V node = nodeQueue.removeFirst();
             for (V _node : graph.getSourceNodes(node).distinctValues()) {
                 if (!retSet.contains(_node)) {
                     retSet.add(_node);
-                    nodeQueue.add(_node);
+                    nodeQueue.addLast(_node);
                 }
             }
         }
@@ -89,7 +86,7 @@ public class BFS<V> {
     public static <V> Set<V> reachableTargets(IGraphDataSource<V> graph, V source) {
         Set<V> retSet = new HashSet<V>();
         retSet.add(source);
-        List<V> nodeQueue = new ArrayList<V>();
+        Deque<V> nodeQueue = new ArrayDeque<V>();
         nodeQueue.add(source);
 
         _reachableTargets(graph, nodeQueue, retSet);
@@ -97,15 +94,15 @@ public class BFS<V> {
         return retSet;
     }
 
-    private static <V> void _reachableTargets(IGraphDataSource<V> graph, List<V> nodeQueue, Set<V> retSet) {
+    private static <V> void _reachableTargets(IGraphDataSource<V> graph, Deque<V> nodeQueue, Set<V> retSet) {
         while (!nodeQueue.isEmpty()) {
-            V node = nodeQueue.remove(0);
+            V node = nodeQueue.removeFirst();
 
             for (V _node : graph.getTargetNodes(node).distinctValues()) {
 
                 if (!retSet.contains(_node)) {
                     retSet.add(_node);
-                    nodeQueue.add(_node);
+                    nodeQueue.addLast(_node);
                 }
             }
         }

@@ -35,7 +35,10 @@ public class StronglyConnectedComponentAlgorithm extends RepresentativeElectionA
 			return;
 		}
 		if (BFS.isReachable(target, source, graph)) {
-			merge(sourceRoot, targetRoot);
+			var sources = BFS.reachableSources(graph, target);
+			var targets = BFS.reachableTargets(graph, source);
+			sources.retainAll(targets);
+			merge(sources);
 		}
 	}
 

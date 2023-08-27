@@ -214,4 +214,48 @@ class StronglyConnectedComponentsTest {
 		assertThat(resultSet.size(), is(2));
 		assertThat(resultSet.get(Tuple.of(2)), is(true));
 	}
+
+	@Test
+	void loopTest() {
+		var query = Query.of("SymbolViewRepresentative", (builder, p1, p2) -> builder
+				.clause(v1 -> List.of(
+						new RepresentativeElectionLiteral(Connectivity.STRONG, friendView, p1, v1),
+						new RepresentativeElectionLiteral(Connectivity.STRONG, friendView, p2, v1)
+				)));
+
+		var store = ModelStore.builder()
+				.symbols(friend)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(query))
+				.build();
+
+		var model = store.createEmptyModel();
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var resultSet = queryEngine.getResultSet(query);
+
+		friendInterpretation.put(Tuple.of(0, 1), true);
+		friendInterpretation.put(Tuple.of(1, 2), true);
+		friendInterpretation.put(Tuple.of(2, 3), true);
+		friendInterpretation.put(Tuple.of(3, 0), true);
+		friendInterpretation.put(Tuple.of(3, 4), true);
+		queryEngine.flushChanges();
+
+		assertThat(resultSet.get(Tuple.of(0, 1)), is(true));
+		assertThat(resultSet.get(Tuple.of(1, 2)), is(true));
+		assertThat(resultSet.get(Tuple.of(2, 3)), is(true));
+		assertThat(resultSet.get(Tuple.of(3, 0)), is(true));
+		assertThat(resultSet.get(Tuple.of(3, 4)), is(false));
+
+		friendInterpretation.put(Tuple.of(2, 3), false);
+		queryEngine.flushChanges();
+
+		assertThat(resultSet.get(Tuple.of(0, 1)), is(false));
+		assertThat(resultSet.get(Tuple.of(0, 2)), is(false));
+		assertThat(resultSet.get(Tuple.of(0, 3)), is(false));
+		assertThat(resultSet.get(Tuple.of(1, 2)), is(false));
+		assertThat(resultSet.get(Tuple.of(2, 3)), is(false));
+		assertThat(resultSet.get(Tuple.of(3, 0)), is(false));
+		assertThat(resultSet.get(Tuple.of(3, 4)), is(false));
+	}
 }

@@ -45,6 +45,40 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		components.put(representative, set);
 	}
 
+	protected void merge(Set<Object> toMerge) {
+		if (toMerge.isEmpty()) {
+			return;
+		}
+		var representativesToMerge = new HashSet<>();
+		Object bestRepresentative = null;
+		Set<Object> bestSet = null;
+		for (var object : toMerge) {
+			var representative = getRepresentative(object);
+			if (representativesToMerge.add(representative)) {
+				var component = getComponent(representative);
+				if (bestSet == null || bestSet.size() < component.size()) {
+					bestRepresentative = representative;
+					bestSet = component;
+				}
+			}
+		}
+		if (bestRepresentative == null) {
+			throw new AssertionError("Could not determine best representative");
+		}
+		for (var representative : representativesToMerge) {
+			if (!bestRepresentative.equals(representative)) {
+				components.remove(representative);
+			}
+		}
+		components.put(bestRepresentative, toMerge);
+		for (var object : toMerge) {
+			var previousRepresentative = representatives.put(object, bestRepresentative);
+			if (!bestSet.contains(object)) {
+				notifyToObservers(object, previousRepresentative, bestRepresentative);
+			}
+		}
+	}
+
 	protected void merge(Object leftRepresentative, Object rightRepresentative) {
 		if (leftRepresentative.equals(rightRepresentative)) {
 			return;
