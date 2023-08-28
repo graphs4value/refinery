@@ -4,21 +4,21 @@
 
 [versions]
 eclipseCollections = "12.0.0.M2"
-ecore = "2.34.0"
+ecore = "2.26.0"
 jetty = "12.0.0"
 jmh = "1.37"
 junit = "5.10.0"
-mockito = "5.4.0"
-mwe2 = "2.15.0.M2"
+mockito = "5.5.0"
+mwe2 = "2.15.0"
 slf4j = "2.0.7"
-xtext = "2.32.0.M2"
+xtext = "2.32.0"
 
 [libraries]
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version.ref = "ecore" }
-ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.18.0" }
+ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.16.0" }
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecore" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", version = "8.1.1" }
@@ -37,7 +37,7 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.9.0.M2" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.9.0" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
