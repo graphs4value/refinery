@@ -42,7 +42,7 @@ import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 
 public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 	public static final PartialRelation CONTAINED_SYMBOL = new PartialRelation("contained", 1);
-	public static final PartialRelation INVALID_NUMBER_OF_CONTAINERS = new PartialRelation("invalidNumberOfContainers",
+	public static final PartialRelation INVALID_CONTAINER = new PartialRelation("invalidContainer",
 			1);
 	public static final PartialRelation CONTAINS_SYMBOL = new PartialRelation("contains", 2);
 
@@ -97,7 +97,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 	public void apply(ModelStoreBuilder storeBuilder) {
 		storeBuilder.symbol(containsStorage);
 		translateContains(storeBuilder);
-		translateInvalidNumberOfContainers(storeBuilder);
+		translateInvalidContainer(storeBuilder);
 		for (var entry : containmentInfoMap.entrySet()) {
 			var linkType = entry.getKey();
 			var info = entry.getValue();
@@ -212,8 +212,8 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				))));
 	}
 
-	private void translateInvalidNumberOfContainers(ModelStoreBuilder storeBuilder) {
+	private void translateInvalidContainer(ModelStoreBuilder storeBuilder) {
 		storeBuilder.with(new InvalidMultiplicityErrorTranslator(CONTAINED_SYMBOL, CONTAINS_SYMBOL, true,
-				ConstrainedMultiplicity.of(CardinalityIntervals.ONE, INVALID_NUMBER_OF_CONTAINERS)));
+				ConstrainedMultiplicity.of(CardinalityIntervals.ONE, INVALID_CONTAINER)));
 	}
 }

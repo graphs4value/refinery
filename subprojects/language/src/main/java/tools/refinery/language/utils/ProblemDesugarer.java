@@ -43,9 +43,8 @@ public class ProblemDesugarer {
 		var exists = doGetDeclaration(builtin, PredicateDefinition.class, "exists");
 		var contained = doGetDeclaration(builtin, ClassDeclaration.class, "contained");
 		var contains = doGetDeclaration(builtin, PredicateDefinition.class, "contains");
-		var invalidNumberOfContainers = doGetDeclaration(builtin, PredicateDefinition.class,
-				"invalidNumberOfContainers");
-		return new BuiltinSymbols(builtin, node, equals, exists, contained,	contains, invalidNumberOfContainers);
+		var invalidContainer = doGetDeclaration(builtin, PredicateDefinition.class, "invalidContainer");
+		return new BuiltinSymbols(builtin, node, equals, exists, contained, contains, invalidContainer);
 	}
 
 	private <T extends Statement & NamedElement> T doGetDeclaration(Problem builtin, Class<T> type, String name) {

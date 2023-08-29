@@ -115,8 +115,8 @@ public class ModelInitializer {
 				null, TruthValue.UNKNOWN));
 		putRelationInfo(builtinSymbols.contains(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,
 				null, TruthValue.UNKNOWN));
-		putRelationInfo(builtinSymbols.invalidNumberOfContainers(),
-				new RelationInfo(ContainmentHierarchyTranslator.INVALID_NUMBER_OF_CONTAINERS, TruthValue.FALSE,
+		putRelationInfo(builtinSymbols.invalidContainer(),
+				new RelationInfo(ContainmentHierarchyTranslator.INVALID_CONTAINER, TruthValue.FALSE,
 						TruthValue.FALSE));
 		collectNodes();
 		collectPartialSymbols();

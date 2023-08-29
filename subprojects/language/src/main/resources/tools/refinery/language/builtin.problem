@@ -13,4 +13,4 @@ abstract class contained extends node.
 
 pred contains(container, contained contained).
 
-error invalidNumberOfContainers(contained contained).
+error invalidContainer(contained contained).
