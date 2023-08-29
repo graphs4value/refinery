@@ -269,6 +269,7 @@ function createRelationEdges(
       weight=${edgeWeight},
       xlabel=${label},
       penwidth=${penwidth},
+      arrowsize=${penwidth >= 2 ? 0.875 : 1},
       style="${isUnknown ? 'dashed' : 'solid'}",
       class="edge-${value}"
     ]`);
