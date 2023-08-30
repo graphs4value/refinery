@@ -153,7 +153,7 @@ function createResponsiveTheme(
               }, {}),
             },
           },
-          sizeSmall: { fontSize: '0.75rem' },
+          sizeSmall: { fontSize: '0.875rem', lineHeight: '1.75' },
           sizeLarge: { fontSize: '1rem' },
           text: { '&.rounded': { padding: '6px 14px' } },
           textSizeSmall: { '&.rounded': { padding: '4px 8px' } },
@@ -289,7 +289,7 @@ const darkTheme = (() => {
           secondary: secondaryText,
           disabled: '#5c6370',
         },
-        divider: alpha(secondaryText, 0.24),
+        divider: alpha(primaryText, 0.24),
         outer: {
           background: darkBackground,
           border: '#181a1f',

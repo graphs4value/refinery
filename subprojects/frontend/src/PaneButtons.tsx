@@ -24,7 +24,7 @@ function PaneButtons({
     <ToggleButtonGroup
       size={hideLabel ? 'small' : 'medium'}
       className="rounded"
-      sx={{
+      sx={(theme) => ({
         '.MuiToggleButton-root': {
           ...(hideLabel
             ? {}
@@ -33,6 +33,10 @@ function PaneButtons({
               }),
           fontSize: '1rem',
           lineHeight: '1.5',
+          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          '&:not(.Mui-selected)': {
+            color: theme.palette.text.secondary,
+          },
         },
         ...(hideLabel
           ? {}
@@ -41,7 +45,7 @@ function PaneButtons({
                 margin: '0 6px 0 -4px',
               },
             }),
-      }}
+      })}
     >
       <ToggleButton
         value="code"

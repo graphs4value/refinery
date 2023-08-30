@@ -4,6 +4,21 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-export default function TablePane(): JSX.Element {
-  return <div>Table</div>;
+import { observer } from 'mobx-react-lite';
+
+import Loading from '../Loading';
+import { useRootStore } from '../RootStoreProvider';
+
+import RelationGrid from './RelationGrid';
+
+function TablePane(): JSX.Element {
+  const { editorStore } = useRootStore();
+
+  if (editorStore === undefined) {
+    return <Loading />;
+  }
+
+  return <RelationGrid graph={editorStore.graph} />;
 }
+
+export default observer(TablePane);

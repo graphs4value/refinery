@@ -13,13 +13,7 @@ const TableArea = lazy(() => import('./TableArea'));
 
 export default function TablePane(): JSX.Element {
   return (
-    <Stack
-      direction="column"
-      height="100%"
-      overflow="auto"
-      alignItems="center"
-      justifyContent="center"
-    >
+    <Stack direction="column" height="100%" overflow="auto" alignItems="center">
       <Suspense fallback={<Loading />}>
         <TableArea />
       </Suspense>

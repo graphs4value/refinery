@@ -61,6 +61,8 @@ export default class GraphStore {
 
   abbreviate = true;
 
+  selectedSymbol: RelationMetadata | undefined;
+
   constructor() {
     makeAutoObservable(this, {
       semantics: observable.ref,
@@ -143,6 +145,19 @@ export default class GraphStore {
     this.abbreviate = !this.abbreviate;
   }
 
+  setSelectedSymbol(option: RelationMetadata | undefined): void {
+    if (option === undefined) {
+      this.selectedSymbol = undefined;
+      return;
+    }
+    const metadata = this.relationMetadata.get(option.name);
+    if (metadata !== undefined) {
+      this.selectedSymbol = metadata;
+    } else {
+      this.selectedSymbol = undefined;
+    }
+  }
+
   setSemantics(semantics: SemanticsSuccessResult) {
     this.semantics = semantics;
     this.relationMetadata.clear();
@@ -161,5 +176,6 @@ export default class GraphStore {
     toRemove.forEach((key) => {
       this.visibility.delete(key);
     });
+    this.setSelectedSymbol(this.selectedSymbol);
   }
 }

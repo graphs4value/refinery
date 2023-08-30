@@ -4,11 +4,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { styled } from '@mui/material/styles';
 import { configure } from 'mobx';
 import { type Root, createRoot } from 'react-dom/client';
 
 import App from './App';
 import RootStore from './RootStore';
+
+// Make sure `styled` ends up in the entry chunk.
+// https://github.com/mui/material-ui/issues/32727#issuecomment-1659945548
+(window as unknown as { fixViteIssue: unknown }).fixViteIssue = styled;
 
 const initialValue = `// Metamodel
 class Person {
