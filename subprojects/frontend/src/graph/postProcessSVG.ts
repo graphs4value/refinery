@@ -62,7 +62,9 @@ function clipCompartmentBackground(node: SVGGElement) {
   modifyAttribute(compartment, 'y', -5);
   modifyAttribute(compartment, 'x', -5);
   modifyAttribute(compartment, 'width', 10);
-  modifyAttribute(compartment, 'height', 5);
+  const isEmpty = node.classList.contains('node-empty');
+  // Make sure that empty nodes are fully filled.
+  modifyAttribute(compartment, 'height', isEmpty ? 10 : 5);
   if (node.classList.contains('node-equalsSelf-UNKNOWN')) {
     addShadow(node, container, 6);
   }

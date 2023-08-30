@@ -40,6 +40,7 @@ function relationName(graph: GraphStore, metadata: RelationMetadata): string {
 }
 
 interface NodeData {
+  isolated: boolean;
   exists: string;
   equalsSelf: string;
   unaryPredicates: Map<RelationMetadata, string>;
@@ -51,27 +52,35 @@ function computeNodeData(graph: GraphStore): NodeData[] {
   } = graph;
 
   const nodeData = Array.from(Array(nodes.length)).map(() => ({
+    isolated: true,
     exists: 'FALSE',
     equalsSelf: 'FALSE',
     unaryPredicates: new Map(),
   }));
 
   relations.forEach((relation) => {
-    if (relation.arity !== 1) {
-      return;
-    }
     const visibility = graph.getVisibility(relation.name);
     if (visibility === 'none') {
       return;
     }
+    const { arity } = relation;
     const interpretation = partialInterpretation[relation.name] ?? [];
-    interpretation.forEach(([index, value]) => {
-      if (
-        typeof index === 'number' &&
-        typeof value === 'string' &&
-        (visibility === 'all' || value !== 'UNKNOWN')
-      ) {
-        nodeData[index]?.unaryPredicates?.set(relation, value);
+    interpretation.forEach((tuple) => {
+      const value = tuple[arity];
+      if (visibility !== 'all' && value === 'UNKNOWN') {
+        return;
+      }
+      for (let i = 0; i < arity; i += 1) {
+        const index = tuple[i];
+        if (typeof index === 'number') {
+          const data = nodeData[index];
+          if (data !== undefined) {
+            data.isolated = false;
+            if (arity === 1) {
+              data.unaryPredicates.set(relation, value);
+            }
+          }
+        }
       }
     });
   });
@@ -109,12 +118,18 @@ function createNodes(graph: GraphStore, lines: string[]): void {
 
   nodes.forEach((node, i) => {
     const data = nodeData[i];
-    if (data === undefined) {
+    if (data === undefined || data.isolated) {
       return;
     }
-    const classes = [
-      `node-${node.kind} node-exists-${data.exists} node-equalsSelf-${data.equalsSelf}`,
-    ].join(' ');
+    const classList = [
+      `node-${node.kind}`,
+      `node-exists-${data.exists}`,
+      `node-equalsSelf-${data.equalsSelf}`,
+    ];
+    if (data.unaryPredicates.size === 0) {
+      classList.push('node-empty');
+    }
+    const classes = classList.join(' ');
     const name = nodeName(graph, node);
     const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
     lines.push(`n${i} [id="${node.name}", class="${classes}", label=<
