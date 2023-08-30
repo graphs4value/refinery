@@ -15,8 +15,10 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
+import { useId } from 'react';
 
 import type GraphStore from './GraphStore';
 import { isVisibilityAllowed } from './GraphStore';
@@ -32,14 +34,15 @@ const VisibilityDialogRoot = styled('div', {
     maxWidth: '100%',
     overflow: 'hidden',
     display: 'flex',
-    padding: theme.spacing(2),
     flexDirection: 'column',
-    '.VisibilityDialog-switch': {
+    '.VisibilityDialog-title': {
       display: 'flex',
       flexDirection: 'row',
-      paddingLeft: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-      '.MuiFormControlLabel-root': {
+      alignItems: 'center',
+      padding: theme.spacing(1),
+      paddingLeft: theme.spacing(2),
+      borderBottom: `1px solid ${theme.palette.divider}`,
+      '& h2': {
         flexGrow: 1,
       },
       '.MuiIconButton-root': {
@@ -48,12 +51,18 @@ const VisibilityDialogRoot = styled('div', {
         marginLeft: theme.spacing(2),
       },
     },
+    '.MuiFormControlLabel-root': {
+      marginLeft: 0,
+      paddingTop: theme.spacing(1),
+      paddingLeft: theme.spacing(1),
+    },
     '.VisibilityDialog-scroll': {
       display: 'flex',
       flexDirection: 'column',
       height: 'auto',
       overflowX: 'hidden',
       overflowY: 'auto',
+      margin: `0 ${theme.spacing(2)}`,
       '& table': {
         // We use flexbox instead of `display: table` to get proper text-overflow
         // behavior for overly long relation names.
@@ -135,10 +144,16 @@ const VisibilityDialogRoot = styled('div', {
       textOverflow: 'ellipsis',
     },
     '.VisibilityDialog-buttons': {
-      marginTop: theme.spacing(2),
+      padding: theme.spacing(1),
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'flex-end',
+      ...(dialog
+        ? {
+            marginTop: theme.spacing(1),
+            borderTop: `1px solid ${theme.palette.divider}`,
+          }
+        : {}),
     },
     '.VisibilityDialog-empty': {
       display: 'flex',
@@ -162,6 +177,8 @@ function VisibilityDialog({
   close: () => void;
   dialog?: boolean;
 }): JSX.Element {
+  const titleId = useId();
+
   const builtinRows: JSX.Element[] = [];
   const rows: JSX.Element[] = [];
   graph.relationMetadata.forEach((metadata, name) => {
@@ -209,23 +226,27 @@ function VisibilityDialog({
   return (
     <VisibilityDialogRoot
       dialog={dialog ?? VisibilityDialog.defaultProps.dialog}
+      aria-labelledby={dialog ? titleId : undefined}
     >
-      <div className="VisibilityDialog-switch">
-        <FormControlLabel
-          control={
-            <Switch
-              checked={!graph.abbreviate}
-              onClick={() => graph.toggleAbbrevaite()}
-            />
-          }
-          label="Fully qualified names"
-        />
-        {dialog && (
+      {dialog && (
+        <div className="VisibilityDialog-title">
+          <Typography variant="h6" component="h2" id={titleId}>
+            Customize view
+          </Typography>
           <IconButton aria-label="Close" onClick={close}>
             <CloseIcon />
           </IconButton>
-        )}
-      </div>
+        </div>
+      )}
+      <FormControlLabel
+        control={
+          <Switch
+            checked={!graph.abbreviate}
+            onClick={() => graph.toggleAbbrevaite()}
+          />
+        }
+        label="Fully qualified names"
+      />
       <div className="VisibilityDialog-scroll">
         {hasRows ? (
           <table cellSpacing={0}>
