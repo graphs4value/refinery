@@ -109,7 +109,6 @@ export default observer(function TopBar(): JSX.Element {
             direction="row"
             alignItems="center"
             sx={{
-              py: 0.5,
               position: 'absolute',
               top: 0,
               bottom: 0,
@@ -120,7 +119,13 @@ export default observer(function TopBar(): JSX.Element {
             <PaneButtons themeStore={themeStore} hideLabel={!large} />
           </Stack>
         )}
-        <Stack direction="row" marginLeft={1} marginRight={1} gap={1}>
+        <Stack
+          direction="row"
+          marginLeft={1}
+          marginRight={1}
+          gap={1}
+          alignItems="center"
+        >
           <GenerateButton editorStore={editorStore} hideWarnings={!veryLarge} />
           {large && (
             <IconButton
