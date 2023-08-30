@@ -20,7 +20,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { observer } from 'mobx-react-lite';
 
-import ConnectButton from './ConnectButton';
 import type EditorStore from './EditorStore';
 
 // Exhastive switch as proven by TypeScript.
@@ -106,7 +105,6 @@ export default observer(function EditorButtons({
       >
         <FormatPaint fontSize="small" />
       </IconButton>
-      <ConnectButton editorStore={editorStore} />
     </Stack>
   );
 });

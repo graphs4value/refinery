@@ -1234,7 +1234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.22.10, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7":
+"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.22.10, @babel/runtime@npm:^7.22.11, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7":
   version: 7.22.11
   resolution: "@babel/runtime@npm:7.22.11"
   dependencies:
@@ -2064,7 +2064,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.14.7":
+"@mui/utils@npm:^5.14.5, @mui/utils@npm:^5.14.7":
   version: 5.14.7
   resolution: "@mui/utils@npm:5.14.7"
   dependencies:
@@ -2076,6 +2076,24 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
   checksum: ec929f6e6e52953f5ae414dab185bca82c70804a7b4243f2825903f89752fbf979f19ca04ed3daf0047df6813b2d3c4acbe2dda1432b9f992ec1e4dd47fd6dda
+  languageName: node
+  linkType: hard
+
+"@mui/x-data-grid@npm:^6.12.0":
+  version: 6.12.0
+  resolution: "@mui/x-data-grid@npm:6.12.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.22.11"
+    "@mui/utils": "npm:^5.14.5"
+    clsx: "npm:^2.0.0"
+    prop-types: "npm:^15.8.1"
+    reselect: "npm:^4.1.8"
+  peerDependencies:
+    "@mui/material": ^5.4.1
+    "@mui/system": ^5.4.1
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: ecb6dbbe5db4cb38f3552cb2e9a4c60963ffd6fc73548da8ebe4cab7208a893aa6064af553a6691d433ecee1ca8f27c5eac0d375069e55693bf5d58b2a6fc295
   languageName: node
   linkType: hard
 
@@ -2166,6 +2184,8 @@ __metadata:
     "@material-icons/svg": "npm:^1.0.33"
     "@mui/icons-material": "npm:5.14.7"
     "@mui/material": "npm:5.14.7"
+    "@mui/system": "npm:^5.14.7"
+    "@mui/x-data-grid": "npm:^6.12.0"
     "@types/d3": "npm:^7.4.0"
     "@types/d3-graphviz": "npm:^2.6.7"
     "@types/d3-selection": "npm:^3.0.6"
@@ -7215,6 +7235,13 @@ __metadata:
   version: 2.0.2
   resolution: "require-from-string@npm:2.0.2"
   checksum: aaa267e0c5b022fc5fd4eef49d8285086b15f2a1c54b28240fdf03599cbd9c26049fee3eab894f2e1f6ca65e513b030a7c264201e3f005601e80c49fb2937ce2
+  languageName: node
+  linkType: hard
+
+"reselect@npm:^4.1.8":
+  version: 4.1.8
+  resolution: "reselect@npm:4.1.8"
+  checksum: 06a305a504affcbb67dd0561ddc8306b35796199c7e15b38934c80606938a021eadcf68cfd58e7bb5e17786601c37602a3362a4665c7bf0a96c1041ceee9d0b7
   languageName: node
   linkType: hard
 

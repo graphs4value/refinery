@@ -46,6 +46,8 @@
     "@material-icons/svg": "^1.0.33",
     "@mui/icons-material": "5.14.7",
     "@mui/material": "5.14.7",
+    "@mui/system": "^5.14.7",
+    "@mui/x-data-grid": "^6.12.0",
     "ansi-styles": "^6.2.1",
     "csstype": "^3.1.2",
     "d3": "^7.8.5",
