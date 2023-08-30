@@ -15,25 +15,28 @@ const EDGE_WEIGHT = 1;
 const CONTAINMENT_WEIGHT = 5;
 const UNKNOWN_WEIGHT_FACTOR = 0.5;
 
-function nodeName({ simpleName, kind }: NodeMetadata): string {
-  switch (kind) {
+function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
+  const name = graph.getName(metadata);
+  switch (metadata.kind) {
     case 'INDIVIDUAL':
-      return `<b>${simpleName}</b>`;
+      return `<b>${name}</b>`;
     case 'NEW':
-      return `<i>${simpleName}</i>`;
+      return `<i>${name}</i>`;
     default:
-      return simpleName;
+      return name;
   }
 }
 
-function relationName({ simpleName, detail }: RelationMetadata): string {
+function relationName(graph: GraphStore, metadata: RelationMetadata): string {
+  const name = graph.getName(metadata);
+  const { detail } = metadata;
   if (detail.type === 'class' && detail.abstractClass) {
-    return `<i>${simpleName}</i>`;
+    return `<i>${name}</i>`;
   }
   if (detail.type === 'reference' && detail.containment) {
-    return `<b>${simpleName}</b>`;
+    return `<b>${name}</b>`;
   }
-  return simpleName;
+  return name;
 }
 
 interface NodeData {
@@ -57,7 +60,7 @@ function computeNodeData(graph: GraphStore): NodeData[] {
     if (relation.arity !== 1) {
       return;
     }
-    const visibility = graph.getVisiblity(relation.name);
+    const visibility = graph.getVisibility(relation.name);
     if (visibility === 'none') {
       return;
     }
@@ -112,7 +115,7 @@ function createNodes(graph: GraphStore, lines: string[]): void {
     const classes = [
       `node-${node.kind} node-exists-${data.exists} node-equalsSelf-${data.equalsSelf}`,
     ].join(' ');
-    const name = nodeName(node);
+    const name = nodeName(graph, node);
     const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
     lines.push(`n${i} [id="${node.name}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">
@@ -128,7 +131,7 @@ function createNodes(graph: GraphStore, lines: string[]): void {
               <td width="1.5"></td>
               <td align="left" href="#${value}" id="${node.name},${
                 relation.name
-              },label">${relationName(relation)}</td>
+              },label">${relationName(graph, relation)}</td>
             </tr>`,
         );
       });
@@ -205,14 +208,15 @@ function createRelationEdges(
   let constraint: 'true' | 'false' = 'true';
   let weight = EDGE_WEIGHT;
   let penwidth = 1;
-  let label = `"${relation.simpleName}"`;
+  const name = graph.getName(relation);
+  let label = `"${name}"`;
   if (detail.type === 'reference' && detail.containment) {
     weight = CONTAINMENT_WEIGHT;
-    label = `<<b>${relation.simpleName}</b>>`;
+    label = `<<b>${name}</b>>`;
     penwidth = 2;
   } else if (
     detail.type === 'opposite' &&
-    graph.getVisiblity(detail.opposite) !== 'none'
+    graph.getVisibility(detail.opposite) !== 'none'
   ) {
     constraint = 'false';
     weight = 0;
@@ -284,7 +288,7 @@ function createEdges(graph: GraphStore, lines: string[]): void {
     if (relation.arity !== 2) {
       return;
     }
-    const visibility = graph.getVisiblity(relation.name);
+    const visibility = graph.getVisibility(relation.name);
     if (visibility !== 'none') {
       createRelationEdges(graph, relation, visibility === 'all', lines);
     }

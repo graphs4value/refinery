@@ -4,13 +4,51 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
+import { observer } from 'mobx-react-lite';
+import { useResizeDetector } from 'react-resize-detector';
+
+import Loading from '../Loading';
+import { useRootStore } from '../RootStoreProvider';
+
 import DotGraphVisualizer from './DotGraphVisualizer';
+import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
 
-export default function GraphArea(): JSX.Element {
+function GraphArea(): JSX.Element {
+  const { editorStore } = useRootStore();
+  const { breakpoints } = useTheme();
+  const { ref, width, height } = useResizeDetector({
+    refreshMode: 'debounce',
+  });
+
+  if (editorStore === undefined) {
+    return <Loading />;
+  }
+
+  const { graph } = editorStore;
+  const breakpoint = breakpoints.values.sm;
+  const dialog =
+    width === undefined ||
+    height === undefined ||
+    width < breakpoint ||
+    height < breakpoint;
+
   return (
-    <ZoomCanvas>
-      {(fitZoom) => <DotGraphVisualizer fitZoom={fitZoom} />}
-    </ZoomCanvas>
+    <Box
+      width="100%"
+      height="100%"
+      overflow="hidden"
+      position="relative"
+      ref={ref}
+    >
+      <ZoomCanvas>
+        {(fitZoom) => <DotGraphVisualizer graph={graph} fitZoom={fitZoom} />}
+      </ZoomCanvas>
+      <VisibilityPanel graph={graph} dialog={dialog} />
+    </Box>
   );
 }
+
+export default observer(GraphArea);

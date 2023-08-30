@@ -11,9 +11,9 @@ import { reaction, type IReactionDisposer } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useRef } from 'react';
 
-import { useRootStore } from '../RootStoreProvider';
 import getLogger from '../utils/getLogger';
 
+import type GraphStore from './GraphStore';
 import GraphTheme from './GraphTheme';
 import { FitZoomCallback } from './ZoomCanvas';
 import dotSource from './dotSource';
@@ -26,17 +26,16 @@ function ptToPx(pt: number): number {
 }
 
 function DotGraphVisualizer({
+  graph,
   fitZoom,
   transitionTime,
 }: {
+  graph: GraphStore;
   fitZoom?: FitZoomCallback;
   transitionTime?: number;
 }): JSX.Element {
   const transitionTimeOrDefault =
     transitionTime ?? DotGraphVisualizer.defaultProps.transitionTime;
-
-  const { editorStore } = useRootStore();
-  const graph = editorStore?.graph;
   const disposerRef = useRef<IReactionDisposer | undefined>();
   const graphvizRef = useRef<
     Graphviz<BaseType, unknown, null, undefined> | undefined
