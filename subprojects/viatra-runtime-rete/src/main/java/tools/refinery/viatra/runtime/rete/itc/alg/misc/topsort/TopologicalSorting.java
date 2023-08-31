@@ -40,15 +40,15 @@ public class TopologicalSorting {
     public static <T> List<T> compute(final IGraphDataSource<T> gds) {
         final Set<T> visited = new HashSet<T>();
         final LinkedList<T> result = new LinkedList<T>();
-        final Stack<Pair<T>> dfsStack = new Stack<Pair<T>>();
+        final Deque<Pair<T>> dfsStack = new ArrayDeque<Pair<T>>();
 
         for (final T node : gds.getAllNodes()) {
             if (!visited.contains(node)) {
-                dfsStack.push(new Pair<T>(node, false));
+                dfsStack.addLast(new Pair<T>(node, false));
             }
 
             while (!dfsStack.isEmpty()) {
-                final Pair<T> head = dfsStack.pop();
+                final Pair<T> head = dfsStack.removeLast();
                 final T source = head.element;
 
                 if (head.isParent) {
@@ -57,11 +57,11 @@ public class TopologicalSorting {
                 } else {
                     // first time we see source, continue with its children
                     visited.add(source);
-                    dfsStack.push(new Pair<T>(source, true));
+                    dfsStack.addLast(new Pair<T>(source, true));
 
                     for (final T target : gds.getTargetNodes(source).distinctValues()) {
                         if (!visited.contains(target)) {
-                            dfsStack.push(new Pair<T>(target, false));
+                            dfsStack.addLast(new Pair<T>(target, false));
                         }
                     }
                 }

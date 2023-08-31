@@ -9,13 +9,10 @@
 
 package tools.refinery.viatra.runtime.rete.itc.alg.misc.scc;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
-import tools.refinery.viatra.runtime.rete.itc.igraph.IGraphDataSource;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
+import tools.refinery.viatra.runtime.rete.itc.igraph.IGraphDataSource;
+
+import java.util.*;
 
 /**
  * Efficient algorithms to compute the Strongly Connected Components in a directed graph.
@@ -52,10 +49,10 @@ public class SCC<V> {
         Map<V, Set<V>> notVisitedMap = CollectionsFactory.createMap();
 
         // stores the nodes during the traversal
-        Stack<V> nodeStack = new Stack<V>();
+        Deque<V> nodeStack = new ArrayDeque<V>();
 
         // stores the nodes which belong to an scc (there can be many sccs in the stack at the same time)
-        Stack<V> sccStack = new Stack<V>();
+        Deque<V> sccStack = new  ArrayDeque<V>();
 
         boolean sink = false, finishedTraversal = true;
 
@@ -71,14 +68,14 @@ public class SCC<V> {
                 nodeStack.push(n);
 
                 while (!nodeStack.isEmpty()) {
-                    V currentNode = nodeStack.peek();
+                    V currentNode = nodeStack.peekLast();
                     sink = false;
                     finishedTraversal = false;
                     SCCProperty prop = nodeMap.get(currentNode);
 
                     if (nodeMap.get(currentNode).getIndex() == 0) {
                         index++;
-                        sccStack.push(currentNode);
+                        sccStack.addLast(currentNode);
                         prop.setIndex(index);
                         prop.setLowlink(index);
 
@@ -97,7 +94,7 @@ public class SCC<V> {
                         if (targetNodeMap.get(currentNode).size() == 0) {
                             targetNodeMap.remove(currentNode);
 
-                            nodeStack.pop();
+                            nodeStack.removeLast();
 
                             for (V targetNode : g.getTargetNodes(currentNode).distinctValues()) {
                                 if (notVisitedMap.get(currentNode).contains(targetNode)) {
@@ -115,13 +112,13 @@ public class SCC<V> {
                             // and mark it in the notVisitedMap
                             if (nodeMap.get(targetNode).getIndex() == 0) {
                                 notVisitedMap.get(currentNode).add(targetNode);
-                                nodeStack.add(targetNode);
+                                nodeStack.addLast(targetNode);
                             }
                         }
                     }
                     // if currentNode has no target nodes
                     else {
-                        nodeStack.pop();
+                        nodeStack.removeLast();
                         sink = true;
                     }
 
@@ -131,7 +128,7 @@ public class SCC<V> {
                         V targetNode = null;
 
                         do {
-                            targetNode = sccStack.pop();
+                            targetNode = sccStack.removeLast();
                             sc.add(targetNode);
                         } while (!targetNode.equals(currentNode));
 
