@@ -101,10 +101,15 @@ export default observer(function TopBar(): JSX.Element {
           py: 0.5,
         }}
       >
-        <Typography variant="h6" component="h1" flexGrow={1}>
+        <Typography variant="h6" component="h1">
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
-        {medium && (
+        <Stack direction="row" alignItems="center" flexGrow={1} marginLeft={1}>
+          {medium && !large && (
+            <PaneButtons themeStore={themeStore} hideLabel />
+          )}
+        </Stack>
+        {large && (
           <Stack
             direction="row"
             alignItems="center"
@@ -116,7 +121,7 @@ export default observer(function TopBar(): JSX.Element {
               transform: 'translateX(-50%)',
             }}
           >
-            <PaneButtons themeStore={themeStore} hideLabel={!large} />
+            <PaneButtons themeStore={themeStore} />
           </Stack>
         )}
         <Stack

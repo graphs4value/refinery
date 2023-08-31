@@ -110,7 +110,7 @@ function PaneButtons({
         selected={themeStore.showGraph}
         onClick={(event) => {
           if (event.shiftKey || event.ctrlKey) {
-            themeStore.setSelectedPane('graph');
+            themeStore.setSelectedPane('graph', event.shiftKey);
           } else {
             themeStore.toggleGraph();
           }
@@ -124,7 +124,7 @@ function PaneButtons({
         selected={themeStore.showTable}
         onClick={(event) => {
           if (event.shiftKey || event.ctrlKey) {
-            themeStore.setSelectedPane('table');
+            themeStore.setSelectedPane('table', event.shiftKey);
           } else {
             themeStore.toggleTable();
           }

@@ -91,8 +91,8 @@ export default class ThemeStore {
     return 'code';
   }
 
-  setSelectedPane(pane: SelectedPane): void {
-    this.showCode = pane === 'code';
+  setSelectedPane(pane: SelectedPane, keepCode = true): void {
+    this.showCode = pane === 'code' || (keepCode && this.showCode);
     this.showGraph = pane === 'graph';
     this.showTable = pane === 'table';
   }
