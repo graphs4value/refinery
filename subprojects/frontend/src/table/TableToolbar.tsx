@@ -8,7 +8,6 @@ import Stack from '@mui/material/Stack';
 import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
-  GridToolbarDensitySelector,
   GridToolbarExport,
   GridToolbarFilterButton,
 } from '@mui/x-data-grid';
@@ -34,7 +33,6 @@ export default function TableToolbar({
       <Stack direction="row" flexWrap="wrap">
         <GridToolbarColumnsButton />
         <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
         <GridToolbarExport />
       </Stack>
       <SymbolSelector graph={graph} />

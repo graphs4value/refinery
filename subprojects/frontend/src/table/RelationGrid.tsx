@@ -96,6 +96,7 @@ function RelationGrid({ graph }: { graph: GraphStore }): JSX.Element {
             graph,
           },
         }}
+        density="compact"
         rowSelection={false}
         columns={columns}
         rows={rows}
