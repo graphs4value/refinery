@@ -51,8 +51,8 @@ val generateXtextLanguage by tasks.registering(JavaExec::class) {
 	inputs.file("../language-model/src/main/resources/model/problem.genmodel")
 	outputs.dir("src/main/xtext-gen")
 	outputs.dir("src/testFixtures/xtext-gen")
-	outputs.dir("$buildDir/generated/sources/xtext/ide")
-	outputs.dir("$buildDir/generated/sources/xtext/web")
+	outputs.dir(layout.buildDirectory.dir("generated/sources/xtext/ide"))
+	outputs.dir(layout.buildDirectory.dir("generated/sources/xtext/web"))
 	args("src/main/java/tools/refinery/language/GenerateProblem.mwe2", "-p", "rootPath=/$projectDir/..")
 }
 
@@ -85,11 +85,11 @@ tasks {
 }
 
 artifacts {
-	add(generatedIdeSources.name, file("$buildDir/generated/sources/xtext/ide")) {
+	add(generatedIdeSources.name, layout.buildDirectory.dir("generated/sources/xtext/ide")) {
 		builtBy(generateXtextLanguage)
 	}
 
-	add(generatedWebSources.name, file("$buildDir/generated/sources/xtext/web")) {
+	add(generatedWebSources.name, layout.buildDirectory.dir("generated/sources/xtext/web")) {
 		builtBy(generateXtextLanguage)
 	}
 }
