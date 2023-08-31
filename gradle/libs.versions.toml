@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: EPL-2.0
 
 [versions]
-eclipseCollections = "12.0.0.M2"
+eclipseCollections = "12.0.0.M3"
 ecore = "2.26.0"
-jetty = "12.0.0"
+jetty = "12.0.1"
 jmh = "1.37"
 junit = "5.10.0"
 mockito = "5.5.0"
