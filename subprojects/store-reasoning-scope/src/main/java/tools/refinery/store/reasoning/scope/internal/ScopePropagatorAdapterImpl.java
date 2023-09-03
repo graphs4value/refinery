@@ -210,10 +210,9 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 			UpperCardinality upperBound;
 			switch (maximizationResult) {
 			case OPTIMAL -> upperBound = UpperCardinalities.atMost(RoundingUtil.roundDown(objective.value()));
-			case UNBOUNDED -> upperBound = UpperCardinalities.UNBOUNDED;
-			case INFEASIBLE -> {
-				return RefinementResult.REJECTED;
-			}
+			// Problem was feasible when minimizing, the only possible source of {@code UNBOUNDED_OR_INFEASIBLE} is
+			// an unbounded maximization problem. See https://github.com/google/or-tools/issues/3319
+			case UNBOUNDED, INFEASIBLE -> upperBound = UpperCardinalities.UNBOUNDED;
 			default -> throw new IllegalStateException("Failed to solve for maximum of %s: %s"
 					.formatted(variable, minimizationResult));
 			}

@@ -49,4 +49,35 @@ class MPSolverTest {
 		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
 		assertThat(objective.value(), closeTo(1, 0.01));
 	}
+
+	@Test
+	void unboundedIsInfeasibleTest() {
+		var solver = MPSolver.createSolver("GLOP");
+		var x = solver.makeNumVar(0, Double.POSITIVE_INFINITY, "x");
+		var objective = solver.objective();
+		objective.setCoefficient(x, 1);
+
+		objective.setMinimization();
+		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+		assertThat(objective.value(), closeTo(0, 0.01));
+
+		objective.setMaximization();
+		assertThat(solver.solve(), is(MPSolver.ResultStatus.INFEASIBLE));
+	}
+
+	@Test
+	void constantTest() {
+		var solver = MPSolver.createSolver("GLOP");
+		var x = solver.makeNumVar(1, 1, "x");
+		var objective = solver.objective();
+		objective.setCoefficient(x, 1);
+
+		objective.setMinimization();
+		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+		assertThat(objective.value(), closeTo(1, 0.01));
+
+		objective.setMaximization();
+		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+		assertThat(objective.value(), closeTo(1, 0.01));
+	}
 }

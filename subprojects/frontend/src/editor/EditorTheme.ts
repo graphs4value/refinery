@@ -105,7 +105,7 @@ export default styled('div', {
         color: theme.palette.text.primary,
       },
     },
-    '.tok-problem-abstract, .tok-problem-new': {
+    '.tok-problem-abstract': {
       fontStyle: 'italic',
     },
     '.tok-problem-containment': {

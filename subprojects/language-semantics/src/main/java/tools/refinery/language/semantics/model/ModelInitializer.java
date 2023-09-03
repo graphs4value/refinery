@@ -24,6 +24,7 @@ import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.scope.ScopePropagatorBuilder;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
@@ -71,6 +72,8 @@ public class ModelInitializer {
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
 	private Metamodel metamodel;
+
+	private Map<Tuple, CardinalityInterval> countSeed = new LinkedHashMap<>();
 
 	private ModelSeed modelSeed;
 
@@ -135,6 +138,10 @@ public class ModelInitializer {
 			relationTrace.put(relation, partialRelation);
 			modelSeedBuilder.seed(partialRelation, info.toSeed(nodeCount));
 		}
+		collectScopes();
+		modelSeedBuilder.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
+				.reducedValue(CardinalityIntervals.SET)
+				.putAll(countSeed));
 		modelSeed = modelSeedBuilder.build();
 		collectPredicates();
 		return modelSeed;
@@ -288,19 +295,25 @@ public class ModelInitializer {
 		CardinalityInterval interval;
 		if (problemMultiplicity == null) {
 			interval = CardinalityIntervals.LONE;
-		} else if (problemMultiplicity instanceof ExactMultiplicity exactMultiplicity) {
-			interval = CardinalityIntervals.exactly(exactMultiplicity.getExactValue());
-		} else if (problemMultiplicity instanceof RangeMultiplicity rangeMultiplicity) {
-			var upperBound = rangeMultiplicity.getUpperBound();
-			interval = CardinalityIntervals.between(rangeMultiplicity.getLowerBound(),
-					upperBound < 0 ? UpperCardinalities.UNBOUNDED : UpperCardinalities.atMost(upperBound));
 		} else {
-			throw new TracedException(problemMultiplicity, "Unknown multiplicity");
+			interval = getCardinalityInterval(problemMultiplicity);
 		}
 		var constraint = getRelationInfo(referenceDeclaration.getInvalidMultiplicity()).partialRelation();
 		return ConstrainedMultiplicity.of(interval, constraint);
 	}
 
+	private static CardinalityInterval getCardinalityInterval(
+			tools.refinery.language.model.problem.Multiplicity problemMultiplicity) {
+		if (problemMultiplicity instanceof ExactMultiplicity exactMultiplicity) {
+			return CardinalityIntervals.exactly(exactMultiplicity.getExactValue());
+		} else if (problemMultiplicity instanceof RangeMultiplicity rangeMultiplicity) {
+			var upperBound = rangeMultiplicity.getUpperBound();
+			return CardinalityIntervals.between(rangeMultiplicity.getLowerBound(),
+					upperBound < 0 ? UpperCardinalities.UNBOUNDED : UpperCardinalities.atMost(upperBound));
+		} else {
+			throw new TracedException(problemMultiplicity, "Unknown multiplicity");
+		}
+	}
 
 	private void collectAssertions() {
 		for (var statement : problem.getStatements()) {
@@ -596,6 +609,50 @@ public class ModelInitializer {
 			}
 		}
 		return argumentList;
+	}
+
+	private void collectScopes() {
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof ScopeDeclaration scopeDeclaration) {
+				for (var typeScope : scopeDeclaration.getTypeScopes()) {
+					if (typeScope.isIncrement()) {
+						collectTypeScopeIncrement(typeScope);
+					} else {
+						collectTypeScope(typeScope);
+					}
+				}
+			}
+		}
+	}
+
+	private void collectTypeScopeIncrement(TypeScope typeScope) {
+		if (!(typeScope.getTargetType() instanceof ClassDeclaration classDeclaration)) {
+			throw new TracedException(typeScope, "Target of incremental type scope must be a class declaration");
+		}
+		var newNode = classDeclaration.getNewNode();
+		if (newNode == null) {
+			throw new TracedException(typeScope, "Target of incremental type scope must be concrete class");
+		}
+		int newNodeId = nodeTrace.get(newNode);
+		var type = relationTrace.get(classDeclaration);
+		var typeInfo = metamodel.typeHierarchy().getAnalysisResult(type);
+		if (!typeInfo.getDirectSubtypes().isEmpty()) {
+			throw new TracedException(typeScope, "Target of incremental type scope cannot have any subclasses");
+		}
+		var interval = getCardinalityInterval(typeScope.getMultiplicity());
+		countSeed.compute(Tuple.of(newNodeId), (key, oldValue) ->
+				oldValue == null ? interval : oldValue.meet(interval));
+	}
+
+	private void collectTypeScope(TypeScope typeScope) {
+		var scopePropagatorBuilder = storeBuilder.tryGetAdapter(ScopePropagatorBuilder.class).orElseThrow(
+				() -> new TracedException(typeScope, "Type scopes require a ScopePropagatorBuilder"));
+		var type = relationTrace.get(typeScope.getTargetType());
+		if (type == null) {
+			throw new TracedException(typeScope, "Unknown target type");
+		}
+		var interval = getCardinalityInterval(typeScope.getMultiplicity());
+		scopePropagatorBuilder.scope(type, interval);
 	}
 
 	private record RelationInfo(PartialRelation partialRelation, MutableSeed<TruthValue> assertions,

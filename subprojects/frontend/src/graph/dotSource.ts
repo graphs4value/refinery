@@ -20,8 +20,6 @@ function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
   switch (metadata.kind) {
     case 'INDIVIDUAL':
       return `<b>${name}</b>`;
-    case 'NEW':
-      return `<i>${name}</i>`;
     default:
       return name;
   }
@@ -44,6 +42,7 @@ interface NodeData {
   exists: string;
   equalsSelf: string;
   unaryPredicates: Map<RelationMetadata, string>;
+  count: string;
 }
 
 function computeNodeData(graph: GraphStore): NodeData[] {
@@ -56,6 +55,7 @@ function computeNodeData(graph: GraphStore): NodeData[] {
     exists: 'FALSE',
     equalsSelf: 'FALSE',
     unaryPredicates: new Map(),
+    count: '[0]',
   }));
 
   relations.forEach((relation) => {
@@ -107,6 +107,15 @@ function computeNodeData(graph: GraphStore): NodeData[] {
     }
   });
 
+  partialInterpretation['builtin::count']?.forEach(([index, value]) => {
+    if (typeof index === 'number' && typeof value === 'string') {
+      const data = nodeData[index];
+      if (data !== undefined) {
+        data.count = value;
+      }
+    }
+  });
+
   return nodeData;
 }
 
@@ -132,9 +141,10 @@ function createNodes(graph: GraphStore, lines: string[]): void {
     const classes = classList.join(' ');
     const name = nodeName(graph, node);
     const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
+    const count = data.equalsSelf !== 'TRUE' ? ` ${data.count}` : '';
     lines.push(`n${i} [id="${node.name}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">
-          <tr><td cellpadding="4.5" width="32" bgcolor="green">${name}</td></tr>`);
+          <tr><td cellpadding="4.5" width="32" bgcolor="green">${name}${count}</td></tr>`);
     if (data.unaryPredicates.size > 0) {
       lines.push(
         '<hr/><tr><td cellpadding="4.5"><table fixedsize="TRUE" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="1.5">',

@@ -83,7 +83,10 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 
 	@Override
 	public String toString() {
-		var closeBracket = upperBound instanceof UnboundedUpperCardinality ? ")" : "]";
-		return "[%d..%s%s".formatted(lowerBound, upperBound, closeBracket);
+		if (upperBound instanceof FiniteUpperCardinality finiteUpperCardinality &&
+				finiteUpperCardinality.finiteUpperBound() == lowerBound) {
+			return "[%d]".formatted(lowerBound);
+		}
+		return "[%d..%s]".formatted(lowerBound, upperBound);
 	}
 }

@@ -22,12 +22,6 @@ import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
 
 import java.util.*;
 
-import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.reasoning.ReasoningAdapter.EQUALS_SYMBOL;
-import static tools.refinery.store.reasoning.ReasoningAdapter.EXISTS_SYMBOL;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
-
 public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<ScopePropagatorStoreAdapter>
 		implements ScopePropagatorBuilder {
 	private Symbol<CardinalityInterval> countSymbol = MultiObjectTranslator.COUNT_STORAGE;
@@ -66,16 +60,8 @@ public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<Scop
 
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
-		var multiQuery = Query.of("MULTI", (builder, instance) -> builder
-				.clause(
-						may(EXISTS_SYMBOL.call(instance)),
-						not(must(EXISTS_SYMBOL.call(instance)))
-				)
-				.clause(
-						may(EXISTS_SYMBOL.call(instance)),
-						not(must(EQUALS_SYMBOL.call(instance, instance)))
-				)
-		);
+		var multiQuery = Query.of("MULTI", (builder, instance) -> builder.clause(
+				new MultiView(countSymbol).call(instance)));
 		typeScopePropagatorFactories = new ArrayList<>(scopes.size());
 		for (var entry : scopes.entrySet()) {
 			var type = entry.getKey();

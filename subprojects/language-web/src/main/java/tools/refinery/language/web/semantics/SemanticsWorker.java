@@ -22,15 +22,18 @@ import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.language.semantics.model.SemanticsUtils;
 import tools.refinery.language.semantics.model.TracedException;
+import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.refinement.RefinementResult;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.scope.ScopePropagatorAdapter;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.viatra.runtime.CancellationToken;
 
@@ -75,7 +78,8 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 				.with(ViatraModelQueryAdapter.builder()
 						.cancellationToken(cancellationToken))
 				.with(ReasoningAdapter.builder()
-						.requiredInterpretations(Concreteness.PARTIAL));
+						.requiredInterpretations(Concreteness.PARTIAL))
+				.with(ScopePropagatorAdapter.builder());
 		cancellationToken.checkCancelled();
 		try {
 			var modelSeed = initializer.createModel(problem, builder);
@@ -90,6 +94,9 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			cancellationToken.checkCancelled();
 			var cancellableModelSeed = CancellableSeed.wrap(cancellationToken, modelSeed);
 			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(cancellableModelSeed);
+			if (model.getAdapter(ScopePropagatorAdapter.class).propagate() == RefinementResult.REJECTED) {
+				return new SemanticsInternalErrorResult("Scopes are unsatisfiable");
+			}
 			cancellationToken.checkCancelled();
 			var partialInterpretation = getPartialInterpretation(initializer, model);
 
@@ -113,13 +120,18 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			json.add(name, tuples);
 			cancellationToken.checkCancelled();
 		}
+		json.add("builtin::count", getCountJson(model));
 		return json;
 	}
 
 	private static JsonArray getTuplesJson(ReasoningAdapter adapter, PartialRelation partialSymbol) {
 		var interpretation = adapter.getPartialInterpretation(Concreteness.PARTIAL, partialSymbol);
 		var cursor = interpretation.getAll();
-		var map = new TreeMap<Tuple, TruthValue>();
+		return getTuplesJson(cursor);
+	}
+
+	private static JsonArray getTuplesJson(Cursor<Tuple, ?> cursor) {
+		var map = new TreeMap<Tuple, Object>();
 		while (cursor.move()) {
 			map.put(cursor.getKey(), cursor.getValue());
 		}
@@ -130,7 +142,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		return tuples;
 	}
 
-	private static JsonArray toArray(Tuple tuple, TruthValue value) {
+	private static JsonArray toArray(Tuple tuple, Object value) {
 		int arity = tuple.getSize();
 		var json = new JsonArray(arity + 1);
 		for (int i = 0; i < arity; i++) {
@@ -138,6 +150,12 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		}
 		json.add(value.toString());
 		return json;
+	}
+
+	private static JsonArray getCountJson(Model model) {
+		var interpretation = model.getInterpretation(MultiObjectTranslator.COUNT_STORAGE);
+		var cursor = interpretation.getAll();
+		return getTuplesJson(cursor);
 	}
 
 	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {
