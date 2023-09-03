@@ -10,6 +10,6 @@ plugins {
 
 dependencies {
 	implementation(libs.slf4j.log4j)
-	implementation(libs.eclipseCollections.api)
 	implementation(libs.eclipseCollections)
+	implementation(libs.eclipseCollections.api)
 }

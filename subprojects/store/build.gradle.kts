@@ -10,6 +10,6 @@ plugins {
 }
 
 dependencies {
-	implementation(libs.eclipseCollections)
 	implementation(libs.eclipseCollections.api)
+	runtimeOnly(libs.eclipseCollections)
 }
