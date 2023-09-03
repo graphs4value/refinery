@@ -15,7 +15,7 @@ import RootStore from './RootStore';
 // https://github.com/mui/material-ui/issues/32727#issuecomment-1659945548
 (window as unknown as { fixViteIssue: unknown }).fixViteIssue = styled;
 
-const initialValue = `// Metamodel
+const initialValue = `% Metamodel
 class Person {
     contains Post[] posts opposite author
     Person[] friend opposite friend
@@ -26,7 +26,7 @@ class Post {
     Post replyTo
 }
 
-// Constraints
+% Constraints
 error replyToNotFriend(Post x, Post y) <->
     replyTo(x, y),
     author(x, xAuthor),
@@ -36,14 +36,14 @@ error replyToNotFriend(Post x, Post y) <->
 
 error replyToCycle(Post x) <-> replyTo+(x, x).
 
-// Instance model
+% Instance model
 friend(a, b).
 author(p1, a).
 author(p2, b).
 
 !author(Post::new, a).
 
-// Scope
+% Scope
 scope Post = 10..15, Person += 0.
 `;
 
