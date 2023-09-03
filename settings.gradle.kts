@@ -17,6 +17,7 @@ include(
 		"store-query",
 		"store-query-viatra",
 		"store-reasoning",
+		"store-reasoning-scope",
 		"viatra-runtime",
 		"viatra-runtime-localsearch",
 		"viatra-runtime-rete",

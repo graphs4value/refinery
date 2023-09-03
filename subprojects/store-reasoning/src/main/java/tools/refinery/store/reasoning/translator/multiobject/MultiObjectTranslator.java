@@ -29,7 +29,7 @@ import static tools.refinery.store.query.term.uppercardinality.UpperCardinalityT
 import static tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms.greaterEq;
 
 public class MultiObjectTranslator implements ModelStoreConfiguration {
-	private static final Symbol<CardinalityInterval> COUNT_STORAGE = Symbol.of("COUNT", 1, CardinalityInterval.class,
+	public static final Symbol<CardinalityInterval> COUNT_STORAGE = Symbol.of("COUNT", 1, CardinalityInterval.class,
 			null);
 	public static final AnySymbolView LOWER_CARDINALITY_VIEW = new LowerCardinalityView(COUNT_STORAGE);
 	public static final AnySymbolView UPPER_CARDINALITY_VIEW = new UpperCardinalityView(COUNT_STORAGE);
