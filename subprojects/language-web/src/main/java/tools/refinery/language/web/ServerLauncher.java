@@ -115,7 +115,10 @@ public class ServerLauncher {
 			// If the app is packaged in the jar, serve it.
 			URI webRootUri;
 			try {
-				webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString().replaceFirst("/index.html$", "/"));
+				webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString()
+						.replaceFirst("/index.html$", "/")
+						// Enable running without warnings from a jar.
+						.replaceFirst("^jar:file:", "jar:file://"));
 			} catch (URISyntaxException e) {
 				throw new IllegalStateException("Jar has invalid base resource URI", e);
 			}

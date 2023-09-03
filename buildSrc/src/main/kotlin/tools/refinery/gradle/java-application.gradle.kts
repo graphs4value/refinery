@@ -25,7 +25,7 @@ dependencies {
 	implementation(libs.slf4j.log4j)
 }
 
-for (taskName in listOf("distTar", "distZip", "shadowDistTar", "shadowDistZip")) {
+for (taskName in listOf("distZip", "shadowDistTar", "shadowDistZip")) {
 	tasks.named(taskName) {
 		enabled = false
 	}
