@@ -123,6 +123,7 @@ function createNodes(graph: GraphStore, lines: string[]): void {
   const nodeData = computeNodeData(graph);
   const {
     semantics: { nodes },
+    scopes,
   } = graph;
 
   nodes.forEach((node, i) => {
@@ -141,7 +142,7 @@ function createNodes(graph: GraphStore, lines: string[]): void {
     const classes = classList.join(' ');
     const name = nodeName(graph, node);
     const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
-    const count = data.equalsSelf !== 'TRUE' ? ` ${data.count}` : '';
+    const count = scopes && data.equalsSelf !== 'TRUE' ? ` ${data.count}` : '';
     lines.push(`n${i} [id="${node.name}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">
           <tr><td cellpadding="4.5" width="32" bgcolor="green">${name}${count}</td></tr>`);

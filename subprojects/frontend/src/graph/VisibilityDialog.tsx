@@ -55,6 +55,9 @@ const VisibilityDialogRoot = styled('div', {
       marginLeft: 0,
       paddingTop: theme.spacing(1),
       paddingLeft: theme.spacing(1),
+      '& + .MuiFormControlLabel-root': {
+        paddingTop: 0,
+      },
     },
     '.VisibilityDialog-scroll': {
       display: 'flex',
@@ -246,6 +249,12 @@ function VisibilityDialog({
           />
         }
         label="Fully qualified names"
+      />
+      <FormControlLabel
+        control={
+          <Switch checked={graph.scopes} onClick={() => graph.toggleScopes()} />
+        }
+        label="Object scopes"
       />
       <div className="VisibilityDialog-scroll">
         {hasRows ? (

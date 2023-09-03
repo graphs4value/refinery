@@ -61,6 +61,8 @@ export default class GraphStore {
 
   abbreviate = true;
 
+  scopes = false;
+
   selectedSymbol: RelationMetadata | undefined;
 
   constructor() {
@@ -143,6 +145,10 @@ export default class GraphStore {
 
   toggleAbbrevaite(): void {
     this.abbreviate = !this.abbreviate;
+  }
+
+  toggleScopes(): void {
+    this.scopes = !this.scopes;
   }
 
   setSelectedSymbol(option: RelationMetadata | undefined): void {
