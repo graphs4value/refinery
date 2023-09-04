@@ -34,5 +34,4 @@ docker buildx build . \
     --output "type=image,name=ghcr.io/graphs4value/refinery:${refinery_version},push=true,annotation-index.org.opencontainers.image.source=https://github.com/graphs4value/refinery,annotation-index.org.opencontainers.image.description=Refinery: an efficient graph solver for generating well-formed models,annotation-index.org.opencontainers.image.licenses=EPL-2.0" \
     --label 'org.opencontainers.image.source=https://github.com/graphs4value/refinery' \
     --label 'org.opencontainers.image.description=Refinery: an efficient graph solver for generating well-formed models' \
-    --label 'org.opencontainers.image.licenses=EPL-2.0' \
-    --push
+    --label 'org.opencontainers.image.licenses=EPL-2.0'

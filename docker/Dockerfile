@@ -33,7 +33,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
 FROM --platform=$BUILDPLATFORM jlink-$TARGETARCH-on-$BUILDARCH as jlink
 RUN jlink --no-header-files --no-man-pages --compress=2 \
     --module-path=/crossjdk/jmods --strip-debug --add-modules \
-    java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.rmi,java.security.jgss,java.sql,jdk.unsupported,jdk.zipfs \
+    java.base,java.logging,java.xml,jdk.zipfs \
     --output /jlink
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal AS base
