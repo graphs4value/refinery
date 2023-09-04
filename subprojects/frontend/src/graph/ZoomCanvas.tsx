@@ -34,10 +34,11 @@ export type ChangeZoomCallback = (factor: number) => void;
 
 export type SetFitZoomCallback = (fitZoom: boolean) => void;
 
-export type FitZoomCallback = (newSize?: {
+export type FitZoomCallback = ((newSize?: {
   width: number;
   height: number;
-}) => void;
+}) => void) &
+  ((newSize: boolean) => void);
 
 export default function ZoomCanvas({
   children,
@@ -79,7 +80,7 @@ export default function ZoomCanvas({
       }
       let width = 0;
       let height = 0;
-      if (newSize === undefined) {
+      if (newSize === undefined || typeof newSize === 'boolean') {
         const elementRect = elementRef.current.getBoundingClientRect();
         const currentFactor = d3.zoomTransform(canvasRef.current).k;
         width = elementRect.width / currentFactor;
@@ -96,8 +97,11 @@ export default function ZoomCanvas({
         (canvasRect.width - 2 * fitPaddingOrDefault) / width,
         (canvasRect.height - 2 * fitPaddingOrDefault) / height,
       );
-      const zoomTransition = makeTransition(canvasRef.current);
-      zoomRef.current.transform(zoomTransition, d3.zoomIdentity.scale(factor));
+      const target =
+        newSize === false
+          ? d3.select(canvasRef.current)
+          : makeTransition(canvasRef.current);
+      zoomRef.current.transform(target, d3.zoomIdentity.scale(factor));
     },
     [fitPaddingOrDefault, makeTransition],
   );

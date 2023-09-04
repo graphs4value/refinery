@@ -9,7 +9,7 @@ import { type Graphviz, graphviz } from 'd3-graphviz';
 import type { BaseType, Selection } from 'd3-selection';
 import { reaction, type IReactionDisposer } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import getLogger from '../utils/getLogger';
 
@@ -44,6 +44,7 @@ function DotGraphVisualizer({
   const graphvizRef = useRef<
     Graphviz<BaseType, unknown, null, undefined> | undefined
   >();
+  const [animate, setAnimate] = useState(true);
 
   const setElement = useCallback(
     (element: HTMLDivElement | null) => {
@@ -72,15 +73,20 @@ function DotGraphVisualizer({
         renderer.tweenPrecision('5%');
         renderer.tweenShapes(false);
         renderer.convertEqualSidedPolygons(false);
-        const transition = () =>
-          d3.transition().duration(transitionTimeOrDefault).ease(d3.easeCubic);
-        /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument,
-          @typescript-eslint/no-explicit-any --
-          Workaround for error in `@types/d3-graphviz`.
-        */
-        renderer.transition(transition as any);
-        let animate = true;
-        let previousSize = 0;
+        if (animate) {
+          const transition = () =>
+            d3
+              .transition()
+              .duration(transitionTimeOrDefault)
+              .ease(d3.easeCubic);
+          /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument,
+            @typescript-eslint/no-explicit-any --
+            Workaround for error in `@types/d3-graphviz`.
+          */
+          renderer.transition(transition as any);
+        } else {
+          renderer.tweenPaths(false);
+        }
         let newViewBox = { width: 0, height: 0 };
         renderer.onerror(LOG.error.bind(LOG));
         renderer.on(
@@ -108,7 +114,11 @@ function DotGraphVisualizer({
           d3.select(element).selectAll('title').remove();
         });
         if (fitZoom !== undefined) {
-          renderer.on('transitionStart', () => fitZoom(newViewBox));
+          if (animate) {
+            renderer.on('transitionStart', () => fitZoom(newViewBox));
+          } else {
+            renderer.on('end', () => fitZoom(false));
+          }
         }
         disposerRef.current = reaction(
           () => dotSource(graph),
@@ -119,20 +129,25 @@ function DotGraphVisualizer({
             const [source, size] = result;
             // Disable tweening for large graphs to improve performance.
             // See https://github.com/magjac/d3-graphviz/issues/232#issuecomment-1157555213
-            const newAnimate = size + previousSize < animateThresholdOrDefault;
-            if (animate !== newAnimate) {
-              renderer.tweenPaths(newAnimate);
-              animate = newAnimate;
+            const newAnimate = size < animateThresholdOrDefault;
+            if (animate === newAnimate) {
+              renderer.renderDot(source);
+            } else {
+              setAnimate(newAnimate);
             }
-            previousSize = size;
-            renderer.renderDot(source);
           },
           { fireImmediately: true },
         );
         graphvizRef.current = renderer;
       }
     },
-    [graph, fitZoom, transitionTimeOrDefault, animateThresholdOrDefault],
+    [
+      graph,
+      fitZoom,
+      transitionTimeOrDefault,
+      animateThresholdOrDefault,
+      animate,
+    ],
   );
 
   return <GraphTheme ref={setElement} />;
@@ -141,7 +156,7 @@ function DotGraphVisualizer({
 DotGraphVisualizer.defaultProps = {
   fitZoom: undefined,
   transitionTime: 250,
-  animateThreshold: 50,
+  animateThreshold: 100,
 };
 
 export default observer(DotGraphVisualizer);
