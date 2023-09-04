@@ -29,13 +29,17 @@ function DotGraphVisualizer({
   graph,
   fitZoom,
   transitionTime,
+  animateThreshold,
 }: {
   graph: GraphStore;
   fitZoom?: FitZoomCallback;
   transitionTime?: number;
+  animateThreshold?: number;
 }): JSX.Element {
   const transitionTimeOrDefault =
     transitionTime ?? DotGraphVisualizer.defaultProps.transitionTime;
+  const animateThresholdOrDefault =
+    animateThreshold ?? DotGraphVisualizer.defaultProps.animateThreshold;
   const disposerRef = useRef<IReactionDisposer | undefined>();
   const graphvizRef = useRef<
     Graphviz<BaseType, unknown, null, undefined> | undefined
@@ -75,6 +79,8 @@ function DotGraphVisualizer({
           Workaround for error in `@types/d3-graphviz`.
         */
         renderer.transition(transition as any);
+        let animate = true;
+        let previousSize = 0;
         let newViewBox = { width: 0, height: 0 };
         renderer.onerror(LOG.error.bind(LOG));
         renderer.on(
@@ -106,17 +112,27 @@ function DotGraphVisualizer({
         }
         disposerRef.current = reaction(
           () => dotSource(graph),
-          (source) => {
-            if (source !== undefined) {
-              renderer.renderDot(source);
+          (result) => {
+            if (result === undefined) {
+              return;
             }
+            const [source, size] = result;
+            // Disable tweening for large graphs to improve performance.
+            // See https://github.com/magjac/d3-graphviz/issues/232#issuecomment-1157555213
+            const newAnimate = size + previousSize < animateThresholdOrDefault;
+            if (animate !== newAnimate) {
+              renderer.tweenPaths(newAnimate);
+              animate = newAnimate;
+            }
+            previousSize = size;
+            renderer.renderDot(source);
           },
           { fireImmediately: true },
         );
         graphvizRef.current = renderer;
       }
     },
-    [graph, fitZoom, transitionTimeOrDefault],
+    [graph, fitZoom, transitionTimeOrDefault, animateThresholdOrDefault],
   );
 
   return <GraphTheme ref={setElement} />;
@@ -125,6 +141,7 @@ function DotGraphVisualizer({
 DotGraphVisualizer.defaultProps = {
   fitZoom: undefined,
   transitionTime: 250,
+  animateThreshold: 50,
 };
 
 export default observer(DotGraphVisualizer);
