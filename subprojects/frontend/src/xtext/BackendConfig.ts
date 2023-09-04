@@ -11,7 +11,7 @@ import { z } from 'zod';
 export const ENDPOINT = 'config.json';
 
 const BackendConfig = z.object({
-  webSocketURL: z.string().url(),
+  webSocketURL: z.string().url().optional(),
 });
 
 type BackendConfig = z.infer<typeof BackendConfig>;

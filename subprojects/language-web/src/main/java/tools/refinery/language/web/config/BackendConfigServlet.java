@@ -25,9 +25,6 @@ public class BackendConfigServlet extends HttpServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		var webSocketUrl = config.getInitParameter(WEBSOCKET_URL_INIT_PARAM);
-		if (webSocketUrl == null) {
-			throw new IllegalArgumentException("Init parameter " + WEBSOCKET_URL_INIT_PARAM + " is mandatory");
-		}
 		var backendConfig = new BackendConfig(webSocketUrl);
 		var gson = new Gson();
 		serializedConfig = gson.toJson(backendConfig);

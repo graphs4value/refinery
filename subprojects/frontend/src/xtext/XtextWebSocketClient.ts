@@ -282,7 +282,10 @@ export default class XtextWebSocketClient {
     log.debug('Creating WebSocket');
 
     (async () => {
-      const { webSocketURL } = await fetchBackendConfig();
+      let { webSocketURL } = await fetchBackendConfig();
+      if (webSocketURL === undefined) {
+        webSocketURL = `${window.origin.replace(/^http/, 'ws')}/xtext-service`;
+      }
       this.openWebSocketWithURL(webSocketURL);
     })().catch((error) => {
       log.error('Error while initializing connection', error);

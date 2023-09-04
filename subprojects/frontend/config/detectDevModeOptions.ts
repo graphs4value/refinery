@@ -30,8 +30,8 @@ function detectListenOptions(
   fallbackHost: string,
   fallbackPort: number,
 ): ListenOptions {
-  const host = process.env[`${name}_HOST`] ?? fallbackHost;
-  const rawPort = process.env[`${name}_PORT`];
+  const host = process.env[`REFINERY_${name}_HOST`] ?? fallbackHost;
+  const rawPort = process.env[`REFINERY_${name}_PORT`];
   const port = rawPort === undefined ? fallbackPort : parseInt(rawPort, 10);
   const secure = port === 443;
   return { host, port, secure };

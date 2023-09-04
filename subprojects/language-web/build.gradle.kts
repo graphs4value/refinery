@@ -64,8 +64,18 @@ tasks {
 		classpath(mainRuntimeClasspath)
 		mainClass.set(application.mainClass)
 		standardInput = System.`in`
-		environment("BASE_RESOURCE", webapp.singleFile)
+		environment("REFINERY_BASE_RESOURCE", webapp.singleFile)
 		group = "run"
 		description = "Start a Jetty web server serving the Xtext API and assets."
+	}
+
+	register<JavaExec>("serveBackendOnly") {
+		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
+		dependsOn(mainRuntimeClasspath)
+		classpath(mainRuntimeClasspath)
+		mainClass.set(application.mainClass)
+		standardInput = System.`in`
+		group = "run"
+		description = "Start a Jetty web server serving the Xtext API without assets."
 	}
 }

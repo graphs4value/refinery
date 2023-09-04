@@ -39,7 +39,7 @@ FROM refinery-$TARGETARCH
 # Layer with platform-independent application jars.
 ADD --link app_lib /app/lib
 # Common settings added on top.
-ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=8888 PUBLIC_HOST=localhost PUBLIC_PORT=8888
+ENV REFINERY_LISTEN_HOST=0.0.0.0 REFINERY_LISTEN_PORT=8888
 EXPOSE 8888
 USER 1000
 WORKDIR /app
