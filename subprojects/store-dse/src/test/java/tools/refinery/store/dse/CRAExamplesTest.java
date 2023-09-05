@@ -8,13 +8,13 @@ package tools.refinery.store.dse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
+import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.dse.internal.TransformationRule;
+import tools.refinery.store.dse.transition.TransformationRule;
 import tools.refinery.store.dse.strategy.BestFirstStrategy;
-import tools.refinery.store.dse.strategy.DepthFirstStrategy;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -282,5 +282,5 @@ class CRAExamplesTest {
 		var states = dseAdapter.explore();
 		System.out.println("states size: " + states.size());
 	}
-
+*/
 }
