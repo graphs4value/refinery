@@ -165,7 +165,7 @@ public class ServerLauncher {
 	private static int getListenPort() {
 		var portStr = System.getenv("REFINERY_LISTEN_PORT");
 		if (portStr != null) {
-			return Integer.parseInt(portStr);
+			return Integer.parseUnsignedInt(portStr);
 		}
 		return DEFAULT_LISTEN_PORT;
 	}
@@ -187,7 +187,7 @@ public class ServerLauncher {
 	private static int getPublicPort() {
 		var portStr = System.getenv("REFINERY_PUBLIC_PORT");
 		if (portStr != null) {
-			return Integer.parseInt(portStr);
+			return Integer.parseUnsignedInt(portStr);
 		}
 		return DEFAULT_PUBLIC_PORT;
 	}

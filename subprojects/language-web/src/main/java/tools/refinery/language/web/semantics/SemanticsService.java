@@ -22,10 +22,14 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
 public class SemanticsService extends AbstractCachedService<SemanticsResult> {
+	public static final String SEMANTICS_EXECUTOR = "semantics";
+
 	private static final Logger LOG = LoggerFactory.getLogger(SemanticsService.class);
 
 	@Inject
@@ -39,9 +43,24 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 
 	private ExecutorService executorService;
 
+	private final long timeoutMs;
+
+	private final long warmupTimeoutMs;
+
+	private final AtomicBoolean warmedUp = new AtomicBoolean(false);
+
+	public SemanticsService() {
+		timeoutMs = getTimeout("REFINERY_SEMANTICS_TIMEOUT_MS").orElse(1000L);
+		warmupTimeoutMs = getTimeout("REFINERY_SEMANTICS_WARMUP_TIMEOUT_MS").orElse(timeoutMs * 2);
+	}
+
+	private static Optional<Long> getTimeout(String name) {
+		return Optional.ofNullable(System.getenv(name)).map(Long::parseUnsignedLong);
+	}
+
 	@Inject
 	public void setExecutorServiceProvider(ExecutorServiceProvider provider) {
-		executorService = provider.get(this.getClass().getName());
+		executorService = provider.get(SEMANTICS_EXECUTOR);
 	}
 
 	@Override
@@ -60,9 +79,14 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		var worker = workerProvider.get();
 		worker.setProblem(problem, cancelIndicator);
 		var future = executorService.submit(worker);
+		boolean warmedUpCurrently = warmedUp.get();
+		long timeout = warmedUpCurrently ? timeoutMs : warmupTimeoutMs;
 		SemanticsResult result = null;
 		try {
-			result = future.get(2, TimeUnit.SECONDS);
+			result = future.get(timeout, TimeUnit.MILLISECONDS);
+			if (!warmedUpCurrently) {
+				warmedUp.set(true);
+			}
 		} catch (InterruptedException e) {
 			future.cancel(true);
 			LOG.error("Semantics service interrupted", e);
@@ -80,6 +104,9 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			return new SemanticsInternalErrorResult(message);
 		} catch (TimeoutException e) {
 			future.cancel(true);
+			if (!warmedUpCurrently) {
+				warmedUp.set(true);
+			}
 			LOG.trace("Semantics service timeout", e);
 			return new SemanticsInternalErrorResult("Partial interpretation timed out");
 		}
