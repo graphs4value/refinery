@@ -7,9 +7,6 @@ package tools.refinery.store.dse.transition.statespace.internal;
 
 import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
-import tools.refinery.store.dse.transition.statespace.ActivationStore;
-import tools.refinery.store.dse.transition.statespace.ObjectivePriorityQueue;
-import tools.refinery.store.dse.transition.statespace.SolutionStore;
 import tools.refinery.store.dse.transition.statespace.EquivalenceClassStore;
 import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.statecoding.StateCoderStoreAdapter;
@@ -68,8 +65,8 @@ public abstract class CompleteEquivalenceClassStore extends AbstractEquivalenceC
 		if (unresolvedSimilarity == null) {
 			return;
 		}
-		var outcome = this.stateCoderStoreAdapter.checkEquivalence(unresolvedSimilarity.get(0),
-				unresolvedSimilarity.get(1));
+		var outcome = this.stateCoderStoreAdapter.checkEquivalence(unresolvedSimilarity.get(0).version(),
+				unresolvedSimilarity.get(1).version());
 		if (outcome != StateEquivalenceChecker.EquivalenceResult.ISOMORPHIC) {
 			delegate(unresolvedSimilarity.get(1), unresolvedSimilarity.activationSizes, unresolvedSimilarity.accept);
 		}

@@ -5,29 +5,20 @@
  */
 package tools.refinery.store.dse;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import tools.refinery.store.dse.objectives.AlwaysSatisfiedRandomHardObjective;
-import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
-import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.dse.transition.TransformationRule;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.dse.transition.TransformationRule;
-import tools.refinery.store.dse.strategy.BestFirstStrategy;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.visualization.ModelVisualizerAdapter;
-import tools.refinery.visualization.internal.FileFormat;
 
 import java.util.List;
 
 import static tools.refinery.store.query.literal.Literals.not;
 
 class CRAExamplesTest {
+
 	private static final Symbol<String> name = Symbol.of("Name", 1, String.class);
 
 //	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
@@ -130,42 +121,42 @@ class CRAExamplesTest {
 				});
 			});
 
-	private static final TransformationRule deleteEmptyClassRule = new TransformationRule("DeleteEmptyClass",
-			deleteEmptyClassPrecondition,
-			(model) -> {
-//				var classesInterpretation = model.getInterpretation(classes);
-				var classElementInterpretation = model.getInterpretation(classElement);
-				return ((Tuple activation) -> {
-					// TODO: can we move dseAdapter outside?
-					var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-//					var modelElement = activation.get(0);
-					var classElement = activation.get(0);
+//	private static final TransformationRule deleteEmptyClassRule = new TransformationRule("DeleteEmptyClass",
+//			deleteEmptyClassPrecondition,
+//			(model) -> {
+////				var classesInterpretation = model.getInterpretation(classes);
+//				var classElementInterpretation = model.getInterpretation(classElement);
+//				return ((Tuple activation) -> {
+//					// TODO: can we move dseAdapter outside?
+//					var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+////					var modelElement = activation.get(0);
+//					var classElement = activation.get(0);
+//
+////					classesInterpretation.put(Tuple.of(modelElement, classElement), false);
+//					classElementInterpretation.put(Tuple.of(classElement), false);
+//					dseAdapter.deleteObject(Tuple.of(classElement));
+//				});
+//			});
 
-//					classesInterpretation.put(Tuple.of(modelElement, classElement), false);
-					classElementInterpretation.put(Tuple.of(classElement), false);
-					dseAdapter.deleteObject(Tuple.of(classElement));
-				});
-			});
-
-	private static final TransformationRule createClassRule = new TransformationRule("CreateClass",
-			createClassPrecondition,
-			(model) -> {
-				var classElementInterpretation = model.getInterpretation(classElement);
-//				var classesInterpretation = model.getInterpretation(classes);
-				var encapsulatesInterpretation = model.getInterpretation(encapsulates);
-				return ((Tuple activation) -> {
-					// TODO: can we move dseAdapter outside?
-					var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-//					var modelElement = activation.get(0);
-					var feature = activation.get(0);
-
-					var newClassElement = dseAdapter.createObject();
-					var newClassElementId = newClassElement.get(0);
-					classElementInterpretation.put(newClassElement, true);
-//					classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
-					encapsulatesInterpretation.put(Tuple.of(newClassElementId, feature), true);
-				});
-			});
+//	private static final TransformationRule createClassRule = new TransformationRule("CreateClass",
+//			createClassPrecondition,
+//			(model) -> {
+//				var classElementInterpretation = model.getInterpretation(classElement);
+////				var classesInterpretation = model.getInterpretation(classes);
+//				var encapsulatesInterpretation = model.getInterpretation(encapsulates);
+//				return ((Tuple activation) -> {
+//					// TODO: can we move dseAdapter outside?
+//					var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+////					var modelElement = activation.get(0);
+//					var feature = activation.get(0);
+//
+//					var newClassElement = dseAdapter.createObject();
+//					var newClassElementId = newClassElement.get(0);
+//					classElementInterpretation.put(newClassElement, true);
+////					classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+//					encapsulatesInterpretation.put(Tuple.of(newClassElementId, feature), true);
+//				});
+//			});
 
 	private static final TransformationRule moveFeatureRule = new TransformationRule("MoveFeature",
 			moveFeaturePrecondition,
@@ -181,106 +172,106 @@ class CRAExamplesTest {
 				});
 			});
 
-	@Test
-	@Disabled("This test is only for debugging purposes")
-	void craTest() {
-		var store = ModelStore.builder()
-				.symbols(classElement, encapsulates, classes, features, attribute, method, dataDependency,
-						functionalDependency, name)
-				.with(ViatraModelQueryAdapter.builder()
-						.queries(feature, assignFeaturePreconditionHelper, assignFeaturePrecondition,
-								deleteEmptyClassPrecondition, createClassPreconditionHelper, createClassPrecondition,
-								moveFeaturePrecondition))
-				.with(ModelVisualizerAdapter.builder()
-						.withOutputpath("test_output")
-						.withFormat(FileFormat.DOT)
-						.withFormat(FileFormat.SVG)
-						.saveStates()
-						.saveDesignSpace()
-				)
-				.with(DesignSpaceExplorationAdapter.builder()
-						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
-						.objectives(new AlwaysSatisfiedRandomHardObjective())
-//						.strategy(new DepthFirstStrategy().withDepthLimit(3).continueIfHardObjectivesFulfilled()
-						.strategy(new BestFirstStrategy().withDepthLimit(6).continueIfHardObjectivesFulfilled()
-//								.goOnOnlyIfFitnessIsBetter()
-						))
-				.build();
-
-		var model = store.createEmptyModel();
-		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-//		dseAdapter.setRandom(1);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-
-//		var modelInterpretation = model.getInterpretation(classModel);
-		var nameInterpretation = model.getInterpretation(name);
-		var methodInterpretation = model.getInterpretation(method);
-		var attributeInterpretation = model.getInterpretation(attribute);
-		var dataDependencyInterpretation = model.getInterpretation(dataDependency);
-		var functionalDependencyInterpretation = model.getInterpretation(functionalDependency);
-
-//		var modelElement = dseAdapter.createObject();
-		var method1 = dseAdapter.createObject();
-		var method1Id = method1.get(0);
-		var method2 = dseAdapter.createObject();
-		var method2Id = method2.get(0);
-		var method3 = dseAdapter.createObject();
-		var method3Id = method3.get(0);
-		var method4 = dseAdapter.createObject();
-		var method4Id = method4.get(0);
-		var attribute1 = dseAdapter.createObject();
-		var attribute1Id = attribute1.get(0);
-		var attribute2 = dseAdapter.createObject();
-		var attribute2Id = attribute2.get(0);
-		var attribute3 = dseAdapter.createObject();
-		var attribute3Id = attribute3.get(0);
-		var attribute4 = dseAdapter.createObject();
-		var attribute4Id = attribute4.get(0);
-		var attribute5 = dseAdapter.createObject();
-		var attribute5Id = attribute5.get(0);
-
-		nameInterpretation.put(method1, "M1");
-		nameInterpretation.put(method2, "M2");
-		nameInterpretation.put(method3, "M3");
-		nameInterpretation.put(method4, "M4");
-		nameInterpretation.put(attribute1, "A1");
-		nameInterpretation.put(attribute2, "A2");
-		nameInterpretation.put(attribute3, "A3");
-		nameInterpretation.put(attribute4, "A4");
-		nameInterpretation.put(attribute5, "A5");
-
-
-
-//		modelInterpretation.put(modelElement, true);
-		methodInterpretation.put(method1, true);
-		methodInterpretation.put(method2, true);
-		methodInterpretation.put(method3, true);
-		methodInterpretation.put(method4, true);
-		attributeInterpretation.put(attribute1, true);
-		attributeInterpretation.put(attribute2, true);
-		attributeInterpretation.put(attribute3, true);
-		attributeInterpretation.put(attribute4, true);
-		attributeInterpretation.put(attribute5, true);
-
-		dataDependencyInterpretation.put(Tuple.of(method1Id, attribute1Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method2Id, attribute2Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method3Id, attribute3Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method4Id, attribute3Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method4Id, attribute5Id), true);
-
-		functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute4Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method2Id, attribute1Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute1Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method4Id, attribute2Id), true);
-
-		queryEngine.flushChanges();
-
-		var states = dseAdapter.explore();
-		System.out.println("states size: " + states.size());
-	}
-*/
+//	@Test
+//	@Disabled("This test is only for debugging purposes")
+//	void craTest() {
+//		var store = ModelStore.builder()
+//				.symbols(classElement, encapsulates, classes, features, attribute, method, dataDependency,
+//						functionalDependency, name)
+//				.with(ViatraModelQueryAdapter.builder()
+//						.queries(feature, assignFeaturePreconditionHelper, assignFeaturePrecondition,
+//								deleteEmptyClassPrecondition, createClassPreconditionHelper, createClassPrecondition,
+//								moveFeaturePrecondition))
+//				.with(ModelVisualizerAdapter.builder()
+//						.withOutputpath("test_output")
+//						.withFormat(FileFormat.DOT)
+//						.withFormat(FileFormat.SVG)
+//						.saveStates()
+//						.saveDesignSpace()
+//				)
+//				.with(DesignSpaceExplorationAdapter.builder()
+//						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
+//						.objectives(new AlwaysSatisfiedRandomHardObjective())
+////						.strategy(new DepthFirstStrategy().withDepthLimit(3).continueIfHardObjectivesFulfilled()
+//						.strategy(new BestFirstStrategy().withDepthLimit(6).continueIfHardObjectivesFulfilled()
+////								.goOnOnlyIfFitnessIsBetter()
+//						))
+//				.build();
+//
+//		var model = store.createEmptyModel();
+//		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+////		dseAdapter.setRandom(1);
+//		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+//
+////		var modelInterpretation = model.getInterpretation(classModel);
+//		var nameInterpretation = model.getInterpretation(name);
+//		var methodInterpretation = model.getInterpretation(method);
+//		var attributeInterpretation = model.getInterpretation(attribute);
+//		var dataDependencyInterpretation = model.getInterpretation(dataDependency);
+//		var functionalDependencyInterpretation = model.getInterpretation(functionalDependency);
+//
+////		var modelElement = dseAdapter.createObject();
+//		var method1 = dseAdapter.createObject();
+//		var method1Id = method1.get(0);
+//		var method2 = dseAdapter.createObject();
+//		var method2Id = method2.get(0);
+//		var method3 = dseAdapter.createObject();
+//		var method3Id = method3.get(0);
+//		var method4 = dseAdapter.createObject();
+//		var method4Id = method4.get(0);
+//		var attribute1 = dseAdapter.createObject();
+//		var attribute1Id = attribute1.get(0);
+//		var attribute2 = dseAdapter.createObject();
+//		var attribute2Id = attribute2.get(0);
+//		var attribute3 = dseAdapter.createObject();
+//		var attribute3Id = attribute3.get(0);
+//		var attribute4 = dseAdapter.createObject();
+//		var attribute4Id = attribute4.get(0);
+//		var attribute5 = dseAdapter.createObject();
+//		var attribute5Id = attribute5.get(0);
+//
+//		nameInterpretation.put(method1, "M1");
+//		nameInterpretation.put(method2, "M2");
+//		nameInterpretation.put(method3, "M3");
+//		nameInterpretation.put(method4, "M4");
+//		nameInterpretation.put(attribute1, "A1");
+//		nameInterpretation.put(attribute2, "A2");
+//		nameInterpretation.put(attribute3, "A3");
+//		nameInterpretation.put(attribute4, "A4");
+//		nameInterpretation.put(attribute5, "A5");
+//
+//
+//
+////		modelInterpretation.put(modelElement, true);
+//		methodInterpretation.put(method1, true);
+//		methodInterpretation.put(method2, true);
+//		methodInterpretation.put(method3, true);
+//		methodInterpretation.put(method4, true);
+//		attributeInterpretation.put(attribute1, true);
+//		attributeInterpretation.put(attribute2, true);
+//		attributeInterpretation.put(attribute3, true);
+//		attributeInterpretation.put(attribute4, true);
+//		attributeInterpretation.put(attribute5, true);
+//
+//		dataDependencyInterpretation.put(Tuple.of(method1Id, attribute1Id), true);
+//		dataDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
+//		dataDependencyInterpretation.put(Tuple.of(method2Id, attribute2Id), true);
+//		dataDependencyInterpretation.put(Tuple.of(method3Id, attribute3Id), true);
+//		dataDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
+//		dataDependencyInterpretation.put(Tuple.of(method4Id, attribute3Id), true);
+//		dataDependencyInterpretation.put(Tuple.of(method4Id, attribute5Id), true);
+//
+//		functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
+//		functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute4Id), true);
+//		functionalDependencyInterpretation.put(Tuple.of(method2Id, attribute1Id), true);
+//		functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute1Id), true);
+//		functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
+//		functionalDependencyInterpretation.put(Tuple.of(method4Id, attribute2Id), true);
+//
+//		queryEngine.flushChanges();
+//
+//		var states = dseAdapter.explore();
+//		System.out.println("states size: " + states.size());
+//	}
+//*/
 }
