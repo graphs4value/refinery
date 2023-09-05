@@ -12,11 +12,11 @@ public abstract class ActivationStoreEntry {
 		this.numberOfActivations = numberOfActivations;
 	}
 
-	public int getNumberOfVisitedActivations() {
-		return numberOfActivations;
-	}
+	public abstract int getNumberOfVisitedActivations();
 
-	public abstract int getNumberOfUnvisitedActivations();
+	public int getNumberOfUnvisitedActivations() {
+		return numberOfActivations - getNumberOfVisitedActivations();
+	}
 	public abstract int getAndAddActivationAfter(int index);
 
 	//	public abstract boolean contains(int activation)
