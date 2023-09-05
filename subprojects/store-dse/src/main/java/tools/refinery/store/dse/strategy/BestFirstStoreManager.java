@@ -35,7 +35,7 @@ public class BestFirstStoreManager {
 		objectiveStore = new ObjectivePriorityQueueImpl(storeAdapter.getObjectives());
 		Procedure<VersionWithObjectiveValue> whenAllActivationsVisited = x -> objectiveStore.remove(x);
 		activationStore = new ActivationStoreImpl(storeAdapter.getTransformations().size(), whenAllActivationsVisited);
-		solutionStore = new SolutionStoreImpl(1);
+		solutionStore = new SolutionStoreImpl(10);
 		equivalenceClassStore = new FastEquivalenceClassStore(modelStore.getAdapter(StateCoderStoreAdapter.class)) {
 			@Override
 			protected void delegate(VersionWithObjectiveValue version, int[] emptyActivations, boolean accept) {
@@ -56,7 +56,7 @@ public class BestFirstStoreManager {
 		return activationStore;
 	}
 
-	SolutionStore getSolutionStore() {
+	public SolutionStore getSolutionStore() {
 		return solutionStore;
 	}
 
