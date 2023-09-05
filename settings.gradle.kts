@@ -14,6 +14,7 @@ include(
 		"language-semantics",
 		"language-web",
 		"store",
+		"store-dse",
 		"store-query",
 		"store-query-viatra",
 		"store-reasoning",
@@ -22,6 +23,7 @@ include(
 		"viatra-runtime-localsearch",
 		"viatra-runtime-rete",
 		"viatra-runtime-rete-recipes",
+		"visualization",
 )
 
 for (project in rootProject.children) {

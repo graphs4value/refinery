@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.model.hashtests;
+package tools.refinery.store.model.hashTests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,10 +14,9 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
-import tools.refinery.store.map.ContinousHashProvider;
+import tools.refinery.store.map.ContinuousHashProvider;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.model.TupleHashProvider;
-import tools.refinery.store.model.TupleHashProviderBitMagic;
 
 class HashEfficiencyTest {
 
@@ -95,7 +94,7 @@ class HashEfficiencyTest {
 		List<Tuple> p = nRandoms(2, amount, 1);;
 		assertEquals(amount,p.size());
 	}
-	private static double calculateHashClashes(List<Tuple> tuples, ContinousHashProvider<Tuple> chp) {
+	private static double calculateHashClashes(List<Tuple> tuples, ContinuousHashProvider<Tuple> chp) {
 		int sumClashes = 0;
 
 		for(int i = 0; i<tuples.size(); i++) {
@@ -108,7 +107,7 @@ class HashEfficiencyTest {
 		}
 		return (sumClashes+0.0) / tuples.size();
 	}
-	private static int calculateHashClash(ContinousHashProvider<Tuple> chp, Tuple a, Tuple b) {
+	private static int calculateHashClash(ContinuousHashProvider<Tuple> chp, Tuple a, Tuple b) {
 		if(a.equals(b)) return 0;
 		final int bits = 5;
 		final int segments = Integer.SIZE/bits;
@@ -131,11 +130,9 @@ class HashEfficiencyTest {
 	}
 	public static void main(String[] args) {
 		List<String> hashNames = new LinkedList<>();
-		List<ContinousHashProvider<Tuple>> hashes = new LinkedList<>();
+		List<ContinuousHashProvider<Tuple>> hashes = new LinkedList<>();
 		hashNames.add("PrimeGroup");
 		hashes.add(new TupleHashProvider());
-		hashNames.add("BitMagic");
-		hashes.add(new TupleHashProviderBitMagic());
 
 		int[] arities = new int[] {2,3,4,5};
 		int[] sizes = new int[] {32*32,32*32*8};

@@ -5,15 +5,17 @@
  */
 package tools.refinery.store.map;
 
-import java.util.Set;
+import tools.refinery.store.map.internal.VersionedMapStoreFactoryBuilderImpl;
 
 public interface VersionedMapStore<K, V> {
-	
-	public VersionedMap<K, V> createMap();
 
-	public VersionedMap<K, V> createMap(long state);
-	
-	public Set<Long> getStates();
+	VersionedMap<K, V> createMap();
 
-	public DiffCursor<K,V> getDiffCursor(long fromState, long toState);
+	VersionedMap<K, V> createMap(Version state);
+
+	DiffCursor<K,V> getDiffCursor(Version fromState, Version toState);
+
+	static <K,V> VersionedMapStoreFactoryBuilder<K,V> builder() {
+		return new VersionedMapStoreFactoryBuilderImpl<>();
+	}
 }

@@ -6,7 +6,7 @@
 package tools.refinery.store.map.tests.utils;
 
 import tools.refinery.store.map.*;
-import tools.refinery.store.map.internal.VersionedMapImpl;
+import tools.refinery.store.map.internal.state.VersionedMapStateImpl;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -14,35 +14,35 @@ import java.util.Map.Entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MapTestEnvironment<K, V> {
-	public static String[] prepareValues(int maxValue) {
+	public static String[] prepareValues(int maxValue, boolean nullDefault) {
 		String[] values = new String[maxValue];
-		values[0] = "DEFAULT";
+		if (nullDefault) {
+			values[0] = null;
+		} else {
+			values[0] = "DEFAULT";
+		}
+
 		for (int i = 1; i < values.length; i++) {
 			values[i] = "VAL" + i;
 		}
 		return values;
 	}
 
-	public static ContinousHashProvider<Integer> prepareHashProvider(final boolean evil) {
+	public static ContinuousHashProvider<Integer> prepareHashProvider(final boolean evil) {
 		// Use maxPrime = 2147483629
 
-		ContinousHashProvider<Integer> chp = new ContinousHashProvider<Integer>() {
-
-			@Override
-			public int getHash(Integer key, int index) {
-				if (evil && index < 15 && index < key / 3) {
-					return 7;
-				}
-				int result = 1;
-				final int prime = 31;
-
-				result = prime * result + key;
-				result = prime * result + index;
-
-				return result;
+		return (key, index) -> {
+			if (evil && index < 15 && index < key / 3) {
+				return 7;
 			}
+			int result = 1;
+			final int prime = 31;
+
+			result = prime * result + key;
+			result = prime * result + index;
+
+			return result;
 		};
-		return chp;
 	}
 
 	public static void printStatus(String scenario, int actual, int max, String stepName) {
@@ -60,29 +60,17 @@ public class MapTestEnvironment<K, V> {
 
 	public static <K, V> void compareTwoMaps(String title, VersionedMap<K, V> map1,
 											 VersionedMap<K, V> map2, List<Throwable> errors) {
-		assertEqualsList(map1.getSize(), map2.getSize(), title + ": Sizes not equal", errors);
+		map1.checkIntegrity();
+		map2.checkIntegrity();
 
-		Cursor<K, V> cursor1 = map1.getAll();
-		Cursor<K, V> cursor2 = map2.getAll();
-		while (!cursor1.isTerminated()) {
-			if (cursor2.isTerminated()) {
-				fail("cursor 2 terminated before cursor1");
-			}
-			assertEqualsList(cursor1.getKey(), cursor2.getKey(), title + ": Keys not equal", errors);
-			assertEqualsList(cursor2.getValue(), cursor2.getValue(), title + ": Values not equal", errors);
-			cursor1.move();
-			cursor2.move();
-		}
-		if (!cursor2.isTerminated()) {
-			fail("cursor 1 terminated before cursor 2");
-		}
+		assertContentEqualsList(map1, map2, title + ": map1.contentEquals(map2)", errors);
+		assertContentEqualsList(map2, map1, title + ": map2.contentEquals(map1)", errors);
+		assertEqualsList(map1.getSize(), map2.getSize(), title + ": Sizes not equal", errors);
 
 		for (var mode : ContentHashCode.values()) {
 			assertEqualsList(map1.contentHashCode(mode), map2.contentHashCode(mode),
 					title + ": " + mode + " hashCode check", errors);
 		}
-		assertContentEqualsList(map1, map2, title + ": map1.contentEquals(map2)", errors);
-		assertContentEqualsList(map2, map1, title + ": map2.contentEquals(map1)", errors);
 	}
 
 	private static void assertEqualsList(Object o1, Object o2, String message, List<Throwable> errors) {
@@ -112,27 +100,33 @@ public class MapTestEnvironment<K, V> {
 		}
 	}
 
-	public VersionedMapImpl<K, V> sut;
-	Map<K, V> oracle = new HashMap<K, V>();
+	final private VersionedMap<K, V> sut;
+	final private V defaultValue;
+	Map<K, V> oracle = new HashMap<>();
 
-	public MapTestEnvironment(VersionedMapImpl<K, V> sut) {
+	public MapTestEnvironment(VersionedMap<K, V> sut) {
 		this.sut = sut;
+		this.defaultValue = sut.getDefaultValue();
 	}
 
 	public void put(K key, V value) {
 		V oldSutValue = sut.put(key, value);
 		V oldOracleValue;
-		if (value != sut.getDefaultValue()) {
+		if (value != defaultValue) {
 			oldOracleValue = oracle.put(key, value);
 		} else {
 			oldOracleValue = oracle.remove(key);
 		}
-		if (oldSutValue == sut.getDefaultValue() && oldOracleValue != null) {
+		if (oldSutValue == defaultValue && oldOracleValue != null) {
 			fail("After put, SUT old nodeId was default, but oracle old value was " + oldOracleValue);
 		}
-		if (oldSutValue != sut.getDefaultValue()) {
+		if (oldSutValue != defaultValue) {
 			assertEquals(oldOracleValue, oldSutValue);
 		}
+	}
+
+	public Version commit(){
+		return sut.commit();
 	}
 
 	public void checkEquivalence(String title) {
@@ -181,7 +175,7 @@ public class MapTestEnvironment<K, V> {
 		long sutSize = sut.getSize();
 		if (oracleSize != sutSize || oracleSize != elementsInSutEntrySet) {
 			printComparison();
-			fail(title + ": Non-equivalent size() result: SUT.getSize()=" + sutSize + ", SUT.entryset.size="
+			fail(title + ": Non-equivalent size() result: SUT.getSize()=" + sutSize + ", SUT.entrySet.size="
 					+ elementsInSutEntrySet + ", Oracle=" + oracleSize + "!");
 		}
 	}
@@ -190,15 +184,15 @@ public class MapTestEnvironment<K, V> {
 		K previous = null;
 		Cursor<K, V> cursor = versionedMap.getAll();
 		while (cursor.move()) {
-			System.out.println(cursor.getKey() + " " + ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().getHash(cursor.getKey(), 0));
+			//System.out.println(cursor.getKey() + " " + ((VersionedMapImpl<K, V>) versionedMap).getHashProvider()
+			// .getHash(cursor.getKey(), 0));
 			if (previous != null) {
-				int comparisonResult = ((VersionedMapImpl<K, V>) versionedMap).getHashProvider().compare(previous,
+				int comparisonResult = ((VersionedMapStateImpl<K, V>) versionedMap).getHashProvider().compare(previous,
 						cursor.getKey());
 				assertTrue(comparisonResult < 0, scenario + " Cursor order is not incremental!");
 			}
 			previous = cursor.getKey();
 		}
-		System.out.println();
 	}
 
 	public void printComparison() {

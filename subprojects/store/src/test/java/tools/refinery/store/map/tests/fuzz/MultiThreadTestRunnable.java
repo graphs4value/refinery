@@ -13,22 +13,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import tools.refinery.store.map.Version;
+import tools.refinery.store.map.VersionedMap;
 import tools.refinery.store.map.VersionedMapStore;
-import tools.refinery.store.map.internal.VersionedMapImpl;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
 public class MultiThreadTestRunnable implements Runnable {
-	String scenario;
-	VersionedMapStore<Integer, String> store;
-	int steps;
-	int maxKey;
-	String[] values;
-	int seed;
-	int commitFrequency;
-	List<Throwable> errors = new LinkedList<>();
-	
+	final String scenario;
+	final VersionedMapStore<Integer, String> store;
+	final int steps;
+	final int maxKey;
+	final String[] values;
+	final int seed;
+	final int commitFrequency;
+	final List<Throwable> errors = new LinkedList<>();
+
 	public MultiThreadTestRunnable(String scenario, VersionedMapStore<Integer, String> store, int steps,
-			int maxKey, String[] values, int seed, int commitFrequency) {
+								   int maxKey, String[] values, int seed, int commitFrequency) {
 		super();
 		this.scenario = scenario;
 		this.store = store;
@@ -43,17 +44,25 @@ public class MultiThreadTestRunnable implements Runnable {
 		AssertionError error = new AssertionError(message);
 		errors.add(error);
 	}
-	
+
 	public List<Throwable> getErrors() {
 		return errors;
 	}
-	
+
 	@Override
 	public void run() {
+		try{
+			task();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void task() {
 		// 1. build a map with versions
 		Random r = new Random(seed);
-		VersionedMapImpl<Integer, String> versioned = (VersionedMapImpl<Integer, String>) store.createMap();
-		Map<Integer, Long> index2Version = new HashMap<>();
+		VersionedMap<Integer, String> versioned =  store.createMap();
+		Map<Integer, Version> index2Version = new HashMap<>();
 
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
@@ -66,15 +75,15 @@ public class MultiThreadTestRunnable implements Runnable {
 				logAndThrowError(scenario + ":" + index + ": exception happened: " + exception);
 			}
 			if (index % commitFrequency == 0) {
-				long version = versioned.commit();
+				Version version = versioned.commit();
 				index2Version.put(i, version);
 			}
 			MapTestEnvironment.printStatus(scenario, index, steps, "building");
 		}
-		// 2. create a non-versioned 
-		VersionedMapImpl<Integer, String> reference = (VersionedMapImpl<Integer, String>) store.createMap();
+		// 2. create a non-versioned
+		VersionedMap<Integer, String> reference = store.createMap();
 		r = new Random(seed);
-		Random r2 = new Random(seed+1);
+		Random r2 = new Random(seed + 1);
 
 		for (int i = 0; i < steps; i++) {
 			int index = i + 1;
@@ -89,13 +98,16 @@ public class MultiThreadTestRunnable implements Runnable {
 			// go back to an existing state and compare to the reference
 			if (index % (commitFrequency) == 0) {
 				versioned.restore(index2Version.get(i));
-				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned,errors);
-				
+				MapTestEnvironment.compareTwoMaps(scenario + ":" + index, reference, versioned, null);
+
 				// go back to a random state (probably created by another thread)
-				List<Long> states = new ArrayList<>(store.getStates());
+				List<Version> states = new ArrayList<>(index2Version.values());
+				//states.sort(Long::compare);
 				Collections.shuffle(states, r2);
-				for(Long state : states.subList(0, Math.min(states.size(), 100))) {
+				for (Version state : states.subList(0, Math.min(states.size(), 100))) {
 					versioned.restore(state);
+					var clean = store.createMap(state);
+					MapTestEnvironment.compareTwoMaps(scenario + ":" + index, clean, versioned, null);
 				}
 				versioned.restore(index2Version.get(i));
 			}

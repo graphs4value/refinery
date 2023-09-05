@@ -7,7 +7,6 @@ package tools.refinery.store.model.internal;
 
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -16,9 +15,8 @@ import java.util.Objects;
 class IndexedVersionedInterpretation<T> extends VersionedInterpretation<T> {
 	private final BaseIndexer<T> indexer;
 
-	public IndexedVersionedInterpretation(ModelImpl model, Symbol<T> symbol, VersionedMapStore<Tuple, T> store,
-										  VersionedMap<Tuple, T> map) {
-		super(model, symbol, store, map);
+	public IndexedVersionedInterpretation(ModelImpl model, Symbol<T> symbol, VersionedMap<Tuple, T> map) {
+		super(model, symbol, map);
 		indexer = new BaseIndexer<>(symbol.arity(), map);
 	}
 

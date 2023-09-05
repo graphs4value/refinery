@@ -8,16 +8,14 @@ package tools.refinery.store.model.internal;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.Cursors;
 import tools.refinery.store.map.VersionedMap;
-import tools.refinery.store.map.VersionedMapStore;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
 class UnaryVersionedInterpretation<T> extends VersionedInterpretation<T> {
-	public UnaryVersionedInterpretation(ModelImpl model, Symbol<T> symbol, VersionedMapStore<Tuple, T> store,
-										VersionedMap<Tuple, T> map) {
-		super(model, symbol, store, map);
+	public UnaryVersionedInterpretation(ModelImpl model, Symbol<T> symbol, VersionedMap<Tuple, T> map) {
+		super(model, symbol, map);
 	}
 
 	private void validateSlot(int slot) {

@@ -6,6 +6,8 @@
 package tools.refinery.store.map;
 
 public non-sealed interface VersionedMap<K, V> extends AnyVersionedMap {
+	V getDefaultValue();
+
 	V get(K key);
 
 	Cursor<K, V> getAll();
@@ -14,5 +16,5 @@ public non-sealed interface VersionedMap<K, V> extends AnyVersionedMap {
 
 	void putAll(Cursor<K, V> cursor);
 
-	DiffCursor<K, V> getDiffCursor(long state);
+	DiffCursor<K, V> getDiffCursor(Version state);
 }
