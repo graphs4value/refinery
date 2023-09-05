@@ -24,6 +24,6 @@ public class ModificationStoreAdapterImpl implements ModificationStoreAdapter {
 
 	@Override
 	public ModelAdapter createModelAdapter(Model model) {
-		return null;
+		return new ModificationAdapterImpl(this, model);
 	}
 }

@@ -13,7 +13,6 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 
-
 import java.util.Random;
 
 public class BestFirstWorker {
@@ -31,6 +30,7 @@ public class BestFirstWorker {
 		stateCoderAdapter = model.getAdapter(StateCoderAdapter.class);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
+
 	}
 
 	private VersionWithObjectiveValue last = null;
@@ -48,12 +48,9 @@ public class BestFirstWorker {
 		var res = new VersionWithObjectiveValue(version, objectiveValue);
 		var code = stateCoderAdapter.calculateStateCode();
 		var accepted = explorationAdapter.checkAccept();
-
 		boolean isNew = storeManager.getEquivalenceClassStore().submit(res, code,
 				activationStoreWorker.calculateEmptyActivationSize(), accepted);
-
-		last = new VersionWithObjectiveValue(version, objectiveValue);
-		return new SubmitResult(isNew, accepted, objectiveValue, last);
+		return new SubmitResult(isNew, accepted, objectiveValue, isNew ? res : null);
 	}
 
 	public void restoreToLast() {
