@@ -14,7 +14,7 @@ public class ActivationStoreBitVectorEntry extends ActivationStoreEntry {
 	}
 
 	@Override
-	public int getNumberOfUnvisitedActivations() {
+	public int getNumberOfVisitedActivations() {
 		int visited = 0;
 		for (int i : selected) {
 			visited += Integer.bitCount(i);
@@ -29,12 +29,13 @@ public class ActivationStoreBitVectorEntry extends ActivationStoreEntry {
 		int position = index;
 		do {
 			final int selectedElement = position >> ELEMENT_POSITION;
-			final int selectedBit = position & ELEMENT_BITMASK;
+			final int selectedBit = 1<<(position & ELEMENT_BITMASK);
+
 			if((selected[selectedElement] & selectedBit) == 0) {
 				selected[selectedElement] |= selectedBit;
 				return position;
 			} else {
-				if(position < this.numberOfActivations) {
+				if(position < this.numberOfActivations-1) {
 					position++;
 				} else {
 					position = 0;

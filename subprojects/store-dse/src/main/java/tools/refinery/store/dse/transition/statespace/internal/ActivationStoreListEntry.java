@@ -16,8 +16,8 @@ public class ActivationStoreListEntry extends ActivationStoreEntry {
 	}
 
 	@Override
-	public int getNumberOfUnvisitedActivations() {
-		return this.numberOfActivations - visitedActivations.size();
+	public int getNumberOfVisitedActivations() {
+		return visitedActivations.size();
 	}
 
 	@Override
@@ -27,43 +27,52 @@ public class ActivationStoreListEntry extends ActivationStoreEntry {
 			this.visitedActivations.add(index);
 			return index;
 		}
+		final int positionInSearch = getPosition(index);
+		int position = positionInSearch;
 
-		int position = getPosition(index);
+		// if the position is after the last, we can insert it at the end of the list
+		if(position == this.visitedActivations.size()) {
+			this.visitedActivations.add(index);
+			return index;
+		} else if(this.visitedActivations.get(position) != index) {
+			// If the index is not in the position, one can insert it
 
-		// If the index is not in the position, one can insert it
-		if(this.visitedActivations.get(position) != index) {
 			this.visitedActivations.addAtIndex(position,index);
 			return index;
 		}
 
 		// Otherwise, get the next empty space between two elements
-		while(position + 2 < this.visitedActivations.size()) {
-			position++;
+		while(position + 1 < this.visitedActivations.size()) {
 			if(this.visitedActivations.get(position+1)-this.visitedActivations.get(position) > 1) {
-				this.visitedActivations.addAtIndex(position+1, this.visitedActivations.get(position+1)+1);
+				int newElement = this.visitedActivations.get(position)+1;
+				this.visitedActivations.addAtIndex(position+1, newElement);
+				return newElement;
 			}
+			position++;
 		}
 
 		// Otherwise, try to add to the last space
 		int last = this.visitedActivations.get(this.visitedActivations.size()-1);
-		if(last<this.numberOfActivations) {
+		if(last<this.numberOfActivations-1) {
 			this.visitedActivations.add(last+1);
 			return last+1;
 		}
 
 		// Otherwise, try to put to the beginning
 		if(this.visitedActivations.get(0) > 0) {
-			this.visitedActivations.add(0);
+			this.visitedActivations.addAtIndex(0,0);
 			return 0;
 		}
 
 		// Otherwise, get the next empty space between two elements
 		position = 0;
-		while(position + 2 < this.visitedActivations.size()) {
-			position++;
+		while(position < positionInSearch) {
 			if(this.visitedActivations.get(position+1)-this.visitedActivations.get(position) > 1) {
-				this.visitedActivations.addAtIndex(position+1, this.visitedActivations.get(position+1)+1);
+				int newElement = this.visitedActivations.get(position)+1;
+				this.visitedActivations.addAtIndex(position+1, newElement);
+				return newElement;
 			}
+			position++;
 		}
 
 		throw new IllegalArgumentException("There is are no unvisited activations!");
