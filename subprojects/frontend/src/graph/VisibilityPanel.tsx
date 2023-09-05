@@ -72,7 +72,13 @@ function VisibilityPanel({
           <VisibilityDialog graph={graph} close={close} dialog />
         </Dialog>
       ) : (
-        <Slide direction="right" in={showFilter} id={id}>
+        <Slide
+          direction="right"
+          in={showFilter}
+          id={id}
+          mountOnEnter
+          unmountOnExit
+        >
           <Paper className="VisibilityPanel-drawer" elevation={4}>
             <VisibilityDialog graph={graph} close={close} />
           </Paper>
