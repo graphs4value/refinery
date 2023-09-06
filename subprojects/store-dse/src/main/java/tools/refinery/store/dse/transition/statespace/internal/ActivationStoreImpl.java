@@ -66,7 +66,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			activation = -1;
 		}
 
-		if(hasMoreInActivation) {
+		if(!hasMoreInActivation) {
 			boolean hasMoreInOtherTransformation = false;
 			for (var e : entries) {
 				if (e != entry && e.getNumberOfVisitedActivations() > 0) {
@@ -83,7 +83,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			actionWhenAllActivationVisited.accept(from);
 		}
 
-		return new VisitResult(false, hasMore, transformation, activation);
+		return new VisitResult(successfulVisit, hasMore, transformation, activation);
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			var entry = entries.get(transformation);
 			int unvisited = entry.getNumberOfUnvisitedActivations();
 			if (selected < sum2 + unvisited) {
-				activation = sum2 + unvisited - selected;
+				activation = sum2 + unvisited - selected - 1;
 				break;
 			} else {
 				sum2 += unvisited;

@@ -10,17 +10,17 @@ import tools.refinery.store.dse.transition.statespace.SolutionStore;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
+
 
 public class SolutionStoreImpl implements SolutionStore {
 	final int maxNumberSolutions;
 	public static final int UNLIMITED = -1;
-	final SortedSet<VersionWithObjectiveValue> solutions;
+	final PriorityQueue<VersionWithObjectiveValue> solutions;
 
 	public SolutionStoreImpl(int maxNumberSolutions) {
 		this.maxNumberSolutions = maxNumberSolutions;
-		solutions = new TreeSet<>(ObjectivePriorityQueueImpl.c1);
+		solutions = new PriorityQueue<>(ObjectivePriorityQueueImpl.c1.reversed());
 	}
 
 
@@ -29,8 +29,7 @@ public class SolutionStoreImpl implements SolutionStore {
 		boolean removeLast = hasEnoughSolution();
 		solutions.add(version);
 		if(removeLast) {
-			var last = solutions.last();
-			solutions.remove(last);
+			var last = solutions.poll();
 			return last != version;
 		} else {
 			return true;

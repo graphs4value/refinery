@@ -58,6 +58,10 @@ public class BestFirstExplorer extends BestFirstWorker {
 						}
 					}
 				}
+				else {
+					lastVisited = null;
+					break;
+				}
 			}
 
 		//final ObjectiveComparatorHelper objectiveComparatorHelper = dseAdapter.getObjectiveComparatorHelper();

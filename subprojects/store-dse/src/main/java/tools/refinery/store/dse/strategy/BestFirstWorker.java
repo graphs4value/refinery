@@ -45,12 +45,12 @@ public class BestFirstWorker {
 
 		Version version = model.commit();
 		ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
-		var res = new VersionWithObjectiveValue(version, objectiveValue);
+		last = new VersionWithObjectiveValue(version, objectiveValue);
 		var code = stateCoderAdapter.calculateStateCode();
 		var accepted = explorationAdapter.checkAccept();
-		boolean isNew = storeManager.getEquivalenceClassStore().submit(res, code,
+		boolean isNew = storeManager.getEquivalenceClassStore().submit(last, code,
 				activationStoreWorker.calculateEmptyActivationSize(), accepted);
-		return new SubmitResult(isNew, accepted, objectiveValue, isNew ? res : null);
+		return new SubmitResult(isNew, accepted, objectiveValue, isNew ? last : null);
 	}
 
 	public void restoreToLast() {

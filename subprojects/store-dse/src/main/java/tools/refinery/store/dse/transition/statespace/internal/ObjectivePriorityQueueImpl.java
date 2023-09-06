@@ -53,12 +53,7 @@ public class ObjectivePriorityQueueImpl implements ObjectivePriorityQueue {
 
 	@Override
 	public VersionWithObjectiveValue getBest() {
-		var best = priorityQueue.peek();
-		if (best != null) {
-			return best;
-		} else {
-			throw new IllegalArgumentException("The objective store is empty!");
-		}
+		return priorityQueue.peek();
 	}
 
 	@Override
