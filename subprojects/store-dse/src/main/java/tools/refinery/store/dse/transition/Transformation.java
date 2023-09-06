@@ -5,26 +5,27 @@
  */
 package tools.refinery.store.dse.transition;
 
+import tools.refinery.store.dse.transition.actions.BoundAction;
+import tools.refinery.store.model.Model;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.resultset.OrderedResultSet;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.function.Consumer;
-
 public class Transformation {
-	private final TransformationRule definition;
-
+	private final Rule definition;
 	private final OrderedResultSet<Boolean> activations;
+	private final BoundAction action;
 
-	private final Consumer<Tuple> action;
-
-	public Transformation(TransformationRule definition, OrderedResultSet<Boolean> activations, Consumer<Tuple> action) {
+	public Transformation(Model model, Rule definition) {
 		this.definition = definition;
-		this.activations = activations;
-		this.action = action;
+		var precondition = definition.getPrecondition();
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		activations = new OrderedResultSet<>(queryEngine.getResultSet(precondition));
+		action = definition.createAction(model);
 	}
 
-	public TransformationRule getDefinition() {
+	public Rule getDefinition() {
 		return definition;
 	}
 
@@ -37,8 +38,6 @@ public class Transformation {
 	}
 
 	public boolean fireActivation(Tuple activation) {
-		action.accept(activation);
-		//queryEngine.flushChanges();
-		return true;
+		return action.fire(activation);
 	}
 }

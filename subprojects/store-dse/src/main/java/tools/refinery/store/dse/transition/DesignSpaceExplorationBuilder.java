@@ -12,14 +12,16 @@ import tools.refinery.store.dse.transition.objectives.Objective;
 import java.util.Collection;
 import java.util.List;
 
+// Builder pattern with methods returning {@code this} for convenience.
+@SuppressWarnings("UnusedReturnValue")
 public interface DesignSpaceExplorationBuilder extends ModelAdapterBuilder {
+	DesignSpaceExplorationBuilder transformation(Rule transformationRuleDefinition);
 
-	DesignSpaceExplorationBuilder transformation(TransformationRule transformationRuleDefinition);
-	default DesignSpaceExplorationBuilder transformations(TransformationRule... transformationRuleDefinitions) {
+	default DesignSpaceExplorationBuilder transformations(Rule... transformationRuleDefinitions) {
 		return transformations(List.of(transformationRuleDefinitions));
 	}
 
-	default DesignSpaceExplorationBuilder transformations(Collection<? extends TransformationRule> transformationRules) {
+	default DesignSpaceExplorationBuilder transformations(Collection<? extends Rule> transformationRules) {
 		transformationRules.forEach(this::transformation);
 		return this;
 	}

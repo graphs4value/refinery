@@ -37,8 +37,8 @@ public class QueryObjective implements Objective {
 	}
 
 	@Override
-	public void doConfigure(ModelStoreBuilder storeBuilder) {
-		Objective.super.doConfigure(storeBuilder);
+	public void configure(ModelStoreBuilder storeBuilder) {
+		Objective.super.configure(storeBuilder);
 		storeBuilder.getAdapter(ModelQueryBuilder.class).query(objectiveFunction);
 	}
 }

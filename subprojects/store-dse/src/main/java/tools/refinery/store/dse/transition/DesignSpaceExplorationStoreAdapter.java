@@ -17,7 +17,7 @@ public interface DesignSpaceExplorationStoreAdapter extends ModelStoreAdapter
 	@Override
 	DesignSpaceExplorationAdapter createModelAdapter(Model model);
 
-	List<TransformationRule> getTransformations();
+	List<Rule> getTransformations();
 
 	List<Criterion> getAccepts();
 

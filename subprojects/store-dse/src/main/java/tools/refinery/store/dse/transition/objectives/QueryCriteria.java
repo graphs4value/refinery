@@ -37,8 +37,8 @@ public class QueryCriteria implements Criterion {
 	}
 
 	@Override
-	public void doConfigure(ModelStoreBuilder storeBuilder) {
-		Criterion.super.doConfigure(storeBuilder);
+	public void configure(ModelStoreBuilder storeBuilder) {
+		Criterion.super.configure(storeBuilder);
 		storeBuilder.getAdapter(ModelQueryBuilder.class).query(query);
 	}
 }

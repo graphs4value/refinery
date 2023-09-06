@@ -16,7 +16,7 @@ public interface ModificationAdapter extends ModelAdapter {
 
 	Tuple1 createObject();
 
-	Tuple deleteObject(Tuple tuple);
+	boolean deleteObject(Tuple tuple, DanglingEdges danglingEdges);
 
 	static ModificationBuilder builder() {
 		return new ModificationBuilderImpl();

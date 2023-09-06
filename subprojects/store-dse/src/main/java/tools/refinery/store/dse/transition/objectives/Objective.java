@@ -9,7 +9,7 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStoreBuilder;
 
 public interface Objective {
-	default void doConfigure(ModelStoreBuilder storeBuilder) {
+	default void configure(ModelStoreBuilder storeBuilder) {
 	}
 	ObjectiveCalculator createCalculator(Model model);
 }

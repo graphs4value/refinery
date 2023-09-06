@@ -5,13 +5,11 @@
  */
 package tools.refinery.store.dse;
 
-import tools.refinery.store.dse.transition.TransformationRule;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 
@@ -107,19 +105,19 @@ class CRAExamplesTest {
 					encapsulatesView.call(c1, f)
 			));
 
-	private static final TransformationRule assignFeatureRule = new TransformationRule("AssignFeature",
-			assignFeaturePrecondition,
-			(model) -> {
-//				var isEncapsulatedByInterpretation = model.getInterpretation(isEncapsulatedBy);
-				var encapsulatesInterpretation = model.getInterpretation(encapsulates);
-				return ((Tuple activation) -> {
-					var feature = activation.get(0);
-					var classElement = activation.get(1);
-
-//					isEncapsulatedByInterpretation.put(Tuple.of(feature, classElement), true);
-					encapsulatesInterpretation.put(Tuple.of(classElement, feature), true);
-				});
-			});
+//	private static final Rule assignFeatureRule = new Rule("AssignFeature",
+//			assignFeaturePrecondition,
+//			(model) -> {
+////				var isEncapsulatedByInterpretation = model.getInterpretation(isEncapsulatedBy);
+//				var encapsulatesInterpretation = model.getInterpretation(encapsulates);
+//				return ((Tuple activation) -> {
+//					var feature = activation.get(0);
+//					var classElement = activation.get(1);
+//
+////					isEncapsulatedByInterpretation.put(Tuple.of(feature, classElement), true);
+//					encapsulatesInterpretation.put(Tuple.of(classElement, feature), true);
+//				});
+//			});
 
 //	private static final TransformationRule deleteEmptyClassRule = new TransformationRule("DeleteEmptyClass",
 //			deleteEmptyClassPrecondition,
@@ -158,19 +156,19 @@ class CRAExamplesTest {
 //				});
 //			});
 
-	private static final TransformationRule moveFeatureRule = new TransformationRule("MoveFeature",
-			moveFeaturePrecondition,
-			(model) -> {
-				var encapsulatesInterpretation = model.getInterpretation(encapsulates);
-				return ((Tuple activation) -> {
-					var classElement1 = activation.get(0);
-					var classElement2 = activation.get(1);
-					var feature = activation.get(2);
-
-					encapsulatesInterpretation.put(Tuple.of(classElement1, feature), false);
-					encapsulatesInterpretation.put(Tuple.of(classElement2, feature), true);
-				});
-			});
+//	private static final Rule moveFeatureRule = new Rule("MoveFeature",
+//			moveFeaturePrecondition,
+//			(model) -> {
+//				var encapsulatesInterpretation = model.getInterpretation(encapsulates);
+//				return ((Tuple activation) -> {
+//					var classElement1 = activation.get(0);
+//					var classElement2 = activation.get(1);
+//					var feature = activation.get(2);
+//
+//					encapsulatesInterpretation.put(Tuple.of(classElement1, feature), false);
+//					encapsulatesInterpretation.put(Tuple.of(classElement2, feature), true);
+//				});
+//			});
 
 //	@Test
 //	@Disabled("This test is only for debugging purposes")
