@@ -23,7 +23,7 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 		this.store = store;
 		this.defaultValue = defaultValue;
 
-		current = new HashMap<>();
+		current = new LinkedHashMap<>();
 		if (summarizeChanges) {
 			this.uncommittedStore = new UncommittedDeltaMapStore<>(this);
 		} else {

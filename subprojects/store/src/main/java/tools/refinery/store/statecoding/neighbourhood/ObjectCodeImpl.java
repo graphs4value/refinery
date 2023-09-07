@@ -32,6 +32,13 @@ public class ObjectCodeImpl implements ObjectCode {
 		effectiveSize = copy.effectiveSize;
 	}
 
+	public void clear() {
+		effectiveSize = 0;
+		for (int i = 0; i < size; i++) {
+			vector[i] = 0;
+		}
+	}
+
 	public void ensureSize(int object) {
 		if (object >= size) {
 			size = object + 1;

@@ -18,21 +18,25 @@ import java.util.List;
 import java.util.Objects;
 
 public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator implements StateCodeCalculator {
+	private ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
+	private ObjectCodeImpl nextObjectCode = new ObjectCodeImpl();
+
 	public NeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
 		super(interpretations, individuals);
 	}
 
 	public StateCoderResult calculateCodes() {
-		ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
+		previousObjectCode.clear();
+		nextObjectCode.clear();
 		initializeWithIndividuals(previousObjectCode);
 
 		int rounds = 0;
 		do {
-			final ObjectCodeImpl nextObjectCode = rounds == 0 ? new ObjectCodeImpl() :
-					new ObjectCodeImpl(previousObjectCode.getSize());
-
 			constructNextObjectCodes(previousObjectCode, nextObjectCode);
+			var tempObjectCode = previousObjectCode;
 			previousObjectCode = nextObjectCode;
+			nextObjectCode = tempObjectCode;
+			nextObjectCode.clear();
 			rounds++;
 		} while (rounds <= 7 && rounds <= previousObjectCode.getEffectiveSize());
 
@@ -43,7 +47,7 @@ public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator imp
 	private long calculateLastSum(ObjectCode codes) {
 		long result = 0;
 		for (var nullImpactValue : nullImpactValues) {
-			result = result * 31 + Objects.hashCode(((Interpretation<?>) nullImpactValue).get(Tuple0.INSTANCE));
+			result = result * PRIME + Objects.hashCode(((Interpretation<?>) nullImpactValue).get(Tuple0.INSTANCE));
 		}
 
 		for (int i = 0; i < codes.getSize(); i++) {
