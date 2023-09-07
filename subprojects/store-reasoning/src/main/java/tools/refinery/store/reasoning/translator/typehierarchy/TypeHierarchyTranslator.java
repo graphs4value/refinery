@@ -5,15 +5,25 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
+import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.reasoning.ReasoningBuilder;
+import tools.refinery.store.reasoning.actions.PartialActionLiterals;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.proxy.PartialRelationTranslatorProxy;
 import tools.refinery.store.representation.Symbol;
+
+import java.util.ArrayList;
+
+import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.store.reasoning.literal.PartialLiterals.candidateMust;
+import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 
 public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 	private final Symbol<InferredType> typeSymbol = Symbol.of("TYPE", 1, InferredType.class, InferredType.UNTYPED);
@@ -49,7 +59,7 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 				builder.clause(new MayTypeView(typeSymbol, type).call(p1));
 			}
 			for (var subtype : result.getDirectSubtypes()) {
-				builder.clause(PartialLiterals.may(subtype.call(p1)));
+				builder.clause(may(subtype.call(p1)));
 			}
 		});
 
@@ -66,11 +76,31 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 			}
 		});
 
-		return PartialRelationTranslator.of(type)
+		var translator = PartialRelationTranslator.of(type)
 				.may(may)
 				.must(must)
 				.candidate(candidate)
 				.refiner(InferredTypeRefiner.of(typeSymbol, result));
+
+		if (!result.isAbstractType()) {
+			var decision = Rule.of(type.name(), (builder, instance) -> builder
+					.clause(
+							may(type.call(instance)),
+							not(candidateMust(type.call(instance))),
+							not(MultiObjectTranslator.MULTI_VIEW.call(instance))
+					)
+					.action(() -> {
+						var actionLiterals = new ArrayList<ActionLiteral>();
+						actionLiterals.add(PartialActionLiterals.add(type, instance));
+						for (var subtype : result.getDirectSubtypes()) {
+							actionLiterals.add(PartialActionLiterals.remove(subtype, instance));
+						}
+						return actionLiterals;
+					}));
+			translator.decision(decision);
+		}
+
+		return translator;
 	}
 
 	private ModelStoreConfiguration createEliminatedTypeTranslator(

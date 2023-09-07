@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.crossreference;
 
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.dnf.Query;
@@ -22,8 +23,9 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 
 import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
+import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
+import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
 public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration {
 	private final PartialRelation linkType;
@@ -67,7 +69,17 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 					}
 				}))
 				.refiner(DirectedCrossReferenceRefiner.of(symbol, sourceType, targetType))
-				.initializer(new RefinementBasedInitializer<>(linkType)));
+				.initializer(new RefinementBasedInitializer<>(linkType))
+				.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
+						.clause(
+								may(linkType.call(source, target)),
+								not(candidateMust(linkType.call(source, target))),
+								not(MULTI_VIEW.call(source)),
+								not(MULTI_VIEW.call(target))
+						)
+						.action(
+								add(linkType, source, target)
+						))));
 
 		storeBuilder.with(new InvalidMultiplicityErrorTranslator(sourceType, linkType, false,
 				info.sourceMultiplicity()));

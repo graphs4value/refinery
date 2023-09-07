@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.scope.internal;
+package tools.refinery.store.reasoning.translator.multiobject;
 
 import tools.refinery.store.query.view.TuplePreservingView;
 import tools.refinery.store.representation.Symbol;

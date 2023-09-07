@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.multiplicity;
 
+import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.dnf.Query;
@@ -22,7 +23,10 @@ import tools.refinery.store.representation.cardinality.UpperCardinality;
 import java.util.List;
 
 import static tools.refinery.store.query.literal.Literals.check;
+import static tools.refinery.store.query.term.int_.IntTerms.INT_SUM;
+import static tools.refinery.store.query.term.int_.IntTerms.constant;
 import static tools.refinery.store.query.term.int_.IntTerms.greater;
+import static tools.refinery.store.query.term.int_.IntTerms.sub;
 import static tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms.constant;
 import static tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms.less;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.candidateMust;
@@ -67,6 +71,8 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 				.parameter(node);
 		var candidateMustBuilder = Query.builder(DnfLifter.decorateName(name, Modality.MUST, Concreteness.PARTIAL))
 				.parameter(node);
+		var missingOutput = Variable.of("missing", Integer.class);
+		var missingBuilder = Query.builder(name + "#missingMultiplicity").parameter(node).output(missingOutput);
 
 		int lowerBound = cardinalityInterval.lowerBound();
 		if (lowerBound > 0) {
@@ -79,12 +85,18 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 			candidateMayBuilder.clause(Integer.class, existingContents -> List.of(
 					candidateMust(nodeType.call(node)),
 					new CountCandidateLowerBoundLiteral(existingContents, linkType, arguments),
-					check(IntTerms.less(existingContents, IntTerms.constant(lowerBound)))
+					check(IntTerms.less(existingContents, constant(lowerBound)))
 			));
 			candidateMustBuilder.clause(Integer.class, existingContents -> List.of(
 					candidateMust(nodeType.call(node)),
 					new CountCandidateUpperBoundLiteral(existingContents, linkType, arguments),
-					check(IntTerms.less(existingContents, IntTerms.constant(lowerBound)))
+					check(IntTerms.less(existingContents, constant(lowerBound)))
+			));
+			missingBuilder.clause(Integer.class, existingContents -> List.of(
+					candidateMust(nodeType.call(node)),
+					new CountCandidateLowerBoundLiteral(existingContents, linkType, arguments),
+					missingOutput.assign(sub(constant(lowerBound), existingContents)),
+					check(greater(missingOutput, constant(0)))
 			));
 		}
 
@@ -93,24 +105,35 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 			mustBuilder.clause(Integer.class, existingContents -> List.of(
 					must(nodeType.call(node)),
 					new CountLowerBoundLiteral(existingContents, linkType, arguments),
-					check(greater(existingContents, IntTerms.constant(upperBound)))
+					check(greater(existingContents, constant(upperBound)))
 			));
 			candidateMayBuilder.clause(Integer.class, existingContents -> List.of(
 					candidateMust(nodeType.call(node)),
 					new CountCandidateUpperBoundLiteral(existingContents, linkType, arguments),
-					check(greater(existingContents, IntTerms.constant(upperBound)))
+					check(greater(existingContents, constant(upperBound)))
 			));
 			candidateMustBuilder.clause(Integer.class, existingContents -> List.of(
 					candidateMust(nodeType.call(node)),
 					new CountCandidateLowerBoundLiteral(existingContents, linkType, arguments),
-					check(greater(existingContents, IntTerms.constant(upperBound)))
+					check(greater(existingContents, constant(upperBound)))
+			));
+			missingBuilder.clause(Integer.class, existingContents -> List.of(
+					candidateMust(nodeType.call(node)),
+					new CountCandidateUpperBoundLiteral(existingContents, linkType, arguments),
+					missingOutput.assign(sub(existingContents, constant(upperBound))),
+					check(greater(missingOutput, constant(0)))
 			));
 		}
+
+		var objective = Query.of(name + "#objective", Integer.class, (builder, output) -> builder.clause(
+				output.assign(missingBuilder.build().aggregate(INT_SUM, Variable.of()))
+		));
 
 		storeBuilder.with(PartialRelationTranslator.of(constrainedMultiplicity.errorSymbol())
 				.mayNever()
 				.must(mustBuilder.build())
 				.candidateMay(candidateMayBuilder.build())
-				.candidateMust(candidateMustBuilder.build()));
+				.candidateMust(candidateMustBuilder.build())
+				.objective(Objectives.value(objective)));
 	}
 }

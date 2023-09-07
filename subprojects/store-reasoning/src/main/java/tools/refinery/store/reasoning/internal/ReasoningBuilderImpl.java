@@ -6,6 +6,9 @@
 package tools.refinery.store.reasoning.internal;
 
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
+import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
+import tools.refinery.store.dse.transition.objectives.Objective;
+import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryBuilder;
@@ -36,11 +39,13 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	private final PartialQueryRewriter queryRewriter = new PartialQueryRewriter(lifter);
 	private Set<Concreteness> requiredInterpretations = Set.of(Concreteness.values());
 	private final Map<AnyPartialSymbol, AnyPartialSymbolTranslator> translators = new LinkedHashMap<>();
-	private final Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters = new LinkedHashMap<>();
+	private final Map<AnyPartialSymbol, PartialInterpretation.Factory<?, ?>> symbolInterpreters =
+			new LinkedHashMap<>();
 	private final Map<AnyPartialSymbol, PartialInterpretationRefiner.Factory<?, ?>> symbolRefiners =
 			new LinkedHashMap<>();
 	private final Map<AnySymbol, StorageRefiner.Factory<?>> registeredStorageRefiners = new LinkedHashMap<>();
 	private final List<PartialModelInitializer> initializers = new ArrayList<>();
+	private final List<Objective> objectives = new ArrayList<>();
 
 	@Override
 	public ReasoningBuilder requiredInterpretations(Collection<Concreteness> requiredInterpretations) {
@@ -71,6 +76,13 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	public ReasoningBuilder initializer(PartialModelInitializer initializer) {
 		checkNotConfigured();
 		initializers.add(initializer);
+		return this;
+	}
+
+	@Override
+	public ReasoningBuilder objective(Objective objective) {
+		checkNotConfigured();
+		objectives.add(objective);
 		return this;
 	}
 
@@ -109,6 +121,10 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 		storeBuilder.symbols(registeredStorageRefiners.keySet());
 		var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
 		queryBuilder.rewriter(queryRewriter);
+		if (!objectives.isEmpty()) {
+			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
+					.ifPresent(dseBuilder -> dseBuilder.objective(Objectives.sum(objectives)));
+		}
 	}
 
 	private void doConfigure(ModelStoreBuilder storeBuilder, PartialRelationTranslator relationConfiguration) {

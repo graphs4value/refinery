@@ -5,10 +5,14 @@
  */
 package tools.refinery.store.reasoning.translator;
 
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
+import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.objectives.Criterion;
+import tools.refinery.store.dse.transition.objectives.Objective;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
-import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
@@ -17,7 +21,8 @@ import tools.refinery.store.reasoning.seed.SeedInitializer;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("UnusedReturnValue")
 public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartialSymbolTranslator
@@ -29,6 +34,13 @@ public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartial
 	protected StorageRefiner.Factory<?> storageRefiner;
 	protected PartialInterpretation.Factory<A, C> interpretationFactory;
 	protected PartialModelInitializer initializer;
+	protected List<Rule> decisionRules = new ArrayList<>();
+	protected boolean acceptWasSet;
+	protected @Nullable Criterion accept;
+	protected boolean excludeWasSet;
+	protected @Nullable Criterion exclude;
+	protected boolean objectiveWasSet;
+	protected @Nullable Objective objective;
 
 	PartialSymbolTranslator(PartialSymbol<A, C> partialSymbol) {
 		this.partialSymbol = partialSymbol;
@@ -102,6 +114,38 @@ public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartial
 		return this;
 	}
 
+	public PartialSymbolTranslator<A, C> decision(Rule decisionRule) {
+		decisionRules.add(decisionRule);
+		return this;
+	}
+
+	public PartialSymbolTranslator<A, C> accept(@Nullable Criterion acceptanceCriterion) {
+		if (acceptWasSet) {
+			throw new IllegalStateException("Accept was already set");
+		}
+		this.accept = acceptanceCriterion;
+		acceptWasSet = true;
+		return this;
+	}
+
+	public PartialSymbolTranslator<A, C> exclude(@Nullable Criterion exclusionCriterion) {
+		if (excludeWasSet) {
+			throw new IllegalStateException("Exclude was already set");
+		}
+		this.exclude = exclusionCriterion;
+		excludeWasSet = true;
+		return this;
+	}
+
+	public PartialSymbolTranslator<A, C> objective(Objective objective) {
+		if (objectiveWasSet) {
+			throw new IllegalStateException("Objective was already set");
+		}
+		this.objective = objective;
+		objectiveWasSet = true;
+		return this;
+	}
+
 	@Override
 	public void configure(ModelStoreBuilder storeBuilder) {
 		checkNotConfigured();
@@ -123,6 +167,18 @@ public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartial
 		createFallbackInitializer();
 		if (initializer != null) {
 			reasoningBuilder.initializer(initializer);
+		}
+		storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder -> {
+			dseBuilder.transformations(decisionRules);
+			if (accept != null) {
+				dseBuilder.accept(accept);
+			}
+			if (exclude != null) {
+				dseBuilder.exclude(exclude);
+			}
+		});
+		if (objective != null) {
+			reasoningBuilder.objective(objective);
 		}
 	}
 

@@ -78,7 +78,14 @@ public class PredicateTranslator implements ModelStoreConfiguration {
 					.clause(mayLiterals)
 					.build();
 			translator.may(may);
-		} else if (!defaultValue.may()) {
+		} else if (defaultValue.may()) {
+			// If all values are permitted, we don't need to check for any forbidden values in the model.
+			// If the result of this predicate of {@code ERROR}, some other partial relation (that we check for)
+			// will be {@code ERROR} as well.
+			translator.exclude(null);
+			translator.accept(null);
+			translator.objective(null);
+		} else {
 			translator.mayNever();
 		}
 		storeBuilder.with(translator);

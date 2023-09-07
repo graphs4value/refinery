@@ -6,7 +6,9 @@
 package tools.refinery.store.reasoning.scope.internal;
 
 import com.google.ortools.linearsolver.MPConstraint;
+import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.resultset.ResultSet;
@@ -53,9 +55,13 @@ abstract class TypeScopePropagator {
 		adapter.markAsChanged();
 	}
 
-	interface Factory {
-		TypeScopePropagator createPropagator(ScopePropagatorAdapterImpl adapter);
+	public abstract static class Factory {
+		public abstract TypeScopePropagator createPropagator(ScopePropagatorAdapterImpl adapter);
 
-		Collection<AnyQuery> getQueries();
+		protected abstract Collection<AnyQuery> getQueries();
+
+		public void configure(ModelStoreBuilder storeBuilder) {
+			storeBuilder.getAdapter(ModelQueryBuilder.class).queries(getQueries());
+		}
 	}
 }

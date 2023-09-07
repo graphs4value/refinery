@@ -42,6 +42,9 @@ public interface ReasoningAdapter extends ModelAdapter {
 	@Nullable
 	Tuple1 split(int parentMultiObject);
 
+	@Nullable
+	Tuple1 focus(int parentObject);
+
 	boolean cleanup(int nodeToDelete);
 
 	static ReasoningBuilder builder() {

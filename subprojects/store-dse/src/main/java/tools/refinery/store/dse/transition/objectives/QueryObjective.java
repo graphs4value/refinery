@@ -15,6 +15,10 @@ public class QueryObjective implements Objective {
 	protected final FunctionalQuery<? extends Number> objectiveFunction;
 
 	public QueryObjective(FunctionalQuery<? extends Number> objectiveFunction) {
+		if (objectiveFunction.arity() != 0) {
+			throw new IllegalArgumentException("Objective functions must have 0 parameters, got %d instead"
+					.formatted(objectiveFunction.arity()));
+		}
 		this.objectiveFunction = objectiveFunction;
 	}
 
@@ -23,22 +27,15 @@ public class QueryObjective implements Objective {
 		var resultSet = model.getAdapter(ModelQueryAdapter.class).getResultSet(objectiveFunction);
 		return () -> {
 			var cursor = resultSet.getAll();
-			boolean hasElement = cursor.move();
-			if(hasElement) {
-				double result = cursor.getValue().doubleValue();
-				if(cursor.move()) {
-					throw new IllegalStateException("Query providing the objective function has multiple values!");
-				}
-				return result;
-			} else {
+			if (!cursor.move()) {
 				throw new IllegalStateException("Query providing the objective function has no values!");
 			}
+			return cursor.getValue().doubleValue();
 		};
 	}
 
 	@Override
 	public void configure(ModelStoreBuilder storeBuilder) {
-		Objective.super.configure(storeBuilder);
 		storeBuilder.getAdapter(ModelQueryBuilder.class).query(objectiveFunction);
 	}
 }

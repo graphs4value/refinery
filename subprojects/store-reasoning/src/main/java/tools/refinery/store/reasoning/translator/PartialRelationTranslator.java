@@ -5,14 +5,21 @@
  */
 package tools.refinery.store.reasoning.translator;
 
+import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.objectives.Criteria;
+import tools.refinery.store.dse.transition.objectives.Criterion;
+import tools.refinery.store.dse.transition.objectives.Objective;
+import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.QueryBuilder;
 import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.literal.Literal;
+import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
@@ -21,6 +28,7 @@ import tools.refinery.store.reasoning.interpretation.QueryBasedRelationRewriter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
@@ -30,7 +38,10 @@ import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.representation.TruthValue;
 
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
+
+import static tools.refinery.store.query.literal.Literals.not;
 
 @SuppressWarnings("UnusedReturnValue")
 public final class PartialRelationTranslator extends PartialSymbolTranslator<TruthValue, Boolean> {
@@ -91,6 +102,30 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	@Override
 	public PartialRelationTranslator initializer(PartialModelInitializer initializer) {
 		super.initializer(initializer);
+		return this;
+	}
+
+	@Override
+	public PartialRelationTranslator decision(Rule decisionRule) {
+		super.decision(decisionRule);
+		return this;
+	}
+
+	@Override
+	public PartialRelationTranslator accept(Criterion acceptanceCriterion) {
+		super.accept(acceptanceCriterion);
+		return this;
+	}
+
+	@Override
+	public PartialRelationTranslator exclude(Criterion exclusionCriterion) {
+		super.exclude(exclusionCriterion);
+		return this;
+	}
+
+	@Override
+	public PartialRelationTranslator objective(Objective objective) {
+		super.objective(objective);
 		return this;
 	}
 
@@ -170,6 +205,8 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		createFallbackRewriter();
 		createFallbackInterpretation();
 		createFallbackRefiner();
+		createFallbackExclude();
+		createFallbackObjective();
 		super.doConfigure(storeBuilder);
 	}
 
@@ -179,10 +216,10 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		}
 	}
 
-	private RelationalQuery createQuery(String name, BiConsumer<QueryBuilder, Variable[]> callback) {
+	private RelationalQuery createQuery(String name, BiConsumer<QueryBuilder, NodeVariable[]> callback) {
 		int arity = partialRelation.arity();
 		var queryBuilder = Query.builder(name);
-		var parameters = new Variable[arity];
+		var parameters = new NodeVariable[arity];
 		for (int i = 0; i < arity; i++) {
 			parameters[i] = queryBuilder.parameter("p" + 1);
 		}
@@ -290,6 +327,55 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 			@SuppressWarnings("unchecked")
 			var typedStorageSymbol = (Symbol<TruthValue>) storageSymbol;
 			interpretationRefiner = ConcreteSymbolRefiner.of(typedStorageSymbol);
+		}
+	}
+
+	private void createFallbackExclude() {
+		if (excludeWasSet) {
+			return;
+		}
+		var excludeQuery = createQuery("exclude", (builder, parameters) -> {
+			var literals = new ArrayList<Literal>(parameters.length + 2);
+			literals.add(PartialLiterals.must(partialRelation.call(parameters)));
+			literals.add(not(PartialLiterals.may(partialRelation.call(parameters))));
+			for (var parameter : parameters) {
+				literals.add(PartialLiterals.must(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+			}
+			builder.clause(literals);
+		});
+		exclude = Criteria.whenHasMatch(excludeQuery);
+	}
+
+	private void createFallbackObjective() {
+		if (acceptWasSet && objectiveWasSet) {
+			return;
+		}
+		var invalidCandidate = createQuery("invalidCandidate", (builder, parameters) -> builder
+				.clause(
+						PartialLiterals.candidateMust(partialRelation.call(parameters)),
+						not(PartialLiterals.candidateMay(partialRelation.call(parameters)))
+				)
+				.clause(
+						PartialLiterals.candidateMust(partialRelation.call(parameters)),
+						not(PartialLiterals.may(partialRelation.call(parameters)))
+				)
+				.clause(
+						PartialLiterals.must(partialRelation.call(parameters)),
+						not(PartialLiterals.candidateMay(partialRelation.call(parameters)))
+				));
+		var reject = createQuery("reject", (builder, parameters) -> {
+			var literals = new ArrayList<Literal>(parameters.length + 1);
+			literals.add(invalidCandidate.call(parameters));
+			for (var parameter : parameters) {
+				literals.add(PartialLiterals.candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+			}
+			builder.clause(literals);
+		});
+		if (!acceptWasSet) {
+			accept = Criteria.whenNoMatch(reject);
+		}
+		if (!objectiveWasSet) {
+			objective = Objectives.count(reject);
 		}
 	}
 

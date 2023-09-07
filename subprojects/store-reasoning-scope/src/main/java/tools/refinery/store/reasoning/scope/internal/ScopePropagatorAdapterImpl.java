@@ -85,12 +85,7 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 		int nodeId = key.get(0);
 		if ((toValue == null || toValue.equals(CardinalityIntervals.ONE))) {
 			if (fromValue != null && !fromValue.equals(CardinalityIntervals.ONE)) {
-				var variable = variables.get(nodeId);
-				if (variable == null || !activeVariables.remove(nodeId)) {
-					throw new AssertionError("Variable not active: " + nodeId);
-				}
-				variable.setBounds(0, 0);
-				markAsChanged();
+				removeActiveVariable(toValue, nodeId);
 			}
 			return;
 		}
@@ -113,6 +108,21 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 			variable.setUb(upperBound);
 			markAsChanged();
 		}
+	}
+
+	private void removeActiveVariable(CardinalityInterval toValue, int nodeId) {
+		var variable = variables.get(nodeId);
+		if (variable == null || !activeVariables.remove(nodeId)) {
+			throw new AssertionError("Variable not active: " + nodeId);
+		}
+		if (toValue == null) {
+			variable.setBounds(0, 0);
+		} else {
+			// Until queries are flushed and the constraints can be properly updated,
+			// the variable corresponding to the (previous) multi-object has to stand in for a single object.
+			variable.setBounds(1, 1);
+		}
+		markAsChanged();
 	}
 
 	MPConstraint makeConstraint() {

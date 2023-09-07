@@ -9,8 +9,6 @@ import com.google.ortools.Loader;
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagatorBuilder;
 import tools.refinery.store.reasoning.scope.ScopePropagatorStoreAdapter;
@@ -60,25 +58,22 @@ public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<Scop
 
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
-		var multiQuery = Query.of("MULTI", (builder, instance) -> builder.clause(
-				new MultiView(countSymbol).call(instance)));
 		typeScopePropagatorFactories = new ArrayList<>(scopes.size());
 		for (var entry : scopes.entrySet()) {
 			var type = entry.getKey();
 			var bounds = entry.getValue();
 			if (bounds.lowerBound() > 0) {
-				var lowerFactory = new LowerTypeScopePropagator.Factory(multiQuery, type, bounds.lowerBound());
+				var lowerFactory = new LowerTypeScopePropagator.Factory(type, bounds.lowerBound());
 				typeScopePropagatorFactories.add(lowerFactory);
 			}
 			if (bounds.upperBound() instanceof FiniteUpperCardinality finiteUpperCardinality) {
-				var upperFactory = new UpperTypeScopePropagator.Factory(multiQuery, type,
+				var upperFactory = new UpperTypeScopePropagator.Factory(type,
 						finiteUpperCardinality.finiteUpperBound());
 				typeScopePropagatorFactories.add(upperFactory);
 			}
 		}
-		var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
 		for (var factory : typeScopePropagatorFactories) {
-			queryBuilder.queries(factory.getQueries());
+			factory.configure(storeBuilder);
 		}
 	}
 

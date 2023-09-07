@@ -17,7 +17,10 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.representation.cardinality.CardinalityInterval;
+import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 
@@ -32,6 +35,7 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 	private final Map<AnyPartialSymbol, AnyPartialInterpretationRefiner> refiners;
 	private final StorageRefiner[] storageRefiners;
 	private final Interpretation<Integer> nodeCountInterpretation;
+	private final Interpretation<CardinalityInterval> countInterpretation;
 
 	ReasoningAdapterImpl(Model model, ReasoningStoreAdapterImpl storeAdapter) {
 		this.model = model;
@@ -51,6 +55,11 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		storageRefiners = storeAdapter.createStorageRefiner(model);
 
 		nodeCountInterpretation = model.getInterpretation(NODE_COUNT_SYMBOL);
+		if (model.getStore().getSymbols().contains(MultiObjectTranslator.COUNT_STORAGE)) {
+			countInterpretation = model.getInterpretation(MultiObjectTranslator.COUNT_STORAGE);
+		} else {
+			countInterpretation = null;
+		}
 	}
 
 	private void createPartialInterpretations() {
@@ -158,6 +167,26 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 			}
 		}
 		return Tuple.of(newNodeId);
+	}
+
+	@Override
+	public @Nullable Tuple1 focus(int parentObject) {
+		if (countInterpretation == null) {
+			throw new IllegalStateException("Cannot focus without " + MultiObjectTranslator.class.getSimpleName());
+		}
+		var tuple = Tuple.of(parentObject);
+		var count = countInterpretation.get(tuple);
+		if (CardinalityIntervals.ONE.equals(count)) {
+			return tuple;
+		}
+		if (CardinalityIntervals.LONE.equals(count)) {
+			countInterpretation.put(tuple, CardinalityIntervals.ONE);
+			return tuple;
+		}
+		if (CardinalityIntervals.NONE.equals(count)) {
+			return null;
+		}
+		return split(parentObject);
 	}
 
 	@Override

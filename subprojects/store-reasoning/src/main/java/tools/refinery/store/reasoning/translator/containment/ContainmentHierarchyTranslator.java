@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
+import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.dnf.Query;
@@ -22,6 +24,7 @@ import tools.refinery.store.reasoning.refinement.RefinementBasedInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
+import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.representation.Symbol;
@@ -37,8 +40,9 @@ import static tools.refinery.store.query.literal.Literals.not;
 import static tools.refinery.store.query.term.int_.IntTerms.constant;
 import static tools.refinery.store.query.term.int_.IntTerms.less;
 import static tools.refinery.store.reasoning.ReasoningAdapter.EXISTS_SYMBOL;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.focus;
+import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 
 public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 	public static final PartialRelation CONTAINED_SYMBOL = new PartialRelation("contained", 1);
@@ -104,6 +108,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 			translateContainmentLinkType(storeBuilder, linkType, info);
 			translateInvalidMultiplicity(storeBuilder, linkType, info);
 		}
+		translateFocusNotContained(storeBuilder);
 	}
 
 	private void translateContainmentLinkType(ModelStoreBuilder storeBuilder, PartialRelation linkType,
@@ -188,7 +193,17 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				)))
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info.sourceType(), info.targetType()))
-				.initializer(new RefinementBasedInitializer<>(linkType)));
+				.initializer(new RefinementBasedInitializer<>(linkType))
+				.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
+						.clause(
+								may(linkType.call(source, target)),
+								not(candidateMust(linkType.call(source, target))),
+								not(MultiObjectTranslator.MULTI_VIEW.call(source))
+						)
+						.action(focusedTarget -> List.of(
+								focus(target, focusedTarget),
+								add(linkType, source, focusedTarget)
+						)))));
 	}
 
 	private void translateInvalidMultiplicity(ModelStoreBuilder storeBuilder, PartialRelation linkType,
@@ -215,5 +230,26 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 	private void translateInvalidContainer(ModelStoreBuilder storeBuilder) {
 		storeBuilder.with(new InvalidMultiplicityErrorTranslator(CONTAINED_SYMBOL, CONTAINS_SYMBOL, true,
 				ConstrainedMultiplicity.of(CardinalityIntervals.ONE, INVALID_CONTAINER)));
+	}
+
+	private void translateFocusNotContained(ModelStoreBuilder storeBuilder) {
+		var dseBuilderOption = storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class);
+		if (dseBuilderOption.isEmpty()) {
+			return;
+		}
+		var dseBuilder = dseBuilderOption.get();
+		dseBuilder.transformation(Rule.of("NOT_CONTAINED", (builder, multi) -> builder
+				.clause(
+						MultiObjectTranslator.MULTI_VIEW.call(multi),
+						not(may(CONTAINED_SYMBOL.call(multi)))
+				)
+				.clause((container) -> List.of(
+						MultiObjectTranslator.MULTI_VIEW.call(multi),
+						must(CONTAINS_SYMBOL.call(container, multi)),
+						not(MultiObjectTranslator.MULTI_VIEW.call(container))
+				))
+				.action(
+						focus(multi, Variable.of())
+				)));
 	}
 }

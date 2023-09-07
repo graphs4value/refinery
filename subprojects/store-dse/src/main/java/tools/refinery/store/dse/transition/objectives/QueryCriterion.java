@@ -6,30 +6,45 @@
 package tools.refinery.store.dse.transition.objectives;
 
 import tools.refinery.store.model.Model;
+import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
+import tools.refinery.store.query.ModelQueryStoreAdapter;
 import tools.refinery.store.query.dnf.AnyQuery;
+import tools.refinery.store.query.literal.Reduction;
 
-public class QueryCriteria implements Criterion {
-	protected final boolean acceptIfHasMatch;
+public class QueryCriterion implements Criterion {
+	protected final boolean satisfiedIfHasMatch;
 	protected final AnyQuery query;
 
 	/**
 	 * Criteria based on the existence of matches evaluated on the model.
-	 * @param query The query evaluated on the model.
-	 * @param acceptIfHasMatch If true, the criteria satisfied if the query has any match on the model. Otherwise,
+	 *
+	 * @param query               The query evaluated on the model.
+	 * @param satisfiedIfHasMatch If true, the criteria satisfied if the query has any match on the model. Otherwise,
 	 *                            the criteria satisfied if the query has no match on the model.
 	 */
-	public QueryCriteria(AnyQuery query, boolean acceptIfHasMatch) {
+	public QueryCriterion(AnyQuery query, boolean satisfiedIfHasMatch) {
 		this.query = query;
-		this.acceptIfHasMatch = acceptIfHasMatch;
+		this.satisfiedIfHasMatch = satisfiedIfHasMatch;
+	}
+
+	@Override
+	public Reduction getReduction(ModelStore store) {
+		var queryStore = store.getAdapter(ModelQueryStoreAdapter.class);
+		var canonicalQuery = queryStore.getCanonicalQuery(query);
+		var reduction = canonicalQuery.getDnf().getReduction();
+		if (satisfiedIfHasMatch) {
+			return reduction;
+		}
+		return reduction.negate();
 	}
 
 	@Override
 	public CriterionCalculator createCalculator(Model model) {
 		var resultSet = model.getAdapter(ModelQueryAdapter.class).getResultSet(query);
-		if(acceptIfHasMatch) {
+		if (satisfiedIfHasMatch) {
 			return () -> resultSet.size() > 0;
 		} else {
 			return () -> resultSet.size() == 0;

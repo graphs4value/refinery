@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning;
 
 import tools.refinery.store.adapter.ModelAdapterBuilder;
+import tools.refinery.store.dse.transition.objectives.Objective;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.dnf.FunctionalQuery;
@@ -34,6 +35,17 @@ public interface ReasoningBuilder extends ModelAdapterBuilder {
 	<T> ReasoningBuilder storageRefiner(Symbol<T> symbol, StorageRefiner.Factory<T> refiner);
 
 	ReasoningBuilder initializer(PartialModelInitializer initializer);
+
+	ReasoningBuilder objective(Objective objective);
+
+	default ReasoningBuilder objectives(Objective... objectives) {
+		return objectives(List.of(objectives));
+	}
+
+	default ReasoningBuilder objectives(Collection<Objective> objectives) {
+		objectives.forEach(this::objective);
+		return this;
+	}
 
 	<T> Query<T> lift(Modality modality, Concreteness concreteness, Query<T> query);
 

@@ -5,43 +5,55 @@
  */
 package tools.refinery.store.reasoning.scope.internal;
 
+import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
+import tools.refinery.store.dse.transition.objectives.Criteria;
+import tools.refinery.store.dse.transition.objectives.Objectives;
+import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.reasoning.ReasoningBuilder;
+import tools.refinery.store.reasoning.literal.CountCandidateLowerBoundLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.Collection;
 import java.util.List;
 
+import static tools.refinery.store.query.literal.Literals.check;
+import static tools.refinery.store.query.term.int_.IntTerms.*;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
+import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
 class LowerTypeScopePropagator extends TypeScopePropagator {
 	private final int lowerBound;
 
 	private LowerTypeScopePropagator(ScopePropagatorAdapterImpl adapter, int lowerBound, RelationalQuery allQuery,
-									RelationalQuery multiQuery) {
+									 RelationalQuery multiQuery) {
 		super(adapter, allQuery, multiQuery);
 		this.lowerBound = lowerBound;
 	}
 
 	@Override
 	public void updateBounds() {
-		constraint.setLb(lowerBound - getSingleCount());
+		constraint.setLb((lowerBound - getSingleCount()));
 	}
 
-	public static class Factory implements TypeScopePropagator.Factory {
+	public static class Factory extends TypeScopePropagator.Factory {
+		private final PartialRelation type;
 		private final int lowerBound;
 		private final RelationalQuery allMay;
 		private final RelationalQuery multiMay;
 
-		public Factory(RelationalQuery multi, PartialRelation type, int lowerBound) {
+		public Factory(PartialRelation type, int lowerBound) {
+			this.type = type;
 			this.lowerBound = lowerBound;
 			allMay = Query.of(type.name() + "#may", (builder, instance) -> builder.clause(
 					may(type.call(instance))
 			));
 			multiMay = Query.of(type.name() + "#multiMay", (builder, instance) -> builder.clause(
 					may(type.call(instance)),
-					multi.call(instance)
+					MULTI_VIEW.call(instance)
 			));
 		}
 
@@ -51,8 +63,24 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 		}
 
 		@Override
-		public Collection<AnyQuery> getQueries() {
+		protected Collection<AnyQuery> getQueries() {
 			return List.of(allMay, multiMay);
+		}
+
+		@Override
+		public void configure(ModelStoreBuilder storeBuilder) {
+			super.configure(storeBuilder);
+
+			var requiredObjects = Query.of(type.name() + "#required", Integer.class, (builder, output) -> builder
+					.clause(Integer.class, currentCount -> List.of(
+							new CountCandidateLowerBoundLiteral(currentCount, type, List.of(Variable.of())),
+							output.assign(sub(currentCount, constant(lowerBound))),
+							check(greater(currentCount, constant(0)))
+					)));
+
+			storeBuilder.getAdapter(ReasoningBuilder.class).objective(Objectives.value(requiredObjects));
+			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder ->
+					dseBuilder.accept(Criteria.whenNoMatch(requiredObjects)));
 		}
 	}
 }
