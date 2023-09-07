@@ -11,6 +11,7 @@ import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.statespace.internal.ActivationStoreWorker;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 
 import java.util.Random;
@@ -21,6 +22,7 @@ public class BestFirstWorker {
 	final ActivationStoreWorker activationStoreWorker;
 	final StateCoderAdapter stateCoderAdapter;
 	final DesignSpaceExplorationAdapter explorationAdapter;
+	final ModelQueryAdapter queryAdapter;
 
 	public BestFirstWorker(BestFirstStoreManager storeManager, Model model) {
 		this.storeManager = storeManager;
@@ -28,9 +30,9 @@ public class BestFirstWorker {
 
 		explorationAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 		stateCoderAdapter = model.getAdapter(StateCoderAdapter.class);
+		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
-
 	}
 
 	private VersionWithObjectiveValue last = null;
@@ -93,7 +95,9 @@ public class BestFirstWorker {
 
 	public RandomVisitResult visitRandomUnvisited(Random random) {
 		if (!model.hasUncommittedChanges()) {
+			queryAdapter.flushChanges();
 			var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
+
 			if (visitResult.successfulVisit()) {
 				return new RandomVisitResult(submit(), visitResult.mayHaveMore());
 			} else {

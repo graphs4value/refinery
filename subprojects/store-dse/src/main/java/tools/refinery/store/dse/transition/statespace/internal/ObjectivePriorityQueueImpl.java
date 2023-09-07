@@ -9,7 +9,6 @@ import tools.refinery.store.dse.transition.ObjectiveValues;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.objectives.Objective;
 import tools.refinery.store.dse.transition.statespace.ObjectivePriorityQueue;
-import tools.refinery.store.map.Version;
 
 import java.util.Comparator;
 import java.util.List;
@@ -37,27 +36,27 @@ public class ObjectivePriorityQueueImpl implements ObjectivePriorityQueue {
 	}
 
 	@Override
-	public void submit(VersionWithObjectiveValue versionWithObjectiveValue) {
+	public synchronized void submit(VersionWithObjectiveValue versionWithObjectiveValue) {
 		priorityQueue.add(versionWithObjectiveValue);
 	}
 
 	@Override
-	public void remove(VersionWithObjectiveValue versionWithObjectiveValue) {
+	public synchronized void remove(VersionWithObjectiveValue versionWithObjectiveValue) {
 		priorityQueue.remove(versionWithObjectiveValue);
 	}
 
 	@Override
-	public int getSize() {
+	public synchronized int getSize() {
 		return priorityQueue.size();
 	}
 
 	@Override
-	public VersionWithObjectiveValue getBest() {
+	public synchronized VersionWithObjectiveValue getBest() {
 		return priorityQueue.peek();
 	}
 
 	@Override
-	public VersionWithObjectiveValue getRandom(Random random) {
+	public synchronized VersionWithObjectiveValue getRandom(Random random) {
 		int randomPosition = random.nextInt(getSize());
 		for (VersionWithObjectiveValue entry : this.priorityQueue) {
 			if (randomPosition-- == 0) {
