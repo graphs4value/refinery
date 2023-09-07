@@ -29,7 +29,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			successful[0] = true;
 			List<ActivationStoreEntry> result = new ArrayList<>(emptyEntrySizes.length);
 			for(int emptyEntrySize : emptyEntrySizes) {
-				result.add(ActivationStoreListEntry.create(emptyEntrySize));
+				result.add(ActivationStoreEntry.create(emptyEntrySize));
 			}
 			return result;
 		});

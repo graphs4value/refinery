@@ -11,7 +11,7 @@ import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.statespace.internal.ActivationStoreWorker;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.visualization.ModelVisualizerAdapter;
 
@@ -23,7 +23,7 @@ public class BestFirstWorker {
 	final ActivationStoreWorker activationStoreWorker;
 	final StateCoderAdapter stateCoderAdapter;
 	final DesignSpaceExplorationAdapter explorationAdapter;
-	final ViatraModelQueryAdapter queryAdapter;
+	final ModelQueryAdapter queryAdapter;
 	final ModelVisualizerAdapter visualizerAdapter;
 	final boolean isVisualizationEnabled;
 
@@ -33,10 +33,10 @@ public class BestFirstWorker {
 
 		explorationAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 		stateCoderAdapter = model.getAdapter(StateCoderAdapter.class);
+		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
 		visualizerAdapter = model.getAdapter(ModelVisualizerAdapter.class);
-		queryAdapter = model.getAdapter(ViatraModelQueryAdapter.class);
 		System.out.println("visualizerAdapter = " + visualizerAdapter);
 		isVisualizationEnabled = visualizerAdapter != null;
 	}
@@ -110,7 +110,9 @@ public class BestFirstWorker {
 
 	public RandomVisitResult visitRandomUnvisited(Random random) {
 		if (!model.hasUncommittedChanges()) {
+			queryAdapter.flushChanges();
 			var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
+
 			if (visitResult.successfulVisit()) {
 				Version oldVersion = null;
 				if (isVisualizationEnabled) {

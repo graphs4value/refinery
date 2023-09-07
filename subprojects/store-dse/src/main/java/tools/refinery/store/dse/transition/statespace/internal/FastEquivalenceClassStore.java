@@ -15,13 +15,14 @@ public abstract class FastEquivalenceClassStore extends AbstractEquivalenceClass
 
 	final IntHashSet codes;
 
-	public FastEquivalenceClassStore(StateCoderStoreAdapter stateCoderStoreAdapter) {
+	protected FastEquivalenceClassStore(StateCoderStoreAdapter stateCoderStoreAdapter) {
 		super(stateCoderStoreAdapter);
 		this.codes = new IntHashSet();
 	}
 
 	@Override
-	protected boolean tryToAdd(StateCoderResult stateCoderResult, VersionWithObjectiveValue newVersion, int[] emptyActivations, boolean accept) {
+	protected synchronized boolean tryToAdd(StateCoderResult stateCoderResult, VersionWithObjectiveValue newVersion,
+								int[] emptyActivations, boolean accept) {
 		return this.codes.add(stateCoderResult.modelCode());
 	}
 
