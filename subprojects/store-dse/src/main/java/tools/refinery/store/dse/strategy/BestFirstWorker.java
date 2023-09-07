@@ -11,7 +11,9 @@ import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.statespace.internal.ActivationStoreWorker;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.statecoding.StateCoderAdapter;
+import tools.refinery.visualization.ModelVisualizerAdapter;
 
 import java.util.Random;
 
@@ -21,6 +23,9 @@ public class BestFirstWorker {
 	final ActivationStoreWorker activationStoreWorker;
 	final StateCoderAdapter stateCoderAdapter;
 	final DesignSpaceExplorationAdapter explorationAdapter;
+	final ViatraModelQueryAdapter queryAdapter;
+	final ModelVisualizerAdapter visualizerAdapter;
+	final boolean isVisualizationEnabled;
 
 	public BestFirstWorker(BestFirstStoreManager storeManager, Model model) {
 		this.storeManager = storeManager;
@@ -30,7 +35,10 @@ public class BestFirstWorker {
 		stateCoderAdapter = model.getAdapter(StateCoderAdapter.class);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
-
+		visualizerAdapter = model.getAdapter(ModelVisualizerAdapter.class);
+		queryAdapter = model.getAdapter(ViatraModelQueryAdapter.class);
+		System.out.println("visualizerAdapter = " + visualizerAdapter);
+		isVisualizationEnabled = visualizerAdapter != null;
 	}
 
 	private VersionWithObjectiveValue last = null;
@@ -44,6 +52,7 @@ public class BestFirstWorker {
 		}
 
 		Version version = model.commit();
+		queryAdapter.flushChanges();
 		ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
 		last = new VersionWithObjectiveValue(version, objectiveValue);
 		var code = stateCoderAdapter.calculateStateCode();
@@ -55,14 +64,22 @@ public class BestFirstWorker {
 
 	public void restoreToLast() {
 		if (explorationAdapter.getModel().hasUncommittedChanges()) {
+			var oldVersion = model.getState();
 			explorationAdapter.getModel().restore(last.version());
+			if (isVisualizationEnabled) {
+				visualizerAdapter.addTransition(oldVersion, last.version(), "");
+			}
 		}
 	}
 
 	public VersionWithObjectiveValue restoreToBest() {
 		var bestVersion = storeManager.getObjectiveStore().getBest();
 		if (bestVersion != null) {
+			var oldVersion = model.getState();
 			this.model.restore(bestVersion.version());
+			if (isVisualizationEnabled) {
+				visualizerAdapter.addTransition(oldVersion, last.version(), "");
+			}
 		}
 		return bestVersion;
 	}
@@ -95,7 +112,22 @@ public class BestFirstWorker {
 		if (!model.hasUncommittedChanges()) {
 			var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
 			if (visitResult.successfulVisit()) {
-				return new RandomVisitResult(submit(), visitResult.mayHaveMore());
+				Version oldVersion = null;
+				if (isVisualizationEnabled) {
+					oldVersion = last.version();
+				}
+				var submitResult = submit();
+				if (isVisualizationEnabled) {
+
+					Version newVersion = null;
+					if (submitResult.newVersion() != null) {
+						newVersion = submitResult.newVersion().version();
+						visualizerAdapter.addState(newVersion, submitResult.newVersion().objectiveValue().toString());
+						visualizerAdapter.addSolution(newVersion);
+					}
+					visualizerAdapter.addTransition(oldVersion, newVersion, "");
+				}
+				return new RandomVisitResult(submitResult, visitResult.mayHaveMore());
 			} else {
 				return new RandomVisitResult(null, visitResult.mayHaveMore());
 			}
