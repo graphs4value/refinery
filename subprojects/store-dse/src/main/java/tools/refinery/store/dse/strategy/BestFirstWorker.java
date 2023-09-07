@@ -11,8 +11,9 @@ import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.statespace.internal.ActivationStoreWorker;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.statecoding.StateCoderAdapter;
-
+import tools.refinery.visualization.statespace.VisualizationStore;
 
 import java.util.Random;
 
@@ -22,6 +23,9 @@ public class BestFirstWorker {
 	final ActivationStoreWorker activationStoreWorker;
 	final StateCoderAdapter stateCoderAdapter;
 	final DesignSpaceExplorationAdapter explorationAdapter;
+	final ModelQueryAdapter queryAdapter;
+	final VisualizationStore visualizationStore;
+	final boolean isVisualizationEnabled;
 
 	public BestFirstWorker(BestFirstStoreManager storeManager, Model model) {
 		this.storeManager = storeManager;
@@ -29,8 +33,11 @@ public class BestFirstWorker {
 
 		explorationAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 		stateCoderAdapter = model.getAdapter(StateCoderAdapter.class);
+		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
+		visualizationStore = storeManager.getVisualizationStore();
+		isVisualizationEnabled = visualizationStore != null;
 	}
 
 	private VersionWithObjectiveValue last = null;
@@ -39,21 +46,36 @@ public class BestFirstWorker {
 
 	public SubmitResult submit() {
 		if (explorationAdapter.checkExclude()) {
-			last = null;
 			return new SubmitResult(false, false, null, null);
 		}
 
-		Version version = model.commit();
-		ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
-		var res = new VersionWithObjectiveValue(version, objectiveValue);
 		var code = stateCoderAdapter.calculateStateCode();
-		var accepted = explorationAdapter.checkAccept();
 
-		boolean isNew = storeManager.getEquivalenceClassStore().submit(res, code,
-				activationStoreWorker.calculateEmptyActivationSize(), accepted);
+		boolean isNew = storeManager.getEquivalenceClassStore().submit(code);
+		if (isNew) {
+			Version version = model.commit();
+			ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
+			var versionWithObjectiveValue = new VersionWithObjectiveValue(version, objectiveValue);
+			last = versionWithObjectiveValue;
+			var accepted = explorationAdapter.checkAccept();
 
-		last = new VersionWithObjectiveValue(version, objectiveValue);
-		return new SubmitResult(isNew, accepted, objectiveValue, last);
+			storeManager.getObjectiveStore().submit(versionWithObjectiveValue);
+			storeManager.getActivationStore().markNewAsVisited(versionWithObjectiveValue, activationStoreWorker.calculateEmptyActivationSize());
+			if(accepted) {
+				storeManager.solutionStore.submit(versionWithObjectiveValue);
+			}
+
+			if (isVisualizationEnabled) {
+				visualizationStore.addState(last.version(), last.objectiveValue().toString());
+				if (accepted) {
+					visualizationStore.addSolution(last.version());
+				}
+			}
+
+			return new SubmitResult(true, accepted, objectiveValue, last);
+		}
+
+		return new SubmitResult(false, false, null, null);
 	}
 
 	public void restoreToLast() {
@@ -65,7 +87,11 @@ public class BestFirstWorker {
 	public VersionWithObjectiveValue restoreToBest() {
 		var bestVersion = storeManager.getObjectiveStore().getBest();
 		if (bestVersion != null) {
+			var oldVersion = model.getState();
 			this.model.restore(bestVersion.version());
+			if (isVisualizationEnabled) {
+				visualizationStore.addTransition(oldVersion, last.version(), "");
+			}
 		}
 		return bestVersion;
 	}
@@ -91,14 +117,25 @@ public class BestFirstWorker {
 		}
 	}
 
-	record RandomVisitResult(SubmitResult submitResult, boolean shouldRetry) {
+	public record RandomVisitResult(SubmitResult submitResult, boolean shouldRetry) {
 	}
 
 	public RandomVisitResult visitRandomUnvisited(Random random) {
 		if (!model.hasUncommittedChanges()) {
+			queryAdapter.flushChanges();
 			var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
+
 			if (visitResult.successfulVisit()) {
-				return new RandomVisitResult(submit(), visitResult.mayHaveMore());
+				Version oldVersion = null;
+				if (isVisualizationEnabled) {
+					oldVersion = last.version();
+				}
+				var submitResult = submit();
+				if (isVisualizationEnabled && submitResult.newVersion() != null) {
+					var newVersion = submitResult.newVersion().version();
+					visualizationStore.addTransition(oldVersion, newVersion, "");
+				}
+				return new RandomVisitResult(submitResult, visitResult.mayHaveMore());
 			} else {
 				return new RandomVisitResult(null, visitResult.mayHaveMore());
 			}

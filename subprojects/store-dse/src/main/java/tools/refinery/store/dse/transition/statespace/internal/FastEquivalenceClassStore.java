@@ -16,12 +16,17 @@ public abstract class FastEquivalenceClassStore extends AbstractEquivalenceClass
 
 	private final MutableIntSet codes = IntSets.mutable.empty();
 
-	public FastEquivalenceClassStore(StateCoderStoreAdapter stateCoderStoreAdapter) {
+	protected FastEquivalenceClassStore(StateCoderStoreAdapter stateCoderStoreAdapter) {
 		super(stateCoderStoreAdapter);
 	}
 
 	@Override
-	protected boolean tryToAdd(StateCoderResult stateCoderResult, VersionWithObjectiveValue newVersion, int[] emptyActivations, boolean accept) {
+	protected synchronized boolean tryToAdd(StateCoderResult stateCoderResult, VersionWithObjectiveValue newVersion,
+								int[] emptyActivations, boolean accept) {
+		return this.codes.add(stateCoderResult.modelCode());
+	}
+
+	public synchronized boolean tryToAdd(StateCoderResult stateCoderResult) {
 		return this.codes.add(stateCoderResult.modelCode());
 	}
 

@@ -8,7 +8,6 @@ package tools.refinery.store.dse.transition.statespace.internal;
 import tools.refinery.store.dse.transition.Transformation;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.statespace.ActivationStore;
-import tools.refinery.store.map.Version;
 
 import java.util.List;
 import java.util.Random;

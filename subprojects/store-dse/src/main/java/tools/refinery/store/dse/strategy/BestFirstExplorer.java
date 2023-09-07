@@ -5,7 +5,6 @@
  */
 package tools.refinery.store.dse.strategy;
 
-import tools.refinery.store.dse.transition.ObjectiveValue;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.model.Model;
 
@@ -32,13 +31,11 @@ public class BestFirstExplorer extends BestFirstWorker {
 	public void explore() {
 		VersionWithObjectiveValue lastVisited = submit().newVersion();
 
-		mainLoop: while (shouldRun()) {
+		while (shouldRun()) {
 
 			if (lastVisited == null) {
-				var restored = this.restoreToBest();
-				if(restored != null) {
-					lastVisited = restored;
-				} else {
+				lastVisited = this.restoreToBest();
+				if(lastVisited == null) {
 					return;
 				}
 			}
@@ -47,7 +44,7 @@ public class BestFirstExplorer extends BestFirstWorker {
 			while(tryActivation && shouldRun()) {
 				RandomVisitResult randomVisitResult = this.visitRandomUnvisited(random);
 
-				tryActivation &= randomVisitResult.shouldRetry();
+				tryActivation = randomVisitResult.shouldRetry();
 				var newSubmit = randomVisitResult.submitResult();
 				if(newSubmit != null) {
 					if(!newSubmit.include()) {
@@ -57,9 +54,13 @@ public class BestFirstExplorer extends BestFirstWorker {
 						int compareResult = compare(lastVisited,newVisit);
 						if(compareResult >= 0) {
 							lastVisited = newVisit;
-							continue mainLoop;
+							break;
 						}
 					}
+				}
+				else {
+					lastVisited = null;
+					break;
 				}
 			}
 
@@ -160,5 +161,6 @@ public class BestFirstExplorer extends BestFirstWorker {
 */
 		}
 		// Interrupted.
+
 	}
 }

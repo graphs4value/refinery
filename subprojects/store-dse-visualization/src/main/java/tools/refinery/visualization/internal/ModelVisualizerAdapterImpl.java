@@ -13,6 +13,7 @@ import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.visualization.ModelVisualizerAdapter;
 import tools.refinery.visualization.ModelVisualizerStoreAdapter;
+import tools.refinery.visualization.statespace.VisualizationStore;
 
 import java.io.*;
 import java.util.*;
@@ -281,62 +282,6 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 		return true;
 	}
 
-	@Override
-	public void addTransition(Version from, Version to, String action) {
-		designSpaceBuilder.append(states.get(from)).append(" -> ").append(states.get(to))
-				.append(" [label=\"").append(transitionCounter++).append(": ").append(action).append("\"]\n");
-	}
-
-	@Override
-	public void addTransition(Version from, Version to, String action, Tuple activation) {
-		designSpaceBuilder.append(states.get(from)).append(" -> ").append(states.get(to))
-				.append(" [label=\"").append(transitionCounter++).append(": ").append(action).append(" / ");
-
-
-		for (int i = 0; i < activation.getSize(); i++) {
-			designSpaceBuilder.append(activation.get(i));
-			if (i < activation.getSize() - 1) {
-				designSpaceBuilder.append(", ");
-			}
-		}
-		designSpaceBuilder.append("\"]\n");
-	}
-
-	@Override
-	public void addState(Version state) {
-		if (states.containsKey(state)) {
-			return;
-		}
-		states.put(state, numberOfStates++);
-		designSpaceBuilder.append(states.get(state)).append(" [URL=\"./").append(states.get(state)).append(".svg\"]\n");
-	}
-
-	@Override
-	public void addState(Version state, Collection<Double> fitness) {
-		var labelBuilder = new StringBuilder();
-		for (var f : fitness) {
-			labelBuilder.append(f).append(", ");
-		}
-		addState(state, labelBuilder.toString());
-	}
-
-	@Override
-	public void addState(Version state, String label) {
-		if (states.containsKey(state)) {
-			return;
-		}
-		states.put(state, numberOfStates++);
-		designSpaceBuilder.append(states.get(state)).append(" [label = \"").append(states.get(state)).append(" (");
-		designSpaceBuilder.append(label);
-		designSpaceBuilder.append(")\"\n").append("URL=\"./").append(states.get(state)).append(".svg\"]\n");
-	}
-
-	@Override
-	public void addSolution(Version state) {
-		addState(state);
-		designSpaceBuilder.append(states.get(state)).append(" [shape = doublecircle]\n");
-	}
-
 	private String buildDesignSpaceDot() {
 		designSpaceBuilder.append("}");
 		return designSpaceBuilder.toString();
@@ -381,7 +326,9 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 	}
 
 	@Override
-	public void visualize() {
+	public void visualize(VisualizationStore visualizationStore) {
+		this.designSpaceBuilder.append(visualizationStore.getDesignSpaceStringBuilder());
+		this.states.putAll(visualizationStore.getStates());
 		renderDesignSpace(outputPath, formats);
 	}
 }

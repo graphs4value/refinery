@@ -29,7 +29,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			successful[0] = true;
 			List<ActivationStoreEntry> result = new ArrayList<>(emptyEntrySizes.length);
 			for(int emptyEntrySize : emptyEntrySizes) {
-				result.add(ActivationStoreListEntry.create(emptyEntrySize));
+				result.add(ActivationStoreEntry.create(emptyEntrySize));
 			}
 			return result;
 		});
@@ -66,10 +66,10 @@ public class ActivationStoreImpl implements ActivationStore {
 			activation = -1;
 		}
 
-		if(hasMoreInActivation) {
+		if(!hasMoreInActivation) {
 			boolean hasMoreInOtherTransformation = false;
 			for (var e : entries) {
-				if (e != entry && e.getNumberOfVisitedActivations() > 0) {
+				if (e != entry && e.getNumberOfUnvisitedActivations() > 0) {
 					hasMoreInOtherTransformation = true;
 					break;
 				}
@@ -83,7 +83,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			actionWhenAllActivationVisited.accept(from);
 		}
 
-		return new VisitResult(false, hasMore, transformation, activation);
+		return new VisitResult(successfulVisit, hasMore, transformation, activation);
 	}
 
 	@Override
@@ -108,6 +108,11 @@ public class ActivationStoreImpl implements ActivationStore {
 			sum1 += entry.getNumberOfUnvisitedActivations();
 		}
 
+		if(sum1 == 0) {
+			this.actionWhenAllActivationVisited.accept(version);
+			return new VisitResult(false, false, -1, -1);
+		}
+
 		int selected = random.nextInt(sum1);
 		int sum2 = 0;
 		int transformation = 0;
@@ -116,7 +121,7 @@ public class ActivationStoreImpl implements ActivationStore {
 			var entry = entries.get(transformation);
 			int unvisited = entry.getNumberOfUnvisitedActivations();
 			if (selected < sum2 + unvisited) {
-				activation = sum2 + unvisited - selected;
+				activation = sum2 + unvisited - selected - 1;
 				break;
 			} else {
 				sum2 += unvisited;
