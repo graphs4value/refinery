@@ -9,14 +9,17 @@ import tools.refinery.store.dse.transition.objectives.Criterion;
 import tools.refinery.store.dse.transition.objectives.CriterionCalculator;
 import tools.refinery.store.model.Model;
 
-public class DummyCriterion implements Criterion {
-	protected final boolean returnValue;
-	public DummyCriterion(boolean returnValue) {
-		this.returnValue = returnValue;
+import java.util.Random;
+
+public class DummyRandomCriterion implements Criterion {
+
+	@SuppressWarnings("squid:S2245")
+	private static final Random random = new Random(9856654);
+	public DummyRandomCriterion() {
 	}
 
 	@Override
 	public CriterionCalculator createCalculator(Model model) {
-		return () -> returnValue;
+		return random::nextBoolean;
 	}
 }

@@ -10,6 +10,7 @@ import tools.refinery.store.statecoding.StateCoderResult;
 
 public interface EquivalenceClassStore {
 	boolean submit(VersionWithObjectiveValue version, StateCoderResult stateCoderResult, int[] emptyActivations, boolean accept);
+	boolean submit(StateCoderResult stateCoderResult);
 	boolean hasUnresolvedSymmetry();
 	void resolveOneSymmetry();
 	int getNumberOfUnresolvedSymmetries();

@@ -9,6 +9,7 @@ import tools.refinery.store.adapter.ModelAdapter;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.visualization.internal.ModelVisualizerBuilderImpl;
+import tools.refinery.visualization.statespace.VisualizationStore;
 
 import java.util.Collection;
 
@@ -18,15 +19,5 @@ public interface ModelVisualizerAdapter extends ModelAdapter {
 	static ModelVisualizerBuilder builder() {
 		return new ModelVisualizerBuilderImpl();
 	}
-
-	public void addTransition(Version from, Version to, String action);
-
-
-	public void addTransition(Version from, Version to, String action, Tuple  activation);
-	public void addState(Version state);
-	public void addState(Version state, Collection<Double> fitness);
-	public void addState(Version state, String label);
-	public void addSolution(Version state);
-	public void visualize();
-
+	void visualize(VisualizationStore visualizationStore);
 }

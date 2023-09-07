@@ -36,7 +36,6 @@ public class BestFirstExplorer extends BestFirstWorker {
 			if (lastVisited == null) {
 				lastVisited = this.restoreToBest();
 				if(lastVisited == null) {
-					visualizerAdapter.visualize();
 					return;
 				}
 			}
@@ -162,7 +161,6 @@ public class BestFirstExplorer extends BestFirstWorker {
 */
 		}
 		// Interrupted.
-		visualizerAdapter.visualize();
 
 	}
 }

@@ -26,6 +26,10 @@ public abstract class FastEquivalenceClassStore extends AbstractEquivalenceClass
 		return this.codes.add(stateCoderResult.modelCode());
 	}
 
+	public synchronized boolean tryToAdd(StateCoderResult stateCoderResult) {
+		return this.codes.add(stateCoderResult.modelCode());
+	}
+
 	@Override
 	public void resolveOneSymmetry() {
 		throw new IllegalArgumentException("This equivalence storage is not prepared to resolve symmetries!");

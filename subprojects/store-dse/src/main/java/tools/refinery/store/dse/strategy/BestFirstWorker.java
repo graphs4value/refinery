@@ -13,7 +13,7 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.statecoding.StateCoderAdapter;
-import tools.refinery.visualization.ModelVisualizerAdapter;
+import tools.refinery.visualization.statespace.VisualizationStore;
 
 import java.util.Random;
 
@@ -24,7 +24,7 @@ public class BestFirstWorker {
 	final StateCoderAdapter stateCoderAdapter;
 	final DesignSpaceExplorationAdapter explorationAdapter;
 	final ModelQueryAdapter queryAdapter;
-	final ModelVisualizerAdapter visualizerAdapter;
+	final VisualizationStore visualizationStore;
 	final boolean isVisualizationEnabled;
 
 	public BestFirstWorker(BestFirstStoreManager storeManager, Model model) {
@@ -36,9 +36,8 @@ public class BestFirstWorker {
 		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
-		visualizerAdapter = model.getAdapter(ModelVisualizerAdapter.class);
-		System.out.println("visualizerAdapter = " + visualizerAdapter);
-		isVisualizationEnabled = visualizerAdapter != null;
+		visualizationStore = storeManager.getVisualizationStore();
+		isVisualizationEnabled = visualizationStore != null;
 	}
 
 	private VersionWithObjectiveValue last = null;
@@ -47,28 +46,41 @@ public class BestFirstWorker {
 
 	public SubmitResult submit() {
 		if (explorationAdapter.checkExclude()) {
-			last = null;
 			return new SubmitResult(false, false, null, null);
 		}
 
-		Version version = model.commit();
-		queryAdapter.flushChanges();
-		ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
-		last = new VersionWithObjectiveValue(version, objectiveValue);
 		var code = stateCoderAdapter.calculateStateCode();
-		var accepted = explorationAdapter.checkAccept();
-		boolean isNew = storeManager.getEquivalenceClassStore().submit(last, code,
-				activationStoreWorker.calculateEmptyActivationSize(), accepted);
-		return new SubmitResult(isNew, accepted, objectiveValue, isNew ? last : null);
+
+		boolean isNew = storeManager.getEquivalenceClassStore().submit(code);
+		if (isNew) {
+			Version version = model.commit();
+			ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
+			var versionWithObjectiveValue = new VersionWithObjectiveValue(version, objectiveValue);
+			last = versionWithObjectiveValue;
+			var accepted = explorationAdapter.checkAccept();
+
+			storeManager.getObjectiveStore().submit(versionWithObjectiveValue);
+			storeManager.getActivationStore().markNewAsVisited(versionWithObjectiveValue, activationStoreWorker.calculateEmptyActivationSize());
+			if(accepted) {
+				storeManager.solutionStore.submit(versionWithObjectiveValue);
+			}
+
+			if (isVisualizationEnabled) {
+				visualizationStore.addState(last.version(), last.objectiveValue().toString());
+				if (accepted) {
+					visualizationStore.addSolution(last.version());
+				}
+			}
+
+			return new SubmitResult(true, accepted, objectiveValue, last);
+		}
+
+		return new SubmitResult(false, false, null, null);
 	}
 
 	public void restoreToLast() {
 		if (explorationAdapter.getModel().hasUncommittedChanges()) {
-			var oldVersion = model.getState();
 			explorationAdapter.getModel().restore(last.version());
-			if (isVisualizationEnabled) {
-				visualizerAdapter.addTransition(oldVersion, last.version(), "");
-			}
 		}
 	}
 
@@ -78,7 +90,7 @@ public class BestFirstWorker {
 			var oldVersion = model.getState();
 			this.model.restore(bestVersion.version());
 			if (isVisualizationEnabled) {
-				visualizerAdapter.addTransition(oldVersion, last.version(), "");
+				visualizationStore.addTransition(oldVersion, last.version(), "");
 			}
 		}
 		return bestVersion;
@@ -105,7 +117,7 @@ public class BestFirstWorker {
 		}
 	}
 
-	record RandomVisitResult(SubmitResult submitResult, boolean shouldRetry) {
+	public record RandomVisitResult(SubmitResult submitResult, boolean shouldRetry) {
 	}
 
 	public RandomVisitResult visitRandomUnvisited(Random random) {
@@ -119,15 +131,9 @@ public class BestFirstWorker {
 					oldVersion = last.version();
 				}
 				var submitResult = submit();
-				if (isVisualizationEnabled) {
-
-					Version newVersion = null;
-					if (submitResult.newVersion() != null) {
-						newVersion = submitResult.newVersion().version();
-						visualizerAdapter.addState(newVersion, submitResult.newVersion().objectiveValue().toString());
-						visualizerAdapter.addSolution(newVersion);
-					}
-					visualizerAdapter.addTransition(oldVersion, newVersion, "");
+				if (isVisualizationEnabled && submitResult.newVersion() != null) {
+					var newVersion = submitResult.newVersion().version();
+					visualizationStore.addTransition(oldVersion, newVersion, "");
 				}
 				return new RandomVisitResult(submitResult, visitResult.mayHaveMore());
 			} else {

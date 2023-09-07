@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.dse.modification.ModificationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
+import tools.refinery.store.dse.tests.DummyRandomCriterion;
+import tools.refinery.store.dse.tests.DummyRandomObjective;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.tests.DummyCriterion;
 import tools.refinery.store.dse.tests.DummyObjective;
@@ -188,7 +190,7 @@ class CRAExamplesTest {
 			});
 
 	@Test
-//	@Disabled("This test is only for debugging purposes")
+	@Disabled("This test is only for debugging purposes")
 	void craTest() {
 		var store = ModelStore.builder()
 				.symbols(classElement, encapsulates, classes, features, attribute, method, dataDependency,
@@ -197,24 +199,20 @@ class CRAExamplesTest {
 						.queries(feature, assignFeaturePreconditionHelper, assignFeaturePrecondition,
 								deleteEmptyClassPrecondition, createClassPreconditionHelper, createClassPrecondition,
 								moveFeaturePrecondition))
-//				.with(ModelVisualizerAdapter.builder()
-//						.withOutputpath("test_output")
-//						.withFormat(FileFormat.DOT)
-//						.withFormat(FileFormat.SVG)
-//						.saveStates()
-//						.saveDesignSpace()
-//				)
+				.with(ModelVisualizerAdapter.builder()
+						.withOutputpath("test_output")
+						.withFormat(FileFormat.DOT)
+						.withFormat(FileFormat.SVG)
+						.saveStates()
+						.saveDesignSpace()
+				)
 				.with(StateCoderAdapter.builder())
 				.with(ModificationAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
-						.objectives(new DummyObjective())
-						.accept(new DummyCriterion(true))
+						.objectives(new DummyRandomObjective())
+						.accept(new DummyRandomCriterion())
 						.exclude(new DummyCriterion(false))
-//						.objectives(new AlwaysSatisfiedRandomHardObjective())
-//						.strategy(new DepthFirstStrategy().withDepthLimit(3).continueIfHardObjectivesFulfilled()
-//						.strategy(new BestFirstStrategy().withDepthLimit(6).continueIfHardObjectivesFulfilled()
-//								.goOnOnlyIfFitnessIsBetter())
 				)
 				.build();
 
@@ -296,7 +294,5 @@ class CRAExamplesTest {
 		bestFirst.startExploration(initialVersion);
 		var resultStore = bestFirst.getSolutionStore();
 		System.out.println("states size: " + resultStore.getSolutions().size());
-		var modelVisualizerAdapter = model.getAdapter(ModelVisualizerAdapter.class);
-		modelVisualizerAdapter.visualize();
 	}
 }

@@ -18,14 +18,20 @@ import tools.refinery.store.dse.transition.statespace.internal.ObjectivePriority
 import tools.refinery.store.dse.transition.statespace.internal.SolutionStoreImpl;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.statecoding.StateCoderStoreAdapter;
+import tools.refinery.visualization.ModelVisualizerStoreAdapter;
+import tools.refinery.visualization.statespace.VisualizationStore;
+import tools.refinery.visualization.statespace.internal.VisualizationStoreImpl;
 
 public class BestFirstStoreManager {
+
 	ModelStore modelStore;
 	ObjectivePriorityQueue objectiveStore;
 	ActivationStore activationStore;
 	SolutionStore solutionStore;
 	EquivalenceClassStore equivalenceClassStore;
+	VisualizationStore visualizationStore;
 
 	public BestFirstStoreManager(ModelStore modelStore) {
 		this.modelStore = modelStore;
@@ -35,17 +41,17 @@ public class BestFirstStoreManager {
 		objectiveStore = new ObjectivePriorityQueueImpl(storeAdapter.getObjectives());
 		Procedure<VersionWithObjectiveValue> whenAllActivationsVisited = x -> objectiveStore.remove(x);
 		activationStore = new ActivationStoreImpl(storeAdapter.getTransformations().size(), whenAllActivationsVisited);
-		solutionStore = new SolutionStoreImpl(10);
+		solutionStore = new SolutionStoreImpl(50);
 		equivalenceClassStore = new FastEquivalenceClassStore(modelStore.getAdapter(StateCoderStoreAdapter.class)) {
 			@Override
 			protected void delegate(VersionWithObjectiveValue version, int[] emptyActivations, boolean accept) {
-				objectiveStore.submit(version);
-				activationStore.markNewAsVisited(version, emptyActivations);
-				if(accept) {
-					solutionStore.submit(version);
-				}
+				throw new UnsupportedOperationException("This equivalence storage is not prepared to resolve symmetries!");
 			}
 		};
+		visualizationStore = new VisualizationStoreImpl();
+	}
+	public ModelStore getModelStore() {
+		return modelStore;
 	}
 
 	ObjectivePriorityQueue getObjectiveStore() {
@@ -62,6 +68,10 @@ public class BestFirstStoreManager {
 
 	EquivalenceClassStore getEquivalenceClassStore() {
 		return equivalenceClassStore;
+	}
+
+	public VisualizationStore getVisualizationStore() {
+		return visualizationStore;
 	}
 
 	public void startExploration(Version initial) {

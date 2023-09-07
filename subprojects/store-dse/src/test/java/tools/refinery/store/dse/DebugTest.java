@@ -5,9 +5,27 @@
  */
 package tools.refinery.store.dse;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.modification.ModificationAdapter;
+import tools.refinery.store.dse.strategy.BestFirstStoreManager;
+import tools.refinery.store.dse.tests.DummyCriterion;
+import tools.refinery.store.dse.tests.DummyObjective;
+import tools.refinery.store.dse.tests.DummyRandomCriterion;
+import tools.refinery.store.dse.tests.DummyRandomObjective;
+import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
+import tools.refinery.store.dse.transition.TransformationRule;
+import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.statecoding.StateCoderAdapter;
+import tools.refinery.store.tuple.Tuple;
+import tools.refinery.visualization.ModelVisualizerAdapter;
+import tools.refinery.visualization.internal.FileFormat;
 
 class DebugTest {
 	private static final Symbol<Boolean> classModel = Symbol.of("ClassModel", 1);
@@ -29,88 +47,92 @@ class DebugTest {
 	private static final AnySymbolView classesView = new KeyOnlyView<>(classes);
 
 
-//	@Test
-//	@Disabled("This test is only for debugging purposes")
-//	void BFSTest() {
-//		var createClassPrecondition = Query.of("CreateClassPrecondition",
-//				(builder, model) -> builder.clause(
-//						classModelView.call(model)
-//				));
-//
-//		var createClassRule = new TransformationRule("CreateClass",
-//				createClassPrecondition,
-//				(model) -> {
-//					var classesInterpretation = model.getInterpretation(classes);
-//					var classElementInterpretation = model.getInterpretation(classElement);
-//					return ((Tuple activation) -> {
-//						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-//						var modelElement = activation.get(0);
-//
-//						var newClassElement = dseAdapter.createObject();
-//						var newClassElementId = newClassElement.get(0);
-//
-//						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
-//						classElementInterpretation.put(Tuple.of(newClassElementId), true);
-//					});
-//				});
-//
-//		var createFeaturePrecondition = Query.of("CreateFeaturePrecondition",
-//				(builder, model) -> builder.clause(
-//						classModelView.call(model)
-//				));
-//
-//		var createFeatureRule = new TransformationRule("CreateFeature",
-//				createFeaturePrecondition,
-//				(model) -> {
-//					var featuresInterpretation = model.getInterpretation(features);
-//					var featureInterpretation = model.getInterpretation(feature);
-//					return ((Tuple activation) -> {
-//						var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-//						var modelElement = activation.get(0);
-//
-//						var newClassElement = dseAdapter.createObject();
-//						var newClassElementId = newClassElement.get(0);
-//
-//						featuresInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
-//						featureInterpretation.put(Tuple.of(newClassElementId), true);
-//					});
-//				});
-//
-//		var store = ModelStore.builder()
-//				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
-//				.with(ViatraModelQueryAdapter.builder()
-//						.queries(createClassPrecondition, createFeaturePrecondition))
-//				.with(ModelVisualizerAdapter.builder()
-//						.withOutputpath("test_output")
-//						.withFormat(FileFormat.DOT)
-//						.withFormat(FileFormat.SVG)
-//						.saveStates()
-//						.saveDesignSpace()
-//				)
-//				.with(DesignSpaceExplorationAdapter.builder()
-//						.transformations(createClassRule, createFeatureRule)
-//						.objectives(new AlwaysSatisfiedRandomHardObjective())
-//						.strategy(new DepthFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
-////						.strategy(new BestFirstStrategy().withDepthLimit(4).continueIfHardObjectivesFulfilled()
-////								.goOnOnlyIfFitnessIsBetter()
-//						))
-//				.build();
-//
-//		var model = store.createEmptyModel();
-//		var dseAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-////		dseAdapter.setRandom(1);
-//		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-//
-//		var modelElementInterpretation = model.getInterpretation(classModel);
-//		var classElementInterpretation = model.getInterpretation(classElement);
-//		var modelElement = dseAdapter.createObject();
-//		modelElementInterpretation.put(modelElement, true);
-//		classElementInterpretation.put(modelElement, true);
-//		queryEngine.flushChanges();
-//
-//
-//		var states = dseAdapter.explore();
-//		System.out.println("states size: " + states.size());
-//
-//	}
+	@Test
+	@Disabled("This test is only for debugging purposes")
+	void BFSTest() {
+		var createClassPrecondition = Query.of("CreateClassPrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createClassRule = new TransformationRule("CreateClass",
+				createClassPrecondition,
+				(model) -> {
+					var classesInterpretation = model.getInterpretation(classes);
+					var classElementInterpretation = model.getInterpretation(classElement);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(ModificationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						classesInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						classElementInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var createFeaturePrecondition = Query.of("CreateFeaturePrecondition",
+				(builder, model) -> builder.clause(
+						classModelView.call(model)
+				));
+
+		var createFeatureRule = new TransformationRule("CreateFeature",
+				createFeaturePrecondition,
+				(model) -> {
+					var featuresInterpretation = model.getInterpretation(features);
+					var featureInterpretation = model.getInterpretation(feature);
+					return ((Tuple activation) -> {
+						var dseAdapter = model.getAdapter(ModificationAdapter.class);
+						var modelElement = activation.get(0);
+
+						var newClassElement = dseAdapter.createObject();
+						var newClassElementId = newClassElement.get(0);
+
+						featuresInterpretation.put(Tuple.of(modelElement, newClassElementId), true);
+						featureInterpretation.put(Tuple.of(newClassElementId), true);
+					});
+				});
+
+		var store = ModelStore.builder()
+				.symbols(classModel, classElement, feature, isEncapsulatedBy, encapsulates, classes, features)
+				.with(ViatraModelQueryAdapter.builder()
+						.queries(createClassPrecondition, createFeaturePrecondition))
+				.with(ModelVisualizerAdapter.builder()
+						.withOutputpath("test_output")
+						.withFormat(FileFormat.DOT)
+						.withFormat(FileFormat.SVG)
+						.saveStates()
+						.saveDesignSpace()
+				)
+				.with(StateCoderAdapter.builder())
+				.with(ModificationAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder()
+						.transformations(createClassRule, createFeatureRule)
+						.objectives(new DummyRandomObjective())
+						.accept(new DummyRandomCriterion())
+						.exclude(new DummyRandomCriterion())
+				)
+				.build();
+
+		var model = store.createEmptyModel();
+		var dseAdapter = model.getAdapter(ModificationAdapter.class);
+//		dseAdapter.setRandom(1);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+
+		var modelElementInterpretation = model.getInterpretation(classModel);
+		var classElementInterpretation = model.getInterpretation(classElement);
+		var modelElement = dseAdapter.createObject();
+		modelElementInterpretation.put(modelElement, true);
+		classElementInterpretation.put(modelElement, true);
+		var initialVersion = model.commit();
+		queryEngine.flushChanges();
+
+
+		var bestFirst = new BestFirstStoreManager(store);
+		bestFirst.startExploration(initialVersion);
+		var resultStore = bestFirst.getSolutionStore();
+		System.out.println("states size: " + resultStore.getSolutions().size());
+
+	}
 }

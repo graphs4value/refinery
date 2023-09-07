@@ -69,7 +69,7 @@ public class ActivationStoreImpl implements ActivationStore {
 		if(!hasMoreInActivation) {
 			boolean hasMoreInOtherTransformation = false;
 			for (var e : entries) {
-				if (e != entry && e.getNumberOfVisitedActivations() > 0) {
+				if (e != entry && e.getNumberOfUnvisitedActivations() > 0) {
 					hasMoreInOtherTransformation = true;
 					break;
 				}
@@ -106,6 +106,11 @@ public class ActivationStoreImpl implements ActivationStore {
 		int sum1 = 0;
 		for (var entry : entries) {
 			sum1 += entry.getNumberOfUnvisitedActivations();
+		}
+
+		if(sum1 == 0) {
+			this.actionWhenAllActivationVisited.accept(version);
+			return new VisitResult(false, false, -1, -1);
 		}
 
 		int selected = random.nextInt(sum1);

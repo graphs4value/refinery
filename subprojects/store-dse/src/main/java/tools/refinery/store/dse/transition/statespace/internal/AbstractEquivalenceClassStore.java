@@ -22,6 +22,13 @@ public abstract class AbstractEquivalenceClassStore implements EquivalenceClassS
 	protected abstract boolean tryToAdd(StateCoderResult stateCoderResult, VersionWithObjectiveValue newVersion,
 							   int[] emptyActivations, boolean accept);
 
+	public abstract boolean tryToAdd(StateCoderResult stateCoderResult);
+
+	@Override
+	public boolean submit(StateCoderResult stateCoderResult) {
+		return tryToAdd(stateCoderResult);
+	}
+
 	@Override
 	public synchronized boolean submit(VersionWithObjectiveValue version, StateCoderResult stateCoderResult,
 									   int[] emptyActivations, boolean accept) {
