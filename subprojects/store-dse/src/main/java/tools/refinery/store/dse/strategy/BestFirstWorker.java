@@ -40,11 +40,13 @@ public class BestFirstWorker {
 		isVisualizationEnabled = visualizationStore != null;
 	}
 
-	private VersionWithObjectiveValue last = null;
-
-	//public boolean isIncluded
+	protected VersionWithObjectiveValue last = null;
 
 	public SubmitResult submit() {
+		checkSynchronized();
+		if (queryAdapter.hasPendingChanges()) {
+			throw new AssertionError("Pending changes detected before model submission");
+		}
 		if (explorationAdapter.checkExclude()) {
 			return new SubmitResult(false, false, null, null);
 		}
@@ -86,14 +88,11 @@ public class BestFirstWorker {
 
 	public VersionWithObjectiveValue restoreToBest() {
 		var bestVersion = storeManager.getObjectiveStore().getBest();
+		last = bestVersion;
 		if (bestVersion != null) {
-			var oldVersion = model.getState();
 			this.model.restore(bestVersion.version());
-			if (isVisualizationEnabled) {
-				visualizationStore.addTransition(oldVersion, last.version(), "");
-			}
 		}
-		return bestVersion;
+		return last;
 	}
 
 	public VersionWithObjectiveValue restoreToRandom(Random random) {
@@ -102,7 +101,7 @@ public class BestFirstWorker {
 		if (randomVersion != null) {
 			this.model.restore(randomVersion.version());
 		}
-		return randomVersion;
+		return last;
 	}
 
 	public int compare(VersionWithObjectiveValue s1, VersionWithObjectiveValue s2) {
@@ -121,9 +120,10 @@ public class BestFirstWorker {
 	}
 
 	public RandomVisitResult visitRandomUnvisited(Random random) {
+		checkSynchronized();
 		if (!model.hasUncommittedChanges()) {
-			queryAdapter.flushChanges();
 			var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
+			queryAdapter.flushChanges();
 
 			if (visitResult.successfulVisit()) {
 				Version oldVersion = null;
@@ -133,7 +133,8 @@ public class BestFirstWorker {
 				var submitResult = submit();
 				if (isVisualizationEnabled && submitResult.newVersion() != null) {
 					var newVersion = submitResult.newVersion().version();
-					visualizationStore.addTransition(oldVersion, newVersion, "");
+					visualizationStore.addTransition(oldVersion, newVersion,
+							"fire: " + visitResult.transformation() + ", " + visitResult.activation());
 				}
 				return new RandomVisitResult(submitResult, visitResult.mayHaveMore());
 			} else {
@@ -146,5 +147,11 @@ public class BestFirstWorker {
 
 	public boolean hasEnoughSolution() {
 		return storeManager.solutionStore.hasEnoughSolution();
+	}
+
+	private void checkSynchronized() {
+		if (last != null && !last.version().equals(model.getState())) {
+			throw new AssertionError("Worker is not synchronized with model state");
+		}
 	}
 }

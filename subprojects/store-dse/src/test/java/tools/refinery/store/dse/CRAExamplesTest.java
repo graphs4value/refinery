@@ -11,10 +11,11 @@ import tools.refinery.store.dse.modification.DanglingEdges;
 import tools.refinery.store.dse.modification.ModificationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.tests.DummyCriterion;
-import tools.refinery.store.dse.tests.DummyRandomCriterion;
 import tools.refinery.store.dse.tests.DummyRandomObjective;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.objectives.Criteria;
+import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
@@ -59,6 +60,12 @@ class CRAExamplesTest {
 					methodView.call(f)
 			));
 
+	private static final RelationalQuery unEncapsulatedFeature = Query.of("unEncapsulatedFeature",
+			(builder, f) -> builder.clause(
+					feature.call(f),
+					not(encapsulatesView.call(Variable.of(), f))
+			));
+
 	private static final Rule assignFeatureRule = Rule.of("AssignFeature", (builder, f, c1) -> builder
 			.clause(
 					feature.call(f),
@@ -66,24 +73,24 @@ class CRAExamplesTest {
 					not(encapsulatesView.call(Variable.of(), f))
 			)
 			.action(
-					add(encapsulates, f, c1)
+					add(encapsulates, c1, f)
 			));
 
 	private static final Rule deleteEmptyClassRule = Rule.of("DeleteEmptyClass", (builder, c) -> builder
-			.clause((f) -> List.of(
+			.clause(
 					classElementView.call(c),
-					not(encapsulatesView.call(c, f))
-			))
+					not(encapsulatesView.call(c, Variable.of()))
+			)
 			.action(
 					remove(classElement, c),
 					delete(c, DanglingEdges.IGNORE)
 			));
 
 	private static final Rule createClassRule = Rule.of("CreateClass", (builder, f) -> builder
-			.clause((c) -> List.of(
+			.clause(
 					feature.call(f),
-					not(encapsulatesView.call(f, c))
-			))
+					not(encapsulatesView.call(Variable.of(), f))
+			)
 			.action((newClass) -> List.of(
 					create(newClass),
 					add(classElement, newClass),
@@ -110,7 +117,7 @@ class CRAExamplesTest {
 				.symbols(classElement, encapsulates, attribute, method, dataDependency, functionalDependency, name)
 				.with(ViatraModelQueryAdapter.builder())
 				.with(ModelVisualizerAdapter.builder()
-						.withOutputpath("test_output")
+						.withOutputPath("test_output")
 						.withFormat(FileFormat.DOT)
 						.withFormat(FileFormat.SVG)
 						.saveStates()
@@ -119,8 +126,11 @@ class CRAExamplesTest {
 				.with(ModificationAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
 						.transformations(assignFeatureRule, deleteEmptyClassRule, createClassRule, moveFeatureRule)
-						.objectives(new DummyRandomObjective())
-						.accept(new DummyRandomCriterion())
+						.objectives(Objectives.sum(
+								new DummyRandomObjective(),
+								Objectives.count(unEncapsulatedFeature)
+						))
+						.accept(Criteria.whenNoMatch(unEncapsulatedFeature))
 						.exclude(new DummyCriterion(false)))
 				.build();
 
@@ -192,9 +202,10 @@ class CRAExamplesTest {
 		var initialVersion = model.commit();
 		queryEngine.flushChanges();
 
-		var bestFirst = new BestFirstStoreManager(store);
+		var bestFirst = new BestFirstStoreManager(store, 50);
 		bestFirst.startExploration(initialVersion);
 		var resultStore = bestFirst.getSolutionStore();
 		System.out.println("states size: " + resultStore.getSolutions().size());
+		model.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
 	}
 }

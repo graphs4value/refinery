@@ -17,9 +17,7 @@ import tools.refinery.store.dse.transition.statespace.internal.ObjectivePriority
 import tools.refinery.store.dse.transition.statespace.internal.SolutionStoreImpl;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.statecoding.StateCoderStoreAdapter;
-import tools.refinery.visualization.ModelVisualizerStoreAdapter;
 import tools.refinery.visualization.statespace.VisualizationStore;
 import tools.refinery.visualization.statespace.internal.VisualizationStoreImpl;
 
@@ -34,7 +32,7 @@ public class BestFirstStoreManager {
 	EquivalenceClassStore equivalenceClassStore;
 	VisualizationStore visualizationStore;
 
-	public BestFirstStoreManager(ModelStore modelStore) {
+	public BestFirstStoreManager(ModelStore modelStore, int maxNumberOfSolutions) {
 		this.modelStore = modelStore;
 		DesignSpaceExplorationStoreAdapter storeAdapter =
 				modelStore.getAdapter(DesignSpaceExplorationStoreAdapter.class);
@@ -42,7 +40,7 @@ public class BestFirstStoreManager {
 		objectiveStore = new ObjectivePriorityQueueImpl(storeAdapter.getObjectives());
 		Consumer<VersionWithObjectiveValue> whenAllActivationsVisited = x -> objectiveStore.remove(x);
 		activationStore = new ActivationStoreImpl(storeAdapter.getTransformations().size(), whenAllActivationsVisited);
-		solutionStore = new SolutionStoreImpl(50);
+		solutionStore = new SolutionStoreImpl(maxNumberOfSolutions);
 		equivalenceClassStore = new FastEquivalenceClassStore(modelStore.getAdapter(StateCoderStoreAdapter.class)) {
 			@Override
 			protected void delegate(VersionWithObjectiveValue version, int[] emptyActivations, boolean accept) {

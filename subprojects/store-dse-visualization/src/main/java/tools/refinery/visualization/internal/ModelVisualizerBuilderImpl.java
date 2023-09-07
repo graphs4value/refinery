@@ -18,7 +18,7 @@ public class ModelVisualizerBuilderImpl
 	private String outputPath;
 	private boolean saveDesignSpace = false;
 	private boolean saveStates = false;
-	private Set<FileFormat> formats = new LinkedHashSet<>();
+	private final Set<FileFormat> formats = new LinkedHashSet<>();
 
 	@Override
 	protected ModelVisualizeStoreAdapterImpl doBuild(ModelStore store) {
@@ -26,9 +26,9 @@ public class ModelVisualizerBuilderImpl
 	}
 
 	@Override
-	public ModelVisualizerBuilder withOutputpath(String outputpath) {
+	public ModelVisualizerBuilder withOutputPath(String outputPath) {
 		checkNotConfigured();
-		this.outputPath = outputpath;
+		this.outputPath = outputPath;
 		return this;
 	}
 

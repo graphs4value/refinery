@@ -64,7 +64,7 @@ class DebugTest {
 				.symbols(classModel, classElement, feature, classes, features)
 				.with(ViatraModelQueryAdapter.builder())
 				.with(ModelVisualizerAdapter.builder()
-						.withOutputpath("test_output")
+						.withOutputPath("test_output")
 						.withFormat(FileFormat.DOT)
 						.withFormat(FileFormat.SVG)
 						.saveStates()
@@ -91,7 +91,7 @@ class DebugTest {
 		var initialVersion = model.commit();
 		queryEngine.flushChanges();
 
-		var bestFirst = new BestFirstStoreManager(store);
+		var bestFirst = new BestFirstStoreManager(store, 50);
 		bestFirst.startExploration(initialVersion);
 		var resultStore = bestFirst.getSolutionStore();
 		System.out.println("states size: " + resultStore.getSolutions().size());

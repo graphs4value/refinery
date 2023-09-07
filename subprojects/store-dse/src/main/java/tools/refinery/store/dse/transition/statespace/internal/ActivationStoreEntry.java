@@ -17,6 +17,11 @@ public abstract class ActivationStoreEntry {
 	public int getNumberOfUnvisitedActivations() {
 		return numberOfActivations - getNumberOfVisitedActivations();
 	}
+
+	public int getNumberOfActivations() {
+		return numberOfActivations;
+	}
+
 	public abstract int getAndAddActivationAfter(int index);
 
 	//	public abstract boolean contains(int activation)
