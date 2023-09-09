@@ -67,4 +67,17 @@ public record FiniteUpperCardinality(int finiteUpperBound) implements UpperCardi
 		}
 		throw new IllegalArgumentException("Unknown UpperCardinality: " + other);
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		FiniteUpperCardinality that = (FiniteUpperCardinality) o;
+		return finiteUpperBound == that.finiteUpperBound;
+	}
+
+	@Override
+	public int hashCode() {
+		return finiteUpperBound;
+	}
 }

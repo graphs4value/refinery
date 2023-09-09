@@ -3,11 +3,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.scope.internal;
+package tools.refinery.store.reasoning.scope;
 
 import com.google.ortools.linearsolver.MPConstraint;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.RelationalQuery;
@@ -17,15 +16,15 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.Collection;
 
 abstract class TypeScopePropagator {
-	private final ScopePropagatorAdapterImpl adapter;
+	private final BoundScopePropagator adapter;
 	private final ResultSet<Boolean> allNodes;
 	private final ResultSet<Boolean> multiNodes;
 	protected final MPConstraint constraint;
 
-	protected TypeScopePropagator(ScopePropagatorAdapterImpl adapter, RelationalQuery allQuery,
-							   RelationalQuery multiQuery) {
+	protected TypeScopePropagator(BoundScopePropagator adapter, RelationalQuery allQuery,
+								  RelationalQuery multiQuery) {
 		this.adapter = adapter;
-		var queryEngine = adapter.getModel().getAdapter(ModelQueryAdapter.class);
+		var queryEngine = adapter.getQueryEngine();
 		allNodes = queryEngine.getResultSet(allQuery);
 		multiNodes = queryEngine.getResultSet(multiQuery);
 		constraint = adapter.makeConstraint();
@@ -56,7 +55,7 @@ abstract class TypeScopePropagator {
 	}
 
 	public abstract static class Factory {
-		public abstract TypeScopePropagator createPropagator(ScopePropagatorAdapterImpl adapter);
+		public abstract TypeScopePropagator createPropagator(BoundScopePropagator adapter);
 
 		protected abstract Collection<AnyQuery> getQueries();
 

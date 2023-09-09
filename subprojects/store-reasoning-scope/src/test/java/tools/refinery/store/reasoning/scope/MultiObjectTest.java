@@ -7,13 +7,14 @@ package tools.refinery.store.reasoning.scope;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.dse.propagation.PropagationAdapter;
+import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
-import tools.refinery.store.reasoning.refinement.RefinementResult;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
@@ -38,11 +39,12 @@ class MultiObjectTest {
 	void beforeEach() {
 		store = ModelStore.builder()
 				.with(ViatraModelQueryAdapter.builder())
+				.with(PropagationAdapter.builder())
 				.with(ReasoningAdapter.builder())
 				.with(new MultiObjectTranslator())
 				.with(PartialRelationTranslator.of(person)
 						.symbol(Symbol.of("Person", 1, TruthValue.class, TruthValue.FALSE)))
-				.with(ScopePropagatorAdapter.builder()
+				.with(new ScopePropagator()
 						.scope(person, CardinalityIntervals.between(5, 15)))
 				.build();
 		model = null;
@@ -57,7 +59,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REFINED));
+		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.between(2, 12)));
 	}
 
@@ -69,7 +71,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.between(5, 20)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REFINED));
+		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.between(5, 12)));
 	}
 
@@ -81,7 +83,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REJECTED));
+		assertThat(propagate(), is(PropagationResult.REJECTED));
 	}
 
 	@Test
@@ -90,7 +92,7 @@ class MultiObjectTest {
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.UNCHANGED));
+		assertThat(propagate(), is(PropagationResult.UNCHANGED));
 	}
 
 	@Test
@@ -99,7 +101,7 @@ class MultiObjectTest {
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REJECTED));
+		assertThat(propagate(), is(PropagationResult.REJECTED));
 	}
 
 	@Test
@@ -110,7 +112,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.atLeast(20)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REJECTED));
+		assertThat(propagate(), is(PropagationResult.REJECTED));
 	}
 
 	@Test
@@ -121,7 +123,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.atMost(1)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REJECTED));
+		assertThat(propagate(), is(PropagationResult.REJECTED));
 	}
 
 	@Test
@@ -133,7 +135,7 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REFINED));
+		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.atMost(12)));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.atMost(12)));
 	}
@@ -147,7 +149,7 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.atMost(11)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REFINED));
+		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.between(7, 12)));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.atMost(5)));
 	}
@@ -161,7 +163,7 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.exactly(11)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REJECTED));
+		assertThat(propagate(), is(PropagationResult.REJECTED));
 	}
 
 	@Test
@@ -173,7 +175,7 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.atMost(2)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REJECTED));
+		assertThat(propagate(), is(PropagationResult.REJECTED));
 	}
 
 	@Test
@@ -185,14 +187,14 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(RefinementResult.REFINED));
+		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.LONE));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.between(1, 12)));
 		countStorage.put(Tuple.of(0), CardinalityIntervals.ONE);
-		assertThat(propagate(), is(RefinementResult.REFINED));
+		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.between(1, 11)));
 		countStorage.put(Tuple.of(1), CardinalityIntervals.ONE);
-		assertThat(propagate(), is(RefinementResult.UNCHANGED));
+		assertThat(propagate(), is(PropagationResult.UNCHANGED));
 	}
 
 	private void createModel(ModelSeed modelSeed) {
@@ -200,7 +202,7 @@ class MultiObjectTest {
 		countStorage = model.getInterpretation(MultiObjectTranslator.COUNT_STORAGE);
 	}
 
-	private RefinementResult propagate() {
-		return model.getAdapter(ScopePropagatorAdapter.class).propagate();
+	private PropagationResult propagate() {
+		return model.getAdapter(PropagationAdapter.class).propagate();
 	}
 }

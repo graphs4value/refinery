@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.scope.internal;
+package tools.refinery.store.reasoning.scope;
 
 import com.google.ortools.linearsolver.MPConstraint;
 import com.google.ortools.linearsolver.MPObjective;
@@ -13,18 +13,15 @@ import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.IntSets;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
+import tools.refinery.store.dse.propagation.BoundPropagator;
+import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.reasoning.refinement.RefinementResult;
-import tools.refinery.store.reasoning.scope.ScopePropagatorAdapter;
-import tools.refinery.store.reasoning.scope.ScopePropagatorStoreAdapter;
 import tools.refinery.store.representation.cardinality.*;
 import tools.refinery.store.tuple.Tuple;
 
-class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
-	private final Model model;
-	private final ScopePropagatorStoreAdapterImpl storeAdapter;
+class BoundScopePropagator implements BoundPropagator {
 	private final ModelQueryAdapter queryEngine;
 	private final Interpretation<CardinalityInterval> countInterpretation;
 	private final MPSolver solver;
@@ -34,30 +31,22 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 	private final TypeScopePropagator[] propagators;
 	private boolean changed = true;
 
-	public ScopePropagatorAdapterImpl(Model model, ScopePropagatorStoreAdapterImpl storeAdapter) {
-		this.model = model;
-		this.storeAdapter = storeAdapter;
+	public BoundScopePropagator(Model model, ScopePropagator storeAdapter) {
 		queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		countInterpretation = model.getInterpretation(storeAdapter.getCountSymbol());
 		solver = MPSolver.createSolver("GLOP");
 		objective = solver.objective();
 		initializeVariables();
 		countInterpretation.addListener(this::countChanged, true);
-		var propagatorFactories = storeAdapter.getPropagatorFactories();
+		var propagatorFactories = storeAdapter.getTypeScopePropagatorFactories();
 		propagators = new TypeScopePropagator[propagatorFactories.size()];
 		for (int i = 0; i < propagators.length; i++) {
 			propagators[i] = propagatorFactories.get(i).createPropagator(this);
 		}
 	}
 
-	@Override
-	public Model getModel() {
-		return model;
-	}
-
-	@Override
-	public ScopePropagatorStoreAdapter getStoreAdapter() {
-		return storeAdapter;
+	ModelQueryAdapter getQueryEngine() {
+		return queryEngine;
 	}
 
 	private void initializeVariables() {
@@ -149,29 +138,16 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 	}
 
 	@Override
-	public RefinementResult propagate() {
-		var result = RefinementResult.UNCHANGED;
-		RefinementResult currentRoundResult;
-		do {
-			currentRoundResult = propagateOne();
-			result = result.andThen(currentRoundResult);
-			if (result.isRejected()) {
-				return result;
-			}
-		} while (currentRoundResult != RefinementResult.UNCHANGED);
-		return result;
-	}
-
-	private RefinementResult propagateOne() {
+	public PropagationResult propagateOne() {
 		queryEngine.flushChanges();
 		if (!changed) {
-			return RefinementResult.UNCHANGED;
+			return PropagationResult.UNCHANGED;
 		}
 		changed = false;
 		for (var propagator : propagators) {
 			propagator.updateBounds();
 		}
-		var result = RefinementResult.UNCHANGED;
+		var result = PropagationResult.UNCHANGED;
 		if (activeVariables.isEmpty()) {
 			return checkEmptiness();
 		}
@@ -190,16 +166,16 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 		return result;
 	}
 
-	private RefinementResult checkEmptiness() {
+	private PropagationResult checkEmptiness() {
 		var emptinessCheckingResult = solver.solve();
 		return switch (emptinessCheckingResult) {
-			case OPTIMAL, UNBOUNDED -> RefinementResult.UNCHANGED;
-			case INFEASIBLE -> RefinementResult.REJECTED;
+			case OPTIMAL, UNBOUNDED -> PropagationResult.UNCHANGED;
+			case INFEASIBLE -> PropagationResult.REJECTED;
 			default -> throw new IllegalStateException("Failed to check for consistency: " + emptinessCheckingResult);
 		};
 	}
 
-	private RefinementResult propagateNode(int nodeId, MPVariable variable) {
+	private PropagationResult propagateNode(int nodeId, MPVariable variable) {
 		objective.setCoefficient(variable, 1);
 		try {
 			objective.setMinimization();
@@ -209,7 +185,7 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 			case OPTIMAL -> lowerBound = RoundingUtil.roundUp(objective.value());
 			case UNBOUNDED -> lowerBound = 0;
 			case INFEASIBLE -> {
-				return RefinementResult.REJECTED;
+				return PropagationResult.REJECTED;
 			}
 			default -> throw new IllegalStateException("Failed to solve for minimum of %s: %s"
 					.formatted(variable, minimizationResult));
@@ -234,7 +210,7 @@ class ScopePropagatorAdapterImpl implements ScopePropagatorAdapter {
 				throw new IllegalArgumentException("Failed to refine multiplicity %s of node %d to %s"
 						.formatted(oldInterval, nodeId, newInterval));
 			}
-			return newInterval.equals(oldInterval) ? RefinementResult.UNCHANGED : RefinementResult.REFINED;
+			return newInterval.equals(oldInterval) ? PropagationResult.UNCHANGED : PropagationResult.PROPAGATED;
 		} finally {
 			objective.setCoefficient(variable, 0);
 		}

@@ -53,4 +53,14 @@ public final class UnboundedUpperCardinality implements UpperCardinality {
 	public String toString() {
 		return "*";
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this == obj || (obj != null && getClass() == obj.getClass());
+	}
+
+	@Override
+	public int hashCode() {
+		return -1;
+	}
 }

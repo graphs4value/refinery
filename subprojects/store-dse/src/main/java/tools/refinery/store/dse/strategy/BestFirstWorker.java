@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.dse.strategy;
 
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.transition.ObjectiveValue;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
@@ -24,6 +26,7 @@ public class BestFirstWorker {
 	final StateCoderAdapter stateCoderAdapter;
 	final DesignSpaceExplorationAdapter explorationAdapter;
 	final ModelQueryAdapter queryAdapter;
+	final @Nullable PropagationAdapter propagationAdapter;
 	final VisualizationStore visualizationStore;
 	final boolean isVisualizationEnabled;
 
@@ -34,6 +37,7 @@ public class BestFirstWorker {
 		explorationAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
 		stateCoderAdapter = model.getAdapter(StateCoderAdapter.class);
 		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
+		propagationAdapter = model.tryGetAdapter(PropagationAdapter.class).orElse(null);
 		activationStoreWorker = new ActivationStoreWorker(storeManager.getActivationStore(),
 				explorationAdapter.getTransformations());
 		visualizationStore = storeManager.getVisualizationStore();
@@ -96,7 +100,11 @@ public class BestFirstWorker {
 	}
 
 	public VersionWithObjectiveValue restoreToRandom(Random random) {
-		var randomVersion = storeManager.getObjectiveStore().getRandom(random);
+		var objectiveStore = storeManager.getObjectiveStore();
+		if (objectiveStore.getSize() == 0) {
+			return null;
+		}
+		var randomVersion = objectiveStore.getRandom(random);
 		last = randomVersion;
 		if (randomVersion != null) {
 			this.model.restore(randomVersion.version());
@@ -108,41 +116,40 @@ public class BestFirstWorker {
 		return storeManager.getObjectiveStore().getComparator().compare(s1, s2);
 	}
 
-	public boolean stateHasUnvisited() {
-		if (!model.hasUncommittedChanges()) {
-			return storeManager.getActivationStore().hasUnmarkedActivation(last);
-		} else {
-			throw new IllegalStateException("The model has uncommitted changes!");
-		}
-	}
-
 	public record RandomVisitResult(SubmitResult submitResult, boolean shouldRetry) {
 	}
 
 	public RandomVisitResult visitRandomUnvisited(Random random) {
 		checkSynchronized();
-		if (!model.hasUncommittedChanges()) {
-			var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
-			queryAdapter.flushChanges();
-
-			if (visitResult.successfulVisit()) {
-				Version oldVersion = null;
-				if (isVisualizationEnabled) {
-					oldVersion = last.version();
-				}
-				var submitResult = submit();
-				if (isVisualizationEnabled && submitResult.newVersion() != null) {
-					var newVersion = submitResult.newVersion().version();
-					visualizationStore.addTransition(oldVersion, newVersion,
-							"fire: " + visitResult.transformation() + ", " + visitResult.activation());
-				}
-				return new RandomVisitResult(submitResult, visitResult.mayHaveMore());
-			} else {
-				return new RandomVisitResult(null, visitResult.mayHaveMore());
-			}
-		} else {
+		if (model.hasUncommittedChanges()) {
 			throw new IllegalStateException("The model has uncommitted changes!");
 		}
+
+		var visitResult = activationStoreWorker.fireRandomActivation(this.last, random);
+
+		if (!visitResult.successfulVisit()) {
+			return new RandomVisitResult(null, visitResult.mayHaveMore());
+		}
+
+		if (propagationAdapter != null) {
+			var propagationResult = propagationAdapter.propagate();
+			if (propagationResult.isRejected()) {
+				return new RandomVisitResult(null, visitResult.mayHaveMore());
+			}
+		}
+		queryAdapter.flushChanges();
+
+		Version oldVersion = null;
+		if (isVisualizationEnabled) {
+			oldVersion = last.version();
+		}
+		var submitResult = submit();
+		if (isVisualizationEnabled && submitResult.newVersion() != null) {
+			var newVersion = submitResult.newVersion().version();
+			visualizationStore.addTransition(oldVersion, newVersion,
+					"fire: " + visitResult.transformation() + ", " + visitResult.activation());
+		}
+		return new RandomVisitResult(submitResult, visitResult.mayHaveMore());
 	}
 
 	public boolean hasEnoughSolution() {

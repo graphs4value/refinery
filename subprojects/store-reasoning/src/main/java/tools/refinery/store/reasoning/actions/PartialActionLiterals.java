@@ -35,4 +35,8 @@ public final class PartialActionLiterals {
 	public static FocusActionLiteral focus(NodeVariable parent, NodeVariable child) {
 		return new FocusActionLiteral(parent, child);
 	}
+
+	public static CleanupActionLiteral cleanup(NodeVariable node) {
+		return new CleanupActionLiteral(node);
+	}
 }

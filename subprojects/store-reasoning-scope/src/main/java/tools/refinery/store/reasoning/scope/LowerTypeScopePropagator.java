@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.scope.internal;
+package tools.refinery.store.reasoning.scope;
 
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.objectives.Criteria;
@@ -28,7 +28,7 @@ import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectT
 class LowerTypeScopePropagator extends TypeScopePropagator {
 	private final int lowerBound;
 
-	private LowerTypeScopePropagator(ScopePropagatorAdapterImpl adapter, int lowerBound, RelationalQuery allQuery,
+	private LowerTypeScopePropagator(BoundScopePropagator adapter, int lowerBound, RelationalQuery allQuery,
 									 RelationalQuery multiQuery) {
 		super(adapter, allQuery, multiQuery);
 		this.lowerBound = lowerBound;
@@ -58,7 +58,7 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 		}
 
 		@Override
-		public TypeScopePropagator createPropagator(ScopePropagatorAdapterImpl adapter) {
+		public TypeScopePropagator createPropagator(BoundScopePropagator adapter) {
 			return new LowerTypeScopePropagator(adapter, lowerBound, allMay, multiMay);
 		}
 
@@ -72,10 +72,10 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 			super.configure(storeBuilder);
 
 			var requiredObjects = Query.of(type.name() + "#required", Integer.class, (builder, output) -> builder
-					.clause(Integer.class, currentCount -> List.of(
-							new CountCandidateLowerBoundLiteral(currentCount, type, List.of(Variable.of())),
-							output.assign(sub(currentCount, constant(lowerBound))),
-							check(greater(currentCount, constant(0)))
+					.clause(Integer.class, candidateLowerBound -> List.of(
+							new CountCandidateLowerBoundLiteral(candidateLowerBound, type, List.of(Variable.of())),
+							output.assign(sub(constant(lowerBound), candidateLowerBound)),
+							check(greater(output, constant(0)))
 					)));
 
 			storeBuilder.getAdapter(ReasoningBuilder.class).objective(Objectives.value(requiredObjects));

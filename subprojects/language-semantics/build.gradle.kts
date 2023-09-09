@@ -16,4 +16,7 @@ dependencies {
 	api(project(":refinery-store-reasoning"))
 	implementation(project(":refinery-store-reasoning-scope"))
 	runtimeOnly(libs.eclipseCollections)
+	testImplementation(project(":refinery-store-dse-visualization"))
+	testImplementation(project(":refinery-store-query-viatra"))
+	testImplementation(testFixtures(project(":refinery-language")))
 }

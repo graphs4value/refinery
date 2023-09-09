@@ -33,7 +33,11 @@ public class BestFirstExplorer extends BestFirstWorker {
 		var lastBest = submit().newVersion();
 		while (shouldRun()) {
 			if (lastBest == null) {
-				lastBest = restoreToBest();
+				if (random.nextInt(10) == 0) {
+					lastBest = restoreToRandom(random);
+				} else {
+					lastBest = restoreToBest();
+				}
 				if (lastBest == null) {
 					return;
 				}
@@ -49,7 +53,7 @@ public class BestFirstExplorer extends BestFirstWorker {
 					} else {
 						var newVisit = newSubmit.newVersion();
 						int compareResult = compare(lastBest, newVisit);
-						if (compareResult >= 0) {
+						if (compareResult >= 0)  {
 							lastBest = newVisit;
 						} else {
 							lastBest = null;

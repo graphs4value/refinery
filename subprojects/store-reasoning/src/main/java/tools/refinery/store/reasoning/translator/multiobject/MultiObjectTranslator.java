@@ -5,17 +5,21 @@
  */
 package tools.refinery.store.reasoning.translator.multiobject;
 
+import tools.refinery.store.dse.propagation.PropagationBuilder;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.dnf.Query;
+import tools.refinery.store.query.literal.Literals;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.term.int_.IntTerms;
 import tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
+import tools.refinery.store.reasoning.actions.PartialActionLiterals;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
@@ -66,6 +70,11 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 								LOWER_CARDINALITY_VIEW.call(p1, lower),
 								check(greaterEq(lower, constant(1)))
 						))))
+				.candidate(Query.of("exists#candidate", (builder, p1) -> builder
+						.clause(
+								LOWER_CARDINALITY_VIEW.call(p1, Variable.of(Integer.class)),
+								Literals.not(MULTI_VIEW.call(p1))
+						)))
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ExistsRefiner.of(COUNT_STORAGE))
 				.exclude(null)
@@ -82,5 +91,17 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
 		reasoningBuilder.initializer(new MultiObjectInitializer(COUNT_STORAGE));
 		reasoningBuilder.storageRefiner(COUNT_STORAGE, MultiObjectStorageRefiner::new);
+
+		storeBuilder.tryGetAdapter(PropagationBuilder.class)
+				.ifPresent(propagationBuilder -> propagationBuilder.rule(
+						Rule.of("exists#cleanup", (builder, node) -> builder
+								.clause(UpperCardinality.class, upper -> List.of(
+										UPPER_CARDINALITY_VIEW.call(node, upper),
+										check(UpperCardinalityTerms.less(upper,
+												UpperCardinalityTerms.constant(UpperCardinalities.ONE)))
+								))
+								.action(
+										PartialActionLiterals.cleanup(node)
+								))));
 	}
 }

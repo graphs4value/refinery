@@ -3,15 +3,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.scope.internal;
+package tools.refinery.store.reasoning.scope;
 
 import com.google.ortools.Loader;
-import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
-import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.scope.ScopePropagatorBuilder;
-import tools.refinery.store.reasoning.scope.ScopePropagatorStoreAdapter;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
@@ -20,14 +18,16 @@ import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
 
 import java.util.*;
 
-public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<ScopePropagatorStoreAdapter>
-		implements ScopePropagatorBuilder {
-	private Symbol<CardinalityInterval> countSymbol = MultiObjectTranslator.COUNT_STORAGE;
+public class ScopePropagator implements ModelStoreConfiguration {
+	private final Symbol<CardinalityInterval> countSymbol;
 	private final Map<PartialRelation, CardinalityInterval> scopes = new LinkedHashMap<>();
-	private List<TypeScopePropagator.Factory> typeScopePropagatorFactories;
+	private final List<TypeScopePropagator.Factory> typeScopePropagatorFactories = new ArrayList<>();
 
-	@Override
-	public ScopePropagatorBuilder countSymbol(Symbol<CardinalityInterval> countSymbol) {
+	public ScopePropagator() {
+		this(MultiObjectTranslator.COUNT_STORAGE);
+	}
+
+	public ScopePropagator(Symbol<CardinalityInterval> countSymbol) {
 		if (countSymbol.arity() != 1) {
 			throw new IllegalArgumentException("Count symbol must have arty 1, got %s with arity %d instead"
 					.formatted(countSymbol, countSymbol.arity()));
@@ -39,11 +39,9 @@ public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<Scop
 			throw new IllegalArgumentException("Count symbol must default value null");
 		}
 		this.countSymbol = countSymbol;
-		return this;
 	}
 
-	@Override
-	public ScopePropagatorBuilder scope(PartialRelation type, CardinalityInterval interval) {
+	public ScopePropagator scope(PartialRelation type, CardinalityInterval interval) {
 		if (type.arity() != 1) {
 			throw new TranslationException(type, "Only types with arity 1 may have scopes, got %s with arity %d"
 					.formatted(type, type.arity()));
@@ -56,9 +54,29 @@ public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<Scop
 		return this;
 	}
 
+	public ScopePropagator scopes(Map<PartialRelation, CardinalityInterval> scopes) {
+		return scopes(scopes.entrySet());
+	}
+
+	public ScopePropagator scopes(Collection<Map.Entry<PartialRelation, CardinalityInterval>> scopes) {
+		for (var entry : scopes) {
+			scope(entry.getKey(), entry.getValue());
+		}
+		return this;
+	}
+
 	@Override
-	protected void doConfigure(ModelStoreBuilder storeBuilder) {
-		typeScopePropagatorFactories = new ArrayList<>(scopes.size());
+	public void apply(ModelStoreBuilder storeBuilder) {
+		createTypeScopePropagatorFactories();
+		Loader.loadNativeLibraries();
+		for (var factory : typeScopePropagatorFactories) {
+			factory.configure(storeBuilder);
+		}
+		storeBuilder.getAdapter(PropagationBuilder.class)
+				.propagator(model -> new BoundScopePropagator(model, this));
+	}
+
+	private void createTypeScopePropagatorFactories() {
 		for (var entry : scopes.entrySet()) {
 			var type = entry.getKey();
 			var bounds = entry.getValue();
@@ -72,15 +90,13 @@ public class ScopePropagatorBuilderImpl extends AbstractModelAdapterBuilder<Scop
 				typeScopePropagatorFactories.add(upperFactory);
 			}
 		}
-		for (var factory : typeScopePropagatorFactories) {
-			factory.configure(storeBuilder);
-		}
 	}
 
-	@Override
-	protected ScopePropagatorStoreAdapter doBuild(ModelStore store) {
-		Loader.loadNativeLibraries();
-		return new ScopePropagatorStoreAdapterImpl(store, countSymbol, Collections.unmodifiableMap(scopes),
-				Collections.unmodifiableList(typeScopePropagatorFactories));
+	Symbol<CardinalityInterval> getCountSymbol() {
+		return countSymbol;
+	}
+
+	List<TypeScopePropagator.Factory> getTypeScopePropagatorFactories() {
+		return typeScopePropagatorFactories;
 	}
 }

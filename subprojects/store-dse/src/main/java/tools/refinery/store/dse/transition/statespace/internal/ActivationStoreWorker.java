@@ -32,7 +32,7 @@ public class ActivationStoreWorker {
 
 	public ActivationStore.VisitResult fireRandomActivation(VersionWithObjectiveValue thisVersion, Random random) {
 		var result = store.getRandomAndMarkAsVisited(thisVersion, random);
-		if(result.successfulVisit()) {
+		if (result.successfulVisit()) {
 			int selectedTransformation = result.transformation();
 			int selectedActivation = result.activation();
 
@@ -40,13 +40,13 @@ public class ActivationStoreWorker {
 			var tuple = transformation.getActivation(selectedActivation);
 
 			boolean success = transformation.fireActivation(tuple);
-			if(success) {
+			if (success) {
 				return result;
 			} else {
 				return new ActivationStore.VisitResult(
 						false,
 						result.mayHaveMore(),
-						selectedActivation,
+						selectedTransformation,
 						selectedActivation);
 			}
 		}

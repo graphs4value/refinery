@@ -18,18 +18,19 @@ import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
-import tools.refinery.store.reasoning.refinement.DefaultStorageRefiner;
-import tools.refinery.store.reasoning.translator.AnyPartialSymbolTranslator;
-import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.refinement.DefaultStorageRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
+import tools.refinery.store.reasoning.translator.AnyPartialSymbolTranslator;
+import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.statecoding.StateCoderBuilder;
 
 import java.util.*;
 
@@ -109,6 +110,8 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		storeBuilder.symbols(ReasoningAdapterImpl.NODE_COUNT_SYMBOL);
+		storeBuilder.tryGetAdapter(StateCoderBuilder.class)
+				.ifPresent(stateCoderBuilder -> stateCoderBuilder.exclude(ReasoningAdapterImpl.NODE_COUNT_SYMBOL));
 		for (var translator : translators.values()) {
 			translator.configure(storeBuilder);
 			if (translator instanceof PartialRelationTranslator relationConfiguration) {

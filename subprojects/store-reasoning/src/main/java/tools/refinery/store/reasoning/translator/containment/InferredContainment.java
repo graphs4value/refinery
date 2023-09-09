@@ -8,18 +8,23 @@ package tools.refinery.store.reasoning.translator.containment;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.representation.TruthValue;
 
+import java.util.Objects;
 import java.util.Set;
 
-record InferredContainment(TruthValue contains, Set<PartialRelation> mustLinks,
-						   Set<PartialRelation> forbiddenLinks) {
+final class InferredContainment {
 	public static final InferredContainment UNKNOWN = new InferredContainment(
 			TruthValue.UNKNOWN, Set.of(), Set.of());
+	private final TruthValue contains;
+	private final Set<PartialRelation> mustLinks;
+	private final Set<PartialRelation> forbiddenLinks;
+	private final int hashCode;
 
 	public InferredContainment(TruthValue contains, Set<PartialRelation> mustLinks,
 							   Set<PartialRelation> forbiddenLinks) {
 		this.contains = adjustContains(contains, mustLinks, forbiddenLinks);
 		this.mustLinks = mustLinks;
 		this.forbiddenLinks = forbiddenLinks;
+		hashCode = Objects.hash(contains, mustLinks, forbiddenLinks);
 	}
 
 	private static TruthValue adjustContains(TruthValue contains, Set<PartialRelation> mustLinks,
@@ -33,5 +38,40 @@ record InferredContainment(TruthValue contains, Set<PartialRelation> mustLinks,
 			result = result.merge(TruthValue.ERROR);
 		}
 		return result;
+	}
+
+	public TruthValue contains() {
+		return contains;
+	}
+
+	public Set<PartialRelation> mustLinks() {
+		return mustLinks;
+	}
+
+	public Set<PartialRelation> forbiddenLinks() {
+		return forbiddenLinks;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (InferredContainment) obj;
+		return Objects.equals(this.contains, that.contains) &&
+				Objects.equals(this.mustLinks, that.mustLinks) &&
+				Objects.equals(this.forbiddenLinks, that.forbiddenLinks);
+	}
+
+	@Override
+	public int hashCode() {
+		return hashCode;
+	}
+
+	@Override
+	public String toString() {
+		return "InferredContainment[" +
+				"contains=" + contains + ", " +
+				"mustLinks=" + mustLinks + ", " +
+				"forbiddenLinks=" + forbiddenLinks + ']';
 	}
 }

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.scope.internal;
+package tools.refinery.store.reasoning.scope;
 
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Query;
@@ -19,7 +19,7 @@ import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectT
 class UpperTypeScopePropagator extends TypeScopePropagator {
 	private final int upperBound;
 
-	private UpperTypeScopePropagator(ScopePropagatorAdapterImpl adapter, int upperBound, RelationalQuery allQuery,
+	private UpperTypeScopePropagator(BoundScopePropagator adapter, int upperBound, RelationalQuery allQuery,
 									 RelationalQuery multiQuery) {
 		super(adapter, allQuery, multiQuery);
 		this.upperBound = upperBound;
@@ -47,7 +47,7 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 		}
 
 		@Override
-		public TypeScopePropagator createPropagator(ScopePropagatorAdapterImpl adapter) {
+		public TypeScopePropagator createPropagator(BoundScopePropagator adapter) {
 			return new UpperTypeScopePropagator(adapter, upperBound, allMust, multiMust);
 		}
 

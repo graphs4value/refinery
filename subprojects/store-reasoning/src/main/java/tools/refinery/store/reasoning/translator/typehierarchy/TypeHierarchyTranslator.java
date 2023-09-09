@@ -26,7 +26,8 @@ import static tools.refinery.store.reasoning.literal.PartialLiterals.candidateMu
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 
 public class TypeHierarchyTranslator implements ModelStoreConfiguration {
-	private final Symbol<InferredType> typeSymbol = Symbol.of("TYPE", 1, InferredType.class, InferredType.UNTYPED);
+	public static final Symbol<InferredType> TYPE_SYMBOL = Symbol.of("TYPE", 1, InferredType.class,
+			InferredType.UNTYPED);
 	private final TypeHierarchy typeHierarchy;
 
 	public TypeHierarchyTranslator(TypeHierarchy typeHierarchy) {
@@ -39,7 +40,7 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 			return;
 		}
 
-		storeBuilder.symbol(typeSymbol);
+		storeBuilder.symbol(TYPE_SYMBOL);
 
 		for (var entry : typeHierarchy.getPreservedTypes().entrySet()) {
 			storeBuilder.with(createPreservedTypeTranslator(entry.getKey(), entry.getValue()));
@@ -50,13 +51,13 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 		}
 
 		var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
-		reasoningBuilder.initializer(new TypeHierarchyInitializer(typeHierarchy, typeSymbol));
+		reasoningBuilder.initializer(new TypeHierarchyInitializer(typeHierarchy, TYPE_SYMBOL));
 	}
 
 	private ModelStoreConfiguration createPreservedTypeTranslator(PartialRelation type, TypeAnalysisResult result) {
 		var may = Query.of(type.name() + "#partial#may", (builder, p1) -> {
 			if (!result.isAbstractType()) {
-				builder.clause(new MayTypeView(typeSymbol, type).call(p1));
+				builder.clause(new MayTypeView(TYPE_SYMBOL, type).call(p1));
 			}
 			for (var subtype : result.getDirectSubtypes()) {
 				builder.clause(may(subtype.call(p1)));
@@ -64,12 +65,12 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 		});
 
 		var must = Query.of(type.name() + "#partial#must", (builder, p1) -> builder.clause(
-				new MustTypeView(typeSymbol, type).call(p1)
+				new MustTypeView(TYPE_SYMBOL, type).call(p1)
 		));
 
 		var candidate = Query.of(type.name() + "#candidate", (builder, p1) -> {
 			if (!result.isAbstractType()) {
-				builder.clause(new CandidateTypeView(typeSymbol, type).call(p1));
+				builder.clause(new CandidateTypeView(TYPE_SYMBOL, type).call(p1));
 			}
 			for (var subtype : result.getDirectSubtypes()) {
 				builder.clause(PartialLiterals.candidateMust(subtype.call(p1)));
@@ -80,7 +81,7 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 				.may(may)
 				.must(must)
 				.candidate(candidate)
-				.refiner(InferredTypeRefiner.of(typeSymbol, result));
+				.refiner(InferredTypeRefiner.of(TYPE_SYMBOL, result));
 
 		if (!result.isAbstractType()) {
 			var decision = Rule.of(type.name(), (builder, instance) -> builder

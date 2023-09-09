@@ -13,6 +13,7 @@ import tools.refinery.language.semantics.model.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.Constraint;
 import tools.refinery.store.query.dnf.InvalidClauseException;
@@ -24,7 +25,7 @@ import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.scope.ScopePropagatorBuilder;
+import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
@@ -73,7 +74,9 @@ public class ModelInitializer {
 
 	private Metamodel metamodel;
 
-	private Map<Tuple, CardinalityInterval> countSeed = new LinkedHashMap<>();
+	private final Map<Tuple, CardinalityInterval> countSeed = new LinkedHashMap<>();
+
+	private ScopePropagator scopePropagator;
 
 	private ModelSeed modelSeed;
 
@@ -139,6 +142,12 @@ public class ModelInitializer {
 			modelSeedBuilder.seed(partialRelation, info.toSeed(nodeCount));
 		}
 		collectScopes();
+		if (scopePropagator != null) {
+			if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {
+				throw new TracedException(problem, "Type scopes require a PropagationBuilder");
+			}
+			storeBuilder.with(scopePropagator);
+		}
 		modelSeedBuilder.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 				.reducedValue(CardinalityIntervals.SET)
 				.putAll(countSeed));
@@ -534,8 +543,7 @@ public class ModelInitializer {
 		}
 	}
 
-	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable,
-			Variable> localScope,
+	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
 							List<Literal> literals) {
 		if (expr instanceof LogicConstant logicConstant) {
 			switch (logicConstant.getLogicValue()) {
@@ -645,14 +653,15 @@ public class ModelInitializer {
 	}
 
 	private void collectTypeScope(TypeScope typeScope) {
-		var scopePropagatorBuilder = storeBuilder.tryGetAdapter(ScopePropagatorBuilder.class).orElseThrow(
-				() -> new TracedException(typeScope, "Type scopes require a ScopePropagatorBuilder"));
 		var type = relationTrace.get(typeScope.getTargetType());
 		if (type == null) {
 			throw new TracedException(typeScope, "Unknown target type");
 		}
 		var interval = getCardinalityInterval(typeScope.getMultiplicity());
-		scopePropagatorBuilder.scope(type, interval);
+		if (scopePropagator == null) {
+			scopePropagator = new ScopePropagator();
+		}
+		scopePropagator.scope(type, interval);
 	}
 
 	private record RelationInfo(PartialRelation partialRelation, MutableSeed<TruthValue> assertions,

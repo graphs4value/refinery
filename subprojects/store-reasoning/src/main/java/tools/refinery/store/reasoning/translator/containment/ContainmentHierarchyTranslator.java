@@ -243,7 +243,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 						MultiObjectTranslator.MULTI_VIEW.call(multi),
 						not(may(CONTAINED_SYMBOL.call(multi)))
 				)
-				.clause((container) -> List.of(
+				.clause(container -> List.of(
 						MultiObjectTranslator.MULTI_VIEW.call(multi),
 						must(CONTAINS_SYMBOL.call(container, multi)),
 						not(MultiObjectTranslator.MULTI_VIEW.call(container))

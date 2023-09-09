@@ -11,18 +11,14 @@ import tools.refinery.store.tuple.Tuple;
 
 public class BoundAction {
 	private final Action action;
-	private final BoundActionLiteral[] boundLiterals;
+	private final Model model;
+	private BoundActionLiteral @Nullable [] boundLiterals;
 	private Tuple activation;
 	private final int[] localVariables;
 
 	BoundAction(Action action, Model model) {
 		this.action = action;
-		var actionLiterals = action.getActionLiterals();
-		int size = actionLiterals.size();
-		boundLiterals = new BoundActionLiteral[size];
-		for (int i = 0; i < size; i++) {
-			boundLiterals[i] = actionLiterals.get(i).bindToModel(model);
-		}
+		this.model = model;
 		localVariables = new int[action.getLocalVariables().size()];
 	}
 
@@ -31,6 +27,9 @@ public class BoundAction {
 			throw new IllegalStateException("Reentrant firing is not allowed");
 		}
 		this.activation = activation;
+		if (boundLiterals == null) {
+			boundLiterals = bindLiterals();
+		}
 		try {
 			int size = boundLiterals.length;
 			for (int i = 0; i < size; i++) {
@@ -48,6 +47,16 @@ public class BoundAction {
 			this.activation = null;
 		}
 		return true;
+	}
+
+	private BoundActionLiteral[] bindLiterals() {
+		var actionLiterals = action.getActionLiterals();
+		int size = actionLiterals.size();
+		var boundLiteralsArray = new BoundActionLiteral[size];
+		for (int i = 0; i < size; i++) {
+			boundLiteralsArray[i] = actionLiterals.get(i).bindToModel(model);
+		}
+		return boundLiteralsArray;
 	}
 
 	private Tuple getInputTuple(int @Nullable [] inputAllocation) {

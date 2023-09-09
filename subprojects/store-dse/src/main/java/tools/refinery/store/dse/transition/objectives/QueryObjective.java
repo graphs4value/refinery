@@ -28,9 +28,9 @@ public class QueryObjective implements Objective {
 		return () -> {
 			var cursor = resultSet.getAll();
 			if (!cursor.move()) {
-				throw new IllegalStateException("Query providing the objective function has no values!");
+				return 0;
 			}
-			return cursor.getValue().doubleValue();
+			return Math.max(cursor.getValue().doubleValue(), 0);
 		};
 	}
 

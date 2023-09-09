@@ -104,9 +104,16 @@ public class ActivationStoreImpl implements ActivationStore {
 	public synchronized VisitResult getRandomAndMarkAsVisited(VersionWithObjectiveValue version, Random random) {
 		var entries = versionToActivations.get(version);
 
+		var weights = new double[entries.size()];
+		double totalWeight = 0;
 		int numberOfAllUnvisitedActivations = 0;
-		for (var entry : entries) {
-			numberOfAllUnvisitedActivations += entry.getNumberOfUnvisitedActivations();
+		for (int i = 0; i < weights.length; i++) {
+			var entry = entries.get(i);
+			int unvisited = entry.getNumberOfUnvisitedActivations();
+			double weight = unvisited == 0 ? 0 : unvisited; //(Math.log(unvisited) + 1.0);
+			weights[i] = weight;
+			totalWeight += weight;
+			numberOfAllUnvisitedActivations += unvisited;
 		}
 
 		if (numberOfAllUnvisitedActivations == 0) {
@@ -114,18 +121,18 @@ public class ActivationStoreImpl implements ActivationStore {
 			return new VisitResult(false, false, -1, -1);
 		}
 
-		int offset = random.nextInt(numberOfAllUnvisitedActivations);
+		double offset = random.nextDouble(totalWeight);
 		int transformation = 0;
 		for (; transformation < entries.size(); transformation++) {
-			var entry = entries.get(transformation);
-			int unvisited = entry.getNumberOfUnvisitedActivations();
-			if (unvisited > 0 && offset < unvisited) {
+			double weight = weights[transformation];
+			if (weight > 0 && offset < weight) {
+				var entry = entries.get(transformation);
 				int activation = random.nextInt(entry.getNumberOfActivations());
 				return this.visitActivation(version, transformation, activation);
 			}
-			offset -= unvisited;
+			offset -= weight;
 		}
 
-		throw new AssertionError("Unvisited activation %d not found".formatted(offset));
+		throw new AssertionError("Unvisited activation %f not found".formatted(offset));
 	}
 }

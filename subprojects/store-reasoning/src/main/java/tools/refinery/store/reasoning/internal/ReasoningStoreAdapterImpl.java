@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.internal;
 
+import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -103,6 +104,11 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 		for (var initializer : initializers) {
 			initializer.initialize(model, modelSeed);
 		}
+		model.tryGetAdapter(PropagationAdapter.class).ifPresent(propagationAdapter -> {
+			if (propagationAdapter.propagate().isRejected()) {
+				throw new IllegalArgumentException("Inconsistent initial mode: propagation failed");
+			}
+		});
 		model.getAdapter(ModelQueryAdapter.class).flushChanges();
 		return model;
 	}
