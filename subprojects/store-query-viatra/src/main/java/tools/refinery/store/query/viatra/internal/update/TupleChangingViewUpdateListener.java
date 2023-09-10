@@ -5,11 +5,11 @@
  */
 package tools.refinery.store.query.viatra.internal.update;
 
-import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.view.SymbolView;
 import tools.refinery.store.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
 
 import java.util.Arrays;
 
@@ -27,18 +27,19 @@ public class TupleChangingViewUpdateListener<T> extends SymbolViewUpdateListener
 		boolean fromPresent = view.filter(key, fromValue);
 		boolean toPresent = view.filter(key, toValue);
 		if (fromPresent) {
+			var fromArray = view.forwardMap(key, fromValue);
 			if (toPresent) { // value change
-				var fromArray = view.forwardMap(key, fromValue);
 				var toArray = view.forwardMap(key, toValue);
 				if (!Arrays.equals(fromArray, toArray)) {
 					processUpdate(Tuples.flatTupleOf(fromArray), false);
 					processUpdate(Tuples.flatTupleOf(toArray), true);
 				}
 			} else { // fromValue disappears
-				processUpdate(Tuples.flatTupleOf(view.forwardMap(key, fromValue)), false);
+				processUpdate(Tuples.flatTupleOf(fromArray), false);
 			}
 		} else if (toPresent) { // toValue appears
-			processUpdate(Tuples.flatTupleOf(view.forwardMap(key, toValue)), true);
+			var toArray = view.forwardMap(key, toValue);
+			processUpdate(Tuples.flatTupleOf(toArray), true);
 		}
 	}
 }

@@ -122,30 +122,30 @@ class ModelGenerationTest {
 
 				abstract class Vertex {
 				    container Region[0..1] region opposite vertices
-				    Transition[] outgoingTransition opposite source
+				    contains Transition[] outgoingTransition opposite source
 				    Transition[] incomingTransition opposite target
 				}
 
 				class Transition {
-				    Vertex source opposite outgoingTransition
+				    container Vertex[0..1] source opposite outgoingTransition
 				    Vertex target opposite incomingTransition
 				}
 
-				abstract class Pseudostate extends Vertex {}
+				abstract class Pseudostate extends Vertex.
 
-				abstract class RegularState extends Vertex {}
+				abstract class RegularState extends Vertex.
 
-				class Entry extends Pseudostate {}
+				class Entry extends Pseudostate.
 
-				class Exit extends Pseudostate {}
+				class Exit extends Pseudostate.
 
-				class Choice extends Pseudostate {}
+				class Choice extends Pseudostate.
 
-				class FinalState extends RegularState {}
+				class FinalState extends RegularState.
 
-				class State extends RegularState, CompositeElement {}
+				class State extends RegularState, CompositeElement.
 
-				class Statechart extends CompositeElement {}
+				class Statechart extends CompositeElement.
 
 				// Constraints
 
@@ -209,7 +209,74 @@ class ModelGenerationTest {
 				error choiceHasNoIncoming(Choice c) <->
 				    !target(_, c).
 
-				scope node = 50..60, Statechart = 1.
+				scope node = 50..60, Region = 5..10, Statechart = 1.
+				""");
+		assertThat(parsedProblem.errors(), empty());
+		var problem = parsedProblem.problem();
+
+		var storeBuilder = ModelStore.builder()
+				.with(ViatraModelQueryAdapter.builder())
+//				.with(ModelVisualizerAdapter.builder()
+//						.withOutputPath("test_output")
+//						.withFormat(FileFormat.DOT)
+//						.withFormat(FileFormat.SVG)
+//						.saveStates()
+//						.saveDesignSpace())
+				.with(PropagationAdapter.builder())
+				.with(StateCoderAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder())
+				.with(ReasoningAdapter.builder());
+
+		var modelSeed = modelInitializer.createModel(problem, storeBuilder);
+
+		var store = storeBuilder.build();
+
+		var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+
+		var initialVersion = initialModel.commit();
+
+		var bestFirst = new BestFirstStoreManager(store, 1);
+		bestFirst.startExploration(initialVersion);
+		var resultStore = bestFirst.getSolutionStore();
+		System.out.println("states size: " + resultStore.getSolutions().size());
+
+		var model = store.createModelForState(resultStore.getSolutions().get(0).version());
+		var interpretation = model.getAdapter(ReasoningAdapter.class)
+				.getPartialInterpretation(Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL);
+		var cursor = interpretation.getAll();
+		int max = -1;
+		var types = new LinkedHashMap<PartialRelation, Integer>();
+		var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
+		while (cursor.move()) {
+			max = Math.max(max, cursor.getKey().get(0));
+			var type = typeInterpretation.get(cursor.getKey());
+			if (type != null) {
+				types.compute(type.candidateType(), (ignoredKey, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+			}
+		}
+		System.out.println("Model size: " + (max + 1));
+		System.out.println(types);
+//		initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
+	}
+
+	@Test
+	void filesystemTest() {
+		var parsedProblem = parseHelper.parse("""
+				class Filesystem {
+					contains Entry root
+				}
+
+				abstract class Entry.
+
+				class Directory extends Entry {
+					contains Entry[] entries
+				}
+
+				class File extends Entry.
+
+				Filesystem(fs).
+
+				scope Filesystem += 0, Entry = 100.
 				""");
 		assertThat(parsedProblem.errors(), empty());
 		var problem = parsedProblem.problem();
@@ -265,7 +332,7 @@ class ModelGenerationTest {
 		var test = injector.getInstance(ModelGenerationTest.class);
 		try {
 			test.statechartTest();
-		} catch (AssertionError e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}

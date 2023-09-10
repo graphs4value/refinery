@@ -67,15 +67,12 @@ class CountPropagationTest {
 						.put(Tuple.of(3), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+		var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+		var initialState = initialModel.commit();
+
+		var model = store.createModelForState(initialState);
 		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 		var propagationAdapter = model.getAdapter(PropagationAdapter.class);
-		model.commit();
-
-		reasoningAdapter.split(0);
-		assertThat(propagationAdapter.propagate(), is(PropagationResult.UNCHANGED));
-		model.commit();
-
 		reasoningAdapter.split(0);
 		assertThat(propagationAdapter.propagate(), is(PropagationResult.UNCHANGED));
 	}

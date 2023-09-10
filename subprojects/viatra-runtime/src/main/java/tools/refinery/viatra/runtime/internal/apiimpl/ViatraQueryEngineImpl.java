@@ -41,6 +41,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static tools.refinery.viatra.runtime.matchers.util.Preconditions.checkArgument;
@@ -164,9 +165,27 @@ public final class ViatraQueryEngineImpl extends AdvancedViatraQueryEngine
 		}
 		delayMessageDelivery = false;
 		try {
-			for (IQueryBackend backend : this.queryBackends.values()) {
-				backend.flushUpdates();
-			}
+			flushAllBackends();
+		} finally {
+			delayMessageDelivery = true;
+		}
+	}
+
+	private void flushAllBackends() {
+		for (IQueryBackend backend : this.queryBackends.values()) {
+			backend.flushUpdates();
+		}
+	}
+
+	@Override
+	public <T> T withFlushingChanges(Supplier<T> callback) {
+		if (!delayMessageDelivery) {
+			return callback.get();
+		}
+		delayMessageDelivery = false;
+		try {
+			flushAllBackends();
+			return callback.get();
 		} finally {
 			delayMessageDelivery = true;
 		}
@@ -186,18 +205,20 @@ public final class ViatraQueryEngineImpl extends AdvancedViatraQueryEngine
     @Override
     public <Matcher extends ViatraQueryMatcher<? extends IPatternMatch>> Matcher getMatcher(
             IQuerySpecification<Matcher> querySpecification, QueryEvaluationHint optionalEvaluationHints) {
-        IMatcherCapability capability = getRequestedCapability(querySpecification, optionalEvaluationHints);
-        Matcher matcher = doGetExistingMatcher(querySpecification, capability);
-        if (matcher != null) {
-            return matcher;
-        }
-        matcher = querySpecification.instantiate();
+		return withFlushingChanges(() -> {
+			IMatcherCapability capability = getRequestedCapability(querySpecification, optionalEvaluationHints);
+			Matcher matcher = doGetExistingMatcher(querySpecification, capability);
+			if (matcher != null) {
+				return matcher;
+			}
+			matcher = querySpecification.instantiate();
 
-        BaseMatcher<?> baseMatcher = (BaseMatcher<?>) matcher;
-        ((QueryResultWrapper) baseMatcher).setBackend(this,
-                getResultProvider(querySpecification, optionalEvaluationHints), capability);
-        internalRegisterMatcher(querySpecification, baseMatcher);
-        return matcher;
+			BaseMatcher<?> baseMatcher = (BaseMatcher<?>) matcher;
+			((QueryResultWrapper) baseMatcher).setBackend(this,
+					getResultProvider(querySpecification, optionalEvaluationHints), capability);
+			internalRegisterMatcher(querySpecification, baseMatcher);
+			return matcher;
+		});
     }
 
     @Override

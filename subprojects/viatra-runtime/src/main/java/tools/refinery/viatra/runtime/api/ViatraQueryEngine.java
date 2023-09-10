@@ -15,6 +15,7 @@ import tools.refinery.viatra.runtime.api.scope.QueryScope;
 import tools.refinery.viatra.runtime.matchers.ViatraQueryRuntimeException;
 
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -147,4 +148,6 @@ public abstract class ViatraQueryEngine {
     public abstract QueryScope getScope();
 
 	public abstract void flushChanges();
+
+	public abstract <T> T withFlushingChanges(Supplier<T> supplier);
 }

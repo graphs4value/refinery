@@ -5,10 +5,10 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import tools.refinery.viatra.runtime.matchers.psystem.IExpressionEvaluator;
-import tools.refinery.viatra.runtime.matchers.psystem.IValueProvider;
 import tools.refinery.store.query.term.Term;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.viatra.runtime.matchers.psystem.IExpressionEvaluator;
+import tools.refinery.viatra.runtime.matchers.psystem.IValueProvider;
 
 import java.util.stream.Collectors;
 
