@@ -27,11 +27,13 @@ import tools.refinery.store.tuple.Tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MultiObjectTest {
 	private static final PartialRelation person = new PartialRelation("Person", 1);
 
 	private ModelStore store;
+	private ReasoningStoreAdapter reasoningStoreAdapter;
 	private Model model;
 	private Interpretation<CardinalityInterval> countStorage;
 
@@ -47,6 +49,7 @@ class MultiObjectTest {
 				.with(new ScopePropagator()
 						.scope(person, CardinalityIntervals.between(5, 15)))
 				.build();
+		reasoningStoreAdapter = store.getAdapter(ReasoningStoreAdapter.class);
 		model = null;
 		countStorage = null;
 	}
@@ -59,7 +62,6 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.between(2, 12)));
 	}
 
@@ -71,19 +73,18 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.between(5, 20)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.between(5, 12)));
 	}
 
 	@Test
 	void oneMultiObjectUnsatisfiableUpperTest() {
-		createModel(ModelSeed.builder(21)
+		var seed = ModelSeed.builder(21)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(0), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
-				.build());
-		assertThat(propagate(), is(PropagationResult.REJECTED));
+				.build();
+		assertThrows(IllegalArgumentException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -97,33 +98,33 @@ class MultiObjectTest {
 
 	@Test
 	void noMultiObjectUnsatisfiableTest() {
-		createModel(ModelSeed.builder(2)
+		var seed = ModelSeed.builder(2)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
-				.build());
-		assertThat(propagate(), is(PropagationResult.REJECTED));
+				.build();
+		assertThrows(IllegalArgumentException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
 	void oneMultiObjectExistingBoundUnsatisfiableLowerTest() {
-		createModel(ModelSeed.builder(4)
+		var seed = ModelSeed.builder(4)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(0), CardinalityIntervals.atLeast(20)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
-				.build());
-		assertThat(propagate(), is(PropagationResult.REJECTED));
+				.build();
+		assertThrows(IllegalArgumentException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
 	void oneMultiObjectExistingBoundUnsatisfiableUpperTest() {
-		createModel(ModelSeed.builder(4)
+		var seed = ModelSeed.builder(4)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(0), CardinalityIntervals.atMost(1)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
-				.build());
-		assertThat(propagate(), is(PropagationResult.REJECTED));
+				.build();
+		assertThrows(IllegalArgumentException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -135,7 +136,6 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.atMost(12)));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.atMost(12)));
 	}
@@ -149,33 +149,32 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.atMost(11)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.between(7, 12)));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.atMost(5)));
 	}
 
 	@Test
 	void twoMultiObjectsExistingBoundUnsatisfiableUpperTest() {
-		createModel(ModelSeed.builder(5)
+		var seed = ModelSeed.builder(5)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(0), CardinalityIntervals.between(7, 20))
 						.put(Tuple.of(1), CardinalityIntervals.exactly(11)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
-				.build());
-		assertThat(propagate(), is(PropagationResult.REJECTED));
+				.build();
+		assertThrows(IllegalArgumentException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
 	void twoMultiObjectsExistingBoundUnsatisfiableLowerTest() {
-		createModel(ModelSeed.builder(3)
+		var seed = ModelSeed.builder(3)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(0), CardinalityIntervals.LONE)
 						.put(Tuple.of(1), CardinalityIntervals.atMost(2)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
-				.build());
-		assertThat(propagate(), is(PropagationResult.REJECTED));
+				.build();
+		assertThrows(IllegalArgumentException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -187,7 +186,6 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build());
-		assertThat(propagate(), is(PropagationResult.PROPAGATED));
 		assertThat(countStorage.get(Tuple.of(0)), is(CardinalityIntervals.LONE));
 		assertThat(countStorage.get(Tuple.of(1)), is(CardinalityIntervals.between(1, 12)));
 		countStorage.put(Tuple.of(0), CardinalityIntervals.ONE);

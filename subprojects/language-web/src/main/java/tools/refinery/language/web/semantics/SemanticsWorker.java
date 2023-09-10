@@ -22,6 +22,7 @@ import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.language.semantics.model.SemanticsUtils;
 import tools.refinery.language.semantics.model.TracedException;
+import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
@@ -29,9 +30,7 @@ import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.refinement.RefinementResult;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.scope.ScopePropagatorAdapter;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
@@ -77,9 +76,9 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		var builder = ModelStore.builder()
 				.with(ViatraModelQueryAdapter.builder()
 						.cancellationToken(cancellationToken))
+				.with(PropagationAdapter.builder())
 				.with(ReasoningAdapter.builder()
-						.requiredInterpretations(Concreteness.PARTIAL))
-				.with(ScopePropagatorAdapter.builder());
+						.requiredInterpretations(Concreteness.PARTIAL));
 		cancellationToken.checkCancelled();
 		try {
 			var modelSeed = initializer.createModel(problem, builder);
@@ -94,9 +93,6 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			cancellationToken.checkCancelled();
 			var cancellableModelSeed = CancellableSeed.wrap(cancellationToken, modelSeed);
 			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(cancellableModelSeed);
-			if (model.getAdapter(ScopePropagatorAdapter.class).propagate() == RefinementResult.REJECTED) {
-				return new SemanticsInternalErrorResult("Scopes are unsatisfiable");
-			}
 			cancellationToken.checkCancelled();
 			var partialInterpretation = getPartialInterpretation(initializer, model);
 
