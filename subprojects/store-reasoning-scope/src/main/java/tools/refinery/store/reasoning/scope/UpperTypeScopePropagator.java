@@ -26,8 +26,8 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 	}
 
 	@Override
-	public void updateBounds() {
-		constraint.setUb(upperBound - getSingleCount());
+	protected void doUpdateBounds() {
+		constraint.setUb((upperBound - getSingleCount()));
 	}
 
 	public static class Factory extends TypeScopePropagator.Factory {

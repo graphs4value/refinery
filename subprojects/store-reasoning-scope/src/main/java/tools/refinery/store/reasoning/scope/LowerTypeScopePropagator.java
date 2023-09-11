@@ -35,7 +35,7 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 	}
 
 	@Override
-	public void updateBounds() {
+	protected void doUpdateBounds() {
 		constraint.setLb((lowerBound - getSingleCount()));
 	}
 

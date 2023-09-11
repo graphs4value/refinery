@@ -38,7 +38,12 @@ abstract class TypeScopePropagator {
 		multiNodes.addListener(this::multiChanged);
 	}
 
-	public abstract void updateBounds();
+	protected abstract void doUpdateBounds();
+
+	public boolean updateBounds() {
+		doUpdateBounds();
+		return constraint.lb() <= constraint.ub();
+	}
 
 	protected int getSingleCount() {
 		return allNodes.size() - multiNodes.size();

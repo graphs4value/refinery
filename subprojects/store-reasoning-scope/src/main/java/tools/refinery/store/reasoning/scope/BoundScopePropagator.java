@@ -37,6 +37,7 @@ class BoundScopePropagator implements BoundPropagator {
 		queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		countInterpretation = model.getInterpretation(storeAdapter.getCountSymbol());
 		solver = MPSolver.createSolver("GLOP");
+		solver.suppressOutput();
 		objective = solver.objective();
 		initializeVariables();
 		countInterpretation.addListener(this::countChanged, true);
@@ -149,7 +150,10 @@ class BoundScopePropagator implements BoundPropagator {
 		changed = false;
 		for (var propagator : propagators) {
 			model.checkCancelled();
-			propagator.updateBounds();
+			if (!propagator.updateBounds()) {
+				// Avoid logging GLOP error to console by checking for inconsistent constraints in advance.
+				return PropagationResult.REJECTED;
+			}
 		}
 		var result = PropagationResult.UNCHANGED;
 		if (activeVariables.isEmpty()) {
