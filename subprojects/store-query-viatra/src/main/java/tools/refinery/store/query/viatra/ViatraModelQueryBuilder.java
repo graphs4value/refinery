@@ -10,7 +10,6 @@ import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Dnf;
 import tools.refinery.store.query.rewriter.DnfRewriter;
-import tools.refinery.viatra.runtime.CancellationToken;
 import tools.refinery.viatra.runtime.api.ViatraQueryEngineOptions;
 import tools.refinery.viatra.runtime.matchers.backend.IQueryBackendFactory;
 import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
@@ -29,8 +28,6 @@ public interface ViatraModelQueryBuilder extends ModelQueryBuilder {
 	ViatraModelQueryBuilder cachingBackend(IQueryBackendFactory queryBackendFactory);
 
 	ViatraModelQueryBuilder searchBackend(IQueryBackendFactory queryBackendFactory);
-
-	ViatraModelQueryBuilder cancellationToken(CancellationToken cancellationToken);
 
 	@Override
 	default ViatraModelQueryBuilder queries(AnyQuery... queries) {

@@ -56,6 +56,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	@Override
 	public boolean checkAccept() {
 		for (var accept : this.accepts) {
+			model.checkCancelled();
 			if (!accept.isSatisfied()) {
 				return false;
 			}
@@ -66,6 +67,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 	@Override
 	public boolean checkExclude() {
 		for (var exclude : this.excludes) {
+			model.checkCancelled();
 			if (exclude.isSatisfied()) {
 				return true;
 			}
@@ -75,6 +77,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 
 	@Override
 	public ObjectiveValue getObjectiveValue() {
+		model.checkCancelled();
 		if (objectives.size() == 1) {
 			return ObjectiveValue.of(objectives.get(0).getValue());
 		} else if (objectives.size() == 2) {
@@ -82,6 +85,7 @@ public class DesignSpaceExplorationAdapterImpl implements DesignSpaceExploration
 		} else {
 			double[] res = new double[objectives.size()];
 			for (int i = 0; i < objectives.size(); i++) {
+				model.checkCancelled();
 				res[i] = objectives.get(i).getValue();
 			}
 			return ObjectiveValue.of(res);

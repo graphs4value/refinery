@@ -12,6 +12,7 @@ import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.AnyInterpretation;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.StateCodeCalculator;
 import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.tuple.Tuple;
@@ -19,8 +20,9 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.List;
 
 public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator implements StateCodeCalculator {
-	public LazyNeighbourhoodCalculator(List<? extends AnyInterpretation> interpretations, IntSet individuals) {
-		super(interpretations, individuals);
+	public LazyNeighbourhoodCalculator(Model model, List<? extends AnyInterpretation> interpretations,
+									   IntSet individuals) {
+		super(model, interpretations, individuals);
 	}
 
 	public StateCoderResult calculateCodes() {

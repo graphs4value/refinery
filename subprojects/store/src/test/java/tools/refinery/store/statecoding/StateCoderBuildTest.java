@@ -124,7 +124,8 @@ class StateCoderBuildTest {
 		var store = ModelStore.builder()
 				.symbols(friend)
 				.with(StateCoderAdapter.builder()
-						.stateCodeCalculatorFactory((interpretations, individuals) -> mock))
+						.stateCodeCalculatorFactory((ignoredModel, ignoredInterpretations, ignoredIndividuals) ->
+								mock))
 				.build();
 
 		var model = store.createEmptyModel();

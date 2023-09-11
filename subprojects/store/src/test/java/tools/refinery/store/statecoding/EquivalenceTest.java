@@ -192,7 +192,8 @@ class EquivalenceTest {
 		ModelStore store = ModelStore.builder()
 				.symbols(person, age, friend, parents, population)
 				.with(StateCoderAdapter.builder()
-						.stateCodeCalculatorFactory((p1, p2) -> calculator))
+						.stateCodeCalculatorFactory((ignoredModel, ignoredInterpretations, ignoredIndividuals) ->
+								calculator))
 				.build();
 
 		var stateCoder = store.getAdapter(StateCoderStoreAdapter.class);

@@ -22,6 +22,7 @@ import tools.refinery.store.representation.cardinality.*;
 import tools.refinery.store.tuple.Tuple;
 
 class BoundScopePropagator implements BoundPropagator {
+	private final Model model;
 	private final ModelQueryAdapter queryEngine;
 	private final Interpretation<CardinalityInterval> countInterpretation;
 	private final MPSolver solver;
@@ -32,6 +33,7 @@ class BoundScopePropagator implements BoundPropagator {
 	private boolean changed = true;
 
 	public BoundScopePropagator(Model model, ScopePropagator storeAdapter) {
+		this.model = model;
 		queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		countInterpretation = model.getInterpretation(storeAdapter.getCountSymbol());
 		solver = MPSolver.createSolver("GLOP");
@@ -41,6 +43,7 @@ class BoundScopePropagator implements BoundPropagator {
 		var propagatorFactories = storeAdapter.getTypeScopePropagatorFactories();
 		propagators = new TypeScopePropagator[propagatorFactories.size()];
 		for (int i = 0; i < propagators.length; i++) {
+			model.checkCancelled();
 			propagators[i] = propagatorFactories.get(i).createPropagator(this);
 		}
 	}
@@ -145,6 +148,7 @@ class BoundScopePropagator implements BoundPropagator {
 		}
 		changed = false;
 		for (var propagator : propagators) {
+			model.checkCancelled();
 			propagator.updateBounds();
 		}
 		var result = PropagationResult.UNCHANGED;
@@ -167,6 +171,7 @@ class BoundScopePropagator implements BoundPropagator {
 	}
 
 	private PropagationResult checkEmptiness() {
+		model.checkCancelled();
 		var emptinessCheckingResult = solver.solve();
 		return switch (emptinessCheckingResult) {
 			case OPTIMAL, UNBOUNDED -> PropagationResult.UNCHANGED;
@@ -178,6 +183,7 @@ class BoundScopePropagator implements BoundPropagator {
 	private PropagationResult propagateNode(int nodeId, MPVariable variable) {
 		objective.setCoefficient(variable, 1);
 		try {
+			model.checkCancelled();
 			objective.setMinimization();
 			var minimizationResult = solver.solve();
 			int lowerBound;
@@ -191,6 +197,7 @@ class BoundScopePropagator implements BoundPropagator {
 					.formatted(variable, minimizationResult));
 			}
 
+			model.checkCancelled();
 			objective.setMaximization();
 			var maximizationResult = solver.solve();
 			UpperCardinality upperBound;

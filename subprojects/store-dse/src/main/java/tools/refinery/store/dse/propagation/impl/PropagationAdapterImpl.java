@@ -31,6 +31,7 @@ class PropagationAdapterImpl implements PropagationAdapter {
 		PropagationResult result = PropagationResult.UNCHANGED;
 		PropagationResult lastResult;
 		do {
+			model.checkCancelled();
 			lastResult = propagateOne();
 			result = result.andThen(lastResult);
 		} while (lastResult.isChanged());
@@ -40,6 +41,7 @@ class PropagationAdapterImpl implements PropagationAdapter {
 	private PropagationResult propagateOne() {
 		PropagationResult result = PropagationResult.UNCHANGED;
 		for (int i = 0; i < boundPropagators.length; i++) {
+			model.checkCancelled();
 			var lastResult = propagateUntilFixedPoint(i);
 			result = result.andThen(lastResult);
 			if (result.isRejected()) {
@@ -54,6 +56,7 @@ class PropagationAdapterImpl implements PropagationAdapter {
 		PropagationResult result = PropagationResult.UNCHANGED;
 		PropagationResult lastResult;
 		do {
+			model.checkCancelled();
 			lastResult = propagator.propagateOne();
 			result = result.andThen(lastResult);
 		} while (lastResult.isChanged());

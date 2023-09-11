@@ -10,6 +10,7 @@ import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.model.AnyInterpretation;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple0;
@@ -17,13 +18,16 @@ import tools.refinery.store.tuple.Tuple0;
 import java.util.*;
 
 public abstract class AbstractNeighbourhoodCalculator {
+	protected final Model model;
 	protected final List<AnyInterpretation> nullImpactValues;
 	protected final LinkedHashMap<AnyInterpretation, long[]> impactValues;
 	protected final MutableIntLongMap individualHashValues = IntLongMaps.mutable.empty();
 
 	protected static final long PRIME = 31;
 
-	protected AbstractNeighbourhoodCalculator(List<? extends AnyInterpretation> interpretations, IntSet individuals) {
+	protected AbstractNeighbourhoodCalculator(Model model, List<? extends AnyInterpretation> interpretations,
+											  IntSet individuals) {
+		this.model = model;
 		this.nullImpactValues = new ArrayList<>();
 		this.impactValues = new LinkedHashMap<>();
 		// Random isn't used for cryptographical purposes but just to assign distinguishable identifiers to symbols.

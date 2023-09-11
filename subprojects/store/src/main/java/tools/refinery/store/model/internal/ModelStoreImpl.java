@@ -14,16 +14,20 @@ import tools.refinery.store.model.ModelDiffCursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.util.CancellationToken;
 
 import java.util.*;
 
 public class ModelStoreImpl implements ModelStore {
 	private final LinkedHashMap<? extends AnySymbol, ? extends VersionedMapStore<Tuple, ?>> stores;
 	private final List<ModelStoreAdapter> adapters;
+	private final CancellationToken cancellationToken;
 
-	ModelStoreImpl(LinkedHashMap<? extends AnySymbol, ? extends VersionedMapStore<Tuple, ?>> stores, int adapterCount) {
+	ModelStoreImpl(LinkedHashMap<? extends AnySymbol, ? extends VersionedMapStore<Tuple, ?>> stores, int adapterCount,
+				   CancellationToken cancellationToken) {
 		this.stores = stores;
 		adapters = new ArrayList<>(adapterCount);
+		this.cancellationToken = cancellationToken;
 	}
 
 	@Override
@@ -99,5 +103,14 @@ public class ModelStoreImpl implements ModelStore {
 
 	void addAdapter(ModelStoreAdapter adapter) {
 		adapters.add(adapter);
+	}
+
+	@Override
+	public void checkCancelled() {
+		cancellationToken.checkCancelled();
+	}
+
+	CancellationToken getCancellationToken() {
+		return cancellationToken;
 	}
 }

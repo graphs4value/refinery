@@ -30,9 +30,9 @@ class MultiObjectInitializer implements PartialModelInitializer {
 
 	@Override
 	public void initialize(Model model, ModelSeed modelSeed) {
-		var intervals = initializeIntervals(modelSeed);
-		initializeExists(intervals, modelSeed);
-		initializeEquals(intervals, modelSeed);
+		var intervals = initializeIntervals(model, modelSeed);
+		initializeExists(intervals, model, modelSeed);
+		initializeEquals(intervals, model, modelSeed);
 		var countInterpretation = model.getInterpretation(countSymbol);
 		var uniqueTable = new HashMap<CardinalityInterval, CardinalityInterval>();
 		for (int i = 0; i < intervals.length; i++) {
@@ -47,12 +47,13 @@ class MultiObjectInitializer implements PartialModelInitializer {
 	}
 
 	@NotNull
-	private CardinalityInterval[] initializeIntervals(ModelSeed modelSeed) {
+	private CardinalityInterval[] initializeIntervals(Model model, ModelSeed modelSeed) {
 		var intervals = new CardinalityInterval[modelSeed.getNodeCount()];
 		if (modelSeed.containsSeed(MultiObjectTranslator.COUNT_SYMBOL)) {
 			Arrays.fill(intervals, CardinalityIntervals.ONE);
 			var cursor = modelSeed.getCursor(MultiObjectTranslator.COUNT_SYMBOL, CardinalityIntervals.ONE);
 			while (cursor.move()) {
+				model.checkCancelled();
 				int i = cursor.getKey().get(0);
 				checkNodeId(intervals, i);
 				intervals[i] = cursor.getValue();
@@ -70,12 +71,13 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		return intervals;
 	}
 
-	private void initializeExists(CardinalityInterval[] intervals, ModelSeed modelSeed) {
+	private void initializeExists(CardinalityInterval[] intervals, Model model, ModelSeed modelSeed) {
 		if (!modelSeed.containsSeed(ReasoningAdapter.EXISTS_SYMBOL)) {
 			return;
 		}
 		var cursor = modelSeed.getCursor(ReasoningAdapter.EXISTS_SYMBOL, TruthValue.UNKNOWN);
 		while (cursor.move()) {
+			model.checkCancelled();
 			int i = cursor.getKey().get(0);
 			checkNodeId(intervals, i);
 			switch (cursor.getValue()) {
@@ -89,13 +91,14 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		}
 	}
 
-	private void initializeEquals(CardinalityInterval[] intervals, ModelSeed modelSeed) {
+	private void initializeEquals(CardinalityInterval[] intervals, Model model, ModelSeed modelSeed) {
 		if (!modelSeed.containsSeed(ReasoningAdapter.EQUALS_SYMBOL)) {
 			return;
 		}
 		var seed = modelSeed.getSeed(ReasoningAdapter.EQUALS_SYMBOL);
 		var cursor = seed.getCursor(TruthValue.FALSE, modelSeed.getNodeCount());
 		while (cursor.move()) {
+			model.checkCancelled();
 			var key = cursor.getKey();
 			int i = key.get(0);
 			int otherIndex = key.get(1);
@@ -116,6 +119,7 @@ class MultiObjectInitializer implements PartialModelInitializer {
 			}
 		}
 		for (int i = 0; i < intervals.length; i++) {
+			model.checkCancelled();
 			if (seed.get(Tuple.of(i, i)) == TruthValue.FALSE) {
 				throw new TranslationException(ReasoningAdapter.EQUALS_SYMBOL, "Inconsistent equality for node " + i);
 			}

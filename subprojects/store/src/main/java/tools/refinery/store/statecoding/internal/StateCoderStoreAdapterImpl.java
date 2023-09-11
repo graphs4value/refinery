@@ -68,7 +68,7 @@ public class StateCoderStoreAdapterImpl implements StateCoderStoreAdapter {
 	@Override
 	public StateCoderAdapter createModelAdapter(Model model) {
 		var interpretations = symbols.stream().map(model::getInterpretation).toList();
-		var coder = codeCalculatorFactory.create(interpretations, individuals);
+		var coder = codeCalculatorFactory.create(model, interpretations, individuals);
 		return new StateCoderAdapterImpl(this, coder, model);
 	}
 }

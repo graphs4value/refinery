@@ -8,6 +8,7 @@ package tools.refinery.store.statecoding.neighbourhood;
 import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.statecoding.StateCodeCalculator;
 import tools.refinery.store.statecoding.StateCoderResult;
@@ -21,17 +22,19 @@ public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator imp
 	private ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
 	private ObjectCodeImpl nextObjectCode = new ObjectCodeImpl();
 
-	public NeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
-		super(interpretations, individuals);
+	public NeighbourhoodCalculator(Model model, List<? extends Interpretation<?>> interpretations, IntSet individuals) {
+		super(model, interpretations, individuals);
 	}
 
 	public StateCoderResult calculateCodes() {
+		model.checkCancelled();
 		previousObjectCode.clear();
 		nextObjectCode.clear();
 		initializeWithIndividuals(previousObjectCode);
 
 		int rounds = 0;
 		do {
+			model.checkCancelled();
 			constructNextObjectCodes(previousObjectCode, nextObjectCode);
 			var tempObjectCode = previousObjectCode;
 			previousObjectCode = nextObjectCode;
@@ -60,6 +63,7 @@ public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator imp
 
 	private void constructNextObjectCodes(ObjectCodeImpl previous, ObjectCodeImpl next) {
 		for (var impactValueEntry : this.impactValues.entrySet()) {
+			model.checkCancelled();
 			Interpretation<?> interpretation = (Interpretation<?>) impactValueEntry.getKey();
 			var cursor = interpretation.getAll();
 			int arity = interpretation.getSymbol().arity();

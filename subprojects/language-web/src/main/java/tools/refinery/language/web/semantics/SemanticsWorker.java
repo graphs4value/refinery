@@ -34,7 +34,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.viatra.runtime.CancellationToken;
+import tools.refinery.store.util.CancellationToken;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -74,8 +74,8 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	@Override
 	public SemanticsResult call() {
 		var builder = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder()
-						.cancellationToken(cancellationToken))
+				.cancellationToken(cancellationToken)
+				.with(ViatraModelQueryAdapter.builder())
 				.with(PropagationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(Concreteness.PARTIAL));
@@ -91,8 +91,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			cancellationToken.checkCancelled();
 			var store = builder.build();
 			cancellationToken.checkCancelled();
-			var cancellableModelSeed = CancellableSeed.wrap(cancellationToken, modelSeed);
-			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(cancellableModelSeed);
+			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
 			cancellationToken.checkCancelled();
 			var partialInterpretation = getPartialInterpretation(initializer, model);
 

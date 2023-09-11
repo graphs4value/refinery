@@ -31,20 +31,23 @@ public class TypeHierarchyInitializer implements PartialModelInitializer {
 		var inferredTypes = new InferredType[modelSeed.getNodeCount()];
 		Arrays.fill(inferredTypes, typeHierarchy.getUnknownType());
 		for (var type : typeHierarchy.getAllTypes()) {
-			initializeType(type, inferredTypes, modelSeed);
+			model.checkCancelled();
+			initializeType(type, inferredTypes, model, modelSeed);
 		}
 		var typeInterpretation = model.getInterpretation(typeSymbol);
 		var uniqueTable = new HashMap<InferredType, InferredType>();
 		for (int i = 0; i < inferredTypes.length; i++) {
+			model.checkCancelled();
 			var uniqueType = uniqueTable.computeIfAbsent(inferredTypes[i], Function.identity());
 			typeInterpretation.put(Tuple.of(i), uniqueType);
 		}
 	}
 
-	private void initializeType(PartialRelation type, InferredType[] inferredTypes, ModelSeed modelSeed) {
+	private void initializeType(PartialRelation type, InferredType[] inferredTypes, Model model, ModelSeed modelSeed) {
 		var cursor = modelSeed.getCursor(type, TruthValue.UNKNOWN);
 		var analysisResult = typeHierarchy.getAnalysisResult(type);
 		while (cursor.move()) {
+			model.checkCancelled();
 			var i = cursor.getKey().get(0);
 			checkNodeId(inferredTypes, i);
 			var value = cursor.getValue();

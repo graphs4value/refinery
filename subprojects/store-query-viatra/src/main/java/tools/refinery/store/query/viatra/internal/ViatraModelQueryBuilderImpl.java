@@ -17,7 +17,6 @@ import tools.refinery.store.query.viatra.ViatraModelQueryBuilder;
 import tools.refinery.store.query.viatra.internal.localsearch.FlatCostFunction;
 import tools.refinery.store.query.viatra.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.viatra.internal.pquery.Dnf2PQuery;
-import tools.refinery.viatra.runtime.CancellationToken;
 import tools.refinery.viatra.runtime.api.IQuerySpecification;
 import tools.refinery.viatra.runtime.api.ViatraQueryEngineOptions;
 import tools.refinery.viatra.runtime.localsearch.matcher.integration.LocalSearchGenericBackendFactory;
@@ -36,7 +35,6 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder<Via
 			// Use a cost function that ignores the initial (empty) model but allows higher arity input keys.
 			LocalSearchHintOptions.PLANNER_COST_FUNCTION, new FlatCostFunction()
 	), (IQueryBackendFactory) null);
-	private CancellationToken cancellationToken = CancellationToken.NONE;
 	private final CompositeRewriter rewriter;
 	private final Dnf2PQuery dnf2PQuery = new Dnf2PQuery();
 	private final Set<AnyQuery> queries = new LinkedHashSet<>();
@@ -83,12 +81,6 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder<Via
 	public ViatraModelQueryBuilder searchBackend(IQueryBackendFactory queryBackendFactory) {
 		checkNotConfigured();
 		engineOptionsBuilder.withDefaultSearchBackend(queryBackendFactory);
-		return this;
-	}
-
-	@Override
-	public ViatraModelQueryBuilder cancellationToken(CancellationToken cancellationToken) {
-		this.cancellationToken = cancellationToken;
 		return this;
 	}
 
@@ -144,7 +136,7 @@ public class ViatraModelQueryBuilderImpl extends AbstractModelAdapterBuilder<Via
 		validateSymbols(store);
 		return new ViatraModelQueryStoreAdapterImpl(store, buildEngineOptions(), dnf2PQuery.getSymbolViews(),
 				Collections.unmodifiableMap(canonicalQueryMap), Collections.unmodifiableMap(querySpecifications),
-				Collections.unmodifiableSet(vacuousQueries), cancellationToken);
+				Collections.unmodifiableSet(vacuousQueries), store::checkCancelled);
 	}
 
 	private ViatraQueryEngineOptions buildEngineOptions() {

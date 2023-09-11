@@ -13,10 +13,12 @@ import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.resultset.ResultSet;
 
 class BoundPropagationRule {
+	private final Model model;
 	private final ResultSet<Boolean> resultSet;
 	private final BoundAction action;
 
 	public BoundPropagationRule(Model model, Rule rule) {
+		this.model = model;
 		resultSet = model.getAdapter(ModelQueryAdapter.class).getResultSet(rule.getPrecondition());
 		action = rule.createAction(model);
 	}
@@ -27,6 +29,7 @@ class BoundPropagationRule {
 		}
 		var cursor = resultSet.getAll();
 		while (cursor.move()) {
+			model.checkCancelled();
 			var result = action.fire(cursor.getKey());
 			if (!result) {
 				return PropagationResult.REJECTED;

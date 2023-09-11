@@ -23,6 +23,7 @@ public class BoundAction {
 	}
 
 	public boolean fire(Tuple activation) {
+		model.checkCancelled();
 		if (this.activation != null) {
 			throw new IllegalStateException("Reentrant firing is not allowed");
 		}

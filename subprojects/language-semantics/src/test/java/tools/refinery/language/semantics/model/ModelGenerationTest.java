@@ -209,7 +209,7 @@ class ModelGenerationTest {
 				error choiceHasNoIncoming(Choice c) <->
 				    !target(_, c).
 
-				scope node = 50..60, Region = 5..10, Statechart = 1.
+				scope node = 200..210, Region = 10..*, Choice = 1..*, Statechart = 1.
 				""");
 		assertThat(parsedProblem.errors(), empty());
 		var problem = parsedProblem.problem();

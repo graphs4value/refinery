@@ -19,14 +19,9 @@ public class BestFirstExplorer extends BestFirstWorker {
 		this.random = new Random(id);
 	}
 
-	private boolean interrupted = false;
-
-	public void interrupt() {
-		this.interrupted = true;
-	}
-
 	private boolean shouldRun() {
-		return !interrupted && !hasEnoughSolution();
+		model.checkCancelled();
+		return !hasEnoughSolution();
 	}
 
 	public void explore() {
