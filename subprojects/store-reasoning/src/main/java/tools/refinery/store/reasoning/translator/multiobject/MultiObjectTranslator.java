@@ -48,11 +48,11 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		storeBuilder.symbol(COUNT_STORAGE);
 
 		var aboveLowerBound = Query.of("count#aboveLowerBound", Integer.class, (builder, node, output) -> builder
-				.clause(Integer.class, lowerBound -> List.of(
-						LOWER_CARDINALITY_VIEW.call(node, lowerBound),
-						output.assign(sub(lowerBound, IntTerms.constant(1))),
+				.clause(
+						MULTI_VIEW.call(node),
+						LOWER_CARDINALITY_VIEW.call(node, output),
 						check(greater(output, IntTerms.constant(0)))
-				)));
+				));
 		var missingCardinality = Query.of("count#missing", Integer.class, (builder, output) -> builder
 				.clause(
 						output.assign(aboveLowerBound.aggregate(INT_SUM, Variable.of()))
