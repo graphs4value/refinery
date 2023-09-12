@@ -59,7 +59,7 @@ public class MetadataCreator {
 		}
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] == null) {
-				var nodeName = "#" + i;
+				var nodeName = "::" + i;
 				nodes[i] = new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
 			}
 		}

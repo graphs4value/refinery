@@ -236,7 +236,7 @@ public class ModelInitializer {
 	}
 
 	private String getName(Relation relation) {
-		return semanticsUtils.getName(relation).orElseGet(() -> "#" + relationInfoMap.size());
+		return semanticsUtils.getName(relation).orElseGet(() -> "::" + relationInfoMap.size());
 	}
 
 	private void collectMetamodel() {
