@@ -204,4 +204,10 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		}
 		return true;
 	}
+
+	@Override
+	public int getNodeCount() {
+		Integer nodeCount = nodeCountInterpretation.get(Tuple.of());
+		return nodeCount == null ? 0 : nodeCount;
+	}
 }

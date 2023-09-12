@@ -32,6 +32,7 @@ import type XtextClient from '../xtext/XtextClient';
 import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
+import GeneratedModelStore from './GeneratedModelStore';
 import LintPanelStore from './LintPanelStore';
 import SearchPanelStore from './SearchPanelStore';
 import createEditorState from './createEditorState';
@@ -68,6 +69,10 @@ export default class EditorStore {
   semanticsError: string | undefined;
 
   graph: GraphStore;
+
+  generatedModels = new Map<string, GeneratedModelStore>();
+
+  selectedGeneratedModel: string | undefined;
 
   constructor(initialValue: string, pwaStore: PWAStore) {
     this.id = nanoid();
@@ -306,5 +311,85 @@ export default class EditorStore {
     this.client?.dispose();
     this.delayedErrors.dispose();
     this.disposed = true;
+  }
+
+  startModelGeneration(): void {
+    this.client
+      ?.startModelGeneration()
+      ?.catch((error) => log.error('Could not start model generation', error));
+  }
+
+  addGeneratedModel(uuid: string): void {
+    this.generatedModels.set(uuid, new GeneratedModelStore());
+    this.selectGeneratedModel(uuid);
+  }
+
+  cancelModelGeneration(): void {
+    this.client
+      ?.cancelModelGeneration()
+      ?.catch((error) => log.error('Could not start model generation', error));
+  }
+
+  selectGeneratedModel(uuid: string | undefined): void {
+    if (uuid === undefined) {
+      this.selectedGeneratedModel = uuid;
+      return;
+    }
+    if (this.generatedModels.has(uuid)) {
+      this.selectedGeneratedModel = uuid;
+      return;
+    }
+    this.selectedGeneratedModel = undefined;
+  }
+
+  deleteGeneratedModel(uuid: string | undefined): void {
+    if (uuid === undefined) {
+      return;
+    }
+    if (this.selectedGeneratedModel === uuid) {
+      let previous: string | undefined;
+      let found: string | undefined;
+      this.generatedModels.forEach((_value, key) => {
+        if (key === uuid) {
+          found = previous;
+        }
+        previous = key;
+      });
+      this.selectGeneratedModel(found);
+    }
+    const generatedModel = this.generatedModels.get(uuid);
+    if (generatedModel !== undefined && generatedModel.running) {
+      this.cancelModelGeneration();
+    }
+    this.generatedModels.delete(uuid);
+  }
+
+  modelGenerationCancelled(): void {
+    this.generatedModels.forEach((value) =>
+      value.setError('Model generation cancelled'),
+    );
+  }
+
+  setGeneratedModelMessage(uuid: string, message: string): void {
+    this.generatedModels.get(uuid)?.setMessage(message);
+  }
+
+  setGeneratedModelError(uuid: string, message: string): void {
+    this.generatedModels.get(uuid)?.setError(message);
+  }
+
+  setGeneratedModelSemantics(
+    uuid: string,
+    semantics: SemanticsSuccessResult,
+  ): void {
+    this.generatedModels.get(uuid)?.setSemantics(semantics);
+  }
+
+  get generating(): boolean {
+    let generating = false;
+    this.generatedModels.forEach((value) => {
+      generating = generating || value.running;
+    });
+    return generating;
   }
 }

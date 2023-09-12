@@ -74,4 +74,8 @@ public class PushWebDocumentAccess extends XtextWebDocumentAccess {
 		}
 		throw new IllegalArgumentException("Unknown precomputed service: " + service);
 	}
+
+	public void cancelModelGeneration() {
+		pushDocument.cancelModelGeneration();
+	}
 }

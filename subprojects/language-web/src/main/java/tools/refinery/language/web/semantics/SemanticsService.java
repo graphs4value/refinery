@@ -54,7 +54,7 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		warmupTimeoutMs = getTimeout("REFINERY_SEMANTICS_WARMUP_TIMEOUT_MS").orElse(timeoutMs * 2);
 	}
 
-	private static Optional<Long> getTimeout(String name) {
+	public static Optional<Long> getTimeout(String name) {
 		return Optional.ofNullable(System.getenv(name)).map(Long::parseUnsignedLong);
 	}
 

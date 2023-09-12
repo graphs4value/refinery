@@ -9,25 +9,17 @@ import { useTheme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useResizeDetector } from 'react-resize-detector';
 
-import Loading from '../Loading';
-import { useRootStore } from '../RootStoreProvider';
-
 import DotGraphVisualizer from './DotGraphVisualizer';
+import type GraphStore from './GraphStore';
 import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
 
-function GraphArea(): JSX.Element {
-  const { editorStore } = useRootStore();
+function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
   const { breakpoints } = useTheme();
   const { ref, width, height } = useResizeDetector({
     refreshMode: 'debounce',
   });
 
-  if (editorStore === undefined) {
-    return <Loading />;
-  }
-
-  const { graph } = editorStore;
   const breakpoint = breakpoints.values.sm;
   const dialog =
     width === undefined ||

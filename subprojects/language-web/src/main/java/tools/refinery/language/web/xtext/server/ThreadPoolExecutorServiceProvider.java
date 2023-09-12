@@ -13,9 +13,13 @@ import tools.refinery.language.web.semantics.SemanticsService;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,6 +28,8 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	private static final String DOCUMENT_LOCK_EXECUTOR;
 	private static final AtomicInteger POOL_ID = new AtomicInteger(1);
 
+	private final Map<String, ScheduledExecutorService> scheduledInstanceCache =
+			Collections.synchronizedMap(new HashMap<>());
 	private final int executorThreadCount;
 	private final int lockExecutorThreadCount;
 	private final int semanticsExecutorThreadCount;
@@ -58,11 +64,15 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 		return Optional.ofNullable(System.getenv(name)).map(Integer::parseUnsignedInt);
 	}
 
+	public ScheduledExecutorService getScheduled(String key) {
+		return scheduledInstanceCache.computeIfAbsent(key, this::createScheduledInstance);
+	}
+
 	@Override
 	protected ExecutorService createInstance(String key) {
 		String name = "xtext-" + POOL_ID.getAndIncrement();
 		if (key != null) {
-			name = name + key + "-";
+			name = name + "-" + key;
 		}
 		var threadFactory = new Factory(name, 5);
 		int size = getSize(key);
@@ -72,6 +82,15 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 		return Executors.newFixedThreadPool(size, threadFactory);
 	}
 
+	protected ScheduledExecutorService createScheduledInstance(String key) {
+		String name = "xtext-scheduled-" + POOL_ID.getAndIncrement();
+		if (key != null) {
+			name = name + "-" + key;
+		}
+		var threadFactory = new Factory(name, 5);
+		return Executors.newScheduledThreadPool(1, threadFactory);
+	}
+
 	private int getSize(String key) {
 		if (SemanticsService.SEMANTICS_EXECUTOR.equals(key)) {
 			return semanticsExecutorThreadCount;
@@ -79,6 +98,17 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 			return lockExecutorThreadCount;
 		} else {
 			return executorThreadCount;
+		}
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		synchronized (scheduledInstanceCache) {
+			for (var instance : scheduledInstanceCache.values()) {
+				instance.shutdown();
+			}
+			scheduledInstanceCache.clear();
 		}
 	}
 

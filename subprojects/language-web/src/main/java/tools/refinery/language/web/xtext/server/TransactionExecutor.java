@@ -187,7 +187,7 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 			var document = subscription.get();
 			if (document != null) {
 				document.removePrecomputationListener(this);
-				document.cancelBackgroundWork();
+				document.dispose();
 			}
 		}
 	}

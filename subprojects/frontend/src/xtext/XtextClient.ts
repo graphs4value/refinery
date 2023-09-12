@@ -16,6 +16,7 @@ import getLogger from '../utils/getLogger';
 
 import ContentAssistService from './ContentAssistService';
 import HighlightingService from './HighlightingService';
+import ModelGenerationService from './ModelGenerationService';
 import OccurrencesService from './OccurrencesService';
 import SemanticsService from './SemanticsService';
 import UpdateService from './UpdateService';
@@ -40,6 +41,8 @@ export default class XtextClient {
 
   private readonly semanticsService: SemanticsService;
 
+  private readonly modelGenerationService: ModelGenerationService;
+
   constructor(
     private readonly store: EditorStore,
     private readonly pwaStore: PWAStore,
@@ -58,6 +61,10 @@ export default class XtextClient {
     this.validationService = new ValidationService(store, this.updateService);
     this.occurrencesService = new OccurrencesService(store, this.updateService);
     this.semanticsService = new SemanticsService(store, this.validationService);
+    this.modelGenerationService = new ModelGenerationService(
+      store,
+      this.updateService,
+    );
   }
 
   start(): void {
@@ -75,6 +82,7 @@ export default class XtextClient {
     this.highlightingService.onDisconnect();
     this.validationService.onDisconnect();
     this.occurrencesService.onDisconnect();
+    this.modelGenerationService.onDisconnect();
   }
 
   onTransaction(transaction: Transaction): void {
@@ -101,7 +109,7 @@ export default class XtextClient {
       );
       return;
     }
-    if (stateId !== xtextStateId) {
+    if (stateId !== xtextStateId && service !== 'modelGeneration') {
       log.error(
         'Unexpected xtext state id: expected:',
         xtextStateId,
@@ -122,6 +130,9 @@ export default class XtextClient {
       case 'semantics':
         this.semanticsService.onPush(push);
         return;
+      case 'modelGeneration':
+        this.modelGenerationService.onPush(push);
+        return;
       default:
         throw new Error('Unknown service');
     }
@@ -129,6 +140,14 @@ export default class XtextClient {
 
   contentAssist(context: CompletionContext): Promise<CompletionResult> {
     return this.contentAssistService.contentAssist(context);
+  }
+
+  startModelGeneration(): Promise<void> {
+    return this.modelGenerationService.start();
+  }
+
+  cancelModelGeneration(): Promise<void> {
+    return this.modelGenerationService.cancel();
   }
 
   formatText(): void {

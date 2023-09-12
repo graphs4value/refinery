@@ -126,6 +126,14 @@ export const FormattingResult = DocumentStateResult.extend({
 
 export type FormattingResult = z.infer<typeof FormattingResult>;
 
+export const ModelGenerationStartedResult = z.object({
+  uuid: z.string().nonempty(),
+});
+
+export type ModelGenerationStartedResult = z.infer<
+  typeof ModelGenerationStartedResult
+>;
+
 export const NodeMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
@@ -171,3 +179,19 @@ export const SemanticsResult = z.union([
 ]);
 
 export type SemanticsResult = z.infer<typeof SemanticsResult>;
+
+export const ModelGenerationResult = z.union([
+  z.object({
+    uuid: z.string().nonempty(),
+    status: z.string(),
+  }),
+  z.object({
+    uuid: z.string().nonempty(),
+    error: z.string(),
+  }),
+  SemanticsSuccessResult.extend({
+    uuid: z.string().nonempty(),
+  }),
+]);
+
+export type ModelGenerationResult = z.infer<typeof ModelGenerationResult>;

@@ -9,9 +9,15 @@ import { Suspense, lazy } from 'react';
 
 import Loading from '../Loading';
 
+import type GraphStore from './GraphStore';
+
 const GraphArea = lazy(() => import('./GraphArea'));
 
-export default function GraphPane(): JSX.Element {
+export default function GraphPane({
+  graph,
+}: {
+  graph: GraphStore;
+}): JSX.Element {
   return (
     <Stack
       direction="column"
@@ -21,7 +27,7 @@ export default function GraphPane(): JSX.Element {
       justifyContent="center"
     >
       <Suspense fallback={<Loading />}>
-        <GraphArea />
+        <GraphArea graph={graph} />
       </Suspense>
     </Stack>
   );

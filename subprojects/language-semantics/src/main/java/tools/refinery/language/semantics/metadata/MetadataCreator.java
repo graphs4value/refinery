@@ -47,11 +47,21 @@ public class MetadataCreator {
 	}
 
 	public List<NodeMetadata> getNodesMetadata() {
-		var nodes = new NodeMetadata[initializer.getNodeCount()];
+		return getNodesMetadata(initializer.getNodeCount());
+	}
+
+	public List<NodeMetadata> getNodesMetadata(int nodeCount) {
+		var nodes = new NodeMetadata[Math.max(initializer.getNodeCount(), nodeCount)];
 		for (var entry : initializer.getNodeTrace().keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();
 			nodes[id] = getNodeMetadata(node);
+		}
+		for (int i = 0; i < nodes.length; i++) {
+			if (nodes[i] == null) {
+				var nodeName = "#" + i;
+				nodes[i] = new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
+			}
 		}
 		return List.of(nodes);
 	}

@@ -47,6 +47,8 @@ public interface ReasoningAdapter extends ModelAdapter {
 
 	boolean cleanup(int nodeToDelete);
 
+	int getNodeCount();
+
 	static ReasoningBuilder builder() {
 		return new ReasoningBuilderImpl();
 	}

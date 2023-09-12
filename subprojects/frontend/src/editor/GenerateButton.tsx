@@ -5,6 +5,7 @@
  */
 
 import CancelIcon from '@mui/icons-material/Cancel';
+import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { observer } from 'mobx-react-lite';
 
@@ -28,13 +29,27 @@ const GenerateButton = observer(function GenerateButton({
     );
   }
 
-  const { analyzing, errorCount, warningCount, semanticsError } =
-    editorStore.delayedErrors;
+  const {
+    delayedErrors: { analyzing, errorCount, warningCount, semanticsError },
+    generating,
+  } = editorStore;
 
   if (analyzing) {
     return (
       <AnimatedButton color="inherit" disabled>
         Analyzing&hellip;
+      </AnimatedButton>
+    );
+  }
+
+  if (generating) {
+    return (
+      <AnimatedButton
+        color="inherit"
+        onClick={() => editorStore.cancelModelGeneration()}
+        startIcon={<CloseIcon />}
+      >
+        Cancel
       </AnimatedButton>
     );
   }
@@ -83,6 +98,7 @@ const GenerateButton = observer(function GenerateButton({
       disabled={!editorStore.opened}
       color={warningCount > 0 ? 'warning' : 'primary'}
       startIcon={<PlayArrowIcon />}
+      onClick={() => editorStore.startModelGeneration()}
     >
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}
     </AnimatedButton>

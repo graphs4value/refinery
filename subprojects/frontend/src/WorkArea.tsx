@@ -7,10 +7,9 @@
 import { observer } from 'mobx-react-lite';
 
 import DirectionalSplitPane from './DirectionalSplitPane';
+import ModelWorkArea from './ModelWorkArea';
 import { useRootStore } from './RootStoreProvider';
 import EditorPane from './editor/EditorPane';
-import GraphPane from './graph/GraphPane';
-import TablePane from './table/TablePane';
 
 export default observer(function WorkArea(): JSX.Element {
   const { themeStore } = useRootStore();
@@ -18,14 +17,7 @@ export default observer(function WorkArea(): JSX.Element {
   return (
     <DirectionalSplitPane
       primary={<EditorPane />}
-      secondary={
-        <DirectionalSplitPane
-          primary={<GraphPane />}
-          secondary={<TablePane />}
-          primaryOnly={!themeStore.showTable}
-          secondaryOnly={!themeStore.showGraph}
-        />
-      }
+      secondary={<ModelWorkArea />}
       primaryOnly={!themeStore.showGraph && !themeStore.showTable}
       secondaryOnly={!themeStore.showCode}
     />

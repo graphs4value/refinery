@@ -13,25 +13,28 @@ import org.eclipse.xtext.web.server.model.DocumentSynchronizer;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.refinery.language.web.generator.ModelGenerationManager;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class PushWebDocument extends XtextWebDocument {
 	private static final Logger LOG = LoggerFactory.getLogger(PushWebDocument.class);
 
 	private final List<PrecomputationListener> precomputationListeners = new ArrayList<>();
 
-	private final Map<Class<?>, IServiceResult> precomputedServices = new HashMap<>();
+	private final ModelGenerationManager modelGenerationManager = new ModelGenerationManager();
 
 	private final DocumentSynchronizer synchronizer;
 
 	public PushWebDocument(String resourceId, DocumentSynchronizer synchronizer) {
 		super(resourceId, synchronizer);
 		this.synchronizer = synchronizer;
+	}
+
+	public ModelGenerationManager getModelGenerationManager() {
+		return modelGenerationManager;
 	}
 
 	public void addPrecomputationListener(PrecomputationListener listener) {
@@ -52,15 +55,13 @@ public class PushWebDocument extends XtextWebDocument {
 
 	public <T extends IServiceResult> void precomputeServiceResult(AbstractCachedService<T> service, String serviceName,
 			CancelIndicator cancelIndicator, boolean logCacheMiss) {
-		var serviceClass = service.getClass();
 		var result = getCachedServiceResult(service, cancelIndicator, logCacheMiss);
-		precomputedServices.put(serviceClass, result);
 		if (result != null) {
 			notifyPrecomputationListeners(serviceName, result);
 		}
 	}
 
-	private <T extends IServiceResult> void notifyPrecomputationListeners(String serviceName, T result) {
+	public <T extends IServiceResult> void notifyPrecomputationListeners(String serviceName, T result) {
 		var resourceId = getResourceId();
 		if (resourceId == null) {
 			return;
@@ -86,7 +87,12 @@ public class PushWebDocument extends XtextWebDocument {
 		}
 	}
 
-	public void cancelBackgroundWork() {
+	public void cancelModelGeneration() {
+		modelGenerationManager.cancel();
+	}
+
+	public void dispose() {
 		synchronizer.setCanceled(true);
+		modelGenerationManager.dispose();
 	}
 }

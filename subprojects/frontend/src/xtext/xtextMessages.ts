@@ -38,6 +38,7 @@ export const XtextWebPushService = z.enum([
   'highlight',
   'validate',
   'semantics',
+  'modelGeneration',
 ]);
 
 export type XtextWebPushService = z.infer<typeof XtextWebPushService>;
