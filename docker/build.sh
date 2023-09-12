@@ -6,6 +6,8 @@
 
 set -euo pipefail
 
+(cd .. && ./gradlew :refinery-language-web:distTar)
+
 refinery_version="$(grep '^version=' ../gradle.properties | cut -d'=' -f2)"
 distribution_name="refinery-language-web-${refinery_version}"
 rm -rf "${distribution_name}" dist app_lib app_{amd64,arm64}_bin lib lib_{amd64,arm64}
