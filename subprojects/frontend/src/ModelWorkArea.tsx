@@ -45,11 +45,6 @@ const GenerationStatus = styled('div', {
   shouldForwardProp: (prop) => prop !== 'error',
 })<{ error: boolean }>(({ error, theme }) => ({
   color: error ? theme.palette.error.main : theme.palette.text.primary,
-  ...(error
-    ? {
-        fontWeight: theme.typography.fontWeightBold ?? 600,
-      }
-    : {}),
 }));
 
 const GeneratedModelPane = observer(function GeneratedModelPane({
@@ -165,6 +160,8 @@ function ModelWorkArea(): JSX.Element {
               editorStore.selectGeneratedModel(generatedModelNames[value - 1]);
             }
           }}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{ flexGrow: 1 }}
         >
           <Tab label="Initial model" />
@@ -175,10 +172,8 @@ function ModelWorkArea(): JSX.Element {
           onClick={() =>
             editorStore.deleteGeneratedModel(selectedGeneratedModel)
           }
-          sx={{
-            display: selectedIndex === 0 ? 'none' : 'flex',
-            mx: 1,
-          }}
+          disabled={selectedIndex === 0}
+          sx={{ mx: 1 }}
         >
           <CloseIcon fontSize="small" />
         </IconButton>
