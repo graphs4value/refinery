@@ -68,15 +68,6 @@ export default styled('div', {
     '.node-exists-UNKNOWN [stroke="black"]': {
       strokeDasharray: '5 2',
     },
-    '.node-exists-FALSE': {
-      '& [fill="green"]': {
-        fill: theme.palette.background.default,
-      },
-      '& [stroke="black"]': {
-        strokeDasharray: '1 3',
-        stroke: theme.palette.text.secondary,
-      },
-    },
     '.edge': {
       '& text': {
         fontFamily: theme.typography.fontFamily,

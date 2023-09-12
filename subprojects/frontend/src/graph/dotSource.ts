@@ -119,8 +119,11 @@ function computeNodeData(graph: GraphStore): NodeData[] {
   return nodeData;
 }
 
-function createNodes(graph: GraphStore, lines: string[]): void {
-  const nodeData = computeNodeData(graph);
+function createNodes(
+  graph: GraphStore,
+  nodeData: NodeData[],
+  lines: string[],
+): void {
   const {
     semantics: { nodes },
     scopes,
@@ -128,7 +131,7 @@ function createNodes(graph: GraphStore, lines: string[]): void {
 
   nodes.forEach((node, i) => {
     const data = nodeData[i];
-    if (data === undefined || data.isolated) {
+    if (data === undefined || data.isolated || data.exists === 'FALSE') {
       return;
     }
     const classList = [
@@ -222,6 +225,7 @@ function binarySerach(
 
 function createRelationEdges(
   graph: GraphStore,
+  nodeData: NodeData[],
   relation: RelationMetadata,
   showUnknown: boolean,
   lines: string[],
@@ -266,6 +270,17 @@ function createRelationEdges(
       return;
     }
 
+    const fromData = nodeData[from];
+    const toData = nodeData[to];
+    if (
+      fromData === undefined ||
+      fromData.exists === 'FALSE' ||
+      toData === undefined ||
+      toData.exists === 'FALSE'
+    ) {
+      return;
+    }
+
     let dir = 'forward';
     let edgeConstraint = constraint;
     let edgeWeight = weight;
@@ -306,7 +321,11 @@ function createRelationEdges(
   });
 }
 
-function createEdges(graph: GraphStore, lines: string[]): void {
+function createEdges(
+  graph: GraphStore,
+  nodeData: NodeData[],
+  lines: string[],
+): void {
   const {
     semantics: { relations },
   } = graph;
@@ -316,7 +335,13 @@ function createEdges(graph: GraphStore, lines: string[]): void {
     }
     const visibility = graph.getVisibility(relation.name);
     if (visibility !== 'none') {
-      createRelationEdges(graph, relation, visibility === 'all', lines);
+      createRelationEdges(
+        graph,
+        nodeData,
+        relation,
+        visibility === 'all',
+        lines,
+      );
     }
   });
 }
@@ -333,8 +358,9 @@ export default function dotSource(
     `node [fontsize=12, shape=plain, fontname="OpenSans"];`,
     'edge [fontsize=10.5, color=black, fontname="OpenSans"];',
   ];
-  createNodes(graph, lines);
-  createEdges(graph, lines);
+  const nodeData = computeNodeData(graph);
+  createNodes(graph, nodeData, lines);
+  createEdges(graph, nodeData, lines);
   lines.push('}');
   return [lines.join('\n'), lines.length];
 }
