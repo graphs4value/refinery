@@ -11,6 +11,7 @@ import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.term.int_.IntTerms;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.representation.PartialRelation;
@@ -119,6 +120,7 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 			));
 			missingBuilder.clause(Integer.class, existingContents -> List.of(
 					candidateMust(nodeType.call(node)),
+					candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(node)),
 					new CountCandidateUpperBoundLiteral(existingContents, linkType, arguments),
 					missingOutput.assign(sub(existingContents, constant(upperBound))),
 					check(greater(missingOutput, constant(0)))
