@@ -270,6 +270,12 @@ export default class XtextWebSocketClient {
     return promise;
   }
 
+  setKeepAlive(keepAlive: boolean): void {
+    this.interpreter.send({
+      type: keepAlive ? 'GENERATION_STARTED' : 'GENERATION_ENDED',
+    });
+  }
+
   private updateVisibility(): void {
     this.interpreter.send(document.hidden ? 'TAB_HIDDEN' : 'TAB_VISIBLE');
   }

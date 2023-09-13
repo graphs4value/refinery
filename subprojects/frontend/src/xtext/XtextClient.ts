@@ -9,6 +9,7 @@ import type {
   CompletionResult,
 } from '@codemirror/autocomplete';
 import type { Transaction } from '@codemirror/state';
+import { type IReactionDisposer, reaction } from 'mobx';
 
 import type PWAStore from '../PWAStore';
 import type EditorStore from '../editor/EditorStore';
@@ -43,6 +44,8 @@ export default class XtextClient {
 
   private readonly modelGenerationService: ModelGenerationService;
 
+  private readonly keepAliveDisposer: IReactionDisposer;
+
   constructor(
     private readonly store: EditorStore,
     private readonly pwaStore: PWAStore,
@@ -64,6 +67,11 @@ export default class XtextClient {
     this.modelGenerationService = new ModelGenerationService(
       store,
       this.updateService,
+    );
+    this.keepAliveDisposer = reaction(
+      () => store.generating,
+      (generating) => this.webSocketClient.setKeepAlive(generating),
+      { fireImmediately: true },
     );
   }
 
@@ -157,6 +165,7 @@ export default class XtextClient {
   }
 
   dispose(): void {
+    this.keepAliveDisposer();
     this.webSocketClient.disconnect();
   }
 }
