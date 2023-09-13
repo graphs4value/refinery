@@ -178,7 +178,8 @@ public class ModelGenerationWorker implements Runnable {
 				.with(PropagationAdapter.builder())
 				.with(StateCoderAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder())
-				.with(ReasoningAdapter.builder());
+				.with(ReasoningAdapter.builder()
+						.requiredInterpretations(Concreteness.CANDIDATE));
 		var modelSeed = initializer.createModel(problem, storeBuilder);
 		var store = storeBuilder.build();
 		cancellationToken.checkCancelled();
