@@ -46,27 +46,36 @@ public class MetadataCreator {
 		relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ASSERTION__RELATION);
 	}
 
-	public List<NodeMetadata> getNodesMetadata() {
-		return getNodesMetadata(initializer.getNodeCount());
+	public static String unnamedNode(int nodeId) {
+		return "::" + nodeId;
 	}
 
-	public List<NodeMetadata> getNodesMetadata(int nodeCount) {
+	public List<NodeMetadata> getNodesMetadata() {
+		return getNodesMetadata(initializer.getNodeCount(), true);
+	}
+
+	public List<NodeMetadata> getNodesMetadata(int nodeCount, boolean preserveNewNodes) {
 		var nodes = new NodeMetadata[Math.max(initializer.getNodeCount(), nodeCount)];
 		for (var entry : initializer.getNodeTrace().keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();
-			nodes[id] = getNodeMetadata(node);
+			nodes[id] = getNodeMetadata(id, node, preserveNewNodes);
 		}
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] == null) {
-				var nodeName = "::" + i;
+				var nodeName = unnamedNode(i);
 				nodes[i] = new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
 			}
 		}
 		return List.of(nodes);
 	}
 
-	private NodeMetadata getNodeMetadata(Node node) {
+	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes) {
+		var kind = getNodeKind(node);
+		if (!preserveNewNodes && kind == NodeKind.NEW) {
+			var nodeName = unnamedNode(nodeId);
+			return new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
+		}
 		var qualifiedName = getQualifiedName(node);
 		var simpleName = getSimpleName(node, qualifiedName, nodeScope);
 		return new NodeMetadata(qualifiedNameConverter.toString(qualifiedName),

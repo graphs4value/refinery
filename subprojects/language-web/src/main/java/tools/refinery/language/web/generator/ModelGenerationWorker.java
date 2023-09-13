@@ -197,7 +197,8 @@ public class ModelGenerationWorker implements Runnable {
 		model.restore(solutionStore.getSolutions().get(0).version());
 		cancellationToken.checkCancelled();
 		metadataCreator.setInitializer(initializer);
-		var nodesMetadata = metadataCreator.getNodesMetadata(model.getAdapter(ReasoningAdapter.class).getNodeCount());
+		var nodesMetadata = metadataCreator.getNodesMetadata(model.getAdapter(ReasoningAdapter.class).getNodeCount(),
+				false);
 		cancellationToken.checkCancelled();
 		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
