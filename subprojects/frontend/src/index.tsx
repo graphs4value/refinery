@@ -33,7 +33,7 @@ abstract class Vertex {
 
 class Transition {
     container Vertex source opposite outgoingTransition
-    Vertex target opposite incomingTransition
+    Vertex[1] target opposite incomingTransition
 }
 
 abstract class Pseudostate extends Vertex.
