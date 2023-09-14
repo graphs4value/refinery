@@ -4,12 +4,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import type { Transaction } from '@codemirror/state';
+
 import type EditorStore from '../editor/EditorStore';
 
 import type UpdateService from './UpdateService';
 import { ModelGenerationResult } from './xtextServiceResults';
 
+const INITIAL_RANDOM_SEED = 1;
+
 export default class ModelGenerationService {
+  private nextRandomSeed = INITIAL_RANDOM_SEED;
+
   constructor(
     private readonly store: EditorStore,
     private readonly updateService: UpdateService,
@@ -26,14 +32,24 @@ export default class ModelGenerationService {
     }
   }
 
-  onDisconnect(): void {
-    this.store.modelGenerationCancelled();
+  onTransaction(transaction: Transaction): void {
+    if (transaction.docChanged) {
+      this.resetRandomSeed();
+    }
   }
 
-  async start(): Promise<void> {
-    const result = await this.updateService.startModelGeneration();
+  onDisconnect(): void {
+    this.store.modelGenerationCancelled();
+    this.resetRandomSeed();
+  }
+
+  async start(randomSeed?: number): Promise<void> {
+    const randomSeedOrNext = randomSeed ?? this.nextRandomSeed;
+    this.nextRandomSeed = randomSeedOrNext + 1;
+    const result =
+      await this.updateService.startModelGeneration(randomSeedOrNext);
     if (!result.cancelled) {
-      this.store.addGeneratedModel(result.data.uuid);
+      this.store.addGeneratedModel(result.data.uuid, randomSeedOrNext);
     }
   }
 
@@ -42,5 +58,9 @@ export default class ModelGenerationService {
     if (!result.cancelled) {
       this.store.modelGenerationCancelled();
     }
+  }
+
+  private resetRandomSeed() {
+    this.nextRandomSeed = INITIAL_RANDOM_SEED;
   }
 }

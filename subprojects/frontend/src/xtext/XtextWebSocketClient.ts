@@ -204,7 +204,7 @@ export default class XtextWebSocketClient {
 
   get state() {
     this.stateAtom.reportObserved();
-    return this.interpreter.state;
+    return this.interpreter.getSnapshot();
   }
 
   get opening(): boolean {

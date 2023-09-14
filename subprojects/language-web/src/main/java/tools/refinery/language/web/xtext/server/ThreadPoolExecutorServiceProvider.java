@@ -9,6 +9,9 @@ import com.google.inject.Singleton;
 import org.eclipse.xtext.ide.ExecutorServiceProvider;
 import org.eclipse.xtext.web.server.model.XtextWebDocumentAccess;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.refinery.language.web.generator.ModelGenerationService;
 import tools.refinery.language.web.semantics.SemanticsService;
 
 import java.lang.invoke.MethodHandle;
@@ -25,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Singleton
 public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
+	private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutorServiceProvider.class);
 	private static final String DOCUMENT_LOCK_EXECUTOR;
 	private static final AtomicInteger POOL_ID = new AtomicInteger(1);
 
@@ -33,6 +37,7 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	private final int executorThreadCount;
 	private final int lockExecutorThreadCount;
 	private final int semanticsExecutorThreadCount;
+	private final int generatorExecutorThreadCount;
 
 	static {
 		var lookup = MethodHandles.lookup();
@@ -57,7 +62,18 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	public ThreadPoolExecutorServiceProvider() {
 		executorThreadCount = getCount("REFINERY_XTEXT_THREAD_COUNT").orElse(0);
 		lockExecutorThreadCount = getCount("REFINERY_XTEXT_LOCKING_THREAD_COUNT").orElse(executorThreadCount);
-		semanticsExecutorThreadCount = getCount("REFINERY_XTEXT_SEMANTICS_THREAD_COUNT").orElse(executorThreadCount);
+		int semanticsCount = getCount("REFINERY_XTEXT_SEMANTICS_THREAD_COUNT").orElse(0);
+		if (semanticsCount == 0 || executorThreadCount == 0) {
+			semanticsExecutorThreadCount = 0;
+		} else {
+			semanticsExecutorThreadCount = Math.max(semanticsCount, executorThreadCount);
+		}
+		if (semanticsExecutorThreadCount != semanticsCount) {
+			LOG.warn("Setting REFINERY_XTEXT_SEMANTICS_THREAD_COUNT to {} to avoid deadlock. This value must be " +
+							"either 0 or at least as large as REFINERY_XTEXT_THREAD_COUNT to avoid lock contention.",
+					semanticsExecutorThreadCount);
+		}
+		generatorExecutorThreadCount = getCount("REFINERY_MODEL_GENERATION_THREAD_COUNT").orElse(executorThreadCount);
 	}
 
 	private static Optional<Integer> getCount(String name) {
@@ -94,6 +110,8 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	private int getSize(String key) {
 		if (SemanticsService.SEMANTICS_EXECUTOR.equals(key)) {
 			return semanticsExecutorThreadCount;
+		} else if (ModelGenerationService.MODEL_GENERATION_EXECUTOR.equals(key)) {
+			return generatorExecutorThreadCount;
 		} else if (DOCUMENT_LOCK_EXECUTOR.equals(key)) {
 			return lockExecutorThreadCount;
 		} else {

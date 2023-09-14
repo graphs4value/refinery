@@ -99,6 +99,7 @@ export default class XtextClient {
     this.contentAssistService.onTransaction(transaction);
     this.updateService.onTransaction(transaction);
     this.occurrencesService.onTransaction(transaction);
+    this.modelGenerationService.onTransaction(transaction);
   }
 
   private onPush(
@@ -150,8 +151,8 @@ export default class XtextClient {
     return this.contentAssistService.contentAssist(context);
   }
 
-  startModelGeneration(): Promise<void> {
-    return this.modelGenerationService.start();
+  startModelGeneration(randomSeed?: number): Promise<void> {
+    return this.modelGenerationService.start(randomSeed);
   }
 
   cancelModelGeneration(): Promise<void> {

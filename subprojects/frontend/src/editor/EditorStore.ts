@@ -313,14 +313,14 @@ export default class EditorStore {
     this.disposed = true;
   }
 
-  startModelGeneration(): void {
+  startModelGeneration(randomSeed?: number): void {
     this.client
-      ?.startModelGeneration()
+      ?.startModelGeneration(randomSeed)
       ?.catch((error) => log.error('Could not start model generation', error));
   }
 
-  addGeneratedModel(uuid: string): void {
-    this.generatedModels.set(uuid, new GeneratedModelStore());
+  addGeneratedModel(uuid: string, randomSeed: number): void {
+    this.generatedModels.set(uuid, new GeneratedModelStore(randomSeed));
     this.selectGeneratedModel(uuid);
   }
 

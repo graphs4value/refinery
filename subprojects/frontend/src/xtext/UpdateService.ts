@@ -343,9 +343,9 @@ export default class UpdateService {
     return { cancelled: false, data: parsedOccurrencesResult };
   }
 
-  async startModelGeneration(): Promise<
-    CancellableResult<ModelGenerationStartedResult>
-  > {
+  async startModelGeneration(
+    randomSeed: number,
+  ): Promise<CancellableResult<ModelGenerationStartedResult>> {
     try {
       await this.updateOrThrow();
     } catch (error) {
@@ -360,6 +360,7 @@ export default class UpdateService {
       serviceType: 'modelGeneration',
       requiredStateId: this.xtextStateId,
       start: true,
+      randomSeed,
     });
     if (isConflictResult(data)) {
       return { cancelled: true };

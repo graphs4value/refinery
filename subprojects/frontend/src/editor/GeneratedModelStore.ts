@@ -18,9 +18,9 @@ export default class GeneratedModelStore {
 
   graph: GraphStore | undefined;
 
-  constructor() {
+  constructor(randomSeed: number) {
     const time = new Date().toLocaleTimeString(undefined, { hour12: false });
-    this.title = `Generated at ${time}`;
+    this.title = `Generated at ${time} (${randomSeed})`;
     makeAutoObservable(this);
   }
 

@@ -45,7 +45,7 @@ export default function AnimatedButton({
   children,
 }: {
   'aria-label'?: string;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLElement>;
   color: 'error' | 'warning' | 'primary' | 'inherit';
   disabled?: boolean;
   startIcon?: JSX.Element;

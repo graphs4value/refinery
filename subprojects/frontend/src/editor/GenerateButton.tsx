@@ -98,7 +98,13 @@ const GenerateButton = observer(function GenerateButton({
       disabled={!editorStore.opened}
       color={warningCount > 0 ? 'warning' : 'primary'}
       startIcon={<PlayArrowIcon />}
-      onClick={() => editorStore.startModelGeneration()}
+      onClick={(event) => {
+        if (event.shiftKey) {
+          editorStore.startModelGeneration(1);
+        } else {
+          editorStore.startModelGeneration();
+        }
+      }}
     >
       {summary === '' ? GENERATE_LABEL : `${GENERATE_LABEL} (${summary})`}
     </AnimatedButton>

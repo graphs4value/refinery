@@ -34,13 +34,13 @@ public class ModelGenerationService {
 		timeoutSec = SemanticsService.getTimeout("REFINERY_MODEL_GENERATION_TIMEOUT_SEC").orElse(600L);
 	}
 
-	public ModelGenerationStartedResult generateModel(PushWebDocumentAccess document){
+	public ModelGenerationStartedResult generateModel(PushWebDocumentAccess document, int randomSeed) {
 		return document.modify(new CancelableUnitOfWork<>() {
 			@Override
 			public ModelGenerationStartedResult exec(IXtextWebDocument state, CancelIndicator cancelIndicator) {
 				var pushState = (PushWebDocument) state;
 				var worker = workerProvider.get();
-				worker.setState(pushState, timeoutSec);
+				worker.setState(pushState, randomSeed, timeoutSec);
 				var manager = pushState.getModelGenerationManager();
 				worker.start();
 				boolean canceled = manager.setActiveModelGenerationWorker(worker, cancelIndicator);

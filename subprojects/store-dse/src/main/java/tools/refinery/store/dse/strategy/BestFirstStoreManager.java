@@ -44,11 +44,13 @@ public class BestFirstStoreManager {
 		equivalenceClassStore = new FastEquivalenceClassStore(modelStore.getAdapter(StateCoderStoreAdapter.class)) {
 			@Override
 			protected void delegate(VersionWithObjectiveValue version, int[] emptyActivations, boolean accept) {
-				throw new UnsupportedOperationException("This equivalence storage is not prepared to resolve symmetries!");
+				throw new UnsupportedOperationException("This equivalence storage is not prepared to resolve " +
+						"symmetries!");
 			}
 		};
 		visualizationStore = new VisualizationStoreImpl();
 	}
+
 	public ModelStore getModelStore() {
 		return modelStore;
 	}
@@ -74,7 +76,12 @@ public class BestFirstStoreManager {
 	}
 
 	public void startExploration(Version initial) {
-		BestFirstExplorer bestFirstExplorer = new BestFirstExplorer(this, modelStore.createModelForState(initial), 1);
+		startExploration(initial, 1);
+	}
+
+	public void startExploration(Version initial, int randomSeed) {
+		BestFirstExplorer bestFirstExplorer = new BestFirstExplorer(this, modelStore.createModelForState(initial),
+				randomSeed);
 		bestFirstExplorer.explore();
 	}
 }

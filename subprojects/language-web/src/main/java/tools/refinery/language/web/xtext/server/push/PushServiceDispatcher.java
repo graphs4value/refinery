@@ -62,11 +62,13 @@ public class PushServiceDispatcher extends XtextServiceDispatcher {
 		if (!start && !cancel) {
 			throw new InvalidRequestException("Either start of cancel must be specified");
 		}
+		@SuppressWarnings({"squid:S4738"})
+		int randomSeed = start ? getInt(context, "randomSeed", Optional.absent()) : 0;
 		var descriptor = new ServiceDescriptor();
 		descriptor.setService(() -> {
 			try {
 				if (start) {
-					return modelGenerationService.generateModel(document);
+					return modelGenerationService.generateModel(document, randomSeed);
 				} else {
 					return modelGenerationService.cancelModelGeneration(document);
 				}

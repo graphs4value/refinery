@@ -79,6 +79,8 @@ public class ModelGenerationWorker implements Runnable {
 
 	private ScheduledExecutorService scheduledExecutorService;
 
+	private int randomSeed;
+
 	private long timeoutSec;
 
 	private Future<?> future;
@@ -97,8 +99,9 @@ public class ModelGenerationWorker implements Runnable {
 		scheduledExecutorService = provider.getScheduled(ModelGenerationService.MODEL_GENERATION_TIMEOUT_EXECUTOR);
 	}
 
-	public void setState(PushWebDocument state, long timeoutSec) {
+	public void setState(PushWebDocument state, int randomSeed, long timeoutSec) {
 		this.state = state;
+		this.randomSeed = randomSeed;
 		this.timeoutSec = timeoutSec;
 		text = state.getText();
 	}
@@ -188,7 +191,7 @@ public class ModelGenerationWorker implements Runnable {
 		cancellationToken.checkCancelled();
 		notifyResult(new ModelGenerationStatusResult(uuid, "Generating model"));
 		var bestFirst = new BestFirstStoreManager(store, 1);
-		bestFirst.startExploration(initialVersion);
+		bestFirst.startExploration(initialVersion, randomSeed);
 		cancellationToken.checkCancelled();
 		var solutionStore = bestFirst.getSolutionStore();
 		if (solutionStore.getSolutions().isEmpty()) {
