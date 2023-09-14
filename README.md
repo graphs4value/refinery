@@ -6,47 +6,49 @@
 
 # Refinery
 
-[![Build](https://github.com/graphs4value/refinery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refinery/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refinery) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=coverage)](https://sonarcloud.io/dashboard?id=graphs4value_refinery)
+[![Build](https://github.com/graphs4value/refinery/actions/workflows/build.yml/badge.svg)](https://github.com/graphs4value/refinery/actions/workflows/build.yml)<!--[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=alert_status)](https://sonarcloud.io/dashboard?id=graphs4value_refinery) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=graphs4value_refinery&metric=coverage)](https://sonarcloud.io/dashboard?id=graphs4value_refinery)-->
 
-## How to contribute
+Refinery provides consistent graph model generation by partial model _refinement_.
 
-### With Eclipse IDE
+See the [Refinery tutorial](https://github.com/graphs4value/refinery-tutorials/tree/main/filesystem) for more information.
 
-1. Download and install a _Java 17_ compatible JDK. For Windows, prefer OpenJDK builds from [Adoptium](https://adoptium.net/).
+## [Graph-Solver-as-a-Service](https://refinery.services)
 
-2. Download and extract the [Eclipse IDE for Java and DSL Developers 2022-09](https://www.eclipse.org/downloads/packages/release/2022-09/r/eclipse-ide-java-and-dsl-developers) package.
+Visit [https://refinery.services](https://refinery.services) to try our Graph-Solver-as-a-Service supported by the [2022 Amazon Research Award](https://www.amazon.science/research-awards/recipients/daniel-varro-fall-2021).
 
-3. Launch Eclipse and create a new workspace.
+## Running locally
 
-4. Open _Help > Install New Software..._ and install the following software from the _2022-09_ update site:
-    * _Modeling > Ecore Diagram Editor (SDK)_
+To generate larger models with a longer timeout, you can use our [Docker container](https://github.com/graphs4value/refinery/pkgs/container/refinery) on either `amd64` or `arm64` machines:
 
-5. Open _Help > Eclipse Marketplace_ and install the following software:
-    * _EclEmma Java Code Coverage_
-    * _SonarLint_
+```sh
+docker run --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery
+```
 
-6. Open _Window > Preferences_ and set the following preferences:
-    * _General > Workspace > Text file encoding_ should be _UTF-8_.
-    * _General > Workspace > New text file line delimiter_ should be _Unix_.
-    * Add the JDK 17 to _Java > Installed JREs_.
-    * Make sure JDK 17 is selected for _JavaSE-17_ at _Java > Installed JREs > Execution Environments_.
-    * Set _Gradle > Java home_ to the `JAVA_HOME` directory (the directory which contains the `bin` directory) of JDK 17. Here, Buildship will show a yellow warning sign, which can be safely ignored.
-    * Set _Java > Compiler > JDK Compliance > Compiler compliance level_ to _17_.
+Once Docker pulls and starts the container, you can navigate to [http://localhost:8888](http://localhost:8888) to open the model generation interface and start editing.
 
-7. Clone the project Git repository but do not import it into Eclipse yet.
+Alternatively, you can follow the instructions in [CONTRIBUTING.md](CONTRIBUTING.md) to set up a local development environment and compile and run Refinery from source.
 
-8. Open a new terminal an run `./gradlew prepareEclipse` (`.\gradlew prepareEclipse` on Windows) in the cloned repository.
-    * This should complete without any compilation errors.
-    * If you get any errors about the JVM version, check whether the `JAVA_HOME` environment variable is set to the location of JDK. You can query the variable with `echo $JAVA_HOME` on Linux and `echo $Env:JAVA_HOME` in PowerShell on Windows. To set it, use `export JAVA_HOME=/java/path/here` or `$Env:JAVA_HOME="C:\java\path\here"`, respectively.
-    * If the build fails with a `Host name must not be empty` error, you [might need to remove the empty proxy configuration from your global `gradle.properties` file](https://stackoverflow.com/a/62128323).
+## Related publications
 
-9. Select _File > Import... > Gradle > Existing Gradle Project_ and import the cloned repository in Eclipse.
-    * Make sure to select the root of the repository (containing this file) as the _Project root directory_ and that the _Gradle distribution_ is _Gradle wrapper_.
-    * If you have previously imported the project into Eclipse, this step will likely fail. In that case, you should remove the projects from Eclipse, run `git clean -fxd` in the repository, and start over from step 8.
+### Partial model specification language
 
-### With IntelliJ IDEA
+* K. Marussy, O. Semeráth, A. Babikian, D. Varró: _A Specification Language for Consistent Model Generation based on Partial Models._
+J. Object Technol. **19**(3): 3:1-22 (2020) [[doi](https://doi.org/10.5381/jot.2020.19.3.a12)] [[pdf](https://www.jot.fm/issues/issue_2020_03/article12.pdf)] [[video](https://www.youtube.com/watch?v=ggTbv_s5t2A)]
 
-It is possible to import the project into IntelliJ IDEA, but it gives no editing help for Xtext (`*.xtext`), MWE2 (`*.mwe2`), and Xtend (`*.xtend`) and Ecore class diagrams (`*.aird`, `*.ecore`, `*.genmodel`).
+### Consitent graph generation techniques
+
+* O. Semeráth, A. Nagy, D. Varró: &ldquo;A graph solver for the automated generation of consistent domain-specific models.&rdquo; _ICSE 2018:_ 969-980 [[doi](https://doi.org/10.1145/3180155.3180186)] [[pdf](https://dl.acm.org/doi/pdf/10.1145/3180155.3180186)]
+* K. Marussy, O. Semeráth, D. Varró: _Automated Generation of Consistent Graph Models With Multiplicity Reasoning._ IEEE Trans. Software Eng. **48**(5): 1610-1629 (2022) [[doi](https://doi.org/10.1109/TSE.2020.3025732)] [[pdf](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9201551)]
+* A.. Babikian, O. Semeráth, A. Li, K. Marussy, D. Varró: _Automated generation of consistent models using qualitative abstractions and exploration strategies._ Softw. Syst. Model. **21**(5): 1763-1787 (2022) [[doi](https://doi.org/10.1007/s10270-021-00918-6)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10270-021-00918-6.pdf?pdf=button)]
+
+### Diverse and realistic graph generation
+
+* O. Semeráth, R. Farkas, G. Bergmann, D. Varró: _Diversity of graph models and graph generators in mutation testing._ Int. J. Softw. Tools Technol. Transf. **22**(1): 57-78 (2020) [[doi](https://doi.org/10.1007/s10009-019-00530-6)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10009-019-00530-6.pdf?pdf=button)]
+* O. Semeráth, A. Babikian, B. Chen, C. Li, K. Marussy, G. Szárnyas, D. Varró: _Automated generation of consistent, diverse and structurally realistic graph models._ Softw. Syst. Model. **20**(5): 1713-1734 (2021) [[doi](https://doi.org/10.1007/s10270-021-00884-z)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10270-021-00884-z.pdf?pdf=button)]
+
+### Correcness proofs
+
+* D. Varró, O. Semeráth, G. Szárnyas, Á. Horváth: &ldquo;Towards the Automated Generation of Consistent, Diverse, Scalable and Realistic Graph Models.&rdquo; _Graph Transformation, Specifications, and Nets 2018:_ 285-312 [[doi](https://doi.org/10.1007/978-3-319-75396-6_16)] [[pdf](https://inf.mit.bme.hu/sites/default/files/publications/fmhe-model-generation.pdf)]
 
 ## License
 
