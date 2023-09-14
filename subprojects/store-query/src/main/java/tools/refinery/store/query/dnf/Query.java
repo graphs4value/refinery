@@ -43,6 +43,29 @@ public abstract sealed class Query<T> implements AnyQuery permits FunctionalQuer
 
 	public abstract T defaultValue();
 
+	public Query<T> withDnf(Dnf newDnf) {
+		if (dnf.equals(newDnf)) {
+			return this;
+		}
+		int arity = dnf.arity();
+		if (newDnf.arity() != arity) {
+			throw new IllegalArgumentException("Arity of %s and %s do not match".formatted(dnf, newDnf));
+		}
+		var parameters = dnf.getParameters();
+		var newParameters = newDnf.getParameters();
+		for (int i = 0; i < arity; i++) {
+			var parameter = parameters.get(i);
+			var newParameter = newParameters.get(i);
+			if (!parameter.matches(newParameter)) {
+				throw new IllegalArgumentException("Parameter #%d mismatch: %s does not match %s"
+						.formatted(i, parameter, newParameter));
+			}
+		}
+		return withDnfInternal(newDnf);
+	}
+
+	protected abstract Query<T> withDnfInternal(Dnf newDnf);
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

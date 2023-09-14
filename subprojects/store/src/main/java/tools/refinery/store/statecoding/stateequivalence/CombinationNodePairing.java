@@ -8,18 +8,14 @@ package tools.refinery.store.statecoding.stateequivalence;
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
-import org.eclipse.collections.impl.list.Interval;
-import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CombinationNodePairing implements NodePairing {
 	private final int[] left;
 	private final int[] right;
 
-	CombinationNodePairing(IntSet left, IntHashSet right) {
+	CombinationNodePairing(IntSet left, IntSet right) {
 		this.left = left.toArray();
 		this.right = right.toArray();
 
@@ -32,64 +28,62 @@ public class CombinationNodePairing implements NodePairing {
 		return left.length;
 	}
 
-	static final int LIMIT = 5;
-	static final List<List<int[]>> permutations = new ArrayList<>();
+	private static final int LIMIT = 5;
+	// Enum-based singleton used to delay generating all permutations until they are first needed.
+	@SuppressWarnings("squid:S6548")
+	private enum PermutationsHolder {
+		INSTANCE;
 
-	/**
-	 * Generates and stores permutations up to a given size. If the number would be more than a limit, it provides a
-	 * single permutation only.
-	 *
-	 * @param max The max number in the permutation
-	 * @return A complete list of permutations of numbers 0...max, or a single permutation.
-	 */
-	public static List<int[]> getPermutations(int max) {
-		if (max < permutations.size()) {
-			return permutations.get(max);
-		}
-		if (max == 0) {
-			List<int[]> result = new ArrayList<>();
-			result.add(new int[1]);
-			permutations.add(result);
-			return result;
-		}
-		List<int[]> result = new ArrayList<>();
-		List<int[]> previousPermutations = getPermutations(max - 1);
-		for (var permutation : previousPermutations) {
-			for (int pos = 0; pos <= max; pos++) {
-				int[] newPermutation = new int[max + 1];
-				System.arraycopy(permutation, 0, newPermutation, 0, pos);
-				newPermutation[pos] = max;
-				if (max - (pos + 1) >= 0)
-					System.arraycopy(permutation, pos + 1, newPermutation, pos + 1 + 1, max - (pos + 1));
-				result.add(newPermutation);
-			}
-		}
-		permutations.add(result);
-		return result;
+		final CombinationNodePairingPermutations permutations = new CombinationNodePairingPermutations(LIMIT);
 	}
 
 	@Override
 	public List<IntIntMap> permutations() {
-		final var interval = Interval.zeroTo(this.size() - 1);
+		int limit = this.size();
+		Iterable<Integer> interval = () -> new IntervalIterator(limit);
 
 		if (isComplete()) {
-			final List<int[]> p = getPermutations(this.size() - 1);
+			final List<int[]> p = PermutationsHolder.INSTANCE.permutations.getPermutations(this.size() - 1);
 			return p.stream().map(x -> constructPermutationMap(interval, x)).toList();
 		} else {
 			return List.of(constructTrivialMap(interval));
 		}
 	}
 
-	private IntIntMap constructTrivialMap(Interval interval) {
+	private IntIntMap constructTrivialMap(Iterable<Integer> interval) {
 		return IntIntMaps.immutable.from(interval, l -> left[l], r -> right[r]);
 	}
 
-	private IntIntMap constructPermutationMap(Interval interval, int[] permutation) {
+	private IntIntMap constructPermutationMap(Iterable<Integer> interval, int[] permutation) {
 		return IntIntMaps.immutable.from(interval, l -> left[l], r -> right[permutation[r]]);
 	}
 
 	@Override
 	public boolean isComplete() {
 		return this.size() <= LIMIT;
+	}
+
+	private static class IntervalIterator implements Iterator<Integer> {
+		private final int limit;
+		private int value = 0;
+
+		private IntervalIterator(int max) {
+			this.limit = max;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return value < limit;
+		}
+
+		@Override
+		public Integer next() {
+			if (value >= limit) {
+				throw new NoSuchElementException("End of interval");
+			}
+			int next = value;
+			value++;
+			return next;
+		}
 	}
 }

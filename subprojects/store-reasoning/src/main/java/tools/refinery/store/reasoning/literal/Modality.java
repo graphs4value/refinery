@@ -11,14 +11,12 @@ import java.util.Locale;
 
 public enum Modality {
 	MUST,
-	MAY,
-	CURRENT;
+	MAY;
 
 	public Modality negate() {
 		return switch(this) {
 			case MUST -> MAY;
 			case MAY -> MUST;
-			case CURRENT -> CURRENT;
 		};
 	}
 

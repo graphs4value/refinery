@@ -50,7 +50,7 @@ class DnfToDefinitionStringTest {
 		var dnf = Dnf.builder("Example").parameter(p, ParameterDirection.IN).clause().build();
 
 		assertThat(dnf.toDefinitionString(), is("""
-				pred Example(@In p) <->
+				pred Example(in p) <->
 				    <empty>.
 				"""));
 	}
@@ -73,7 +73,7 @@ class DnfToDefinitionStringTest {
 				.build();
 
 		assertThat(dnf.toDefinitionString(), is("""
-				pred Example(@In p) <->
+				pred Example(in p) <->
 				    !(@RelationView("key") friend(p, q)).
 				"""));
 	}

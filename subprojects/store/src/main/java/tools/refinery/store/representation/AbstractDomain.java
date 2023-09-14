@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.representation;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public non-sealed interface AbstractDomain<A, C> extends AnyAbstractDomain {
@@ -22,7 +23,9 @@ public non-sealed interface AbstractDomain<A, C> extends AnyAbstractDomain {
 		return toConcrete(abstractValue).isPresent();
 	}
 
-	boolean isRefinement(A originalValue, A refinedValue);
+	default boolean isRefinement(A originalValue, A refinedValue) {
+		return Objects.equals(commonRefinement(originalValue, refinedValue), refinedValue);
+	}
 
 	A commonRefinement(A leftValue, A rightValue);
 

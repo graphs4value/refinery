@@ -5,12 +5,13 @@
  */
 package tools.refinery.store.query.viatra.internal.context;
 
-import org.eclipse.viatra.query.runtime.matchers.context.*;
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuple;
-import org.eclipse.viatra.query.runtime.matchers.tuple.TupleMask;
-import org.eclipse.viatra.query.runtime.matchers.tuple.Tuples;
-import org.eclipse.viatra.query.runtime.matchers.util.Accuracy;
+import tools.refinery.viatra.runtime.CancellationToken;
+import tools.refinery.viatra.runtime.matchers.context.*;
+import tools.refinery.viatra.runtime.matchers.tuple.ITuple;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
+import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
+import tools.refinery.viatra.runtime.matchers.tuple.Tuples;
+import tools.refinery.viatra.runtime.matchers.util.Accuracy;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;
@@ -32,10 +33,13 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	private final Model model;
 
+	private final CancellationToken cancellationToken;
+
 	RelationalRuntimeContext(ViatraModelQueryAdapterImpl adapter) {
 		model = adapter.getModel();
 		metaContext = new RelationalQueryMetaContext(adapter.getStoreAdapter().getInputKeys());
 		modelUpdateListener = new ModelUpdateListener(adapter);
+		cancellationToken = adapter.getCancellationToken();
 	}
 
 	@Override
@@ -119,8 +123,18 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 
 	private Iterable<Object[]> enumerate(IInputKey key, TupleMask seedMask, ITuple seed) {
 		var relationViewKey = checkKey(key);
-		Iterable<Object[]> allObjects = relationViewKey.getAll(model);
+		Iterable<Object[]> allObjects = getAllObjects(relationViewKey, seedMask, seed);
 		return filter(allObjects, objectArray -> isMatching(objectArray, seedMask, seed));
+	}
+
+	private Iterable<Object[]> getAllObjects(AnySymbolView key, TupleMask seedMask, ITuple seed) {
+		for (int i = 0; i < seedMask.indices.length; i++) {
+			int slot = seedMask.indices[i];
+			if (key.canIndexSlot(slot)) {
+				return key.getAdjacent(model, slot, seed.get(i));
+			}
+		}
+		return key.getAll(model);
 	}
 
 	private static boolean isMatching(Object[] tuple, TupleMask seedMask, ITuple seed) {
@@ -181,5 +195,10 @@ public class RelationalRuntimeContext implements IQueryRuntimeContext {
 	@Override
 	public void executeAfterTraversal(Runnable runnable) {
 		runnable.run();
+	}
+
+	@Override
+	public CancellationToken getCancellationToken() {
+		return cancellationToken;
 	}
 }

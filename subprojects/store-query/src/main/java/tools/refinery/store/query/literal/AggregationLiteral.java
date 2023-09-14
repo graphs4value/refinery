@@ -6,7 +6,9 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.*;
 
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	private final DataVariable<R> resultVariable;
 	private final DataVariable<T> inputVariable;
@@ -23,19 +27,19 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 							  DataVariable<T> inputVariable, Constraint target, List<Variable> arguments) {
 		super(target, arguments);
 		if (!inputVariable.getType().equals(aggregator.getInputType())) {
-			throw new IllegalArgumentException("Input variable %s must of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Input variable %s must of type %s, got %s instead".formatted(
 					inputVariable, aggregator.getInputType().getName(), inputVariable.getType().getName()));
 		}
 		if (!getArgumentsOfDirection(ParameterDirection.OUT).contains(inputVariable)) {
-			throw new IllegalArgumentException("Input variable %s must be bound with direction %s in the argument list"
+			throw new InvalidQueryException("Input variable %s must be bound with direction %s in the argument list"
 					.formatted(inputVariable, ParameterDirection.OUT));
 		}
 		if (!resultVariable.getType().equals(aggregator.getResultType())) {
-			throw new IllegalArgumentException("Result variable %s must of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Result variable %s must of type %s, got %s instead".formatted(
 					resultVariable, aggregator.getResultType().getName(), resultVariable.getType().getName()));
 		}
 		if (arguments.contains(resultVariable)) {
-			throw new IllegalArgumentException("Result variable %s must not appear in the argument list".formatted(
+			throw new InvalidQueryException("Result variable %s must not appear in the argument list".formatted(
 					resultVariable));
 		}
 		this.resultVariable = resultVariable;
@@ -63,7 +67,7 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
 		if (positiveVariablesInClause.contains(inputVariable)) {
-			throw new IllegalArgumentException("Aggregation variable %s must not be bound".formatted(inputVariable));
+			throw new InvalidQueryException("Aggregation variable %s must not be bound".formatted(inputVariable));
 		}
 		return super.getInputVariables(positiveVariablesInClause);
 	}
@@ -77,7 +81,7 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 				yield emptyValue == null ? BooleanLiteral.FALSE :
 						resultVariable.assign(new ConstantTerm<>(resultVariable.getType(), emptyValue));
 			}
-			case ALWAYS_TRUE -> throw new IllegalArgumentException("Trying to aggregate over an infinite set");
+			case ALWAYS_TRUE -> throw new InvalidQueryException("Trying to aggregate over an infinite set");
 			case NOT_REDUCIBLE -> this;
 		};
 	}
@@ -86,6 +90,11 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	protected Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments) {
 		return new AggregationLiteral<>(substitution.getTypeSafeSubstitute(resultVariable), aggregator,
 				substitution.getTypeSafeSubstitute(inputVariable), getTarget(), substitutedArguments);
+	}
+
+	@Override
+	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new AggregationLiteral<>(resultVariable, aggregator, inputVariable, newTarget, newArguments);
 	}
 
 	@Override
@@ -100,18 +109,9 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
-		AggregationLiteral<?, ?> that = (AggregationLiteral<?, ?>) o;
-		return resultVariable.equals(that.resultVariable) && inputVariable.equals(that.inputVariable) &&
-				aggregator.equals(that.aggregator);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), resultVariable, inputVariable, aggregator);
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), helper.getVariableHashCode(resultVariable),
+				helper.getVariableHashCode(inputVariable), aggregator);
 	}
 
 	@Override

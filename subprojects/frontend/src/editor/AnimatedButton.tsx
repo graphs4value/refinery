@@ -45,10 +45,10 @@ export default function AnimatedButton({
   children,
 }: {
   'aria-label'?: string;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLElement>;
   color: 'error' | 'warning' | 'primary' | 'inherit';
   disabled?: boolean;
-  startIcon: JSX.Element;
+  startIcon?: JSX.Element;
   sx?: SxProps<Theme> | undefined;
   children?: ReactNode;
 }): JSX.Element {
@@ -79,7 +79,11 @@ export default function AnimatedButton({
       className="rounded shaded"
       disabled={disabled ?? false}
       startIcon={startIcon}
-      width={width === undefined ? 'auto' : `calc(${width} + 50px)`}
+      width={
+        width === undefined
+          ? 'auto'
+          : `calc(${width} + ${startIcon === undefined ? 28 : 50}px)`
+      }
     >
       <Box
         display="flex"
@@ -100,6 +104,7 @@ AnimatedButton.defaultProps = {
   'aria-label': undefined,
   onClick: undefined,
   disabled: false,
+  startIcon: undefined,
   sx: undefined,
   children: undefined,
 };

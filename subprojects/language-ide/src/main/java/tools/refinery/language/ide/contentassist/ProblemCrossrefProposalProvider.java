@@ -5,39 +5,60 @@
  */
 package tools.refinery.language.ide.contentassist;
 
-import java.util.Objects;
-
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
-import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
+import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
-
-import com.google.inject.Inject;
-
+import org.eclipse.xtext.scoping.IScope;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.resource.ReferenceCounter;
 import tools.refinery.language.utils.ProblemUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider {
 	@Inject
 	private ReferenceCounter referenceCounter;
 
 	@Override
-	protected ContentAssistEntry createProposal(IEObjectDescription candidate, CrossReference crossRef,
-			ContentAssistContext context) {
-		if (!shouldCreateProposal(candidate, crossRef, context)) {
-			return null;
+	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
+													   ContentAssistContext context) {
+		var eObjectDescriptionsByName = new HashMap<QualifiedName, List<IEObjectDescription>>();
+		for (var candidate : super.queryScope(scope, crossReference, context)) {
+			if (isExistingObject(candidate, crossReference, context)) {
+				// {@code getQualifiedName()} will refer to the full name for objects that are loaded from the global
+				// scope, but {@code getName()} returns the qualified name that we set in
+				// {@code ProblemResourceDescriptionStrategy}.
+				var qualifiedName = candidate.getName();
+				var candidateList = eObjectDescriptionsByName.computeIfAbsent(qualifiedName,
+						ignored -> new ArrayList<>());
+				candidateList.add(candidate);
+			}
 		}
-		return super.createProposal(candidate, crossRef, context);
+		var eObjectDescriptions = new ArrayList<IEObjectDescription>();
+		for (var candidates : eObjectDescriptionsByName.values()) {
+			if (candidates.size() == 1) {
+				var candidate = candidates.get(0);
+				if (shouldBeVisible(candidate)) {
+					eObjectDescriptions.add(candidate);
+				}
+			}
+		}
+		return eObjectDescriptions;
 	}
 
-	protected boolean shouldCreateProposal(IEObjectDescription candidate, CrossReference crossRef,
-			ContentAssistContext context) {
+	protected boolean isExistingObject(IEObjectDescription candidate, CrossReference crossRef,
+									   ContentAssistContext context) {
 		var rootModel = context.getRootModel();
 		var eObjectOrProxy = candidate.getEObjectOrProxy();
 		if (!Objects.equals(rootModel.eResource(), eObjectOrProxy.eResource())) {
@@ -58,6 +79,11 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return referenceCounter.countReferences(problem, eObject) >= 2;
 		}
 		return true;
+	}
+
+	protected boolean shouldBeVisible(IEObjectDescription candidate) {
+		var errorPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE);
+		return !ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(errorPredicate);
 	}
 
 	protected EObject getCurrentValue(CrossReference crossRef, ContentAssistContext context) {

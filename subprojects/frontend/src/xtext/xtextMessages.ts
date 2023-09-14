@@ -34,7 +34,12 @@ export const XtextWebErrorResponse = z.object({
 
 export type XtextWebErrorResponse = z.infer<typeof XtextWebErrorResponse>;
 
-export const XtextWebPushService = z.enum(['highlight', 'validate']);
+export const XtextWebPushService = z.enum([
+  'highlight',
+  'validate',
+  'semantics',
+  'modelGeneration',
+]);
 
 export type XtextWebPushService = z.infer<typeof XtextWebPushService>;
 

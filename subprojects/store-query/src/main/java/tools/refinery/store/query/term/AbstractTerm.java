@@ -6,6 +6,7 @@
 package tools.refinery.store.query.term;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 
 import java.util.Objects;
 
@@ -17,13 +18,18 @@ public abstract class AbstractTerm<T> implements Term<T> {
 	}
 
 	@Override
-	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {
-		return getClass().equals(other.getClass()) && type.equals(other.getType());
+	public Class<T> getType() {
+		return type;
 	}
 
 	@Override
-	public Class<T> getType() {
-		return type;
+	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {
+		return other != null && getClass() == other.getClass() && type.equals(other.getType());
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(getClass(), type);
 	}
 
 	@Override
@@ -31,11 +37,11 @@ public abstract class AbstractTerm<T> implements Term<T> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		AbstractTerm<?> that = (AbstractTerm<?>) o;
-		return type.equals(that.type);
+		return equalsWithSubstitution(LiteralEqualityHelper.DEFAULT, that);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getClass(), type);
+		return hashCodeWithSubstitution(LiteralHashCodeHelper.DEFAULT);
 	}
 }

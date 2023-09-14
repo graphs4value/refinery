@@ -16,7 +16,7 @@ public final class Literals {
 		return literal.negate();
 	}
 
-	public static AssumeLiteral assume(Term<Boolean> term) {
-		return new AssumeLiteral(term);
+	public static CheckLiteral check(Term<Boolean> term) {
+		return new CheckLiteral(term);
 	}
 }

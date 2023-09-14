@@ -34,6 +34,7 @@ public class ProblemWebInjectorProvider extends ProblemInjectorProvider {
 		// the tasks in the service and the {@link
 		// org.eclipse.xtext.testing.extensions.InjectionExtension}.
 		return new ProblemWebModule() {
+			@Override
 			@SuppressWarnings("unused")
 			public Class<? extends ExecutorServiceProvider> bindExecutorServiceProvider() {
 				return AwaitTerminationExecutorServiceProvider.class;

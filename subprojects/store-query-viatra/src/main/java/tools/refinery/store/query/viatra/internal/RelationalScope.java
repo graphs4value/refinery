@@ -6,10 +6,10 @@
 package tools.refinery.store.query.viatra.internal;
 
 import org.apache.log4j.Logger;
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine;
-import org.eclipse.viatra.query.runtime.api.scope.IEngineContext;
-import org.eclipse.viatra.query.runtime.api.scope.IIndexingErrorListener;
-import org.eclipse.viatra.query.runtime.api.scope.QueryScope;
+import tools.refinery.viatra.runtime.api.ViatraQueryEngine;
+import tools.refinery.viatra.runtime.api.scope.IEngineContext;
+import tools.refinery.viatra.runtime.api.scope.IIndexingErrorListener;
+import tools.refinery.viatra.runtime.api.scope.QueryScope;
 import tools.refinery.store.query.viatra.internal.context.RelationalEngineContext;
 
 public class RelationalScope extends QueryScope {

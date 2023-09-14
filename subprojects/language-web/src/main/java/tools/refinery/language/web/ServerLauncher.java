@@ -33,7 +33,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public class ServerLauncher {
-	public static final String DEFAULT_LISTEN_ADDRESS = "localhost";
+	public static final String DEFAULT_LISTEN_HOST = "localhost";
 
 	public static final int DEFAULT_LISTEN_PORT = 1312;
 
@@ -105,7 +105,7 @@ public class ServerLauncher {
 
 	private Resource getBaseResource() {
 		var factory = ResourceFactory.of(server);
-		var baseResourceOverride = System.getenv("BASE_RESOURCE");
+		var baseResourceOverride = System.getenv("REFINERY_BASE_RESOURCE");
 		if (baseResourceOverride != null) {
 			// If a user override is provided, use it.
 			return factory.newResource(baseResourceOverride);
@@ -115,7 +115,10 @@ public class ServerLauncher {
 			// If the app is packaged in the jar, serve it.
 			URI webRootUri;
 			try {
-				webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString().replaceFirst("/index.html$", "/"));
+				webRootUri = URI.create(indexUrlInJar.toURI().toASCIIString()
+						.replaceFirst("/index.html$", "/")
+						// Enable running without warnings from a jar.
+						.replaceFirst("^jar:file:", "jar:file://"));
 			} catch (URISyntaxException e) {
 				throw new IllegalStateException("Jar has invalid base resource URI", e);
 			}
@@ -152,17 +155,17 @@ public class ServerLauncher {
 	}
 
 	private static String getListenAddress() {
-		var listenAddress = System.getenv("LISTEN_ADDRESS");
+		var listenAddress = System.getenv("REFINERY_LISTEN_HOST");
 		if (listenAddress == null) {
-			return DEFAULT_LISTEN_ADDRESS;
+			return DEFAULT_LISTEN_HOST;
 		}
 		return listenAddress;
 	}
 
 	private static int getListenPort() {
-		var portStr = System.getenv("LISTEN_PORT");
+		var portStr = System.getenv("REFINERY_LISTEN_PORT");
 		if (portStr != null) {
-			return Integer.parseInt(portStr);
+			return Integer.parseUnsignedInt(portStr);
 		}
 		return DEFAULT_LISTEN_PORT;
 	}
@@ -174,7 +177,7 @@ public class ServerLauncher {
 	}
 
 	private static String getPublicHost() {
-		var publicHost = System.getenv("PUBLIC_HOST");
+		var publicHost = System.getenv("REFINERY_PUBLIC_HOST");
 		if (publicHost != null) {
 			return publicHost.toLowerCase();
 		}
@@ -182,15 +185,15 @@ public class ServerLauncher {
 	}
 
 	private static int getPublicPort() {
-		var portStr = System.getenv("PUBLIC_PORT");
+		var portStr = System.getenv("REFINERY_PUBLIC_PORT");
 		if (portStr != null) {
-			return Integer.parseInt(portStr);
+			return Integer.parseUnsignedInt(portStr);
 		}
 		return DEFAULT_PUBLIC_PORT;
 	}
 
 	private static String[] getAllowedOrigins() {
-		var allowedOrigins = System.getenv("ALLOWED_ORIGINS");
+		var allowedOrigins = System.getenv("REFINERY_ALLOWED_ORIGINS");
 		if (allowedOrigins != null) {
 			return allowedOrigins.split(ALLOWED_ORIGINS_SEPARATOR);
 		}
@@ -219,12 +222,10 @@ public class ServerLauncher {
 		int port;
 		var publicHost = getPublicHost();
 		if (publicHost == null) {
-			host = getListenAddress();
-			port = getListenPort();
-		} else {
-			host = publicHost;
-			port = getPublicPort();
+			return null;
 		}
+		host = publicHost;
+		port = getPublicPort();
 		var scheme = port == HTTPS_DEFAULT_PORT ? "wss" : "ws";
 		return String.format("%s://%s:%d/xtext-service", scheme, host, port);
 	}

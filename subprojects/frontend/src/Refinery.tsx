@@ -10,7 +10,7 @@ import { SnackbarProvider } from 'notistack';
 
 import TopBar from './TopBar';
 import UpdateNotification from './UpdateNotification';
-import EditorPane from './editor/EditorPane';
+import WorkArea from './WorkArea';
 
 export default function Refinery(): JSX.Element {
   return (
@@ -18,7 +18,7 @@ export default function Refinery(): JSX.Element {
       <UpdateNotification />
       <Stack direction="column" height="100%" overflow="auto">
         <TopBar />
-        <EditorPane />
+        <WorkArea />
       </Stack>
     </SnackbarProvider>
   );

@@ -30,7 +30,7 @@ public final class CardinalityIntervals {
 	}
 
 	public static CardinalityInterval between(int lowerBound, int upperBound) {
-		return between(lowerBound, UpperCardinalities.valueOf(upperBound));
+		return between(lowerBound, UpperCardinalities.atMost(upperBound));
 	}
 
 	public static CardinalityInterval atMost(UpperCardinality upperBound) {
@@ -38,7 +38,7 @@ public final class CardinalityIntervals {
 	}
 
 	public static CardinalityInterval atMost(int upperBound) {
-		return atMost(UpperCardinalities.valueOf(upperBound));
+		return atMost(UpperCardinalities.atMost(upperBound));
 	}
 
 	public static CardinalityInterval atLeast(int lowerBound) {
@@ -46,6 +46,6 @@ public final class CardinalityIntervals {
 	}
 
 	public static CardinalityInterval exactly(int lowerBound) {
-		return new NonEmptyCardinalityInterval(lowerBound, UpperCardinalities.valueOf(lowerBound));
+		return new NonEmptyCardinalityInterval(lowerBound, UpperCardinalities.atMost(lowerBound));
 	}
 }

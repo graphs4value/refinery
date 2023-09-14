@@ -6,13 +6,17 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public final class CallLiteral extends AbstractCallLiteral implements CanNegate<CallLiteral> {
 	private final CallPolarity polarity;
 
@@ -22,10 +26,14 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 		int arity = target.arity();
 		if (polarity.isTransitive()) {
 			if (arity != 2) {
-				throw new IllegalArgumentException("Transitive closures can only take binary relations");
+				throw new InvalidQueryException("Transitive closures can only take binary relations");
 			}
 			if (parameters.get(0).isDataVariable() || parameters.get(1).isDataVariable()) {
-				throw new IllegalArgumentException("Transitive closures can only be computed over nodes");
+				throw new InvalidQueryException("Transitive closures can only be computed over nodes");
+			}
+			if (parameters.get(0).getDirection() != ParameterDirection.OUT ||
+					parameters.get(1).getDirection() != ParameterDirection.OUT) {
+				throw new InvalidQueryException("Transitive closures cannot take input parameters");
 			}
 		}
 		this.polarity = polarity;
@@ -85,22 +93,18 @@ public final class CallLiteral extends AbstractCallLiteral implements CanNegate<
 	}
 
 	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), polarity);
+	}
+
+	@Override
 	public CallLiteral negate() {
 		return new CallLiteral(polarity.negate(), getTarget(), getArguments());
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
-		CallLiteral that = (CallLiteral) o;
-		return polarity == that.polarity;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), polarity);
+	public AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new CallLiteral(polarity, newTarget, newArguments);
 	}
 
 	@Override

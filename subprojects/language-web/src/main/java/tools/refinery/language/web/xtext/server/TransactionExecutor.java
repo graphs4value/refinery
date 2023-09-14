@@ -42,6 +42,8 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 
 	private final List<XtextWebPushMessage> pendingPushMessages = new ArrayList<>();
 
+	private volatile boolean disposed;
+
 	public TransactionExecutor(ISession session, IResourceServiceProvider.Registry resourceServiceProviderRegistry) {
 		this.session = session;
 		this.resourceServiceProviderRegistry = resourceServiceProviderRegistry;
@@ -52,10 +54,13 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 	}
 
 	public void handleRequest(XtextWebRequest request) throws ResponseHandlerException {
+		if (disposed) {
+			return;
+		}
 		var serviceContext = new SimpleServiceContext(session, request.getRequestData());
 		var ping = serviceContext.getParameter("ping");
 		if (ping != null) {
-			responseHandler.onResponse(new XtextWebOkResponse(request, new PongResult(ping)));
+			onResponse(new XtextWebOkResponse(request, new PongResult(ping)));
 			return;
 		}
 		synchronized (callPendingLock) {
@@ -72,23 +77,36 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 			var serviceDispatcher = injector.getInstance(XtextServiceDispatcher.class);
 			var service = serviceDispatcher.getService(new SubscribingServiceContext(serviceContext, this));
 			var serviceResult = service.getService().apply();
-			responseHandler.onResponse(new XtextWebOkResponse(request, serviceResult));
+			onResponse(new XtextWebOkResponse(request, serviceResult));
 		} catch (InvalidRequestException e) {
-			responseHandler.onResponse(new XtextWebErrorResponse(request, XtextWebErrorKind.REQUEST_ERROR, e));
+			onResponse(new XtextWebErrorResponse(request, XtextWebErrorKind.REQUEST_ERROR, e));
 		} catch (RuntimeException e) {
-			responseHandler.onResponse(new XtextWebErrorResponse(request, XtextWebErrorKind.SERVER_ERROR, e));
+			onResponse(new XtextWebErrorResponse(request, XtextWebErrorKind.SERVER_ERROR, e));
 		} finally {
-			synchronized (callPendingLock) {
-				for (var message : pendingPushMessages) {
-					try {
-						responseHandler.onResponse(message);
-					} catch (ResponseHandlerException | RuntimeException e) {
-						LOG.error("Error while flushing push message", e);
-					}
+			flushPendingPushMessages();
+		}
+	}
+
+	private void onResponse(XtextWebResponse response) throws ResponseHandlerException {
+		if (!disposed) {
+			responseHandler.onResponse(response);
+		}
+	}
+
+	private void flushPendingPushMessages() {
+		synchronized (callPendingLock) {
+			for (var message : pendingPushMessages) {
+				if (disposed) {
+					return;
 				}
-				pendingPushMessages.clear();
-				callPending = false;
+				try {
+					responseHandler.onResponse(message);
+				} catch (ResponseHandlerException | RuntimeException e) {
+					LOG.error("Error while flushing push message", e);
+				}
 			}
+			pendingPushMessages.clear();
+			callPending = false;
 		}
 	}
 
@@ -134,7 +152,7 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 	 * @throws UnknownLanguageException if the Xtext language cannot be determined
 	 */
 	protected Injector getInjector(IServiceContext context) {
-		IResourceServiceProvider resourceServiceProvider = null;
+		IResourceServiceProvider resourceServiceProvider;
 		var resourceName = context.getParameter("resource");
 		if (resourceName == null) {
 			resourceName = "";
@@ -164,10 +182,12 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 
 	@Override
 	public void dispose() {
+		disposed = true;
 		for (var subscription : subscriptions.values()) {
 			var document = subscription.get();
 			if (document != null) {
 				document.removePrecomputationListener(this);
+				document.dispose();
 			}
 		}
 	}

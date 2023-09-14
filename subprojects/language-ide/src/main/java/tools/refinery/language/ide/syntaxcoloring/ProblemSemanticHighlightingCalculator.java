@@ -16,6 +16,7 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
@@ -94,9 +95,16 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	}
 
 	protected String[] getHighlightClass(EObject eObject, EReference reference) {
+		boolean isError = ProblemUtil.isError(eObject);
 		if (ProblemUtil.isBuiltIn(eObject)) {
-			return new String[] { BUILTIN_CLASS };
+			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
+			return new String[] { className };
 		}
+		return getUserDefinedElementHighlightClass(eObject, reference, isError);
+	}
+
+	@NotNull
+	private String[] getUserDefinedElementHighlightClass(EObject eObject, EReference reference, boolean isError) {
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
 		if (eObject instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			classesBuilder.add(ABSTRACT_CLASS);
@@ -105,8 +113,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 				&& desugarer.isContainmentReference(referenceDeclaration)) {
 			classesBuilder.add(CONTAINMENT_CLASS);
 		}
-		if (eObject instanceof PredicateDefinition predicateDefinition
-				&& predicateDefinition.getKind() == PredicateKind.ERROR) {
+		if (isError) {
 			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {

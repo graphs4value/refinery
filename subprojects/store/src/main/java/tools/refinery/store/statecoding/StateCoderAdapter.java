@@ -17,7 +17,7 @@ public interface StateCoderAdapter extends ModelAdapter {
 		return calculateStateCode().objectCode();
 	}
 
-	static StateCoderBuilderImpl builder() {
+	static StateCoderBuilder builder() {
 		return new StateCoderBuilderImpl();
 	}
 }

@@ -12,21 +12,37 @@ import tools.refinery.store.map.VersionedMapStoreFactory;
 import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.util.CancellationToken;
 
 import java.util.*;
 
 public class ModelStoreBuilderImpl implements ModelStoreBuilder {
+	private CancellationToken cancellationToken;
 	private final LinkedHashSet<AnySymbol> allSymbols = new LinkedHashSet<>();
 	private final LinkedHashMap<SymbolEquivalenceClass<?>, List<AnySymbol>> equivalenceClasses = new LinkedHashMap<>();
 	private final List<ModelAdapterBuilder> adapters = new ArrayList<>();
 
 	@Override
+	public ModelStoreBuilder cancellationToken(CancellationToken cancellationToken) {
+		if (this.cancellationToken != null) {
+			throw new IllegalStateException("Cancellation token was already set");
+		}
+		if (cancellationToken == null) {
+			throw new IllegalStateException("Cancellation token must not be null");
+		}
+		this.cancellationToken = cancellationToken;
+		return this;
+	}
+
+	@Override
 	public <T> ModelStoreBuilder symbol(Symbol<T> symbol) {
 		if (!allSymbols.add(symbol)) {
-			throw new IllegalArgumentException("Symbol %s already added".formatted(symbol));
+			// No need to add symbol twice.
+			return this;
 		}
 		var equivalenceClass = new SymbolEquivalenceClass<>(symbol);
 		var symbolsInEquivalenceClass = equivalenceClasses.computeIfAbsent(equivalenceClass,
@@ -36,7 +52,7 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	}
 
 	@Override
-	public <T extends ModelAdapterBuilder> ModelStoreBuilder with(T adapterBuilder) {
+	public ModelStoreBuilder with(ModelAdapterBuilder adapterBuilder) {
 		for (var existingAdapter : adapters) {
 			if (existingAdapter.getClass().equals(adapterBuilder.getClass())) {
 				throw new IllegalArgumentException("%s adapter was already configured for store builder"
@@ -44,6 +60,12 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 			}
 		}
 		adapters.add(adapterBuilder);
+		return this;
+	}
+
+	@Override
+	public ModelStoreBuilder with(ModelStoreConfiguration configuration) {
+		configuration.apply(this);
 		return this;
 	}
 
@@ -59,6 +81,7 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 
 	@Override
 	public ModelStore build() {
+		// First configure adapters and let them register any symbols we don't know about yet.
 		for (int i = adapters.size() - 1; i >= 0; i--) {
 			adapters.get(i).configure(this);
 		}
@@ -66,7 +89,8 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 		for (var entry : equivalenceClasses.entrySet()) {
 			createStores(stores, entry.getKey(), entry.getValue());
 		}
-		var modelStore = new ModelStoreImpl(stores, adapters.size());
+		var modelStore = new ModelStoreImpl(stores, adapters.size(), cancellationToken == null ?
+				CancellationToken.NONE : cancellationToken);
 		for (var adapterBuilder : adapters) {
 			var storeAdapter = adapterBuilder.build(modelStore);
 			modelStore.addAdapter(storeAdapter);
@@ -77,8 +101,8 @@ public class ModelStoreBuilderImpl implements ModelStoreBuilder {
 	private <T> void createStores(Map<AnySymbol, VersionedMapStore<Tuple, ?>> stores,
 								  SymbolEquivalenceClass<T> equivalenceClass, List<AnySymbol> symbols) {
 		int size = symbols.size();
-		VersionedMapStoreFactory<Tuple,T> mapFactory = VersionedMapStore
-				.<Tuple,T>builder()
+		VersionedMapStoreFactory<Tuple, T> mapFactory = VersionedMapStore
+				.<Tuple, T>builder()
 				.strategy(VersionedMapStoreFactoryBuilder.StoreStrategy.DELTA)
 				.defaultValue(equivalenceClass.defaultValue())
 				.build();

@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.matchers.context.common.BaseInputKeyWrapper;
+import tools.refinery.viatra.runtime.matchers.context.common.BaseInputKeyWrapper;
 import tools.refinery.store.query.view.AnySymbolView;
 
 public class SymbolViewWrapper extends BaseInputKeyWrapper<AnySymbolView> {

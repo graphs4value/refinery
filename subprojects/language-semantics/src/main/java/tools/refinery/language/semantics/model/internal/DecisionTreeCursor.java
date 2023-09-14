@@ -67,6 +67,15 @@ class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
 
 	@Override
 	public boolean move() {
+		while (moveOne()) {
+			if (!value.equals(defaultValue)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean moveOne() {
 		boolean found = false;
 		if (path.isEmpty() && !terminated) {
 			found = root.moveNext(levels - 1, this);

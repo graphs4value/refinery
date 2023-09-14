@@ -15,10 +15,15 @@ include(
 		"language-web",
 		"store",
 		"store-dse",
+		"store-dse-visualization",
 		"store-query",
 		"store-query-viatra",
 		"store-reasoning",
-		"visualization",
+		"store-reasoning-scope",
+		"viatra-runtime",
+		"viatra-runtime-localsearch",
+		"viatra-runtime-rete",
+		"viatra-runtime-rete-recipes",
 )
 
 for (project in rootProject.children) {

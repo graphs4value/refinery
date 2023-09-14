@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.dnf;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.literal.CallLiteral;
 import tools.refinery.store.query.literal.CallPolarity;
 import tools.refinery.store.query.term.AssignedValue;
@@ -19,7 +20,7 @@ public final class RelationalQuery extends Query<Boolean> {
 		for (var parameter : dnf.getSymbolicParameters()) {
 			var parameterType = parameter.tryGetType();
 			if (parameterType.isPresent()) {
-				throw new IllegalArgumentException("Expected parameter %s of %s to be a node variable, got %s instead"
+				throw new InvalidQueryException("Expected parameter %s of %s to be a node variable, got %s instead"
 						.formatted(parameter, dnf, parameterType.get().getName()));
 			}
 		}
@@ -38,6 +39,16 @@ public final class RelationalQuery extends Query<Boolean> {
 	@Override
 	public Boolean defaultValue() {
 		return false;
+	}
+
+	@Override
+	protected RelationalQuery withDnfInternal(Dnf newDnf) {
+		return newDnf.asRelation();
+	}
+
+	@Override
+	public RelationalQuery withDnf(Dnf newDnf) {
+		return (RelationalQuery) super.withDnf(newDnf);
 	}
 
 	public CallLiteral call(CallPolarity polarity, List<NodeVariable> arguments) {

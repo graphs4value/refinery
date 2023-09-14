@@ -28,9 +28,8 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static tools.refinery.store.query.literal.Literals.assume;
 import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.query.term.int_.IntTerms.*;
+import static tools.refinery.store.query.term.int_.IntTerms.INT_SUM;
 
 class VariableDirectionTest {
 	private static final Symbol<Boolean> person = Symbol.of("Person", 1);
@@ -49,7 +48,7 @@ class VariableDirectionTest {
 	@MethodSource("clausesWithVariableInput")
 	void unboundOutVariableTest(List<? extends Literal> clause) {
 		var builder = Dnf.builder().parameter(p, ParameterDirection.OUT).clause(clause);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@ParameterizedTest
@@ -101,7 +100,7 @@ class VariableDirectionTest {
 		var clauseWithEquivalence = new ArrayList<Literal>(clause);
 		clauseWithEquivalence.add(r.isEquivalent(p));
 		var builder = Dnf.builder().clause(clauseWithEquivalence);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	static Stream<Arguments> clausesNotBindingVariable() {
@@ -119,7 +118,7 @@ class VariableDirectionTest {
 	@MethodSource("literalsWithPrivateVariable")
 	void unboundTwicePrivateVariableTest(Literal literal) {
 		var builder = Dnf.builder().clause(not(personView.call(p)), literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@ParameterizedTest
@@ -127,7 +126,7 @@ class VariableDirectionTest {
 	void unboundTwiceByEquivalencePrivateVariableTest(Literal literal) {
 		var r = Variable.of("r");
 		var builder = Dnf.builder().clause(not(personView.call(r)), r.isEquivalent(p), literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	static Stream<Arguments> literalsWithPrivateVariable() {
@@ -160,7 +159,7 @@ class VariableDirectionTest {
 	@MethodSource("literalsWithRequiredVariableInput")
 	void unboundPrivateVariableTest(Literal literal) {
 		var builder = Dnf.builder().clause(literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
+		assertThrows(InvalidClauseException.class, builder::build);
 	}
 
 	@ParameterizedTest
@@ -243,182 +242,6 @@ class VariableDirectionTest {
 		return Stream.of(
 				Arguments.of(friendView.call(p, q)),
 				Arguments.of(dnfWithOutput.call(p, q))
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("clausesWithDataVariableInput")
-	void unboundOutDataVariableTest(List<? extends Literal> clause) {
-		var builder = Dnf.builder().parameter(x, ParameterDirection.OUT).clause(clause);
-		assertThrows(IllegalArgumentException.class, builder::build);
-	}
-
-	@ParameterizedTest
-	@MethodSource("clausesWithDataVariableInput")
-	void unboundInDataVariableTest(List<? extends Literal> clause) {
-		var builder = Dnf.builder().parameter(x, ParameterDirection.IN).clause(clause);
-		var dnf = assertDoesNotThrow(builder::build);
-		var clauses = dnf.getClauses();
-		if (clauses.size() > 0) {
-			assertThat(clauses.get(0).positiveVariables(), hasItem(x));
-		}
-	}
-
-	@ParameterizedTest
-	@MethodSource("clausesWithDataVariableInput")
-	void boundPrivateDataVariableTest(List<? extends Literal> clause) {
-		var clauseWithBinding = new ArrayList<Literal>(clause);
-		clauseWithBinding.add(x.assign(constant(27)));
-		var builder = Dnf.builder().clause(clauseWithBinding);
-		var dnf = assertDoesNotThrow(builder::build);
-		var clauses = dnf.getClauses();
-		if (clauses.size() > 0) {
-			assertThat(clauses.get(0).positiveVariables(), hasItem(x));
-		}
-	}
-
-	static Stream<Arguments> clausesWithDataVariableInput() {
-		return Stream.concat(
-				clausesNotBindingDataVariable(),
-				literalToClauseArgumentStream(literalsWithRequiredDataVariableInput())
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("clausesNotBindingDataVariable")
-	void unboundPrivateDataVariableTest(List<? extends Literal> clause) {
-		var builder = Dnf.builder().clause(clause);
-		var dnf = assertDoesNotThrow(builder::build);
-		var clauses = dnf.getClauses();
-		if (clauses.size() > 0) {
-			assertThat(clauses.get(0).positiveVariables(), not(hasItem(x)));
-		}
-	}
-
-	static Stream<Arguments> clausesNotBindingDataVariable() {
-		return Stream.concat(
-				Stream.of(
-						Arguments.of(List.of()),
-						Arguments.of(List.of(BooleanLiteral.TRUE)),
-						Arguments.of(List.of(BooleanLiteral.FALSE))
-				),
-				literalToClauseArgumentStream(literalsWithPrivateDataVariable())
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("literalsWithPrivateDataVariable")
-	void unboundTwicePrivateDataVariableTest(Literal literal) {
-		var builder = Dnf.builder().clause(not(ageView.call(p, x)), literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
-	}
-
-	static Stream<Arguments> literalsWithPrivateDataVariable() {
-		var dnfWithOutput = Dnf.builder("WithDataOutput")
-				.parameter(y, ParameterDirection.OUT)
-				.parameter(q, ParameterDirection.OUT)
-				.clause(ageView.call(q, y))
-				.build();
-
-		return Stream.of(
-				Arguments.of(not(ageView.call(q, x))),
-				Arguments.of(y.assign(ageView.count(q, x))),
-				Arguments.of(not(dnfWithOutput.call(x, q)))
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("literalsWithRequiredDataVariableInput")
-	void unboundPrivateDataVariableTest(Literal literal) {
-		var builder = Dnf.builder().clause(literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
-	}
-
-	static Stream<Arguments> literalsWithRequiredDataVariableInput() {
-		var dnfWithInput = Dnf.builder("WithDataInput")
-				.parameter(y, ParameterDirection.IN)
-				.parameter(q, ParameterDirection.OUT)
-				.clause(ageView.call(q, x))
-				.build();
-		// We are passing {@code y} to the parameter named {@code right} of {@code greaterEq}.
-		@SuppressWarnings("SuspiciousNameCombination")
-		var dnfWithInputToAggregate = Dnf.builder("WithDataInputToAggregate")
-				.parameter(y, ParameterDirection.IN)
-				.parameter(q, ParameterDirection.OUT)
-				.parameter(x, ParameterDirection.OUT)
-				.clause(
-						friendView.call(p, q),
-						ageView.call(q, x),
-						assume(greaterEq(x, y))
-				)
-				.build();
-
-		return Stream.of(
-				Arguments.of(dnfWithInput.call(x, q)),
-				Arguments.of(not(dnfWithInput.call(x, q))),
-				Arguments.of(y.assign(dnfWithInput.count(x, q))),
-				Arguments.of(y.assign(dnfWithInputToAggregate.aggregateBy(z, INT_SUM, x, q, z)))
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("literalsWithDataVariableOutput")
-	void boundDataParameterTest(Literal literal) {
-		var builder = Dnf.builder().parameter(x, ParameterDirection.OUT).clause(literal);
-		var dnf = assertDoesNotThrow(builder::build);
-		assertThat(dnf.getClauses().get(0).positiveVariables(), hasItem(x));
-	}
-
-	@ParameterizedTest
-	@MethodSource("literalsWithDataVariableOutput")
-	void boundTwiceDataParameterTest(Literal literal) {
-		var builder = Dnf.builder().parameter(x, ParameterDirection.IN).clause(literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
-	}
-
-	@ParameterizedTest
-	@MethodSource("literalsWithDataVariableOutput")
-	void boundPrivateDataVariableOutputTest(Literal literal) {
-		var dnfWithInput = Dnf.builder("WithInput")
-				.parameter(x, ParameterDirection.IN)
-				.clause(assume(greaterEq(x, constant(24))))
-				.build();
-		var builder = Dnf.builder().clause(dnfWithInput.call(x), literal);
-		var dnf = assertDoesNotThrow(builder::build);
-		assertThat(dnf.getClauses().get(0).positiveVariables(), hasItem(x));
-	}
-
-	@ParameterizedTest
-	@MethodSource("literalsWithDataVariableOutput")
-	void boundTwicePrivateDataVariableOutputTest(Literal literal) {
-		var builder = Dnf.builder().clause(x.assign(constant(27)), literal);
-		assertThrows(IllegalArgumentException.class, builder::build);
-	}
-
-	static Stream<Arguments> literalsWithDataVariableOutput() {
-		var dnfWithOutput = Dnf.builder("WithOutput")
-				.parameter(q, ParameterDirection.OUT)
-				.clause(personView.call(q))
-				.build();
-		var dnfWithDataOutput = Dnf.builder("WithDataOutput")
-				.parameter(y, ParameterDirection.OUT)
-				.parameter(q, ParameterDirection.OUT)
-				.clause(ageView.call(q, y))
-				.build();
-		var dnfWithOutputToAggregate = Dnf.builder("WithDataOutputToAggregate")
-				.parameter(q, ParameterDirection.OUT)
-				.parameter(y, ParameterDirection.OUT)
-				.clause(ageView.call(q, y))
-				.build();
-
-		return Stream.of(
-				Arguments.of(x.assign(constant(24))),
-				Arguments.of(ageView.call(q, x)),
-				Arguments.of(x.assign(personView.count(q))),
-				Arguments.of(x.assign(ageView.aggregate(INT_SUM, q))),
-				Arguments.of(dnfWithDataOutput.call(x, q)),
-				Arguments.of(x.assign(dnfWithOutput.count(q))),
-				Arguments.of(x.assign(dnfWithOutputToAggregate.aggregateBy(z, INT_SUM, q, z)))
 		);
 	}
 

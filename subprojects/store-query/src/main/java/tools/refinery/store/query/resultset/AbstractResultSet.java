@@ -28,7 +28,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
 	}
 
 	@Override
-	public Query<T> getQuery() {
+	public Query<T> getCanonicalQuery() {
 		return query;
 	}
 

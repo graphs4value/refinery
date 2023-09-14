@@ -16,9 +16,9 @@ frontend {
 	assembleScript.set("run build")
 }
 
-val viteOutputDir = "$buildDir/vite"
+val viteOutputDir = layout.buildDirectory.dir("vite")
 
-val productionResources = file("$viteOutputDir/production")
+val productionResources = viteOutputDir.map { it.dir("production") }
 
 val productionAssets: Configuration by configurations.creating {
 	isCanBeConsumed = true
@@ -81,7 +81,7 @@ tasks {
 		dependsOn(installFrontend)
 		dependsOn(generateXStateTypes)
 		inputs.files(lintingFiles)
-		outputs.dir("$buildDir/typescript")
+		outputs.dir(layout.buildDirectory.dir("typescript"))
 		script.set("run typecheck")
 		group = "verification"
 		description = "Check for TypeScript type errors."
@@ -92,7 +92,7 @@ tasks {
 		dependsOn(generateXStateTypes)
 		dependsOn(typeCheckFrontend)
 		inputs.files(lintingFiles)
-		outputs.file("$buildDir/eslint.json")
+		outputs.file(layout.buildDirectory.file("eslint.json"))
 		script.set("run lint")
 		group = "verification"
 		description = "Check for TypeScript lint errors and warnings."
@@ -140,5 +140,5 @@ artifacts {
 sonarqube.properties {
 	SonarPropertiesUtils.addToList(properties, "sonar.sources", "src")
 	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
-	property("sonar.eslint.reportPaths", "$buildDir/eslint.json")
+	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
 }

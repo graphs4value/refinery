@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.tuple.ITuple;
+import tools.refinery.viatra.runtime.matchers.tuple.ITuple;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.tuple.Tuple;
 

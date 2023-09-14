@@ -5,10 +5,10 @@
  */
 package tools.refinery.language.web.xtext.server.message;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Map;
 import java.util.Objects;
-
-import com.google.gson.annotations.SerializedName;
 
 public class XtextWebRequest {
 	private String id;
@@ -16,8 +16,11 @@ public class XtextWebRequest {
 	@SerializedName("request")
 	private Map<String, String> requestData;
 
+	public XtextWebRequest() {
+		this(null, null);
+	}
+
 	public XtextWebRequest(String id, Map<String, String> requestData) {
-		super();
 		this.id = id;
 		this.requestData = requestData;
 	}

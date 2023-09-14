@@ -5,10 +5,10 @@
  */
 package tools.refinery.store.query.viatra.internal.context;
 
-import org.eclipse.viatra.query.runtime.matchers.context.AbstractQueryMetaContext;
-import org.eclipse.viatra.query.runtime.matchers.context.IInputKey;
-import org.eclipse.viatra.query.runtime.matchers.context.InputKeyImplication;
-import org.eclipse.viatra.query.runtime.matchers.context.common.JavaTransitiveInstancesKey;
+import tools.refinery.viatra.runtime.matchers.context.AbstractQueryMetaContext;
+import tools.refinery.viatra.runtime.matchers.context.IInputKey;
+import tools.refinery.viatra.runtime.matchers.context.InputKeyImplication;
+import tools.refinery.viatra.runtime.matchers.context.common.JavaTransitiveInstancesKey;
 import tools.refinery.store.query.viatra.internal.pquery.SymbolViewWrapper;
 import tools.refinery.store.query.view.AnySymbolView;
 

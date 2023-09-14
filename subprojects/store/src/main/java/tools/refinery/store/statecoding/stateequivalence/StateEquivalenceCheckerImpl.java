@@ -6,11 +6,14 @@
 package tools.refinery.store.statecoding.stateequivalence;
 
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
+import org.eclipse.collections.api.factory.primitive.IntSets;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
-import org.eclipse.collections.impl.map.mutable.primitive.IntIntHashMap;
-import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
-import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
+import org.eclipse.collections.api.set.primitive.MutableIntSet;
+import tools.refinery.store.model.AnyInterpretation;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.statecoding.Morphism;
 import tools.refinery.store.statecoding.ObjectCode;
@@ -26,12 +29,11 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 
 	@Override
 	public EquivalenceResult constructMorphism(IntSet individuals,
-												List<? extends Interpretation<?>> interpretations1,
-												ObjectCode code1,
-												List<? extends Interpretation<?>> interpretations2,
-												ObjectCode code2)
-	{
-		IntIntHashMap object2PermutationGroup = new IntIntHashMap();
+											   List<? extends AnyInterpretation> interpretations1,
+											   ObjectCode code1,
+											   List<? extends AnyInterpretation> interpretations2,
+											   ObjectCode code2) {
+		MutableIntIntMap object2PermutationGroup = IntIntMaps.mutable.empty();
 		List<List<IntIntMap>> permutationsGroups = new ArrayList<>();
 
 		final EquivalenceResult permutations = constructPermutationNavigation(individuals,
@@ -50,7 +52,7 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 				return permutations;
 			}
 
-			if(tried >= LIMIT) {
+			if (tried >= LIMIT) {
 				return EquivalenceResult.UNKNOWN;
 			}
 
@@ -58,22 +60,22 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 			tried++;
 		} while (hasNext);
 
-		if(permutations == EquivalenceResult.UNKNOWN) {
+		if (permutations == EquivalenceResult.UNKNOWN) {
 			return EquivalenceResult.UNKNOWN;
 		} else {
 			return EquivalenceResult.DIFFERENT;
 		}
 	}
 
-	private LongObjectHashMap<IntHashSet> indexByHash(ObjectCode code, IntSet individuals) {
-		LongObjectHashMap<IntHashSet> result = new LongObjectHashMap<>();
+	private MutableLongObjectMap<MutableIntSet> indexByHash(ObjectCode code, IntSet individuals) {
+		MutableLongObjectMap<MutableIntSet> result = LongObjectMaps.mutable.empty();
 		for (int o = 0; o < code.getSize(); o++) {
-			if(! individuals.contains(o)){
+			if (!individuals.contains(o)) {
 				long hash = code.get(o);
-				if(hash != 0) {
+				if (hash != 0) {
 					var equivalenceClass = result.get(hash);
 					if (equivalenceClass == null) {
-						equivalenceClass = new IntHashSet();
+						equivalenceClass = IntSets.mutable.empty();
 						result.put(hash, equivalenceClass);
 					}
 					equivalenceClass.add(o);
@@ -83,11 +85,9 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 		return result;
 	}
 
-	private EquivalenceResult constructPermutationNavigation(IntSet individuals,
-															 LongObjectHashMap<IntHashSet> map1,
-															 LongObjectHashMap<IntHashSet> map2,
-															 IntIntHashMap object2OptionIndex,
-															 List<List<IntIntMap>> listOfOptions) {
+	private EquivalenceResult constructPermutationNavigation(
+			IntSet individuals, MutableLongObjectMap<MutableIntSet> map1, MutableLongObjectMap<MutableIntSet> map2,
+			MutableIntIntMap object2OptionIndex, List<List<IntIntMap>> listOfOptions) {
 		if (map1.size() != map2.size()) {
 			return EquivalenceResult.DIFFERENT;
 		}
@@ -116,27 +116,28 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 			listOfOptions.add(pairing.permutations());
 		}
 
-		individuals.forEach(o -> listOfOptions.add(o,List.of(IntIntMaps.immutable.of(o,o))));
+		individuals.forEach(o -> listOfOptions.add(o, List.of(IntIntMaps.immutable.of(o, o))));
 
-		if(allComplete) {
+		if (allComplete) {
 			return EquivalenceResult.ISOMORPHIC;
 		} else {
 			return EquivalenceResult.UNKNOWN;
 		}
 	}
 
-	private boolean testMorphism(List<? extends Interpretation<?>> s, List<? extends Interpretation<?>> t, Morphism m) {
+	private boolean testMorphism(List<? extends AnyInterpretation> s, List<? extends AnyInterpretation> t,
+								 Morphism m) {
 		for (int interpretationIndex = 0; interpretationIndex < s.size(); interpretationIndex++) {
 			var sI = s.get(interpretationIndex);
 			var tI = t.get(interpretationIndex);
 
-			var cursor = sI.getAll();
+			var cursor = ((Interpretation<?>) sI).getAll();
 			while (cursor.move()) {
 				final Tuple sTuple = cursor.getKey();
 				final Object sValue = cursor.getValue();
 
 				final Tuple tTuple = apply(sTuple, m);
-				final Object tValue = tI.get(tTuple);
+				final Object tValue = ((Interpretation<?>) tI).get(tTuple);
 
 				if (!Objects.equals(sValue, tValue)) {
 					return false;

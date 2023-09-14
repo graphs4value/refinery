@@ -22,17 +22,18 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ReferenceKind"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="referenceType" eType="#//Relation"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="invalidMultiplicity" eType="#//Relation"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PredicateDefinition" eSuperTypes="#//ParametricDefinition #//Relation">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//PredicateKind"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="bodies" upperBound="-1"
         eType="#//Conjunction" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="error" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Variable" abstract="true" eSuperTypes="#//VariableOrNode"/>
@@ -168,12 +169,6 @@
     <eLiterals name="REFERENCE" value="1"/>
     <eLiterals name="CONTAINMENT" value="2"/>
     <eLiterals name="CONTAINER" value="3"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="PredicateKind">
-    <eLiterals name="DEFAULT"/>
-    <eLiterals name="ERROR" value="1"/>
-    <eLiterals name="CONTAINED" value="2"/>
-    <eLiterals name="CONTAINMENT" value="3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expr" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableOrNodeExpr" eSuperTypes="#//Expr">

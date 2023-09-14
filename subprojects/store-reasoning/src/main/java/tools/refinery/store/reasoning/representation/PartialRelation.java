@@ -26,11 +26,6 @@ public record PartialRelation(String name, int arity) implements PartialSymbol<T
 	}
 
 	@Override
-	public Boolean defaultConcreteValue() {
-		return false;
-	}
-
-	@Override
 	public List<Parameter> getParameters() {
 		var parameters = new Parameter[arity];
 		Arrays.fill(parameters, Parameter.NODE_OUT);

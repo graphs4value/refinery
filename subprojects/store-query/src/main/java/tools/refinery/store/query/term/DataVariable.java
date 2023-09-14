@@ -6,7 +6,10 @@
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
+import tools.refinery.store.query.literal.EquivalenceLiteral;
 import tools.refinery.store.query.literal.Literal;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.valuation.Valuation;
@@ -39,8 +42,8 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public <U> DataVariable<U> asDataVariable(Class<U> newType) {
 		if (!getType().equals(newType)) {
-			throw new IllegalStateException("%s is not of type %s but of type %s".formatted(this, newType.getName(),
-					getType().getName()));
+			throw new InvalidQueryException("%s is not of type %s but of type %s"
+					.formatted(this, newType.getName(), getType().getName()));
 		}
 		@SuppressWarnings("unchecked")
 		var result = (DataVariable<U>) this;
@@ -62,6 +65,16 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 		return other instanceof DataVariable<?> dataVariable && helper.variableEqual(this, dataVariable);
 	}
 
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return helper.getVariableHashCode(this);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(int sequenceNumber) {
+		return Objects.hash(type, sequenceNumber);
+	}
+
 	public Literal assign(AssignedValue<T> value) {
 		return value.toLiteral(this);
 	}
@@ -78,5 +91,13 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), type);
+	}
+
+	public EquivalenceLiteral isEquivalent(DataVariable<T> other) {
+		return new EquivalenceLiteral(true, this, other);
+	}
+
+	public EquivalenceLiteral notEquivalent(DataVariable<T> other) {
+		return new EquivalenceLiteral(false, this, other);
 	}
 }

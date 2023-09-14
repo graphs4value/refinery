@@ -27,6 +27,8 @@ export type WebSocketEvent =
   | { type: 'PAGE_RESUME' }
   | { type: 'ONLINE' }
   | { type: 'OFFLINE' }
+  | { type: 'GENERATION_STARTED' }
+  | { type: 'GENERATION_ENDED' }
   | { type: 'ERROR'; message: string };
 
 export default createMachine(
@@ -105,7 +107,7 @@ export default createMachine(
                 initial: 'opening',
                 states: {
                   opening: {
-                    always: [{ target: '#timedOut', in: '#tabHidden' }],
+                    always: [{ target: '#timedOut', in: '#mayDisconnect' }],
                     after: {
                       OPEN_TIMEOUT: {
                         actions: 'raiseTimeoutError',
@@ -143,7 +145,7 @@ export default createMachine(
                 initial: 'active',
                 states: {
                   active: {
-                    always: [{ target: 'inactive', in: '#tabHidden' }],
+                    always: [{ target: 'inactive', in: '#mayDisconnect' }],
                   },
                   inactive: {
                     always: [{ target: 'active', in: '#tabVisible' }],
@@ -173,13 +175,43 @@ export default createMachine(
           visibleOrUnknown: {
             id: 'tabVisible',
             on: {
-              TAB_HIDDEN: 'hidden',
+              TAB_HIDDEN: [
+                { target: 'hidden.mayDisconnect', in: '#generationIdle' },
+                { target: 'hidden.keepAlive', in: '#generationRunning' },
+              ],
             },
           },
           hidden: {
-            id: 'tabHidden',
             on: {
               TAB_VISIBLE: 'visibleOrUnknown',
+            },
+            initial: 'mayDisconnect',
+            states: {
+              mayDisconnect: {
+                id: 'mayDisconnect',
+                always: { target: 'keepAlive', in: '#generationRunning' },
+              },
+              keepAlive: {
+                id: 'keepAlive',
+                always: { target: 'mayDisconnect', in: '#generationIdle' },
+              },
+            },
+          },
+        },
+      },
+      generation: {
+        initial: 'idle',
+        states: {
+          idle: {
+            id: 'generationIdle',
+            on: {
+              GENERATION_STARTED: 'running',
+            },
+          },
+          running: {
+            id: 'generationRunning',
+            on: {
+              GENERATION_ENDED: 'idle',
             },
           },
         },

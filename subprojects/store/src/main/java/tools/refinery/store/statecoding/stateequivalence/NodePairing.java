@@ -6,18 +6,18 @@
 package tools.refinery.store.statecoding.stateequivalence;
 
 import org.eclipse.collections.api.map.primitive.IntIntMap;
-import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
+import org.eclipse.collections.api.set.primitive.IntSet;
 
 import java.util.List;
 
 public interface NodePairing {
-
 	int size();
+
 	List<IntIntMap> permutations();
 
 	boolean isComplete();
 
-	static NodePairing constructNodePairing(IntHashSet left, IntHashSet right){
+	static NodePairing constructNodePairing(IntSet left, IntSet right){
 		if(left.size() !=  right.size()) {
 			return null;
 		}

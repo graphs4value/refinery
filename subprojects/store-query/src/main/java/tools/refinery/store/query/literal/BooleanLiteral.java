@@ -6,6 +6,7 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.Variable;
 
@@ -50,6 +51,11 @@ public enum BooleanLiteral implements CanNegate<BooleanLiteral> {
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
 		return equals(other);
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return hashCode();
 	}
 
 	@Override

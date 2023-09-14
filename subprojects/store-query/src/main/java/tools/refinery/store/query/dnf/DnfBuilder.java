@@ -5,12 +5,10 @@
  */
 package tools.refinery.store.query.dnf;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.dnf.callback.*;
 import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.ParameterDirection;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.*;
 
 import java.util.*;
 
@@ -62,6 +60,18 @@ public final class DnfBuilder {
 		return variable;
 	}
 
+	public Variable parameter(Parameter parameter) {
+		return parameter(null, parameter);
+	}
+
+	public Variable parameter(String name, Parameter parameter) {
+		var type = parameter.tryGetType();
+		if (type.isPresent()) {
+			return parameter(name, type.get(), parameter.getDirection());
+		}
+		return parameter(name, parameter.getDirection());
+	}
+
 	public DnfBuilder parameter(Variable variable) {
 		return parameter(variable, ParameterDirection.OUT);
 	}
@@ -88,7 +98,7 @@ public final class DnfBuilder {
 	public DnfBuilder symbolicParameter(SymbolicParameter symbolicParameter) {
 		var variable = symbolicParameter.getVariable();
 		if (!parameterVariables.add(variable)) {
-			throw new IllegalArgumentException("Variable %s is already on the parameter list %s"
+			throw new InvalidQueryException("Variable %s is already on the parameter list %s"
 					.formatted(variable, parameters));
 		}
 		parameters.add(symbolicParameter);
@@ -129,7 +139,7 @@ public final class DnfBuilder {
 	}
 
 	public <T> DnfBuilder clause(Class<T> type1, ClauseCallback1Data1<T> callback) {
-		return clause(callback.toLiterals(Variable.of("v1", type1)));
+		return clause(callback.toLiterals(Variable.of("d1", type1)));
 	}
 
 	public DnfBuilder clause(ClauseCallback2Data0 callback) {
@@ -206,57 +216,10 @@ public final class DnfBuilder {
 	}
 
 	public Dnf build() {
-		var postProcessedClauses = postProcessClauses();
+		var postProcessor = new DnfPostProcessor(parameters, clauses);
+		var postProcessedClauses = postProcessor.postProcessClauses();
 		return new Dnf(name, Collections.unmodifiableList(parameters),
 				Collections.unmodifiableList(functionalDependencies),
 				Collections.unmodifiableList(postProcessedClauses));
-	}
-
-	private List<DnfClause> postProcessClauses() {
-		var parameterInfoMap = getParameterInfoMap();
-		var postProcessedClauses = new ArrayList<DnfClause>(clauses.size());
-		for (var literals : clauses) {
-			var postProcessor = new ClausePostProcessor(parameterInfoMap, literals);
-			var result = postProcessor.postProcessClause();
-			if (result instanceof ClausePostProcessor.ClauseResult clauseResult) {
-				postProcessedClauses.add(clauseResult.clause());
-			} else if (result instanceof ClausePostProcessor.ConstantResult constantResult) {
-				switch (constantResult) {
-				case ALWAYS_TRUE -> {
-					var inputVariables = getInputVariables();
-					return List.of(new DnfClause(inputVariables, List.of()));
-				}
-				case ALWAYS_FALSE -> {
-					// Skip this clause because it can never match.
-				}
-				default -> throw new IllegalStateException("Unexpected ClausePostProcessor.ConstantResult: " +
-						constantResult);
-				}
-			} else {
-				throw new IllegalStateException("Unexpected ClausePostProcessor.Result: " + result);
-			}
-		}
-		return postProcessedClauses;
-	}
-
-	private Map<Variable, ClausePostProcessor.ParameterInfo> getParameterInfoMap() {
-		var mutableParameterInfoMap = new LinkedHashMap<Variable, ClausePostProcessor.ParameterInfo>();
-		int arity = parameters.size();
-		for (int i = 0; i < arity; i++) {
-			var parameter = parameters.get(i);
-			mutableParameterInfoMap.put(parameter.getVariable(),
-					new ClausePostProcessor.ParameterInfo(parameter.getDirection(), i));
-		}
-		return Collections.unmodifiableMap(mutableParameterInfoMap);
-	}
-
-	private Set<Variable> getInputVariables() {
-		var inputParameters = new LinkedHashSet<Variable>();
-		for (var parameter : parameters) {
-			if (parameter.getDirection() == ParameterDirection.IN) {
-				inputParameters.add(parameter.getVariable());
-			}
-		}
-		return Collections.unmodifiableSet(inputParameters);
 	}
 }

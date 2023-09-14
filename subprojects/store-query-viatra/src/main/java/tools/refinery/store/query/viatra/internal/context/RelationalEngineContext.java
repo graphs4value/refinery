@@ -5,9 +5,9 @@
  */
 package tools.refinery.store.query.viatra.internal.context;
 
-import org.eclipse.viatra.query.runtime.api.scope.IBaseIndex;
-import org.eclipse.viatra.query.runtime.api.scope.IEngineContext;
-import org.eclipse.viatra.query.runtime.matchers.context.IQueryRuntimeContext;
+import tools.refinery.viatra.runtime.api.scope.IBaseIndex;
+import tools.refinery.viatra.runtime.api.scope.IEngineContext;
+import tools.refinery.viatra.runtime.matchers.context.IQueryRuntimeContext;
 import tools.refinery.store.query.viatra.internal.ViatraModelQueryAdapterImpl;
 
 public class RelationalEngineContext implements IEngineContext {

@@ -6,7 +6,6 @@
 package tools.refinery.language.utils;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -20,9 +19,6 @@ import java.util.*;
 public class ProblemDesugarer {
 	@Inject
 	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
-
-	@Inject
-	private Provider<SymbolCollector> symbolCollectorProvider;
 
 	public Optional<Problem> getBuiltinProblem(EObject context) {
 		return Optional.ofNullable(context).map(EObject::eResource).flatMap(resource ->
@@ -43,25 +39,18 @@ public class ProblemDesugarer {
 
 	private BuiltinSymbols doGetBuiltinSymbols(Problem builtin) {
 		var node = doGetDeclaration(builtin, ClassDeclaration.class, "node");
-		var equals = doGetEqualsReference(node);
+		var equals = doGetDeclaration(builtin, PredicateDefinition.class, "equals");
 		var exists = doGetDeclaration(builtin, PredicateDefinition.class, "exists");
-		var contained = doGetDeclaration(builtin, PredicateDefinition.class, "contained");
+		var contained = doGetDeclaration(builtin, ClassDeclaration.class, "contained");
 		var contains = doGetDeclaration(builtin, PredicateDefinition.class, "contains");
-		var root = doGetDeclaration(builtin, PredicateDefinition.class, "root");
-		return new BuiltinSymbols(builtin, node, equals, exists, contained,	contains, root);
+		var invalidContainer = doGetDeclaration(builtin, PredicateDefinition.class, "invalidContainer");
+		return new BuiltinSymbols(builtin, node, equals, exists, contained, contains, invalidContainer);
 	}
 
 	private <T extends Statement & NamedElement> T doGetDeclaration(Problem builtin, Class<T> type, String name) {
 		return builtin.getStatements().stream().filter(type::isInstance).map(type::cast)
 				.filter(declaration -> name.equals(declaration.getName())).findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Built-in declaration " + name + " was not found"));
-	}
-
-	private ReferenceDeclaration doGetEqualsReference(ClassDeclaration nodeClassDeclaration) {
-		return (ReferenceDeclaration) nodeClassDeclaration.getFeatureDeclarations().stream()
-				.filter(reference -> reference instanceof ReferenceDeclaration &&
-								"equals".equals(reference.getName())).findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Reference " + "equals" + " not found"));
 	}
 
 	public Collection<ClassDeclaration> getSuperclassesAndSelf(ClassDeclaration classDeclaration) {
@@ -108,10 +97,5 @@ public class ProblemDesugarer {
 
 	public boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
 		return referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
-	}
-
-	public CollectedSymbols collectSymbols(Problem problem) {
-		return cache.get(Tuples.create(problem, "collectedSymbols"), problem.eResource(),
-				() -> symbolCollectorProvider.get().collectSymbols(problem));
 	}
 }

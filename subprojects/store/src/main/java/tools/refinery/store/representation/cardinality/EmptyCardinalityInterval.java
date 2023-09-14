@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.representation.cardinality;
 
+// Singleton implementation, because there is only a single empty interval.
+@SuppressWarnings("squid:S6548")
 public final class EmptyCardinalityInterval implements CardinalityInterval {
 	static final EmptyCardinalityInterval INSTANCE = new EmptyCardinalityInterval();
 
@@ -39,6 +41,11 @@ public final class EmptyCardinalityInterval implements CardinalityInterval {
 
 	@Override
 	public CardinalityInterval add(CardinalityInterval other) {
+		return this;
+	}
+
+	@Override
+	public CardinalityInterval take(int count) {
 		return this;
 	}
 

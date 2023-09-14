@@ -7,6 +7,8 @@ package tools.refinery.store.representation.cardinality;
 
 import org.jetbrains.annotations.NotNull;
 
+// Singleton implementation, because there is only a single countable infinity.
+@SuppressWarnings("squid:S6548")
 public final class UnboundedUpperCardinality implements UpperCardinality {
 	static final UnboundedUpperCardinality INSTANCE = new UnboundedUpperCardinality();
 
@@ -20,10 +22,17 @@ public final class UnboundedUpperCardinality implements UpperCardinality {
 	}
 
 	@Override
+	public UpperCardinality take(int count) {
+		return this;
+	}
+
+	@Override
 	public UpperCardinality multiply(UpperCardinality other) {
 		return this;
 	}
 
+	// This should always be greater than any finite cardinality.
+	@SuppressWarnings("ComparatorMethodParameterNotUsed")
 	@Override
 	public int compareTo(@NotNull UpperCardinality upperCardinality) {
 		if (upperCardinality instanceof FiniteUpperCardinality) {
@@ -43,5 +52,15 @@ public final class UnboundedUpperCardinality implements UpperCardinality {
 	@Override
 	public String toString() {
 		return "*";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this == obj || (obj != null && getClass() == obj.getClass());
+	}
+
+	@Override
+	public int hashCode() {
+		return -1;
 	}
 }

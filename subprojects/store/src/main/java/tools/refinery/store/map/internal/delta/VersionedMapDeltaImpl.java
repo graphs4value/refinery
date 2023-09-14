@@ -5,10 +5,9 @@
  */
 package tools.refinery.store.map.internal.delta;
 
-import java.util.*;
-
 import tools.refinery.store.map.*;
-import tools.refinery.store.map.IteratorAsCursor;
+
+import java.util.*;
 
 public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 	protected final VersionedMapStoreDeltaImpl<K, V> store;
@@ -24,7 +23,7 @@ public class VersionedMapDeltaImpl<K, V> implements VersionedMap<K, V> {
 		this.store = store;
 		this.defaultValue = defaultValue;
 
-		current = new HashMap<>();
+		current = new LinkedHashMap<>();
 		if (summarizeChanges) {
 			this.uncommittedStore = new UncommittedDeltaMapStore<>(this);
 		} else {

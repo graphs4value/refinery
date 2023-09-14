@@ -17,9 +17,6 @@ plugins {
 
 repositories {
 	mavenCentral()
-	maven {
-		url = uri("https://repo.eclipse.org/content/groups/releases/")
-	}
 }
 
 // Use log4j-over-slf4j instead of log4j 1.x in the tests.
@@ -35,6 +32,7 @@ dependencies {
 	testImplementation(libs.hamcrest)
 	testImplementation(libs.junit.api)
 	testRuntimeOnly(libs.junit.engine)
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation(libs.junit.params)
 	testImplementation(libs.mockito.core)
 	testImplementation(libs.mockito.junit)

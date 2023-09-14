@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.representation.cardinality;
 
+import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.IntBinaryOperator;
 
@@ -53,6 +54,16 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 		return lift(other, Math::min, UpperCardinality::max, this);
 	}
 
+	@Override
+	public CardinalityInterval take(int count) {
+		int newLowerBound = Math.max(lowerBound - count, 0);
+		var newUpperBound = upperBound.take(count);
+		if (newUpperBound == null) {
+			return CardinalityIntervals.ERROR;
+		}
+		return CardinalityIntervals.between(newLowerBound, newUpperBound);
+	}
+
 	private CardinalityInterval lift(CardinalityInterval other, IntBinaryOperator lowerOperator,
 									 BinaryOperator<UpperCardinality> upperOperator,
 									 CardinalityInterval whenEmpty) {
@@ -73,7 +84,23 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 
 	@Override
 	public String toString() {
-		var closeBracket = upperBound instanceof UnboundedUpperCardinality ? ")" : "]";
-		return "[%d..%s%s".formatted(lowerBound, upperBound, closeBracket);
+		if (upperBound instanceof FiniteUpperCardinality finiteUpperCardinality &&
+				finiteUpperCardinality.finiteUpperBound() == lowerBound) {
+			return "[%d]".formatted(lowerBound);
+		}
+		return "[%d..%s]".formatted(lowerBound, upperBound);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		NonEmptyCardinalityInterval that = (NonEmptyCardinalityInterval) o;
+		return lowerBound == that.lowerBound && Objects.equals(upperBound, that.upperBound);
+	}
+
+	@Override
+	public int hashCode() {
+		return lowerBound * 31 + upperBound.hashCode();
 	}
 }

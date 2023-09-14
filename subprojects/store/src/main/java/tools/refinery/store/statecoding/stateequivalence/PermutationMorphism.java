@@ -12,12 +12,12 @@ import java.util.List;
 
 public class PermutationMorphism implements Morphism {
 	private final IntIntMap object2PermutationGroup;
-	private final List<List<IntIntMap>> permutationsGroups;
+	private final List<? extends List<? extends IntIntMap>> permutationsGroups;
 	private final int[] selection;
 	private boolean hasNext;
 
 	PermutationMorphism(IntIntMap object2PermutationGroup,
-						List<List<IntIntMap>> permutationsGroups) {
+						List<? extends List<? extends IntIntMap>> permutationsGroups) {
 		this.object2PermutationGroup = object2PermutationGroup;
 		this.permutationsGroups = permutationsGroups;
 

@@ -9,9 +9,11 @@ plugins {
 }
 
 dependencies {
-	implementation(libs.ecore)
-	api(libs.viatra)
+	api(project(":refinery-viatra-runtime"))
+	api(project(":refinery-viatra-runtime-localsearch"))
+	api(project(":refinery-viatra-runtime-rete"))
+	api(project(":refinery-viatra-runtime-rete-recipes"))
 	api(project(":refinery-store-query"))
-	api(project(":refinery-store-reasoning"))
-	api(project(":refinery-visualization"))
+	implementation(libs.ecore)
+	implementation(libs.slf4j.log4j)
 }

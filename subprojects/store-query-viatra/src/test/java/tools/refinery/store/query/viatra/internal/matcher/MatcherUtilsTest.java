@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.matcher;
 
-import org.eclipse.viatra.query.runtime.matchers.tuple.*;
+import tools.refinery.viatra.runtime.matchers.tuple.*;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.*;

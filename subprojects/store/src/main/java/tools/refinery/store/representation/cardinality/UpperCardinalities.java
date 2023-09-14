@@ -26,7 +26,7 @@ public final class UpperCardinalities {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public static UpperCardinality valueOf(int upperBound) {
+	public static UpperCardinality atMost(int upperBound) {
 		if (upperBound < 0) {
 			return UNBOUNDED;
 		}

@@ -6,6 +6,7 @@
 package tools.refinery.store.query.term;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.literal.ConstantLiteral;
 import tools.refinery.store.query.literal.EquivalenceLiteral;
 
@@ -22,11 +23,6 @@ public final class NodeVariable extends Variable {
 	}
 
 	@Override
-	public boolean isUnifiable() {
-		return true;
-	}
-
-	@Override
 	public NodeVariable renew(@Nullable String name) {
 		return Variable.of(name);
 	}
@@ -37,13 +33,28 @@ public final class NodeVariable extends Variable {
 	}
 
 	@Override
+	public boolean isNodeVariable() {
+		return true;
+	}
+
+	@Override
+	public boolean isDataVariable() {
+		return false;
+	}
+
+	@Override
 	public NodeVariable asNodeVariable() {
 		return this;
 	}
 
 	@Override
 	public <T> DataVariable<T> asDataVariable(Class<T> type) {
-		throw new IllegalStateException("%s is a node variable".formatted(this));
+		throw new InvalidQueryException("%s is a node variable".formatted(this));
+	}
+
+	@Override
+	public int hashCodeWithSubstitution(int sequenceNumber) {
+		return sequenceNumber;
 	}
 
 	public ConstantLiteral isConstant(int value) {

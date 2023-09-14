@@ -3,43 +3,14 @@
 % SPDX-License-Identifier: EPL-2.0
 problem builtin.
 
-abstract class node {
-	refers node[] equals opposite equals
-}
+abstract class node.
 
-pred exists(node node).
+pred exists(node).
 
-% class Integer {
-%     int intValue
-% }
-%
-% class Real {
-%     real realValue
-% }
-%
-% class String {
-%     string stringValue
-% }
-%
-% enum Boolean {
-%     TRUE, FALSE
-% }
+pred equals(left, right).
 
-pred contained(node node).
+abstract class contained extends node.
 
-pred contains(node container, node contained).
+pred contains(container, contained contained).
 
-pred root(node node).
-
-% error missingContainer(contained node) <->
-%     !contains(node, _), !root(node).
-%
-% error tooManyContainers(contained node) <->
-%     #contains(_, node) > 1
-% ;
-%     contains(_, node), root(node)
-% ;
-% 	  contains(_, node), !contained(node).
-%
-% error containmentCycle(node node) <->
-%     contains+(node, node).
+error invalidContainer(contained contained).

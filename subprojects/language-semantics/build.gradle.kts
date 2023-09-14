@@ -9,9 +9,14 @@ plugins {
 }
 
 dependencies {
-	implementation(libs.eclipseCollections)
-	implementation(libs.eclipseCollections.api)
+	api(libs.eclipseCollections.api)
 	api(project(":refinery-language"))
 	api(project(":refinery-store"))
+	api(project(":refinery-store-query"))
+	api(project(":refinery-store-reasoning"))
+	implementation(project(":refinery-store-reasoning-scope"))
+	runtimeOnly(libs.eclipseCollections)
+	testImplementation(project(":refinery-store-dse-visualization"))
+	testImplementation(project(":refinery-store-query-viatra"))
 	testImplementation(testFixtures(project(":refinery-language")))
 }

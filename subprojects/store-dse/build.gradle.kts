@@ -10,7 +10,8 @@ plugins {
 
 dependencies {
 	api(project(":refinery-store-query"))
-	api(project(":refinery-store-query-viatra"))
-	api(project(":refinery-store-reasoning"))
-	api(project(":refinery-visualization"))
+	implementation(project(":refinery-store-dse-visualization"))
+	implementation(libs.eclipseCollections.api)
+	runtimeOnly(libs.eclipseCollections)
+	testImplementation(project(":refinery-store-query-viatra"))
 }

@@ -17,6 +17,7 @@ import detectDevModeOptions, {
   API_ENDPOINT,
 } from './config/detectDevModeOptions';
 import fetchPackageMetadata from './config/fetchPackageMetadata';
+import graphvizUMDVitePlugin from './config/graphvizUMDVitePlugin';
 import manifest from './config/manifest';
 import minifyHTMLVitePlugin from './config/minifyHTMLVitePlugin';
 import preloadFontsVitePlugin from './config/preloadFontsVitePlugin';
@@ -29,8 +30,8 @@ const { mode, isDevelopment, devModePlugins, serverOptions } =
 process.env['NODE_ENV'] ??= mode;
 
 const fontsGlob = [
-  'inter-latin-variable-wghtOnly-normal-*.woff2',
-  'jetbrains-mono-latin-variable-wghtOnly-{normal,italic}-*.woff2',
+  'open-sans-latin-wdth-{normal,italic}-*.woff2',
+  'jetbrains-mono-latin-wght-{normal,italic}-*.woff2',
 ];
 
 const viteConfig: ViteConfig = {
@@ -43,6 +44,7 @@ const viteConfig: ViteConfig = {
     lezer(),
     preloadFontsVitePlugin(fontsGlob),
     minifyHTMLVitePlugin(),
+    graphvizUMDVitePlugin(),
     VitePWA({
       strategies: 'generateSW',
       registerType: 'prompt',

@@ -4,15 +4,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import errorSVG from '@material-icons/svg/svg/error/baseline.svg?raw';
+import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import { alpha, styled, type CSSObject } from '@mui/material/styles';
 
-function svgURL(svg: string): string {
-  return `url('data:image/svg+xml;utf8,${svg}')`;
-}
+import svgURL from '../utils/svgURL';
 
 export default styled('div', {
   name: 'EditorTheme',
@@ -56,15 +54,16 @@ export default styled('div', {
     '.cm-activeLineGutter': {
       background: 'transparent',
     },
-    '.cm-cursor, .cm-cursor-primary': {
+    '.cm-cursor, .cm-dropCursor, .cm-cursor-primary': {
       borderLeft: `2px solid ${theme.palette.info.main}`,
+      marginLeft: -1,
     },
     '.cm-selectionBackground': {
       background: theme.palette.highlight.selection,
     },
     '.cm-focused': {
       outline: 'none',
-      '.cm-selectionBackground': {
+      '& > .cm-scroller > .cm-selectionLayer .cm-selectionBackground': {
         background: theme.palette.highlight.selection,
       },
     },
@@ -106,7 +105,7 @@ export default styled('div', {
         color: theme.palette.text.primary,
       },
     },
-    '.tok-problem-abstract, .tok-problem-new': {
+    '.tok-problem-abstract': {
       fontStyle: 'italic',
     },
     '.tok-problem-containment': {
@@ -331,7 +330,7 @@ export default styled('div', {
     '.cm-lintRange-active': {
       background: theme.palette.highlight.activeLintRange,
     },
-    ...lintSeverityStyle('error', errorSVG, 120),
+    ...lintSeverityStyle('error', cancelSVG, 120),
     ...lintSeverityStyle('warning', warningSVG, 110),
     ...lintSeverityStyle('info', infoSVG, 100),
   };

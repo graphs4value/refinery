@@ -204,7 +204,7 @@ export default class XtextWebSocketClient {
 
   get state() {
     this.stateAtom.reportObserved();
-    return this.interpreter.state;
+    return this.interpreter.getSnapshot();
   }
 
   get opening(): boolean {
@@ -270,6 +270,12 @@ export default class XtextWebSocketClient {
     return promise;
   }
 
+  setKeepAlive(keepAlive: boolean): void {
+    this.interpreter.send({
+      type: keepAlive ? 'GENERATION_STARTED' : 'GENERATION_ENDED',
+    });
+  }
+
   private updateVisibility(): void {
     this.interpreter.send(document.hidden ? 'TAB_HIDDEN' : 'TAB_VISIBLE');
   }
@@ -282,7 +288,10 @@ export default class XtextWebSocketClient {
     log.debug('Creating WebSocket');
 
     (async () => {
-      const { webSocketURL } = await fetchBackendConfig();
+      let { webSocketURL } = await fetchBackendConfig();
+      if (webSocketURL === undefined) {
+        webSocketURL = `${window.origin.replace(/^http/, 'ws')}/xtext-service`;
+      }
       this.openWebSocketWithURL(webSocketURL);
     })().catch((error) => {
       log.error('Error while initializing connection', error);

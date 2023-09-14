@@ -12,10 +12,18 @@ export enum ThemePreference {
   PreferDark,
 }
 
+export type SelectedPane = 'code' | 'graph' | 'table';
+
 export default class ThemeStore {
   preference = ThemePreference.System;
 
   systemDarkMode: boolean;
+
+  showCode = true;
+
+  showGraph = true;
+
+  showTable = false;
 
   constructor() {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -47,5 +55,45 @@ export default class ThemeStore {
         ? ThemePreference.System
         : ThemePreference.PreferDark;
     }
+  }
+
+  toggleCode(): void {
+    if (!this.showGraph && !this.showTable) {
+      return;
+    }
+    this.showCode = !this.showCode;
+  }
+
+  toggleGraph(): void {
+    if (!this.showCode && !this.showTable) {
+      return;
+    }
+    this.showGraph = !this.showGraph;
+  }
+
+  toggleTable(): void {
+    if (!this.showCode && !this.showGraph) {
+      return;
+    }
+    this.showTable = !this.showTable;
+  }
+
+  get selectedPane(): SelectedPane {
+    if (this.showCode) {
+      return 'code';
+    }
+    if (this.showGraph) {
+      return 'graph';
+    }
+    if (this.showTable) {
+      return 'table';
+    }
+    return 'code';
+  }
+
+  setSelectedPane(pane: SelectedPane, keepCode = true): void {
+    this.showCode = pane === 'code' || (keepCode && this.showCode);
+    this.showGraph = pane === 'graph';
+    this.showTable = pane === 'table';
   }
 }

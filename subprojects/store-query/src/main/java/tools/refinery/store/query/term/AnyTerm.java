@@ -6,6 +6,7 @@
 package tools.refinery.store.query.term;
 
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 
 import java.util.Set;
@@ -16,6 +17,8 @@ public sealed interface AnyTerm permits AnyDataVariable, Term {
 	AnyTerm substitute(Substitution substitution);
 
 	boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other);
+
+	int hashCodeWithSubstitution(LiteralHashCodeHelper helper);
 
 	Set<AnyDataVariable> getInputVariables();
 }

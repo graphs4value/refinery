@@ -5,9 +5,12 @@
  */
 package tools.refinery.store.statecoding.neighbourhood;
 
+import org.eclipse.collections.api.factory.primitive.IntLongMaps;
+import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
-import org.eclipse.collections.impl.map.mutable.primitive.IntLongHashMap;
+import tools.refinery.store.model.AnyInterpretation;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple0;
@@ -15,25 +18,28 @@ import tools.refinery.store.tuple.Tuple0;
 import java.util.*;
 
 public abstract class AbstractNeighbourhoodCalculator {
-	protected final List<Interpretation<?>> nullImpactValues;
-	protected final LinkedHashMap<Interpretation<?>, long[]> impactValues;
-	protected final IntLongHashMap individualHashValues;
+	protected final Model model;
+	protected final List<AnyInterpretation> nullImpactValues;
+	protected final LinkedHashMap<AnyInterpretation, long[]> impactValues;
+	protected final MutableIntLongMap individualHashValues = IntLongMaps.mutable.empty();
 
 	protected static final long PRIME = 31;
 
-	protected AbstractNeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
+	protected AbstractNeighbourhoodCalculator(Model model, List<? extends AnyInterpretation> interpretations,
+											  IntSet individuals) {
+		this.model = model;
 		this.nullImpactValues = new ArrayList<>();
 		this.impactValues = new LinkedHashMap<>();
+		// Random isn't used for cryptographical purposes but just to assign distinguishable identifiers to symbols.
 		@SuppressWarnings("squid:S2245")
 		Random random = new Random(1);
 
-		individualHashValues = new IntLongHashMap();
 		var individualsInOrder = individuals.toSortedList(Integer::compare);
 		for(int i = 0; i<individualsInOrder.size(); i++) {
 			individualHashValues.put(individualsInOrder.get(i), random.nextLong());
 		}
 
-		for (Interpretation<?> interpretation : interpretations) {
+		for (AnyInterpretation interpretation : interpretations) {
 			int arity = interpretation.getSymbol().arity();
 			if (arity == 0) {
 				nullImpactValues.add(interpretation);
@@ -86,7 +92,7 @@ public abstract class AbstractNeighbourhoodCalculator {
 	protected long calculateModelCode(long lastSum) {
 		long result = 0;
 		for (var nullImpactValue : nullImpactValues) {
-			result = result * PRIME + Objects.hashCode(nullImpactValue.get(Tuple0.INSTANCE));
+			result = result * PRIME + Objects.hashCode(((Interpretation<?>) nullImpactValue).get(Tuple0.INSTANCE));
 		}
 		result += lastSum;
 		return result;

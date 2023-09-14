@@ -5,7 +5,9 @@
  */
 package tools.refinery.store.query.term;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.valuation.Valuation;
 
@@ -14,6 +16,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractTerm}.
+@SuppressWarnings("squid:S2160")
 public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 	private final Class<T1> leftType;
 	private final Class<T2> rightType;
@@ -23,11 +27,11 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 	protected BinaryTerm(Class<R> type, Class<T1> leftType, Class<T2> rightType, Term<T1> left, Term<T2> right) {
 		super(type);
 		if (!left.getType().equals(leftType)) {
-			throw new IllegalArgumentException("Expected left %s to be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Expected left %s to be of type %s, got %s instead".formatted(
 					left, leftType.getName(), left.getType().getName()));
 		}
 		if (!right.getType().equals(rightType)) {
-			throw new IllegalArgumentException("Expected right %s to be of type %s, got %s instead".formatted(
+			throw new InvalidQueryException("Expected right %s to be of type %s, got %s instead".formatted(
 					right, rightType.getName(), right.getType().getName()));
 		}
 		this.leftType = leftType;
@@ -80,6 +84,12 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 	}
 
 	@Override
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		return Objects.hash(super.hashCodeWithSubstitution(helper), leftType.hashCode(), rightType.hashCode(),
+				left.hashCodeWithSubstitution(helper), right.hashCodeWithSubstitution(helper));
+	}
+
+	@Override
 	public Term<R> substitute(Substitution substitution) {
 		return doSubstitute(substitution, left.substitute(substitution), right.substitute(substitution));
 	}
@@ -92,22 +102,5 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 		var inputVariables = new HashSet<>(left.getInputVariables());
 		inputVariables.addAll(right.getInputVariables());
 		return Collections.unmodifiableSet(inputVariables);
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
-		BinaryTerm<?, ?, ?> that = (BinaryTerm<?, ?, ?>) o;
-		return Objects.equals(leftType, that.leftType) &&
-				Objects.equals(rightType, that.rightType) &&
-				Objects.equals(left, that.left) &&
-				Objects.equals(right, that.right);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(super.hashCode(), leftType, rightType, left, right);
 	}
 }

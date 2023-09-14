@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.literal;
 
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.literal.CallLiteral;
 
 public final class PartialLiterals {
@@ -13,24 +14,28 @@ public final class PartialLiterals {
 	}
 
 	public static CallLiteral may(CallLiteral literal) {
-		return addModality(literal, Modality.MAY);
+		return addModality(literal, Modality.MAY, Concreteness.PARTIAL);
 	}
 
 	public static CallLiteral must(CallLiteral literal) {
-		return addModality(literal, Modality.MUST);
+		return addModality(literal, Modality.MUST, Concreteness.PARTIAL);
 	}
 
-	public static CallLiteral current(CallLiteral literal) {
-		return addModality(literal, Modality.CURRENT);
+	public static CallLiteral candidateMay(CallLiteral literal) {
+		return addModality(literal, Modality.MAY, Concreteness.CANDIDATE);
 	}
 
-	public static CallLiteral addModality(CallLiteral literal, Modality modality) {
+	public static CallLiteral candidateMust(CallLiteral literal) {
+		return addModality(literal, Modality.MUST, Concreteness.CANDIDATE);
+	}
+
+	public static CallLiteral addModality(CallLiteral literal, Modality modality, Concreteness concreteness) {
 		var target = literal.getTarget();
 		if (target instanceof ModalConstraint) {
-			throw new IllegalArgumentException("Literal %s already has modality".formatted(literal));
+			throw new InvalidQueryException("Literal %s already has modality".formatted(literal));
 		}
 		var polarity = literal.getPolarity();
-		var modalTarget = new ModalConstraint(modality.commute(polarity), target);
+		var modalTarget = new ModalConstraint(modality.commute(polarity), concreteness, target);
 		return new CallLiteral(polarity, modalTarget, literal.getArguments());
 	}
 }

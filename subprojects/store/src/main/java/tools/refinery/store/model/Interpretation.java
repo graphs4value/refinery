@@ -19,6 +19,8 @@ public non-sealed interface Interpretation<T> extends AnyInterpretation {
 
 	Cursor<Tuple, T> getAll();
 
+	Cursor<Tuple, T> getAdjacent(int slot, int node);
+
 	T put(Tuple key, T value);
 
 	void putAll(Cursor<Tuple, T> cursor);

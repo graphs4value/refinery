@@ -20,6 +20,10 @@ public class CycleDetectingMapper<T, R> {
 
 	private final Map<T, R> results = new HashMap<>();
 
+	public CycleDetectingMapper(Function<T, R> doMap) {
+		this(Objects::toString, doMap);
+	}
+
 	public CycleDetectingMapper(Function<T, String> getName, Function<T, R> doMap) {
 		this.getName = getName;
 		this.doMap = doMap;

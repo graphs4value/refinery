@@ -1,0 +1,95 @@
+diff --git a/src/dot.js b/src/dot.js
+index 96ae02b6edd947ac9086f3108986c08d91470cba..c4422b08d73f7fe73dc52ad905cf981d1f3cbcc5 100644
+--- a/src/dot.js
++++ b/src/dot.js
+@@ -1,4 +1,3 @@
+-import { Graphviz } from "@hpcc-js/wasm/graphviz";
+ import * as d3 from "d3-selection";
+ import {extractAllElementsData, extractElementData, createElementWithAttributes} from "./element.js";
+ import {convertToPathData} from "./svg.js";
+@@ -8,31 +7,6 @@ import {getEdgeTitle} from "./data.js";
+ 
+ 
+ export function initViz() {
+-
+-    // force JIT compilation of @hpcc-js/wasm
+-    try {
+-        Graphviz.load().then(graphviz => {
+-            graphviz.layout("", "svg", "dot");
+-            this.layoutSync = graphviz.layout.bind(graphviz);
+-            if (this._worker == null) {
+-                this._dispatch.call("initEnd", this);
+-            }
+-            if (this._afterInit) {
+-                this._afterInit();
+-            }
+-        });
+-// after the port to ESM modules, we don't know how to trigger this so
+-// we just disable it from coverage
+-/* c8 ignore start */
+-    } catch(error) {
+-        // we end up here when the the script tag type used to load
+-        // the "@hpcc-js/wasm" script is not "application/javascript"
+-        // or "text/javascript", but typically "javascript/worker". In
+-        // this case the browser does not load the script since it's
+-        // unnecessary because it's loaded by the web worker
+-        // instead. This is expected so we just ignore the error.
+-    }
+-/* c8 ignore stop */
+     if (this._worker != null) {
+         var vizURL = this._vizURL;
+         var graphvizInstance = this;
+@@ -337,7 +311,8 @@ function layoutDone(svgDoc, callback) {
+ 
+     var newSvg = newDoc
+       .select('svg');
+-
++    
++    this._dispatch.call('postProcessSVG', this, newSvg);
+     var data = extractAllElementsData(newSvg);
+     this._dispatch.call('dataExtractEnd', this);
+     postProcessDataPass1Local(data);
+diff --git a/src/element.js b/src/element.js
+index 5aa398a6cf2550e15f642aea4eaa5a1c69af69ad..5d799e38566e8f847aa1ba80f4c575911e9851cf 100644
+--- a/src/element.js
++++ b/src/element.js
+@@ -108,6 +108,8 @@ export function createElement(data) {
+         return document.createTextNode("");
+     } else if (data.tag == '#comment') {
+         return document.createComment(data.comment);
++    } else if (data.tag == 'div' || data.tag == 'DIV') {
++        return document.createElement('div');
+     } else {
+         return document.createElementNS('http://www.w3.org/2000/svg', data.tag);
+     }
+diff --git a/src/graphviz.js b/src/graphviz.js
+index c4638cb0e4042844c59c52dfe4749e13999fef6e..28dcfb71ad787c78645c460a29e9c52295c5f6bf 100644
+--- a/src/graphviz.js
++++ b/src/graphviz.js
+@@ -49,7 +49,6 @@ import {drawnNodeSelection} from "./drawNode.js";
+ import {workerCode} from "./workerCode.js";
+ import {sharedWorkerCode} from "./workerCode.js";
+ import {workerCodeBody} from "./workerCode.js";
+-import {Graphviz as hpccWasmGraphviz} from "@hpcc-js/wasm/graphviz";
+ 
+ export function Graphviz(selection, options) {
+     this._options = {
+@@ -119,10 +118,6 @@ export function Graphviz(selection, options) {
+         this._workerPort = this._worker;
+         this._workerPortClose = this._worker.terminate.bind(this._worker);
+         this._workerCallbacks = [];
+-    } else {
+-        hpccWasmGraphviz.load().then(((graphviz) => {
+-            this._graphvizVersion = graphviz.version();
+-        }).bind(this));
+     }
+     this._selection = selection;
+     this._active = false;
+@@ -143,6 +138,7 @@ export function Graphviz(selection, options) {
+         'start',
+         'layoutStart',
+         'layoutEnd',
++        'postProcessSVG',
+         'dataExtractEnd',
+         'dataProcessPass1End',
+         'dataProcessPass2End',

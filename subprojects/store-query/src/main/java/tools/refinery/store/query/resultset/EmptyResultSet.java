@@ -18,7 +18,7 @@ public record EmptyResultSet<T>(ModelQueryAdapter adapter, Query<T> query) imple
 	}
 
 	@Override
-	public Query<T> getQuery() {
+	public Query<T> getCanonicalQuery() {
 		return query;
 	}
 

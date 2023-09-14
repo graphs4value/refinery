@@ -40,12 +40,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINER"/>
     </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//PredicateKind">
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/DEFAULT"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/ERROR"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/CONTAINED"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/CONTAINMENT"/>
-    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//UnaryOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//UnaryOp/PLUS"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//UnaryOp/MINUS"/>
@@ -85,16 +79,16 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ReferenceDeclaration/multiplicity"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ReferenceDeclaration/kind"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//ReferenceDeclaration/referenceType"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ReferenceDeclaration/invalidMultiplicity"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//NamedElement">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//NamedElement/name"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//PredicateDefinition">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//PredicateDefinition/kind"/>
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//PredicateDefinition/bodies"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//PredicateDefinition/error"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Parameter">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/modality"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Parameter/parameterType"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Variable"/>

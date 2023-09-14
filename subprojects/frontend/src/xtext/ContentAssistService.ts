@@ -248,10 +248,20 @@ export default class ContentAssistService {
     if (lastTo === undefined) {
       return true;
     }
-    const [transformedFrom, transformedTo] = this.mapRangeInclusive(
-      lastFrom,
-      lastTo,
-    );
+    let transformedFrom: number;
+    let transformedTo: number;
+    try {
+      [transformedFrom, transformedTo] = this.mapRangeInclusive(
+        lastFrom,
+        lastTo,
+      );
+    } catch (error) {
+      if (error instanceof RangeError) {
+        log.debug('Invalidating cache due to invalid range', error);
+        return true;
+      }
+      throw error;
+    }
     let invalidate = false;
     transaction.changes.iterChangedRanges((fromA, toA) => {
       if (fromA < transformedFrom || toA > transformedTo) {

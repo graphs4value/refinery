@@ -6,9 +6,12 @@
 package tools.refinery.store.query.dnf;
 
 import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.literal.Reduction;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.DnfEqualityChecker;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.SubstitutingLiteralEqualityHelper;
+import tools.refinery.store.query.equality.SubstitutingLiteralHashCodeHelper;
+import tools.refinery.store.query.literal.Reduction;
 import tools.refinery.store.query.term.Parameter;
 import tools.refinery.store.query.term.Variable;
 
@@ -53,7 +56,7 @@ public final class Dnf implements Constraint {
 										   FunctionalDependency<Variable> functionalDependency) {
 		for (var variable : toValidate) {
 			if (!parameterSet.contains(variable)) {
-				throw new IllegalArgumentException(
+				throw new InvalidQueryException(
 						"Variable %s of functional dependency %s does not appear in the parameter list %s"
 								.formatted(variable, functionalDependency, symbolicParameters));
 			}
@@ -66,7 +69,7 @@ public final class Dnf implements Constraint {
 	}
 
 	public boolean isExplicitlyNamed() {
-		return name == null;
+		return name != null;
 	}
 
 	public String getUniqueName() {
@@ -129,7 +132,7 @@ public final class Dnf implements Constraint {
 			return false;
 		}
 		for (int i = 0; i < numClauses; i++) {
-			var literalEqualityHelper = new LiteralEqualityHelper(callEqualityChecker, symbolicParameters,
+			var literalEqualityHelper = new SubstitutingLiteralEqualityHelper(callEqualityChecker, symbolicParameters,
 					other.symbolicParameters);
 			if (!clauses.get(i).equalsWithSubstitution(literalEqualityHelper, other.clauses.get(i))) {
 				return false;
@@ -144,6 +147,18 @@ public final class Dnf implements Constraint {
 			return helper.dnfEqual(this, otherDnf);
 		}
 		return false;
+	}
+
+	public int hashCodeWithSubstitution() {
+		var helper = new SubstitutingLiteralHashCodeHelper();
+		int result = 0;
+		for (var symbolicParameter : symbolicParameters) {
+			result = result * 31 + symbolicParameter.hashCodeWithSubstitution(helper);
+		}
+		for (var clause : clauses) {
+			result = result * 31 + clause.hashCodeWithSubstitution(helper);
+		}
+		return result;
 	}
 
 	@Override
@@ -199,6 +214,13 @@ public final class Dnf implements Constraint {
 
 	public static DnfBuilder builder(String name) {
 		return new DnfBuilder(name);
+	}
+
+	public static DnfBuilder builderFrom(Dnf original) {
+		var builder = builder(original.name());
+		builder.symbolicParameters(original.getSymbolicParameters());
+		builder.functionalDependencies(original.getFunctionalDependencies());
+		return builder;
 	}
 
 	public static Dnf of(Consumer<DnfBuilder> callback) {

@@ -10,7 +10,7 @@ import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.tuple.Tuple;
 
 public non-sealed interface ResultSet<T> extends AnyResultSet {
-	Query<T> getQuery();
+	Query<T> getCanonicalQuery();
 
 	T get(Tuple parameters);
 

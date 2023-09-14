@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Rodion Efremov
  * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  *
- * SPDX-License-Identifier: MIT OR EPL-2.0
+ * SPDX-License-Identifier: MIT
  */
 package tools.refinery.store.query.utils;
 

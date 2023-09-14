@@ -6,13 +6,12 @@
 package tools.refinery.store.query.dnf;
 
 import org.jetbrains.annotations.NotNull;
-import tools.refinery.store.query.literal.BooleanLiteral;
-import tools.refinery.store.query.literal.EquivalenceLiteral;
-import tools.refinery.store.query.literal.Literal;
+import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
+import tools.refinery.store.query.literal.*;
 import tools.refinery.store.query.substitution.MapBasedSubstitution;
 import tools.refinery.store.query.substitution.StatelessSubstitution;
 import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
@@ -22,8 +21,8 @@ import java.util.function.Function;
 class ClausePostProcessor {
 	private final Map<Variable, ParameterInfo> parameters;
 	private final List<Literal> literals;
-	private final Map<NodeVariable, NodeVariable> representatives = new LinkedHashMap<>();
-	private final Map<NodeVariable, Set<NodeVariable>> equivalencePartition = new HashMap<>();
+	private final Map<Variable, Variable> representatives = new LinkedHashMap<>();
+	private final Map<Variable, Set<Variable>> equivalencePartition = new HashMap<>();
 	private List<Literal> substitutedLiterals;
 	private final Set<Variable> existentiallyQuantifiedVariables = new LinkedHashSet<>();
 	private Set<Variable> positiveVariables;
@@ -58,6 +57,9 @@ class ClausePostProcessor {
 		if (filteredLiterals.isEmpty()) {
 			return ConstantResult.ALWAYS_TRUE;
 		}
+		if (hasContradictoryCall(filteredLiterals)) {
+			return ConstantResult.ALWAYS_FALSE;
+		}
 		var clause = new DnfClause(Collections.unmodifiableSet(positiveVariables),
 				Collections.unmodifiableList(filteredLiterals));
 		return new ClauseResult(clause);
@@ -67,16 +69,16 @@ class ClausePostProcessor {
 		for (var literal : literals) {
 			if (isPositiveEquivalence(literal)) {
 				var equivalenceLiteral = (EquivalenceLiteral) literal;
-				mergeVariables(equivalenceLiteral.left(), equivalenceLiteral.right());
+				mergeVariables(equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
 			}
 		}
 	}
 
 	private static boolean isPositiveEquivalence(Literal literal) {
-		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.positive();
+		return literal instanceof EquivalenceLiteral equivalenceLiteral && equivalenceLiteral.isPositive();
 	}
 
-	private void mergeVariables(NodeVariable left, NodeVariable right) {
+	private void mergeVariables(Variable left, Variable right) {
 		var leftRepresentative = getRepresentative(left);
 		var rightRepresentative = getRepresentative(right);
 		var leftInfo = parameters.get(leftRepresentative);
@@ -89,7 +91,7 @@ class ClausePostProcessor {
 		}
 	}
 
-	private void doMergeVariables(NodeVariable parentRepresentative, NodeVariable newChildRepresentative) {
+	private void doMergeVariables(Variable parentRepresentative, Variable newChildRepresentative) {
 		var parentSet = getEquivalentVariables(parentRepresentative);
 		var childSet = getEquivalentVariables(newChildRepresentative);
 		parentSet.addAll(childSet);
@@ -99,18 +101,18 @@ class ClausePostProcessor {
 		}
 	}
 
-	private NodeVariable getRepresentative(NodeVariable variable) {
+	private Variable getRepresentative(Variable variable) {
 		return representatives.computeIfAbsent(variable, Function.identity());
 	}
 
-	private Set<NodeVariable> getEquivalentVariables(NodeVariable variable) {
+	private Set<Variable> getEquivalentVariables(Variable variable) {
 		var representative = getRepresentative(variable);
 		if (!representative.equals(variable)) {
 			throw new AssertionError("NodeVariable %s already has a representative %s"
 					.formatted(variable, representative));
 		}
 		return equivalencePartition.computeIfAbsent(variable, key -> {
-			var set = new HashSet<NodeVariable>(1);
+			var set = new HashSet<Variable>(1);
 			set.add(key);
 			return set;
 		});
@@ -121,7 +123,7 @@ class ClausePostProcessor {
 			var left = pair.getKey();
 			var right = pair.getValue();
 			if (!left.equals(right) && parameters.containsKey(left) && parameters.containsKey(right)) {
-				substitutedLiterals.add(left.isEquivalent(right));
+				substitutedLiterals.add(new EquivalenceLiteral(true, left, right));
 			}
 		}
 	}
@@ -147,20 +149,7 @@ class ClausePostProcessor {
 
 	private void computeExistentiallyQuantifiedVariables() {
 		for (var literal : substitutedLiterals) {
-			for (var variable : literal.getOutputVariables()) {
-				boolean added = existentiallyQuantifiedVariables.add(variable);
-				if (!variable.isUnifiable()) {
-					var parameterInfo = parameters.get(variable);
-					if (parameterInfo != null && parameterInfo.direction() == ParameterDirection.IN) {
-						throw new IllegalArgumentException("Trying to bind %s parameter %s"
-								.formatted(ParameterDirection.IN, variable));
-					}
-					if (!added) {
-						throw new IllegalArgumentException("Variable %s has multiple assigned values"
-								.formatted(variable));
-					}
-				}
-			}
+			existentiallyQuantifiedVariables.addAll(literal.getOutputVariables());
 		}
 	}
 
@@ -172,7 +161,7 @@ class ClausePostProcessor {
 				// Inputs count as positive, because they are already bound when we evaluate literals.
 				positiveVariables.add(variable);
 			} else if (!existentiallyQuantifiedVariables.contains(variable)) {
-				throw new IllegalArgumentException("Unbound %s parameter %s"
+				throw new InvalidQueryException("Unbound %s parameter %s"
 						.formatted(ParameterDirection.OUT, variable));
 			}
 		}
@@ -184,7 +173,7 @@ class ClausePostProcessor {
 			var representative = pair.getKey();
 			if (!positiveVariables.contains(representative)) {
 				var variableSet = pair.getValue();
-				throw new IllegalArgumentException("Variables %s were merged by equivalence but are not bound"
+				throw new InvalidQueryException("Variables %s were merged by equivalence but are not bound"
 						.formatted(variableSet));
 			}
 		}
@@ -196,7 +185,7 @@ class ClausePostProcessor {
 			for (var variable : literal.getPrivateVariables(positiveVariables)) {
 				var oldLiteral = negativeVariablesMap.put(variable, literal);
 				if (oldLiteral != null) {
-					throw new IllegalArgumentException("Unbound variable %s appears in multiple literals %s and %s"
+					throw new InvalidQueryException("Unbound variable %s appears in multiple literals %s and %s"
 							.formatted(variable, oldLiteral, literal));
 				}
 			}
@@ -218,9 +207,58 @@ class ClausePostProcessor {
 			variable.addToSortedLiterals();
 		}
 		if (!variableToLiteralInputMap.isEmpty()) {
-			throw new IllegalArgumentException("Unbound input variables %s"
+			throw new InvalidQueryException("Unbound input variables %s"
 					.formatted(variableToLiteralInputMap.keySet()));
 		}
+	}
+
+	private boolean hasContradictoryCall(Collection<Literal> filteredLiterals) {
+		var positiveCalls = new HashMap<Constraint, Set<CallLiteral>>();
+		for (var literal : filteredLiterals) {
+			if (literal instanceof CallLiteral callLiteral && callLiteral.getPolarity() == CallPolarity.POSITIVE) {
+				var callsOfTarget = positiveCalls.computeIfAbsent(callLiteral.getTarget(), key -> new HashSet<>());
+				callsOfTarget.add(callLiteral);
+			}
+		}
+		for (var literal : filteredLiterals) {
+			if (literal instanceof CallLiteral callLiteral && callLiteral.getPolarity() == CallPolarity.NEGATIVE) {
+				var callsOfTarget = positiveCalls.get(callLiteral.getTarget());
+				if (contradicts(callLiteral, callsOfTarget)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean contradicts(CallLiteral negativeCall, Collection<CallLiteral> positiveCalls) {
+		if (positiveCalls == null) {
+			return false;
+		}
+		for (var positiveCall : positiveCalls) {
+			if (contradicts(negativeCall, positiveCall)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean contradicts(CallLiteral negativeCall, CallLiteral positiveCall) {
+		var privateVariables = negativeCall.getPrivateVariables(positiveVariables);
+		var negativeArguments = negativeCall.getArguments();
+		var positiveArguments = positiveCall.getArguments();
+		int arity = negativeArguments.size();
+		for (int i = 0; i < arity; i++) {
+			var negativeArgument = negativeArguments.get(i);
+			if (privateVariables.contains(negativeArgument)) {
+				continue;
+			}
+			var positiveArgument = positiveArguments.get(i);
+			if (!negativeArgument.equals(positiveArgument)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private class SortableLiteral implements Comparable<SortableLiteral> {

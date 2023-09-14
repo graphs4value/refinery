@@ -30,7 +30,7 @@ public final class QueryAssertions {
 	}
 
 	public static <T> void assertResults(Map<Tuple, T> expected, ResultSet<T> resultSet) {
-		var defaultValue = resultSet.getQuery().defaultValue();
+		var defaultValue = resultSet.getCanonicalQuery().defaultValue();
 		var filteredExpected = new LinkedHashMap<Tuple, T>();
 		var executables = new ArrayList<Executable>();
 		for (var entry : expected.entrySet()) {

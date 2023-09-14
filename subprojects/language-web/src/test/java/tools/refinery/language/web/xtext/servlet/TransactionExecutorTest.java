@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.refinery.language.web.semantics.SemanticsService;
 import tools.refinery.language.web.tests.AwaitTerminationExecutorServiceProvider;
 import tools.refinery.language.web.tests.ProblemWebInjectorProvider;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
@@ -59,11 +60,16 @@ class TransactionExecutorTest {
 	@Inject
 	private AwaitTerminationExecutorServiceProvider executorServices;
 
+	@Inject
+	private SemanticsService semanticsService;
+
 	private TransactionExecutor transactionExecutor;
 
 	@BeforeEach
 	void beforeEach() {
 		transactionExecutor = new TransactionExecutor(new SimpleSession(), resourceServiceProviderRegistry);
+		// Manually re-create the semantics analysis thread pool if it was disposed by the previous test.
+		semanticsService.setExecutorServiceProvider(executorServices);
 	}
 
 	@Test
@@ -95,7 +101,7 @@ class TransactionExecutorTest {
 						"0")));
 
 		var captor = newCaptor();
-		verify(responseHandler, times(2)).onResponse(captor.capture());
+		verify(responseHandler, times(4)).onResponse(captor.capture());
 		var newStateId = getStateId("bar", captor.getAllValues().get(0));
 		assertHighlightingResponse(newStateId, captor.getAllValues().get(1));
 	}
@@ -126,7 +132,7 @@ class TransactionExecutorTest {
 	private String updateFullText(ArgumentCaptor<XtextWebResponse> captor) throws ResponseHandlerException {
 		var responseHandler = sendRequestAndWaitForAllResponses(new XtextWebRequest("foo", UPDATE_FULL_TEXT_PARAMS));
 
-		verify(responseHandler, times(3)).onResponse(captor.capture());
+		verify(responseHandler, times(4)).onResponse(captor.capture());
 		return getStateId("foo", captor.getAllValues().get(0));
 	}
 

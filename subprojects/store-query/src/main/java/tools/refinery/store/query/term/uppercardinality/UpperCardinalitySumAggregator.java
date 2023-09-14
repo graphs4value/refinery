@@ -70,7 +70,7 @@ public class UpperCardinalitySumAggregator implements StatefulAggregator<UpperCa
 
 		@Override
 		public UpperCardinality getResult() {
-			return countUnbounded > 0 ? UpperCardinalities.UNBOUNDED : UpperCardinalities.valueOf(sumFiniteUpperBounds);
+			return countUnbounded > 0 ? UpperCardinalities.UNBOUNDED : UpperCardinalities.atMost(sumFiniteUpperBounds);
 		}
 
 		@Override

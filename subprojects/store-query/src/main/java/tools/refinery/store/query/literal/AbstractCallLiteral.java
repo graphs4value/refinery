@@ -6,14 +6,18 @@
 package tools.refinery.store.query.literal;
 
 import tools.refinery.store.query.Constraint;
+import tools.refinery.store.query.InvalidQueryException;
 import tools.refinery.store.query.equality.LiteralEqualityHelper;
+import tools.refinery.store.query.equality.LiteralHashCodeHelper;
 import tools.refinery.store.query.substitution.Substitution;
 import tools.refinery.store.query.term.ParameterDirection;
 import tools.refinery.store.query.term.Variable;
 
 import java.util.*;
 
-public abstract class AbstractCallLiteral implements Literal {
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
+public abstract class AbstractCallLiteral extends AbstractLiteral {
 	private final Constraint target;
 	private final List<Variable> arguments;
 	private final Set<Variable> inArguments;
@@ -24,7 +28,7 @@ public abstract class AbstractCallLiteral implements Literal {
 	protected AbstractCallLiteral(Constraint target, List<Variable> arguments) {
 		int arity = target.arity();
 		if (arguments.size() != arity) {
-			throw new IllegalArgumentException("%s needs %d arguments, but got %s".formatted(target.name(),
+			throw new InvalidQueryException("%s needs %d arguments, but got %s".formatted(target.name(),
 					target.arity(), arguments.size()));
 		}
 		this.target = target;
@@ -36,40 +40,23 @@ public abstract class AbstractCallLiteral implements Literal {
 			var argument = arguments.get(i);
 			var parameter = parameters.get(i);
 			if (!parameter.isAssignable(argument)) {
-				throw new IllegalArgumentException("Argument %d of %s is not assignable to parameter %s"
+				throw new InvalidQueryException("Argument %d of %s is not assignable to parameter %s"
 						.formatted(i, target, parameter));
 			}
 			switch (parameter.getDirection()) {
 			case IN -> {
-				if (mutableOutArguments.remove(argument)) {
-					checkInOutUnifiable(argument);
-				}
+				mutableOutArguments.remove(argument);
 				mutableInArguments.add(argument);
 			}
 			case OUT -> {
-				if (mutableInArguments.contains(argument)) {
-					checkInOutUnifiable(argument);
-				} else if (!mutableOutArguments.add(argument)) {
-					checkDuplicateOutUnifiable(argument);
+				if (!mutableInArguments.contains(argument)) {
+					mutableOutArguments.add(argument);
 				}
 			}
 			}
 		}
 		inArguments = Collections.unmodifiableSet(mutableInArguments);
 		outArguments = Collections.unmodifiableSet(mutableOutArguments);
-	}
-
-	private static void checkInOutUnifiable(Variable argument) {
-		if (!argument.isUnifiable()) {
-			throw new IllegalArgumentException("Argument %s cannot appear with both %s and %s direction"
-					.formatted(argument, ParameterDirection.IN, ParameterDirection.OUT));
-		}
-	}
-
-	private static void checkDuplicateOutUnifiable(Variable argument) {
-		if (!argument.isUnifiable()) {
-			throw new IllegalArgumentException("Argument %s cannot be bound multiple times".formatted(argument));
-		}
 	}
 
 	public Constraint getTarget() {
@@ -110,9 +97,18 @@ public abstract class AbstractCallLiteral implements Literal {
 
 	protected abstract Literal doSubstitute(Substitution substitution, List<Variable> substitutedArguments);
 
+	public AbstractCallLiteral withTarget(Constraint newTarget) {
+		if (Objects.equals(target, newTarget)) {
+			return this;
+		}
+		return withArguments(newTarget, arguments);
+	}
+
+	public abstract AbstractCallLiteral withArguments(Constraint newTarget, List<Variable> newArguments);
+
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, Literal other) {
-		if (other == null || getClass() != other.getClass()) {
+		if (!super.equalsWithSubstitution(helper, other)) {
 			return false;
 		}
 		var otherCallLiteral = (AbstractCallLiteral) other;
@@ -129,15 +125,11 @@ public abstract class AbstractCallLiteral implements Literal {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		AbstractCallLiteral that = (AbstractCallLiteral) o;
-		return target.equals(that.target) && arguments.equals(that.arguments);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getClass(), target, arguments);
+	public int hashCodeWithSubstitution(LiteralHashCodeHelper helper) {
+		int result = super.hashCodeWithSubstitution(helper) * 31 + target.hashCode();
+		for (var argument : arguments) {
+			result = result * 31 + helper.getVariableHashCode(argument);
+		}
+		return result;
 	}
 }

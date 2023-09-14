@@ -28,4 +28,12 @@ public sealed interface AnySymbolView extends Constraint permits SymbolView {
 	boolean get(Model model, Object[] tuple);
 
 	Iterable<Object[]> getAll(Model model);
+
+	default Iterable<Object[]> getAdjacent(Model model, int slot, Object value) {
+		throw new IllegalArgumentException("Cannot index slot " + slot);
+	}
+
+	default boolean canIndexSlot(int slot) {
+		return false;
+	}
 }

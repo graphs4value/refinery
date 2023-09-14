@@ -93,7 +93,7 @@ class ProblemWebSocketServletIntegrationTest {
 		clientSocket.waitForTestResult();
 		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
 		var responses = clientSocket.getResponses();
-		assertThat(responses, hasSize(5));
+		assertThat(responses, hasSize(8));
 		assertThat(responses.get(0), equalTo("{\"id\":\"foo\",\"response\":{\"stateId\":\"-80000000\"}}"));
 		assertThat(responses.get(1), startsWith(
 				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"highlight\"," +
@@ -101,10 +101,19 @@ class ProblemWebSocketServletIntegrationTest {
 		assertThat(responses.get(2), equalTo(
 				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"validate\"," +
 						"\"push\":{\"issues\":[]}}"));
-		assertThat(responses.get(3), equalTo("{\"id\":\"bar\",\"response\":{\"stateId\":\"-7fffffff\"}}"));
-		assertThat(responses.get(4), startsWith(
+		assertThat(responses.get(3), startsWith(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-80000000\",\"service\":\"semantics\"," +
+						"\"push\":{"));
+		assertThat(responses.get(4), equalTo("{\"id\":\"bar\",\"response\":{\"stateId\":\"-7fffffff\"}}"));
+		assertThat(responses.get(5), startsWith(
 				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"highlight\"," +
 						"\"push\":{\"regions\":["));
+		assertThat(responses.get(6), equalTo(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"validate\"," +
+						"\"push\":{\"issues\":[]}}"));
+		assertThat(responses.get(7), startsWith(
+				"{\"resource\":\"test.problem\",\"stateId\":\"-7fffffff\",\"service\":\"semantics\"," +
+						"\"push\":{"));
 	}
 
 	@WebSocket
@@ -117,14 +126,14 @@ class ProblemWebSocketServletIntegrationTest {
 							"\"fullText\":\"class Person.\n\"}}",
 					Callback.NOOP
 			);
-			case 3 -> //noinspection TextBlockMigration
+			case 4 -> //noinspection TextBlockMigration
 					session.sendText(
 					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\"," +
 							"\"requiredStateId\":\"-80000000\",\"deltaText\":\"indiv q.\nnode(q).\n\"," +
 							"\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}",
 					Callback.NOOP
 			);
-			case 5 -> session.close();
+			case 8 -> session.close();
 			}
 		}
 	}

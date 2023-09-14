@@ -5,11 +5,14 @@
  */
 package tools.refinery.store.statecoding.neighbourhood;
 
+import org.eclipse.collections.api.factory.primitive.LongIntMaps;
 import org.eclipse.collections.api.map.primitive.LongIntMap;
+import org.eclipse.collections.api.map.primitive.MutableLongIntMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
-import org.eclipse.collections.impl.map.mutable.primitive.LongIntHashMap;
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.model.AnyInterpretation;
 import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.StateCodeCalculator;
 import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.tuple.Tuple;
@@ -17,13 +20,14 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.List;
 
 public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator implements StateCodeCalculator {
-	public LazyNeighbourhoodCalculator(List<? extends Interpretation<?>> interpretations, IntSet individuals) {
-		super(interpretations, individuals);
+	public LazyNeighbourhoodCalculator(Model model, List<? extends AnyInterpretation> interpretations,
+									   IntSet individuals) {
+		super(model, interpretations, individuals);
 	}
 
 	public StateCoderResult calculateCodes() {
 		ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
-		LongIntHashMap prevHash2Amount = new LongIntHashMap();
+		MutableLongIntMap prevHash2Amount = LongIntMaps.mutable.empty();
 
 		long lastSum;
 		// All hash code is 0, except to the individuals.
@@ -42,7 +46,7 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 			}
 			constructNextObjectCodes(previousObjectCode, nextObjectCode, prevHash2Amount);
 
-			LongIntHashMap nextHash2Amount = new LongIntHashMap();
+			MutableLongIntMap nextHash2Amount = LongIntMaps.mutable.empty();
 			lastSum = calculateLastSum(previousObjectCode, nextObjectCode, prevHash2Amount, nextHash2Amount);
 
 			int nextSize = nextHash2Amount.size();
@@ -60,7 +64,7 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 	}
 
 	private long calculateLastSum(ObjectCodeImpl previous, ObjectCodeImpl next, LongIntMap hash2Amount,
-								  LongIntHashMap nextHash2Amount) {
+								  MutableLongIntMap nextHash2Amount) {
 		long lastSum = 0;
 		for (int i = 0; i < next.getSize(); i++) {
 			final long hash;
@@ -84,7 +88,7 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 
 	private void constructNextObjectCodes(ObjectCodeImpl previous, ObjectCodeImpl next, LongIntMap hash2Amount) {
 		for (var impactValueEntry : this.impactValues.entrySet()) {
-			Interpretation<?> interpretation = impactValueEntry.getKey();
+			Interpretation<?> interpretation = (Interpretation<?>) impactValueEntry.getKey();
 			var cursor = interpretation.getAll();
 			int arity = interpretation.getSymbol().arity();
 			long[] impactValue = impactValueEntry.getValue();
@@ -114,7 +118,8 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 		return amount == 1;
 	}
 
-	private void lazyImpactCalculation1(LongIntMap hash2Amount, ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues, Cursor<Tuple, ?> cursor) {
+	private void lazyImpactCalculation1(LongIntMap hash2Amount, ObjectCodeImpl previous, ObjectCodeImpl next,
+										long[] impactValues, Cursor<Tuple, ?> cursor) {
 
 		Tuple tuple = cursor.getKey();
 		int o = tuple.get(0);
@@ -129,7 +134,8 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 		}
 	}
 
-	private void lazyImpactCalculation2(LongIntMap hash2Amount, ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues, Cursor<Tuple, ?> cursor) {
+	private void lazyImpactCalculation2(LongIntMap hash2Amount, ObjectCodeImpl previous, ObjectCodeImpl next,
+										long[] impactValues, Cursor<Tuple, ?> cursor) {
 		final Tuple tuple = cursor.getKey();
 		final int o1 = tuple.get(0);
 		final int o2 = tuple.get(1);
@@ -155,7 +161,8 @@ public class LazyNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator
 		}
 	}
 
-	private void lazyImpactCalculationN(LongIntMap hash2Amount, ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues, Cursor<Tuple, ?> cursor) {
+	private void lazyImpactCalculationN(LongIntMap hash2Amount, ObjectCodeImpl previous, ObjectCodeImpl next,
+										long[] impactValues, Cursor<Tuple, ?> cursor) {
 		final Tuple tuple = cursor.getKey();
 
 		final boolean[] uniques = new boolean[tuple.getSize()];

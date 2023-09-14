@@ -13,4 +13,6 @@ public sealed interface AnyInterpretation permits Interpretation {
 	AnySymbol getSymbol();
 
 	long getSize();
+
+	int getAdjacentSize(int slot, int node);
 }

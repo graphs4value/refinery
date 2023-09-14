@@ -6,7 +6,6 @@
 
 import GitHubIcon from '@mui/icons-material/GitHub';
 import AppBar from '@mui/material/AppBar';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
@@ -17,6 +16,7 @@ import { throttle } from 'lodash-es';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 
+import PaneButtons from './PaneButtons';
 import { useRootStore } from './RootStoreProvider';
 import ToggleDarkModeButton from './ToggleDarkModeButton';
 import GenerateButton from './editor/GenerateButton';
@@ -65,11 +65,12 @@ const DevModeBadge = styled('div')(({ theme }) => ({
 }));
 
 export default observer(function TopBar(): JSX.Element {
-  const { editorStore } = useRootStore();
+  const { editorStore, themeStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
   const { breakpoints } = useTheme();
-  const small = useMediaQuery(breakpoints.down('sm'));
+  const medium = useMediaQuery(breakpoints.up('sm'));
   const large = useMediaQuery(breakpoints.up('md'));
+  const veryLarge = useMediaQuery(breakpoints.up('lg'));
 
   return (
     <AppBar
@@ -100,50 +101,46 @@ export default observer(function TopBar(): JSX.Element {
           py: 0.5,
         }}
       >
-        <Typography variant="h6" component="h1" flexGrow={1}>
+        <Typography variant="h6" component="h1">
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
-        <Stack direction="row" marginRight={1}>
-          <GenerateButton editorStore={editorStore} hideWarnings={small} />
+        <Stack direction="row" alignItems="center" flexGrow={1} marginLeft={1}>
+          {medium && !large && (
+            <PaneButtons themeStore={themeStore} hideLabel />
+          )}
+        </Stack>
+        {large && (
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+            }}
+          >
+            <PaneButtons themeStore={themeStore} />
+          </Stack>
+        )}
+        <Stack
+          direction="row"
+          marginLeft={1}
+          marginRight={1}
+          gap={1}
+          alignItems="center"
+        >
+          <GenerateButton editorStore={editorStore} hideWarnings={!veryLarge} />
           {large && (
-            <>
-              <Button
-                arial-label="Budapest University of Technology and Economics, Critical Systems Research Group"
-                className="rounded"
-                color="inherit"
-                href="https://ftsrg.mit.bme.hu"
-                target="_blank"
-                sx={{ marginLeft: 1 }}
-              >
-                BME FTSRG
-              </Button>
-              <Button
-                aria-label="McGill University, Department of Electrical and Computer Engineering"
-                className="rounded"
-                color="inherit"
-                href="https://www.mcgill.ca/ece/daniel-varro"
-                target="_blank"
-              >
-                McGill ECE
-              </Button>
-              <Button
-                aria-label="2022 Amazon Research Awards recipent"
-                className="rounded"
-                color="inherit"
-                href="https://www.amazon.science/research-awards/recipients/daniel-varro-fall-2021"
-                target="_blank"
-              >
-                Amazon Science
-              </Button>
-              <IconButton
-                aria-label="GitHub"
-                href="https://github.com/graphs4value/refinery"
-                target="_blank"
-                color="inherit"
-              >
-                <GitHubIcon />
-              </IconButton>
-            </>
+            <IconButton
+              aria-label="GitHub"
+              href="https://github.com/graphs4value/refinery"
+              target="_blank"
+              color="inherit"
+            >
+              <GitHubIcon />
+            </IconButton>
           )}
         </Stack>
         <ToggleDarkModeButton />

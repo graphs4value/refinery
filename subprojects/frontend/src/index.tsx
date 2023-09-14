@@ -4,46 +4,113 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { styled } from '@mui/material/styles';
 import { configure } from 'mobx';
 import { type Root, createRoot } from 'react-dom/client';
 
 import App from './App';
 import RootStore from './RootStore';
 
-const initialValue = `// Metamodel
-class Person {
-    Person[] friend opposite friend
+// Make sure `styled` ends up in the entry chunk.
+// https://github.com/mui/material-ui/issues/32727#issuecomment-1659945548
+(window as unknown as { fixViteIssue: unknown }).fixViteIssue = styled;
+
+const initialValue = `% Metamodel
+
+abstract class CompositeElement {
+    contains Region[] regions
 }
 
-class Post {
-    Person author
-    Post[0..1] replyTo
+class Region {
+    contains Vertex[] vertices opposite region
 }
 
-// Constraints
-error replyToNotFriend(Post x, Post y) <->
-    replyTo(x, y),
-    author(x, xAuthor),
-    author(y, yAuthor),
-    !friend(xAuthor, yAuthor).
+abstract class Vertex {
+    container Region region opposite vertices
+    contains Transition[] outgoingTransition opposite source
+    Transition[] incomingTransition opposite target
+}
 
-error replyToCycle(Post x) <-> replyTo+(x,x).
+class Transition {
+    container Vertex source opposite outgoingTransition
+    Vertex[1] target opposite incomingTransition
+}
 
-// Instance model
-Person(a).
-Person(b).
-friend(a, b).
-friend(b, a).
-Post(p1).
-author(p1, a).
-Post(p2).
-author(p2, b).
-replyTo(p2, p1).
+abstract class Pseudostate extends Vertex.
 
-!author(Post::new, a). // Automatically inferred: author(Post::new, b).
+abstract class RegularState extends Vertex.
 
-// Scope
-scope Post = 10..15, Person += 0.
+class Entry extends Pseudostate.
+
+class Exit extends Pseudostate.
+
+class Choice extends Pseudostate.
+
+class FinalState extends RegularState.
+
+class State extends RegularState, CompositeElement.
+
+class Statechart extends CompositeElement.
+
+% Constraints
+
+%% Entry
+
+pred entryInRegion(Region r, Entry e) <->
+    vertices(r, e).
+
+error noEntryInRegion(Region r) <->
+    !entryInRegion(r, _).
+
+error multipleEntryInRegion(Region r) <->
+    entryInRegion(r, e1),
+    entryInRegion(r, e2),
+    e1 != e2.
+
+error incomingToEntry(Transition t, Entry e) <->
+    target(t, e).
+
+error noOutgoingTransitionFromEntry(Entry e) <->
+    !source(_, e).
+
+error multipleTransitionFromEntry(Entry e, Transition t1, Transition t2) <->
+    outgoingTransition(e, t1),
+    outgoingTransition(e, t2),
+    t1 != t2.
+
+%% Exit
+
+error outgoingFromExit(Transition t, Exit e) <->
+    source(t, e).
+
+%% Final
+
+error outgoingFromFinal(Transition t, FinalState e) <->
+    source(t, e).
+
+%% State vs Region
+
+pred stateInRegion(Region r, State s) <->
+    vertices(r, s).
+
+error noStateInRegion(Region r) <->
+    !stateInRegion(r, _).
+
+%% Choice
+
+error choiceHasNoOutgoing(Choice c) <->
+    !source(_, c).
+
+error choiceHasNoIncoming(Choice c) <->
+    !target(_, c).
+
+% Instance model
+
+Statechart(sct).
+
+% Scope
+
+scope node = 20..30, Region = 2..*, Choice = 1..*, Statechart += 0.
 `;
 
 configure({

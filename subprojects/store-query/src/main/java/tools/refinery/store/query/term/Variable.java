@@ -38,15 +38,19 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 		return uniqueName;
 	}
 
-	public abstract boolean isUnifiable();
-
 	public abstract Variable renew(@Nullable String name);
 
 	public abstract Variable renew();
 
+	public abstract boolean isNodeVariable();
+
+	public abstract boolean isDataVariable();
+
 	public abstract NodeVariable asNodeVariable();
 
 	public abstract <T> DataVariable<T> asDataVariable(Class<T> type);
+
+	public abstract int hashCodeWithSubstitution(int sequenceNumber);
 
 	@Override
 	public String toString() {

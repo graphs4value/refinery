@@ -17,6 +17,10 @@ val webapp: Configuration by configurations.creating {
 dependencies {
 	implementation(project(":refinery-language"))
 	implementation(project(":refinery-language-ide"))
+	implementation(project(":refinery-language-semantics"))
+	implementation(project(":refinery-store-query-viatra"))
+	implementation(project(":refinery-store-reasoning-scope"))
+	implementation(libs.gson)
 	implementation(libs.jetty.server)
 	implementation(libs.jetty.servlet)
 	implementation(libs.jetty.websocket.api)
@@ -60,9 +64,18 @@ tasks {
 		classpath(mainRuntimeClasspath)
 		mainClass.set(application.mainClass)
 		standardInput = System.`in`
-		val baseResource = webapp.incoming.artifacts.artifactFiles.first()
-		environment("BASE_RESOURCE", baseResource)
+		environment("REFINERY_BASE_RESOURCE", webapp.singleFile)
 		group = "run"
-		description = "Start a Jetty web server serving the Xtex API and assets."
+		description = "Start a Jetty web server serving the Xtext API and assets."
+	}
+
+	register<JavaExec>("serveBackendOnly") {
+		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
+		dependsOn(mainRuntimeClasspath)
+		classpath(mainRuntimeClasspath)
+		mainClass.set(application.mainClass)
+		standardInput = System.`in`
+		group = "run"
+		description = "Start a Jetty web server serving the Xtext API without assets."
 	}
 }

@@ -13,5 +13,11 @@ public sealed interface PartialSymbol<A, C> extends AnyPartialSymbol permits Par
 
 	A defaultValue();
 
-	C defaultConcreteValue();
+	static PartialRelation of(String name, int arity) {
+		return new PartialRelation(name, arity);
+	}
+
+	static <A, C> PartialFunction<A, C> of(String name, int arity, AbstractDomain<A, C> abstractDomain) {
+		return new PartialFunction<>(name, arity, abstractDomain);
+	}
 }

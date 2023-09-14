@@ -18,6 +18,7 @@ import org.eclipse.xtext.web.server.syntaxcoloring.HighlightingService;
 import org.eclipse.xtext.web.server.validation.ValidationService;
 
 import com.google.inject.Inject;
+import tools.refinery.language.web.semantics.SemanticsService;
 
 public class PushWebDocumentAccess extends XtextWebDocumentAccess {
 
@@ -49,7 +50,7 @@ public class PushWebDocumentAccess extends XtextWebDocumentAccess {
 			precomputeServiceResult(service, false);
 		}
 	}
-	
+
 	protected <T extends IServiceResult> void precomputeServiceResult(AbstractCachedService<T> service, boolean logCacheMiss) {
 		var serviceName = getPrecomputedServiceName(service);
 		readOnly(new CancelableUnitOfWork<Void, IXtextWebDocument>() {
@@ -60,7 +61,7 @@ public class PushWebDocumentAccess extends XtextWebDocumentAccess {
 			}
 		});
 	}
-	
+
 	protected String getPrecomputedServiceName(AbstractCachedService<? extends IServiceResult> service) {
 		if (service instanceof ValidationService) {
 			return "validate";
@@ -68,6 +69,13 @@ public class PushWebDocumentAccess extends XtextWebDocumentAccess {
 		if (service instanceof HighlightingService) {
 			return "highlight";
 		}
+		if (service instanceof SemanticsService) {
+			return "semantics";
+		}
 		throw new IllegalArgumentException("Unknown precomputed service: " + service);
+	}
+
+	public void cancelModelGeneration() {
+		pushDocument.cancelModelGeneration();
 	}
 }

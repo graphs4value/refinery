@@ -5,7 +5,8 @@
  */
 package tools.refinery.store.statecoding;
 
-import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +24,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 class ExperimentalSetupTest {
 	static class ExperimentalSetupResult {
@@ -61,7 +61,7 @@ class ExperimentalSetupTest {
 				.build();
 
 		Set<Version> versions = new HashSet<>();
-		IntObjectHashMap<List<Version>> codes = new IntObjectHashMap<>();
+		MutableIntObjectMap<List<Version>> codes = IntObjectMaps.mutable.empty();
 
 		var empty = store.createEmptyModel();
 		if (!permuteTypes) {
@@ -123,8 +123,9 @@ class ExperimentalSetupTest {
 		return result;
 	}
 
-	private static void saveAsNewVersion(Set<Version> versions, IntObjectHashMap<List<Version>> codes,
-										 StateCoderStoreAdapter storeAdapter, ExperimentalSetupResult result, Model model) {
+	private static void saveAsNewVersion(Set<Version> versions, MutableIntObjectMap<List<Version>> codes,
+										 StateCoderStoreAdapter storeAdapter, ExperimentalSetupResult result,
+										 Model model) {
 		Version version1 = model.commit();
 
 		var stateCode = model.getAdapter(StateCoderAdapter.class).calculateStateCode();

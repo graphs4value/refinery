@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra;
 
-import org.eclipse.viatra.query.runtime.matchers.backend.QueryEvaluationHint;
+import tools.refinery.viatra.runtime.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static tools.refinery.store.query.literal.Literals.assume;
+import static tools.refinery.store.query.literal.Literals.check;
 import static tools.refinery.store.query.term.int_.IntTerms.*;
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertNullableResults;
 import static tools.refinery.store.query.viatra.tests.QueryAssertions.assertResults;
@@ -390,7 +390,7 @@ class FunctionalQueryTest {
 		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
 				personView.call(p1),
 				ageView.call(p1, x),
-				assume(lessEq(div(constant(120), x), constant(5)))
+				check(lessEq(div(constant(120), x), constant(5)))
 		)));
 
 		var store = ModelStore.builder()
@@ -420,6 +420,42 @@ class FunctionalQueryTest {
 				Tuple.of(1), true,
 				Tuple.of(2), false,
 				Tuple.of(3), false
+		), queryResultSet);
+	}
+
+	@QueryEngineTest
+	void multipleAssignmentTest(QueryEvaluationHint hint) {
+		var query = Query.of("MultipleAssignment", Integer.class, (builder, p1, p2, output) -> builder
+				.clause(Integer.class, Integer.class, (x1, x2) -> List.of(
+						ageView.call(p1, x1),
+						ageView.call(p2, x2),
+						output.assign(mul(x1, constant(2))),
+						output.assign(mul(x2, constant(3)))
+				)));
+
+		var store = ModelStore.builder()
+				.symbols(age)
+				.with(ViatraModelQueryAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
+				.build();
+
+		var model = store.createEmptyModel();
+		var ageInterpretation = model.getInterpretation(age);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var queryResultSet = queryEngine.getResultSet(query);
+
+		ageInterpretation.put(Tuple.of(0), 3);
+		ageInterpretation.put(Tuple.of(1), 2);
+		ageInterpretation.put(Tuple.of(2), 15);
+		ageInterpretation.put(Tuple.of(3), 10);
+
+		queryEngine.flushChanges();
+		assertNullableResults(Map.of(
+				Tuple.of(0, 1), Optional.of(6),
+				Tuple.of(1, 0), Optional.empty(),
+				Tuple.of(2, 3), Optional.of(30),
+				Tuple.of(3, 2), Optional.empty()
 		), queryResultSet);
 	}
 

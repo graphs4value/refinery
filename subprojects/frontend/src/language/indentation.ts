@@ -2,7 +2,7 @@
  * Copyright (C) 2018-2021 by Marijn Haverbeke <marijnh@gmail.com> and others
  * Copyright (C) 2021-2023 The Refinery Authors <https://refinery.tools/>
  *
- * SPDX-License-Identifier: MIT OR EPL-2.0
+ * SPDX-License-Identifier: MIT AND EPL-2.0
  */
 
 import type { TreeIndentContext } from '@codemirror/language';

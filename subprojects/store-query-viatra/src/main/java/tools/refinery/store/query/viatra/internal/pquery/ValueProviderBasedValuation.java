@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.matchers.psystem.IValueProvider;
+import tools.refinery.viatra.runtime.matchers.psystem.IValueProvider;
 import tools.refinery.store.query.term.DataVariable;
 import tools.refinery.store.query.valuation.Valuation;
 

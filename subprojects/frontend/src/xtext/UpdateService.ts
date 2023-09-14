@@ -22,6 +22,7 @@ import {
   FormattingResult,
   isConflictResult,
   OccurrencesResult,
+  ModelGenerationStartedResult,
 } from './xtextServiceResults';
 
 const UPDATE_TIMEOUT_MS = 500;
@@ -133,6 +134,7 @@ export default class UpdateService {
       return;
     }
     log.trace('Editor delta', delta);
+    this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'update',
@@ -157,6 +159,7 @@ export default class UpdateService {
   private async updateFullTextExclusive(): Promise<void> {
     log.debug('Performing full text update');
     this.tracker.prepareFullTextUpdateExclusive();
+    this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'update',
@@ -338,5 +341,44 @@ export default class UpdateService {
       return { cancelled: true };
     }
     return { cancelled: false, data: parsedOccurrencesResult };
+  }
+
+  async startModelGeneration(
+    randomSeed: number,
+  ): Promise<CancellableResult<ModelGenerationStartedResult>> {
+    try {
+      await this.updateOrThrow();
+    } catch (error) {
+      if (error instanceof CancelledError || error instanceof TimeoutError) {
+        return { cancelled: true };
+      }
+      throw error;
+    }
+    log.debug('Starting model generation');
+    const data = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'modelGeneration',
+      requiredStateId: this.xtextStateId,
+      start: true,
+      randomSeed,
+    });
+    if (isConflictResult(data)) {
+      return { cancelled: true };
+    }
+    const parsedResult = ModelGenerationStartedResult.parse(data);
+    return { cancelled: false, data: parsedResult };
+  }
+
+  async cancelModelGeneration(): Promise<CancellableResult<unknown>> {
+    log.debug('Cancelling model generation');
+    const data = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'modelGeneration',
+      cancel: true,
+    });
+    if (isConflictResult(data)) {
+      return { cancelled: true };
+    }
+    return { cancelled: false, data };
   }
 }

@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.viatra.internal.pquery;
 
-import org.eclipse.viatra.query.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
+import tools.refinery.viatra.runtime.matchers.psystem.aggregations.IMultisetAggregationOperator;
 import tools.refinery.store.query.term.StatelessAggregator;
 
 import java.util.stream.Stream;

@@ -26,6 +26,8 @@ public interface ModelStore {
 
 	<T extends ModelStoreAdapter> T getAdapter(Class<T> adapterType);
 
+	void checkCancelled();
+
 	static ModelStoreBuilder builder() {
 		return new ModelStoreBuilderImpl();
 	}
