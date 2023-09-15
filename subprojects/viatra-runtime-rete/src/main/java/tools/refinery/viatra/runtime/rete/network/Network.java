@@ -3,22 +3,11 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
 package tools.refinery.viatra.runtime.rete.network;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import tools.refinery.viatra.runtime.matchers.tuple.Tuple;
 import tools.refinery.viatra.runtime.matchers.util.CollectionsFactory;
@@ -30,9 +19,15 @@ import tools.refinery.viatra.runtime.rete.remote.Address;
 import tools.refinery.viatra.runtime.rete.traceability.RecipeTraceInfo;
 import tools.refinery.viatra.runtime.rete.util.Options;
 
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
  * @author Gabor Bergmann
- * 
+ *
  */
 public class Network {
     final int threads;
@@ -43,7 +38,7 @@ public class Network {
     private int nextContainer = 0;
 
     // the following fields exist only if threads > 0
-    protected Map<ReteContainer, Long> globalTerminationCriteria = null;
+    protected final Map<ReteContainer, Long> globalTerminationCriteria;
     protected Map<ReteContainer, Long> reportedClocks = null;
     protected Lock updateLock = null; // grab during normal update operations
     protected Lock structuralChangeLock = null; // grab if the network structure
@@ -104,9 +99,10 @@ public class Network {
             structuralChangeLock = rwl.writeLock();
             for (int i = 0; i < threads; ++i)
                 containers.add(new ReteContainer(this, true));
-        } else
-            containers.add(new ReteContainer(this, false));
-
+        } else {
+			containers.add(new ReteContainer(this, false));
+			globalTerminationCriteria = null;
+		}
         headContainer = containers.get(0);
     }
 
@@ -138,7 +134,7 @@ public class Network {
 
     /**
      * Internal message delivery method.
-     * 
+     *
      * @pre threads > 0
      */
     private void sendUpdate(Address<? extends Receiver> receiver, Direction direction, Tuple updateElement) {
@@ -151,7 +147,7 @@ public class Network {
 
     /**
      * Internal message delivery method for single-threaded operation
-     * 
+     *
      * @pre threads == 0
      */
     private void sendUpdateSingleThreaded(Address<? extends Receiver> receiver, Direction direction,
@@ -162,7 +158,7 @@ public class Network {
 
     /**
      * Internal message delivery method.
-     * 
+     *
      * @pre threads > 0
      */
     private void sendUpdates(Address<? extends Receiver> receiver, Direction direction,
@@ -180,7 +176,7 @@ public class Network {
      * Sends an update message to the receiver node, indicating a newly found or lost partial matching. The node may
      * reside in any of the containers associated with this network. To be called from a user thread during normal
      * operation, NOT during construction.
-     * 
+     *
      * @since 2.4
      */
     public void sendExternalUpdate(Address<? extends Receiver> receiver, Direction direction, Tuple updateElement) {
@@ -201,10 +197,10 @@ public class Network {
      * Sends an update message to the receiver node, indicating a newly found or lost partial matching. The node may
      * reside in any of the containers associated with this network. To be called from a user thread during
      * construction.
-     * 
+     *
      * @pre: structuralChangeLock MUST be grabbed by the sequence (but not necessarily this thread, as the sequence may
      *       span through network calls, that's why it's not enforced here )
-     * 
+     *
      * @return the value of the target container's clock at the time when the message was accepted into its message
      *         queue
      * @since 2.4
@@ -222,10 +218,10 @@ public class Network {
      * Sends multiple update messages atomically to the receiver node, indicating a newly found or lost partial
      * matching. The node may reside in any of the containers associated with this network. To be called from a user
      * thread during construction.
-     * 
+     *
      * @pre: structuralChangeLock MUST be grabbed by the sequence (but not necessarily this thread, as the sequence may
      *       span through network calls, that's why it's not enforced here )
-     * 
+     *
      * @since 2.4
      */
     public void sendConstructionUpdates(Address<? extends Receiver> receiver, Direction direction,
@@ -241,7 +237,7 @@ public class Network {
     /**
      * Establishes connection between a supplier and a receiver node, regardless which container they are in. Not to be
      * called remotely, because this method enforces the structural lock.
-     * 
+     *
      * @param supplier
      * @param receiver
      * @param synchronise
@@ -262,7 +258,7 @@ public class Network {
     /**
      * Severs connection between a supplier and a receiver node, regardless which container they are in. Not to be
      * called remotely, because this method enforces the structural lock.
-     * 
+     *
      * @param supplier
      * @param receiver
      * @param desynchronise
@@ -282,9 +278,9 @@ public class Network {
 
     /**
      * Containers use this method to report whenever they run out of messages in their queue.
-     * 
+     *
      * To be called from the thread of the reporting container.
-     * 
+     *
      * @pre threads > 0.
      * @param reportingContainer
      *            the container reporting the emptiness of its message queue.
@@ -328,7 +324,7 @@ public class Network {
     /**
      * Waits until all rete update operations are settled in all containers. Returns immediately, if no updates are
      * pending.
-     * 
+     *
      * To be called from any user thread.
      */
     public void waitForReteTermination() {
@@ -338,7 +334,7 @@ public class Network {
                     try {
                         globalTerminationCriteria.wait();
                     } catch (InterruptedException e) {
-
+						Thread.currentThread().interrupt();
                     }
                 }
             }
@@ -350,10 +346,10 @@ public class Network {
      * Waits to execute action until all rete update operations are settled in all containers. Runs action and returns
      * immediately, if no updates are pending. The given action is guaranteed to be run when the terminated state still
      * persists.
-     * 
+     *
      * @param action
      *            the action to be run when reaching the steady-state.
-     * 
+     *
      *            To be called from any user thread.
      */
     public void waitForReteTermination(Runnable action) {
@@ -363,7 +359,7 @@ public class Network {
                     try {
                         globalTerminationCriteria.wait();
                     } catch (InterruptedException e) {
-
+						Thread.currentThread().interrupt();
                     }
                 }
                 action.run();

@@ -13,16 +13,24 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class ModelVisualizerBuilderImpl
-		extends AbstractModelAdapterBuilder<ModelVisualizeStoreAdapterImpl>
+		extends AbstractModelAdapterBuilder<ModelVisualizerStoreAdapterImpl>
 		implements ModelVisualizerBuilder {
+	private String dotBinaryPath = "dot";
 	private String outputPath;
 	private boolean saveDesignSpace = false;
 	private boolean saveStates = false;
 	private final Set<FileFormat> formats = new LinkedHashSet<>();
 
 	@Override
-	protected ModelVisualizeStoreAdapterImpl doBuild(ModelStore store) {
-		return new ModelVisualizeStoreAdapterImpl(store, outputPath, formats, saveDesignSpace, saveStates);
+	protected ModelVisualizerStoreAdapterImpl doBuild(ModelStore store) {
+		return new ModelVisualizerStoreAdapterImpl(store, dotBinaryPath, outputPath, formats, saveDesignSpace, saveStates);
+	}
+
+	@Override
+	public ModelVisualizerBuilder withDotBinaryPath(String dotBinaryPath) {
+		checkNotConfigured();
+		this.dotBinaryPath = dotBinaryPath;
+		return this;
 	}
 
 	@Override

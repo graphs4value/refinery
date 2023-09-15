@@ -10,5 +10,9 @@
   },
   "eslint.nodePath": ".yarn/sdks",
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "graphs4value",
+    "projectKey": "graphs4value_refinery"
+  }
 }

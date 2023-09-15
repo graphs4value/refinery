@@ -132,17 +132,16 @@ class ConnectionFactory {
      * @return a replacement for the secondary Indexers, if needed
      */
     private Slots avoidActiveNodeConflict(final RecipeTraceInfo primarySlot, final RecipeTraceInfo secondarySlot) {
-        Slots result = new Slots() {
-            {
-                primary = (IterableIndexer) resolveIndexer((ProjectionIndexerRecipe) primarySlot.getRecipe());
-                secondary = resolveIndexer((IndexerRecipe) secondarySlot.getRecipe());
-            }
-        };
-        if (activeNodeConflict(result.primary, result.secondary))
-            if (result.secondary instanceof IterableIndexer)
-                result.secondary = resolveActiveIndexer(secondarySlot);
-            else
-                result.primary = (IterableIndexer) resolveActiveIndexer(primarySlot);
+        Slots result = new Slots();
+        result.primary = (IterableIndexer) resolveIndexer((ProjectionIndexerRecipe) primarySlot.getRecipe());
+        result.secondary = resolveIndexer((IndexerRecipe) secondarySlot.getRecipe());
+        if (activeNodeConflict(result.primary, result.secondary)) {
+			if (result.secondary instanceof IterableIndexer) {
+				result.secondary = resolveActiveIndexer(secondarySlot);
+			} else {
+				result.primary = (IterableIndexer) resolveActiveIndexer(primarySlot);
+			}
+		}
         return result;
     }
 

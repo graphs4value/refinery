@@ -74,7 +74,7 @@ public final class ViatraQueryEngineImpl extends AdvancedViatraQueryEngine
     /**
      * The context of the engine, provided by the scope.
      */
-    private IEngineContext engineContext;
+    private final IEngineContext engineContext;
 
     /**
      * Initialized matchers for each query
@@ -85,7 +85,7 @@ public final class ViatraQueryEngineImpl extends AdvancedViatraQueryEngine
     /**
      * The RETE and other pattern matcher implementations of the VIATRA Query Engine.
      */
-    private volatile Map<IQueryBackendFactory, IQueryBackend> queryBackends = new HashMap<>();
+    private final Map<IQueryBackendFactory, IQueryBackend> queryBackends = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * The current engine default hints

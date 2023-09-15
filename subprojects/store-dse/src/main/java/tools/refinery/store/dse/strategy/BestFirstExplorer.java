@@ -16,7 +16,11 @@ public class BestFirstExplorer extends BestFirstWorker {
 	public BestFirstExplorer(BestFirstStoreManager storeManager, Model model, int id) {
 		super(storeManager, model);
 		this.id = id;
-		this.random = new Random(id);
+		// The use of a non-cryptographic random generator is safe here, because we only use it to direct the state
+		// space exploration.
+		@SuppressWarnings("squid:S2245")
+		var randomGenerator = new Random(id);
+		this.random = randomGenerator;
 	}
 
 	private boolean shouldRun() {

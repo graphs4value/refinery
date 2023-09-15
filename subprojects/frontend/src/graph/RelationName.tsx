@@ -9,7 +9,7 @@ import { observer } from 'mobx-react-lite';
 
 import { RelationMetadata } from '../xtext/xtextServiceResults';
 
-const Error = styled('span', {
+const ErrorPredicateName = styled('span', {
   name: 'RelationName-Error',
 })(({ theme }) => ({
   color: theme.palette.error.main,
@@ -36,7 +36,7 @@ const FormattedName = observer(function FormattedName({
     return <b>{name}</b>;
   }
   if (detail.type === 'predicate' && detail.error) {
-    return <Error>{name}</Error>;
+    return <ErrorPredicateName>{name}</ErrorPredicateName>;
   }
   return name;
 });

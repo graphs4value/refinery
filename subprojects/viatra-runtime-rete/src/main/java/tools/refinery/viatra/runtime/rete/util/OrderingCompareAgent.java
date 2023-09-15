@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 
@@ -13,9 +13,9 @@ import java.util.Comparator;
 
 /**
  * Comparing agent for an ordering. Terminology: the "preferred" item will register as LESS.
- * 
+ *
  * @author Gabor Bergmann
- * 
+ *
  */
 public abstract class OrderingCompareAgent<T> {
     protected T a;
@@ -25,7 +25,7 @@ public abstract class OrderingCompareAgent<T> {
      * @param a
      * @param b
      */
-    public OrderingCompareAgent(T a, T b) {
+    protected OrderingCompareAgent(T a, T b) {
         super();
         this.a = a;
         this.b = b;
@@ -77,16 +77,21 @@ public abstract class OrderingCompareAgent<T> {
     protected static <U> int preferLess(Comparable<U> c1, U c2) {
         return c1.compareTo(c2);
     }
-    
+
     protected static <U> int preferLess(U c1, U c2, Comparator<U> comp) {
         return comp.compare(c1, c2);
     }
 
     protected static <U> int preferMore(Comparable<U> c1, U c2) {
-        return -c1.compareTo(c2);
+        return reverse(c1.compareTo(c2));
     }
+
     protected static <U> int preferMore(U c1, U c2, Comparator<U> comp) {
-        return -comp.compare(c1, c2);
+        return reverse(comp.compare(c1, c2));
     }
+
+	private static int reverse(int value) {
+		return Integer.compare(0, value);
+	}
 
 }

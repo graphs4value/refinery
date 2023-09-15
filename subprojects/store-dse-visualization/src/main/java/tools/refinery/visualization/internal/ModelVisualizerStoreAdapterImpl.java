@@ -12,16 +12,18 @@ import tools.refinery.visualization.ModelVisualizerStoreAdapter;
 
 import java.util.Set;
 
-public class ModelVisualizeStoreAdapterImpl implements ModelVisualizerStoreAdapter {
+public class ModelVisualizerStoreAdapterImpl implements ModelVisualizerStoreAdapter {
 	private final ModelStore store;
+	private final String dotBinaryPath;
 	private final String outputPath;
 	private final boolean renderDesignSpace;
 	private final boolean renderStates;
 	private final Set<FileFormat> formats;
 
-	public ModelVisualizeStoreAdapterImpl(ModelStore store, String outputPath, Set<FileFormat> formats,
-										  boolean renderDesignSpace, boolean renderStates) {
+	public ModelVisualizerStoreAdapterImpl(ModelStore store, String dotBinaryPath, String outputPath,
+										   Set<FileFormat> formats, boolean renderDesignSpace, boolean renderStates) {
 		this.store = store;
+		this.dotBinaryPath = dotBinaryPath;
 		this.outputPath = outputPath;
 		this.formats = formats;
 		this.renderDesignSpace = renderDesignSpace;
@@ -36,6 +38,10 @@ public class ModelVisualizeStoreAdapterImpl implements ModelVisualizerStoreAdapt
 	@Override
 	public ModelAdapter createModelAdapter(Model model) {
 		return new ModelVisualizerAdapterImpl(model, this);
+	}
+
+	String getDotBinaryPath() {
+		return dotBinaryPath;
 	}
 
 	@Override

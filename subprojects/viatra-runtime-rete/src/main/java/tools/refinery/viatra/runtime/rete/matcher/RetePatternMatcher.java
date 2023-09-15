@@ -31,10 +31,8 @@ import tools.refinery.viatra.runtime.rete.single.TransformerNode;
 import tools.refinery.viatra.runtime.rete.traceability.RecipeTraceInfo;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -76,14 +74,6 @@ public class RetePatternMatcher extends TransformerNode implements IQueryResultP
      */
     public ProductionNode getProductionNode() {
         return productionNode;
-    }
-
-    public Tuple matchOneRandomly(Object[] inputMapping, boolean[] fixed) {
-        List<Tuple> allMatches = matchAll(inputMapping, fixed).collect(Collectors.toList());
-        if (allMatches == null || allMatches.isEmpty())
-            return null;
-        else
-            return allMatches.get((int) (Math.random() * allMatches.size()));
     }
 
     /**

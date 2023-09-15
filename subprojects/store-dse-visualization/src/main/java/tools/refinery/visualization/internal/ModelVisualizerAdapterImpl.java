@@ -5,6 +5,8 @@
  */
 package tools.refinery.visualization.internal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
@@ -20,13 +22,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
+	private static final Logger LOG = LoggerFactory.getLogger(ModelVisualizerAdapterImpl.class);
+
 	private final Model model;
-	private final ModelVisualizerStoreAdapter storeAdapter;
+	private final ModelVisualizerStoreAdapterImpl storeAdapter;
 	private final Map<AnySymbol, Interpretation<?>> allInterpretations;
 	private final StringBuilder designSpaceBuilder = new StringBuilder();
 	private final Map<Version, Integer> states = new HashMap<>();
-	private int transitionCounter = 0;
-	private Integer numberOfStates = 0;
 	private final String outputPath;
 	private final Set<FileFormat> formats;
 	private final boolean renderDesignSpace;
@@ -41,7 +43,7 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 			false, "0"
 	);
 
-	public ModelVisualizerAdapterImpl(Model model, ModelVisualizerStoreAdapter storeAdapter) {
+	public ModelVisualizerAdapterImpl(Model model, ModelVisualizerStoreAdapterImpl storeAdapter) {
 		this.model = model;
 		this.storeAdapter = storeAdapter;
 		this.outputPath = storeAdapter.getOutputPath();
@@ -257,8 +259,8 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 
 		try (FileWriter writer = new FileWriter(file)) {
 			writer.write(dot);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (IOException e) {
+			LOG.error("Failed to write dot file", e);
 			return false;
 		}
 		return true;
@@ -270,14 +272,15 @@ public class ModelVisualizerAdapterImpl implements ModelVisualizerAdapter {
 
 	private boolean renderDot(String dot, FileFormat format, String filePath) {
 		try {
-			Process process = new ProcessBuilder("dot", "-T" + format.getFormat(), "-o", filePath).start();
+			Process process = new ProcessBuilder(storeAdapter.getDotBinaryPath(), "-T" + format.getFormat(),
+					"-o", filePath).start();
 
 			OutputStream osToProcess = process.getOutputStream();
 			PrintWriter pwToProcess = new PrintWriter(osToProcess);
 			pwToProcess.write(dot);
 			pwToProcess.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error("Failed to render dot", e);
 			return false;
 		}
 		return true;

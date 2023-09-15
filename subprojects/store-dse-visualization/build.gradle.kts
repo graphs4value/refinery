@@ -10,4 +10,5 @@ plugins {
 
 dependencies {
 	api(project(":refinery-store-query"))
+	implementation(libs.slf4j.api)
 }

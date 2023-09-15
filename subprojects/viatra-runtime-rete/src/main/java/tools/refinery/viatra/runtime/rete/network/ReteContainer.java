@@ -514,6 +514,7 @@ public final class ReteContainer {
                             try {
                                 externalMessageLock.wait();
                             } catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
                                 if (killed)
                                     return;
                             }
@@ -565,7 +566,9 @@ public final class ReteContainer {
                                         + group.getRepresentative() + " has already been processed!");
                     }
 
-                    group.deliverMessages();
+					if (group != null) {
+						group.deliverMessages();
+					}
 
                     lastGroup = group;
                 }

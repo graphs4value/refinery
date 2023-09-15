@@ -9,6 +9,7 @@ import tools.refinery.store.adapter.ModelAdapterBuilder;
 import tools.refinery.visualization.internal.FileFormat;
 
 public interface ModelVisualizerBuilder extends ModelAdapterBuilder {
+	ModelVisualizerBuilder withDotBinaryPath(String dotBinaryPath);
 	ModelVisualizerBuilder withOutputPath(String outputPath);
 	ModelVisualizerBuilder withFormat(FileFormat format);
 	ModelVisualizerBuilder saveDesignSpace();

@@ -3,24 +3,24 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 package tools.refinery.viatra.runtime.matchers.psystem.rewriters;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import tools.refinery.viatra.runtime.matchers.psystem.IExpressionEvaluator;
 import tools.refinery.viatra.runtime.matchers.psystem.IValueProvider;
 import tools.refinery.viatra.runtime.matchers.psystem.PVariable;
 import tools.refinery.viatra.runtime.matchers.util.Preconditions;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * A wrapper for {@link IExpressionEvaluator} which is capable of correctly mapping variable names used by the
  * expression.
- * 
+ *
  * @author Grill Balázs
  *
  */
@@ -28,10 +28,10 @@ class VariableMappingExpressionEvaluatorWrapper implements IExpressionEvaluator 
 
     private final IExpressionEvaluator wrapped;
     private final Map<String, String> variableMapping;
-    
+
     public VariableMappingExpressionEvaluatorWrapper(IExpressionEvaluator wrapped,
             Map<PVariable, PVariable> variableMapping) {
-        
+
         // Support to rewrap an already wrapped expression.
         boolean rewrap = wrapped instanceof VariableMappingExpressionEvaluatorWrapper;
         this.wrapped = rewrap ? ((VariableMappingExpressionEvaluatorWrapper)wrapped).wrapped : wrapped;
@@ -46,7 +46,7 @@ class VariableMappingExpressionEvaluatorWrapper implements IExpressionEvaluator 
         for (PVariable originalVar : variableMapping.keySet()) {
             names.put(originalVar.getName(), originalVar);
         }
-        
+
         // In case of rewrapping, current names are contained by the previous mapping
         Map<String, String> previousMapping = null;
         if (rewrap){
@@ -55,6 +55,8 @@ class VariableMappingExpressionEvaluatorWrapper implements IExpressionEvaluator 
 
         // Populate mapping
         for (String inputParameterName : this.wrapped.getInputParameterNames()) {
+			// {@code previousMapping} can't be {@code null} if {@code rewrap} is {@code true}.
+			@SuppressWarnings("squid:S2259")
             String parameterName = rewrap ? previousMapping.get(inputParameterName) : inputParameterName;
             Preconditions.checkArgument(parameterName != null);
             PVariable original = names.get(parameterName);

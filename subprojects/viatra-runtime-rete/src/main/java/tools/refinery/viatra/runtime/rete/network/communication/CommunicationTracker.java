@@ -8,33 +8,15 @@
  *******************************************************************************/
 package tools.refinery.viatra.runtime.rete.network.communication;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
-
-import tools.refinery.viatra.runtime.rete.itc.alg.incscc.IncSCCAlg;
-import tools.refinery.viatra.runtime.rete.itc.alg.misc.topsort.TopologicalSorting;
-import tools.refinery.viatra.runtime.rete.itc.graphimpl.Graph;
 import tools.refinery.viatra.runtime.matchers.tuple.TupleMask;
 import tools.refinery.viatra.runtime.rete.aggregation.IAggregatorNode;
 import tools.refinery.viatra.runtime.rete.boundary.ExternalInputEnumeratorNode;
 import tools.refinery.viatra.runtime.rete.eval.RelationEvaluatorNode;
-import tools.refinery.viatra.runtime.rete.index.DualInputNode;
-import tools.refinery.viatra.runtime.rete.index.ExistenceNode;
-import tools.refinery.viatra.runtime.rete.index.Indexer;
-import tools.refinery.viatra.runtime.rete.index.IndexerListener;
-import tools.refinery.viatra.runtime.rete.index.IterableIndexer;
-import tools.refinery.viatra.runtime.rete.index.SpecializedProjectionIndexer;
-import tools.refinery.viatra.runtime.rete.network.IGroupable;
-import tools.refinery.viatra.runtime.rete.network.NetworkStructureChangeSensitiveNode;
-import tools.refinery.viatra.runtime.rete.network.Node;
-import tools.refinery.viatra.runtime.rete.network.ProductionNode;
-import tools.refinery.viatra.runtime.rete.network.Receiver;
-import tools.refinery.viatra.runtime.rete.network.ReteContainer;
+import tools.refinery.viatra.runtime.rete.index.*;
+import tools.refinery.viatra.runtime.rete.itc.alg.incscc.IncSCCAlg;
+import tools.refinery.viatra.runtime.rete.itc.alg.misc.topsort.TopologicalSorting;
+import tools.refinery.viatra.runtime.rete.itc.graphimpl.Graph;
+import tools.refinery.viatra.runtime.rete.network.*;
 import tools.refinery.viatra.runtime.rete.network.communication.timely.TimelyIndexerListenerProxy;
 import tools.refinery.viatra.runtime.rete.network.communication.timely.TimelyMailboxProxy;
 import tools.refinery.viatra.runtime.rete.network.mailbox.FallThroughCapableMailbox;
@@ -42,6 +24,8 @@ import tools.refinery.viatra.runtime.rete.network.mailbox.Mailbox;
 import tools.refinery.viatra.runtime.rete.network.mailbox.timeless.BehaviorChangingMailbox;
 import tools.refinery.viatra.runtime.rete.single.TransitiveClosureNode;
 import tools.refinery.viatra.runtime.rete.single.TrimmerNode;
+
+import java.util.*;
 
 /**
  * An instance of this class is associated with every {@link ReteContainer}. The tracker serves two purposes: <br>
@@ -263,7 +247,10 @@ public abstract class CommunicationTracker {
 
     public CommunicationGroup getAndRemoveFirstGroup() {
         final CommunicationGroup group = groupQueue.poll();
-        group.isEnqueued = false;
+		if (group == null) {
+			throw new IllegalStateException("Group queue must not be empty");
+		}
+		group.isEnqueued = false;
         return group;
     }
 
