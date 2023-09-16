@@ -10,7 +10,7 @@ import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.representation.PartialRelation;
@@ -40,7 +40,7 @@ class CountPropagationTest {
 				.build();
 
 		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder())

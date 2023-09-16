@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright (c) 2004-2014 Gabor Bergmann and Daniel Varro&#xA;Copyright (c) 2023 The Refinery Authors &lt;https://refinery.tools>&#xA;This program and the accompanying materials are made available under the&#xA;terms of the Eclipse Public License v. 2.0 which is available at&#xA;http://www.eclipse.org/legal/epl-v20.html.&#xA;&#xA;SPDX-License-Identifier: EPL-2.0"
+    modelDirectory="/tools.refinery.refinery-interpreter-rete-recipes/src/main/emf-gen"
+    modelPluginID="tools.refinery.refinery-interpreter-rete-recipes" runtimeJar="true" forceOverwrite="true"
+    modelName="Rete-recipes" updateClasspath="false" nonNLSMarkers="true" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    testsDirectory="" importerID="org.eclipse.emf.importer.ecore" containmentProxies="true"
+    complianceLevel="7.0" language="en" operationReflection="true">
+  <genAnnotations source="http://www.eclipse.org/emf/2002/GenModel/exporter/org.eclipse.xsd.ecore.exporter">
+    <genAnnotations source="selectedPackages">
+      <details key="http://www.eclipse.org/emf/2002/Ecore" value="Ecore.xsd"/>
+    </genAnnotations>
+    <details key="directoryURI" value="."/>
+  </genAnnotations>
+  <genAnnotations source="http://www.eclipse.org/emf/2002/GenModel/exporter/org.eclipse.xsd.ecore.exporter.xmi">
+    <genAnnotations source="selectedPackages">
+      <details key="http://www.eclipse.org/emf/2002/Ecore" value="EcoreXMI.xsd"/>
+    </genAnnotations>
+    <details key="directoryURI" value="."/>
+  </genAnnotations>
+  <foreignModel>recipes.ecore</foreignModel>
+  <modelPluginVariables>org.eclipse.xtext.xbase.lib</modelPluginVariables>
+  <modelPluginVariables>org.eclipse.emf.ecore.xcore.lib</modelPluginVariables>
+  <genPackages prefix="Recipes" basePackage="tools.refinery.interpreter.rete" disposableProviderFactory="true"
+      ecorePackage="recipes.ecore#/">
+    <genDataTypes ecoreDataType="recipes.ecore#//Index"/>
+    <genDataTypes ecoreDataType="recipes.ecore#//AggregationOperator"/>
+    <genDataTypes ecoreDataType="recipes.ecore#//Connectivity"/>
+    <genClasses ecoreClass="recipes.ecore#//ReteRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//ReteRecipe/recipeNodes"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//ReteNodeRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ReteNodeRecipe/traceInfo"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ReteNodeRecipe/equivalenceClassIDs"/>
+      <genOperations ecoreOperation="recipes.ecore#//ReteNodeRecipe/getArity" body="throw new &lt;%java.lang.UnsupportedOperationException%>();"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//SingleParentNodeRecipe">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference recipes.ecore#//SingleParentNodeRecipe/parent"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//AlphaRecipe"/>
+    <genClasses image="false" ecoreClass="recipes.ecore#//MultiParentNodeRecipe">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference recipes.ecore#//MultiParentNodeRecipe/parents"/>
+      <genOperations ecoreOperation="recipes.ecore#//MultiParentNodeRecipe/getArity"
+          body="&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%>> _parents = this.getParents();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _get = _parents.get(0);&#xA;return _get.getArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//MonotonicityInfo">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//MonotonicityInfo/coreMask"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//MonotonicityInfo/posetMask"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//MonotonicityInfo/posetComparator"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//UniquenessEnforcerRecipe"/>
+    <genClasses ecoreClass="recipes.ecore#//ProductionRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//ProductionRecipe/mappedIndices"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ProductionRecipe/pattern"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ProductionRecipe/patternFQN"/>
+      <genOperations ecoreOperation="recipes.ecore#//ProductionRecipe/getArity" body="return this.getMappedIndices().size();"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//IndexerRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//IndexerRecipe/mask"/>
+      <genOperations ecoreOperation="recipes.ecore#//IndexerRecipe/getArity" body="&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = this.getMask();&#xA;return _mask.getSourceArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//ProjectionIndexerRecipe"/>
+    <genClasses ecoreClass="recipes.ecore#//AggregatorIndexerRecipe"/>
+    <genClasses image="false" ecoreClass="recipes.ecore#//BetaRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//BetaRecipe/leftParent"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//BetaRecipe/rightParent"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//Mask">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//Mask/sourceIndices"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//Mask/sourceArity"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//StringIndexMapEntry">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//StringIndexMapEntry/key"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//StringIndexMapEntry/value"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//InputRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InputRecipe/inputKey"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InputRecipe/keyID"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InputRecipe/keyArity"/>
+      <genOperations ecoreOperation="recipes.ecore#//InputRecipe/getArity" body="return getKeyArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//ConstantRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ConstantRecipe/constantValues"/>
+      <genOperations ecoreOperation="recipes.ecore#//ConstantRecipe/getArity" body="return this.getConstantValues().size();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//TransitiveClosureRecipe">
+      <genOperations ecoreOperation="recipes.ecore#//TransitiveClosureRecipe/getArity"
+          body="return 2;"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//FilterRecipe">
+      <genOperations ecoreOperation="recipes.ecore#//FilterRecipe/getArity" body="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//InequalityFilterRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InequalityFilterRecipe/subject"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InequalityFilterRecipe/inequals"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//EqualityFilterRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//EqualityFilterRecipe/indices"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//TransparentRecipe"/>
+    <genClasses ecoreClass="recipes.ecore#//TrimmerRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//TrimmerRecipe/mask"/>
+      <genOperations ecoreOperation="recipes.ecore#//TrimmerRecipe/getArity" body="&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = this.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;return _sourceIndices.size();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//ExpressionDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ExpressionDefinition/evaluator"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//ExpressionEnforcerRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//ExpressionEnforcerRecipe/expression"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//ExpressionEnforcerRecipe/mappedIndices"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ExpressionEnforcerRecipe/cacheOutput"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//CheckRecipe">
+      <genOperations ecoreOperation="recipes.ecore#//CheckRecipe/getArity" body="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//EvalRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//EvalRecipe/unwinding"/>
+      <genOperations ecoreOperation="recipes.ecore#//EvalRecipe/getArity" body="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;int _arity = _parent.getArity();&#xA;return (1 + _arity);"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//IndexerBasedAggregatorRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//IndexerBasedAggregatorRecipe/parent"/>
+      <genOperations ecoreOperation="recipes.ecore#//IndexerBasedAggregatorRecipe/getArity"
+          body="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _parent = this.getParent();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = _parent.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;int _size = _sourceIndices.size();&#xA;return (1 + _size);"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//CountAggregatorRecipe"/>
+    <genClasses ecoreClass="recipes.ecore#//JoinRecipe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//JoinRecipe/rightParentComplementaryMask"/>
+      <genOperations ecoreOperation="recipes.ecore#//JoinRecipe/getArity" body="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _leftParent = this.getLeftParent();&#xA;int _arity = _leftParent.getArity();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.IndexerRecipe%> _rightParent = this.getRightParent();&#xA;int _arity_1 = _rightParent.getArity();&#xA;int _plus = (_arity + _arity_1);&#xA;&lt;%tools.refinery.interpreter.rete.recipes.IndexerRecipe%> _rightParent_1 = this.getRightParent();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = _rightParent_1.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;int _size = _sourceIndices.size();&#xA;return (_plus - _size);"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//ExistenceJoinRecipe">
+      <genOperations ecoreOperation="recipes.ecore#//ExistenceJoinRecipe/getArity"
+          body="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _leftParent = this.getLeftParent();&#xA;return _leftParent.getArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//SemiJoinRecipe"/>
+    <genClasses ecoreClass="recipes.ecore#//AntiJoinRecipe"/>
+    <genClasses ecoreClass="recipes.ecore#//InputFilterRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InputFilterRecipe/inputKey"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//InputFilterRecipe/keyID"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//InputFilterRecipe/mask"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//SingleColumnAggregatorRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//SingleColumnAggregatorRecipe/multisetAggregationOperator"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//SingleColumnAggregatorRecipe/aggregableIndex"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//SingleColumnAggregatorRecipe/groupByMask"/>
+      <genOperations ecoreOperation="recipes.ecore#//SingleColumnAggregatorRecipe/getArity"
+          body="&lt;%tools.refinery.interpreter.rete.recipes.MonotonicityInfo%> info = getOptionalMonotonicityInfo();&#xA;if (info == null) {&#xA;&#x9;return 1 + getGroupByMask().getSourceIndices().size();&#xA;} else {&#x9;&#xA;&#x9;return info.getCoreMask().getSourceIndices().size() + info.getPosetMask().getSourceIndices().size();&#xA;}"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//DiscriminatorDispatcherRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//DiscriminatorDispatcherRecipe/discriminationColumnIndex"/>
+      <genOperations ecoreOperation="recipes.ecore#//DiscriminatorDispatcherRecipe/getArity"
+          body="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//DiscriminatorBucketRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//DiscriminatorBucketRecipe/bucketKey"/>
+      <genOperations ecoreOperation="recipes.ecore#//DiscriminatorBucketRecipe/getArity"
+          body="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="recipes.ecore#//RederivableNodeRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//RederivableNodeRecipe/deleteRederiveEvaluation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference recipes.ecore#//RederivableNodeRecipe/optionalMonotonicityInfo"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//RelationEvaluationRecipe">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference recipes.ecore#//RelationEvaluationRecipe/evaluator"/>
+    </genClasses>
+    <genClasses ecoreClass="recipes.ecore#//RepresentativeElectionRecipe">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//RepresentativeElectionRecipe/connectivity"/>
+      <genOperations ecoreOperation="recipes.ecore#//RepresentativeElectionRecipe/getArity"
+          body="return 2;"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

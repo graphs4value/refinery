@@ -1,0 +1,25 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+module tools.refinery.viatra.runtime.rete.recipes.GenerateReteRecipes
+
+Workflow {
+	bean = org.eclipse.emf.mwe.utils.StandaloneSetup {
+		projectMapping = {
+			projectName = "tools.refinery.refinery-interpreter-rete-recipes"
+			path = "."
+		}
+	}
+
+	component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+		directory = "src/main/emf-gen"
+	}
+
+	component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {
+		generateCustomClasses = false
+		genModel = "platform:/resource/tools.refinery.refinery-interpreter-rete-recipes/src/main/resources/model/rete-recipes.genmodel"
+		srcPath = "platform:/resource/tools.refinery.refinery-interpreter-rete-recipes/src/main/emf-gen"
+	}
+}

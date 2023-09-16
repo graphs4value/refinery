@@ -13,5 +13,5 @@ dependencies {
 	implementation(project(":refinery-store-dse-visualization"))
 	implementation(libs.eclipseCollections.api)
 	runtimeOnly(libs.eclipseCollections)
-	testImplementation(project(":refinery-store-query-viatra"))
+	testImplementation(project(":refinery-store-query-interpreter"))
 }

@@ -11,7 +11,7 @@ import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
@@ -305,7 +305,7 @@ class PartialCountTest {
 		var friendStorage = Symbol.of("friend", 2, TruthValue.class, TruthValue.FALSE);
 
 		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder()
+				.with(QueryInterpreterAdapter.builder()
 						.query(query))
 				.with(ReasoningAdapter.builder())
 				.with(new MultiObjectTranslator())

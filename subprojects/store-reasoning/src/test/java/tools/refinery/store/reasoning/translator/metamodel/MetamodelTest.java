@@ -8,7 +8,7 @@ package tools.refinery.store.reasoning.translator.metamodel;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -141,7 +141,7 @@ class MetamodelTest {
 
 	private static Model createModel(Metamodel metamodel, ModelSeed seed) {
 		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ReasoningAdapter.builder())
 				.with(new MultiObjectTranslator())
 				.with(new MetamodelTranslator(metamodel))

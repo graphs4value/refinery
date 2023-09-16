@@ -8,7 +8,7 @@ package tools.refinery.store.reasoning.translator.typehierarchy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -34,7 +34,7 @@ class ConcreteSupertypeTest {
 				.build();
 
 		store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ReasoningAdapter.builder())
 				.with(new TypeHierarchyTranslator(typeHierarchy))
 				.build();

@@ -12,7 +12,7 @@ import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.representation.PartialRelation;
@@ -40,7 +40,7 @@ class MultiObjectTest {
 	@BeforeEach
 	void beforeEach() {
 		store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder())
 				.with(ReasoningAdapter.builder())
 				.with(new MultiObjectTranslator())

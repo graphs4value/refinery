@@ -21,7 +21,7 @@ import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.language.semantics.model.TracedException;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -66,7 +66,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	public SemanticsResult call() {
 		var builder = ModelStore.builder()
 				.cancellationToken(cancellationToken)
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(Concreteness.PARTIAL));

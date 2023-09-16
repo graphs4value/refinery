@@ -10,7 +10,7 @@ import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.ForbiddenView;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
@@ -42,7 +42,7 @@ class PartialModelTest {
 		var friendStorage = Symbol.of("friend", 2, TruthValue.class, TruthValue.UNKNOWN);
 
 		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ReasoningAdapter.builder())
 				.with(new MultiObjectTranslator())
 				.with(PartialRelationTranslator.of(person)

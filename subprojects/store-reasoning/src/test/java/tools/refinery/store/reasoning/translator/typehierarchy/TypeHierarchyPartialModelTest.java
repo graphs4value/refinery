@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -42,7 +42,7 @@ class TypeHierarchyPartialModelTest {
 				.build();
 
 		var store = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ReasoningAdapter.builder())
 				.with(new TypeHierarchyTranslator(typeHierarchy))
 				.build();

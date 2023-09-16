@@ -11,5 +11,5 @@ plugins {
 dependencies {
 	api(project(":refinery-store-dse"))
 	testImplementation(testFixtures(project(":refinery-store-query")))
-	testImplementation(project(":refinery-store-query-viatra"))
+	testImplementation(project(":refinery-store-query-interpreter"))
 }

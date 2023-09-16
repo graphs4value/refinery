@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="recipes" nsURI="https://refinery.tools/emf/2023/InterpreterReteRecipes"
+    nsPrefix="recipes">
+  <eClassifiers xsi:type="ecore:EClass" name="ReteRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Container for Rete recipes."/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="recipeNodes" upperBound="-1"
+        eType="#//ReteNodeRecipe" containment="true" resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ReteNodeRecipe" abstract="true">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Abstract base class for model elements that represent &quot;Rete node recipes&quot;,&#xD;&#xA;that is DTOs that carry information for Rete network construction.&#xD;&#xA;&#xD;&#xA;@noimplement"/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value=" The width of tuples contained by this node."/>
+        <details key="body" value="throw new &lt;%java.lang.UnsupportedOperationException%>();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="traceInfo" unique="false"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Temporary construct for storing traceability information."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="equivalenceClassIDs" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong" transient="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="If two recipes were found equivalent, a matching equivalence ID can be assigned to them by {@link RecipeRecognizer}. &#xD;&#xA;If two recipes share (at least one) equivalence ID, they are known to be equivalent.&#xD;&#xA;&#xD;&#xA;&lt;p>&#xD;&#xA;A difference in this attribute only does not preclude two recipe elements to be considered equal. &#xD;&#xA;If they are shown to be equivalent using deeper analysis, equivalence ids can be set so that the equivalence is recognized more easily the next time.&#xD;&#xA;&#xD;&#xA;@since 1.3"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SingleParentNodeRecipe" abstract="true"
+      eSuperTypes="#//ReteNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Abstract base class for single-parent node recipes."/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//ReteNodeRecipe"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AlphaRecipe" abstract="true" eSuperTypes="#//SingleParentNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Abstract base class for alpha node recipes."/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MultiParentNodeRecipe" abstract="true"
+      eSuperTypes="#//ReteNodeRecipe">
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%>> _parents = this.getParents();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _get = _parents.get(0);&#xA;return _get.getArity();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parents" upperBound="-1"
+        eType="#//ReteNodeRecipe"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MonotonicityInfo">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="coreMask" eType="#//Mask"
+        containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="posetMask" eType="#//Mask"
+        containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="posetComparator" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="UniquenessEnforcerRecipe" eSuperTypes="#//MultiParentNodeRecipe #//RederivableNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents nodes that enforce tuple uniqueness, i.e. filter out&#xA;duplicate input tuples for output."/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ProductionRecipe" eSuperTypes="#//MultiParentNodeRecipe #//RederivableNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="The production node represents the output of the Rete network,&#xA;from which the results of a query can be read."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="return this.getMappedIndices().size();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mappedIndices" upperBound="-1"
+        eType="#//StringIndexMapEntry" containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="String -> Index map.&#xA;Indicates the positions of parameters."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="pattern" unique="false"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Traceability link to defining pattern object (from EMFPatternLanguage)&#xA;TODO unused?"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="patternFQN" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IndexerRecipe" abstract="true" eSuperTypes="#//SingleParentNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents a node that indexes the contents of a parent based on a projection defined by a Mask."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = this.getMask();&#xA;return _mask.getSourceArity();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mask" eType="#//Mask" containment="true"
+        resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ProjectionIndexerRecipe" eSuperTypes="#//IndexerRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents helper nodes that provide projection indexing for Beta nodes and user queries."/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AggregatorIndexerRecipe" eSuperTypes="#//IndexerRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Attached to an aggregator node, provides the aggregated values for outer join."/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BetaRecipe" abstract="true" eSuperTypes="#//ReteNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Abstract base class for Beta node recipes."/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="leftParent" eType="#//ProjectionIndexerRecipe"
+        containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rightParent" eType="#//IndexerRecipe"
+        containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value=" can be an AggregatorIndexer"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Mask">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="A mask defines the set of tuple variables that need to be taken into consideration for operations."/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="sourceIndices" unique="false"
+        upperBound="-1" eType="#//Index">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The indices that are relevant for tuple operations."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="sourceArity" unique="false"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The arity of tuples."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Index" instanceClassName="java.lang.Integer">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Indexes tell which variable of tuples are relevant for a given operation.&#xA;TODO: is this necessary at all?"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringIndexMapEntry" instanceClassName="java.util.Map$Entry">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="key" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" unique="false" eType="#//Index"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InputRecipe" eSuperTypes="#//ReteNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents input nodes for the Rete network, i.e. nodes&#xA;that generate input tuples for processing."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="return getKeyArity();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="inputKey" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"
+        transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="keyID" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Temporary construct for identifying types over the wire.&#xA;TODO improve type references"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="keyArity" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConstantRecipe" eSuperTypes="#//ReteNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Simple node that stores constant values."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="return this.getConstantValues().size();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="constantValues" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Stores constant values. May be empty.&#xA;&#xA;TODO store constants as strings instead? (for easier serialization)"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitiveClosureRecipe" eSuperTypes="#//AlphaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents transitive closure."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="return 2;"/>
+      </eAnnotations>
+    </eOperations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FilterRecipe" abstract="true" eSuperTypes="#//AlphaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Abstract base class for nodes that implement filtering operations."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+      </eAnnotations>
+    </eOperations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InequalityFilterRecipe" eSuperTypes="#//FilterRecipe">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="subject" unique="false"
+        eType="#//Index"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="inequals" unique="false"
+        upperBound="-1" eType="#//Index"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EqualityFilterRecipe" eSuperTypes="#//FilterRecipe">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="indices" unique="false"
+        upperBound="-1" eType="#//Index"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransparentRecipe" eSuperTypes="#//FilterRecipe"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TrimmerRecipe" eSuperTypes="#//AlphaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Implements projection without uniqueness checking."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = this.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;return _sourceIndices.size();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mask" eType="#//Mask" containment="true"
+        resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ExpressionDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="evaluator" unique="false"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ExpressionEnforcerRecipe" abstract="true"
+      eSuperTypes="#//AlphaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="type RuntimeExpressionEvaluator wraps psystem.matchers.tools.refinery.interpreter.IExpressionEvaluator&#xA;class RuntimeExpressionDefinition extends ExpressionDefinition {&#xA;&#x9;RuntimeExpressionEvaluator evaluator&#xA;}"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//ExpressionDefinition"
+        containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Provides traceability to expression representation."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mappedIndices" upperBound="-1"
+        eType="#//StringIndexMapEntry" containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="String -> Index map.&#xA;Maps variable names in the expression to tuple indices."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="cacheOutput" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CheckRecipe" eSuperTypes="#//ExpressionEnforcerRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Computes the result of the boolean expression evaluation and&#xA;only passes tuples for which the result is true."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+      </eAnnotations>
+    </eOperations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EvalRecipe" eSuperTypes="#//ExpressionEnforcerRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Computes the result of expression evaluation and suffixes the result&#xA;to output tuples as the last element."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;int _arity = _parent.getArity();&#xA;return (1 + _arity);"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="unwinding" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="@since 2.4"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IndexerBasedAggregatorRecipe" abstract="true"
+      eSuperTypes="#//ReteNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents a (compound) node that performs an aggregation operation.&#xA;Parent must be a ProjectionIndexer, which defines how tuples are to be aggregated.&#xA;Usable only through an Join with an AggregatorIndexer as the right parent"/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _parent = this.getParent();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = _parent.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;int _size = _sourceIndices.size();&#xA;return (1 + _size);"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//ProjectionIndexerRecipe"
+        containment="true" resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CountAggregatorRecipe" eSuperTypes="#//IndexerBasedAggregatorRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="The count aggregator node represents a &quot;count find&quot; operation."/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinRecipe" eSuperTypes="#//BetaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="The most basic beta operation, the join node performs a join operation over two input tuple sets."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _leftParent = this.getLeftParent();&#xA;int _arity = _leftParent.getArity();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.IndexerRecipe%> _rightParent = this.getRightParent();&#xA;int _arity_1 = _rightParent.getArity();&#xA;int _plus = (_arity + _arity_1);&#xA;&lt;%tools.refinery.interpreter.rete.recipes.IndexerRecipe%> _rightParent_1 = this.getRightParent();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = _rightParent_1.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;int _size = _sourceIndices.size();&#xA;return (_plus - _size);"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rightParentComplementaryMask"
+        eType="#//Mask" containment="true" resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ExistenceJoinRecipe" abstract="true"
+      eSuperTypes="#//BetaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Existence joins are TODO&#xA;&#xA;See http://en.wikipedia.org/wiki/Relational_algebra"/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _leftParent = this.getLeftParent();&#xA;return _leftParent.getArity();"/>
+      </eAnnotations>
+    </eOperations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SemiJoinRecipe" eSuperTypes="#//ExistenceJoinRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="A semi-join is TODO&#xA;&#xA;See http://en.wikipedia.org/wiki/Relational_algebra"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AntiJoinRecipe" eSuperTypes="#//ExistenceJoinRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="An anti-join is TODO&#xA;&#xA;See http://en.wikipedia.org/wiki/Relational_algebra"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InputFilterRecipe" eSuperTypes="#//FilterRecipe">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="inputKey" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"
+        transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="keyID" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Temporary construct for identifying types over the wire.&#xA;TODO improve type references"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mask" eType="#//Mask" containment="true"
+        resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SingleColumnAggregatorRecipe" eSuperTypes="#//AlphaRecipe #//RederivableNodeRecipe">
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.MonotonicityInfo%> info = getOptionalMonotonicityInfo();&#xA;if (info == null) {&#xA;&#x9;return 1 + getGroupByMask().getSourceIndices().size();&#xA;} else {&#x9;&#xA;&#x9;return info.getCoreMask().getSourceIndices().size() + info.getPosetMask().getSourceIndices().size();&#xA;}"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="multisetAggregationOperator"
+        eType="#//AggregationOperator"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="aggregableIndex" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="groupByMask" lowerBound="1"
+        eType="#//Mask" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="AggregationOperator" instanceTypeName="tools.refinery.interpreter.matchers.psystem.aggregations.IMultisetAggregationOperator&lt;?, ?, ?>"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DiscriminatorDispatcherRecipe" eSuperTypes="#//SingleParentNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Node that sends tuples off to different buckets (attached as children) based on the value of a given column."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="discriminationColumnIndex"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DiscriminatorBucketRecipe" eSuperTypes="#//SingleParentNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="A bucket holds a filtered set of tuples of its parent DiscriminatorDispatcher; exactly those that have the given bucket key at their discrimination column."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ReteNodeRecipe%> _parent = this.getParent();&#xA;return _parent.getArity();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="bucketKey" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RederivableNodeRecipe" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="deleteRederiveEvaluation"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="optionalMonotonicityInfo"
+        eType="#//MonotonicityInfo" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RelationEvaluationRecipe" eSuperTypes="#//MultiParentNodeRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="@since 2.8"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="evaluator" eType="#//ExpressionDefinition"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RepresentativeElectionRecipe" eSuperTypes="#//AlphaRecipe">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Represents represenative election."/>
+    </eAnnotations>
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="return 2;"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="connectivity" eType="#//Connectivity"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Connectivity" instanceClassName="tools.refinery.interpreter.matchers.psystem.basicenumerables.Connectivity"/>
+</ecore:EPackage>

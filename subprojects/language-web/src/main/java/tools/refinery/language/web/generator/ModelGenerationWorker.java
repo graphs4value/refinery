@@ -27,7 +27,7 @@ import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -177,7 +177,7 @@ public class ModelGenerationWorker implements Runnable {
 		cancellationToken.checkCancelled();
 		var storeBuilder = ModelStore.builder()
 				.cancellationToken(cancellationToken)
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder())
 				.with(StateCoderAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder())

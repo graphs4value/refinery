@@ -8,6 +8,10 @@ rootProject.name = "refinery"
 
 include(
 		"frontend",
+		"interpreter",
+		"interpreter-localsearch",
+		"interpreter-rete",
+		"interpreter-rete-recipes",
 		"language",
 		"language-ide",
 		"language-model",
@@ -17,13 +21,9 @@ include(
 		"store-dse",
 		"store-dse-visualization",
 		"store-query",
-		"store-query-viatra",
+		"store-query-interpreter",
 		"store-reasoning",
 		"store-reasoning-scope",
-		"viatra-runtime",
-		"viatra-runtime-localsearch",
-		"viatra-runtime-rete",
-		"viatra-runtime-rete-recipes",
 )
 
 for (project in rootProject.children) {

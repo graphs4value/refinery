@@ -18,7 +18,7 @@ import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -81,7 +81,7 @@ class ModelGenerationTest {
 		var problem = parsedProblem.problem();
 
 		var storeBuilder = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ModelVisualizerAdapter.builder()
 						.withOutputPath("test_output")
 						.withFormat(FileFormat.DOT)
@@ -215,7 +215,7 @@ class ModelGenerationTest {
 		var problem = parsedProblem.problem();
 
 		var storeBuilder = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 //				.with(ModelVisualizerAdapter.builder()
 //						.withOutputPath("test_output")
 //						.withFormat(FileFormat.DOT)
@@ -282,7 +282,7 @@ class ModelGenerationTest {
 		var problem = parsedProblem.problem();
 
 		var storeBuilder = ModelStore.builder()
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 //				.with(ModelVisualizerAdapter.builder()
 //						.withOutputPath("test_output")
 //						.withFormat(FileFormat.DOT)

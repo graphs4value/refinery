@@ -21,7 +21,7 @@ import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
@@ -115,7 +115,7 @@ class CRAExamplesTest {
 	void craTest() {
 		var store = ModelStore.builder()
 				.symbols(classElement, encapsulates, attribute, method, dataDependency, functionalDependency, name)
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ModelVisualizerAdapter.builder()
 						.withOutputPath("test_output")
 						.withFormat(FileFormat.DOT)

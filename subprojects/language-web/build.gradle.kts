@@ -18,7 +18,7 @@ dependencies {
 	implementation(project(":refinery-language"))
 	implementation(project(":refinery-language-ide"))
 	implementation(project(":refinery-language-semantics"))
-	implementation(project(":refinery-store-query-viatra"))
+	implementation(project(":refinery-store-query-interpreter"))
 	implementation(project(":refinery-store-reasoning-scope"))
 	implementation(libs.gson)
 	implementation(libs.jetty.server)

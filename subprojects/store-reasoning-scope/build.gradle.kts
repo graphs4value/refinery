@@ -13,5 +13,5 @@ dependencies {
 	implementation(libs.eclipseCollections.api)
 	implementation(libs.ortools)
 	runtimeOnly(libs.eclipseCollections)
-	testImplementation(project(":refinery-store-query-viatra"))
+	testImplementation(project(":refinery-store-query-interpreter"))
 }

@@ -15,7 +15,7 @@ import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
@@ -62,7 +62,7 @@ class DebugTest {
 
 		var store = ModelStore.builder()
 				.symbols(classModel, classElement, feature, classes, features)
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(ModelVisualizerAdapter.builder()
 						.withOutputPath("test_output")
 						.withFormat(FileFormat.DOT)

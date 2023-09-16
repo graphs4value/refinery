@@ -17,7 +17,7 @@ import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.term.int_.IntTerms;
-import tools.refinery.store.query.viatra.ViatraModelQueryAdapter;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
@@ -135,7 +135,7 @@ class TransitionBuildTests {
 	private Model getModel() {
 		var store = ModelStore.builder()
 				.symbols(person, friend)
-				.with(ViatraModelQueryAdapter.builder())
+				.with(QueryInterpreterAdapter.builder())
 				.with(StateCoderAdapter.builder())
 				.with(ModificationAdapter.builder())
 				.with(DesignSpaceExplorationAdapter.builder()
