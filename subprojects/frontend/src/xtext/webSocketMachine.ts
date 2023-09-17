@@ -175,10 +175,9 @@ export default createMachine(
           visibleOrUnknown: {
             id: 'tabVisible',
             on: {
-              TAB_HIDDEN: [
-                { target: 'hidden.mayDisconnect', in: '#generationIdle' },
-                { target: 'hidden.keepAlive', in: '#generationRunning' },
-              ],
+              // The `always` transition will move to `#mayDisconnect`
+              // if disconnection is possible.
+              TAB_HIDDEN: '#keepAlive',
             },
           },
           hidden: {
