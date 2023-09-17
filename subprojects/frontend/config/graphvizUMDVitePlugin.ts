@@ -26,7 +26,7 @@ export default function graphvizUMDVitePlugin(): PluginOption {
     },
     async buildStart() {
       const issuer =
-        root === undefined ? issuerFileName : path.join(issuerFileName);
+        root === undefined ? issuerFileName : path.join(root, issuerFileName);
       const resolvedPath = pnpapi.resolveRequest(
         '@hpcc-js/wasm/graphviz',
         issuer,

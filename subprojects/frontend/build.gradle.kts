@@ -18,7 +18,7 @@ frontend {
 
 val viteOutputDir = layout.buildDirectory.dir("vite")
 
-val productionResources = viteOutputDir.map { it.dir("production") }
+val productionResources: Provider<Directory> = viteOutputDir.map { it.dir("production") }
 
 val productionAssets: Configuration by configurations.creating {
 	isCanBeConsumed = true
@@ -117,7 +117,7 @@ tasks {
 		dependsOn(installFrontend)
 		dependsOn(generateXStateTypes)
 		inputs.files(assembleFiles)
-		outputs.dir("$viteOutputDir/development")
+		outputs.dir(viteOutputDir.map { it.dir("development") })
 		script.set("run serve")
 		group = "run"
 		description = "Start a Vite dev server with hot module replacement."
