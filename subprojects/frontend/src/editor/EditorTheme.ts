@@ -84,7 +84,7 @@ export default styled('div', {
       color: theme.palette.highlight.number,
     },
     '.tok-string': {
-      color: theme.palette.secondary,
+      color: theme.palette.secondary.main,
     },
     '.tok-keyword': {
       color: theme.palette.primary.main,
