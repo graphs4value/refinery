@@ -510,6 +510,59 @@ class FunctionalQueryTest {
 		}
 	}
 
+	@QueryEngineTest
+	void multipleFunctionalQueriesTest(QueryEvaluationHint hint) {
+		var subQuery1 = Query.of("SubQuery1", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				ageView.call(p1, output)
+		));
+		var subQuery2 = Query.of("SubQuery2", Integer.class, (builder, p1, output) -> builder.clause(
+				personView.call(p1),
+				output.assign(friendMustView.count(p1, Variable.of()))
+		));
+		var query = Query.of("Query", Integer.class, (builder, p1, output) -> builder
+				.clause(Integer.class, Integer.class, (v1, v2) -> List.of(
+				v1.assign(subQuery1.call(p1)),
+				v2.assign(subQuery2.call(p1)),
+				output.assign(add(v1, v2))
+		)));
+
+		var store = ModelStore.builder()
+				.symbols(person, age, friend)
+				.with(QueryInterpreterAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
+				.build();
+
+		var model = store.createEmptyModel();
+		var personInterpretation = model.getInterpretation(person);
+		var ageInterpretation = model.getInterpretation(age);
+		var friendInterpretation = model.getInterpretation(friend);
+		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		var queryResultSet = queryEngine.getResultSet(query);
+
+		personInterpretation.put(Tuple.of(0), true);
+		personInterpretation.put(Tuple.of(1), true);
+		personInterpretation.put(Tuple.of(2), true);
+
+		ageInterpretation.put(Tuple.of(0), 24);
+		ageInterpretation.put(Tuple.of(1), 30);
+		ageInterpretation.put(Tuple.of(2), 36);
+
+		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+
+		queryEngine.flushChanges();
+		queryEngine.flushChanges();
+		assertNullableResults(Map.of(
+				Tuple.of(0), Optional.of(25),
+				Tuple.of(1), Optional.of(32),
+				Tuple.of(2), Optional.of(36),
+				Tuple.of(3), Optional.empty()
+		), queryResultSet);
+	}
+
 	private static void enumerateValues(Cursor<?, ?> cursor) {
 		//noinspection StatementWithEmptyBody
 		while (cursor.move()) {

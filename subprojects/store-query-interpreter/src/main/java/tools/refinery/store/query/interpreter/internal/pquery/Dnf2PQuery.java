@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.interpreter.internal.pquery;
 
+import tools.refinery.interpreter.matchers.psystem.annotations.ParameterReference;
 import tools.refinery.interpreter.matchers.psystem.basicdeferred.*;
 import tools.refinery.interpreter.matchers.psystem.basicenumerables.*;
 import tools.refinery.interpreter.matchers.psystem.basicenumerables.Connectivity;
@@ -80,10 +81,12 @@ public class Dnf2PQuery {
 		for (var functionalDependency : dnfQuery.getFunctionalDependencies()) {
 			var functionalDependencyAnnotation = new PAnnotation("FunctionalDependency");
 			for (var forEachVariable : functionalDependency.forEach()) {
-				functionalDependencyAnnotation.addAttribute("forEach", forEachVariable.getUniqueName());
+				var reference = new ParameterReference(forEachVariable.getUniqueName());
+				functionalDependencyAnnotation.addAttribute("forEach", reference);
 			}
 			for (var uniqueVariable : functionalDependency.unique()) {
-				functionalDependencyAnnotation.addAttribute("unique", uniqueVariable.getUniqueName());
+				var reference = new ParameterReference(uniqueVariable.getUniqueName());
+				functionalDependencyAnnotation.addAttribute("unique", reference);
 			}
 			pQuery.addAnnotation(functionalDependencyAnnotation);
 		}
