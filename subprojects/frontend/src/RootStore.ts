@@ -9,11 +9,20 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
+import Compressor from './persistence/Compressor';
 import ThemeStore from './theme/ThemeStore';
 
 const log = getLogger('RootStore');
 
 export default class RootStore {
+  private readonly compressor = new Compressor((text) =>
+    this.setInitialValue(text),
+  );
+
+  private initialValue: string | undefined;
+
+  private editorStoreClass: typeof EditorStore | undefined;
+
   editorStore: EditorStore | undefined;
 
   readonly pwaStore: PWAStore;
@@ -22,10 +31,12 @@ export default class RootStore {
 
   disposed = false;
 
-  constructor(initialValue: string) {
+  constructor() {
     this.pwaStore = new PWAStore();
     this.themeStore = new ThemeStore();
-    makeAutoObservable(this, {
+    makeAutoObservable<RootStore, 'compressor' | 'editorStoreClass'>(this, {
+      compressor: false,
+      editorStoreClass: false,
       pwaStore: false,
       themeStore: false,
     });
@@ -35,11 +46,27 @@ export default class RootStore {
         if (this.disposed) {
           return;
         }
-        this.editorStore = new EditorStore(initialValue, this.pwaStore);
+        this.editorStoreClass = EditorStore;
+        if (this.initialValue !== undefined) {
+          this.setInitialValue(this.initialValue);
+        }
       });
     })().catch((error) => {
       log.error('Failed to load EditorStore', error);
     });
+    this.compressor.decompressInitial();
+  }
+
+  private setInitialValue(initialValue: string): void {
+    this.initialValue = initialValue;
+    if (this.editorStoreClass !== undefined) {
+      const EditorStore = this.editorStoreClass;
+      this.editorStore = new EditorStore(
+        this.initialValue,
+        this.pwaStore,
+        (text) => this.compressor.compress(text),
+      );
+    }
   }
 
   dispose(): void {
@@ -47,6 +74,7 @@ export default class RootStore {
       return;
     }
     this.editorStore?.dispose();
+    this.compressor.dispose();
     this.disposed = true;
   }
 }

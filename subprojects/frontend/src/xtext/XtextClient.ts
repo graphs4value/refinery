@@ -49,13 +49,18 @@ export default class XtextClient {
   constructor(
     private readonly store: EditorStore,
     private readonly pwaStore: PWAStore,
+    onUpdate: (text: string) => void,
   ) {
     this.webSocketClient = new XtextWebSocketClient(
       () => this.onReconnect(),
       () => this.onDisconnect(),
       this.onPush.bind(this),
     );
-    this.updateService = new UpdateService(store, this.webSocketClient);
+    this.updateService = new UpdateService(
+      store,
+      this.webSocketClient,
+      onUpdate,
+    );
     this.contentAssistService = new ContentAssistService(this.updateService);
     this.highlightingService = new HighlightingService(
       store,

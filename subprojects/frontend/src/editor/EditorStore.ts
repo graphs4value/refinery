@@ -74,7 +74,11 @@ export default class EditorStore {
 
   selectedGeneratedModel: string | undefined;
 
-  constructor(initialValue: string, pwaStore: PWAStore) {
+  constructor(
+    initialValue: string,
+    pwaStore: PWAStore,
+    onUpdate: (text: string) => void,
+  ) {
     this.id = nanoid();
     this.state = createEditorState(initialValue, this);
     this.delayedErrors = new EditorErrors(this);
@@ -86,7 +90,7 @@ export default class EditorStore {
         if (this.disposed) {
           return;
         }
-        this.client = new LazyXtextClient(this, pwaStore);
+        this.client = new LazyXtextClient(this, pwaStore, onUpdate);
         this.client.start();
       });
     })().catch((error) => {
