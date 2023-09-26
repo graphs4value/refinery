@@ -23,7 +23,8 @@ public class SecurityHeadersFilter implements Filter {
 					// Use 'data:' for displaying inline SVG backgrounds.
 					"img-src 'self' data:; " +
 					"font-src 'self'; " +
-					"connect-src 'self'; " +
+					// Fetch data:application/octet-stream;base64 URIs to unpack compressed URL fragments.
+					"connect-src 'self' data:; " +
 					"manifest-src 'self'; " +
 					"worker-src 'self' blob:;");
 			httpResponse.setHeader("X-Content-Type-Options", "nosniff");

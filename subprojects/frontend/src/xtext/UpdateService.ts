@@ -56,6 +56,7 @@ export default class UpdateService {
   constructor(
     private readonly store: EditorStore,
     private readonly webSocketClient: XtextWebSocketClient,
+    private readonly onUpdate: (text: string) => void,
   ) {
     this.resourceName = `${nanoid(7)}.problem`;
     this.tracker = new UpdateStateTracker(store);
@@ -122,6 +123,7 @@ export default class UpdateService {
     if (!this.tracker.needsUpdate) {
       return;
     }
+    this.onUpdate(this.store.state.sliceDoc());
     await this.tracker.runExclusive(() => this.updateExclusive());
   }
 
