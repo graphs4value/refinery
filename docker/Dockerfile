@@ -4,7 +4,7 @@
 
 FROM public.ecr.aws/amazoncorretto/amazoncorretto:17-al2023-jdk AS jdk
 
-FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:17-jammy AS jlink-base
+FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:17-jdk-jammy AS jlink-base
 # Use the Ubuntu Jammy based Temurin image for JLink, because it already
 # contains the require objcopy tool for stripping debug symbols:
 # https://github.com/docker-library/openjdk/issues/351
