@@ -2,10 +2,11 @@
 <genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright (c) 2004-2014 Gabor Bergmann and Daniel Varro&#xA;Copyright (c) 2023 The Refinery Authors &lt;https://refinery.tools>&#xA;This program and the accompanying materials are made available under the&#xA;terms of the Eclipse Public License v. 2.0 which is available at&#xA;http://www.eclipse.org/legal/epl-v20.html.&#xA;&#xA;SPDX-License-Identifier: EPL-2.0"
     modelDirectory="/tools.refinery.refinery-interpreter-rete-recipes/src/main/emf-gen"
-    modelPluginID="tools.refinery.refinery-interpreter-rete-recipes" runtimeJar="true" forceOverwrite="true"
-    modelName="Rete-recipes" updateClasspath="false" nonNLSMarkers="true" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    testsDirectory="" importerID="org.eclipse.emf.importer.ecore" containmentProxies="true"
-    complianceLevel="7.0" language="en" operationReflection="true">
+    modelPluginID="tools.refinery.refinery-interpreter-rete-recipes" runtimeJar="true"
+    forceOverwrite="true" modelName="Rete-recipes" updateClasspath="false" nonNLSMarkers="true"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" testsDirectory=""
+    importerID="org.eclipse.emf.importer.ecore" containmentProxies="true" complianceLevel="7.0"
+    language="en" operationReflection="true">
   <genAnnotations source="http://www.eclipse.org/emf/2002/GenModel/exporter/org.eclipse.xsd.ecore.exporter">
     <genAnnotations source="selectedPackages">
       <details key="http://www.eclipse.org/emf/2002/Ecore" value="Ecore.xsd"/>
@@ -32,6 +33,8 @@
     <genClasses image="false" ecoreClass="recipes.ecore#//ReteNodeRecipe">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ReteNodeRecipe/traceInfo"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ReteNodeRecipe/equivalenceClassIDs"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ReteNodeRecipe/cachedHashCode"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute recipes.ecore#//ReteNodeRecipe/constructed"/>
       <genOperations ecoreOperation="recipes.ecore#//ReteNodeRecipe/getArity" body="throw new &lt;%java.lang.UnsupportedOperationException%>();"/>
     </genClasses>
     <genClasses image="false" ecoreClass="recipes.ecore#//SingleParentNodeRecipe">

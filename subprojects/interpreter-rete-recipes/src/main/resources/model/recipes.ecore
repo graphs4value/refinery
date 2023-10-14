@@ -31,6 +31,8 @@
         <details key="documentation" value="If two recipes were found equivalent, a matching equivalence ID can be assigned to them by {@link RecipeRecognizer}. &#xD;&#xA;If two recipes share (at least one) equivalence ID, they are known to be equivalent.&#xD;&#xA;&#xD;&#xA;&lt;p>&#xD;&#xA;A difference in this attribute only does not preclude two recipe elements to be considered equal. &#xD;&#xA;If they are shown to be equivalent using deeper analysis, equivalence ids can be set so that the equivalence is recognized more easily the next time.&#xD;&#xA;&#xD;&#xA;@since 1.3"/>
       </eAnnotations>
     </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="cachedHashCode" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELongObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="constructed" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SingleParentNodeRecipe" abstract="true"
       eSuperTypes="#//ReteNodeRecipe">
