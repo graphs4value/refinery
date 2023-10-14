@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.query.interpreter.internal;
 
+import org.eclipse.emf.ecore.EPackage;
+import tools.refinery.interpreter.rete.recipes.RecipesPackage;
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.dnf.AnyQuery;
@@ -40,6 +42,7 @@ public class QueryInterpreterBuilderImpl extends AbstractModelAdapterBuilder<Que
 	private final Set<AnyQuery> queries = new LinkedHashSet<>();
 
 	public QueryInterpreterBuilderImpl() {
+		EPackage.Registry.INSTANCE.put(RecipesPackage.eNS_URI, RecipesPackage.eINSTANCE);
 		engineOptionsBuilder = new InterpreterEngineOptions.Builder()
 				.withDefaultBackend(ReteBackendFactory.INSTANCE)
 				.withDefaultCachingBackend(ReteBackendFactory.INSTANCE)

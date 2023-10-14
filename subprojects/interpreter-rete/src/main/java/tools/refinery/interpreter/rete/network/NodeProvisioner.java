@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2004-2008 Gabor Bergmann and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
@@ -74,49 +75,28 @@ public class NodeProvisioner {
     public synchronized Address<? extends Node> getOrCreateNodeByRecipe(RecipeTraceInfo recipeTrace) {
         ReteNodeRecipe recipe = recipeTrace.getRecipe();
         Address<? extends Node> result = getNodesByRecipe().get(recipe);
-        if (result != null) {
-            // NODE ALREADY CONSTRUCTED FOR RECIPE, only needs to add trace
-            if (getRecipeTraces().add(recipeTrace))
-                result.getNodeCache().assignTraceInfo(recipeTrace);
-        } else {
+        if (result == null) {
             // No node for this recipe object - but equivalent recipes still
             // reusable
             ReteNodeRecipe canonicalRecipe = recognizer.canonicalizeRecipe(recipe);
-            if (canonicalRecipe != recipe) {
-                // FOUND EQUIVALENT RECIPE
-                result = getNodesByRecipe().get(canonicalRecipe);
-                if (result != null) {
-                    // NODE ALREADY CONSTRUCTED FOR EQUIVALENT RECIPE
-                    recipeTrace.shadowWithEquivalentRecipe(canonicalRecipe);
-                    getNodesByRecipe().put(recipe, result);
-                    if (getRecipeTraces().add(recipeTrace))
-                        result.getNodeCache().assignTraceInfo(recipeTrace);
-                    // Bug 491922: ensure that recipe shadowing propagates to
-                    // parent traces
-                    // note that if equivalentRecipes() becomes more
-                    // sophisticated
-                    // and considers recipes with different parents, this might
-                    // have to be changed
-                    ensureParents(recipeTrace);
-                } else {
-                    // CONSTRUCTION IN PROGRESS FOR EQUIVALENT RECIPE
-                    if (recipe instanceof IndexerRecipe) {
-                        // this is allowed for indexers;
-                        // go on with the construction, as the same indexer node
-                        // will be obtained anyways
-                    } else {
-                        throw new IllegalStateException(
-                                "This should not happen: " + "non-indexer nodes are are supposed to be constructed "
-                                        + "as soon as they are designated as canonical recipes");
-                    }
-                }
-            }
-            if (result == null) {
-                // MUST INSTANTIATE NEW NODE FOR RECIPE
-                final Node freshNode = instantiateNodeForRecipe(recipeTrace, recipe);
-                result = reteContainer.makeAddress(freshNode);
-            }
+			result = getNodesByRecipe().get(canonicalRecipe);
+			if (result == null) {
+				if (canonicalRecipe.isConstructed()) {
+					throw new IllegalStateException(
+							"Already constructed node is missing for canonical recipe " + canonicalRecipe);
+				}
+				canonicalRecipe.setConstructed(true);
+				final Node freshNode = instantiateNodeForRecipe(recipeTrace, canonicalRecipe);
+				result = reteContainer.makeAddress(freshNode);
+			}
+			if (canonicalRecipe != recipe) {
+				recipeTrace.shadowWithEquivalentRecipe(canonicalRecipe);
+				getNodesByRecipe().put(recipe, result);
+			}
         }
+		if (getRecipeTraces().add(recipeTrace)) {
+			result.getNodeCache().assignTraceInfo(recipeTrace);
+		}
         return result;
     }
 
