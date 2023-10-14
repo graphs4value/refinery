@@ -171,16 +171,15 @@ public class MetadataCreator {
 
 	private QualifiedName getSimpleName(EObject eObject, QualifiedName qualifiedName, IScope scope) {
 		var descriptions = scope.getElements(eObject);
-		var names = new HashSet<QualifiedName>();
+		var names = new ArrayList<QualifiedName>();
 		for (var description : descriptions) {
 			// {@code getQualifiedName()} will refer to the full name for objects that are loaded from the global
 			// scope, but {@code getName()} returns the qualified name that we set in
 			// {@code ProblemResourceDescriptionStrategy}.
 			names.add(description.getName());
 		}
-		var iterator = names.stream().sorted(Comparator.comparingInt(QualifiedName::getSegmentCount)).iterator();
-		while (iterator.hasNext()) {
-			var simpleName = iterator.next();
+		names.sort(Comparator.comparingInt(QualifiedName::getSegmentCount));
+		for (var simpleName : names) {
 			if (names.contains(simpleName) && isUnique(scope, simpleName)) {
 				return simpleName;
 			}
