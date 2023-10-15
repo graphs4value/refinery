@@ -23,11 +23,11 @@ import tools.refinery.interpreter.matchers.util.timeline.Timeline;
 import java.util.Collection;
 import java.util.Map;
 
-public class RepresentativeElectionNode extends SingleInputNode implements Clearable, RepresentativeObserver,
+public class RepresentativeElectionNode extends SingleInputNode implements Clearable, RepresentativeObserver<Object>,
         ReinitializedNode {
 	private final RepresentativeElectionAlgorithm.Factory algorithmFactory;
 	private Graph<Object> graph;
-	private RepresentativeElectionAlgorithm algorithm;
+	private RepresentativeElectionAlgorithm<Object> algorithm;
 
 	public RepresentativeElectionNode(ReteContainer reteContainer,
                                       RepresentativeElectionAlgorithm.Factory algorithmFactory) {
