@@ -9,14 +9,14 @@
 @external prop implicitCompletion from './props'
 
 @precedence {
-  reference @cut,
   prefix,
   exponential @right,
   multiplicative @left,
   additive @left,
   range @left,
   lattice @left,
-  comparison @left
+  comparison @left,
+  feature @cut
 }
 
 @top Problem { statement* }
@@ -65,8 +65,16 @@ statement {
 }
 
 FeatureDeclaration {
-  // The @cut helps disambiguate silly cases like `contains contains`
-  (ReferenceKind !reference | PrimitiveType | kw<"bool">)? RelationName
+  // Prefer parsing `contains` as a contextual keyword.
+  (
+    FeatureDeclarationHeadWithKind[@dynamicPrecedence=1] {
+      ReferenceKind !feature ~featureHead
+    } |
+    FeatureDeclarationHeadWithoutKind {
+      (PrimitiveType | kw<"bool">)? ~featureHead
+    }
+  )
+  RelationName
   ("[" Multiplicity? "]")?
   RelationName
   (kw<"opposite"> RelationName)?
