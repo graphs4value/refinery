@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2010-2019, Tamas Szabo, Istvan Rath and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
@@ -8,11 +9,7 @@
  *******************************************************************************/
 package tools.refinery.interpreter.rete.network.communication.timeless;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map.Entry;
-
+import org.apache.log4j.Logger;
 import tools.refinery.interpreter.rete.index.DualInputNode;
 import tools.refinery.interpreter.rete.index.Indexer;
 import tools.refinery.interpreter.rete.index.IndexerListener;
@@ -26,6 +23,11 @@ import tools.refinery.interpreter.rete.network.communication.MessageSelector;
 import tools.refinery.interpreter.rete.network.mailbox.Mailbox;
 import tools.refinery.interpreter.rete.network.mailbox.timeless.BehaviorChangingMailbox;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
+
 /**
  * Timeless implementation of the communication tracker.
  *
@@ -33,10 +35,13 @@ import tools.refinery.interpreter.rete.network.mailbox.timeless.BehaviorChanging
  * @since 2.2
  */
 public class TimelessCommunicationTracker extends CommunicationTracker {
+	public TimelessCommunicationTracker(Logger logger) {
+		super(logger);
+	}
 
     @Override
     protected CommunicationGroup createGroup(Node representative, int index) {
-        final boolean isSingleton = this.sccInformationProvider.sccs.getPartition(representative).size() == 1;
+        final boolean isSingleton = isSingleton(representative);
         final boolean isReceiver = representative instanceof Receiver;
         final boolean isPosetIndifferent = isReceiver
                 && ((Receiver) representative).getMailbox() instanceof BehaviorChangingMailbox;
@@ -95,14 +100,13 @@ public class TimelessCommunicationTracker extends CommunicationTracker {
             final Mailbox mailbox = ((Receiver) node).getMailbox();
             if (mailbox instanceof BehaviorChangingMailbox) {
                 final CommunicationGroup group = this.groupMap.get(node);
-                final Set<Node> sccNodes = this.sccInformationProvider.sccs.getPartition(node);
                 // a default mailbox must split its messages iff
                 // (1) its receiver is in a recursive group and
                 final boolean c1 = group.isRecursive();
                 // (2) its receiver is at the SCC boundary of that group
                 final boolean c2 = isAtSCCBoundary(node);
                 // (3) its group consists of more than one node
-                final boolean c3 = sccNodes.size() > 1;
+                final boolean c3 = isSingleton(node);
                 ((BehaviorChangingMailbox) mailbox).setSplitFlag(c1 && c2 && c3);
             }
         }

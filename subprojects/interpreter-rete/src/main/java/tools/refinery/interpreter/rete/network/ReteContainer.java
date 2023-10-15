@@ -90,15 +90,16 @@ public final class ReteContainer {
         this.delayedCommandBuffer = new LinkedHashSet<DelayedCommand>();
         this.executingDelayedCommands = false;
 
+		this.logger = network.getEngine().getLogger();
+
         if (this.isTimelyEvaluation()) {
-            this.tracker = new TimelyCommunicationTracker(this.getTimelyConfiguration());
+            this.tracker = new TimelyCommunicationTracker(logger, this.getTimelyConfiguration());
         } else {
-            this.tracker = new TimelessCommunicationTracker();
+            this.tracker = new TimelessCommunicationTracker(logger);
         }
 
         this.nodesById = CollectionsFactory.createMap();
         this.clearables = new LinkedList<Clearable>();
-        this.logger = network.getEngine().getLogger();
 
         this.connectionFactory = new ConnectionFactory(this);
         this.nodeProvisioner = new NodeProvisioner(this);
