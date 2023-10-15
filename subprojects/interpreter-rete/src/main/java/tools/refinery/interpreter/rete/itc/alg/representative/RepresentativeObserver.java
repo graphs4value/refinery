@@ -7,6 +7,6 @@ package tools.refinery.interpreter.rete.itc.alg.representative;
 
 import tools.refinery.interpreter.matchers.util.Direction;
 
-public interface RepresentativeObserver {
-	void tupleChanged(Object node, Object representative, Direction direction);
+public interface RepresentativeObserver<T> {
+	void tupleChanged(T node, T representative, Direction direction);
 }

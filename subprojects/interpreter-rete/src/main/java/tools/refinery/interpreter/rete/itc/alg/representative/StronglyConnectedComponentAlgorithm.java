@@ -13,8 +13,8 @@ import tools.refinery.interpreter.rete.itc.alg.misc.scc.SCC;
 import java.util.Collection;
 import java.util.Set;
 
-public class StronglyConnectedComponentAlgorithm extends RepresentativeElectionAlgorithm {
-	public StronglyConnectedComponentAlgorithm(Graph<Object> graph) {
+public class StronglyConnectedComponentAlgorithm<T> extends RepresentativeElectionAlgorithm<T> {
+	public StronglyConnectedComponentAlgorithm(Graph<T> graph) {
 		super(graph);
 	}
 
@@ -27,7 +27,7 @@ public class StronglyConnectedComponentAlgorithm extends RepresentativeElectionA
 	}
 
 	@Override
-	public void edgeInserted(Object source, Object target) {
+	public void edgeInserted(T source, T target) {
 		var sourceRoot = getRepresentative(source);
 		var targetRoot = getRepresentative(target);
 		if (sourceRoot.equals(targetRoot)) {
@@ -43,7 +43,7 @@ public class StronglyConnectedComponentAlgorithm extends RepresentativeElectionA
 	}
 
 	@Override
-	public void edgeDeleted(Object source, Object target) {
+	public void edgeDeleted(T source, T target) {
 		var sourceRoot = getRepresentative(source);
 		var targetRoot = getRepresentative(target);
 		if (!sourceRoot.equals(targetRoot)) {
@@ -57,7 +57,7 @@ public class StronglyConnectedComponentAlgorithm extends RepresentativeElectionA
 		}
 	}
 
-	private void split(Object preservedRepresentative, Collection<? extends Set<Object>> sets) {
+	private void split(T preservedRepresentative, Collection<? extends Set<T>> sets) {
 		for (var set : sets) {
 			if (set.contains(preservedRepresentative)) {
 				components.put(preservedRepresentative, set);

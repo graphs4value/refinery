@@ -11,8 +11,8 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 
-public class WeaklyConnectedComponentAlgorithm extends RepresentativeElectionAlgorithm {
-	public WeaklyConnectedComponentAlgorithm(Graph<Object> graph) {
+public class WeaklyConnectedComponentAlgorithm<T> extends RepresentativeElectionAlgorithm<T> {
+	public WeaklyConnectedComponentAlgorithm(Graph<T> graph) {
 		super(graph);
 	}
 
@@ -28,14 +28,14 @@ public class WeaklyConnectedComponentAlgorithm extends RepresentativeElectionAlg
 	}
 
 	@Override
-	public void edgeInserted(Object source, Object target) {
+	public void edgeInserted(T source, T target) {
 		var sourceRoot = getRepresentative(source);
 		var targetRoot = getRepresentative(target);
 		merge(sourceRoot, targetRoot);
 	}
 
 	@Override
-	public void edgeDeleted(Object source, Object target) {
+	public void edgeDeleted(T source, T target) {
 		var sourceRoot = getRepresentative(source);
 		var targetRoot = getRepresentative(target);
 		if (!sourceRoot.equals(targetRoot)) {
@@ -47,7 +47,7 @@ public class WeaklyConnectedComponentAlgorithm extends RepresentativeElectionAlg
 		}
 	}
 
-	private void split(Object sourceRepresentative, Set<Object> targetReachable) {
+	private void split(T sourceRepresentative, Set<T> targetReachable) {
 		var sourceComponent = getComponent(sourceRepresentative);
 		sourceComponent.removeAll(targetReachable);
 		if (targetReachable.contains(sourceRepresentative)) {
@@ -58,10 +58,10 @@ public class WeaklyConnectedComponentAlgorithm extends RepresentativeElectionAlg
 		}
 	}
 
-	private Set<Object> getReachableNodes(Object source) {
-		var retSet = new HashSet<>();
+	private Set<T> getReachableNodes(T source) {
+		var retSet = new HashSet<T>();
 		retSet.add(source);
-		var nodeQueue = new ArrayDeque<>();
+		var nodeQueue = new ArrayDeque<T>();
 		nodeQueue.addLast(source);
 
 		while (!nodeQueue.isEmpty()) {

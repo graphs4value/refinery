@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2010-2019, Tamas Szabo, Istvan Rath and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
@@ -8,20 +9,14 @@
  *******************************************************************************/
 package tools.refinery.interpreter.rete.network.communication.timely;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.function.Function;
-
-import tools.refinery.interpreter.rete.itc.alg.misc.topsort.TopologicalSorting;
-import tools.refinery.interpreter.rete.itc.graphimpl.Graph;
+import org.apache.log4j.Logger;
 import tools.refinery.interpreter.matchers.util.CollectionsFactory;
 import tools.refinery.interpreter.rete.index.IndexerListener;
 import tools.refinery.interpreter.rete.index.SpecializedProjectionIndexer;
 import tools.refinery.interpreter.rete.index.SpecializedProjectionIndexer.ListenerSubscription;
 import tools.refinery.interpreter.rete.index.StandardIndexer;
+import tools.refinery.interpreter.rete.itc.alg.misc.topsort.TopologicalSorting;
+import tools.refinery.interpreter.rete.itc.graphimpl.Graph;
 import tools.refinery.interpreter.rete.matcher.TimelyConfiguration;
 import tools.refinery.interpreter.rete.matcher.TimelyConfiguration.TimelineRepresentation;
 import tools.refinery.interpreter.rete.network.NetworkStructureChangeSensitiveNode;
@@ -35,6 +30,13 @@ import tools.refinery.interpreter.rete.network.communication.NodeComparator;
 import tools.refinery.interpreter.rete.network.mailbox.Mailbox;
 import tools.refinery.interpreter.rete.single.DiscriminatorDispatcherNode;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Function;
+
 /**
  * Timely (DDF) implementation of the {@link CommunicationTracker}.
  *
@@ -45,13 +47,14 @@ public class TimelyCommunicationTracker extends CommunicationTracker {
 
     protected final TimelyConfiguration configuration;
 
-    public TimelyCommunicationTracker(final TimelyConfiguration configuration) {
+    public TimelyCommunicationTracker(final Logger logger, final TimelyConfiguration configuration) {
+		super(logger);
         this.configuration = configuration;
     }
 
     @Override
     protected CommunicationGroup createGroup(final Node representative, final int index) {
-        final boolean isSingleton = this.sccInformationProvider.sccs.getPartition(representative).size() == 1;
+        final boolean isSingleton = isSingleton(representative);
         return new TimelyCommunicationGroup(this, representative, index, isSingleton);
     }
 
@@ -130,8 +133,8 @@ public class TimelyCommunicationTracker extends CommunicationTracker {
     protected void postProcessGroup(final CommunicationGroup group) {
         if (this.configuration.getTimelineRepresentation() == TimelineRepresentation.FAITHFUL) {
             final Node representative = group.getRepresentative();
-            final Set<Node> groupMembers = this.sccInformationProvider.sccs.getPartition(representative);
-            if (groupMembers.size() > 1) {
+            final Set<Node> groupMembers = getPartition(representative);
+            if (groupMembers != null && groupMembers.size() > 1) {
                 final Graph<Node> graph = new Graph<Node>();
 
                 for (final Node node : groupMembers) {

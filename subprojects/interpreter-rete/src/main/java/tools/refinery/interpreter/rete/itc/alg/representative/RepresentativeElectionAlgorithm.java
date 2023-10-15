@@ -14,13 +14,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<Object> {
-	protected final Graph<Object> graph;
-	protected final Map<Object, Object> representatives = new HashMap<>();
-	protected final Map<Object, Set<Object>> components = new HashMap<>();
-	private RepresentativeObserver observer;
+public abstract class RepresentativeElectionAlgorithm<T> implements IGraphObserver<T> {
+	protected final Graph<T> graph;
+	protected final Map<T, T> representatives = new HashMap<>();
+	protected final Map<T, Set<T>> components = new HashMap<>();
+	private RepresentativeObserver<? super T> observer;
 
-	protected RepresentativeElectionAlgorithm(Graph<Object> graph) {
+	protected RepresentativeElectionAlgorithm(Graph<T> graph) {
 		this.graph = graph;
 		initializeComponents();
 		graph.attachObserver(this);
@@ -28,7 +28,7 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 
 	protected abstract void initializeComponents();
 
-	protected void initializeSet(Set<Object> set) {
+	protected void initializeSet(Set<T> set) {
 		var iterator = set.iterator();
 		if (!iterator.hasNext()) {
 			// Set is empty.
@@ -45,13 +45,13 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		components.put(representative, set);
 	}
 
-	protected void merge(Set<Object> toMerge) {
+	protected void merge(Set<T> toMerge) {
 		if (toMerge.isEmpty()) {
 			return;
 		}
-		var representativesToMerge = new HashSet<>();
-		Object bestRepresentative = null;
-		Set<Object> bestSet = null;
+		var representativesToMerge = new HashSet<T>();
+		T bestRepresentative = null;
+		Set<T> bestSet = null;
 		for (var object : toMerge) {
 			var representative = getRepresentative(object);
 			if (representativesToMerge.add(representative)) {
@@ -79,7 +79,7 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		}
 	}
 
-	protected void merge(Object leftRepresentative, Object rightRepresentative) {
+	protected void merge(T leftRepresentative, T rightRepresentative) {
 		if (leftRepresentative.equals(rightRepresentative)) {
 			return;
 		}
@@ -92,8 +92,7 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		}
 	}
 
-	private void merge(Object preservedRepresentative, Set<Object> preservedSet, Object removedRepresentative,
-					   Set<Object> removedSet) {
+	private void merge(T preservedRepresentative, Set<T> preservedSet, T removedRepresentative, Set<T> removedSet) {
 		components.remove(removedRepresentative);
 		for (var node : removedSet) {
 			representatives.put(node, preservedRepresentative);
@@ -102,7 +101,7 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		}
 	}
 
-	protected void assignNewRepresentative(Object oldRepresentative, Set<Object> set) {
+	protected void assignNewRepresentative(T oldRepresentative, Set<T> set) {
 		var iterator = set.iterator();
 		if (!iterator.hasNext()) {
 			return;
@@ -119,19 +118,19 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		}
 	}
 
-	public void setObserver(RepresentativeObserver observer) {
+	public void setObserver(RepresentativeObserver<? super T> observer) {
 		this.observer = observer;
 	}
 
-	public Map<Object, Set<Object>> getComponents() {
+	public Map<T, Set<T>> getComponents() {
 		return components;
 	}
 
-	public Object getRepresentative(Object node) {
+	public T getRepresentative(T node) {
 		return representatives.get(node);
 	}
 
-	public Set<Object> getComponent(Object representative) {
+	public Set<T> getComponent(T representative) {
 		return components.get(representative);
 	}
 
@@ -140,15 +139,15 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 	}
 
 	@Override
-	public void nodeInserted(Object n) {
-		var component = new HashSet<>(1);
+	public void nodeInserted(T n) {
+		var component = new HashSet<T>(1);
 		component.add(n);
 		initializeSet(component);
 		notifyToObservers(n, n, Direction.INSERT);
 	}
 
 	@Override
-	public void nodeDeleted(Object n) {
+	public void nodeDeleted(T n) {
 		var representative = representatives.remove(n);
 		if (!representative.equals(n)) {
 			throw new IllegalStateException("Trying to delete node with dangling edges");
@@ -157,18 +156,19 @@ public abstract class RepresentativeElectionAlgorithm implements IGraphObserver<
 		notifyToObservers(n, representative, Direction.DELETE);
 	}
 
-	protected void notifyToObservers(Object node, Object oldRepresentative, Object newRepresentative) {
+	protected void notifyToObservers(T node, T oldRepresentative, T newRepresentative) {
 		notifyToObservers(node, oldRepresentative, Direction.DELETE);
 		notifyToObservers(node, newRepresentative, Direction.INSERT);
 	}
 
-	protected void notifyToObservers(Object node, Object representative, Direction direction) {
+	protected void notifyToObservers(T node, T representative, Direction direction) {
 		if (observer != null) {
 			observer.tupleChanged(node, representative, direction);
 		}
 	}
 
+	@FunctionalInterface
 	public interface Factory {
-		RepresentativeElectionAlgorithm create(Graph<Object> graph);
+		<T> RepresentativeElectionAlgorithm<T> create(Graph<T> graph);
 	}
 }

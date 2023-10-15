@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2010-2017, Tamas Szabo, Istvan Rath and Daniel Varro
+ * Copyright (c) 2023 The Refinery Authors <https://refinery.tools/>
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-v20.html.
@@ -8,12 +9,13 @@
  *******************************************************************************/
 package tools.refinery.interpreter.rete.network.communication;
 
+import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.interpreter.matchers.tuple.TupleMask;
 import tools.refinery.interpreter.rete.aggregation.IAggregatorNode;
 import tools.refinery.interpreter.rete.boundary.ExternalInputEnumeratorNode;
 import tools.refinery.interpreter.rete.eval.RelationEvaluatorNode;
 import tools.refinery.interpreter.rete.index.*;
-import tools.refinery.interpreter.rete.itc.alg.incscc.IncSCCAlg;
 import tools.refinery.interpreter.rete.itc.alg.misc.topsort.TopologicalSorting;
 import tools.refinery.interpreter.rete.itc.graphimpl.Graph;
 import tools.refinery.interpreter.rete.network.*;
@@ -61,7 +63,7 @@ public abstract class CommunicationTracker {
     /**
      * Incremental SCC information about the dependency graph
      */
-    protected final IncSCCAlg<Node> sccInformationProvider;
+    private final NetworkComponentDetector componentDetector;
 
     /**
      * Precomputed node -> communication group map
@@ -76,9 +78,9 @@ public abstract class CommunicationTracker {
     // groups should have a simple integer flag which represents its position in a priority queue
     // priority queue only contains the ACTIVE groups
 
-    public CommunicationTracker() {
+    public CommunicationTracker(Logger logger) {
         this.dependencyGraph = new Graph<Node>();
-        this.sccInformationProvider = new IncSCCAlg<Node>(this.dependencyGraph);
+		this.componentDetector = new NetworkComponentDetector(logger, dependencyGraph);
         this.groupQueue = new PriorityQueue<CommunicationGroup>();
         this.groupMap = new HashMap<Node, CommunicationGroup>();
     }
@@ -91,11 +93,33 @@ public abstract class CommunicationTracker {
         return this.groupMap.get(node);
     }
 
+	@Nullable
+	protected Set<Node> getPartition(Node node) {
+		return componentDetector.getPartition(node);
+	}
+
+	protected boolean isSingleton(Node node) {
+		var partition = getPartition(node);
+		return partition == null || partition.isEmpty();
+	}
+
+	protected Node getRepresentative(Node node) {
+		return componentDetector.getRepresentative(node);
+	}
+
+	protected boolean hasOutgoingEdges(Node representative) {
+		return componentDetector.hasOutgoingEdges(representative);
+	}
+
+	protected Graph<Node> getReducedGraph() {
+		return componentDetector.getReducedGraph();
+	}
+
     private void precomputeGroups() {
         groupMap.clear();
 
         // reconstruct group map from dependency graph
-        final Graph<Node> reducedGraph = sccInformationProvider.getReducedGraph();
+        final Graph<Node> reducedGraph = getReducedGraph();
         final List<Node> representatives = TopologicalSorting.compute(reducedGraph);
 
         for (int i = 0; i < representatives.size(); i++) { // groups for SCC representatives
@@ -107,7 +131,7 @@ public abstract class CommunicationTracker {
         maxGroupId = representatives.size() - 1;
 
         for (final Node node : dependencyGraph.getAllNodes()) { // extend group map to the rest of nodes
-            final Node representative = sccInformationProvider.getRepresentative(node);
+            final Node representative = getRepresentative(node);
             final CommunicationGroup group = groupMap.get(representative);
             if (representative != node) {
                 addToGroup(node, group);
@@ -285,9 +309,9 @@ public abstract class CommunicationTracker {
 
             // query all these information before the actual edge insertion
             // because SCCs may be unified during the process
-            final Node sourceRepresentative = sccInformationProvider.getRepresentative(source);
-            final Node targetRepresentative = sccInformationProvider.getRepresentative(target);
-            final boolean targetHadOutgoingEdges = sccInformationProvider.hasOutgoingEdges(targetRepresentative);
+            final Node sourceRepresentative = getRepresentative(source);
+            final Node targetRepresentative = getRepresentative(target);
+            final boolean targetHadOutgoingEdges = hasOutgoingEdges(targetRepresentative);
 
             // insert the edge
             dependencyGraph.insertEdge(source, target);
@@ -372,8 +396,8 @@ public abstract class CommunicationTracker {
         // delete the edge first, and then query the SCC info provider
         this.dependencyGraph.deleteEdgeIfExists(source, target);
 
-        final Node sourceRepresentative = sccInformationProvider.getRepresentative(source);
-        final Node targetRepresentative = sccInformationProvider.getRepresentative(target);
+        final Node sourceRepresentative = getRepresentative(source);
+        final Node targetRepresentative = getRepresentative(target);
 
         // if they are still in the same SCC,
         // then this deletion did not affect the SCCs,
