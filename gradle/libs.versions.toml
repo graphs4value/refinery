@@ -4,14 +4,14 @@
 
 [versions]
 eclipseCollections = "12.0.0.M3"
-ecore = "2.26.0"
-jetty = "12.0.1"
+ecore = "2.35.0"
+jetty = "12.0.2"
 jmh = "1.37"
 junit = "5.10.0"
-mockito = "5.5.0"
+mockito = "5.6.0"
 mwe2 = "2.15.0"
 slf4j = "2.0.9"
-xtext = "2.32.0"
+xtext = "2.33.0.M1"
 
 [libraries]
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
@@ -22,7 +22,7 @@ ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", ver
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecore" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", version = "8.1.1" }
-gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.3.1.3277" }
+gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.4.1.3373" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.10.1" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
@@ -55,4 +55,4 @@ xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", v
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.48.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.49.0" }

@@ -23,9 +23,9 @@
   "scripts": {
     "frontend": "yarn workspace @refinery/frontend"
   },
-  "packageManager": "yarn@4.0.0-rc.50",
+  "packageManager": "yarn@4.0.0-rc.53",
   "devDependencies": {
-    "eslint": "^8.49.0",
+    "eslint": "^8.51.0",
     "typescript": "5.2.2"
   },
   "resolutions": {
