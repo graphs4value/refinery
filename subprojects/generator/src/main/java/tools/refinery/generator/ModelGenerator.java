@@ -10,10 +10,7 @@ import tools.refinery.language.model.problem.Relation;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.map.Version;
-import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -22,33 +19,14 @@ import tools.refinery.store.representation.TruthValue;
 
 import java.util.Collection;
 
-public class ModelGenerator {
-	private final ProblemTrace problemTrace;
-	private final ModelStore store;
-	private final Model model;
-	private final ReasoningAdapter reasoningAdapter;
+public class ModelGenerator extends AbstractRefinery {
 	private final Version initialVersion;
 
 	private int randomSeed = 1;
 
 	public ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed) {
-		this.problemTrace = problemTrace;
-		this.store = store;
-		model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+		super(problemTrace, store, modelSeed);
 		initialVersion = model.commit();
-	}
-
-	public ProblemTrace getProblemTrace() {
-		return problemTrace;
-	}
-
-	public ModelStore getModelStore() {
-		return store;
-	}
-
-	public Model getModel() {
-		return model;
 	}
 
 	public int getRandomSeed() {

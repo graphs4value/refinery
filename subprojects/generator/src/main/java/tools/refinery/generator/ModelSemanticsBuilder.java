@@ -6,36 +6,32 @@
 package tools.refinery.generator;
 
 import tools.refinery.store.dse.propagation.PropagationAdapter;
-import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.statecoding.StateCoderAdapter;
 
 import java.util.Set;
 
-public final class ModelGeneratorBuilder extends AbstractRefineryBuilder<ModelGeneratorBuilder> {
-	public ModelGeneratorBuilder() {
-		super(Set.of(Concreteness.CANDIDATE));
+public final class ModelSemanticsBuilder extends AbstractRefineryBuilder<ModelSemanticsBuilder> {
+	public ModelSemanticsBuilder() {
+		super(Set.of(Concreteness.PARTIAL));
 	}
 
 	@Override
-	protected ModelGeneratorBuilder self() {
+	protected ModelSemanticsBuilder self() {
 		return this;
 	}
 
-	public ModelGenerator build() {
+	public ModelSemantics build() {
 		checkProblem();
 		var storeBuilder = ModelStore.builder()
 				.cancellationToken(cancellationToken)
 				.with(getQueryEngineBuilder())
 				.with(PropagationAdapter.builder())
-				.with(StateCoderAdapter.builder())
-				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(requiredInterpretations));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		return new ModelGenerator(getProblemTrace(), store, initializer.getModelSeed());
+		return new ModelSemantics(getProblemTrace(), store, initializer.getModelSeed());
 	}
 }
