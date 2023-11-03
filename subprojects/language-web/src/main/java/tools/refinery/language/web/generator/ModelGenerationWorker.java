@@ -6,36 +6,18 @@
 package tools.refinery.language.web.generator;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.xtext.diagnostics.Severity;
-import org.eclipse.xtext.resource.IResourceFactory;
-import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.service.OperationCanceledManager;
-import org.eclipse.xtext.util.LazyStringInputStream;
-import org.eclipse.xtext.validation.CheckMode;
-import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.metadata.MetadataCreator;
-import tools.refinery.language.semantics.model.ModelInitializer;
+import tools.refinery.generator.ModelGeneratorBuilder;
+import tools.refinery.generator.ValidationErrorsException;
 import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
-import tools.refinery.store.dse.propagation.PropagationAdapter;
-import tools.refinery.store.dse.strategy.BestFirstStoreManager;
-import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
-import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
-import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -56,19 +38,7 @@ public class ModelGenerationWorker implements Runnable {
 	private OperationCanceledManager operationCanceledManager;
 
 	@Inject
-	private Provider<XtextResourceSet> resourceSetProvider;
-
-	@Inject
-	private IResourceFactory resourceFactory;
-
-	@Inject
-	private IResourceValidator resourceValidator;
-
-	@Inject
-	private ModelInitializer initializer;
-
-	@Inject
-	private MetadataCreator metadataCreator;
+	private ModelGeneratorBuilder generatorBuilder;
 
 	@Inject
 	private PartialInterpretation2Json partialInterpretation2Json;
@@ -157,56 +127,29 @@ public class ModelGenerationWorker implements Runnable {
 
 	public ModelGenerationResult doRun() throws IOException {
 		cancellationToken.checkCancelled();
-		var resourceSet = resourceSetProvider.get();
-		var uri = URI.createURI("__synthetic_" + uuid + ".problem");
-		var resource = resourceFactory.createResource(uri);
-		resourceSet.getResources().add(resource);
-		var inputStream = new LazyStringInputStream(text);
-		resource.load(inputStream, Map.of());
-		cancellationToken.checkCancelled();
-		var issues = resourceValidator.validate(resource, CheckMode.ALL, () -> cancelled || Thread.interrupted());
-		cancellationToken.checkCancelled();
-		for (var issue : issues) {
-			if (issue.getSeverity() == Severity.ERROR) {
-				return new ModelGenerationErrorResult(uuid, "Validation error: " + issue.getMessage());
+		try {
+			generatorBuilder.cancellationToken(cancellationToken);
+			generatorBuilder.fromString(text);
+		} catch (ValidationErrorsException e) {
+			var errors = e.getErrors();
+			if (errors != null && !errors.isEmpty()) {
+				return new ModelGenerationErrorResult(uuid, "Validation error: " + errors.get(0).getMessage());
 			}
+			throw e;
 		}
-		if (resource.getContents().isEmpty() || !(resource.getContents().get(0) instanceof Problem problem)) {
-			return new ModelGenerationErrorResult(uuid, "Model generation problem not found");
-		}
-		cancellationToken.checkCancelled();
-		var storeBuilder = ModelStore.builder()
-				.cancellationToken(cancellationToken)
-				.with(QueryInterpreterAdapter.builder())
-				.with(PropagationAdapter.builder())
-				.with(StateCoderAdapter.builder())
-				.with(DesignSpaceExplorationAdapter.builder())
-				.with(ReasoningAdapter.builder()
-						.requiredInterpretations(Concreteness.CANDIDATE));
-		var modelSeed = initializer.createModel(problem, storeBuilder);
-		var store = storeBuilder.build();
-		cancellationToken.checkCancelled();
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var initialVersion = model.commit();
-		cancellationToken.checkCancelled();
+		var generator = generatorBuilder.build();
 		notifyResult(new ModelGenerationStatusResult(uuid, "Generating model"));
-		var bestFirst = new BestFirstStoreManager(store, 1);
-		bestFirst.startExploration(initialVersion, randomSeed);
-		cancellationToken.checkCancelled();
-		var solutionStore = bestFirst.getSolutionStore();
-		if (solutionStore.getSolutions().isEmpty()) {
+		generator.setRandomSeed(randomSeed);
+		if (!generator.tryRun()) {
 			return new ModelGenerationErrorResult(uuid, "Problem is unsatisfiable");
 		}
 		notifyResult(new ModelGenerationStatusResult(uuid, "Saving generated model"));
-		model.restore(solutionStore.getSolutions().get(0).version());
 		cancellationToken.checkCancelled();
-		metadataCreator.setInitializer(initializer);
-		var nodesMetadata = metadataCreator.getNodesMetadata(model.getAdapter(ReasoningAdapter.class).getNodeCount(),
-				false);
+		var nodesMetadata = generator.getNodesMetadata();
 		cancellationToken.checkCancelled();
-		var relationsMetadata = metadataCreator.getRelationsMetadata();
+		var relationsMetadata = generator.getProblemTrace().getRelationsMetadata();
 		cancellationToken.checkCancelled();
-		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(initializer, model,
+		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator,
 				Concreteness.CANDIDATE, cancellationToken);
 		return new ModelGenerationSuccessResult(uuid, nodesMetadata, relationsMetadata, partialInterpretation);
 	}

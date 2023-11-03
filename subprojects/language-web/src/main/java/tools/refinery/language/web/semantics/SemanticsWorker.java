@@ -15,15 +15,10 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
+import tools.refinery.generator.ModelSemantics;
+import tools.refinery.generator.ModelSemanticsBuilder;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.metadata.MetadataCreator;
-import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.language.semantics.model.TracedException;
-import tools.refinery.store.dse.propagation.PropagationAdapter;
-import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
-import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
@@ -44,10 +39,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	private IDiagnosticConverter diagnosticConverter;
 
 	@Inject
-	private ModelInitializer initializer;
-
-	@Inject
-	private MetadataCreator metadataCreator;
+	private ModelSemanticsBuilder semanticsBuilder;
 
 	private Problem problem;
 
@@ -64,36 +56,29 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	@Override
 	public SemanticsResult call() {
-		var builder = ModelStore.builder()
-				.cancellationToken(cancellationToken)
-				.with(QueryInterpreterAdapter.builder())
-				.with(PropagationAdapter.builder())
-				.with(ReasoningAdapter.builder()
-						.requiredInterpretations(Concreteness.PARTIAL));
+		semanticsBuilder.cancellationToken(cancellationToken);
 		cancellationToken.checkCancelled();
+		ModelSemantics semantics;
 		try {
-			var modelSeed = initializer.createModel(problem, builder);
+			semanticsBuilder.problem(problem);
 			cancellationToken.checkCancelled();
-			metadataCreator.setInitializer(initializer);
-			cancellationToken.checkCancelled();
-			var nodesMetadata = metadataCreator.getNodesMetadata();
-			cancellationToken.checkCancelled();
-			var relationsMetadata = metadataCreator.getRelationsMetadata();
-			cancellationToken.checkCancelled();
-			var store = builder.build();
-			cancellationToken.checkCancelled();
-			var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-			cancellationToken.checkCancelled();
-			var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(initializer, model,
-					Concreteness.PARTIAL, cancellationToken);
-
-			return new SemanticsSuccessResult(nodesMetadata, relationsMetadata, partialInterpretation);
-		} catch (TracedException e) {
-			return getTracedErrorResult(e.getSourceElement(), e.getMessage());
+			semantics = semanticsBuilder.build();
 		} catch (TranslationException e) {
-			var sourceElement = initializer.getInverseTrace(e.getPartialSymbol());
-			return getTracedErrorResult(sourceElement, e.getMessage());
+			return new SemanticsInternalErrorResult(e.getMessage());
+		} catch (TracedException e) {
+			var cause = e.getCause();
+			// Suppress the type of the cause exception.
+			var message = cause == null ? e.getMessage() : cause.getMessage();
+			return getTracedErrorResult(e.getSourceElement(), message);
 		}
+		cancellationToken.checkCancelled();
+		var nodesMetadata = semantics.getNodesMetadata();
+		cancellationToken.checkCancelled();
+		var relationsMetadata = semantics.getProblemTrace().getRelationsMetadata();
+		cancellationToken.checkCancelled();
+		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics,
+				Concreteness.PARTIAL, cancellationToken);
+		return new SemanticsSuccessResult(nodesMetadata, relationsMetadata, partialInterpretation);
 	}
 
 	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {

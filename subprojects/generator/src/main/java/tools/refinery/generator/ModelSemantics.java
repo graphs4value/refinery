@@ -19,6 +19,11 @@ public class ModelSemantics extends AbstractRefinery {
 		super(problemTrace, store, modelSeed);
 	}
 
+	@Override
+	protected boolean isPreserveNewNodes() {
+		return true;
+	}
+
 	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(PartialSymbol<A, C> partialSymbol) {
 		return reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, partialSymbol);
 	}

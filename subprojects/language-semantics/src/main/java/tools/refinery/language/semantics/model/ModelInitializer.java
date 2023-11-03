@@ -68,7 +68,7 @@ public class ModelInitializer {
 
 	private final Map<AnyPartialSymbol, Relation> inverseTrace = new HashMap<>();
 
-	private Map<Relation, PartialRelation> relationTrace;
+	private final Map<Relation, PartialRelation> relationTrace = new LinkedHashMap<>();
 
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
@@ -128,7 +128,6 @@ public class ModelInitializer {
 		collectMetamodel();
 		metamodel = metamodelBuilder.build();
 		collectAssertions();
-		relationTrace = new LinkedHashMap<>(relationInfoMap.size());
 		int nodeCount = getNodeCount();
 		var modelSeedBuilder = ModelSeed.builder(nodeCount);
 		for (var entry : relationInfoMap.entrySet()) {

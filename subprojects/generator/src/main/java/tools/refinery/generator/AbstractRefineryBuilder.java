@@ -21,6 +21,7 @@ import tools.refinery.language.semantics.model.ModelInitializer;
 import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.File;
@@ -29,6 +30,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 
+// This class is used as a fluent builder.
+@SuppressWarnings("UnusedReturnValue")
 public abstract class AbstractRefineryBuilder<T> {
 	@Inject
 	private Provider<XtextResourceSet> resourceSetProvider;
@@ -113,8 +116,12 @@ public abstract class AbstractRefineryBuilder<T> {
 		if (problemLoaded) {
 			throw new IllegalStateException("Problem was already set");
 		}
-		initializer.readProblem(problem);
 		problemTrace.setInitializer(initializer);
+		try {
+			initializer.readProblem(problem);
+		} catch (TranslationException e) {
+			throw ProblemTraceImpl.wrapException(problemTrace, e);
+		}
 		problemLoaded = true;
 		return self();
 	}

@@ -9,7 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import tools.refinery.language.semantics.model.ModelInitializer;
+import tools.refinery.generator.AbstractRefinery;
 import tools.refinery.language.semantics.model.SemanticsUtils;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
@@ -27,11 +27,12 @@ public class PartialInterpretation2Json {
 	@Inject
 	private SemanticsUtils semanticsUtils;
 
-	public JsonObject getPartialInterpretation(ModelInitializer initializer, Model model, Concreteness concreteness,
+	public JsonObject getPartialInterpretation(AbstractRefinery refinery, Concreteness concreteness,
 											   CancellationToken cancellationToken) {
+		var model = refinery.getModel();
 		var adapter = model.getAdapter(ReasoningAdapter.class);
 		var json = new JsonObject();
-		for (var entry : initializer.getRelationTrace().entrySet()) {
+		for (var entry : refinery.getProblemTrace().getRelationTrace().entrySet()) {
 			var relation = entry.getKey();
 			var partialSymbol = entry.getValue();
 			var tuples = getTuplesJson(adapter, concreteness, partialSymbol);

@@ -29,6 +29,11 @@ public class ModelGenerator extends AbstractRefinery {
 		initialVersion = model.commit();
 	}
 
+	@Override
+	protected boolean isPreserveNewNodes() {
+		return false;
+	}
+
 	public int getRandomSeed() {
 		return randomSeed;
 	}
@@ -50,6 +55,8 @@ public class ModelGenerator extends AbstractRefinery {
 				.toList();
 	}
 
+	// This method only makes sense if it returns {@code true} on success.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean tryRun() {
 		var iterator = run(1).iterator();
 		if (!iterator.hasNext()) {
@@ -57,6 +64,12 @@ public class ModelGenerator extends AbstractRefinery {
 		}
 		model.restore(iterator.next());
 		return true;
+	}
+
+	public void run() {
+		if (!tryRun()) {
+			throw new UnsatisfiableProblemException();
+		}
 	}
 
 	public <A, C> PartialInterpretation<A, C> getCandidateInterpretation(PartialSymbol<A, C> partialSymbol) {
