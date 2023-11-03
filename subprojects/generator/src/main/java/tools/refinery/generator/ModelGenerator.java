@@ -5,33 +5,25 @@
  */
 package tools.refinery.generator;
 
-import org.eclipse.xtext.naming.QualifiedName;
-import tools.refinery.language.model.problem.Relation;
+import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
-import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
-import tools.refinery.store.representation.TruthValue;
 
-import java.util.Collection;
-
-public class ModelGenerator extends AbstractRefinery {
+public class ModelGenerator extends ModelFacade {
 	private final Version initialVersion;
 
-	private int randomSeed = 1;
+	private int randomSeed = 0;
+
+	private boolean lastGenerationSuccessful;
 
 	public ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed) {
-		super(problemTrace, store, modelSeed);
-		initialVersion = model.commit();
-	}
-
-	@Override
-	protected boolean isPreserveNewNodes() {
-		return false;
+		super(problemTrace, store, modelSeed, Concreteness.CANDIDATE);
+		initialVersion = getModel().commit();
 	}
 
 	public int getRandomSeed() {
@@ -40,56 +32,40 @@ public class ModelGenerator extends AbstractRefinery {
 
 	public void setRandomSeed(int randomSeed) {
 		this.randomSeed = randomSeed;
+		this.lastGenerationSuccessful = false;
 	}
 
-	public Collection<Version> run(int maxNumberOfSolutions) {
-		var bestFirst = new BestFirstStoreManager(store, maxNumberOfSolutions);
-		int currentRandomSeed = randomSeed;
-		// Increment random seed even if generation is unsuccessful.
-		randomSeed++;
-		bestFirst.startExploration(initialVersion, currentRandomSeed);
-		return bestFirst.getSolutionStore()
-				.getSolutions()
-				.stream()
-				.map(VersionWithObjectiveValue::version)
-				.toList();
+	public boolean isLastGenerationSuccessful() {
+		return lastGenerationSuccessful;
 	}
 
 	// This method only makes sense if it returns {@code true} on success.
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean tryRun() {
-		var iterator = run(1).iterator();
-		if (!iterator.hasNext()) {
+	public boolean tryGenerate() {
+		lastGenerationSuccessful = false;
+		randomSeed++;
+		var bestFirst = new BestFirstStoreManager(getModelStore(), 1);
+		bestFirst.startExploration(initialVersion, randomSeed);
+		var solutions = bestFirst.getSolutionStore().getSolutions();
+		if (solutions.isEmpty()) {
 			return false;
 		}
-		model.restore(iterator.next());
+		getModel().restore(solutions.get(0).version());
+		lastGenerationSuccessful = true;
 		return true;
 	}
 
-	public void run() {
-		if (!tryRun()) {
+	public void generate() {
+		if (!tryGenerate()) {
 			throw new UnsatisfiableProblemException();
 		}
 	}
 
-	public <A, C> PartialInterpretation<A, C> getCandidateInterpretation(PartialSymbol<A, C> partialSymbol) {
-		return reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, partialSymbol);
-	}
-
-	public PartialInterpretation<TruthValue, Boolean> getCandidateInterpretation(Relation relation) {
-		return getCandidateInterpretation(problemTrace.getPartialRelation(relation));
-	}
-
-	public PartialInterpretation<TruthValue, Boolean> getCandidateInterpretation(QualifiedName qualifiedName) {
-		return getCandidateInterpretation(problemTrace.getPartialRelation(qualifiedName));
-	}
-
-	public PartialInterpretation<TruthValue, Boolean> getCandidateInterpretation(String qualifiedName) {
-		return getCandidateInterpretation(problemTrace.getPartialRelation(qualifiedName));
-	}
-
-	public static ModelGeneratorBuilder standaloneBuilder() {
-		var injector = StandaloneInjectorHolder.getInjector();
-		return injector.getInstance(ModelGeneratorBuilder.class);
+	@Override
+	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(PartialSymbol<A, C> partialSymbol) {
+		if (!lastGenerationSuccessful) {
+			throw new IllegalStateException("No generated model is available");
+		}
+		return super.getPartialInterpretation(partialSymbol);
 	}
 }

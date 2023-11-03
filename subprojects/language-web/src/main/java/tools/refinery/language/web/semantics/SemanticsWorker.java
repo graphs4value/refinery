@@ -16,10 +16,10 @@ import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.generator.ModelSemantics;
-import tools.refinery.generator.ModelSemanticsBuilder;
+import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.model.TracedException;
-import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.language.web.semantics.metadata.MetadataCreator;
+import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
 
@@ -30,16 +30,19 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	private static final String DIAGNOSTIC_ID = "tools.refinery.language.semantics.SemanticError";
 
 	@Inject
-	private PartialInterpretation2Json partialInterpretation2Json;
-
-	@Inject
 	private OperationCanceledManager operationCanceledManager;
 
 	@Inject
 	private IDiagnosticConverter diagnosticConverter;
 
 	@Inject
-	private ModelSemanticsBuilder semanticsBuilder;
+	private ModelSemanticsFactory semanticsFactory;
+
+	@Inject
+	private MetadataCreator metadataCreator;
+
+	@Inject
+	private PartialInterpretation2Json partialInterpretation2Json;
 
 	private Problem problem;
 
@@ -56,13 +59,10 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	@Override
 	public SemanticsResult call() {
-		semanticsBuilder.cancellationToken(cancellationToken);
 		cancellationToken.checkCancelled();
 		ModelSemantics semantics;
 		try {
-			semanticsBuilder.problem(problem);
-			cancellationToken.checkCancelled();
-			semantics = semanticsBuilder.build();
+			semantics = semanticsFactory.cancellationToken(cancellationToken).createSemantics(problem);
 		} catch (TranslationException e) {
 			return new SemanticsInternalErrorResult(e.getMessage());
 		} catch (TracedException e) {
@@ -72,12 +72,12 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			return getTracedErrorResult(e.getSourceElement(), message);
 		}
 		cancellationToken.checkCancelled();
-		var nodesMetadata = semantics.getNodesMetadata();
+		metadataCreator.setProblemTrace(semantics.getProblemTrace());
+		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), true);
 		cancellationToken.checkCancelled();
-		var relationsMetadata = semantics.getProblemTrace().getRelationsMetadata();
+		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
-		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics,
-				Concreteness.PARTIAL, cancellationToken);
+		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics, cancellationToken);
 		return new SemanticsSuccessResult(nodesMetadata, relationsMetadata, partialInterpretation);
 	}
 

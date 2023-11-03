@@ -9,12 +9,14 @@ import com.google.inject.Inject;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.generator.ModelGeneratorBuilder;
+import tools.refinery.generator.ModelGenerator;
+import tools.refinery.generator.ModelGeneratorFactory;
+import tools.refinery.language.web.semantics.metadata.MetadataCreator;
+import tools.refinery.generator.ProblemLoader;
 import tools.refinery.generator.ValidationErrorsException;
 import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
-import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.IOException;
@@ -38,7 +40,13 @@ public class ModelGenerationWorker implements Runnable {
 	private OperationCanceledManager operationCanceledManager;
 
 	@Inject
-	private ModelGeneratorBuilder generatorBuilder;
+	private ProblemLoader problemLoader;
+
+	@Inject
+	private ModelGeneratorFactory generatorFactory;
+
+	@Inject
+	private MetadataCreator metadataCreator;
 
 	@Inject
 	private PartialInterpretation2Json partialInterpretation2Json;
@@ -127,9 +135,10 @@ public class ModelGenerationWorker implements Runnable {
 
 	public ModelGenerationResult doRun() throws IOException {
 		cancellationToken.checkCancelled();
+		var problem = problemLoader.cancellationToken(cancellationToken).loadString(text);
+		ModelGenerator generator;
 		try {
-			generatorBuilder.cancellationToken(cancellationToken);
-			generatorBuilder.fromString(text);
+			generator = generatorFactory.cancellationToken(cancellationToken).createGenerator(problem);
 		} catch (ValidationErrorsException e) {
 			var errors = e.getErrors();
 			if (errors != null && !errors.isEmpty()) {
@@ -137,20 +146,19 @@ public class ModelGenerationWorker implements Runnable {
 			}
 			throw e;
 		}
-		var generator = generatorBuilder.build();
 		notifyResult(new ModelGenerationStatusResult(uuid, "Generating model"));
 		generator.setRandomSeed(randomSeed);
-		if (!generator.tryRun()) {
+		if (!generator.tryGenerate()) {
 			return new ModelGenerationErrorResult(uuid, "Problem is unsatisfiable");
 		}
 		notifyResult(new ModelGenerationStatusResult(uuid, "Saving generated model"));
 		cancellationToken.checkCancelled();
-		var nodesMetadata = generator.getNodesMetadata();
+		metadataCreator.setProblemTrace(generator.getProblemTrace());
+		var nodesMetadata = metadataCreator.getNodesMetadata(generator.getModel(), false);
 		cancellationToken.checkCancelled();
-		var relationsMetadata = generator.getProblemTrace().getRelationsMetadata();
+		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
-		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator,
-				Concreteness.CANDIDATE, cancellationToken);
+		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator, cancellationToken);
 		return new ModelGenerationSuccessResult(uuid, nodesMetadata, relationsMetadata, partialInterpretation);
 	}
 

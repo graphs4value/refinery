@@ -9,12 +9,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import tools.refinery.generator.AbstractRefinery;
-import tools.refinery.language.semantics.model.SemanticsUtils;
+import tools.refinery.generator.ModelFacade;
+import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
@@ -27,15 +25,13 @@ public class PartialInterpretation2Json {
 	@Inject
 	private SemanticsUtils semanticsUtils;
 
-	public JsonObject getPartialInterpretation(AbstractRefinery refinery, Concreteness concreteness,
-											   CancellationToken cancellationToken) {
-		var model = refinery.getModel();
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+	public JsonObject getPartialInterpretation(ModelFacade facade, CancellationToken cancellationToken) {
+		var model = facade.getModel();
 		var json = new JsonObject();
-		for (var entry : refinery.getProblemTrace().getRelationTrace().entrySet()) {
+		for (var entry : facade.getProblemTrace().getRelationTrace().entrySet()) {
 			var relation = entry.getKey();
 			var partialSymbol = entry.getValue();
-			var tuples = getTuplesJson(adapter, concreteness, partialSymbol);
+			var tuples = getTuplesJson(facade, partialSymbol);
 			var name = semanticsUtils.getName(relation).orElse(partialSymbol.name());
 			json.add(name, tuples);
 			cancellationToken.checkCancelled();
@@ -44,9 +40,8 @@ public class PartialInterpretation2Json {
 		return json;
 	}
 
-	private static JsonArray getTuplesJson(ReasoningAdapter adapter, Concreteness concreteness,
-										   PartialRelation partialSymbol) {
-		var interpretation = adapter.getPartialInterpretation(concreteness, partialSymbol);
+	private static JsonArray getTuplesJson(ModelFacade facade, PartialRelation partialSymbol) {
+		var interpretation = facade.getPartialInterpretation(partialSymbol);
 		var cursor = interpretation.getAll();
 		return getTuplesJson(cursor);
 	}

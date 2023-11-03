@@ -17,7 +17,7 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.language.semantics.metadata.*;
+import tools.refinery.language.web.semantics.metadata.*;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;

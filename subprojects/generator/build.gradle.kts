@@ -10,6 +10,6 @@ plugins {
 
 dependencies {
 	api(project(":refinery-language-semantics"))
+	api(libs.eclipseCollections.api)
 	implementation(project(":refinery-store-query-interpreter"))
-	implementation(project(":refinery-store-reasoning-scope"))
 }
