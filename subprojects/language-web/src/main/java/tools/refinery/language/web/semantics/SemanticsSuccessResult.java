@@ -6,8 +6,8 @@
 package tools.refinery.language.web.semantics;
 
 import com.google.gson.JsonObject;
-import tools.refinery.language.semantics.metadata.NodeMetadata;
-import tools.refinery.language.semantics.metadata.RelationMetadata;
+import tools.refinery.language.web.semantics.metadata.NodeMetadata;
+import tools.refinery.language.web.semantics.metadata.RelationMetadata;
 
 import java.util.List;
 
