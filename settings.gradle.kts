@@ -8,6 +8,7 @@ rootProject.name = "refinery"
 
 include(
 		"frontend",
+		"generator",
 		"interpreter",
 		"interpreter-localsearch",
 		"interpreter-rete",

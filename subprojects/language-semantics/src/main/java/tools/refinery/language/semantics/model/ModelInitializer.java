@@ -104,9 +104,8 @@ public class ModelInitializer {
 		return metamodel;
 	}
 
-	public ModelSeed createModel(Problem problem, ModelStoreBuilder storeBuilder) {
+	public void readProblem(Problem problem) {
 		this.problem = problem;
-		this.storeBuilder = storeBuilder;
 		builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalArgumentException(
 				"Problem has no builtin library"));
 		var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
@@ -129,8 +128,6 @@ public class ModelInitializer {
 		collectMetamodel();
 		metamodel = metamodelBuilder.build();
 		collectAssertions();
-		storeBuilder.with(new MultiObjectTranslator());
-		storeBuilder.with(new MetamodelTranslator(metamodel));
 		relationTrace = new LinkedHashMap<>(relationInfoMap.size());
 		int nodeCount = getNodeCount();
 		var modelSeedBuilder = ModelSeed.builder(nodeCount);
@@ -142,17 +139,32 @@ public class ModelInitializer {
 			modelSeedBuilder.seed(partialRelation, info.toSeed(nodeCount));
 		}
 		collectScopes();
+		modelSeedBuilder.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
+				.reducedValue(CardinalityIntervals.SET)
+				.putAll(countSeed));
+		modelSeed = modelSeedBuilder.build();
+	}
+
+	public void configureStoreBuilder(ModelStoreBuilder storeBuilder) {
+		this.storeBuilder = storeBuilder;
+		storeBuilder.with(new MultiObjectTranslator());
+		storeBuilder.with(new MetamodelTranslator(metamodel));
 		if (scopePropagator != null) {
 			if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {
 				throw new TracedException(problem, "Type scopes require a PropagationBuilder");
 			}
 			storeBuilder.with(scopePropagator);
 		}
-		modelSeedBuilder.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
-				.reducedValue(CardinalityIntervals.SET)
-				.putAll(countSeed));
-		modelSeed = modelSeedBuilder.build();
 		collectPredicates();
+	}
+
+	public ModelSeed createModel(Problem problem, ModelStoreBuilder storeBuilder) {
+		readProblem(problem);
+		configureStoreBuilder(storeBuilder);
+		return getModelSeed();
+	}
+
+	public ModelSeed getModelSeed() {
 		return modelSeed;
 	}
 
