@@ -18,7 +18,7 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
-import tools.refinery.language.resource.ReferenceCounter;
+import tools.refinery.language.validation.ReferenceCounter;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.ArrayList;
