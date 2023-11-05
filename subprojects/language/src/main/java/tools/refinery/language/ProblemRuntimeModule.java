@@ -12,6 +12,7 @@ package tools.refinery.language;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
+import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.resource.*;
@@ -22,10 +23,12 @@ import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
 import tools.refinery.language.conversion.ProblemValueConverterService;
+import tools.refinery.language.linking.ProblemLinkingService;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
 import tools.refinery.language.resource.ProblemDerivedStateComputer;
 import tools.refinery.language.resource.ProblemLocationInFileProvider;
+import tools.refinery.language.resource.ProblemResource;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
@@ -55,6 +58,11 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	}
 
 	@Override
+	public Class<? extends ILinkingService> bindILinkingService() {
+		return ProblemLinkingService.class;
+	}
+
+	@Override
 	public Class<? extends IGlobalScopeProvider> bindIGlobalScopeProvider() {
 		return ProblemGlobalScopeProvider.class;
 	}
@@ -67,7 +75,7 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 
 	@Override
 	public Class<? extends XtextResource> bindXtextResource() {
-		return DerivedStateAwareResource.class;
+		return ProblemResource.class;
 	}
 
 	// Method name follows Xtext convention.
