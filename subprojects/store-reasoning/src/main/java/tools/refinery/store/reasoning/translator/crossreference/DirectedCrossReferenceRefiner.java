@@ -15,15 +15,17 @@ import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 class DirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Boolean> {
+	private final PartialRelation targetType;
 	private final PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
-	private final PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
 
 	public DirectedCrossReferenceRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 										 Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
 										 PartialRelation targetType) {
 		super(adapter, partialSymbol, concreteSymbol);
+		this.targetType = targetType;
+		// Source is always a class, so we can rely on the fact that it is always constructed before this refiner.
 		sourceRefiner = adapter.getRefiner(sourceType);
-		targetRefiner = adapter.getRefiner(targetType);
 	}
 
 	@Override
@@ -32,6 +34,10 @@ class DirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Bo
 			return false;
 		}
 		if (value.must()) {
+			if (targetRefiner == null) {
+				// Access the target refinery lazily, since it may be constructed after this refiner.
+				targetRefiner = getAdapter().getRefiner(targetType);
+			}
 			return sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
 					targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
 		}
