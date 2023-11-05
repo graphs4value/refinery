@@ -83,6 +83,19 @@ public final class ProblemUtil {
 		return true;
 	}
 
+	public static int getArity(Relation relation) {
+		if (relation instanceof ClassDeclaration || relation instanceof EnumDeclaration) {
+			return 1;
+		}
+		if (relation instanceof ReferenceDeclaration) {
+			return 2;
+		}
+		if (relation instanceof PredicateDefinition predicateDefinition) {
+			return predicateDefinition.getParameters().size();
+		}
+		throw new IllegalArgumentException("Unknown Relation: " + relation);
+	}
+
 	private static URI getLibraryUri(String libraryName) {
 		return URI.createURI(ProblemUtil.class.getClassLoader()
 				.getResource("tools/refinery/language/%s.problem".formatted(libraryName)).toString());

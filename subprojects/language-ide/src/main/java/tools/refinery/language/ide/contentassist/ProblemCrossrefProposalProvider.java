@@ -6,7 +6,9 @@
 package tools.refinery.language.ide.contentassist;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.GrammarUtil;
@@ -16,10 +18,14 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
-import tools.refinery.language.model.problem.Problem;
+import org.eclipse.xtext.xtext.CurrentTypeFinder;
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
-import tools.refinery.language.validation.ReferenceCounter;
+import tools.refinery.language.utils.BuiltinSymbols;
+import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.language.validation.ReferenceCounter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +34,13 @@ import java.util.Objects;
 
 public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider {
 	@Inject
+	private CurrentTypeFinder currentTypeFinder;
+
+	@Inject
 	private ReferenceCounter referenceCounter;
+
+	@Inject
+	private ProblemDesugarer desugarer;
 
 	@Override
 	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
@@ -49,7 +61,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		for (var candidates : eObjectDescriptionsByName.values()) {
 			if (candidates.size() == 1) {
 				var candidate = candidates.get(0);
-				if (shouldBeVisible(candidate)) {
+				if (shouldBeVisible(candidate, crossReference, context)) {
 					eObjectDescriptions.add(candidate);
 				}
 			}
@@ -81,9 +93,81 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		return true;
 	}
 
-	protected boolean shouldBeVisible(IEObjectDescription candidate) {
+	protected boolean shouldBeVisible(IEObjectDescription candidate, CrossReference crossReference,
+									  ContentAssistContext context) {
 		var errorPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE);
-		return !ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(errorPredicate);
+		if (ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(errorPredicate)) {
+			return false;
+		}
+
+		var eReference = getEReference(crossReference);
+		if (eReference == null) {
+			return true;
+		}
+
+		var builtinSymbolsOption = desugarer.getBuiltinSymbols(context.getRootModel());
+		if (builtinSymbolsOption.isEmpty()) {
+			return true;
+		}
+		var builtinSymbols = builtinSymbolsOption.get();
+
+		var candidateEObjectOrProxy = candidate.getEObjectOrProxy();
+
+		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE) &&
+				context.getCurrentModel() instanceof ReferenceDeclaration referenceDeclaration &&
+				(referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT ||
+						referenceDeclaration.getKind() == ReferenceKind.CONTAINER)) {
+			// Containment or container references must have a class type.
+			// We don't support {@code node} as a container or contained type.
+			return ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(candidate.getEClass()) &&
+					!builtinSymbols.node().equals(candidateEObjectOrProxy);
+		}
+
+		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE) ||
+				eReference.equals(ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE) ||
+				eReference.equals(ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE)) {
+			if (builtinSymbols.exists().equals(candidateEObjectOrProxy)) {
+				return false;
+			}
+			var arity = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
+			return arity == null || arity.equals("1");
+		}
+
+		if (eReference.equals(ProblemPackage.Literals.CLASS_DECLARATION__SUPER_TYPES)) {
+			return supertypeShouldBeVisible(candidate, context, builtinSymbols, candidateEObjectOrProxy);
+		}
+
+		if (eReference.equals(ProblemPackage.Literals.ASSERTION__RELATION)) {
+			// Currently, we don't support assertions on the {@code contains} relation.
+			return !builtinSymbols.contains().equals(candidateEObjectOrProxy) &&
+					!builtinSymbols.contained().equals(candidateEObjectOrProxy);
+		}
+
+		return true;
+	}
+
+	private boolean supertypeShouldBeVisible(IEObjectDescription candidate, ContentAssistContext context,
+											 BuiltinSymbols builtinSymbols, EObject candidateEObjectOrProxy) {
+		if (!ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(candidate.getEClass()) ||
+				builtinSymbols.node().equals(candidateEObjectOrProxy) ||
+				builtinSymbols.contained().equals(candidateEObjectOrProxy)) {
+			return false;
+		}
+		if (context.getCurrentModel() instanceof ClassDeclaration classDeclaration &&
+				candidateEObjectOrProxy instanceof ClassDeclaration candidateClassDeclaration) {
+			return !classDeclaration.equals(candidateClassDeclaration) &&
+					!classDeclaration.getSuperTypes().contains(candidateClassDeclaration);
+		}
+		return true;
+	}
+
+	@Nullable
+	private EReference getEReference(CrossReference crossReference) {
+		var type = currentTypeFinder.findCurrentTypeAfter(crossReference);
+		if (!(type instanceof EClass eClass)) {
+			return null;
+		}
+		return GrammarUtil.getReference(crossReference, eClass);
 	}
 
 	protected EObject getCurrentValue(CrossReference crossRef, ContentAssistContext context) {
