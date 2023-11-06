@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.CrossReference;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
@@ -105,14 +106,45 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return true;
 		}
 
+		var candidateEObjectOrProxy = candidate.getEObjectOrProxy();
+
+		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) &&
+				candidateEObjectOrProxy instanceof ReferenceDeclaration candidateReferenceDeclaration) {
+			return oppositeShouldBeVisible(candidateReferenceDeclaration, context);
+		}
+
 		var builtinSymbolsOption = desugarer.getBuiltinSymbols(context.getRootModel());
 		if (builtinSymbolsOption.isEmpty()) {
 			return true;
 		}
 		var builtinSymbols = builtinSymbolsOption.get();
 
-		var candidateEObjectOrProxy = candidate.getEObjectOrProxy();
+		return builtinSymbolAwareShouldBeVisible(candidate, context, eReference, builtinSymbols,
+				candidateEObjectOrProxy);
+	}
 
+	private static boolean oppositeShouldBeVisible(ReferenceDeclaration candidateReferenceDeclaration,
+												   ContentAssistContext context) {
+		var referenceDeclaration = EcoreUtil2.getContainerOfType(context.getCurrentModel(),
+				ReferenceDeclaration.class);
+		if (referenceDeclaration == null) {
+			return true;
+		}
+		var classDeclaration = EcoreUtil2.getContainerOfType(referenceDeclaration, ClassDeclaration.class);
+		if (classDeclaration == null) {
+			return true;
+		}
+		var oppositeType = candidateReferenceDeclaration.getReferenceType();
+		if (oppositeType == null) {
+			return true;
+		}
+		var resolvedOppositeType = EcoreUtil.resolve(oppositeType, candidateReferenceDeclaration);
+		return classDeclaration.equals(resolvedOppositeType);
+	}
+
+	private boolean builtinSymbolAwareShouldBeVisible(
+			IEObjectDescription candidate, ContentAssistContext context, EReference eReference,
+			BuiltinSymbols builtinSymbols, EObject candidateEObjectOrProxy) {
 		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE) &&
 				context.getCurrentModel() instanceof ReferenceDeclaration referenceDeclaration &&
 				(referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT ||

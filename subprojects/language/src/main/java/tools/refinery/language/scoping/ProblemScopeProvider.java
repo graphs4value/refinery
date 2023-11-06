@@ -44,7 +44,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 			return getVariableScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) {
-			return getOppositeScope(context, scope);
+			return getOppositeScope(context);
 		}
 		return scope;
 	}
@@ -96,16 +96,19 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		}
 	}
 
-	protected IScope getOppositeScope(EObject context, IScope delegateScope) {
+	protected IScope getOppositeScope(EObject context) {
 		var referenceDeclaration = EcoreUtil2.getContainerOfType(context, ReferenceDeclaration.class);
 		if (referenceDeclaration == null) {
-			return delegateScope;
+			return IScope.NULLSCOPE;
 		}
 		var relation = referenceDeclaration.getReferenceType();
 		if (!(relation instanceof ClassDeclaration classDeclaration)) {
-			return delegateScope;
+			return IScope.NULLSCOPE;
 		}
-		var referenceDeclarations = desugarer.getAllReferenceDeclarations(classDeclaration);
-		return Scopes.scopeFor(referenceDeclarations, delegateScope);
+		var referenceDeclarations = classDeclaration.getFeatureDeclarations()
+				.stream()
+				.filter(ReferenceDeclaration.class::isInstance)
+				.toList();
+		return Scopes.scopeFor(referenceDeclarations);
 	}
 }
