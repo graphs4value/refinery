@@ -39,7 +39,7 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 		constraint.setLb((lowerBound - getSingleCount()));
 	}
 
-	public static class Factory extends TypeScopePropagator.Factory {
+	static class Factory extends TypeScopePropagator.Factory {
 		private final PartialRelation type;
 		private final int lowerBound;
 		private final RelationalQuery allMay;
