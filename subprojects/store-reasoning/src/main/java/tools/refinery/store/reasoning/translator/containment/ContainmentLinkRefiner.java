@@ -24,8 +24,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner<TruthV
 	private final PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
 	private final PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
 
-	public ContainmentLinkRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-								  Factory factory) {
+	private ContainmentLinkRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
+								   Factory factory) {
 		super(adapter, partialSymbol);
 		this.factory = factory;
 		interpretation = adapter.getModel().getInterpretation(factory.symbol);

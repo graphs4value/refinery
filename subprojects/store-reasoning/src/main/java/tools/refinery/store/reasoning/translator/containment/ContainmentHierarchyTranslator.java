@@ -52,9 +52,10 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 
 	private final Symbol<InferredContainment> containsStorage = Symbol.of("CONTAINS", 2, InferredContainment.class,
 			InferredContainment.UNKNOWN);
+	private final AnySymbolView mustAnyContainmentLinkView = new MustAnyContainmentLinkView(containsStorage);
 	private final AnySymbolView forbiddenContainsView = new ForbiddenContainsView(containsStorage);
 	private final RelationalQuery containsMayNewTargetHelper;
-	private final RelationalQuery containsMayExistingHelper;
+	private final RelationalQuery containsWithoutLink;
 	private final RelationalQuery weakComponents;
 	private final RelationalQuery strongComponents;
 	private final Map<PartialRelation, ContainmentInfo> containmentInfoMap;
@@ -67,18 +68,15 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 		containsMayNewTargetHelper = Query.of(name + "#mayNewTargetHelper", (builder, child) -> builder
 				.clause(Integer.class, existingContainers -> List.of(
 						may(CONTAINED_SYMBOL.call(child)),
-						new CountLowerBoundLiteral(existingContainers, CONTAINS_SYMBOL, List.of(Variable.of(), child)),
+						new CountLowerBoundLiteral(existingContainers, CONTAINS_SYMBOL,
+								List.of(Variable.of(), child)),
 						check(less(existingContainers, constant(1)))
 				)));
 
-		containsMayExistingHelper = Query.of(name + "#mayExistingHelper", (builder, parent, child) -> builder
-				.clause(Integer.class, existingContainers -> List.of(
-						must(CONTAINS_SYMBOL.call(parent, child)),
-						not(forbiddenContainsView.call(parent, child))
-						// Violation of monotonicity:
-						// Containment edges violating upper multiplicity will not be marked as {@code ERROR}, but the
-						// {@code invalidNumberOfContainers} error pattern will already mark the node as invalid.
-				)));
+		containsWithoutLink = Query.of(name + "#withoutLink", (builder, parent, child) -> builder.clause(
+				must(CONTAINS_SYMBOL.call(parent, child)),
+				not(mustAnyContainmentLinkView.call(parent, child))
+		));
 
 		var mustExistBothContains = Query.of(name + "#mustExistBoth", (builder, parent, child) -> builder.clause(
 				must(CONTAINS_SYMBOL.call(parent, child)),
@@ -139,13 +137,21 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 		var mayNewHelper = Query.of(name + "#mayNewHelper", (builder, parent, child) -> builder.clause(
 				mayNewSourceHelper.call(parent),
 				mayNewTargetHelper.call(child),
-				not(must(CONTAINS_SYMBOL.call(parent, child))),
+				not(mustAnyContainmentLinkView.call(parent, child)),
 				not(forbiddenLinkView.call(parent, child))
 		));
 
+		var existingContainsLink = Query.of(name + "#existingContaints", (builder, parent, child) -> builder
+				.clause(
+						must(linkType.call(parent, child))
+				)
+				.clause(
+						containsWithoutLink.call(parent, child)
+				));
+
 		var mayExistingHelper = Query.of(name + "#mayExistingHelper", (builder, parent, child) -> builder.clause(
-				must(linkType.call(parent, child)),
-				containsMayExistingHelper.call(parent, child),
+				existingContainsLink.call(parent, child),
+				not(forbiddenContainsView.call(parent, child)),
 				may(sourceType.call(parent)),
 				may(targetType.call(child)),
 				not(forbiddenLinkView.call(parent, child))
@@ -224,7 +230,9 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				}))
 				.must(Query.of(mustName, (builder, parent, child) -> builder.clause(
 						new MustContainsView(containsStorage).call(parent, child)
-				))));
+				)))
+				.refiner(ContainsRefiner.of(containsStorage))
+				.initializer(new RefinementBasedInitializer<>(CONTAINS_SYMBOL)));
 	}
 
 	private void translateInvalidContainer(ModelStoreBuilder storeBuilder) {
@@ -245,7 +253,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				)
 				.clause(container -> List.of(
 						MultiObjectTranslator.MULTI_VIEW.call(multi),
-						must(CONTAINS_SYMBOL.call(container, multi)),
+						mustAnyContainmentLinkView.call(container, multi),
 						not(MultiObjectTranslator.MULTI_VIEW.call(container))
 				))
 				.action(

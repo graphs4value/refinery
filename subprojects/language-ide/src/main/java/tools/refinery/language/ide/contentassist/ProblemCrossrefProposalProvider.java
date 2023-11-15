@@ -169,12 +169,6 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return supertypeShouldBeVisible(candidate, context, builtinSymbols, candidateEObjectOrProxy);
 		}
 
-		if (eReference.equals(ProblemPackage.Literals.ASSERTION__RELATION)) {
-			// Currently, we don't support assertions on the {@code contains} relation.
-			return !builtinSymbols.contains().equals(candidateEObjectOrProxy) &&
-					!builtinSymbols.contained().equals(candidateEObjectOrProxy);
-		}
-
 		return true;
 	}
 

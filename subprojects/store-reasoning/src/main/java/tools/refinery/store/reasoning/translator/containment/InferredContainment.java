@@ -24,7 +24,7 @@ final class InferredContainment {
 		this.contains = adjustContains(contains, mustLinks, forbiddenLinks);
 		this.mustLinks = mustLinks;
 		this.forbiddenLinks = forbiddenLinks;
-		hashCode = Objects.hash(contains, mustLinks, forbiddenLinks);
+		hashCode = Objects.hash(this.contains, mustLinks, forbiddenLinks);
 	}
 
 	private static TruthValue adjustContains(TruthValue contains, Set<PartialRelation> mustLinks,

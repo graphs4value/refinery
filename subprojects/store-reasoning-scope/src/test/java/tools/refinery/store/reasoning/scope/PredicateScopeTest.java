@@ -84,6 +84,8 @@ class PredicateScopeTest {
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
 				.seed(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
 						builder -> builder.reducedValue(TruthValue.UNKNOWN))
+				.seed(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,
+						builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(index, builder -> builder.reducedValue(TruthValue.TRUE))
 				.seed(next, builder -> builder
 						.reducedValue(TruthValue.UNKNOWN)
