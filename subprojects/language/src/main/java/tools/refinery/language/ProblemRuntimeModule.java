@@ -20,6 +20,7 @@ import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
+import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
 import tools.refinery.language.conversion.ProblemValueConverterService;
@@ -33,6 +34,7 @@ import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
 import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;
+import tools.refinery.language.validation.ProblemDiagnosticConverter;
 
 /**
  * Use this class to register components to be used at runtime / without the
@@ -100,5 +102,9 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends ISemanticSequencer> bindISemanticSequencer() {
 		return PreferShortAssertionsProblemSemanticSequencer.class;
+	}
+
+	public Class<? extends IDiagnosticConverter> bindIDiagnosticConverter() {
+		return ProblemDiagnosticConverter.class;
 	}
 }

@@ -7,6 +7,7 @@ package tools.refinery.language.tests.linking;
 
 
 import com.google.inject.Inject;
+import org.eclipse.xtext.diagnostics.Diagnostic;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +58,7 @@ class AmbiguousReferenceTest {
 			"""})
 	void unambiguousReferenceTest(String text) {
 		var problem = parseHelper.parse(text);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 	}
 
 	@ParameterizedTest
@@ -88,7 +89,10 @@ class AmbiguousReferenceTest {
 			"""})
 	void ambiguousReferenceTest(String text) {
 		var problem = parseHelper.parse(text);
-		assertThat(problem.errors(), hasItem(hasProperty("message", stringContainsInOrder(
-				"Ambiguous reference", "'quux'"))));
+		var errors = problem.getResourceErrors();
+		assertThat(problem.getResourceErrors(), hasItem(allOf(
+				hasProperty("code", is(Diagnostic.LINKING_DIAGNOSTIC)),
+				hasProperty("message", containsString("'quux'"))
+		)));
 	}
 }

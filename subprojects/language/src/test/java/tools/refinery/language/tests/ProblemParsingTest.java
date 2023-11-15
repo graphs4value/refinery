@@ -51,6 +51,6 @@ class ProblemParsingTest {
 				?children(bob, ciri).
 				taxStatus(anne, ADULT).
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 	}
 }

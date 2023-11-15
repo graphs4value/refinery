@@ -35,6 +35,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	public static final String DUPLICATE_NAME_ISSUE = ISSUE_PREFIX + "DUPLICATE_NAME";
 
+	public static final String INVALID_MULTIPLICITY_ISSUE = ISSUE_PREFIX + "INVALID_MULTIPLICITY";
+
+	public static final String ZERO_MULTIPLICITY_ISSUE = ISSUE_PREFIX + "ZERO_MULTIPLICITY";
+
+	public static final String MISSING_OPPOSITE_ISSUE = ISSUE_PREFIX + "MISSING_OPPOSITE";
+
+	public static final String INVALID_OPPOSITE_ISSUE = ISSUE_PREFIX + "INVALID_OPPOSITE";
+
 	@Inject
 	private ReferenceCounter referenceCounter;
 
@@ -108,6 +116,106 @@ public class ProblemValidator extends AbstractProblemValidator {
 			for (var namedElement : objectsWithName) {
 				acceptError(message, namedElement, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
 						DUPLICATE_NAME_ISSUE);
+			}
+		}
+	}
+
+	@Check
+	public void checkRangeMultiplicity(RangeMultiplicity rangeMultiplicity) {
+		int lower = rangeMultiplicity.getLowerBound();
+		int upper = rangeMultiplicity.getUpperBound();
+		if (upper >= 0 && lower > upper) {
+			var message = "Multiplicity range [%d..%d] is inconsistent.";
+			acceptError(message, rangeMultiplicity, null, 0, INVALID_MULTIPLICITY_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkReferenceMultiplicity(ReferenceDeclaration referenceDeclaration) {
+		var multiplicity = referenceDeclaration.getMultiplicity();
+		if (multiplicity == null) {
+			return;
+		}
+		if (ProblemUtil.isContainerReference(referenceDeclaration) && (
+				!(multiplicity instanceof RangeMultiplicity rangeMultiplicity) ||
+						rangeMultiplicity.getLowerBound() != 0 ||
+						rangeMultiplicity.getUpperBound() != 1)) {
+			var message = "The only allowed multiplicity for container references is [0..1]";
+			acceptError(message, multiplicity, null, 0, INVALID_MULTIPLICITY_ISSUE);
+		}
+		if ((multiplicity instanceof ExactMultiplicity exactMultiplicity &&
+				exactMultiplicity.getExactValue() == 0) ||
+				(multiplicity instanceof RangeMultiplicity rangeMultiplicity &&
+						rangeMultiplicity.getLowerBound() == 0 &&
+						rangeMultiplicity.getUpperBound() == 0)) {
+			var message = "The multiplicity constraint does not allow any reference links";
+			acceptWarning(message, multiplicity, null, 0, ZERO_MULTIPLICITY_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkOpposite(ReferenceDeclaration referenceDeclaration) {
+		var opposite = referenceDeclaration.getOpposite();
+		if (opposite == null || opposite.eIsProxy()) {
+			return;
+		}
+		var oppositeOfOpposite = opposite.getOpposite();
+		if (oppositeOfOpposite == null) {
+			acceptError("Reference '%s' does not declare '%s' as an opposite."
+							.formatted(opposite.getName(), referenceDeclaration.getName()),
+					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
+					INVALID_OPPOSITE_ISSUE);
+			var oppositeResource = opposite.eResource();
+			if (oppositeResource != null && oppositeResource.equals(referenceDeclaration.eResource())) {
+				acceptError("Missing opposite '%s' for reference '%s'."
+								.formatted(referenceDeclaration.getName(), opposite.getName()),
+						opposite, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, MISSING_OPPOSITE_ISSUE);
+			}
+			return;
+		}
+        if (!referenceDeclaration.equals(oppositeOfOpposite)) {
+            var messageBuilder = new StringBuilder()
+                    .append("Expected reference '")
+                    .append(opposite.getName())
+                    .append("' to have opposite '")
+                    .append(referenceDeclaration.getName())
+                    .append("'");
+            var oppositeOfOppositeName = oppositeOfOpposite.getName();
+            if (oppositeOfOppositeName != null) {
+                messageBuilder.append(", got '")
+                        .append(oppositeOfOppositeName)
+                        .append("' instead");
+            }
+            messageBuilder.append(".");
+            acceptError(messageBuilder.toString(), referenceDeclaration,
+                    ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0, INVALID_OPPOSITE_ISSUE);
+        }
+    }
+
+	@Check
+	void checkContainerOpposite(ReferenceDeclaration referenceDeclaration) {
+		var kind = referenceDeclaration.getKind();
+		var opposite = referenceDeclaration.getOpposite();
+		if (opposite != null && opposite.eIsProxy()) {
+			// If {@code opposite} is a proxy, we have already emitted a linker error.
+			return;
+		}
+		if (kind == ReferenceKind.CONTAINMENT) {
+			if (opposite != null && opposite.getKind() == ReferenceKind.CONTAINMENT) {
+				acceptError("Opposite '%s' of containment reference '%s' is not a container reference."
+								.formatted(opposite.getName(), referenceDeclaration.getName()),
+						referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
+						INVALID_OPPOSITE_ISSUE);
+			}
+		} else if (kind == ReferenceKind.CONTAINER) {
+			if (opposite == null) {
+				acceptError("Container reference '%s' requires an opposite.".formatted(referenceDeclaration.getName()),
+						referenceDeclaration, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, MISSING_OPPOSITE_ISSUE);
+			} else if (opposite.getKind() != ReferenceKind.CONTAINMENT) {
+				acceptError("Opposite '%s' of container reference '%s' is not a containment reference."
+								.formatted(opposite.getName(), referenceDeclaration.getName()),
+						referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
+						INVALID_OPPOSITE_ISSUE);
 			}
 		}
 	}

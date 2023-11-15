@@ -31,7 +31,7 @@ class TransitiveClosureParserTest {
 		var problem = parseHelper.parse("""
 					pred foo(a, b) <-> a + (b) > 10.
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		var literal = problem.pred("foo").conj(0).lit(0).get();
 		assertThat(literal, instanceOf(ComparisonExpr.class));
 		var left = ((ComparisonExpr) literal).getLeft();
@@ -45,7 +45,7 @@ class TransitiveClosureParserTest {
 		var problem = parseHelper.parse("""
 					pred foo(a, b) <-> equals+(a, b).
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		var literal = problem.pred("foo").conj(0).lit(0).get();
 		assertThat(literal, instanceOf(Atom.class));
 		var atom = (Atom) literal;

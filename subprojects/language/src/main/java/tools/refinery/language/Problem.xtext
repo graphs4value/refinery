@@ -40,9 +40,12 @@ enum ReferenceKind:
 ReferenceDeclaration:
 	(referenceType=[Relation|NonContainmentQualifiedName] |
 	kind=ReferenceKind referenceType=[Relation|QualifiedName])
-	("[" multiplicity=Multiplicity "]")?
+	(multiplicity=ReferenceMultiplicity)?
 	name=Identifier
 	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
+
+ReferenceMultiplicity returns Multiplicity:
+	"[" Multiplicity "]";
 
 //enum PrimitiveType:
 //	INT="int" | REAL="real" | STRING="string";

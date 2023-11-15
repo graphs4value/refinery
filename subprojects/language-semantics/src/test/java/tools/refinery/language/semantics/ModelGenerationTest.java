@@ -77,7 +77,7 @@ class ModelGenerationTest {
 				% Scope
 				scope Post = 5, Person = 5.
 				""");
-		assertThat(parsedProblem.errors(), empty());
+		assertThat(parsedProblem.getResourceErrors(), empty());
 		var problem = parsedProblem.problem();
 
 		var storeBuilder = ModelStore.builder()
@@ -211,7 +211,7 @@ class ModelGenerationTest {
 
 				scope node = 200..210, Region = 10..*, Choice = 1..*, Statechart = 1.
 				""");
-		assertThat(parsedProblem.errors(), empty());
+		assertThat(parsedProblem.getResourceErrors(), empty());
 		var problem = parsedProblem.problem();
 
 		var storeBuilder = ModelStore.builder()
@@ -278,7 +278,7 @@ class ModelGenerationTest {
 
 				scope Filesystem += 0, Entry = 100.
 				""");
-		assertThat(parsedProblem.errors(), empty());
+		assertThat(parsedProblem.getResourceErrors(), empty());
 		var problem = parsedProblem.problem();
 
 		var storeBuilder = ModelStore.builder()
