@@ -7,20 +7,22 @@ package tools.refinery.store.reasoning.scope;
 
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.objectives.Criteria;
+import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.literal.CountCandidateUpperBoundLiteral;
+import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.Collection;
 import java.util.List;
 
 import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.term.int_.IntTerms.constant;
-import static tools.refinery.store.query.term.int_.IntTerms.greater;
+import static tools.refinery.store.query.term.int_.IntTerms.*;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
@@ -70,14 +72,23 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 		public void configure(ModelStoreBuilder storeBuilder) {
 			super.configure(storeBuilder);
 
-			var tooManyObjects = Query.of(type.name() + "#tooMany", builder -> builder
+			var excessObjects = Query.of(type.name() + "#excess", Integer.class, (builder, output) -> builder
 					.clause(Integer.class, candidateUpperBound -> List.of(
 							new CountCandidateUpperBoundLiteral(candidateUpperBound, type, List.of(Variable.of())),
-							check(greater(candidateUpperBound, constant(upperBound)))
+							output.assign(sub(candidateUpperBound, constant(upperBound))),
+							check(greater(output, constant(0)))
+					)));
+			var tooManyObjects = Query.of(type.name() + "#tooMany", builder -> builder
+					.clause(Integer.class, lowerBound -> List.of(
+							new CountLowerBoundLiteral(lowerBound, type, List.of(Variable.of())),
+							check(greater(lowerBound, constant(upperBound)))
 					)));
 
-			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder ->
-					dseBuilder.accept(Criteria.whenNoMatch(tooManyObjects)));
+			storeBuilder.getAdapter(ReasoningBuilder.class).objective(Objectives.value(excessObjects));
+			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder -> {
+                dseBuilder.accept(Criteria.whenNoMatch(excessObjects));
+				dseBuilder.exclude(Criteria.whenHasMatch(tooManyObjects));
+            });
 		}
 	}
 }
