@@ -13,6 +13,13 @@ plugins {
 	id("tools.refinery.gradle.internal.java-conventions")
 }
 
+publishing.publications {
+	withType(MavenPublication::class) {
+		suppressPomMetadataWarningsFor(configurations.testFixturesApiElements.name)
+		suppressPomMetadataWarningsFor(configurations.testFixturesRuntimeElements.name)
+	}
+}
+
 eclipse.classpath {
 	containsTestFixtures.set(true)
 
