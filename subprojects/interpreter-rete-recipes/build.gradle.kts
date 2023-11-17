@@ -45,7 +45,7 @@ tasks {
 				"-p", "rootPath=/$projectDir")
 	}
 
-	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders")) {
+	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders", "sourcesJar")) {
 		named(taskName) {
 			dependsOn(generateEPackage)
 		}

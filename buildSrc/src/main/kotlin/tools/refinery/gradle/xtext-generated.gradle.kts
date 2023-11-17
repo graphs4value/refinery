@@ -32,7 +32,7 @@ tasks {
 		into(xtextGenPath)
 	}
 
-	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders")) {
+	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders", "sourcesJar")) {
 		tasks.named(taskName) {
 			dependsOn(syncXtextGeneratedSources)
 		}

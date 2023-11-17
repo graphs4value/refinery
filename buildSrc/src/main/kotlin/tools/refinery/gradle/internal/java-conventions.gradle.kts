@@ -12,6 +12,7 @@ import tools.refinery.gradle.utils.EclipseUtils
 plugins {
     jacoco
     java
+	`maven-publish`
 	id("tools.refinery.gradle.eclipse")
 }
 
@@ -40,8 +41,13 @@ dependencies {
 	testImplementation(libs.slf4j.log4j)
 }
 
-java.toolchain {
-	languageVersion.set(JavaLanguageVersion.of(17))
+java {
+	withJavadocJar()
+	withSourcesJar()
+
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
 }
 
 tasks {
@@ -68,6 +74,18 @@ tasks {
 		}
 	}
 
+	tasks.named<Jar>("sourcesJar") {
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	}
+
+	javadoc {
+		options {
+			this as StandardJavadocDocletOptions
+			addBooleanOption("Xdoclint:none", true)
+			quiet()
+		}
+	}
+
 	val generateEclipseSourceFolders by tasks.registering
 
 	register("prepareEclipse") {
@@ -77,6 +95,14 @@ tasks {
 
 	eclipseClasspath {
 		dependsOn(generateEclipseSourceFolders)
+	}
+}
+
+publishing {
+	publications {
+		create<MavenPublication>("mavenJava") {
+			from(components["java"])
+		}
 	}
 }
 

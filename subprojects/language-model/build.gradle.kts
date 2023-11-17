@@ -43,7 +43,7 @@ tasks {
 		args("src/main/java/tools/refinery/language/model/GenerateProblemModel.mwe2", "-p", "rootPath=/$projectDir")
 	}
 
-	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders")) {
+	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders", "sourcesJar")) {
 		named(taskName) {
 			dependsOn(generateEPackage)
 		}

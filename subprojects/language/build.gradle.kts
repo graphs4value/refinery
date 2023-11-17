@@ -72,7 +72,7 @@ tasks {
 	}
 
 	for (taskName in listOf("compileJava", "processResources", "compileTestFixturesJava",
-			"processTestFixturesResources", "generateEclipseSourceFolders")) {
+			"processTestFixturesResources", "generateEclipseSourceFolders", "sourcesJar")) {
 		named(taskName) {
 			dependsOn(generateXtextLanguage)
 		}
