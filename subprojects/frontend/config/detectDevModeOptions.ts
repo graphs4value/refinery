@@ -63,6 +63,11 @@ export default function detectDevModeOptions(): DevModeOptions {
   const api = detectListenOptions('API', '127.0.0.1', 1312);
   const publicAddress = detectListenOptions('PUBLIC', listen.host, listen.port);
 
+  if (listen.secure) {
+    // Since nodejs 20, we'd need to pass in HTTPS options manually.
+    throw new Error(`Preview on secure port ${listen.port} is not supported`);
+  }
+
   const backendConfig: BackendConfig = {
     webSocketURL: `${listenURL(publicAddress, 'ws')}/${API_ENDPOINT}`,
   };
@@ -75,7 +80,6 @@ export default function detectDevModeOptions(): DevModeOptions {
       host: listen.host,
       port: listen.port,
       strictPort: true,
-      https: listen.secure,
       headers: {
         // Enable strict origin isolation, see e.g.,
         // https://github.com/vitejs/vite/issues/3909#issuecomment-1065893956
