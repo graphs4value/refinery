@@ -10,6 +10,8 @@
 package tools.refinery.language.validation;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 import tools.refinery.language.model.problem.*;
@@ -42,6 +44,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String MISSING_OPPOSITE_ISSUE = ISSUE_PREFIX + "MISSING_OPPOSITE";
 
 	public static final String INVALID_OPPOSITE_ISSUE = ISSUE_PREFIX + "INVALID_OPPOSITE";
+
+	public static final String INVALID_SUPERTYPE_ISSUE = ISSUE_PREFIX + "INVALID_SUPERTYPE";
+
+	public static final String INVALID_REFERENCE_TYPE_ISSUE = ISSUE_PREFIX + "INVALID_REFERENCE_TYPE";
+
+	public static final String INVALID_ARITY_ISSUE = ISSUE_PREFIX + "INVALID_ARITY";
+
+	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
@@ -173,24 +183,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 			}
 			return;
 		}
-        if (!referenceDeclaration.equals(oppositeOfOpposite)) {
-            var messageBuilder = new StringBuilder()
-                    .append("Expected reference '")
-                    .append(opposite.getName())
-                    .append("' to have opposite '")
-                    .append(referenceDeclaration.getName())
-                    .append("'");
-            var oppositeOfOppositeName = oppositeOfOpposite.getName();
-            if (oppositeOfOppositeName != null) {
-                messageBuilder.append(", got '")
-                        .append(oppositeOfOppositeName)
-                        .append("' instead");
-            }
-            messageBuilder.append(".");
-            acceptError(messageBuilder.toString(), referenceDeclaration,
-                    ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0, INVALID_OPPOSITE_ISSUE);
-        }
-    }
+		if (!referenceDeclaration.equals(oppositeOfOpposite)) {
+			var messageBuilder = new StringBuilder()
+					.append("Expected reference '")
+					.append(opposite.getName())
+					.append("' to have opposite '")
+					.append(referenceDeclaration.getName())
+					.append("'");
+			var oppositeOfOppositeName = oppositeOfOpposite.getName();
+			if (oppositeOfOppositeName != null) {
+				messageBuilder.append(", got '")
+						.append(oppositeOfOppositeName)
+						.append("' instead");
+			}
+			messageBuilder.append(".");
+			acceptError(messageBuilder.toString(), referenceDeclaration,
+					ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0, INVALID_OPPOSITE_ISSUE);
+		}
+	}
 
 	@Check
 	void checkContainerOpposite(ReferenceDeclaration referenceDeclaration) {
@@ -218,5 +228,81 @@ public class ProblemValidator extends AbstractProblemValidator {
 						INVALID_OPPOSITE_ISSUE);
 			}
 		}
+	}
+
+	@Check
+	void checkSupertypes(ClassDeclaration classDeclaration) {
+		var supertypes = classDeclaration.getSuperTypes();
+		int supertypeCount = supertypes.size();
+		for (int i = 0; i < supertypeCount; i++) {
+			var supertype = supertypes.get(i);
+			if (!supertype.eIsProxy() && !(supertype instanceof ClassDeclaration)) {
+				var message = "Supertype '%s' of '%s' is not a class."
+						.formatted(supertype.getName(), classDeclaration.getName());
+				acceptError(message, classDeclaration, ProblemPackage.Literals.CLASS_DECLARATION__SUPER_TYPES, i,
+						INVALID_SUPERTYPE_ISSUE);
+			}
+		}
+	}
+
+	@Check
+	void checkReferenceType(ReferenceDeclaration referenceDeclaration) {
+		if (referenceDeclaration.getKind() == ReferenceKind.REFERENCE &&
+				!ProblemUtil.isContainerReference(referenceDeclaration)) {
+			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
+			return;
+		}
+		var referenceType = referenceDeclaration.getReferenceType();
+		if (referenceType == null || referenceType.eIsProxy() || referenceType instanceof ClassDeclaration) {
+			// Either correct, or a missing reference type where we are probably already emitting another error.
+			return;
+		}
+		var message = "Reference type '%s' of the containment or container reference '%s' is not a class."
+				.formatted(referenceType.getName(), referenceDeclaration.getName());
+		acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0,
+				INVALID_REFERENCE_TYPE_ISSUE);
+	}
+
+	@Check
+	void checkParameterType(Parameter parameter) {
+		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
+	}
+
+	@Check
+	void checkAtom(Atom atom) {
+		int argumentCount = atom.getArguments().size();
+		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
+		if (atom.isTransitiveClosure() && argumentCount != 2) {
+			var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
+					.formatted(argumentCount);
+			acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
+					INVALID_TRANSITIVE_CLOSURE_ISSUE);
+		}
+	}
+
+	@Check
+	void checkAssertion(Assertion assertion) {
+		int argumentCount = assertion.getArguments().size();
+		checkArity(assertion, ProblemPackage.Literals.ASSERTION__RELATION, argumentCount);
+	}
+
+	@Check
+	void checkTypeScope(TypeScope typeScope) {
+		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+	}
+
+	void checkArity(EObject eObject, EReference reference, int expectedArity) {
+		var value = eObject.eGet(reference);
+		if (!(value instanceof Relation relation) || relation.eIsProxy()) {
+			// Feature does not point to a {@link Relation}, we are probably already emitting another error.
+			return;
+		}
+		int arity = ProblemUtil.getArity(relation);
+		if (arity == expectedArity) {
+			return;
+		}
+		var message = "Expected symbol '%s' to have arity %d, got arity %d instead."
+				.formatted(relation.getName(), expectedArity, arity);
+		acceptError(message, eObject, reference, 0, INVALID_ARITY_ISSUE);
 	}
 }
