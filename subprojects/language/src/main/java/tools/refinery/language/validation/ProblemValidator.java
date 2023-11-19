@@ -14,7 +14,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.ArrayList;
@@ -53,8 +55,15 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
 
+	public static final String INVALID_VALUE_ISSUE = ISSUE_PREFIX + "INVALID_VALUE";
+
+	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
+
 	@Inject
 	private ReferenceCounter referenceCounter;
+
+	@Inject
+	private ProblemDesugarer desugarer;
 
 	@Check
 	public void checkSingletonVariable(VariableOrNodeExpr expr) {
@@ -203,7 +212,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	void checkContainerOpposite(ReferenceDeclaration referenceDeclaration) {
+	public void checkContainerOpposite(ReferenceDeclaration referenceDeclaration) {
 		var kind = referenceDeclaration.getKind();
 		var opposite = referenceDeclaration.getOpposite();
 		if (opposite != null && opposite.eIsProxy()) {
@@ -231,7 +240,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	void checkSupertypes(ClassDeclaration classDeclaration) {
+	public void checkSupertypes(ClassDeclaration classDeclaration) {
 		var supertypes = classDeclaration.getSuperTypes();
 		int supertypeCount = supertypes.size();
 		for (int i = 0; i < supertypeCount; i++) {
@@ -246,7 +255,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	void checkReferenceType(ReferenceDeclaration referenceDeclaration) {
+	public void checkReferenceType(ReferenceDeclaration referenceDeclaration) {
 		if (referenceDeclaration.getKind() == ReferenceKind.REFERENCE &&
 				!ProblemUtil.isContainerReference(referenceDeclaration)) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
@@ -264,12 +273,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	void checkParameterType(Parameter parameter) {
+	public void checkParameterType(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 	}
 
 	@Check
-	void checkAtom(Atom atom) {
+	public void checkAtom(Atom atom) {
 		int argumentCount = atom.getArguments().size();
 		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
 		if (atom.isTransitiveClosure() && argumentCount != 2) {
@@ -281,17 +290,21 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	void checkAssertion(Assertion assertion) {
+	public void checkAssertion(Assertion assertion) {
 		int argumentCount = assertion.getArguments().size();
+		if (!(assertion.getValue() instanceof LogicConstant)) {
+			var message = "Assertion value must be one of 'true', 'false', 'unknown', or 'error'.";
+			acceptError(message, assertion, ProblemPackage.Literals.ASSERTION__VALUE, 0, INVALID_VALUE_ISSUE);
+		}
 		checkArity(assertion, ProblemPackage.Literals.ASSERTION__RELATION, argumentCount);
 	}
 
 	@Check
-	void checkTypeScope(TypeScope typeScope) {
+	public void checkTypeScope(TypeScope typeScope) {
 		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
 	}
 
-	void checkArity(EObject eObject, EReference reference, int expectedArity) {
+	private void checkArity(EObject eObject, EReference reference, int expectedArity) {
 		var value = eObject.eGet(reference);
 		if (!(value instanceof Relation relation) || relation.eIsProxy()) {
 			// Feature does not point to a {@link Relation}, we are probably already emitting another error.
@@ -304,5 +317,90 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var message = "Expected symbol '%s' to have arity %d, got arity %d instead."
 				.formatted(relation.getName(), expectedArity, arity);
 		acceptError(message, eObject, reference, 0, INVALID_ARITY_ISSUE);
+	}
+
+	@Check
+	public void checkMultiObjectAssertion(Assertion assertion) {
+		var builtinSymbolsOption = desugarer.getBuiltinSymbols(assertion);
+		if (builtinSymbolsOption.isEmpty()) {
+			return;
+		}
+		var builtinSymbols = builtinSymbolsOption.get();
+		var relation = assertion.getRelation();
+		boolean isExists = builtinSymbols.exists().equals(relation);
+		boolean isEquals = builtinSymbols.equals().equals(relation);
+		if ((!isExists && !isEquals) || !(assertion.getValue() instanceof LogicConstant logicConstant)) {
+			return;
+		}
+		var value = logicConstant.getLogicValue();
+		if (assertion.isDefault()) {
+			acceptError("Default assertions for 'exists' and 'equals' are not supported.", assertion,
+					ProblemPackage.Literals.ASSERTION__DEFAULT, 0, UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
+		if (value == LogicValue.ERROR) {
+			acceptError("Error assertions for 'exists' and 'equals' are not supported.", assertion,
+					ProblemPackage.Literals.ASSERTION__DEFAULT, 0, UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
+		if (isExists) {
+			checkExistsAssertion(assertion, value);
+			return;
+		}
+		checkEqualsAssertion(assertion, value);
+	}
+
+	private void checkExistsAssertion(Assertion assertion, LogicValue value) {
+		if (value == LogicValue.TRUE || value == LogicValue.UNKNOWN) {
+			// {@code true} is always a valid value for {@code exists}, while {@code unknown} values may always be
+			// refined to {@code true} if necessary (e.g., for individual nodes).
+			return;
+		}
+		var arguments = assertion.getArguments();
+		if (arguments.isEmpty()) {
+			// We already report an error on invalid arity.
+			return;
+		}
+		var node = getNodeArgumentForMultiObjectAssertion(arguments.get(0));
+		if (node != null && !node.eIsProxy() && ProblemUtil.isIndividualNode(node)) {
+			acceptError("Individual nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
+		}
+	}
+
+	private void checkEqualsAssertion(Assertion assertion, LogicValue value) {
+		var arguments = assertion.getArguments();
+		if (arguments.size() < 2) {
+			// We already report an error on invalid arity.
+			return;
+		}
+		var left = getNodeArgumentForMultiObjectAssertion(arguments.get(0));
+		var right = getNodeArgumentForMultiObjectAssertion(arguments.get(1));
+		if (left == null || left.eIsProxy() || right == null || right.eIsProxy()) {
+			return;
+		}
+		if (left.equals(right)) {
+			if (value == LogicValue.FALSE || value == LogicValue.ERROR) {
+				acceptError("A node cannot be necessarily unequal to itself.", assertion, null, 0,
+						UNSUPPORTED_ASSERTION_ISSUE);
+			}
+		} else {
+			if (value != LogicValue.FALSE) {
+				acceptError("Equalities between distinct nodes are not supported.", assertion, null, 0,
+						UNSUPPORTED_ASSERTION_ISSUE);
+			}
+		}
+	}
+
+	@Nullable
+	private Node getNodeArgumentForMultiObjectAssertion(AssertionArgument argument) {
+		if (argument instanceof WildcardAssertionArgument) {
+			acceptError("Wildcard arguments for 'exists' are not supported.", argument, null, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return null;
+		}
+		if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
+			return nodeAssertionArgument.getNode();
+		}
+		throw new IllegalArgumentException("Unknown assertion argument: " + argument);
 	}
 }
