@@ -36,7 +36,7 @@ class NodeScopingTest {
 		var problem = parse("""
 				pred predicate({PARAM}node a).
 				""", qualifiedNamePrefix);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.pred("predicate").param(0).getParameterType(),
 				equalTo(problem.builtin().findClass("node").get()));
 	}
@@ -48,7 +48,7 @@ class NodeScopingTest {
 				predicate(a, a).
 				?predicate(a, b).
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), hasItems("a", "b"));
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.node("a")));
 		assertThat(problem.assertion(0).arg(1).node(), equalTo(problem.node("a")));
@@ -62,7 +62,7 @@ class NodeScopingTest {
 				pred predicate(node a) <-> node(b).
 				predicate(b).
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), hasItems("b"));
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(), equalTo(problem.node("b")));
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.node("b")));
@@ -77,7 +77,7 @@ class NodeScopingTest {
 				predicate({PARAM}a, {PARAM}a).
 				?predicate({PARAM}a, {PARAM}b).
 				""", qualifiedNamePrefix, namedProblem);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.individualNode("a")));
 		assertThat(problem.assertion(0).arg(1).node(), equalTo(problem.individualNode("a")));
@@ -92,7 +92,7 @@ class NodeScopingTest {
 				indiv b.
 				pred predicate(node a) <-> node({PARAM}b).
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(), equalTo(problem.individualNode("b")));
 	}
@@ -109,7 +109,7 @@ class NodeScopingTest {
 				pred predicate(node x) <-> node(x).
 				predicate({PARAM}).
 				""", qualifiedName);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.builtin().findClass("int").get().getNewNode()));
 	}
@@ -121,7 +121,7 @@ class NodeScopingTest {
 		var problem = parse("""
 				pred predicate(node x) <-> node({PARAM}).
 				""", qualifiedName);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(),
 				equalTo(problem.builtin().findClass("int").get().getNewNode()));
@@ -139,7 +139,7 @@ class NodeScopingTest {
 				pred predicate(node x) <-> node(x).
 				predicate({PARAM}).
 				""", qualifiedName, namedProblem);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.findClass("Foo").get().getNewNode()));
 	}
@@ -151,7 +151,7 @@ class NodeScopingTest {
 				class Foo.
 				pred predicate(node x) <-> node({PARAM}).
 				""", qualifiedName, namedProblem);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(),
 				equalTo(problem.findClass("Foo").get().getNewNode()));
@@ -169,7 +169,7 @@ class NodeScopingTest {
 				pred predicate(node x) <-> node(x).
 				predicate(new).
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), hasItems("new"));
 		assertThat(problem.assertion(0).arg(0).node(), not(equalTo(problem.findClass("Foo").get().getNewNode())));
 	}
@@ -182,7 +182,7 @@ class NodeScopingTest {
 				pred predicate(Foo a) <-> node(a).
 				predicate({PARAM}).
 				""", qualifiedName, namedProblem);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.findEnum("Foo").literal("alpha")));
 	}
@@ -194,7 +194,7 @@ class NodeScopingTest {
 				enum Foo { alpha, beta }
 				pred predicate(Foo a) <-> node({PARAM}).
 				""", qualifiedName, namedProblem);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(),
 				equalTo(problem.findEnum("Foo").literal("alpha")));
@@ -214,7 +214,7 @@ class NodeScopingTest {
 				pred predicate(node a) <-> node(a).
 				predicate({PARAM}).
 				""", qualifiedName);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.builtin().findEnum("bool").literal("true")));
 	}
@@ -226,7 +226,7 @@ class NodeScopingTest {
 		var problem = parse("""
 				pred predicate() <-> node({PARAM}).
 				""", qualifiedName);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(),
 				equalTo(problem.builtin().findEnum("bool").literal("true")));

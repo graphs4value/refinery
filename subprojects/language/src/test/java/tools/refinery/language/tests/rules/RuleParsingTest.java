@@ -42,7 +42,7 @@ class RuleParsingTest {
 			""" })
 	void simpleTest(String text) {
 		var problem = parseHelper.parse(text);
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 	}
 
 	@Test
@@ -51,7 +51,7 @@ class RuleParsingTest {
 				pred Person(p).
 				rule r(p1): must Person(p1) ==> new p2, Person(p2) := unknown.
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.rule("r").param(0), equalTo(problem.rule("r").conj(0).lit(0).arg(0).variable()));
 		assertThat(problem.rule("r").consequent(0).action(0).newVar(),
 				equalTo(problem.rule("r").consequent(0).action(1).assertedAtom().arg(0).variable()));
@@ -63,7 +63,7 @@ class RuleParsingTest {
 				pred Friend(a, b).
 				rule r(p1): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) := true.
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.rule("r").conj(0).lit(0).negated().arg(1).variable(),
 				not(equalTo(problem.rule("r").consequent(0).action(1).assertedAtom().arg(1).variable())));
 	}
@@ -74,7 +74,7 @@ class RuleParsingTest {
 				pred Friend(a, b).
 				rule r(p1, p2): !may Friend(p1, p2) ==> new p2, Friend(p1, p2) := true.
 				""");
-		assertThat(problem.errors(), empty());
+		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.rule("r").param(1),
 				not(equalTo(problem.rule("r").consequent(0).action(1).assertedAtom().arg(1).variable())));
 	}
@@ -85,6 +85,6 @@ class RuleParsingTest {
 				pred Person(p).
 				rule r(p1): must Friend(p1, p2) ==> delete p2.
 				""");
-		assertThat(problem.errors(), not(empty()));
+		assertThat(problem.getResourceErrors(), not(empty()));
 	}
 }

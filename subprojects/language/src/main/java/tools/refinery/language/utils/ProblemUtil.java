@@ -7,11 +7,12 @@ package tools.refinery.language.utils;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
 	public static final String BUILTIN_LIBRARY_NAME = "builtin";
-	public static final URI BUILTIN_LIBRARY_URI = getLibraryUri(BUILTIN_LIBRARY_NAME);
+	public static final URI BUILTIN_LIBRARY_URI = getLibraryUri();
 
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
@@ -83,8 +84,44 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	private static URI getLibraryUri(String libraryName) {
-		return URI.createURI(ProblemUtil.class.getClassLoader()
-				.getResource("tools/refinery/language/%s.problem".formatted(libraryName)).toString());
+	public static int getArity(Relation relation) {
+		if (relation instanceof ClassDeclaration || relation instanceof EnumDeclaration) {
+			return 1;
+		}
+		if (relation instanceof ReferenceDeclaration) {
+			return 2;
+		}
+		if (relation instanceof PredicateDefinition predicateDefinition) {
+			return predicateDefinition.getParameters().size();
+		}
+		throw new IllegalArgumentException("Unknown Relation: " + relation);
+	}
+
+	public static boolean isContainerReference(ReferenceDeclaration referenceDeclaration) {
+		var kind = referenceDeclaration.getKind();
+		if (kind == null) {
+			return false;
+		}
+		return switch (kind) {
+			case CONTAINMENT -> false;
+			case CONTAINER -> true;
+			case REFERENCE -> {
+				var opposite = referenceDeclaration.getOpposite();
+				if (opposite == null) {
+					yield false;
+				}
+				opposite = (ReferenceDeclaration) EcoreUtil.resolve(opposite, referenceDeclaration);
+				yield opposite.getKind() == ReferenceKind.CONTAINMENT;
+			}
+		};
+	}
+
+	private static URI getLibraryUri() {
+		var libraryResource = ProblemUtil.class.getClassLoader()
+				.getResource("tools/refinery/language/%s.problem".formatted(BUILTIN_LIBRARY_NAME));
+		if (libraryResource == null) {
+			throw new AssertionError("Library '%s' was not found".formatted(BUILTIN_LIBRARY_NAME));
+		}
+		return URI.createURI(libraryResource.toString());
 	}
 }

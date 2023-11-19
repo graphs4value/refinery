@@ -13,9 +13,12 @@ import tools.refinery.store.query.dnf.AnyQuery;
 import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.dnf.RelationalQuery;
 import tools.refinery.store.query.term.Variable;
+import tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.literal.CountCandidateLowerBoundLiteral;
+import tools.refinery.store.reasoning.literal.CountUpperBoundLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +42,7 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 		constraint.setLb((lowerBound - getSingleCount()));
 	}
 
-	public static class Factory extends TypeScopePropagator.Factory {
+	static class Factory extends TypeScopePropagator.Factory {
 		private final PartialRelation type;
 		private final int lowerBound;
 		private final RelationalQuery allMay;
@@ -77,10 +80,18 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 							output.assign(sub(constant(lowerBound), candidateLowerBound)),
 							check(greater(output, constant(0)))
 					)));
+			var tooFewObjects = Query.of(type.name() + "#tooFew", builder -> builder
+					.clause(UpperCardinality.class, upperBound -> List.of(
+							new CountUpperBoundLiteral(upperBound, type, List.of(Variable.of())),
+							check(UpperCardinalityTerms.less(upperBound,
+									UpperCardinalityTerms.constant(UpperCardinality.of(lowerBound))))
+					)));
 
 			storeBuilder.getAdapter(ReasoningBuilder.class).objective(Objectives.value(requiredObjects));
-			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder ->
-					dseBuilder.accept(Criteria.whenNoMatch(requiredObjects)));
+			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder -> {
+                dseBuilder.accept(Criteria.whenNoMatch(requiredObjects));
+				dseBuilder.exclude(Criteria.whenHasMatch(tooFewObjects));
+            });
 		}
 	}
 }

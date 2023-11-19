@@ -59,7 +59,7 @@ abstract class TypeScopePropagator {
 		adapter.markAsChanged();
 	}
 
-	public abstract static class Factory {
+	abstract static class Factory {
 		public abstract TypeScopePropagator createPropagator(BoundScopePropagator adapter);
 
 		protected abstract Collection<AnyQuery> getQueries();

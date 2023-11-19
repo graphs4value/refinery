@@ -64,9 +64,8 @@ export default function DirectionalSplitPane({
           [axis]: '0px',
           display: showLeftOnly || showRightOnly ? 'none' : 'flex',
           flexDirection: direction,
-          [horizontalSplit
-            ? 'borderBottom'
-            : 'borderRight']: `1px solid ${theme.palette.outer.border}`,
+          [horizontalSplit ? 'borderBottom' : 'borderRight']:
+            `1px solid ${theme.palette.outer.border}`,
         }}
       >
         <Box

@@ -153,15 +153,11 @@ public class MetamodelBuilder {
 			return;
 		}
 		var sourceType = info.sourceType();
-		var targetType = info.targetType();
 		if (typeHierarchyBuilder.isInvalidType(sourceType)) {
 			throw new TranslationException(linkType, "Source type %s of %s is not in type hierarchy"
 					.formatted(sourceType, linkType));
 		}
-		if (typeHierarchyBuilder.isInvalidType(targetType)) {
-			throw new TranslationException(linkType, "Target type %s of %s is not in type hierarchy"
-					.formatted(targetType, linkType));
-		}
+		var targetType = info.targetType();
 		var opposite = info.opposite();
 		Multiplicity targetMultiplicity = UnconstrainedMultiplicity.INSTANCE;
 		if (opposite != null) {
@@ -185,16 +181,28 @@ public class MetamodelBuilder {
 			oppositeReferences.put(opposite, linkType);
 		}
 		if (info.containment()) {
-			if (!UnconstrainedMultiplicity.INSTANCE.equals(targetMultiplicity)) {
-				throw new TranslationException(opposite, "Invalid opposite %s with multiplicity %s of containment %s"
-						.formatted(opposite, targetMultiplicity, linkType));
-			}
-			containedTypes.add(targetType);
-			containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType));
+			processContainmentInfo(linkType, info, targetMultiplicity);
 			return;
 		}
 		directedCrossReferences.put(linkType, new DirectedCrossReferenceInfo(sourceType, info.multiplicity(),
 				targetType, targetMultiplicity));
+	}
+
+	private void processContainmentInfo(PartialRelation linkType, ReferenceInfo info,
+										Multiplicity targetMultiplicity) {
+		var sourceType = info.sourceType();
+		var targetType = info.targetType();
+		var opposite = info.opposite();
+		if (typeHierarchyBuilder.isInvalidType(targetType)) {
+			throw new TranslationException(linkType, "Target type %s of %s is not in type hierarchy"
+					.formatted(targetType, linkType));
+		}
+		if (!UnconstrainedMultiplicity.INSTANCE.equals(targetMultiplicity)) {
+			throw new TranslationException(opposite, "Invalid opposite %s with multiplicity %s of containment %s"
+					.formatted(opposite, targetMultiplicity, linkType));
+		}
+		containedTypes.add(targetType);
+		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType));
 	}
 
 	private static void validateOpposite(PartialRelation linkType, ReferenceInfo info, PartialRelation opposite,

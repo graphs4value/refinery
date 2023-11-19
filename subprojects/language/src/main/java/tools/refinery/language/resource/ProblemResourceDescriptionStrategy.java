@@ -24,8 +24,9 @@ import java.util.Map;
 
 @Singleton
 public class ProblemResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
-	public static final String ERROR_PREDICATE = "tools.refinery.language.resource" +
-			".ProblemResourceDescriptionStrategy.ERROR_PREDICATE";
+	private static final String DATA_PREFIX = "tools.refinery.language.resource.ProblemResourceDescriptionStrategy.";
+	public static final String ARITY = DATA_PREFIX + "ARITY";
+	public static final String ERROR_PREDICATE = DATA_PREFIX + "ERROR_PREDICATE";
 	public static final String ERROR_PREDICATE_TRUE = "true";
 
 	@Inject
@@ -97,6 +98,10 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	protected Map<String, String> getUserData(EObject eObject) {
 		var builder = ImmutableMap.<String, String>builder();
+		if (eObject instanceof Relation relation) {
+			int arity = ProblemUtil.getArity(relation);
+			builder.put(ARITY, Integer.toString(arity));
+		}
 		if (eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError()) {
 			builder.put(ERROR_PREDICATE, ERROR_PREDICATE_TRUE);
 		}

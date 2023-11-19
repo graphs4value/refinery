@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.resource;
+package tools.refinery.language.validation;
 
 import java.util.HashMap;
 import java.util.Map;

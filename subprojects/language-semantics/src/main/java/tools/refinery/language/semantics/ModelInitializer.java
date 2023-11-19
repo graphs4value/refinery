@@ -63,6 +63,8 @@ public class ModelInitializer {
 
 	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new HashMap<>();
 
+	private final Set<PartialRelation> targetTypes = new HashSet<>();
+
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
 	private Metamodel metamodel;
@@ -285,6 +287,7 @@ public class ModelInitializer {
 		var relation = getPartialRelation(referenceDeclaration);
 		var source = getPartialRelation(classDeclaration);
 		var target = getPartialRelation(referenceDeclaration.getReferenceType());
+		targetTypes.add(target);
 		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 		var opposite = referenceDeclaration.getOpposite();
 		PartialRelation oppositeRelation = null;
@@ -473,17 +476,16 @@ public class ModelInitializer {
 	private void collectPredicateDefinition(PredicateDefinition predicateDefinition, ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var query = toQuery(partialRelation.name(), predicateDefinition);
-		boolean mutable;
+		boolean mutable = targetTypes.contains(partialRelation);
 		TruthValue defaultValue;
 		if (predicateDefinition.isError()) {
-			mutable = false;
 			defaultValue = TruthValue.FALSE;
 		} else {
 			var seed = modelSeed.getSeed(partialRelation);
 			defaultValue = seed.reducedValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
 			var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
 			// The symbol should be mutable if there is at least one non-default entry in the seed.
-			mutable = cursor.move();
+			mutable = mutable || cursor.move();
 		}
 		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
 		storeBuilder.with(translator);

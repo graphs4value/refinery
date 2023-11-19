@@ -210,7 +210,10 @@ function VisibilityDialog({
             }
           />
         </td>
-        <td onClick={() => graph.cycleVisibility(name)}>
+        <td
+          onClick={() => graph.cycleVisibility(name)}
+          aria-label="Toggle visiblity"
+        >
           <div className="VisibilityDialog-nowrap">
             <RelationName metadata={metadata} abbreviate={graph.abbreviate} />
           </div>
@@ -261,10 +264,10 @@ function VisibilityDialog({
           <table cellSpacing={0}>
             <thead>
               <tr>
-                <th>
+                <th aria-label="Show true and error values">
                   <LabelIcon />
                 </th>
-                <th>
+                <th aria-label="Show unknown values">
                   <LabelOutlinedIcon />
                 </th>
                 <th>Symbol</th>

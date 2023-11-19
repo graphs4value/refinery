@@ -6,7 +6,7 @@
 package tools.refinery.language.model.tests.utils;
 
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
-import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.util.Diagnostician;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
@@ -19,9 +19,16 @@ public record WrappedProblem(Problem problem) {
 		return problem;
 	}
 
-	public List<Diagnostic> errors() {
-		EcoreUtil.resolveAll(problem);
+	public List<Diagnostic> getResourceErrors() {
 		return problem.eResource().getErrors();
+	}
+
+	public List<Diagnostic> getResourceWarnings() {
+		return problem.eResource().getWarnings();
+	}
+
+	public List<org.eclipse.emf.common.util.Diagnostic> validate() {
+		return Diagnostician.INSTANCE.validate(problem).getChildren();
 	}
 
 	public WrappedProblem builtin() {
