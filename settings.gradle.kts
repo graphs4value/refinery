@@ -33,3 +33,5 @@ for (project in rootProject.children) {
 	project.name = "${rootProject.name}-$projectName"
 	project.projectDir = file("subprojects/$projectName")
 }
+
+includeBuild("z3")
