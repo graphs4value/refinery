@@ -95,6 +95,7 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 			));
 			missingBuilder.clause(Integer.class, existingContents -> List.of(
 					candidateMust(nodeType.call(node)),
+					candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(node)),
 					new CountCandidateLowerBoundLiteral(existingContents, linkType, arguments),
 					missingOutput.assign(sub(constant(lowerBound), existingContents)),
 					check(greater(missingOutput, constant(0)))
