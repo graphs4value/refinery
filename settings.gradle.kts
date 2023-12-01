@@ -26,6 +26,7 @@ include(
 		"store-query-interpreter",
 		"store-reasoning",
 		"store-reasoning-scope",
+		"store-reasoning-smt",
 )
 
 for (project in rootProject.children) {

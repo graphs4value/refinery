@@ -41,6 +41,7 @@ mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", ver
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.9.3963" }
+refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version = "4.12.2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
