@@ -4,21 +4,20 @@
 
 [versions]
 eclipseCollections = "12.0.0.M3"
-ecore = "2.35.0"
 jetty = "12.0.3"
 jmh = "1.37"
 junit = "5.10.1"
-mockito = "5.7.0"
+mockito = "5.8.0"
 mwe2 = "2.16.0"
 slf4j = "2.0.9"
-xtext = "2.33.0.M3"
+xtext = "2.33.0"
 
 [libraries]
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
-ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version.ref = "ecore" }
-ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.35.0" }
-ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecore" }
+ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.35.0" }
+ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.36.0" }
+ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.36.0" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-gradle-plugin-jdk11", version = "6.0.0" }
 gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", version = "8.1.1" }
 gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.4.1.3373" }

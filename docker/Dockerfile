@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:17-al2023-jdk AS jdk
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:21-al2023-jdk AS jdk
 
-FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:17-jdk-jammy AS jlink-base
+FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:21-jdk-jammy AS jlink-base
 # Use the Ubuntu Jammy based Temurin image for JLink, because it already
 # contains the require objcopy tool for stripping debug symbols:
 # https://github.com/docker-library/openjdk/issues/351
 # We'll have to cross-jlink the JDK: https://stackoverflow.com/a/47611708
-COPY --link --from=jdk /usr/lib/jvm/java-17-amazon-corretto /crossjdk
+COPY --link --from=jdk /usr/lib/jvm/java-21-amazon-corretto /crossjdk
 
 FROM --platform=$BUILDPLATFORM jlink-base AS jlink-amd64-on-amd64
 

@@ -63,7 +63,7 @@ const viteConfig: ViteConfig = {
       includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest,
     }),
-    ...devModePlugins,
+    devModePlugins,
   ],
   base: '',
   define: {
