@@ -46,7 +46,7 @@ J. Object Technol. **19**(3): 3:1-22 (2020) [[doi](https://doi.org/10.5381/jot.2
 * O. Semeráth, R. Farkas, G. Bergmann, D. Varró: _Diversity of graph models and graph generators in mutation testing._ Int. J. Softw. Tools Technol. Transf. **22**(1): 57-78 (2020) [[doi](https://doi.org/10.1007/s10009-019-00530-6)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10009-019-00530-6.pdf?pdf=button)]
 * O. Semeráth, A. Babikian, B. Chen, C. Li, K. Marussy, G. Szárnyas, D. Varró: _Automated generation of consistent, diverse and structurally realistic graph models._ Softw. Syst. Model. **20**(5): 1713-1734 (2021) [[doi](https://doi.org/10.1007/s10270-021-00884-z)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10270-021-00884-z.pdf?pdf=button)]
 
-### Correcness proofs
+### Correctness proofs
 
 * D. Varró, O. Semeráth, G. Szárnyas, Á. Horváth: &ldquo;Towards the Automated Generation of Consistent, Diverse, Scalable and Realistic Graph Models.&rdquo; _Graph Transformation, Specifications, and Nets 2018:_ 285-312 [[doi](https://doi.org/10.1007/978-3-319-75396-6_16)] [[pdf](https://inf.mit.bme.hu/sites/default/files/publications/fmhe-model-generation.pdf)]
 
