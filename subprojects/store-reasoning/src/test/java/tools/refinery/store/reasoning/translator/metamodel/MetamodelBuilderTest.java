@@ -8,7 +8,6 @@ package tools.refinery.store.reasoning.translator.metamodel;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,8 +23,13 @@ class MetamodelBuilderTest {
 		var builder = Metamodel.builder()
 				.type(university)
 				.type(course)
-				.reference(courses, university, course, location)
-				.reference(location, course, university);
+				.reference(courses, referenceBuilder -> referenceBuilder
+						.source(university)
+						.target(course)
+						.opposite(location))
+				.reference(location, referenceBuilder -> referenceBuilder
+						.source(course)
+						.target(university));
 
 		assertThrows(TranslationException.class, builder::build);
 	}
@@ -35,8 +39,14 @@ class MetamodelBuilderTest {
 		var builder = Metamodel.builder()
 				.type(university)
 				.type(course)
-				.reference(courses, university, course, location)
-				.reference(location, course, course, courses);
+				.reference(courses, referenceBuilder -> referenceBuilder
+						.source(university)
+						.target(course)
+						.opposite(location))
+				.reference(location, referenceBuilder -> referenceBuilder
+						.source(course)
+						.target(course)
+						.opposite(courses));
 
 		assertThrows(TranslationException.class, builder::build);
 	}
@@ -48,10 +58,16 @@ class MetamodelBuilderTest {
 		var builder = Metamodel.builder()
 				.type(university)
 				.type(course)
-				.reference(courses, university, true, course, location)
-				.reference(location, course,
-						ConstrainedMultiplicity.of(CardinalityIntervals.atLeast(2), invalidMultiplicity),
-						university,	courses);
+				.reference(courses, referenceBuilder -> referenceBuilder
+						.containment(true)
+						.source(university)
+						.target(course)
+						.opposite(location))
+				.reference(location, referenceBuilder -> referenceBuilder
+						.source(course)
+						.multiplicity(CardinalityIntervals.atLeast(2), invalidMultiplicity)
+						.target(university)
+						.opposite(courses));
 
 		assertThrows(TranslationException.class, builder::build);
 	}

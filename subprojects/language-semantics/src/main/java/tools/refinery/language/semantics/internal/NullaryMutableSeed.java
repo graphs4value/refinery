@@ -29,14 +29,14 @@ class NullaryMutableSeed implements MutableSeed<TruthValue> {
 	}
 
 	@Override
-	public TruthValue reducedValue() {
+	public TruthValue majorityValue() {
 		return value.getTruthValue();
 	}
 
 	@Override
 	public TruthValue get(Tuple key) {
 		validateKey(key);
-		return reducedValue();
+		return majorityValue();
 	}
 
 	private static void validateKey(Tuple key) {

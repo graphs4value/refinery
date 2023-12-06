@@ -115,12 +115,17 @@ class TerminalNode extends DecisionTreeNode {
 
 	@Override
 	protected DecisionTreeValue getOtherwiseReducedValue() {
-		return otherwise;
+		return getMajorityValue();
 	}
 
 	@Override
 	protected LazyIntIterable getChildKeys() {
 		return children.keysView();
+	}
+
+	@Override
+	public DecisionTreeValue getMajorityValue() {
+		return otherwise;
 	}
 
 	@Override

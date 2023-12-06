@@ -276,6 +276,16 @@ class DecisionTreeTests {
 		assertThat(sut.getReducedValue(), is(TruthValue.TRUE));
 	}
 
+	@Test
+	void overwriteWildcardAllTest() {
+		var first = new DecisionTree(2, TruthValue.UNKNOWN);
+		first.mergeValue(Tuple.of(-1, -1), TruthValue.FALSE);
+		var second = new DecisionTree(2, null);
+		second.mergeValue(Tuple.of(1, -1), TruthValue.TRUE);
+		first.overwriteValues(second);
+		assertThat(first.majorityValue(), is(TruthValue.FALSE));
+	}
+
 	private Map<Tuple, TruthValue> iterateAll(DecisionTree sut, TruthValue defaultValue, int nodeCount) {
 		var cursor = sut.getCursor(defaultValue, nodeCount);
 		var map = new LinkedHashMap<Tuple, TruthValue>();

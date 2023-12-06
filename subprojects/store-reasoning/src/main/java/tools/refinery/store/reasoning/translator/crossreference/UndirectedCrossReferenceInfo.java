@@ -7,8 +7,9 @@ package tools.refinery.store.reasoning.translator.crossreference;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
+import tools.refinery.store.representation.TruthValue;
 
-public record UndirectedCrossReferenceInfo(PartialRelation type, Multiplicity multiplicity) {
+public record UndirectedCrossReferenceInfo(PartialRelation type, Multiplicity multiplicity, TruthValue defaultValue) {
 	public boolean isConstrained() {
 		return multiplicity.isConstrained();
 	}
