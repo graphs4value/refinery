@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.model.hashTests;
+package tools.refinery.store.model.hashtests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -15,6 +15,7 @@ import tools.refinery.interpreter.matchers.util.*;
 import tools.refinery.interpreter.matchers.util.timeline.Diff;
 import tools.refinery.interpreter.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode.CumulativeAggregate;
 import tools.refinery.interpreter.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode.FoldingState;
+import tools.refinery.interpreter.rete.aggregation.timely.FaithfulTimelyColumnAggregatorNode.MergeableFoldingState;
 import tools.refinery.interpreter.rete.network.ReteContainer;
 import tools.refinery.interpreter.rete.network.communication.Timestamp;
 import tools.refinery.interpreter.rete.network.communication.timely.ResumableNode;
