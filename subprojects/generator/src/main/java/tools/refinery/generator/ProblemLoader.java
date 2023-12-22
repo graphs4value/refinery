@@ -10,6 +10,7 @@ import com.google.inject.Provider;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.diagnostics.Severity;
+import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IResourceFactory;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.util.LazyStringInputStream;
@@ -24,6 +25,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 public class ProblemLoader {
+	private String fileExtension;
+
 	@Inject
 	private Provider<XtextResourceSet> resourceSetProvider;
 
@@ -34,6 +37,11 @@ public class ProblemLoader {
 	private IResourceValidator resourceValidator;
 
 	private CancellationToken cancellationToken = CancellationToken.NONE;
+
+	@Inject
+	public void setFileExtensionProvider(FileExtensionProvider fileExtensionProvider) {
+		this.fileExtension = fileExtensionProvider.getPrimaryFileExtension();
+	}
 
 	public ProblemLoader cancellationToken(CancellationToken cancellationToken) {
 		this.cancellationToken = cancellationToken;
@@ -48,7 +56,8 @@ public class ProblemLoader {
 
 	public Problem loadStream(InputStream inputStream) throws IOException {
 		var resourceSet = resourceSetProvider.get();
-		var resource = resourceFactory.createResource(URI.createFileURI("__synthetic.problem"));
+		var uri = URI.createFileURI("__synthetic." + fileExtension);
+		var resource = resourceFactory.createResource(uri);
 		resourceSet.getResources().add(resource);
 		resource.load(inputStream, Map.of());
 		return loadResource(resource);
@@ -82,7 +91,7 @@ public class ProblemLoader {
 		if (!errors.isEmpty()) {
 			throw new ValidationErrorsException(resource.getURI(), errors);
 		}
-		if (resource.getContents().isEmpty() || !(resource.getContents().get(0) instanceof Problem problem)) {
+		if (resource.getContents().isEmpty() || !(resource.getContents().getFirst() instanceof Problem problem)) {
 			throw new IllegalArgumentException("Model generation problem not found in resource " + resource.getURI());
 		}
 		return problem;
