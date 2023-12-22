@@ -74,8 +74,8 @@ class ProblemSerializerTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource
-	void defaultAssertionTest(LogicValue value, String valueAsString) {
+	@MethodSource("assertionTest")
+	void defaultAssertionTest(LogicValue value, String serializedAssertion) {
 		var pred = createPred();
 		var node = ProblemFactory.eINSTANCE.createNode();
 		node.setName("a");
@@ -88,12 +88,7 @@ class ProblemSerializerTest {
 				pred foo(node p).
 
 				indiv a.
-				default foo(a):\040""" + valueAsString + ".\n");
-	}
-
-	static Stream<Arguments> defaultAssertionTest() {
-		return Stream.of(Arguments.of(LogicValue.TRUE, "true"), Arguments.of(LogicValue.FALSE, "false"),
-				Arguments.of(LogicValue.UNKNOWN, "unknown"), Arguments.of(LogicValue.ERROR, "error"));
+				default\040""" + serializedAssertion + "\n");
 	}
 
 	@Test
@@ -233,19 +228,14 @@ class ProblemSerializerTest {
 	}
 
 	private void assertSerializedResult(String expected) {
-		var outputStream = new ByteArrayOutputStream();
-		try {
-			resource.save(outputStream, Map.of());
-		} catch (IOException e) {
-			throw new AssertionError("Failed to serialize problem", e);
-		} finally {
-			try {
-				outputStream.close();
-			} catch (IOException e) {
-				// Nothing to handle in a test.
-			}
-		}
-		var problemString = outputStream.toString();
+		String problemString;
+        try (var outputStream = new ByteArrayOutputStream()) {
+            resource.save(outputStream, Map.of());
+			problemString = outputStream.toString();
+        } catch (IOException e) {
+            throw new AssertionError("Failed to serialize problem", e);
+        }
+        // Nothing to handle in a test.
 
 		assertThat(problemString.replace("\r\n", "\n"), equalTo(expected.replace("\r\n", "\n")));
 	}

@@ -21,8 +21,7 @@ public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemant
 
 	@Override
 	protected void sequence_Assertion(ISerializationContext context, Assertion semanticObject) {
-		if (semanticObject.isDefault() ||
-				!(semanticObject.getValue() instanceof LogicConstant logicConstant) ||
+		if (!(semanticObject.getValue() instanceof LogicConstant logicConstant) ||
 				logicConstant.getLogicValue() == LogicValue.ERROR) {
 			super.sequence_Assertion(context, semanticObject);
 			return;
@@ -39,6 +38,9 @@ public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemant
 		}
 		var feeder = createSequencerFeeder(context, semanticObject);
 		var access = grammarAccess.getAssertionAccess();
+		if (semanticObject.isDefault()) {
+			feeder.accept(access.getDefaultDefaultKeyword_0_0());
+		}
 		feeder.accept(access.getValueShortLogicConstantParserRuleCall_1_1_0_0(), logicConstant);
 		feeder.accept(access.getRelationRelationQualifiedNameParserRuleCall_1_1_1_0_1(), semanticObject.getRelation());
 		var iterator = semanticObject.getArguments().iterator();
