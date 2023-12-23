@@ -69,6 +69,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		doc.prepend(region.keyword("{"), this::oneSpace);
 		doc.append(region.keyword("{"), it -> it.setNewLines(1, 1, 2));
 		doc.prepend(region.keyword("}"), it -> it.setNewLines(1, 1, 2));
+		doc.interior(region.keyword("{"), region.keyword("}"), IHiddenRegionFormatter::indent);
 		doc.prepend(region.keyword("."), this::noSpace);
 		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
 			doc.format(featureDeclaration);
@@ -82,6 +83,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		doc.prepend(region.keyword("{"), this::oneSpace);
 		doc.append(region.keyword("{"), it -> it.setNewLines(1, 1, 2));
 		doc.prepend(region.keyword("}"), it -> it.setNewLines(1, 1, 2));
+		doc.interior(region.keyword("{"), region.keyword("}"), IHiddenRegionFormatter::indent);
 		doc.prepend(region.keyword("."), this::noSpace);
 	}
 

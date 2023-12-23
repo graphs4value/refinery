@@ -156,6 +156,7 @@ class ProblemSerializerTest {
 		problem.getStatements().add(assertion);
 	}
 
+
 	@Test
 	void implicitVariableTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
@@ -227,15 +228,77 @@ class ProblemSerializerTest {
 				""");
 	}
 
+	@Test
+	void unambiguousNameTest() {
+		createClassAndAssertion("Foo", "foo");
+
+		assertSerializedResult("""
+				class Foo {
+					Foo ref
+				}
+
+				ref(foo, foo).
+				""");
+	}
+
+	@Test
+	void ambiguousNameTest() {
+		createClassAndAssertion("Foo", "foo");
+		createClassAndAssertion("Bar", "bar");
+
+		assertSerializedResult("""
+				class Foo {
+					Foo ref
+				}
+
+				Foo::ref(foo, foo).
+
+				class Bar {
+					Bar ref
+				}
+
+				Bar::ref(bar, bar).
+				""");
+	}
+
+	private void createClassAndAssertion(String className, String nodeName) {
+		var classDeclaration = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration.setName(className);
+		var referenceDeclaration = ProblemFactory.eINSTANCE.createReferenceDeclaration();
+		referenceDeclaration.setReferenceType(classDeclaration);
+		referenceDeclaration.setName("ref");
+		classDeclaration.getFeatureDeclarations().add(referenceDeclaration);
+		problem.getStatements().add(classDeclaration);
+		var node = ProblemFactory.eINSTANCE.createNode();
+		node.setName(nodeName);
+		problem.getNodes().add(node);
+		createBinaryAssertion(referenceDeclaration, node, node);
+	}
+
+	private void createBinaryAssertion(Relation relation, Node from, Node to) {
+		var assertion = ProblemFactory.eINSTANCE.createAssertion();
+		assertion.setRelation(relation);
+		var fromArgument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
+		fromArgument.setNode(from);
+		assertion.getArguments().add(fromArgument);
+		var toArgument = ProblemFactory.eINSTANCE.createNodeAssertionArgument();
+		toArgument.setNode(to);
+		assertion.getArguments().add(toArgument);
+		var value = ProblemFactory.eINSTANCE.createLogicConstant();
+		value.setLogicValue(LogicValue.TRUE);
+		assertion.setValue(value);
+		problem.getStatements().add(assertion);
+	}
+
 	private void assertSerializedResult(String expected) {
 		String problemString;
-        try (var outputStream = new ByteArrayOutputStream()) {
-            resource.save(outputStream, Map.of());
+		try (var outputStream = new ByteArrayOutputStream()) {
+			resource.save(outputStream, Map.of());
 			problemString = outputStream.toString();
-        } catch (IOException e) {
-            throw new AssertionError("Failed to serialize problem", e);
-        }
-        // Nothing to handle in a test.
+		} catch (IOException e) {
+			throw new AssertionError("Failed to serialize problem", e);
+		}
+		// Nothing to handle in a test.
 
 		assertThat(problemString.replace("\r\n", "\n"), equalTo(expected.replace("\r\n", "\n")));
 	}
