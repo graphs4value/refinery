@@ -4,7 +4,7 @@
 
 [versions]
 eclipseCollections = "12.0.0.M3"
-jetty = "12.0.3"
+jetty = "12.0.5"
 jmh = "1.37"
 junit = "5.10.1"
 mockito = "5.8.0"
