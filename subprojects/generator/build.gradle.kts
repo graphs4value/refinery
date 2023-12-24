@@ -12,4 +12,5 @@ dependencies {
 	api(project(":refinery-language-semantics"))
 	api(libs.eclipseCollections.api)
 	implementation(project(":refinery-store-query-interpreter"))
+	testImplementation(testFixtures(project(":refinery-language")))
 }
