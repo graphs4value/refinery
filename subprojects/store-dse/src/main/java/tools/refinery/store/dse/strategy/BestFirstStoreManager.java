@@ -79,7 +79,7 @@ public class BestFirstStoreManager {
 		startExploration(initial, 1);
 	}
 
-	public void startExploration(Version initial, int randomSeed) {
+	public void startExploration(Version initial, long randomSeed) {
 		BestFirstExplorer bestFirstExplorer = new BestFirstExplorer(this, modelStore.createModelForState(initial),
 				randomSeed);
 		bestFirstExplorer.explore();

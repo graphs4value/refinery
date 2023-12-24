@@ -48,19 +48,27 @@ public class ProblemLoader {
 		return this;
 	}
 
-	public Problem loadString(String problemString) throws IOException {
+	public Problem loadString(String problemString, URI uri) throws IOException {
 		try (var stream = new LazyStringInputStream(problemString)) {
-			return loadStream(stream);
+			return loadStream(stream, uri);
 		}
 	}
 
-	public Problem loadStream(InputStream inputStream) throws IOException {
+	public Problem loadString(String problemString) throws IOException {
+		return loadString(problemString, null);
+	}
+
+	public Problem loadStream(InputStream inputStream, URI uri) throws IOException {
 		var resourceSet = resourceSetProvider.get();
-		var uri = URI.createFileURI("__synthetic." + fileExtension);
-		var resource = resourceFactory.createResource(uri);
+		var resourceUri = uri == null ? URI.createFileURI("__synthetic." + fileExtension) : uri;
+		var resource = resourceFactory.createResource(resourceUri);
 		resourceSet.getResources().add(resource);
 		resource.load(inputStream, Map.of());
 		return loadResource(resource);
+	}
+
+	public Problem loadStream(InputStream inputStream) throws IOException {
+		return loadStream(inputStream, null);
 	}
 
 	public Problem loadFile(File file) throws IOException {

@@ -5,7 +5,10 @@
  */
 package tools.refinery.generator;
 
+import com.google.inject.Provider;
+import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
+import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
@@ -16,21 +19,22 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 
 public class ModelGenerator extends ModelFacade {
 	private final Version initialVersion;
-
-	private int randomSeed = 0;
-
+	private final Provider<SolutionSerializer> solutionSerializerProvider;
+	private long randomSeed = 1;
 	private boolean lastGenerationSuccessful;
 
-	public ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed) {
+	ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
+                          Provider<SolutionSerializer> solutionSerializerProvider) {
 		super(problemTrace, store, modelSeed, Concreteness.CANDIDATE);
+		this.solutionSerializerProvider = solutionSerializerProvider;
 		initialVersion = getModel().commit();
 	}
 
-	public int getRandomSeed() {
+	public long getRandomSeed() {
 		return randomSeed;
 	}
 
-	public void setRandomSeed(int randomSeed) {
+	public void setRandomSeed(long randomSeed) {
 		this.randomSeed = randomSeed;
 		this.lastGenerationSuccessful = false;
 	}
@@ -50,7 +54,7 @@ public class ModelGenerator extends ModelFacade {
 		if (solutions.isEmpty()) {
 			return false;
 		}
-		getModel().restore(solutions.get(0).version());
+		getModel().restore(solutions.getFirst().version());
 		lastGenerationSuccessful = true;
 		return true;
 	}
@@ -63,9 +67,19 @@ public class ModelGenerator extends ModelFacade {
 
 	@Override
 	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(PartialSymbol<A, C> partialSymbol) {
+		checkSuccessfulGeneration();
+		return super.getPartialInterpretation(partialSymbol);
+	}
+
+	public Problem serializeSolution() {
+		checkSuccessfulGeneration();
+		var serializer = solutionSerializerProvider.get();
+		return serializer.serializeSolution(getProblemTrace(), getModel());
+	}
+
+	private void checkSuccessfulGeneration() {
 		if (!lastGenerationSuccessful) {
 			throw new IllegalStateException("No generated model is available");
 		}
-		return super.getPartialInterpretation(partialSymbol);
 	}
 }

@@ -23,6 +23,7 @@ gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", ver
 gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.4.1.3373" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.10.1" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
+jcommander = { group = "org.jcommander", name = "jcommander", version = "1.83" }
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.1.0" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty.ee10", name = "jetty-ee10-servlet", version.ref = "jetty" }
