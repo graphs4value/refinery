@@ -9,7 +9,6 @@ import com.google.inject.Inject;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
@@ -28,7 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ProblemTraceImpl implements ProblemTrace {
+class ProblemTraceImpl implements ProblemTrace {
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
 
@@ -164,24 +163,6 @@ public class ProblemTraceImpl implements ProblemTrace {
 	}
 
 	private <T> T getElement(IScope scope, QualifiedName qualifiedName, Class<T> type) {
-		var iterator = scope.getElements(qualifiedName).iterator();
-		if (!iterator.hasNext()) {
-			var qualifiedNameString = qualifiedNameConverter.toString(qualifiedName);
-			throw new IllegalArgumentException("No such %s: %s"
-					.formatted(type.getName(), qualifiedNameString));
-		}
-		var eObjectDescription = iterator.next();
-		if (iterator.hasNext()) {
-			var qualifiedNameString = qualifiedNameConverter.toString(qualifiedName);
-			throw new IllegalArgumentException("Ambiguous %s: %s"
-					.formatted(type.getName(), qualifiedNameString));
-		}
-		var eObject = EcoreUtil.resolve(eObjectDescription.getEObjectOrProxy(), getProblem());
-		if (!type.isInstance(eObject)) {
-			var qualifiedNameString = qualifiedNameConverter.toString(qualifiedName);
-			throw new IllegalArgumentException("Not a %s: %s"
-					.formatted(type.getName(), qualifiedNameString));
-		}
-		return type.cast(eObject);
+		return semanticsUtils.getElement(problem, scope, qualifiedName, type);
 	}
 }

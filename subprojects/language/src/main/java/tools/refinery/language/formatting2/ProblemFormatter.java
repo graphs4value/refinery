@@ -69,10 +69,22 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		doc.prepend(region.keyword("{"), this::oneSpace);
 		doc.append(region.keyword("{"), it -> it.setNewLines(1, 1, 2));
 		doc.prepend(region.keyword("}"), it -> it.setNewLines(1, 1, 2));
+		doc.interior(region.keyword("{"), region.keyword("}"), IHiddenRegionFormatter::indent);
 		doc.prepend(region.keyword("."), this::noSpace);
 		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
 			doc.format(featureDeclaration);
 		}
+	}
+
+	protected void format(EnumDeclaration enumDeclaration, IFormattableDocument doc) {
+		surroundNewLines(doc, enumDeclaration, this::twoNewLines);
+		var region = regionFor(enumDeclaration);
+		doc.append(region.keyword("enum"), this::oneSpace);
+		doc.prepend(region.keyword("{"), this::oneSpace);
+		doc.append(region.keyword("{"), it -> it.setNewLines(1, 1, 2));
+		doc.prepend(region.keyword("}"), it -> it.setNewLines(1, 1, 2));
+		doc.interior(region.keyword("{"), region.keyword("}"), IHiddenRegionFormatter::indent);
+		doc.prepend(region.keyword("."), this::noSpace);
 	}
 
 	protected void format(PredicateDefinition predicateDefinition, IFormattableDocument doc) {
@@ -151,14 +163,14 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	}
 
 	protected void surroundNewLines(IFormattableDocument doc, EObject eObject,
-			Procedure1<? super IHiddenRegionFormatter> init) {
+									Procedure1<? super IHiddenRegionFormatter> init) {
 		var region = doc.getRequest().getTextRegionAccess().regionForEObject(eObject);
 		preprendNewLines(doc, region, init);
 		appendNewLines(doc, region, init);
 	}
 
 	protected void preprendNewLines(IFormattableDocument doc, ISequentialRegion region,
-			Procedure1<? super IHiddenRegionFormatter> init) {
+									Procedure1<? super IHiddenRegionFormatter> init) {
 		if (region == null) {
 			return;
 		}
@@ -174,7 +186,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	}
 
 	protected void appendNewLines(IFormattableDocument doc, ISequentialRegion region,
-			Procedure1<? super IHiddenRegionFormatter> init) {
+								  Procedure1<? super IHiddenRegionFormatter> init) {
 		if (region == null) {
 			return;
 		}

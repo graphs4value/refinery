@@ -19,7 +19,7 @@ public interface Seed<T> {
 
 	Class<T> valueType();
 
-	T reducedValue();
+	T majorityValue();
 
 	T get(Tuple key);
 

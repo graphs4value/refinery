@@ -23,7 +23,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ReferenceKind"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="referenceType" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="invalidMultiplicity" eType="#//Relation"
-        containment="true"/>
+        transient="true" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

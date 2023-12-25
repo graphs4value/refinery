@@ -12,19 +12,19 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.Map;
 import java.util.Objects;
 
-record MapBasedSeed<T>(int arity, Class<T> valueType, T reducedValue, Map<Tuple, T> map) implements Seed<T> {
+record MapBasedSeed<T>(int arity, Class<T> valueType, T majorityValue, Map<Tuple, T> map) implements Seed<T> {
 	@Override
 	public T get(Tuple key) {
 		var value = map.get(key);
-		return value == null ? reducedValue : value;
+		return value == null ? majorityValue : value;
 	}
 
 	@Override
 	public Cursor<Tuple, T> getCursor(T defaultValue, int nodeCount) {
-		if (Objects.equals(defaultValue, reducedValue)) {
+		if (Objects.equals(defaultValue, majorityValue)) {
 			return Cursors.of(map);
 		}
-		return new CartesianProductCursor<>(arity, nodeCount, reducedValue, defaultValue, map);
+		return new CartesianProductCursor<>(arity, nodeCount, majorityValue, defaultValue, map);
 	}
 
 	private static class CartesianProductCursor<T> implements Cursor<Tuple, T> {

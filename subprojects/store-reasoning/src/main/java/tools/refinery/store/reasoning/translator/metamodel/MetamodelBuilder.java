@@ -16,6 +16,7 @@ import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMulti
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeInfo;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class MetamodelBuilder {
 	private final ContainedTypeHierarchyBuilder typeHierarchyBuilder = new ContainedTypeHierarchyBuilder();
@@ -68,6 +69,12 @@ public class MetamodelBuilder {
 		return this;
 	}
 
+	public MetamodelBuilder reference(PartialRelation linkType, Consumer<ReferenceInfoBuilder> callback) {
+		var builder = ReferenceInfo.builder();
+		callback.accept(builder);
+		return reference(linkType, builder.build());
+	}
+
 	public MetamodelBuilder reference(PartialRelation linkType, ReferenceInfo info) {
 		if (linkType.arity() != 2) {
 			throw new TranslationException(linkType,
@@ -79,47 +86,6 @@ public class MetamodelBuilder {
 			throw new TranslationException(linkType, "Duplicate reference info for partial relation: " + linkType);
 		}
 		return this;
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType, boolean containment,
-									  Multiplicity multiplicity, PartialRelation targetType,
-									  PartialRelation opposite) {
-		return reference(linkType, new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite));
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType, Multiplicity multiplicity,
-									  PartialRelation targetType, PartialRelation opposite) {
-		return reference(linkType, sourceType, false, multiplicity, targetType, opposite);
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType,
-									  boolean containment, PartialRelation targetType, PartialRelation opposite) {
-		return reference(linkType, sourceType, containment, UnconstrainedMultiplicity.INSTANCE, targetType, opposite);
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType, PartialRelation targetType,
-									  PartialRelation opposite) {
-		return reference(linkType, sourceType, UnconstrainedMultiplicity.INSTANCE, targetType, opposite);
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType, boolean containment,
-									  Multiplicity multiplicity, PartialRelation targetType) {
-		return reference(linkType, sourceType, containment, multiplicity, targetType, null);
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType, Multiplicity multiplicity,
-									  PartialRelation targetType) {
-		return reference(linkType, sourceType, multiplicity, targetType, null);
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType, boolean containment,
-									  PartialRelation targetType) {
-		return reference(linkType, sourceType, containment, targetType, null);
-	}
-
-	public MetamodelBuilder reference(PartialRelation linkType, PartialRelation sourceType,
-									  PartialRelation targetType) {
-		return reference(linkType, sourceType, targetType, null);
 	}
 
 	public MetamodelBuilder references(Collection<Map.Entry<PartialRelation, ReferenceInfo>> entries) {
@@ -160,10 +126,12 @@ public class MetamodelBuilder {
 		var targetType = info.targetType();
 		var opposite = info.opposite();
 		Multiplicity targetMultiplicity = UnconstrainedMultiplicity.INSTANCE;
+		var defaultValue = info.defaultValue();
 		if (opposite != null) {
 			var oppositeInfo = referenceInfoMap.get(opposite);
 			validateOpposite(linkType, info, opposite, oppositeInfo);
 			targetMultiplicity = oppositeInfo.multiplicity();
+			defaultValue = defaultValue.merge(oppositeInfo.defaultValue());
 			if (oppositeInfo.containment()) {
 				// Skip processing this reference and process it once we encounter its containment opposite.
 				return;
@@ -175,7 +143,7 @@ public class MetamodelBuilder {
 									targetType, linkType, sourceType));
 				}
 				undirectedCrossReferences.put(linkType, new UndirectedCrossReferenceInfo(sourceType,
-						info.multiplicity()));
+						info.multiplicity(), defaultValue));
 				return;
 			}
 			oppositeReferences.put(opposite, linkType);
@@ -185,7 +153,7 @@ public class MetamodelBuilder {
 			return;
 		}
 		directedCrossReferences.put(linkType, new DirectedCrossReferenceInfo(sourceType, info.multiplicity(),
-				targetType, targetMultiplicity));
+				targetType, targetMultiplicity, defaultValue));
 	}
 
 	private void processContainmentInfo(PartialRelation linkType, ReferenceInfo info,

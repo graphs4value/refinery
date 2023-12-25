@@ -27,9 +27,7 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
-import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
-import tools.refinery.store.reasoning.translator.metamodel.MetamodelBuilder;
-import tools.refinery.store.reasoning.translator.metamodel.MetamodelTranslator;
+import tools.refinery.store.reasoning.translator.metamodel.*;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
@@ -73,6 +71,10 @@ public class ModelInitializer {
 
 	private ScopePropagator scopePropagator;
 
+	private int nodeCount;
+
+	private ModelSeed.Builder modelSeedBuilder;
+
 	private ModelSeed modelSeed;
 
 	public void readProblem(Problem problem) {
@@ -101,13 +103,17 @@ public class ModelInitializer {
 							TruthValue.FALSE));
 			collectNodes();
 			collectPartialSymbols();
+			nodeCount = problemTrace.getNodeTrace().size();
+			modelSeedBuilder = ModelSeed.builder(nodeCount);
+			collectAssertions();
 			collectMetamodel();
 			metamodel = metamodelBuilder.build();
 			problemTrace.setMetamodel(metamodel);
-			collectAssertions();
-			int nodeCount = problemTrace.getNodeTrace().size();
-			var modelSeedBuilder = ModelSeed.builder(nodeCount);
+			fixClassDeclarationAssertions();
 			for (var entry : relationInfoMap.entrySet()) {
+				if (entry.getKey() instanceof ReferenceDeclaration) {
+					continue;
+				}
 				var info = entry.getValue();
 				var partialRelation = info.partialRelation();
 				modelSeedBuilder.seed(partialRelation, info.toSeed(nodeCount));
@@ -296,7 +302,20 @@ public class ModelInitializer {
 		}
 		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
 		try {
-			metamodelBuilder.reference(relation, source, containment, multiplicity, target, oppositeRelation);
+			var seed = relationInfoMap.get(referenceDeclaration).toSeed(nodeCount);
+			var defaultValue = seed.majorityValue();
+			if (defaultValue.must()) {
+				defaultValue = TruthValue.FALSE;
+			}
+			modelSeedBuilder.seed(relation, seed);
+			metamodelBuilder.reference(relation, ReferenceInfo.builder()
+					.containment(containment)
+					.source(source)
+					.multiplicity(multiplicity)
+					.target(target)
+					.opposite(oppositeRelation)
+					.defaultValue(defaultValue)
+					.build());
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
 		}
@@ -355,10 +374,6 @@ public class ModelInitializer {
 		collectCardinalityAssertions(newNodeId, TruthValue.UNKNOWN);
 		var tuple = Tuple.of(newNodeId);
 		mergeValue(classDeclaration, tuple, TruthValue.TRUE);
-		var typeInfo = metamodel.typeHierarchy().getAnalysisResult(getPartialRelation(classDeclaration));
-		for (var subType : typeInfo.getDirectSubtypes()) {
-			partialRelationInfoMap.get(subType).assertions().mergeValue(tuple, TruthValue.FALSE);
-		}
 	}
 
 	private void collectEnumAssertions(EnumDeclaration enumDeclaration) {
@@ -396,6 +411,27 @@ public class ModelInitializer {
 			info.defaultAssertions().mergeValue(tuple, value);
 		} else {
 			info.assertions().mergeValue(tuple, value);
+		}
+	}
+
+	private void fixClassDeclarationAssertions() {
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof ClassDeclaration classDeclaration) {
+				fixClassDeclarationAssertions(classDeclaration);
+			}
+		}
+	}
+
+	private void fixClassDeclarationAssertions(ClassDeclaration classDeclaration) {
+		var newNode = classDeclaration.getNewNode();
+		if (newNode == null) {
+			return;
+		}
+		var newNodeId = getNodeId(newNode);
+		var tuple = Tuple.of(newNodeId);
+		var typeInfo = metamodel.typeHierarchy().getAnalysisResult(getPartialRelation(classDeclaration));
+		for (var subType : typeInfo.getDirectSubtypes()) {
+			partialRelationInfoMap.get(subType).assertions().mergeValue(tuple, TruthValue.FALSE);
 		}
 	}
 
@@ -482,7 +518,7 @@ public class ModelInitializer {
 			defaultValue = TruthValue.FALSE;
 		} else {
 			var seed = modelSeed.getSeed(partialRelation);
-			defaultValue = seed.reducedValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+			defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
 			var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
 			// The symbol should be mutable if there is at least one non-default entry in the seed.
 			mutable = mutable || cursor.move();
@@ -495,7 +531,7 @@ public class ModelInitializer {
 		var problemParameters = predicateDefinition.getParameters();
 		int arity = problemParameters.size();
 		var parameters = new NodeVariable[arity];
-		var parameterMap = new HashMap<tools.refinery.language.model.problem.Variable, Variable>(arity);
+		var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
 		var commonLiterals = new ArrayList<Literal>();
 		for (int i = 0; i < arity; i++) {
 			var problemParameter = problemParameters.get(i);
@@ -532,7 +568,7 @@ public class ModelInitializer {
 			return existing;
 		}
 		int localScopeSize = existing.size() + newVariables.size();
-		var localScope = new HashMap<tools.refinery.language.model.problem.Variable, Variable>(localScopeSize);
+		var localScope = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(localScopeSize);
 		localScope.putAll(existing);
 		for (var newVariable : newVariables) {
 			localScope.put(newVariable, Variable.of(newVariable.getName()));

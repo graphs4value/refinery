@@ -16,7 +16,6 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
-import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
@@ -45,12 +44,23 @@ class MetamodelTest {
 				.type(teacher, person)
 				.type(university)
 				.type(course)
-				.reference(courses, university, true, course, location)
-				.reference(location, course, university, courses)
-				.reference(lecturer, course,
-						ConstrainedMultiplicity.of(CardinalityIntervals.ONE, invalidLecturerCount), teacher)
-				.reference(enrolledStudents, course,
-						ConstrainedMultiplicity.of(CardinalityIntervals.SOME, invalidStudentCount), student)
+				.reference(courses, builder -> builder
+						.containment(true)
+						.source(university)
+						.target(course)
+						.opposite(location))
+				.reference(location, builder -> builder
+						.source(course)
+						.target(university)
+						.opposite(courses))
+				.reference(lecturer, builder -> builder
+						.source(course)
+						.multiplicity(CardinalityIntervals.ONE, invalidLecturerCount)
+						.target(teacher))
+				.reference(enrolledStudents, builder -> builder
+						.source(course)
+						.multiplicity(CardinalityIntervals.SOME, invalidStudentCount)
+						.target(student))
 				.build();
 
 		var seed = ModelSeed.builder(5)
@@ -105,9 +115,11 @@ class MetamodelTest {
 		var metamodel = Metamodel.builder()
 				.type(university)
 				.type(course)
-				.reference(courses, university, true, course)
+				.reference(courses, builder -> builder
+						.containment(true)
+						.source(university)
+						.target(course))
 				.build();
-
 
 		var seed = ModelSeed.builder(4)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder

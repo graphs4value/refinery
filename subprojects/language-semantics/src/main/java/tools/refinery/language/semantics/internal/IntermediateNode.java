@@ -130,6 +130,11 @@ final class IntermediateNode extends DecisionTreeNode {
 		return children.keysView();
 	}
 
+	@Override
+	public DecisionTreeValue getMajorityValue() {
+		return otherwise.getMajorityValue();
+	}
+
 	protected boolean moveNextSparse(int level, DecisionTreeCursor cursor, int startIndex, int[] sortedChildren) {
 		for (int i = startIndex; i < sortedChildren.length; i++) {
 			var key = sortedChildren[i];

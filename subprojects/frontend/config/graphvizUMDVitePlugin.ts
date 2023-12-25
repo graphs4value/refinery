@@ -27,13 +27,15 @@ export default function graphvizUMDVitePlugin(): PluginOption {
     async buildStart() {
       const issuer =
         root === undefined ? issuerFileName : path.join(root, issuerFileName);
-      const resolvedPath = pnpapi.resolveRequest(
-        '@hpcc-js/wasm/graphviz',
-        issuer,
-      );
-      if (resolvedPath === null) {
+      // Since https://github.com/hpcc-systems/hpcc-js-wasm/commit/15e1ace5edae7f94714e547a3ac20e0e17cd6b0c,
+      // hpcc-js has both a `.cjs` and a `.umd.js` build. PnPAPI will find the former, but we need the latter.
+      const resolvedPath = pnpapi
+        .resolveRequest('@hpcc-js/wasm/graphviz', issuer)
+        ?.replace(/\.cjs$/, '.umd.js');
+      if (resolvedPath === undefined) {
         return;
       }
+      console.log(resolvedPath);
       if (command === 'serve') {
         url = `/@fs/${resolvedPath}`;
       } else {

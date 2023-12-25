@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ModelInitializer;
+import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
@@ -24,6 +25,9 @@ import java.util.Set;
 public final class ModelGeneratorFactory {
 	@Inject
 	private Provider<ModelInitializer> initializerProvider;
+
+	@Inject
+	private Provider<SolutionSerializer> solutionSerializerProvider;
 
 	private CancellationToken cancellationToken = CancellationToken.NONE;
 
@@ -53,7 +57,8 @@ public final class ModelGeneratorFactory {
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		return new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed());
+		return new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
+                solutionSerializerProvider);
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {

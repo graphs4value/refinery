@@ -20,6 +20,7 @@ import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
+import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
@@ -34,12 +35,15 @@ import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
 import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;
+import tools.refinery.language.serializer.ProblemCrossReferenceSerializer;
 import tools.refinery.language.validation.ProblemDiagnosticConverter;
 
 /**
  * Use this class to register components to be used at runtime / without the
  * Equinox extension registry.
  */
+// Unused methods in this class are called by reflection to configure the Xtext Injector.
+@SuppressWarnings("unused")
 public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends IParser> bindIParser() {
@@ -102,6 +106,10 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends ISemanticSequencer> bindISemanticSequencer() {
 		return PreferShortAssertionsProblemSemanticSequencer.class;
+	}
+
+	public Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
+		return ProblemCrossReferenceSerializer.class;
 	}
 
 	public Class<? extends IDiagnosticConverter> bindIDiagnosticConverter() {

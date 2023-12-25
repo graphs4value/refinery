@@ -27,7 +27,6 @@ import tools.refinery.store.reasoning.translator.containment.ContainmentHierarch
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 import tools.refinery.store.reasoning.translator.metamodel.MetamodelTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
-import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.statecoding.StateCoderAdapter;
@@ -109,10 +108,16 @@ class PredicateScopeTest {
 	private ModelStore createStore() {
 		var metamodel = Metamodel.builder()
 				.type(index)
-				.reference(next, index, false,
-						ConstrainedMultiplicity.of(CardinalityIntervals.LONE, nextInvalidMultiplicity), index, prev)
-				.reference(prev, index, false,
-						ConstrainedMultiplicity.of(CardinalityIntervals.LONE, prevInvalidMultiplicity), index, next)
+				.reference(next, builder -> builder
+						.source(index)
+						.target(index)
+						.multiplicity(CardinalityIntervals.LONE, nextInvalidMultiplicity)
+						.opposite(prev))
+				.reference(prev, builder -> builder
+						.source(index)
+						.target(index)
+						.multiplicity(CardinalityIntervals.LONE, prevInvalidMultiplicity)
+						.opposite(next))
 				.build();
 		return ModelStore.builder()
 				.with(QueryInterpreterAdapter.builder())

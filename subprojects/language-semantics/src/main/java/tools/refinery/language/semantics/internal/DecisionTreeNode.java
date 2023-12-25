@@ -100,6 +100,8 @@ abstract class DecisionTreeNode {
 
 	protected abstract LazyIntIterable getChildKeys();
 
+	public abstract DecisionTreeValue getMajorityValue();
+
 	protected abstract boolean moveNextSparse(int level, DecisionTreeCursor cursor, int startIndex,
 											  int[] sortedChildren);
 

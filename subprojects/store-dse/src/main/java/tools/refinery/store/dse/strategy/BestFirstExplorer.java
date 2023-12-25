@@ -10,10 +10,10 @@ import tools.refinery.store.model.Model;
 import java.util.Random;
 
 public class BestFirstExplorer extends BestFirstWorker {
-	final int id;
+	final long id;
 	Random random;
 
-	public BestFirstExplorer(BestFirstStoreManager storeManager, Model model, int id) {
+	public BestFirstExplorer(BestFirstStoreManager storeManager, Model model, long id) {
 		super(storeManager, model);
 		this.id = id;
 		// The use of a non-cryptographic random generator is safe here, because we only use it to direct the state
