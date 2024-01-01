@@ -1,29 +1,36 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.language.web.semantics.metadata;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.semantics.NodeNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.IntFunction;
 
 public class MetadataCreator {
 	@Inject
@@ -35,10 +42,11 @@ public class MetadataCreator {
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
 
+	@Inject
+	private Provider<NodeNameProvider> nodeNameProviderProvider;
+
 	private ProblemTrace problemTrace;
-
 	private IScope nodeScope;
-
 	private IScope relationScope;
 
 	public void setProblemTrace(ProblemTrace problemTrace) {
@@ -51,32 +59,55 @@ public class MetadataCreator {
 		relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ASSERTION__RELATION);
 	}
 
-	public static String unnamedNode(int nodeId) {
-		return "::" + nodeId;
-	}
-
-	public List<NodeMetadata> getNodesMetadata(Model model, boolean preserveNewNodes) {
+	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
+		var getName = makeGetName(model, concreteness);
+		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
 		for (var entry : nodeTrace.keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();
-			nodes[id] = getNodeMetadata(id, node, preserveNewNodes);
+			nodes[id] = getNodeMetadata(id, node, preserveNewNodes, getName);
 		}
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] == null) {
-				var nodeName = unnamedNode(i);
+				var nodeName = getName.apply(i);
 				nodes[i] = new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
 			}
 		}
 		return List.of(nodes);
 	}
 
-	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes) {
+	@NotNull
+	private IntFunction<String> makeGetName(Model model, Concreteness concreteness) {
+		var nodeNameProvider = nodeNameProviderProvider.get();
+		nodeNameProvider.setProblem(problemTrace.getProblem());
+		var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
+		var existsInterpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(concreteness,
+				ReasoningAdapter.EXISTS_SYMBOL);
+		return nodeId -> {
+			var key = Tuple.of(nodeId);
+			var inferredType = typeInterpretation.get(key);
+			if (inferredType == null || inferredType.candidateType() == null) {
+				return nodeNameProvider.getNextName(null);
+			}
+			if (concreteness == Concreteness.CANDIDATE && !existsInterpretation.get(key).may()) {
+				// Do not increment the node name counter for non-existent nodes in the candidate interpretation.
+				// While non-existent nodes may appear in the partial interpretation, they are never displayed in the
+				// candidate interpretation.
+				return "::" + nodeId;
+			}
+			var relation = problemTrace.getRelation(inferredType.candidateType());
+			return nodeNameProvider.getNextName(relation.getName());
+		};
+	}
+
+	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes,
+										 IntFunction<String> getName) {
 		var kind = getNodeKind(node);
 		if (!preserveNewNodes && kind == NodeKind.NEW) {
-			var nodeName = unnamedNode(nodeId);
+			var nodeName = getName.apply(nodeId);
 			return new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
 		}
 		var qualifiedName = getQualifiedName(node);

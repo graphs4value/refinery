@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -20,6 +20,7 @@ import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.semantics.metadata.MetadataCreator;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
 
@@ -73,7 +74,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		}
 		cancellationToken.checkCancelled();
 		metadataCreator.setProblemTrace(semantics.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), true);
+		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), Concreteness.PARTIAL);
 		cancellationToken.checkCancelled();
 		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();

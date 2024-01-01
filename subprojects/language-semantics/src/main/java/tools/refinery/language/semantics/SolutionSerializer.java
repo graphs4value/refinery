@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,12 +8,9 @@ package tools.refinery.language.semantics;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.FileExtensionProvider;
@@ -37,7 +34,6 @@ import tools.refinery.store.tuple.Tuple;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -57,9 +53,6 @@ public class SolutionSerializer {
 	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject
-	private IQualifiedNameConverter qualifiedNameConverter;
-
-	@Inject
 	private SemanticsUtils semanticsUtils;
 
 	@Inject
@@ -67,6 +60,9 @@ public class SolutionSerializer {
 
 	@Inject
 	private ProblemDesugarer desugarer;
+
+	@Inject
+	private NodeNameProvider nameProvider;
 
 	private ProblemTrace trace;
 	private Model model;
@@ -95,6 +91,7 @@ public class SolutionSerializer {
 		problem = copyProblem(originalProblem, uri);
 		problem.getStatements().removeIf(SolutionSerializer::shouldRemoveStatement);
 		problem.getNodes().removeIf(this::shouldRemoveNode);
+		nameProvider.setProblem(problem);
 		addExistsAssertions();
 		addClassAssertions();
 		addReferenceAssertions();
@@ -172,11 +169,6 @@ public class SolutionSerializer {
 		return findNode(qualifiedName);
 	}
 
-	private Node findNode(String name) {
-		var qualifiedName = qualifiedNameConverter.toQualifiedName(name);
-		return findNode(qualifiedName);
-	}
-
 	private Node findNode(QualifiedName qualifiedName) {
 		var scope = scopeProvider.getScope(problem, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE);
 		return semanticsUtils.maybeGetElement(problem, scope, qualifiedName, Node.class);
@@ -222,19 +214,17 @@ public class SolutionSerializer {
 	private void addClassAssertions() {
 		var types = trace.getMetamodel().typeHierarchy().getPreservedTypes().keySet().stream()
 				.collect(Collectors.toMap(Function.identity(), this::findPartialRelation));
-		var indexMap = ObjectIntMaps.mutable.empty();
 		var cursor = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL).getAll();
 		while (cursor.move()) {
 			var key = cursor.getKey();
 			var nodeId = key.get(0);
 			if (isExistingNode(nodeId)) {
-				createNodeAndAssertType(nodeId, cursor.getValue(), types, indexMap);
+				createNodeAndAssertType(nodeId, cursor.getValue(), types);
 			}
 		}
 	}
 
-	private void createNodeAndAssertType(int nodeId, InferredType inferredType, Map<PartialRelation, Relation> types,
-										 MutableObjectIntMap<Object> indexMap) {
+	private void createNodeAndAssertType(int nodeId, InferredType inferredType, Map<PartialRelation, Relation> types) {
 		var candidateTypeSymbol = inferredType.candidateType();
 		var candidateRelation = types.get(candidateTypeSymbol);
 		if (candidateRelation instanceof EnumDeclaration) {
@@ -243,18 +233,8 @@ public class SolutionSerializer {
 		}
 		Node node = nodes.get(nodeId);
 		if (node == null) {
-			String typeName = candidateRelation.getName();
-			if (typeName == null || typeName.isEmpty()) {
-				typeName = "node";
-			} else {
-				typeName = typeName.substring(0, 1).toLowerCase(Locale.ROOT) + typeName.substring(1);
-			}
-			int index = indexMap.getIfAbsent(typeName, 0);
-			String nodeName;
-			do {
-				index++;
-				nodeName = typeName + index;
-			} while (findNode(nodeName) != null);
+			var typeName = candidateRelation.getName();
+			var nodeName = nameProvider.getNextName(typeName);
 			node = ProblemFactory.eINSTANCE.createNode();
 			node.setName(nodeName);
 			problem.getNodes().add(node);

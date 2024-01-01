@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,6 +17,7 @@ import tools.refinery.generator.ValidationErrorsException;
 import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.IOException;
@@ -142,7 +143,7 @@ public class ModelGenerationWorker implements Runnable {
 		} catch (ValidationErrorsException e) {
 			var errors = e.getErrors();
 			if (errors != null && !errors.isEmpty()) {
-				return new ModelGenerationErrorResult(uuid, "Validation error: " + errors.get(0).getMessage());
+				return new ModelGenerationErrorResult(uuid, "Validation error: " + errors.getFirst().getMessage());
 			}
 			throw e;
 		}
@@ -154,7 +155,7 @@ public class ModelGenerationWorker implements Runnable {
 		notifyResult(new ModelGenerationStatusResult(uuid, "Saving generated model"));
 		cancellationToken.checkCancelled();
 		metadataCreator.setProblemTrace(generator.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(generator.getModel(), false);
+		var nodesMetadata = metadataCreator.getNodesMetadata(generator.getModel(), Concreteness.CANDIDATE);
 		cancellationToken.checkCancelled();
 		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
