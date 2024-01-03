@@ -43,7 +43,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	@Override
 	protected boolean highlightElement(EObject object, IHighlightedPositionAcceptor acceptor,
-			CancelIndicator cancelIndicator) {
+									   CancelIndicator cancelIndicator) {
 		highlightName(object, acceptor);
 		highlightCrossReferences(object, acceptor, cancelIndicator);
 		return false;
@@ -60,7 +60,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	}
 
 	protected void highlightCrossReferences(EObject object, IHighlightedPositionAcceptor acceptor,
-			CancelIndicator cancelIndicator) {
+											CancelIndicator cancelIndicator) {
 		for (EReference reference : object.eClass().getEAllReferences()) {
 			if (reference.isContainment()) {
 				continue;
@@ -101,7 +101,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		boolean isError = ProblemUtil.isError(eObject);
 		if (ProblemUtil.isBuiltIn(eObject)) {
 			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
-			return new String[] { className };
+			return new String[]{className};
 		}
 		return getUserDefinedElementHighlightClass(eObject, reference, isError);
 	}
@@ -116,19 +116,12 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 				&& desugarer.isContainmentReference(referenceDeclaration)) {
 			classesBuilder.add(CONTAINMENT_CLASS);
 		}
-		if (isError) {
+		if (isError && reference != null) {
+			// References to error patterns should be highlighted as errors, but error pattern definitions shouldn't.
 			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {
-			if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
-				classesBuilder.add(NODE_CLASS);
-			}
-			if (ProblemUtil.isIndividualNode(node)) {
-				classesBuilder.add(INDIVIDUAL_NODE_CLASS);
-			}
-			if (ProblemUtil.isNewNode(node)) {
-				classesBuilder.add(NEW_NODE_CLASS);
-			}
+			highlightNode(node, reference, classesBuilder);
 		}
 		if (eObject instanceof Relation relation) {
 			var typeHash = typeHashProvider.getTypeHash(relation);
@@ -138,5 +131,17 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		}
 		List<String> classes = classesBuilder.build();
 		return classes.toArray(new String[0]);
+	}
+
+	private static void highlightNode(Node node, EReference reference, ImmutableList.Builder<String> classesBuilder) {
+		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
+			classesBuilder.add(NODE_CLASS);
+		}
+		if (ProblemUtil.isIndividualNode(node)) {
+			classesBuilder.add(INDIVIDUAL_NODE_CLASS);
+		}
+		if (ProblemUtil.isNewNode(node)) {
+			classesBuilder.add(NEW_NODE_CLASS);
+		}
 	}
 }

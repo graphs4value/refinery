@@ -133,6 +133,11 @@ export default styled('div', {
     },
     '.tok-problem-error': {
       '&, & .tok-typeName': {
+        color: theme.palette.highlight.comment,
+      },
+    },
+    '.tok-invalid': {
+      '&, & .tok-typeName': {
         color: theme.palette.error.main,
       },
     },
