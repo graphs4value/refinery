@@ -18,7 +18,13 @@ import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
 
-function createTypeHashStyles(theme: Theme): CSSObject {
+function createTypeHashStyles(
+  theme: Theme,
+  colorIdentifiers: boolean,
+): CSSObject {
+  if (!colorIdentifiers) {
+    return {};
+  }
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
     result[`.tok-problem-typeHash-${i}`] = {
@@ -38,7 +44,8 @@ export default styled('div', {
 })<{
   showLineNumbers: boolean;
   showActiveLine: boolean;
-}>(({ theme, showLineNumbers, showActiveLine }) => {
+  colorIdentifiers: boolean;
+}>(({ theme, showLineNumbers, showActiveLine, colorIdentifiers }) => {
   const editorFontStyle: CSSObject = {
     ...theme.typography.editor,
     fontWeight: theme.typography.fontWeightEditorNormal,
@@ -148,7 +155,7 @@ export default styled('div', {
         fontStyle: 'normal',
       },
     },
-    ...createTypeHashStyles(theme),
+    ...createTypeHashStyles(theme, colorIdentifiers),
   };
 
   const matchingStyle: CSSObject = {

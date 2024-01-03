@@ -37,7 +37,10 @@ function createEdgeColor(
   };
 }
 
-function createTypeHashStyles(theme: Theme): CSSObject {
+function createTypeHashStyles(theme: Theme, colorNodes: boolean): CSSObject {
+  if (!colorNodes) {
+    return {};
+  }
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
     result[`.node-typeHash-${i}`] = {
@@ -51,7 +54,7 @@ function createTypeHashStyles(theme: Theme): CSSObject {
 
 export default styled('div', {
   name: 'GraphTheme',
-})(({ theme }) => ({
+})<{ colorNodes: boolean }>(({ theme, colorNodes }) => ({
   '& svg': {
     userSelect: 'none',
     '.node': {
@@ -86,7 +89,7 @@ export default styled('div', {
     '.node-exists-UNKNOWN [stroke="black"]': {
       strokeDasharray: '5 2',
     },
-    ...createTypeHashStyles(theme),
+    ...createTypeHashStyles(theme, colorNodes),
     '.edge': {
       '& text': {
         fontFamily: theme.typography.fontFamily,

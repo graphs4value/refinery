@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,6 +8,8 @@ import { makeAutoObservable } from 'mobx';
 
 import GraphStore from '../graph/GraphStore';
 import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
+
+import type EditorStore from './EditorStore';
 
 export default class GeneratedModelStore {
   title: string;
@@ -18,10 +20,15 @@ export default class GeneratedModelStore {
 
   graph: GraphStore | undefined;
 
-  constructor(randomSeed: number) {
+  constructor(
+    randomSeed: number,
+    private readonly editorStore: EditorStore,
+  ) {
     const time = new Date().toLocaleTimeString(undefined, { hour12: false });
     this.title = `Generated at ${time} (${randomSeed})`;
-    makeAutoObservable(this);
+    makeAutoObservable<GeneratedModelStore, 'editorStore'>(this, {
+      editorStore: false,
+    });
   }
 
   get running(): boolean {
@@ -43,7 +50,7 @@ export default class GeneratedModelStore {
 
   setSemantics(semantics: SemanticsSuccessResult): void {
     if (this.running) {
-      this.graph = new GraphStore();
+      this.graph = new GraphStore(this.editorStore);
       this.graph.setSemantics(semantics);
     }
   }

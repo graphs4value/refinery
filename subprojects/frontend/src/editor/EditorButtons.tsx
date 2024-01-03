@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,8 +8,9 @@ import type { Diagnostic } from '@codemirror/lint';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckIcon from '@mui/icons-material/Check';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import FormatPaint from '@mui/icons-material/FormatPaint';
+import FormatPaintIcon from '@mui/icons-material/FormatPaint';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LooksIcon from '@mui/icons-material/Looks';
 import RedoIcon from '@mui/icons-material/Redo';
 import SearchIcon from '@mui/icons-material/Search';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -72,6 +73,15 @@ export default observer(function EditorButtons({
           <FormatListNumberedIcon fontSize="small" />
         </ToggleButton>
         <ToggleButton
+          selected={editorStore?.colorIdentifiers ?? false}
+          disabled={editorStore === undefined}
+          onClick={() => editorStore?.toggleColorIdentifiers()}
+          aria-label="Color identifiers"
+          value="color-identifiers"
+        >
+          <LooksIcon fontSize="small" />
+        </ToggleButton>
+        <ToggleButton
           selected={editorStore?.searchPanel?.state ?? false}
           disabled={editorStore === undefined}
           onClick={() => editorStore?.searchPanel?.toggle()}
@@ -104,7 +114,7 @@ export default observer(function EditorButtons({
         aria-label="Automatic format"
         color="inherit"
       >
-        <FormatPaint fontSize="small" />
+        <FormatPaintIcon fontSize="small" />
       </IconButton>
       <ConnectButton editorStore={editorStore} />
     </Stack>
