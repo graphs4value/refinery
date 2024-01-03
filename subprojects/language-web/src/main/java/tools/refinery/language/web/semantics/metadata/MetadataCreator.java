@@ -13,9 +13,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
-import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.semantics.NodeNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.ProblemUtil;
@@ -23,14 +21,11 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
-import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.IntFunction;
 
 public class MetadataCreator {
 	@Inject
@@ -43,7 +38,7 @@ public class MetadataCreator {
 	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
-	private Provider<NodeNameProvider> nodeNameProviderProvider;
+	private Provider<NodeMetadataFactory> nodeMetadataFactoryProvider;
 
 	private ProblemTrace problemTrace;
 	private IScope nodeScope;
@@ -63,56 +58,31 @@ public class MetadataCreator {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
-		var getName = makeGetName(model, concreteness);
+		var nodeMetadataFactory = nodeMetadataFactoryProvider.get();
+		nodeMetadataFactory.initialize(problemTrace, concreteness, model);
 		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
 		for (var entry : nodeTrace.keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();
-			nodes[id] = getNodeMetadata(id, node, preserveNewNodes, getName);
+			nodes[id] = getNodeMetadata(id, node, preserveNewNodes, nodeMetadataFactory);
 		}
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] == null) {
-				var nodeName = getName.apply(i);
-				nodes[i] = new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
+				nodes[i] = nodeMetadataFactory.createFreshlyNamedMetadata(i);
 			}
 		}
 		return List.of(nodes);
 	}
 
-	@NotNull
-	private IntFunction<String> makeGetName(Model model, Concreteness concreteness) {
-		var nodeNameProvider = nodeNameProviderProvider.get();
-		nodeNameProvider.setProblem(problemTrace.getProblem());
-		var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
-		var existsInterpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(concreteness,
-				ReasoningAdapter.EXISTS_SYMBOL);
-		return nodeId -> {
-			var key = Tuple.of(nodeId);
-			var inferredType = typeInterpretation.get(key);
-			if (inferredType == null || inferredType.candidateType() == null) {
-				return nodeNameProvider.getNextName(null);
-			}
-			if (concreteness == Concreteness.CANDIDATE && !existsInterpretation.get(key).may()) {
-				// Do not increment the node name counter for non-existent nodes in the candidate interpretation.
-				// While non-existent nodes may appear in the partial interpretation, they are never displayed in the
-				// candidate interpretation.
-				return "::" + nodeId;
-			}
-			var relation = problemTrace.getRelation(inferredType.candidateType());
-			return nodeNameProvider.getNextName(relation.getName());
-		};
-	}
-
 	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes,
-										 IntFunction<String> getName) {
+										 NodeMetadataFactory nodeMetadataFactory) {
 		var kind = getNodeKind(node);
 		if (!preserveNewNodes && kind == NodeKind.NEW) {
-			var nodeName = getName.apply(nodeId);
-			return new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
+			return nodeMetadataFactory.createFreshlyNamedMetadata(nodeId);
 		}
 		var qualifiedName = getQualifiedName(node);
 		var simpleName = getSimpleName(node, qualifiedName, nodeScope);
-		return new NodeMetadata(qualifiedNameConverter.toString(qualifiedName),
+		return nodeMetadataFactory.doCreateMetadata(nodeId, qualifiedNameConverter.toString(qualifiedName),
 				qualifiedNameConverter.toString(simpleName), getNodeKind(node));
 	}
 

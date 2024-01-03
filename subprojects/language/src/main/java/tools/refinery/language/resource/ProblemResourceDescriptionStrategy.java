@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -28,6 +28,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String ARITY = DATA_PREFIX + "ARITY";
 	public static final String ERROR_PREDICATE = DATA_PREFIX + "ERROR_PREDICATE";
 	public static final String ERROR_PREDICATE_TRUE = "true";
+	public static final String COLOR_RELATION = DATA_PREFIX + "COLOR_RELATION";
+	public static final String COLOR_RELATION_TRUE = "true";
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -44,12 +46,9 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
 		var problemQualifiedName = getNameAsQualifiedName(problem);
 		var userData = getUserData(eObject);
-		boolean nameExported;
+		QualifiedName lastQualifiedNameToExport = null;
 		if (shouldExportSimpleName(eObject)) {
-			acceptEObjectDescription(eObject, problemQualifiedName, qualifiedName, userData, acceptor);
-			nameExported = true;
-		} else {
-			nameExported = false;
+			lastQualifiedNameToExport = qualifiedName;
 		}
 		var parent = eObject.eContainer();
 		while (parent != null && parent != problem) {
@@ -60,16 +59,18 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			}
 			qualifiedName = parentQualifiedName.append(qualifiedName);
 			if (shouldExportSimpleName(parent)) {
-				acceptEObjectDescription(eObject, problemQualifiedName, qualifiedName, userData, acceptor);
-				nameExported = true;
-			} else {
-				nameExported = false;
+				if (lastQualifiedNameToExport != null) {
+					acceptEObjectDescription(eObject, problemQualifiedName, lastQualifiedNameToExport, userData,
+							acceptor);
+				}
+				lastQualifiedNameToExport = qualifiedName;
 			}
 			parent = parent.eContainer();
 		}
-		if (!nameExported) {
-			acceptEObjectDescription(eObject, problemQualifiedName, qualifiedName, userData, acceptor);
+		if (lastQualifiedNameToExport == null) {
+			lastQualifiedNameToExport = qualifiedName;
 		}
+		acceptEObjectDescription(eObject, problemQualifiedName, lastQualifiedNameToExport, userData, true, acceptor);
 		return true;
 	}
 
@@ -120,8 +121,31 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	private void acceptEObjectDescription(EObject eObject, QualifiedName prefix, QualifiedName qualifiedName,
 										  Map<String, String> userData, IAcceptor<IEObjectDescription> acceptor) {
+		acceptEObjectDescription(eObject, prefix, qualifiedName, userData, false, acceptor);
+	}
+
+	private void acceptEObjectDescription(EObject eObject, QualifiedName prefix, QualifiedName qualifiedName,
+										  Map<String, String> userData, boolean fullyQualified,
+										  IAcceptor<IEObjectDescription> acceptor) {
 		var qualifiedNameWithPrefix = prefix == null ? qualifiedName : prefix.append(qualifiedName);
-		var description = EObjectDescription.create(qualifiedNameWithPrefix, eObject, userData);
+		Map<String, String> userDataWithFullyQualified;
+		if (fullyQualified && shouldColorRelation(eObject)) {
+			userDataWithFullyQualified = ImmutableMap.<String, String>builder()
+					.putAll(userData)
+					.put(COLOR_RELATION, COLOR_RELATION_TRUE)
+					.build();
+		} else {
+			userDataWithFullyQualified = userData;
+		}
+		var description = EObjectDescription.create(qualifiedNameWithPrefix, eObject, userDataWithFullyQualified);
 		acceptor.accept(description);
+	}
+
+	private boolean shouldColorRelation(EObject eObject) {
+		if (ProblemUtil.isBuiltIn(eObject)) {
+			return false;
+		}
+		return eObject instanceof ClassDeclaration || eObject instanceof EnumDeclaration;
+
 	}
 }

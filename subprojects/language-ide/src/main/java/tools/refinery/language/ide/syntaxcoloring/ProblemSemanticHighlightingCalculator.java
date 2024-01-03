@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -37,6 +37,9 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	@Inject
 	private ProblemDesugarer desugarer;
+
+	@Inject
+	private TypeHashProvider typeHashProvider;
 
 	@Override
 	protected boolean highlightElement(EObject object, IHighlightedPositionAcceptor acceptor,
@@ -125,6 +128,12 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			}
 			if (ProblemUtil.isNewNode(node)) {
 				classesBuilder.add(NEW_NODE_CLASS);
+			}
+		}
+		if (eObject instanceof Relation relation) {
+			var typeHash = typeHashProvider.getTypeHash(relation);
+			if (typeHash != null) {
+				classesBuilder.add("typeHash-" + typeHash);
 			}
 		}
 		List<String> classes = classesBuilder.build();

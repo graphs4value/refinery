@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -137,6 +137,7 @@ export type ModelGenerationStartedResult = z.infer<
 export const NodeMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
+  typeHash: z.string().optional(),
   kind: z.enum(['IMPLICIT', 'INDIVIDUAL', 'NEW']),
 });
 
@@ -182,15 +183,15 @@ export type SemanticsResult = z.infer<typeof SemanticsResult>;
 
 export const ModelGenerationResult = z.union([
   z.object({
-    uuid: z.string().nonempty(),
+    uuid: z.string().min(1),
     status: z.string(),
   }),
   z.object({
-    uuid: z.string().nonempty(),
+    uuid: z.string().min(1),
     error: z.string(),
   }),
   SemanticsSuccessResult.extend({
-    uuid: z.string().nonempty(),
+    uuid: z.string().min(1),
   }),
 ]);
 

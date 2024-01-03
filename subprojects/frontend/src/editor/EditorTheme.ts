@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,9 +8,28 @@ import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
-import { alpha, styled, type CSSObject } from '@mui/material/styles';
+import {
+  alpha,
+  styled,
+  type CSSObject,
+  type Theme,
+} from '@mui/material/styles';
+import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
+
+function createTypeHashStyles(theme: Theme): CSSObject {
+  const result: CSSObject = {};
+  range(theme.palette.highlight.typeHash.length).forEach((i) => {
+    result[`.tok-problem-typeHash-${i}`] = {
+      '&, .tok-typeName': {
+        color: theme.palette.highlight.typeHash[i]?.text,
+        fontWeight: theme.typography.fontWeightEditorTypeHash,
+      },
+    };
+  });
+  return result;
+}
 
 export default styled('div', {
   name: 'EditorTheme',
@@ -124,6 +143,7 @@ export default styled('div', {
         fontStyle: 'normal',
       },
     },
+    ...createTypeHashStyles(theme),
   };
 
   const matchingStyle: CSSObject = {

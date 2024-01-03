@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -141,6 +141,9 @@ function createNodes(
     ];
     if (data.unaryPredicates.size === 0) {
       classList.push('node-empty');
+    }
+    if (node.typeHash !== undefined) {
+      classList.push(`node-typeHash-${node.typeHash}`);
     }
     const classes = classList.join(' ');
     const name = nodeName(graph, node);

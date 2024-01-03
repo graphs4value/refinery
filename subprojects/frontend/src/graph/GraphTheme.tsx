@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -7,7 +7,13 @@
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
-import { alpha, styled, type CSSObject } from '@mui/material/styles';
+import {
+  alpha,
+  styled,
+  type CSSObject,
+  type Theme,
+} from '@mui/material/styles';
+import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
 
@@ -29,6 +35,18 @@ function createEdgeColor(
       },
     },
   };
+}
+
+function createTypeHashStyles(theme: Theme): CSSObject {
+  const result: CSSObject = {};
+  range(theme.palette.highlight.typeHash.length).forEach((i) => {
+    result[`.node-typeHash-${i}`] = {
+      '& [fill="green"]': {
+        fill: theme.palette.highlight.typeHash[i]?.box,
+      },
+    };
+  });
+  return result;
 }
 
 export default styled('div', {
@@ -68,6 +86,7 @@ export default styled('div', {
     '.node-exists-UNKNOWN [stroke="black"]': {
       strokeDasharray: '5 2',
     },
+    ...createTypeHashStyles(theme),
     '.edge': {
       '& text': {
         fontFamily: theme.typography.fontFamily,
