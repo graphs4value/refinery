@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -62,6 +62,8 @@ export default class EditorStore {
 
   showLineNumbers = false;
 
+  colorIdentifiers = true;
+
   disposed = false;
 
   analyzing = false;
@@ -96,7 +98,7 @@ export default class EditorStore {
     })().catch((error) => {
       log.error('Failed to load XtextClient', error);
     });
-    this.graph = new GraphStore();
+    this.graph = new GraphStore(this);
     makeAutoObservable<EditorStore, 'client'>(this, {
       id: false,
       state: observable.ref,
@@ -279,6 +281,11 @@ export default class EditorStore {
     log.debug('Show line numbers', this.showLineNumbers);
   }
 
+  toggleColorIdentifiers(): void {
+    this.colorIdentifiers = !this.colorIdentifiers;
+    log.debug('Color identifiers', this.colorIdentifiers);
+  }
+
   get hasSelection(): boolean {
     return this.state.selection.ranges.some(({ from, to }) => from !== to);
   }
@@ -324,7 +331,7 @@ export default class EditorStore {
   }
 
   addGeneratedModel(uuid: string, randomSeed: number): void {
-    this.generatedModels.set(uuid, new GeneratedModelStore(randomSeed));
+    this.generatedModels.set(uuid, new GeneratedModelStore(randomSeed, this));
     this.selectGeneratedModel(uuid);
   }
 

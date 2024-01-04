@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 
 import { makeAutoObservable, observable } from 'mobx';
 
+import type EditorStore from '../editor/EditorStore';
 import type {
   RelationMetadata,
   SemanticsSuccessResult,
@@ -65,8 +66,9 @@ export default class GraphStore {
 
   selectedSymbol: RelationMetadata | undefined;
 
-  constructor() {
-    makeAutoObservable(this, {
+  constructor(private readonly editorStore: EditorStore) {
+    makeAutoObservable<GraphStore, 'editorStore'>(this, {
+      editorStore: false,
       semantics: observable.ref,
     });
   }
@@ -183,5 +185,9 @@ export default class GraphStore {
       this.visibility.delete(key);
     });
     this.setSelectedSymbol(this.selectedSymbol);
+  }
+
+  get colorNodes(): boolean {
+    return this.editorStore.colorIdentifiers;
   }
 }

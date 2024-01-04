@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -24,6 +24,11 @@ interface OuterPalette {
   border: string;
 }
 
+interface TypeHashPalette {
+  text: string;
+  box: string;
+}
+
 interface HighlightPalette {
   number: string;
   parameter: string;
@@ -41,17 +46,20 @@ interface HighlightPalette {
     selected: string;
     contrastText: string;
   };
+  typeHash: TypeHashPalette[];
 }
 
 declare module '@mui/material/styles' {
   interface TypographyVariants {
     fontWeightEditorNormal: number;
+    fontWeightEditorTypeHash: number;
     fontWeightEditorBold: number;
     editor: TypographyStyle;
   }
 
   interface TypographyVariantsOptions {
     fontWeightEditorNormal?: number;
+    fontWeightEditorTypeHash?: number;
     fontWeightEditorBold?: number;
     editor?: TypographyStyle;
   }
@@ -78,6 +86,7 @@ function createResponsiveTheme(
         '"Open Sans Variable", "Open Sans", "Roboto", "Helvetica", "Arial", sans-serif',
       fontWeightMedium: 500,
       fontWeightEditorNormal: 400,
+      fontWeightEditorTypeHash: 500,
       fontWeightEditorBold: 700,
       button: {
         fontWeight: 600,
@@ -220,7 +229,7 @@ const lightTheme = (() => {
     palette: {
       mode: 'light',
       primary: { main: '#038a99' },
-      secondary: { main: '#e45649' },
+      secondary: { main: '#61afef' },
       error: { main: '#ca1243' },
       warning: { main: '#c18401' },
       success: { main: '#50a14f' },
@@ -256,6 +265,18 @@ const lightTheme = (() => {
           selected: '#d500f9',
           contrastText: '#fff',
         },
+        typeHash: [
+          { text: '#986801', box: '#e5c07b' },
+          { text: '#d6493e', box: '#e06c75' },
+          { text: '#50a14f', box: '#98c379' },
+          { text: '#a626a4', box: '#c678dd' },
+          { text: '#4078f2', box: '#80a7f4' },
+          { text: '#827662', box: '#e3d1b2' },
+          { text: '#904f53', box: '#e78b8f' },
+          { text: '#637855', box: '#abcc94' },
+          { text: '#805f89', box: '#dbb2e8' },
+          { text: '#5987ae', box: '#92c0e9' },
+        ],
       },
     },
   });
@@ -270,6 +291,7 @@ const darkTheme = (() => {
     {
       typography: {
         fontWeightEditorNormal: 350,
+        fontWeightEditorTypeHash: 350,
         fontWeightEditorBold: 650,
       },
       palette: {
@@ -277,7 +299,7 @@ const darkTheme = (() => {
         primary: { main: '#56b6c2' },
         secondary: { main: '#be5046' },
         error: { main: '#e06c75' },
-        warning: { main: '#e5c07b' },
+        warning: { main: '#d19a66' },
         success: { main: '#98c379' },
         info: { main: '#61afef' },
         background: {
@@ -311,6 +333,18 @@ const darkTheme = (() => {
             selected: '#dd33fa',
             contrastText: darkBackground,
           },
+          typeHash: [
+            { text: '#e5c07b', box: '#ae8003' },
+            { text: '#e06c75', box: '#a23b47' },
+            { text: '#98c379', box: '#428141' },
+            { text: '#c678dd', box: '#854797' },
+            { text: '#61afef', box: '#3982bb' },
+            { text: '#e3d1b2', box: '#827662' },
+            { text: '#e78b8f', box: '#904f53' },
+            { text: '#abcc94', box: '#647e63' },
+            { text: '#dbb2e8', box: '#805f89' },
+            { text: '#92c0e9', box: '#4f7799' },
+          ],
         },
       },
     },

@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.language.web.semantics.metadata;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -18,6 +19,7 @@ import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.ArrayList;
@@ -35,10 +37,11 @@ public class MetadataCreator {
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
 
+	@Inject
+	private Provider<NodeMetadataFactory> nodeMetadataFactoryProvider;
+
 	private ProblemTrace problemTrace;
-
 	private IScope nodeScope;
-
 	private IScope relationScope;
 
 	public void setProblemTrace(ProblemTrace problemTrace) {
@@ -51,37 +54,35 @@ public class MetadataCreator {
 		relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ASSERTION__RELATION);
 	}
 
-	public static String unnamedNode(int nodeId) {
-		return "::" + nodeId;
-	}
-
-	public List<NodeMetadata> getNodesMetadata(Model model, boolean preserveNewNodes) {
+	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
+		var nodeMetadataFactory = nodeMetadataFactoryProvider.get();
+		nodeMetadataFactory.initialize(problemTrace, concreteness, model);
+		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
 		for (var entry : nodeTrace.keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();
-			nodes[id] = getNodeMetadata(id, node, preserveNewNodes);
+			nodes[id] = getNodeMetadata(id, node, preserveNewNodes, nodeMetadataFactory);
 		}
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] == null) {
-				var nodeName = unnamedNode(i);
-				nodes[i] = new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
+				nodes[i] = nodeMetadataFactory.createFreshlyNamedMetadata(i);
 			}
 		}
 		return List.of(nodes);
 	}
 
-	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes) {
+	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes,
+										 NodeMetadataFactory nodeMetadataFactory) {
 		var kind = getNodeKind(node);
 		if (!preserveNewNodes && kind == NodeKind.NEW) {
-			var nodeName = unnamedNode(nodeId);
-			return new NodeMetadata(nodeName, nodeName, NodeKind.IMPLICIT);
+			return nodeMetadataFactory.createFreshlyNamedMetadata(nodeId);
 		}
 		var qualifiedName = getQualifiedName(node);
 		var simpleName = getSimpleName(node, qualifiedName, nodeScope);
-		return new NodeMetadata(qualifiedNameConverter.toString(qualifiedName),
+		return nodeMetadataFactory.doCreateMetadata(nodeId, qualifiedNameConverter.toString(qualifiedName),
 				qualifiedNameConverter.toString(simpleName), getNodeKind(node));
 	}
 
