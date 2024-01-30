@@ -6,19 +6,29 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.generator.ModelGeneratorFactory;
-import tools.refinery.generator.ProblemLoader;
+import tools.refinery.language.model.tests.utils.ProblemParseHelper;
 import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.store.dse.propagation.PropagationAdapter;
+import tools.refinery.store.dse.strategy.BestFirstStoreManager;
+import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
+import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
+import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.ReasoningStoreAdapter;
+import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.statecoding.StateCoderAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,21 +38,35 @@ import static org.hamcrest.Matchers.is;
 @InjectWith(ProblemInjectorProvider.class)
 class SolutionSerializerTest {
 	@Inject
-	ProblemLoader loader;
+	private ProblemParseHelper parseHelper;
 
 	@Inject
-	ModelGeneratorFactory generatorFactory;
+	private Provider<ModelInitializer> initializerProvider;
 
 	@Inject
-	SolutionSerializer serializer;
+	private Provider<SolutionSerializer> serializerProvider;
 
 	@ParameterizedTest
 	@MethodSource
 	void solutionSerializerTest(String prefix, String input, String expectedOutput) throws IOException {
-		var problem = loader.loadString(prefix + "\n" + input);
-		var generator = generatorFactory.createGenerator(problem);
-		generator.generate();
-		var solution = serializer.serializeSolution(generator.getProblemTrace(), generator.getModel());
+		var problem = parseHelper.parse(prefix + "\n" + input).problem();
+		var storeBuilder = ModelStore.builder()
+				.with(QueryInterpreterAdapter.builder())
+				.with(PropagationAdapter.builder())
+				.with(StateCoderAdapter.builder())
+				.with(DesignSpaceExplorationAdapter.builder())
+				.with(ReasoningAdapter.builder()
+						.requiredInterpretations(Set.of(Concreteness.CANDIDATE)));
+		var initializer = initializerProvider.get();
+		var modelSeed = initializer.createModel(problem, storeBuilder);
+		var store = storeBuilder.build();
+		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+		var initialVersion = model.commit();
+		var bestFirst = new BestFirstStoreManager(store, 1);
+		bestFirst.startExploration(initialVersion, 0);
+		model.restore(bestFirst.getSolutionStore().getSolutions().getFirst().version());
+		var serializer = serializerProvider.get();
+		var solution = serializer.serializeSolution(initializer.getProblemTrace(), model);
 		String actualOutput;
 		try (var outputStream = new ByteArrayOutputStream()) {
 			solution.eResource().save(outputStream, Map.of());
