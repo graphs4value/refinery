@@ -7,10 +7,10 @@ eclipseCollections = "12.0.0.M3"
 jetty = "12.0.5"
 jmh = "1.37"
 junit = "5.10.1"
-mockito = "5.8.0"
+mockito = "5.10.0"
 mwe2 = "2.17.0.M0"
-slf4j = "2.0.9"
-xtext = "2.34.0.M0"
+slf4j = "2.0.11"
+xtext = "2.34.0.M1"
 
 [libraries]
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
@@ -55,4 +55,4 @@ xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", v
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.50.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }
