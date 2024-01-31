@@ -72,7 +72,7 @@ class SolutionSerializerTest {
 			solution.eResource().save(outputStream, Map.of());
 			actualOutput = outputStream.toString();
 		}
-		assertThat(actualOutput, is(prefix + "\n" + expectedOutput));
+		assertThat(actualOutput, is("module.\n\n" + prefix + "\n" + expectedOutput));
 	}
 
 	static Stream<Arguments> solutionSerializerTest() {
@@ -81,6 +81,7 @@ class SolutionSerializerTest {
 				""", """
 				scope Foo = 3.
 				""", """
+				declare foo1, foo2, foo3.
 				!exists(Foo::new).
 				Foo(foo1).
 				Foo(foo2).
@@ -94,6 +95,7 @@ class SolutionSerializerTest {
 				""", """
 				scope Foo = 1.
 				""", """
+				declare foo1, bar1, bar2.
 				!exists(Foo::new).
 				!exists(Bar::new).
 				Foo(foo1).
@@ -112,6 +114,7 @@ class SolutionSerializerTest {
 				""", """
 				scope Foo = 1, Bar = 2.
 				""", """
+				declare foo1, bar1, bar2.
 				!exists(Foo::new).
 				!exists(Bar::new).
 				Foo(foo1).
@@ -131,6 +134,7 @@ class SolutionSerializerTest {
 
 				scope Person += 0.
 				""", """
+				declare a, b, c.
 				!exists(Person::new).
 				Person(a).
 				Person(b).
@@ -156,6 +160,7 @@ class SolutionSerializerTest {
 
 				scope Foo += 0.
 				""", """
+				declare foo.
 				!exists(Foo::new).
 				Foo(foo).
 				default !bar(*, *).
@@ -166,6 +171,7 @@ class SolutionSerializerTest {
 				""", """
 				scope Foo = 1, Bar = 0.
 				""", """
+				declare foo1.
 				!exists(Foo::new).
 				!exists(Bar::new).
 				Foo(foo1).
@@ -180,6 +186,7 @@ class SolutionSerializerTest {
 
 				scope Foo += 0.
 				""", """
+				declare a.
 				!exists(Foo::new).
 				Foo(a).
 				default !ref(*, *).
@@ -200,29 +207,32 @@ class SolutionSerializerTest {
 				!exists(Foo::new).
 				scope Foo = 2.
 				""", """
+				declare foo1, foo2.
 				!exists(a).
 				!exists(Foo::new).
 				Foo(foo1).
 				Foo(foo2).
 				"""), Arguments.of("""
-				node a.
+				declare a.
 				class Foo.
 				""", """
 				Foo(a).
 				?exists(a).
 				scope Foo = 2, Foo += 1.
 				""", """
+				declare foo1.
 				!exists(Foo::new).
 				Foo(a).
 				Foo(foo1).
 				"""), Arguments.of("""
-				node a.
+				declare a.
 				class Foo.
 				""", """
 				Foo(a).
 				?exists(a).
 				scope Foo = 1, Foo += 1.
 				""", """
+				declare foo1.
 				!exists(a).
 				!exists(Foo::new).
 				Foo(foo1).

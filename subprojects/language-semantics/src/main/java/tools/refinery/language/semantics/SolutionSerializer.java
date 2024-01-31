@@ -68,7 +68,9 @@ public class SolutionSerializer {
 	private Model model;
 	private ReasoningAdapter reasoningAdapter;
 	private PartialInterpretation<TruthValue, Boolean> existsInterpretation;
+	private Problem originalProblem;
 	private Problem problem;
+	private NodeDeclaration nodeDeclaration;
 	private final MutableIntObjectMap<Node> nodes = IntObjectMaps.mutable.empty();
 
 	@Inject
@@ -87,14 +89,22 @@ public class SolutionSerializer {
 		reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 		existsInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE,
 				ReasoningAdapter.EXISTS_SYMBOL);
-		var originalProblem = trace.getProblem();
+		originalProblem = trace.getProblem();
 		problem = copyProblem(originalProblem, uri);
+		problem.setKind(ModuleKind.MODULE);
 		problem.getStatements().removeIf(SolutionSerializer::shouldRemoveStatement);
 		problem.getNodes().removeIf(this::shouldRemoveNode);
+		nodeDeclaration = ProblemFactory.eINSTANCE.createNodeDeclaration();
+		nodeDeclaration.setKind(NodeKind.NODE);
+		nodeDeclaration.getNodes().addAll(problem.getNodes());
+		problem.getStatements().add(nodeDeclaration);
 		nameProvider.setProblem(problem);
 		addExistsAssertions();
 		addClassAssertions();
 		addReferenceAssertions();
+		if (nodeDeclaration.getNodes().isEmpty()) {
+			problem.getStatements().remove(nodeDeclaration);
+		}
 		return problem;
 	}
 
@@ -104,8 +114,8 @@ public class SolutionSerializer {
 
 	private boolean shouldRemoveNode(Node newNode) {
 		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(newNode);
-		var scope = scopeProvider.getScope(trace.getProblem(), ProblemPackage.Literals.ASSERTION__RELATION);
-		var originalNode = semanticsUtils.maybeGetElement(problem, scope, qualifiedName, Node.class);
+		var scope = scopeProvider.getScope(originalProblem, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE);
+		var originalNode = semanticsUtils.maybeGetElement(originalProblem, scope, qualifiedName, Node.class);
 		if (originalNode == null) {
 			return false;
 		}
@@ -238,7 +248,7 @@ public class SolutionSerializer {
 			var nodeName = nameProvider.getNextName(typeName);
 			node = ProblemFactory.eINSTANCE.createNode();
 			node.setName(nodeName);
-			problem.getNodes().add(node);
+			nodeDeclaration.getNodes().add(node);
 			nodes.put(nodeId, node);
 		}
 		addAssertion(candidateRelation, LogicValue.TRUE, node);
