@@ -28,7 +28,7 @@ const parserWithMetadata = parser.configure({
       LineComment: t.lineComment,
       BlockComment: t.blockComment,
       'module problem class enum pred fn scope': t.definitionKeyword,
-      'node atom multi': t.definitionKeyword,
+      'declare atom multi': t.definitionKeyword,
       'abstract extends refers contains container opposite': t.modifier,
       'default error contained containment': t.modifier,
       'true false unknown error': t.keyword,

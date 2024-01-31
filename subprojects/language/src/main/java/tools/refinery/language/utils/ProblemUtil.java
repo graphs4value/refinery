@@ -8,6 +8,7 @@ package tools.refinery.language.utils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.EcoreUtil2;
 import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
@@ -124,6 +125,11 @@ public final class ProblemUtil {
 				yield opposite.getKind() == ReferenceKind.CONTAINMENT;
 			}
 		};
+	}
+
+	public static boolean isInModule(EObject eObject) {
+		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
+		return problem != null && problem.getKind() == ModuleKind.MODULE;
 	}
 
 	private static URI getLibraryUri() {

@@ -86,8 +86,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
 			var name = node.getName();
-			var message = ("Only individuals can be referenced in predicates. " +
-					"Mark '%s' as individual with the declaration 'indiv %s.'").formatted(name, name);
+			var message = ("Only atoms can be referenced in predicates. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
 			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
 					INSIGNIFICANT_INDEX, NODE_CONSTANT_ISSUE);
 		}
@@ -302,6 +302,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkTypeScope(TypeScope typeScope) {
 		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+		if (typeScope.isIncrement() && ProblemUtil.isInModule(typeScope)) {
+			acceptError("Incremental type scopes are not supported in modules", typeScope, null, 0,
+					INVALID_MULTIPLICITY_ISSUE);
+		}
 	}
 
 	private void checkArity(EObject eObject, EReference reference, int expectedArity) {
@@ -351,9 +355,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	private void checkExistsAssertion(Assertion assertion, LogicValue value) {
-		if (value == LogicValue.TRUE || value == LogicValue.UNKNOWN) {
-			// {@code true} is always a valid value for {@code exists}, while {@code unknown} values may always be
-			// refined to {@code true} if necessary (e.g., for individual nodes).
+		if (value == LogicValue.UNKNOWN) {
+			// {@code unknown} values may always be refined to {@code true} of {@code false} if necessary (e.g., for
+			// atom nodes or removed multi-objects).
 			return;
 		}
 		var arguments = assertion.getArguments();
@@ -361,9 +365,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 			// We already report an error on invalid arity.
 			return;
 		}
-		var node = getNodeArgumentForMultiObjectAssertion(arguments.get(0));
-		if (node != null && !node.eIsProxy() && ProblemUtil.isAtomNode(node)) {
-			acceptError("Individual nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
+		var node = getNodeArgumentForMultiObjectAssertion(arguments.getFirst());
+		if (node == null || node.eIsProxy()) {
+			return;
+		}
+		if (ProblemUtil.isAtomNode(node) && value != LogicValue.TRUE) {
+			acceptError("Atom nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
+		}
+		if (ProblemUtil.isMultiNode(node) && value != LogicValue.FALSE && ProblemUtil.isInModule(node)) {
+			acceptError("Multi-objects in modules cannot be required to exist.", assertion, null, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
 		}
 	}
 
@@ -402,5 +413,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 			return nodeAssertionArgument.getNode();
 		}
 		throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+	}
+
+	@Check
+	private void checkImplicitNodeInModule(Assertion assertion) {
+		if (!ProblemUtil.isInModule(assertion)) {
+			return;
+		}
+		for (var argument : assertion.getArguments()) {
+			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
+				var node = nodeAssertionArgument.getNode();
+				if (node != null && !node.eIsProxy() && ProblemUtil.isImplicitNode(node)) {
+					var name = node.getName();
+					var message = ("Implicit nodes are not allowed in modules. Explicitly declare '%s' as a node " +
+							"with the declaration 'declare %s.'").formatted(name, name);
+					acceptError(message, nodeAssertionArgument, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE,
+							0, UNSUPPORTED_ASSERTION_ISSUE);
+				}
+			}
+		}
 	}
 }

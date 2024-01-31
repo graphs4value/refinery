@@ -256,10 +256,11 @@ ExactMultiplicity:
 	exactValue=INT;
 
 NodeDeclaration:
-	kind=NodeKind nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+	("declare" | "declare"? kind=NodeKind)
+	nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
 
 enum NodeKind:
-	NODE="node" | ATOM="atom" | MULTI="multi";
+	ATOM="atom" | MULTI="multi";
 
 UpperBound returns ecore::EInt:
 	INT | "*";
@@ -274,7 +275,7 @@ Identifier:
 	NonContainmentIdentifier | "contains" | "container";
 
 NonContainmentIdentifier:
-	ID | "node" | "atom" | "multi" | "contained" |
+	ID | "atom" | "multi" | "contained" |
 	"sum" | "prod" | "min" | "max" | "problem" | "module";
 
 Real returns ecore::EDouble:

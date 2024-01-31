@@ -82,7 +82,6 @@ class AssertionValidationTest {
 			"exists(n).",
 			"?exists(n).",
 			"!exists(n).",
-			"exists(*).",
 			"?exists(*).",
 			"exists(Foo::new).",
 			"?exists(Foo::new).",

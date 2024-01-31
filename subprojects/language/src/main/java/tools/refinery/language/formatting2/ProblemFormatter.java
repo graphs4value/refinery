@@ -23,7 +23,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	protected void format(Problem problem, IFormattableDocument doc) {
 		doc.prepend(problem, this::noSpace);
 		var region = regionFor(problem);
-		doc.append(region.feature(ProblemPackage.Literals.PROBLEM__KIND), this::oneSpace);
+		doc.prepend(region.feature(ProblemPackage.Literals.NAMED_ELEMENT__NAME), this::oneSpace);
 		doc.prepend(region.keyword("."), this::noSpace);
 		appendNewLines(doc, region.keyword("."), this::twoNewLines);
 		for (var statement : problem.getStatements()) {
@@ -135,6 +135,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	protected void format(NodeDeclaration nodeDeclaration, IFormattableDocument doc) {
 		surroundNewLines(doc, nodeDeclaration, this::singleNewLine);
 		var region = regionFor(nodeDeclaration);
+		doc.append(region.keyword("declare"), this::oneSpace);
 		doc.append(region.feature(ProblemPackage.Literals.NODE_DECLARATION__KIND), this::oneSpace);
 		formatList(region, ",", doc);
 		doc.prepend(region.keyword("."), this::noSpace);

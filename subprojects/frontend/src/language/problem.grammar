@@ -57,10 +57,10 @@ statement {
   //  RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
   //} |
   AtomDeclaration {
-    ckw<"atom"> sep<",", AtomNodeName> "."
+    kw<"declare">? ckw<"atom"> sep<",", AtomNodeName> "."
   } |
   NodeDeclaration {
-    (ckw<"node"> | ckw<"multi">) sep<",", NodeName> "."
+    (kw<"declare"> | kw<"declare">? ckw<"multi">) sep<",", NodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
