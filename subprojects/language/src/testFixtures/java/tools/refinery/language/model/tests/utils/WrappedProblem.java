@@ -67,8 +67,9 @@ public record WrappedProblem(Problem problem) {
 		return ProblemNavigationUtil.named(problem.getNodes(), name);
 	}
 
-	public Node individualNode(String name) {
-		var uniqueNodes = statementsOfType(IndividualDeclaration.class)
+	public Node atomNode(String name) {
+		var uniqueNodes = statementsOfType(NodeDeclaration.class)
+				.filter(declaration -> declaration.getKind() == NodeKind.ATOM)
 				.flatMap(declaration -> declaration.getNodes().stream());
 		return ProblemNavigationUtil.named(uniqueNodes, name);
 	}

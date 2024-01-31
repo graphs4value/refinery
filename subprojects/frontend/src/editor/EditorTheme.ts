@@ -126,7 +126,7 @@ export default styled('div', {
         color: theme.palette.text.secondary,
       },
     },
-    '.tok-problem-individual': {
+    '.tok-problem-atom': {
       '&, & .tok-variableName': {
         color: theme.palette.text.primary,
       },

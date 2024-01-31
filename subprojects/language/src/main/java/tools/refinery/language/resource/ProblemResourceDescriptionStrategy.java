@@ -91,8 +91,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			return false;
 		}
 		if (eObject instanceof Node node) {
-			// Only enum literals and new nodes are visible across problem files.
-			return ProblemUtil.isIndividualNode(node) || ProblemUtil.isNewNode(node);
+			return !ProblemUtil.isImplicitNode(node);
 		}
 		return true;
 	}
@@ -111,7 +110,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	protected boolean shouldExportSimpleName(EObject eObject) {
 		if (eObject instanceof Node node) {
-			return !ProblemUtil.isNewNode(node);
+			return !ProblemUtil.isMultiNode(node);
 		}
 		if (eObject instanceof PredicateDefinition predicateDefinition) {
 			return !ProblemUtil.isInvalidMultiplicityConstraint(predicateDefinition);
@@ -146,6 +145,5 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			return false;
 		}
 		return eObject instanceof ClassDeclaration || eObject instanceof EnumDeclaration;
-
 	}
 }

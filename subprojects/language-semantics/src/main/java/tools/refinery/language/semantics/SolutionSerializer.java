@@ -197,9 +197,10 @@ public class SolutionSerializer {
 			var originalNode = pair.getOne();
 			int nodeId = pair.getTwo();
 			var newNode = findNode(originalNode);
-			// Since all implicit nodes that do not exist has already been remove in serializeSolution,
-			// we only need to add !exists assertions to ::new nodes (nodes marked as an individual must always exist).
-			if (ProblemUtil.isNewNode(originalNode)) {
+			// Since all implicit nodes that do not exist has already been removed in serializeSolution,
+			// we only need to add !exists assertions to ::new nodes and explicitly declared nodes that do not exist.
+			if (ProblemUtil.isMultiNode(originalNode) ||
+					(ProblemUtil.isDeclaredNode(originalNode) && !isExistingNode(nodeId))) {
 				sortedNewNodes.put(nodeId, newNode);
 			} else {
 				nodes.put(nodeId, newNode);

@@ -69,35 +69,35 @@ class NodeScopingTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("individualNodeReferenceSource")
-	void individualNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@MethodSource("atomNodeReferenceSource")
+	void atomNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				indiv a, b.
+				atom a, b.
 				pred predicate(node x, node y) <-> node(x).
 				predicate({PARAM}a, {PARAM}a).
 				?predicate({PARAM}a, {PARAM}b).
 				""", qualifiedNamePrefix, namedProblem);
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.individualNode("a")));
-		assertThat(problem.assertion(0).arg(1).node(), equalTo(problem.individualNode("a")));
-		assertThat(problem.assertion(1).arg(0).node(), equalTo(problem.individualNode("a")));
-		assertThat(problem.assertion(1).arg(1).node(), equalTo(problem.individualNode("b")));
+		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.atomNode("a")));
+		assertThat(problem.assertion(0).arg(1).node(), equalTo(problem.atomNode("a")));
+		assertThat(problem.assertion(1).arg(0).node(), equalTo(problem.atomNode("a")));
+		assertThat(problem.assertion(1).arg(1).node(), equalTo(problem.atomNode("b")));
 	}
 
 	@ParameterizedTest
-	@MethodSource("individualNodeReferenceSource")
-	void individualNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@MethodSource("atomNodeReferenceSource")
+	void atomNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
 		var problem = parse("""
-				indiv b.
+				atom b.
 				pred predicate(node a) <-> node({PARAM}b).
-				""");
+				""", qualifiedNamePrefix, namedProblem);
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
-		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(), equalTo(problem.individualNode("b")));
+		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(), equalTo(problem.atomNode("b")));
 	}
 
-	static Stream<Arguments> individualNodeReferenceSource() {
+	static Stream<Arguments> atomNodeReferenceSource() {
 		return Stream.of(Arguments.of("", false), Arguments.of("", true), Arguments.of("test::", true));
 	}
 

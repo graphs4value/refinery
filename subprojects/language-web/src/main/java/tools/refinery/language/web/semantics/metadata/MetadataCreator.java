@@ -87,14 +87,12 @@ public class MetadataCreator {
 	}
 
 	private NodeKind getNodeKind(Node node) {
-		if (ProblemUtil.isImplicitNode(node)) {
-			return NodeKind.IMPLICIT;
-		} else if (ProblemUtil.isIndividualNode(node)) {
+		if (ProblemUtil.isAtomNode(node)) {
 			return NodeKind.INDIVIDUAL;
-		} else if (ProblemUtil.isNewNode(node)) {
+		} else if (ProblemUtil.isMultiNode(node)) {
 			return NodeKind.NEW;
 		} else {
-			throw new TracedException(node, "Unknown node type");
+			return NodeKind.IMPLICIT;
 		}
 	}
 

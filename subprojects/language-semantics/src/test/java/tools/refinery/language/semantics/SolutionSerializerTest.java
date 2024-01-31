@@ -183,6 +183,49 @@ class SolutionSerializerTest {
 				!exists(Foo::new).
 				Foo(a).
 				default !ref(*, *).
+				"""), Arguments.of("""
+				atom a.
+				class Foo.
+				""", """
+				Foo(a).
+				scope Foo += 0.
+				""", """
+				!exists(Foo::new).
+				Foo(a).
+				"""), Arguments.of("""
+				multi a.
+				class Foo.
+				""", """
+				Foo(a).
+				!exists(Foo::new).
+				scope Foo = 2.
+				""", """
+				!exists(a).
+				!exists(Foo::new).
+				Foo(foo1).
+				Foo(foo2).
+				"""), Arguments.of("""
+				node a.
+				class Foo.
+				""", """
+				Foo(a).
+				?exists(a).
+				scope Foo = 2, Foo += 1.
+				""", """
+				!exists(Foo::new).
+				Foo(a).
+				Foo(foo1).
+				"""), Arguments.of("""
+				node a.
+				class Foo.
+				""", """
+				Foo(a).
+				?exists(a).
+				scope Foo = 1, Foo += 1.
+				""", """
+				!exists(a).
+				!exists(Foo::new).
+				Foo(foo1).
 				"""));
 	}
 }

@@ -183,8 +183,8 @@ class ProblemFormatterTest {
 	}
 
 	@Test
-	void individualDeclarationTest() {
-		testFormatter("  indiv  a  ,  b  .  ", "indiv a, b.\n");
+	void atomDeclarationTest() {
+		testFormatter("  atom  a  ,  b  .  ", "atom a, b.\n");
 	}
 
 	@Test
@@ -194,7 +194,7 @@ class ProblemFormatterTest {
 				pred foo(node a).
 				class Foo.
 				foo(n1, n2).
-				indiv i1.
+				atom i1.
 				!foo(i1, n1).
 				pred bar(node a, node b).
 				pred quux().
@@ -207,7 +207,7 @@ class ProblemFormatterTest {
 				class Foo.
 
 				foo(n1, n2).
-				indiv i1.
+				atom i1.
 				!foo(i1, n1).
 
 				pred bar(node a, node b).

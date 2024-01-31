@@ -25,10 +25,10 @@ public class ProblemLocationInFileProvider extends DefaultLocationInFileProvider
 	}
 
 	protected ITextRegion getNodeTextRegion(Node node, RegionDescription query) {
-		if (ProblemUtil.isIndividualNode(node)) {
+		if (ProblemUtil.isDeclaredNode(node)) {
 			return super.doGetTextRegion(node, query);
 		}
-		if (ProblemUtil.isNewNode(node)) {
+		if (ProblemUtil.isMultiNode(node)) {
 			EObject container = node.eContainer();
 			return doGetTextRegion(container, query);
 		}

@@ -28,7 +28,7 @@ statement {
     (":" Expr)? "."
   } |
   ProblemDeclaration {
-    kw<"problem"> QualifiedName "."
+    (ckw<"module"> | kw<"problem">) QualifiedName "."
   } |
   ClassDefinition {
     kw<"abstract">? kw<"class"> RelationName
@@ -37,7 +37,7 @@ statement {
   } |
   EnumDefinition {
     kw<"enum"> RelationName
-    (EnumBody { "{" sep<",", IndividualNodeName> "}" } | ".")
+    (EnumBody { "{" sep<",", AtomNodeName> "}" } | ".")
   } |
   PredicateDefinition {
     (
@@ -56,8 +56,11 @@ statement {
   //  RuleName ParameterList<Parameter>?
   //  RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
   //} |
-  IndividualDeclaration {
-    kw<"indiv"> sep<",", IndividualNodeName> "."
+  AtomDeclaration {
+    ckw<"atom"> sep<",", AtomNodeName> "."
+  } |
+  NodeDeclaration {
+    (ckw<"node"> | ckw<"multi">) sep<",", NodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
@@ -161,7 +164,7 @@ RelationName { QualifiedName ~name }
 
 //RuleName { QualifiedName }
 
-IndividualNodeName { QualifiedName }
+AtomNodeName { QualifiedName }
 
 VariableName[@dynamicPrecedence=10] { QualifiedName ~name }
 

@@ -169,9 +169,9 @@ public class ModelInitializer {
 
 	private void collectNodes() {
 		for (var statement : problem.getStatements()) {
-			if (statement instanceof IndividualDeclaration individualDeclaration) {
-				for (var individual : individualDeclaration.getNodes()) {
-					collectNode(individual);
+			if (statement instanceof NodeDeclaration nodeDeclaration) {
+				for (var node : nodeDeclaration.getNodes()) {
+					collectNode(node);
 				}
 			} else if (statement instanceof ClassDeclaration classDeclaration) {
 				var newNode = classDeclaration.getNewNode();
@@ -355,10 +355,8 @@ public class ModelInitializer {
 				collectClassDeclarationAssertions(classDeclaration);
 			} else if (statement instanceof EnumDeclaration enumDeclaration) {
 				collectEnumAssertions(enumDeclaration);
-			} else if (statement instanceof IndividualDeclaration individualDeclaration) {
-				for (var individual : individualDeclaration.getNodes()) {
-					collectIndividualAssertions(individual);
-				}
+			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
+				collectNodeDeclarationAssertions(nodeDeclaration);
 			} else if (statement instanceof Assertion assertion) {
 				collectAssertion(assertion);
 			}
@@ -379,7 +377,7 @@ public class ModelInitializer {
 	private void collectEnumAssertions(EnumDeclaration enumDeclaration) {
 		var overlay = MutableSeed.of(1, null);
 		for (var literal : enumDeclaration.getLiterals()) {
-			collectIndividualAssertions(literal);
+			collectCardinalityAssertions(literal, TruthValue.TRUE);
 			var nodeId = getNodeId(literal);
 			overlay.mergeValue(Tuple.of(nodeId), TruthValue.TRUE);
 		}
@@ -387,9 +385,25 @@ public class ModelInitializer {
 		info.assertions().overwriteValues(overlay);
 	}
 
-	private void collectIndividualAssertions(Node node) {
+	private void collectNodeDeclarationAssertions(NodeDeclaration nodeDeclaration) {
+		var kind = nodeDeclaration.getKind();
+		TruthValue value;
+		switch (kind) {
+		case ATOM -> value = TruthValue.TRUE;
+		case MULTI -> value = TruthValue.UNKNOWN;
+		case NODE -> {
+			return;
+		}
+		default -> throw new IllegalArgumentException("Unknown node kind: " + kind);
+		}
+		for (var node : nodeDeclaration.getNodes()) {
+			collectCardinalityAssertions(node, value);
+		}
+	}
+
+	private void collectCardinalityAssertions(Node node, TruthValue value) {
 		var nodeId = getNodeId(node);
-		collectCardinalityAssertions(nodeId, TruthValue.TRUE);
+		collectCardinalityAssertions(nodeId, value);
 	}
 
 	private void collectCardinalityAssertions(int nodeId, TruthValue value) {
@@ -587,47 +601,51 @@ public class ModelInitializer {
 
 	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
 							List<Literal> literals) {
-		if (expr instanceof LogicConstant logicConstant) {
-			switch (logicConstant.getLogicValue()) {
-			case TRUE -> literals.add(BooleanLiteral.TRUE);
-			case FALSE -> literals.add(BooleanLiteral.FALSE);
-			default -> throw new TracedException(logicConstant, "Unsupported literal");
-			}
-		} else if (expr instanceof Atom atom) {
-			var target = getPartialRelation(atom.getRelation());
-			var polarity = atom.isTransitiveClosure() ? CallPolarity.TRANSITIVE : CallPolarity.POSITIVE;
-			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
-			literals.add(target.call(polarity, argumentList));
-		} else if (expr instanceof NegationExpr negationExpr) {
-			var body = negationExpr.getBody();
-			if (!(body instanceof Atom atom)) {
-				throw new TracedException(body, "Cannot negate literal");
-			}
-			var target = getPartialRelation(atom.getRelation());
-			Constraint constraint;
-			if (atom.isTransitiveClosure()) {
-				constraint = Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
-						target.callTransitive(p1, p2)
-				)).getDnf();
-			} else {
-				constraint = target;
-			}
-			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-			var argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
-			literals.add(constraint.call(CallPolarity.NEGATIVE, argumentList));
-		} else if (expr instanceof ComparisonExpr comparisonExpr) {
-			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
-					localScope, literals);
-			boolean positive = switch (comparisonExpr.getOp()) {
-				case EQ -> true;
-				case NOT_EQ -> false;
-				default -> throw new TracedException(
-						comparisonExpr, "Unsupported operator");
-			};
-			literals.add(new EquivalenceLiteral(positive, argumentList.get(0), argumentList.get(1)));
-		} else {
-			throw new TracedException(expr, "Unsupported literal");
-		}
+        switch (expr) {
+            case LogicConstant logicConstant -> {
+                switch (logicConstant.getLogicValue()) {
+                    case TRUE -> literals.add(BooleanLiteral.TRUE);
+                    case FALSE -> literals.add(BooleanLiteral.FALSE);
+                    default -> throw new TracedException(logicConstant, "Unsupported literal");
+                }
+            }
+            case Atom atom -> {
+                var target = getPartialRelation(atom.getRelation());
+                var polarity = atom.isTransitiveClosure() ? CallPolarity.TRANSITIVE : CallPolarity.POSITIVE;
+                var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
+                literals.add(target.call(polarity, argumentList));
+            }
+            case NegationExpr negationExpr -> {
+                var body = negationExpr.getBody();
+                if (!(body instanceof Atom atom)) {
+                    throw new TracedException(body, "Cannot negate literal");
+                }
+                var target = getPartialRelation(atom.getRelation());
+                Constraint constraint;
+                if (atom.isTransitiveClosure()) {
+                    constraint = Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
+                            target.callTransitive(p1, p2)
+                    )).getDnf();
+                } else {
+                    constraint = target;
+                }
+                var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
+                var argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
+                literals.add(constraint.call(CallPolarity.NEGATIVE, argumentList));
+            }
+            case ComparisonExpr comparisonExpr -> {
+                var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
+                        localScope, literals);
+                boolean positive = switch (comparisonExpr.getOp()) {
+                    case EQ -> true;
+                    case NOT_EQ -> false;
+                    default -> throw new TracedException(
+                            comparisonExpr, "Unsupported operator");
+                };
+                literals.add(new EquivalenceLiteral(positive, argumentList.get(0), argumentList.get(1)));
+            }
+            default -> throw new TracedException(expr, "Unsupported literal");
+        }
 	}
 
 	private List<Variable> toArgumentList(

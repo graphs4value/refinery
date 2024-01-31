@@ -54,14 +54,24 @@ public final class ProblemUtil {
 		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
 	}
 
-	public static boolean isIndividualNode(Node node) {
+	public static boolean isAtomNode(Node node) {
 		var containingFeature = node.eContainingFeature();
-		return containingFeature == ProblemPackage.Literals.INDIVIDUAL_DECLARATION__NODES
-				|| containingFeature == ProblemPackage.Literals.ENUM_DECLARATION__LITERALS;
+		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {
+			return ((NodeDeclaration) node.eContainer()).getKind() == NodeKind.ATOM;
+		}
+		return containingFeature == ProblemPackage.Literals.ENUM_DECLARATION__LITERALS;
 	}
 
-	public static boolean isNewNode(Node node) {
-		return node.eContainingFeature() == ProblemPackage.Literals.CLASS_DECLARATION__NEW_NODE;
+	public static boolean isMultiNode(Node node) {
+		var containingFeature = node.eContainingFeature();
+		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {
+			return ((NodeDeclaration) node.eContainer()).getKind() == NodeKind.MULTI;
+		}
+		return containingFeature == ProblemPackage.Literals.CLASS_DECLARATION__NEW_NODE;
+	}
+
+	public static boolean isDeclaredNode(Node node) {
+		return node.eContainingFeature() == ProblemPackage.Literals.NODE_DECLARATION__NODES;
 	}
 
 	public static boolean isInvalidMultiplicityConstraint(PredicateDefinition predicateDefinition) {

@@ -84,7 +84,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkNodeConstants(VariableOrNodeExpr expr) {
 		var variableOrNode = expr.getVariableOrNode();
-		if (variableOrNode instanceof Node node && !ProblemUtil.isIndividualNode(node)) {
+		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
 			var name = node.getName();
 			var message = ("Only individuals can be referenced in predicates. " +
 					"Mark '%s' as individual with the declaration 'indiv %s.'").formatted(name, name);
@@ -96,16 +96,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkUniqueDeclarations(Problem problem) {
 		var relations = new ArrayList<Relation>();
-		var individuals = new ArrayList<Node>();
+		var nodes = new ArrayList<Node>();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof Relation relation) {
 				relations.add(relation);
-			} else if (statement instanceof IndividualDeclaration individualDeclaration) {
-				individuals.addAll(individualDeclaration.getNodes());
+			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
+				nodes.addAll(nodeDeclaration.getNodes());
 			}
 		}
 		checkUniqueSimpleNames(relations);
-		checkUniqueSimpleNames(individuals);
+		checkUniqueSimpleNames(nodes);
 	}
 
 	@Check
@@ -362,7 +362,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 			return;
 		}
 		var node = getNodeArgumentForMultiObjectAssertion(arguments.get(0));
-		if (node != null && !node.eIsProxy() && ProblemUtil.isIndividualNode(node)) {
+		if (node != null && !node.eIsProxy() && ProblemUtil.isAtomNode(node)) {
 			acceptError("Individual nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
 		}
 	}
