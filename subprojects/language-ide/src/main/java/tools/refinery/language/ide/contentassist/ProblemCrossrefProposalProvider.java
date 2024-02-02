@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -15,13 +15,14 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
-import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xtext.CurrentTypeFinder;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
@@ -46,14 +47,12 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 	@Override
 	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
 													   ContentAssistContext context) {
-		var eObjectDescriptionsByName = new HashMap<QualifiedName, List<IEObjectDescription>>();
+		var eObjectDescriptionsByName = new HashMap<ProblemResourceDescriptionStrategy.ShadowingKey,
+				List<IEObjectDescription>>();
 		for (var candidate : super.queryScope(scope, crossReference, context)) {
 			if (isExistingObject(candidate, crossReference, context)) {
-				// {@code getQualifiedName()} will refer to the full name for objects that are loaded from the global
-				// scope, but {@code getName()} returns the qualified name that we set in
-				// {@code ProblemResourceDescriptionStrategy}.
-				var qualifiedName = candidate.getName();
-				var candidateList = eObjectDescriptionsByName.computeIfAbsent(qualifiedName,
+				var shadowingKey = ProblemResourceDescriptionStrategy.getShadowingKey(candidate);
+				var candidateList = eObjectDescriptionsByName.computeIfAbsent(shadowingKey,
 						ignored -> new ArrayList<>());
 				candidateList.add(candidate);
 			}
@@ -61,7 +60,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		var eObjectDescriptions = new ArrayList<IEObjectDescription>();
 		for (var candidates : eObjectDescriptionsByName.values()) {
 			if (candidates.size() == 1) {
-				var candidate = candidates.get(0);
+				var candidate = candidates.getFirst();
 				if (shouldBeVisible(candidate, crossReference, context)) {
 					eObjectDescriptions.add(candidate);
 				}
@@ -96,6 +95,11 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	protected boolean shouldBeVisible(IEObjectDescription candidate, CrossReference crossReference,
 									  ContentAssistContext context) {
+		if (NamingUtil.isFullyQualified(candidate.getName()) &&
+				!context.getPrefix().startsWith(ProblemQualifiedNameConverter.DELIMITER)) {
+			// Do not propose names with a root prefix unless explicitly asked for.
+			return false;
+		}
 		var errorPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE);
 		if (ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(errorPredicate)) {
 			return false;

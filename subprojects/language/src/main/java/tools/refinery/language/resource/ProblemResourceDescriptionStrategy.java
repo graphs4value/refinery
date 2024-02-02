@@ -25,9 +25,16 @@ import java.util.Map;
 @Singleton
 public class ProblemResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
 	private static final String DATA_PREFIX = "tools.refinery.language.resource.ProblemResourceDescriptionStrategy.";
+
 	public static final String ARITY = DATA_PREFIX + "ARITY";
 	public static final String ERROR_PREDICATE = DATA_PREFIX + "ERROR_PREDICATE";
 	public static final String ERROR_PREDICATE_TRUE = "true";
+	public static final String SHADOWING_KEY = DATA_PREFIX + "SHADOWING_KEY";
+	public static final String SHADOWING_KEY_PROBLEM = "problem";
+	public static final String SHADOWING_KEY_NODE = "node";
+	public static final String SHADOWING_KEY_RELATION = "relation";
+	public static final String PREFERRED_NAME = DATA_PREFIX + "PREFERRED_NAME";
+	public static final String PREFERRED_NAME_TRUE = "true";
 	public static final String COLOR_RELATION = DATA_PREFIX + "COLOR_RELATION";
 	public static final String COLOR_RELATION_TRUE = "true";
 
@@ -44,8 +51,12 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			return true;
 		}
 		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
-		var problemQualifiedName = getNameAsQualifiedName(problem);
 		var userData = getUserData(eObject);
+		if (eObject.equals(problem)) {
+			acceptEObjectDescription(eObject, qualifiedName, QualifiedName.EMPTY, userData, true, acceptor);
+			return true;
+		}
+		var problemQualifiedName = getNameAsQualifiedName(problem);
 		QualifiedName lastQualifiedNameToExport = null;
 		if (shouldExportSimpleName(eObject)) {
 			lastQualifiedNameToExport = qualifiedName;
@@ -82,10 +93,14 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (NamingUtil.isNullOrEmpty(name)) {
 			return null;
 		}
-		return qualifiedNameConverter.toQualifiedName(name);
+		var qualifiedName = qualifiedNameConverter.toQualifiedName(name);
+		if (eObject instanceof Problem) {
+			return NamingUtil.stripRootPrefix(qualifiedName);
+		}
+		return qualifiedName;
 	}
 
-	protected boolean shouldExport(EObject eObject) {
+	public static boolean shouldExport(EObject eObject) {
 		if (eObject instanceof Variable) {
 			// Variables are always private to the containing predicate definition.
 			return false;
@@ -98,7 +113,12 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	protected Map<String, String> getUserData(EObject eObject) {
 		var builder = ImmutableMap.<String, String>builder();
-		if (eObject instanceof Relation relation) {
+		if (eObject instanceof Problem) {
+			builder.put(SHADOWING_KEY, SHADOWING_KEY_PROBLEM);
+		} else if (eObject instanceof Node) {
+			builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
+		} else if (eObject instanceof Relation relation) {
+			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
 			int arity = ProblemUtil.getArity(relation);
 			builder.put(ARITY, Integer.toString(arity));
 		}
@@ -124,20 +144,31 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	}
 
 	private void acceptEObjectDescription(EObject eObject, QualifiedName prefix, QualifiedName qualifiedName,
-										  Map<String, String> userData, boolean fullyQualified,
+										  Map<String, String> userData, boolean preferredName,
 										  IAcceptor<IEObjectDescription> acceptor) {
 		var qualifiedNameWithPrefix = prefix == null ? qualifiedName : prefix.append(qualifiedName);
-		Map<String, String> userDataWithFullyQualified;
-		if (fullyQualified && shouldColorRelation(eObject)) {
-			userDataWithFullyQualified = ImmutableMap.<String, String>builder()
+		var userDataWithPreference = userData;
+		if (preferredName) {
+			userDataWithPreference = ImmutableMap.<String, String>builder()
 					.putAll(userData)
+					.put(PREFERRED_NAME, PREFERRED_NAME_TRUE)
+					.build();
+		}
+		var description = EObjectDescription.create(qualifiedNameWithPrefix, eObject, userDataWithPreference);
+		acceptor.accept(description);
+		if (!preferredName) {
+			return;
+		}
+		var userDataWithFullyQualified = userDataWithPreference;
+		if (shouldColorRelation(eObject)) {
+			userDataWithFullyQualified = ImmutableMap.<String, String>builder()
+					.putAll(userDataWithPreference)
 					.put(COLOR_RELATION, COLOR_RELATION_TRUE)
 					.build();
-		} else {
-			userDataWithFullyQualified = userData;
 		}
-		var description = EObjectDescription.create(qualifiedNameWithPrefix, eObject, userDataWithFullyQualified);
-		acceptor.accept(description);
+		var rootQualifiedName = NamingUtil.addRootPrefix(qualifiedNameWithPrefix);
+		var rootDescription = EObjectDescription.create(rootQualifiedName, eObject, userDataWithFullyQualified);
+		acceptor.accept(rootDescription);
 	}
 
 	private boolean shouldColorRelation(EObject eObject) {
@@ -145,5 +176,12 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			return false;
 		}
 		return eObject instanceof ClassDeclaration || eObject instanceof EnumDeclaration;
+	}
+
+	public static ShadowingKey getShadowingKey(IEObjectDescription description) {
+		return new ShadowingKey(description.getName(), description.getUserData(SHADOWING_KEY));
+	}
+
+	public record ShadowingKey(QualifiedName name, String shadowingKey) {
 	}
 }

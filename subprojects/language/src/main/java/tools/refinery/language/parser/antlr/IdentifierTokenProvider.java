@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -59,7 +59,7 @@ public class IdentifierTokenProvider {
 
 		private void createValueToTokenIdMap() {
 			var tokenIdToValueMap = tokenDefProvider.getTokenDefMap();
-			valueToTokenIdMap = new HashMap<>(tokenIdToValueMap.size());
+			valueToTokenIdMap = HashMap.newHashMap(tokenIdToValueMap.size());
 			for (var entry : tokenIdToValueMap.entrySet()) {
 				valueToTokenIdMap.put(entry.getValue(), entry.getKey());
 			}
@@ -74,17 +74,16 @@ public class IdentifierTokenProvider {
 		}
 
 		private void collectIdentifierTokensFromElement(AbstractElement element) {
-			if (element instanceof Alternatives alternatives) {
-				for (var alternative : alternatives.getElements()) {
-					collectIdentifierTokensFromElement(alternative);
-				}
-			} else if (element instanceof RuleCall ruleCall) {
-				collectIdentifierTokensFromRule(ruleCall.getRule());
-			} else if (element instanceof Keyword keyword) {
-				collectToken("'" + keyword.getValue() + "'");
-			} else {
-				throw new IllegalArgumentException("Unknown Xtext grammar element: " + element);
-			}
+            switch (element) {
+                case Alternatives alternatives -> {
+                    for (var alternative : alternatives.getElements()) {
+                        collectIdentifierTokensFromElement(alternative);
+                    }
+                }
+                case RuleCall ruleCall -> collectIdentifierTokensFromRule(ruleCall.getRule());
+                case Keyword keyword -> collectToken("'" + keyword.getValue() + "'");
+                default -> throw new IllegalArgumentException("Unknown Xtext grammar element: " + element);
+            }
 		}
 
 		private void collectToken(String value) {

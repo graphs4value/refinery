@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -108,7 +108,11 @@ function createCompletion(entry: ContentAssistEntry): Completion {
       boost = -90;
       break;
     default:
-      {
+      if (entry.proposal.startsWith('::')) {
+        // Move absolute names below relative names,
+        // they should only be preferred if no relative name is available.
+        boost = -60;
+      } else {
         // Penalize qualified names (vs available unqualified names).
         const extraSegments = entry.proposal.match(/::/g)?.length || 0;
         boost = Math.max(-5 * extraSegments, -50);

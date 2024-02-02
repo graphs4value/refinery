@@ -247,7 +247,7 @@ public class ModelInitializer {
 	}
 
 	private String getName(Relation relation) {
-		return semanticsUtils.getName(relation).orElseGet(() -> "::" + relationInfoMap.size());
+		return semanticsUtils.getNameWithoutRootPrefix(relation).orElseGet(() -> "::" + relationInfoMap.size());
 	}
 
 	private void collectMetamodel() {
@@ -659,7 +659,7 @@ public class ModelInitializer {
 			var variableOrNode = variableOrNodeExpr.getVariableOrNode();
 			if (variableOrNode instanceof Node node) {
 				int nodeId = getNodeId(node);
-				var tempVariable = Variable.of(semanticsUtils.getName(node).orElse("_" + nodeId));
+				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
 				literals.add(new ConstantLiteral(tempVariable, nodeId));
 				argumentList.add(tempVariable);
 			} else if (variableOrNode instanceof tools.refinery.language.model.problem.Variable problemVariable) {

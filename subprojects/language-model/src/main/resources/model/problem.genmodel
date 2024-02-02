@@ -238,5 +238,9 @@
     <genClasses ecoreClass="problem.ecore#//LogicConstant">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LogicConstant/logicValue"/>
     </genClasses>
+    <genClasses ecoreClass="problem.ecore#//ImportStatement">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//ImportStatement/importedModule"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ImportStatement/alias"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

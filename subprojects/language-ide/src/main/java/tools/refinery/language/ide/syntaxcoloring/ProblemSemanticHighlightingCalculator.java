@@ -99,7 +99,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	protected String[] getHighlightClass(EObject eObject, EReference reference) {
 		boolean isError = ProblemUtil.isError(eObject);
-		if (ProblemUtil.isBuiltIn(eObject)) {
+		if (ProblemUtil.isBuiltIn(eObject) && !(eObject instanceof Problem)) {
 			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
 			return new String[]{className};
 		}

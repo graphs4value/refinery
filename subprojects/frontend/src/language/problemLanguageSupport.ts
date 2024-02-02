@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -28,7 +28,7 @@ const parserWithMetadata = parser.configure({
       LineComment: t.lineComment,
       BlockComment: t.blockComment,
       'module problem class enum pred fn scope': t.definitionKeyword,
-      'declare atom multi': t.definitionKeyword,
+      'import as declare atom multi': t.definitionKeyword,
       'abstract extends refers contains container opposite': t.modifier,
       'default error contained containment': t.modifier,
       'true false unknown error': t.keyword,

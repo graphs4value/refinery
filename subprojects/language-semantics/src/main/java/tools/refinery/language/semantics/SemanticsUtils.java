@@ -7,6 +7,7 @@ package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
@@ -16,6 +17,7 @@ import org.eclipse.xtext.scoping.IScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 
 import java.util.Optional;
 
@@ -25,10 +27,14 @@ public class SemanticsUtils {
 	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject
+	@Named(ProblemQualifiedNameProvider.NAMED_DELEGATE)
+	private IQualifiedNameProvider delegateQualifiedNameProvider;
+
+	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
 
-	public Optional<String> getName(EObject eObject) {
-		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(eObject);
+	public Optional<String> getNameWithoutRootPrefix(EObject eObject) {
+		var qualifiedName = delegateQualifiedNameProvider.getFullyQualifiedName(eObject);
 		if (qualifiedName == null) {
 			return Optional.empty();
 		}

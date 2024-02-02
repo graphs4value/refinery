@@ -40,7 +40,9 @@ function createTypeHashStyles(
 export default styled('div', {
   name: 'EditorTheme',
   shouldForwardProp: (propName) =>
-    propName !== 'showLineNumbers' && propName !== 'showActiveLine',
+    propName !== 'showLineNumbers' &&
+    propName !== 'showActiveLine' &&
+    propName !== 'colorIdentifiers',
 })<{
   showLineNumbers: boolean;
   showActiveLine: boolean;

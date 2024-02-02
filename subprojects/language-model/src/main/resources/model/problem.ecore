@@ -270,4 +270,8 @@
     <eLiterals name="ATOM" value="1"/>
     <eLiterals name="MULTI" value="2"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ImportStatement" eSuperTypes="#//Statement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="importedModule" eType="#//Problem"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="alias" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>
