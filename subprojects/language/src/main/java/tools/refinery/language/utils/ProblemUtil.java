@@ -5,16 +5,13 @@
  */
 package tools.refinery.language.utils;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
-	public static final String BUILTIN_LIBRARY_NAME = "builtin";
-	public static final URI BUILTIN_LIBRARY_URI = getLibraryUri();
-
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
@@ -23,7 +20,7 @@ public final class ProblemUtil {
 		if (eObject != null) {
 			var eResource = eObject.eResource();
 			if (eResource != null) {
-				return ProblemUtil.BUILTIN_LIBRARY_URI.equals(eResource.getURI());
+				return BuiltinLibrary.BUILTIN_LIBRARY_URI.equals(eResource.getURI());
 			}
 		}
 		return false;
@@ -130,14 +127,5 @@ public final class ProblemUtil {
 	public static boolean isInModule(EObject eObject) {
 		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
 		return problem != null && problem.getKind() == ModuleKind.MODULE;
-	}
-
-	private static URI getLibraryUri() {
-		var libraryResource = ProblemUtil.class.getClassLoader()
-				.getResource("tools/refinery/language/%s.problem".formatted(BUILTIN_LIBRARY_NAME));
-		if (libraryResource == null) {
-			throw new AssertionError("Library '%s' was not found".formatted(BUILTIN_LIBRARY_NAME));
-		}
-		return URI.createURI(libraryResource.toString());
 	}
 }

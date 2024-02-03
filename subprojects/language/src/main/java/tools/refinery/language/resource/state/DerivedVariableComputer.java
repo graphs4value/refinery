@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.resource;
+package tools.refinery.language.resource.state;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

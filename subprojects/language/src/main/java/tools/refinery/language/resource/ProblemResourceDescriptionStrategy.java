@@ -16,11 +16,13 @@ import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
+import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Singleton
 public class ProblemResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
@@ -35,11 +37,16 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String SHADOWING_KEY_RELATION = "relation";
 	public static final String PREFERRED_NAME = DATA_PREFIX + "PREFERRED_NAME";
 	public static final String PREFERRED_NAME_TRUE = "true";
+	public static final String IMPORTS = DATA_PREFIX + "IMPORTS";
+	public static final String IMPORTS_SEPARATOR = "|";
 	public static final String COLOR_RELATION = DATA_PREFIX + "COLOR_RELATION";
 	public static final String COLOR_RELATION_TRUE = "true";
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private ImportCollector importCollector;
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
@@ -115,6 +122,11 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		var builder = ImmutableMap.<String, String>builder();
 		if (eObject instanceof Problem) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_PROBLEM);
+			var explicitImports = importCollector.getDirectImports(eObject.eResource());
+			var importsString = explicitImports.toList().stream()
+					.map(importEntry -> importEntry.uri().toString())
+					.collect(Collectors.joining(IMPORTS_SEPARATOR));
+			builder.put(IMPORTS, importsString);
 		} else if (eObject instanceof Node) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
 		} else if (eObject instanceof Relation relation) {

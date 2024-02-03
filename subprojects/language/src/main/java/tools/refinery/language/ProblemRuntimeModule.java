@@ -32,6 +32,7 @@ import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
 import tools.refinery.language.resource.*;
+import tools.refinery.language.resource.state.ProblemDerivedStateComputer;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
 import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;

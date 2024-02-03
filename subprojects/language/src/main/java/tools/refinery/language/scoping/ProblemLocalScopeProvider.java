@@ -6,37 +6,72 @@
 package tools.refinery.language.scoping;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptionsProvider;
 import org.eclipse.xtext.resource.ISelectable;
-import org.eclipse.xtext.scoping.impl.SimpleLocalScopeProvider;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.impl.AbstractGlobalScopeDelegatingScopeProvider;
+import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
+import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.naming.NamingUtil;
 
-public class ProblemLocalScopeProvider extends SimpleLocalScopeProvider {
+public class ProblemLocalScopeProvider extends AbstractGlobalScopeDelegatingScopeProvider {
+	private static final String CACHE_KEY = "tools.refinery.language.scoping.ProblemLocalScopeProvider.CACHE_KEY";
+
 	@Inject
 	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject
 	private IResourceDescriptionsProvider resourceDescriptionsProvider;
 
+	@Inject
+	private IResourceScopeCache cache;
+
 	@Override
-	protected ISelectable getAllDescriptions(Resource resource) {
-		// Force the use of ProblemResourceDescriptionStrategy to include all QualifiedNames of objects.
-		var resourceDescriptions = resourceDescriptionsProvider
-				.getResourceDescriptions(resource.getResourceSet());
-		var resourceDescription = resourceDescriptions.getResourceDescription(resource.getURI());
-		if (resourceDescription != null && !resource.getContents().isEmpty()) {
-			var rootElement = resource.getContents().getFirst();
-			if (rootElement != null) {
-				var rootName = NamingUtil.stripRootPrefix(qualifiedNameProvider.getFullyQualifiedName(rootElement));
-				if (rootName == null) {
-					return resourceDescription;
-				}
-				return NormalizedSelectable.of(resourceDescription, rootName, QualifiedName.EMPTY);
-			}
+	public IScope getScope(EObject context, EReference reference) {
+		var resource = context.eResource();
+		if (resource == null) {
+			return IScope.NULLSCOPE;
 		}
-		return resourceDescription;
+		var localImports = cache.get(CACHE_KEY, resource, () -> computeLocalImports(resource));
+		if (localImports.resourceDescription() == null) {
+			return IScope.NULLSCOPE;
+		}
+		var globalScope = getGlobalScope(resource, reference);
+		var type = reference.getEReferenceType();
+		boolean ignoreCase = isIgnoreCase(reference);
+		var scope = SelectableBasedScope.createScope(globalScope, localImports.resourceDescription(), type,
+                ignoreCase);
+		if (localImports.normalizedSelectable() == null) {
+			return scope;
+		}
+		return SelectableBasedScope.createScope(scope, localImports.normalizedSelectable(), type, ignoreCase);
+	}
+
+	protected LocalImports computeLocalImports(Resource resource) {
+		// Force the use of ProblemResourceDescriptionStrategy to include all QualifiedNames of objects.
+		var resourceDescriptions = resourceDescriptionsProvider.getResourceDescriptions(resource.getResourceSet());
+		var resourceDescription = resourceDescriptions.getResourceDescription(resource.getURI());
+		if (resourceDescription == null) {
+			return new LocalImports(null, null);
+		}
+		var rootElement = resource.getContents().getFirst();
+		if (rootElement == null) {
+			return new LocalImports(resourceDescription, null);
+		}
+		var rootName = NamingUtil.stripRootPrefix(qualifiedNameProvider.getFullyQualifiedName(rootElement));
+		if (rootName == null) {
+			return new LocalImports(resourceDescription, null);
+		}
+		var normalizedSelectable = new NormalizedSelectable(resourceDescription, rootName, QualifiedName.EMPTY);
+		return new LocalImports(resourceDescription, normalizedSelectable);
+	}
+
+	protected record LocalImports(IResourceDescription resourceDescription, ISelectable normalizedSelectable) {
 	}
 }

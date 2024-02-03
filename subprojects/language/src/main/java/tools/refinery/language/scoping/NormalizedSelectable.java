@@ -12,18 +12,21 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.resource.impl.AliasedEObjectDescription;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-public class NormalizedSelectable implements ISelectable {
+class NormalizedSelectable implements ISelectable {
 	private final ISelectable delegateSelectable;
 	private final QualifiedName originalPrefix;
 	private final QualifiedName normalizedPrefix;
 
-	private NormalizedSelectable(ISelectable delegateSelectable, QualifiedName originalPrefix,
-								 QualifiedName normalizedPrefix) {
+	public NormalizedSelectable(ISelectable delegateSelectable, QualifiedName originalPrefix,
+								QualifiedName normalizedPrefix) {
+		if (originalPrefix.equals(QualifiedName.EMPTY)) {
+			throw new IllegalArgumentException("Cannot normalize empty qualified name prefix");
+		}
 		this.delegateSelectable = delegateSelectable;
 		this.originalPrefix = originalPrefix;
 		this.normalizedPrefix = normalizedPrefix;
@@ -37,41 +40,36 @@ public class NormalizedSelectable implements ISelectable {
 	@Override
 	public Iterable<IEObjectDescription> getExportedObjects() {
 		var delegateIterable = delegateSelectable.getExportedObjects();
-		var aliasedIterable = getAliasedElements(delegateIterable);
-		return Iterables.concat(delegateIterable, aliasedIterable);
+		return getAliasedElements(delegateIterable);
 	}
 
 	@Override
 	public Iterable<IEObjectDescription> getExportedObjects(EClass type, QualifiedName name, boolean ignoreCase) {
-		var delegateIterable = delegateSelectable.getExportedObjects(type, name, ignoreCase);
 		boolean startsWith = ignoreCase ? name.startsWithIgnoreCase(normalizedPrefix) :
 				name.startsWith(normalizedPrefix);
 		if (startsWith && name.getSegmentCount() > normalizedPrefix.getSegmentCount()) {
 			var originalName = originalPrefix.append(name.skipFirst(normalizedPrefix.getSegmentCount()));
-			var originalIterable = Iterables.transform(
+			return Iterables.transform(
 					delegateSelectable.getExportedObjects(type, originalName, ignoreCase),
 					description -> {
 						var normalizedName = normalizedPrefix.append(
 								description.getName().skipFirst(originalPrefix.getSegmentCount()));
 						return new AliasedEObjectDescription(normalizedName, description);
 					});
-			return Iterables.concat(originalIterable, delegateIterable);
 		}
-		return delegateIterable;
+		return List.of();
 	}
 
 	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByType(EClass type) {
 		var delegateIterable = delegateSelectable.getExportedObjectsByType(type);
-		var aliasedIterable = getAliasedElements(delegateIterable);
-		return Iterables.concat(delegateIterable, aliasedIterable);
+		return getAliasedElements(delegateIterable);
 	}
 
 	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByObject(EObject object) {
 		var delegateIterable = delegateSelectable.getExportedObjectsByObject(object);
-		var aliasedIterable = getAliasedElements(delegateIterable);
-		return Iterables.concat(delegateIterable, aliasedIterable);
+		return getAliasedElements(delegateIterable);
 	}
 
 	private Iterable<IEObjectDescription> getAliasedElements(Iterable<IEObjectDescription> delegateIterable) {
@@ -107,16 +105,5 @@ public class NormalizedSelectable implements ISelectable {
 				return null;
 			}
 		};
-	}
-
-	public static ISelectable of(@NotNull ISelectable delegateSelectable, @NotNull QualifiedName originalPrefix,
-								 @NotNull QualifiedName normalizedPrefix) {
-		if (originalPrefix.equals(normalizedPrefix)) {
-			return delegateSelectable;
-		}
-		if (originalPrefix.equals(QualifiedName.EMPTY)) {
-			throw new IllegalArgumentException("Cannot normalize empty qualified name prefix");
-		}
-		return new NormalizedSelectable(delegateSelectable, originalPrefix, normalizedPrefix);
 	}
 }

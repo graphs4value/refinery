@@ -6,7 +6,9 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
@@ -51,7 +53,12 @@ public class ModelInitializer {
 	@Inject
 	private ProblemTraceImpl problemTrace;
 
+	@Inject
+	private ImportCollector importCollector;
+
 	private Problem problem;
+
+	private final Set<Problem> importedProblems = new HashSet<>();
 
 	private BuiltinSymbols builtinSymbols;
 
@@ -82,6 +89,8 @@ public class ModelInitializer {
 			throw new IllegalArgumentException("Problem was already set");
 		}
 		this.problem = problem;
+		loadImportedProblems();
+		importedProblems.add(problem);
 		problemTrace.setProblem(problem);
 		try {
 			builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalArgumentException(
@@ -128,6 +137,29 @@ public class ModelInitializer {
 		}
 	}
 
+	private void loadImportedProblems() {
+		var resource = problem.eResource();
+		if (resource == null) {
+			return;
+		}
+		var resourceSet = resource.getResourceSet();
+		if (resourceSet == null) {
+			return;
+		}
+		var importedUris = importCollector.getAllImports(resource).toUriSet();
+		for (var uri : importedUris) {
+			if (BuiltinLibrary.BUILTIN_LIBRARY_URI.equals(uri)) {
+				// We hard-code the behavior of the builtin library.
+				continue;
+			}
+			var importedResource = resourceSet.getResource(uri, false);
+			if (importedResource != null && !importedResource.getContents().isEmpty() &&
+					importedResource.getContents().getFirst() instanceof Problem importedProblem) {
+				importedProblems.add(importedProblem);
+			}
+		}
+	}
+
 	public void configureStoreBuilder(ModelStoreBuilder storeBuilder) {
 		checkProblem();
 		try {
@@ -168,19 +200,21 @@ public class ModelInitializer {
 	}
 
 	private void collectNodes() {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof NodeDeclaration nodeDeclaration) {
-				for (var node : nodeDeclaration.getNodes()) {
-					collectNode(node);
-				}
-			} else if (statement instanceof ClassDeclaration classDeclaration) {
-				var newNode = classDeclaration.getNewNode();
-				if (newNode != null) {
-					collectNode(newNode);
-				}
-			} else if (statement instanceof EnumDeclaration enumDeclaration) {
-				for (var literal : enumDeclaration.getLiterals()) {
-					collectNode(literal);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof NodeDeclaration nodeDeclaration) {
+					for (var node : nodeDeclaration.getNodes()) {
+						collectNode(node);
+					}
+				} else if (statement instanceof ClassDeclaration classDeclaration) {
+					var newNode = classDeclaration.getNewNode();
+					if (newNode != null) {
+						collectNode(newNode);
+					}
+				} else if (statement instanceof EnumDeclaration enumDeclaration) {
+					for (var literal : enumDeclaration.getLiterals()) {
+						collectNode(literal);
+					}
 				}
 			}
 		}
@@ -194,13 +228,15 @@ public class ModelInitializer {
 	}
 
 	private void collectPartialSymbols() {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration classDeclaration) {
-				collectClassDeclarationSymbols(classDeclaration);
-			} else if (statement instanceof EnumDeclaration enumDeclaration) {
-				collectPartialRelation(enumDeclaration, 1, TruthValue.FALSE, TruthValue.FALSE);
-			} else if (statement instanceof PredicateDefinition predicateDefinition) {
-				collectPredicateDefinitionSymbol(predicateDefinition);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof ClassDeclaration classDeclaration) {
+					collectClassDeclarationSymbols(classDeclaration);
+				} else if (statement instanceof EnumDeclaration enumDeclaration) {
+					collectPartialRelation(enumDeclaration, 1, TruthValue.FALSE, TruthValue.FALSE);
+				} else if (statement instanceof PredicateDefinition predicateDefinition) {
+					collectPredicateDefinitionSymbol(predicateDefinition);
+				}
 			}
 		}
 	}
@@ -251,11 +287,13 @@ public class ModelInitializer {
 	}
 
 	private void collectMetamodel() {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration classDeclaration) {
-				collectClassDeclarationMetamodel(classDeclaration);
-			} else if (statement instanceof EnumDeclaration enumDeclaration) {
-				collectEnumMetamodel(enumDeclaration);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof ClassDeclaration classDeclaration) {
+					collectClassDeclarationMetamodel(classDeclaration);
+				} else if (statement instanceof EnumDeclaration enumDeclaration) {
+					collectEnumMetamodel(enumDeclaration);
+				}
 			}
 		}
 	}
@@ -350,15 +388,17 @@ public class ModelInitializer {
 	}
 
 	private void collectAssertions() {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration classDeclaration) {
-				collectClassDeclarationAssertions(classDeclaration);
-			} else if (statement instanceof EnumDeclaration enumDeclaration) {
-				collectEnumAssertions(enumDeclaration);
-			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
-				collectNodeDeclarationAssertions(nodeDeclaration);
-			} else if (statement instanceof Assertion assertion) {
-				collectAssertion(assertion);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof ClassDeclaration classDeclaration) {
+					collectClassDeclarationAssertions(classDeclaration);
+				} else if (statement instanceof EnumDeclaration enumDeclaration) {
+					collectEnumAssertions(enumDeclaration);
+				} else if (statement instanceof NodeDeclaration nodeDeclaration) {
+					collectNodeDeclarationAssertions(nodeDeclaration);
+				} else if (statement instanceof Assertion assertion) {
+					collectAssertion(assertion);
+				}
 			}
 		}
 	}
@@ -429,9 +469,11 @@ public class ModelInitializer {
 	}
 
 	private void fixClassDeclarationAssertions() {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration classDeclaration) {
-				fixClassDeclarationAssertions(classDeclaration);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof ClassDeclaration classDeclaration) {
+					fixClassDeclarationAssertions(classDeclaration);
+				}
 			}
 		}
 	}
@@ -499,9 +541,11 @@ public class ModelInitializer {
 	}
 
 	private void collectPredicates(ModelStoreBuilder storeBuilder) {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof PredicateDefinition predicateDefinition) {
-				collectPredicateDefinitionTraced(predicateDefinition, storeBuilder);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof PredicateDefinition predicateDefinition) {
+					collectPredicateDefinitionTraced(predicateDefinition, storeBuilder);
+				}
 			}
 		}
 	}
@@ -601,51 +645,51 @@ public class ModelInitializer {
 
 	private void toLiterals(Expr expr, Map<tools.refinery.language.model.problem.Variable, Variable> localScope,
 							List<Literal> literals) {
-        switch (expr) {
-            case LogicConstant logicConstant -> {
-                switch (logicConstant.getLogicValue()) {
-                    case TRUE -> literals.add(BooleanLiteral.TRUE);
-                    case FALSE -> literals.add(BooleanLiteral.FALSE);
-                    default -> throw new TracedException(logicConstant, "Unsupported literal");
-                }
-            }
-            case Atom atom -> {
-                var target = getPartialRelation(atom.getRelation());
-                var polarity = atom.isTransitiveClosure() ? CallPolarity.TRANSITIVE : CallPolarity.POSITIVE;
-                var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
-                literals.add(target.call(polarity, argumentList));
-            }
-            case NegationExpr negationExpr -> {
-                var body = negationExpr.getBody();
-                if (!(body instanceof Atom atom)) {
-                    throw new TracedException(body, "Cannot negate literal");
-                }
-                var target = getPartialRelation(atom.getRelation());
-                Constraint constraint;
-                if (atom.isTransitiveClosure()) {
-                    constraint = Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
-                            target.callTransitive(p1, p2)
-                    )).getDnf();
-                } else {
-                    constraint = target;
-                }
-                var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-                var argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
-                literals.add(constraint.call(CallPolarity.NEGATIVE, argumentList));
-            }
-            case ComparisonExpr comparisonExpr -> {
-                var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
-                        localScope, literals);
-                boolean positive = switch (comparisonExpr.getOp()) {
-                    case EQ -> true;
-                    case NOT_EQ -> false;
-                    default -> throw new TracedException(
-                            comparisonExpr, "Unsupported operator");
-                };
-                literals.add(new EquivalenceLiteral(positive, argumentList.get(0), argumentList.get(1)));
-            }
-            default -> throw new TracedException(expr, "Unsupported literal");
-        }
+		switch (expr) {
+		case LogicConstant logicConstant -> {
+			switch (logicConstant.getLogicValue()) {
+			case TRUE -> literals.add(BooleanLiteral.TRUE);
+			case FALSE -> literals.add(BooleanLiteral.FALSE);
+			default -> throw new TracedException(logicConstant, "Unsupported literal");
+			}
+		}
+		case Atom atom -> {
+			var target = getPartialRelation(atom.getRelation());
+			var polarity = atom.isTransitiveClosure() ? CallPolarity.TRANSITIVE : CallPolarity.POSITIVE;
+			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
+			literals.add(target.call(polarity, argumentList));
+		}
+		case NegationExpr negationExpr -> {
+			var body = negationExpr.getBody();
+			if (!(body instanceof Atom atom)) {
+				throw new TracedException(body, "Cannot negate literal");
+			}
+			var target = getPartialRelation(atom.getRelation());
+			Constraint constraint;
+			if (atom.isTransitiveClosure()) {
+				constraint = Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
+						target.callTransitive(p1, p2)
+				)).getDnf();
+			} else {
+				constraint = target;
+			}
+			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
+			var argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
+			literals.add(constraint.call(CallPolarity.NEGATIVE, argumentList));
+		}
+		case ComparisonExpr comparisonExpr -> {
+			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
+					localScope, literals);
+			boolean positive = switch (comparisonExpr.getOp()) {
+				case EQ -> true;
+				case NOT_EQ -> false;
+				default -> throw new TracedException(
+						comparisonExpr, "Unsupported operator");
+			};
+			literals.add(new EquivalenceLiteral(positive, argumentList.get(0), argumentList.get(1)));
+		}
+		default -> throw new TracedException(expr, "Unsupported literal");
+		}
 	}
 
 	private List<Variable> toArgumentList(
@@ -680,13 +724,15 @@ public class ModelInitializer {
 	}
 
 	private void collectScopes() {
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ScopeDeclaration scopeDeclaration) {
-				for (var typeScope : scopeDeclaration.getTypeScopes()) {
-					if (typeScope.isIncrement()) {
-						collectTypeScopeIncrement(typeScope);
-					} else {
-						collectTypeScope(typeScope);
+		for (var importedProblem : importedProblems) {
+			for (var statement : importedProblem.getStatements()) {
+				if (statement instanceof ScopeDeclaration scopeDeclaration) {
+					for (var typeScope : scopeDeclaration.getTypeScopes()) {
+						if (typeScope.isIncrement()) {
+							collectTypeScopeIncrement(typeScope);
+						} else {
+							collectTypeScope(typeScope);
+						}
 					}
 				}
 			}
