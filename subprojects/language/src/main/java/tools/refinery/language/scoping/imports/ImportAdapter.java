@@ -8,12 +8,9 @@ package tools.refinery.language.scoping.imports;
 import com.google.common.base.Splitter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.apache.log4j.Logger;
-import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -24,7 +21,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class ImportAdapter extends AdapterImpl {
-	private static final Logger LOG = Logger.getLogger(ImportAdapter.class);
 	private static final List<RefineryLibrary> DEFAULT_LIBRARIES;
 	private static final List<Path> DEFAULT_PATHS;
 
@@ -53,12 +49,9 @@ public class ImportAdapter extends AdapterImpl {
 	private final Map<QualifiedName, URI> qualifiedNameToUriMap = new LinkedHashMap<>();
 	private final Map<URI, QualifiedName> uriToQualifiedNameMap = new LinkedHashMap<>();
 
-	private ImportAdapter(ResourceSet resourceSet) {
+	private ImportAdapter() {
 		libraries = new ArrayList<>(DEFAULT_LIBRARIES);
 		libraryPaths = new ArrayList<>(DEFAULT_PATHS);
-		for (var resource : resourceSet.getResources()) {
-			resourceAdded(resource);
-		}
 	}
 
 	@Override
@@ -120,81 +113,10 @@ public class ImportAdapter extends AdapterImpl {
 		return uriToQualifiedNameMap.get(uri);
 	}
 
-	@Override
-	public void notifyChanged(Notification msg) {
-		switch (msg.getEventType()) {
-		case Notification.ADD -> {
-			if (msg.getNewValue() instanceof Resource resource) {
-				resourceAdded(resource);
-			}
-		}
-		case Notification.ADD_MANY -> {
-			if (msg.getNewValue() instanceof List<?> list) {
-				manyResourcesAdded(list);
-			}
-		}
-		case Notification.REMOVE -> {
-			if (msg.getOldValue() instanceof Resource resource) {
-				resourceRemoved(resource);
-			}
-		}
-		case Notification.REMOVE_MANY -> {
-			if (msg.getOldValue() instanceof List<?> list) {
-				manyResourcesRemoved(list);
-			}
-		}
-		default -> {
-			// Nothing to update.
-		}
-		}
-	}
-
-	private void manyResourcesAdded(List<?> list) {
-		for (var element : list) {
-			if (element instanceof Resource resource) {
-				resourceAdded(resource);
-			}
-		}
-	}
-
-	private void manyResourcesRemoved(List<?> list) {
-		for (var element : list) {
-			if (element instanceof Resource resource) {
-				resourceRemoved(resource);
-			}
-		}
-	}
-
-	private void resourceAdded(Resource resource) {
-		var uri = resource.getURI();
-		for (var library : libraries) {
-			var result = library.getQualifiedName(uri, libraryPaths);
-			if (result.isPresent()) {
-				var qualifiedName = result.get();
-				var previousQualifiedName = uriToQualifiedNameMap.putIfAbsent(uri, qualifiedName);
-				if (previousQualifiedName == null) {
-					if (qualifiedNameToUriMap.put(qualifiedName, uri) != null) {
-						throw new IllegalArgumentException("Duplicate resource for" + qualifiedName);
-					}
-				} else if (!previousQualifiedName.equals(qualifiedName)) {
-					LOG.warn("Expected %s to have qualified name %s, got %s instead".formatted(
-							uri, previousQualifiedName, qualifiedName));
-				}
-			}
-		}
-	}
-
-	private void resourceRemoved(Resource resource) {
-		var qualifiedName = uriToQualifiedNameMap.remove(resource.getURI());
-		if (qualifiedName != null) {
-			qualifiedNameToUriMap.remove(qualifiedName);
-		}
-	}
-
 	public static ImportAdapter getOrInstall(ResourceSet resourceSet) {
 		var adapter = getAdapter(resourceSet);
 		if (adapter == null) {
-			adapter = new ImportAdapter(resourceSet);
+			adapter = new ImportAdapter();
 			resourceSet.eAdapters().add(adapter);
 		}
 		return adapter;
@@ -226,5 +148,7 @@ public class ImportAdapter extends AdapterImpl {
 		newAdapter.libraries.addAll(originalAdapter.libraries);
 		newAdapter.libraryPaths.clear();
 		newAdapter.libraryPaths.addAll(originalAdapter.libraryPaths);
+		newAdapter.uriToQualifiedNameMap.putAll(originalAdapter.uriToQualifiedNameMap);
+		newAdapter.qualifiedNameToUriMap.putAll(originalAdapter.qualifiedNameToUriMap);
 	}
 }

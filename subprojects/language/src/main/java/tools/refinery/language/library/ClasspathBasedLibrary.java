@@ -14,21 +14,10 @@ import java.util.*;
 public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 	private final QualifiedName prefix;
 	private final List<QualifiedName> automaticImports;
-	private final URI rootUri;
 
 	protected ClasspathBasedLibrary(QualifiedName prefix, List<QualifiedName> automaticImports) {
 		this.prefix = prefix;
 		this.automaticImports = List.copyOf(automaticImports);
-		var context = this.getClass();
-		var contextPath = context.getCanonicalName().replace('.', '/') + ".class";
-		var contextResource = context.getClassLoader().getResource(contextPath);
-		if (contextResource == null) {
-			throw new IllegalStateException("Failed to find library context");
-		}
-		var contextUri = URI.createURI(contextResource.toString());
-		var segments = Arrays.copyOf(contextUri.segments(), contextUri.segmentCount() - 1);
-		rootUri = URI.createHierarchicalURI(contextUri.scheme(), contextUri.authority(), contextUri.device(),
-				segments, null, null);
 	}
 
 	protected ClasspathBasedLibrary(QualifiedName prefix) {
@@ -46,43 +35,6 @@ public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 			return getLibraryUri(this.getClass(), qualifiedName);
 		}
 		return Optional.empty();
-	}
-
-	@Override
-	public Optional<QualifiedName> getQualifiedName(URI uri, List<Path> libraryPaths) {
-		if (!uri.isHierarchical() ||
-				!Objects.equals(rootUri.scheme(), uri.scheme()) ||
-				!Objects.equals(rootUri.authority(), uri.authority()) ||
-				!Objects.equals(rootUri.device(), uri.device()) ||
-				rootUri.segmentCount() >= uri.segmentCount()) {
-			return Optional.empty();
-		}
-		int rootSegmentCount = rootUri.segmentCount();
-		int uriSegmentCount = uri.segmentCount();
-		if (!uri.segment(uriSegmentCount - 1).endsWith(RefineryLibrary.EXTENSION)) {
-			return Optional.empty();
-		}
-		var segments = new ArrayList<String>();
-		int i = 0;
-		while (i < rootSegmentCount) {
-			if (!rootUri.segment(i).equals(uri.segment(i))) {
-				return Optional.empty();
-			}
-			i++;
-		}
-		while (i < uriSegmentCount) {
-			var segment = uri.segment(i);
-			if (i == uriSegmentCount - 1) {
-				segment = segment.substring(0, segment.length() - RefineryLibrary.EXTENSION.length());
-			}
-			segments.add(segment);
-			i++;
-		}
-		var qualifiedName = QualifiedName.create(segments);
-		if (!qualifiedName.startsWith(prefix)) {
-			return Optional.empty();
-		}
-		return Optional.of(qualifiedName);
 	}
 
 	public static Optional<URI> getLibraryUri(Class<?> context, QualifiedName qualifiedName) {
