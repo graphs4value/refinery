@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -19,6 +19,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.ScopeDeclaration;
+import tools.refinery.language.scoping.imports.ImportAdapter;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.ByteArrayOutputStream;
@@ -26,11 +27,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+// This class is used as a fluent builder.
+@SuppressWarnings("UnusedReturnValue")
 public class ProblemLoader {
 	private String fileExtension;
 
@@ -45,6 +49,8 @@ public class ProblemLoader {
 
 	private CancellationToken cancellationToken = CancellationToken.NONE;
 
+	private final List<Path> extraPaths = new ArrayList<>();
+
 	@Inject
 	public void setFileExtensionProvider(FileExtensionProvider fileExtensionProvider) {
 		this.fileExtension = fileExtensionProvider.getPrimaryFileExtension();
@@ -52,6 +58,15 @@ public class ProblemLoader {
 
 	public ProblemLoader cancellationToken(CancellationToken cancellationToken) {
 		this.cancellationToken = cancellationToken;
+		return this;
+	}
+
+	public ProblemLoader extraPath(String path) {
+		return extraPath(Path.of(path));
+	}
+
+	public ProblemLoader extraPath(Path path) {
+		extraPaths.add(path.toAbsolutePath().normalize());
 		return this;
 	}
 
@@ -66,8 +81,8 @@ public class ProblemLoader {
 	}
 
 	public Problem loadStream(InputStream inputStream, URI uri) throws IOException {
-		var resourceSet = resourceSetProvider.get();
-		var resourceUri = uri == null ? URI.createFileURI("__synthetic." + fileExtension) : uri;
+		var resourceSet = createResourceSet();
+		var resourceUri = uri == null ? URI.createURI("__synthetic." + fileExtension) : uri;
 		var resource = resourceFactory.createResource(resourceUri);
 		resourceSet.getResources().add(resource);
 		resource.load(inputStream, Map.of());
@@ -87,11 +102,18 @@ public class ProblemLoader {
 	}
 
 	public Problem loadUri(URI uri) throws IOException {
-		var resourceSet = resourceSetProvider.get();
+		var resourceSet = createResourceSet();
 		var resource = resourceFactory.createResource(uri);
 		resourceSet.getResources().add(resource);
 		resource.load(Map.of());
 		return loadResource(resource);
+	}
+
+	private XtextResourceSet createResourceSet() {
+		var resourceSet = resourceSetProvider.get();
+		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		adapter.getLibraryPaths().addAll(0, extraPaths);
+		return resourceSet;
 	}
 
 	public Problem loadResource(Resource resource) {

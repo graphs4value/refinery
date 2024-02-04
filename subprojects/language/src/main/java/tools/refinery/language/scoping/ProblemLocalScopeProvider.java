@@ -6,6 +6,7 @@
 package tools.refinery.language.scoping;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -18,13 +19,14 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.AbstractGlobalScopeDelegatingScopeProvider;
 import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
 import org.eclipse.xtext.util.IResourceScopeCache;
-import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 
 public class ProblemLocalScopeProvider extends AbstractGlobalScopeDelegatingScopeProvider {
 	private static final String CACHE_KEY = "tools.refinery.language.scoping.ProblemLocalScopeProvider.CACHE_KEY";
 
 	@Inject
-	private IQualifiedNameProvider qualifiedNameProvider;
+	@Named(ProblemQualifiedNameProvider.NAMED_DELEGATE)
+	private IQualifiedNameProvider delegateQualifiedNameProvider;
 
 	@Inject
 	private IResourceDescriptionsProvider resourceDescriptionsProvider;
@@ -64,7 +66,7 @@ public class ProblemLocalScopeProvider extends AbstractGlobalScopeDelegatingScop
 		if (rootElement == null) {
 			return new LocalImports(resourceDescription, null);
 		}
-		var rootName = NamingUtil.stripRootPrefix(qualifiedNameProvider.getFullyQualifiedName(rootElement));
+		var rootName = delegateQualifiedNameProvider.getFullyQualifiedName(rootElement);
 		if (rootName == null) {
 			return new LocalImports(resourceDescription, null);
 		}

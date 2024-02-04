@@ -8,14 +8,17 @@ package tools.refinery.language.resource;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
+import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
@@ -46,6 +49,10 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
+	@Named(ProblemQualifiedNameProvider.NAMED_DELEGATE)
+	private IQualifiedNameProvider delegateQualifiedNameProvider;
+
+	@Inject
 	private ImportCollector importCollector;
 
 	@Override
@@ -53,17 +60,17 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (!shouldExport(eObject)) {
 			return false;
 		}
+		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
+		var problemQualifiedName = getProblemQualifiedName(problem);
+		var userData = getUserData(eObject);
+		if (eObject.equals(problem)) {
+			acceptEObjectDescription(eObject, problemQualifiedName, QualifiedName.EMPTY, userData, true, acceptor);
+			return true;
+		}
 		var qualifiedName = getNameAsQualifiedName(eObject);
 		if (qualifiedName == null) {
 			return true;
 		}
-		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
-		var userData = getUserData(eObject);
-		if (eObject.equals(problem)) {
-			acceptEObjectDescription(eObject, qualifiedName, QualifiedName.EMPTY, userData, true, acceptor);
-			return true;
-		}
-		var problemQualifiedName = getNameAsQualifiedName(problem);
 		QualifiedName lastQualifiedNameToExport = null;
 		if (shouldExportSimpleName(eObject)) {
 			lastQualifiedNameToExport = qualifiedName;
@@ -106,6 +113,14 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		}
 		return qualifiedName;
 	}
+
+	protected QualifiedName getProblemQualifiedName(Problem problem) {
+		if (problem == null) {
+			return QualifiedName.EMPTY;
+		}
+		var qualifiedName = delegateQualifiedNameProvider.getFullyQualifiedName(problem);
+        return qualifiedName == null ? QualifiedName.EMPTY : qualifiedName;
+    }
 
 	public static boolean shouldExport(EObject eObject) {
 		if (eObject instanceof Variable) {

@@ -18,7 +18,6 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.util.IResourceScopeCache;
-import tools.refinery.language.library.RefineryLibraries;
 import tools.refinery.language.model.problem.ImportStatement;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemPackage;
@@ -54,28 +53,49 @@ public class ImportCollector {
 		if (resource.getContents().isEmpty() || !(resource.getContents().getFirst() instanceof Problem problem)) {
 			return ImportCollection.EMPTY;
 		}
+		var resourceSet = resource.getResourceSet();
+		if (resourceSet == null) {
+			return ImportCollection.EMPTY;
+		}
 		Map<QualifiedName, Set<QualifiedName>> aliasesMap = new LinkedHashMap<>();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ImportStatement importStatement) {
 				collectImportStatement(importStatement, aliasesMap);
 			}
 		}
+		var adapter = ImportAdapter.getOrInstall(resourceSet);
 		var collection = new ImportCollection();
-		collection.addAll(RefineryLibraries.getAutomaticImports());
-		for (var entry : aliasesMap.entrySet()) {
-			var qualifiedName = entry.getKey();
-			RefineryLibraries.resolveQualifiedName(qualifiedName).ifPresent(uri -> {
-				if (!uri.equals(resource.getURI())) {
-					var aliases = entry.getValue();
-					collection.add(NamedImport.explicit(uri, qualifiedName, List.copyOf(aliases)));
-				}
-			});
-		}
+		collectAutomaticImports(collection, adapter);
+		collectExplicitImports(aliasesMap, collection, adapter);
 		collection.remove(resource.getURI());
 		return collection;
 	}
 
-	private void collectImportStatement(ImportStatement importStatement, Map<QualifiedName, Set<QualifiedName>> aliasesMap) {
+	private void collectAutomaticImports(ImportCollection importCollection, ImportAdapter adapter) {
+		for (var library : adapter.getLibraries()) {
+			for (var qualifiedName : library.getAutomaticImports()) {
+				var uri = adapter.resolveQualifiedName(qualifiedName);
+				if (uri != null) {
+					importCollection.add(NamedImport.implicit(uri, qualifiedName));
+				}
+			}
+		}
+	}
+
+	private void collectExplicitImports(Map<QualifiedName, Set<QualifiedName>> aliasesMap,
+										ImportCollection collection, ImportAdapter adapter) {
+		for (var entry : aliasesMap.entrySet()) {
+			var qualifiedName = entry.getKey();
+			var uri = adapter.resolveQualifiedName(qualifiedName);
+			if (uri != null) {
+				var aliases = entry.getValue();
+				collection.add(NamedImport.explicit(uri, qualifiedName, List.copyOf(aliases)));
+			}
+		}
+	}
+
+	private void collectImportStatement(ImportStatement importStatement,
+										Map<QualifiedName, Set<QualifiedName>> aliasesMap) {
 		var nodes = NodeModelUtils.findNodesForFeature(importStatement,
 				ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE);
 		var aliasString = importStatement.getAlias();

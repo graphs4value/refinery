@@ -124,8 +124,12 @@ public final class ProblemUtil {
 		};
 	}
 
+	public static boolean isModule(Problem problem) {
+		return problem.getKind() == ModuleKind.MODULE;
+	}
+
 	public static boolean isInModule(EObject eObject) {
 		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
-		return problem != null && problem.getKind() == ModuleKind.MODULE;
+		return problem != null && isModule(problem);
 	}
 }

@@ -19,6 +19,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.scoping.imports.ImportAdapter;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
@@ -79,7 +80,7 @@ public class SolutionSerializer {
 	}
 
 	public Problem serializeSolution(ProblemTrace trace, Model model) {
-		var uri = URI.createFileURI("__synthetic" + fileExtension);
+		var uri = URI.createURI("__synthetic." + fileExtension);
 		return serializeSolution(trace, model, uri);
 	}
 
@@ -133,6 +134,7 @@ public class SolutionSerializer {
 
 	private Problem copyProblem(Problem originalProblem, URI uri) {
 		var newResourceSet = resourceSetProvider.get();
+		ImportAdapter.copySettings(originalProblem, newResourceSet);
 		if (!fileExtension.equals(uri.fileExtension())) {
 			uri = uri.appendFileExtension(fileExtension);
 		}
@@ -153,6 +155,7 @@ public class SolutionSerializer {
 				throw new IllegalStateException("Failed to copy problem", e);
 			}
 			var contents = newResource.getContents();
+			EcoreUtil.resolveAll(newResourceSet);
 			if (!contents.isEmpty() && contents.getFirst() instanceof Problem newProblem) {
 				return newProblem;
 			}
