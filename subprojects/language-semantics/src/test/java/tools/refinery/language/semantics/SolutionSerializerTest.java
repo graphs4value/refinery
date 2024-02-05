@@ -72,7 +72,7 @@ class SolutionSerializerTest {
 			solution.eResource().save(outputStream, Map.of());
 			actualOutput = outputStream.toString();
 		}
-		assertThat(actualOutput, is("module.\n\n" + prefix + "\n" + expectedOutput));
+		assertThat(actualOutput, is(prefix + "\n" + expectedOutput));
 	}
 
 	static Stream<Arguments> solutionSerializerTest() {

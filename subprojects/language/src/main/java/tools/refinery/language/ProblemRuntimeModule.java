@@ -15,7 +15,9 @@ import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.parser.IAstFactory;
 import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.parsetree.reconstr.ITransientValueService;
 import org.eclipse.xtext.resource.*;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
@@ -30,13 +32,18 @@ import tools.refinery.language.linking.ProblemLinkingService;
 import tools.refinery.language.naming.ProblemDelegateQualifiedNameProvider;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
+import tools.refinery.language.parser.ProblemEcoreElementFactory;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
-import tools.refinery.language.resource.*;
+import tools.refinery.language.resource.ProblemLocationInFileProvider;
+import tools.refinery.language.resource.ProblemResource;
+import tools.refinery.language.resource.ProblemResourceDescriptionManager;
+import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.resource.state.ProblemDerivedStateComputer;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
 import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;
 import tools.refinery.language.serializer.ProblemCrossReferenceSerializer;
+import tools.refinery.language.serializer.ProblemTransientValueService;
 import tools.refinery.language.validation.ProblemDiagnosticConverter;
 
 /**
@@ -49,6 +56,11 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends IParser> bindIParser() {
 		return TokenSourceInjectingProblemParser.class;
+	}
+
+	@Override
+	public Class<? extends IAstFactory> bindIAstFactory() {
+		return ProblemEcoreElementFactory.class;
 	}
 
 	public Class<? extends IQualifiedNameConverter> bindIQualifiedNameConverter() {
@@ -113,6 +125,11 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends ILocationInFileProvider> bindILocationInFileProvider() {
 		return ProblemLocationInFileProvider.class;
+	}
+
+	@Override
+	public Class<? extends ITransientValueService> bindITransientValueService() {
+		return ProblemTransientValueService.class;
 	}
 
 	@Override

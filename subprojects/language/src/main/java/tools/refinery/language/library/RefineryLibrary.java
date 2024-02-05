@@ -7,13 +7,14 @@ package tools.refinery.language.library;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.naming.QualifiedName;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 public interface RefineryLibrary {
-	String EXTENSION = ".refinery";
+	String FILE_NAME_SUFFIX = "." + ProblemUtil.MODULE_EXTENSION;
 
 	default List<QualifiedName> getAutomaticImports() {
 		return List.of();

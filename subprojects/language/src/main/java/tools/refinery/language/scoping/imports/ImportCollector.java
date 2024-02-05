@@ -11,6 +11,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
@@ -57,16 +58,10 @@ public class ImportCollector {
 		if (resourceSet == null) {
 			return ImportCollection.EMPTY;
 		}
-		Map<QualifiedName, Set<QualifiedName>> aliasesMap = new LinkedHashMap<>();
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ImportStatement importStatement) {
-				collectImportStatement(importStatement, aliasesMap);
-			}
-		}
 		var adapter = ImportAdapter.getOrInstall(resourceSet);
 		var collection = new ImportCollection();
 		collectAutomaticImports(collection, adapter);
-		collectExplicitImports(aliasesMap, collection, adapter);
+		collectExplicitImports(problem, collection, adapter);
 		collection.remove(resource.getURI());
 		return collection;
 	}
@@ -82,25 +77,30 @@ public class ImportCollector {
 		}
 	}
 
-	private void collectExplicitImports(Map<QualifiedName, Set<QualifiedName>> aliasesMap,
-										ImportCollection collection, ImportAdapter adapter) {
-		for (var entry : aliasesMap.entrySet()) {
-			var qualifiedName = entry.getKey();
-			var uri = adapter.resolveQualifiedName(qualifiedName);
-			if (uri != null) {
-				var aliases = entry.getValue();
-				collection.add(NamedImport.explicit(uri, qualifiedName, List.copyOf(aliases)));
+	private void collectExplicitImports(Problem problem, ImportCollection collection, ImportAdapter adapter) {
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof ImportStatement importStatement) {
+				collectImportStatement(importStatement, collection, adapter);
 			}
 		}
 	}
 
-	private void collectImportStatement(ImportStatement importStatement,
-										Map<QualifiedName, Set<QualifiedName>> aliasesMap) {
+	private void collectImportStatement(ImportStatement importStatement, ImportCollection collection,
+										ImportAdapter adapter) {
 		var nodes = NodeModelUtils.findNodesForFeature(importStatement,
 				ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE);
 		var aliasString = importStatement.getAlias();
 		var alias = Strings.isNullOrEmpty(aliasString) ? QualifiedName.EMPTY :
 				NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(aliasString));
+		var referredProblem = (EObject) importStatement.eGet(ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE,
+				false);
+		URI referencedUri = null;
+		if (referredProblem != null && !referredProblem.eIsProxy()) {
+			var resource = referredProblem.eResource();
+			if (resource != null) {
+				referencedUri = resource.getURI();
+			}
+		}
 		for (var node : nodes) {
 			var qualifiedNameString = linkingHelper.getCrossRefNodeAsString(node, true);
 			if (Strings.isNullOrEmpty(qualifiedNameString)) {
@@ -108,8 +108,10 @@ public class ImportCollector {
 			}
 			var qualifiedName = NamingUtil.stripRootPrefix(
 					qualifiedNameConverter.toQualifiedName(qualifiedNameString));
-			var aliases = aliasesMap.computeIfAbsent(qualifiedName, ignored -> new LinkedHashSet<>());
-			aliases.add(alias);
+			var uri = referencedUri == null ? adapter.resolveQualifiedName(qualifiedName) : referencedUri;
+			if (uri != null) {
+				collection.add(NamedImport.explicit(uri, qualifiedName, List.of(alias)));
+			}
 		}
 	}
 

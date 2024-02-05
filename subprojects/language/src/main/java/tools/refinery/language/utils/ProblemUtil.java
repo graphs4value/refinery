@@ -5,6 +5,7 @@
  */
 package tools.refinery.language.utils;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
@@ -12,6 +13,8 @@ import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
+	public static final String MODULE_EXTENSION = "refinery";
+
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
@@ -122,6 +125,18 @@ public final class ProblemUtil {
 				yield opposite.getKind() == ReferenceKind.CONTAINMENT;
 			}
 		};
+	}
+
+	public static ModuleKind getDefaultModuleKind(Problem problem) {
+		var resource = problem.eResource();
+		if (resource == null) {
+			return ModuleKind.PROBLEM;
+		}
+		return getDefaultModuleKind(resource.getURI());
+	}
+
+	public static ModuleKind getDefaultModuleKind(URI uri) {
+		return MODULE_EXTENSION.equals(uri.fileExtension()) ? ModuleKind.MODULE : ModuleKind.PROBLEM;
 	}
 
 	public static boolean isModule(Problem problem) {

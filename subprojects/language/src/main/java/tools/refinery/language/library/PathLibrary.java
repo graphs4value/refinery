@@ -41,7 +41,7 @@ public final class PathLibrary implements RefineryLibrary {
 		for (var i = 0; i < segmentCount; i++) {
 			var segment = qualifiedName.getSegment(i);
 			if (i == segmentCount - 1) {
-				segment = segment + RefineryLibrary.EXTENSION;
+				segment = segment + RefineryLibrary.FILE_NAME_SUFFIX;
 			}
 			if (i == 0) {
 				first = segment;
@@ -80,10 +80,10 @@ public final class PathLibrary implements RefineryLibrary {
 		}
 		int lastIndex = segments.size() - 1;
 		var lastSegment = segments.get(lastIndex);
-		if (!lastSegment.endsWith(EXTENSION)) {
+		if (!lastSegment.endsWith(FILE_NAME_SUFFIX)) {
 			return Optional.empty();
 		}
-		lastSegment = lastSegment.substring(0, lastSegment.length() - RefineryLibrary.EXTENSION.length());
+		lastSegment = lastSegment.substring(0, lastSegment.length() - RefineryLibrary.FILE_NAME_SUFFIX.length());
 		segments.set(lastIndex, lastSegment);
 		return Optional.of(QualifiedName.create(segments));
 	}

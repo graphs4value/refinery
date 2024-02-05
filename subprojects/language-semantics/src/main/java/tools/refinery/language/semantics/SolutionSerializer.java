@@ -13,7 +13,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
-import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IResourceFactory;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -42,8 +41,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SolutionSerializer {
-	private String fileExtension;
-
 	@Inject
 	private Provider<XtextResourceSet> resourceSetProvider;
 
@@ -74,13 +71,8 @@ public class SolutionSerializer {
 	private NodeDeclaration nodeDeclaration;
 	private final MutableIntObjectMap<Node> nodes = IntObjectMaps.mutable.empty();
 
-	@Inject
-	public void setFileExtensionProvider(FileExtensionProvider fileExtensionProvider) {
-		this.fileExtension = fileExtensionProvider.getPrimaryFileExtension();
-	}
-
 	public Problem serializeSolution(ProblemTrace trace, Model model) {
-		var uri = URI.createURI("__synthetic." + fileExtension);
+		var uri = URI.createURI("__synthetic." + ProblemUtil.MODULE_EXTENSION);
 		return serializeSolution(trace, model, uri);
 	}
 
@@ -135,8 +127,8 @@ public class SolutionSerializer {
 	private Problem copyProblem(Problem originalProblem, URI uri) {
 		var newResourceSet = resourceSetProvider.get();
 		ImportAdapter.copySettings(originalProblem, newResourceSet);
-		if (!fileExtension.equals(uri.fileExtension())) {
-			uri = uri.appendFileExtension(fileExtension);
+		if (!ProblemUtil.MODULE_EXTENSION.equals(uri.fileExtension())) {
+			uri = uri.appendFileExtension(ProblemUtil.MODULE_EXTENSION);
 		}
 		var newResource = resourceFactory.createResource(uri);
 		newResourceSet.getResources().add(newResource);
