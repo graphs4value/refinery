@@ -20,4 +20,6 @@ public interface RefineryLibrary {
 	}
 
 	Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths);
+
+	Optional<QualifiedName> getQualifiedName(URI uri, List<Path> libraryPaths);
 }
