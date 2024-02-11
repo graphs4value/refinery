@@ -10,7 +10,6 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.parsetree.reconstr.impl.DefaultTransientValueService;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.ProblemPackage;
-import tools.refinery.language.parser.ProblemEcoreElementFactory;
 import tools.refinery.language.utils.ProblemUtil;
 
 public class ProblemTransientValueService extends DefaultTransientValueService {
@@ -18,7 +17,7 @@ public class ProblemTransientValueService extends DefaultTransientValueService {
 	public boolean isTransient(EObject owner, EStructuralFeature feature, int index) {
 		if (owner instanceof Problem problem && feature == ProblemPackage.Literals.PROBLEM__KIND) {
 			return problem.getName() == null && problem.getKind() == ProblemUtil.getDefaultModuleKind(problem) &&
-					!ProblemEcoreElementFactory.hasExplicitlySetProblemKind(problem);
+					!problem.isExplicitKind();
 		}
 		return super.isTransient(owner, feature, index);
 	}

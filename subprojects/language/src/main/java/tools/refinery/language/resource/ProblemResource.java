@@ -25,7 +25,6 @@ import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.util.Triple;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.parser.ProblemEcoreElementFactory;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.Arrays;
@@ -48,7 +47,11 @@ public class ProblemResource extends DerivedStateAwareResource {
 	protected void updateInternalState(IParseResult oldParseResult, IParseResult newParseResult) {
 		if (isNewRootElement(oldParseResult, newParseResult) &&
 				newParseResult.getRootASTElement() instanceof Problem newRootProblem &&
-				!ProblemEcoreElementFactory.hasExplicitlySetProblemKind(newRootProblem)) {
+				!newRootProblem.isExplicitKind()) {
+			// Post-process the parsed model to set its URI-dependent module kind.
+			// We can't set the default module kind in {@link tools.refinery.language.serializer
+			// .ProblemTransientValueService}, because the {@link Problem} does not get added into the EMF resource
+			// before parsing is fully completed.
 			var defaultModuleKind = ProblemUtil.getDefaultModuleKind(getURI());
 			newRootProblem.setKind(defaultModuleKind);
 		}
