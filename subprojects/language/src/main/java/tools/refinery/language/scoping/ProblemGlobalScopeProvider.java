@@ -15,10 +15,9 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.AbstractGlobalScopeProvider;
-import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
 import org.eclipse.xtext.util.IResourceScopeCache;
-import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.resource.LoadOnDemandResourceDescriptionProvider;
+import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.scoping.imports.NamedImport;
 
 import java.util.ArrayList;
@@ -81,7 +80,7 @@ public class ProblemGlobalScopeProvider extends AbstractGlobalScopeProvider {
 	protected IScope createScope(IScope parent, Collection<? extends ISelectable> children, EClass type,
 								 Predicate<IEObjectDescription> filter, boolean ignoreCase) {
 		var selectable = CompositeSelectable.of(children);
-		return SelectableBasedScope.createScope(parent, selectable, filter, type, ignoreCase);
+		return ShadowingKeyAwareSelectableBasedScope.createScope(parent, selectable, filter, type, ignoreCase);
 	}
 
 	protected record LoadedImports(List<ISelectable> qualifiedImports, List<ISelectable> implicitImports,

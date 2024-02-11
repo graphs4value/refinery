@@ -17,7 +17,6 @@ import org.eclipse.xtext.resource.IResourceDescriptionsProvider;
 import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.AbstractGlobalScopeDelegatingScopeProvider;
-import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 
@@ -47,12 +46,13 @@ public class ProblemLocalScopeProvider extends AbstractGlobalScopeDelegatingScop
 		var globalScope = getGlobalScope(resource, reference);
 		var type = reference.getEReferenceType();
 		boolean ignoreCase = isIgnoreCase(reference);
-		var scope = SelectableBasedScope.createScope(globalScope, localImports.resourceDescription(), type,
-                ignoreCase);
+		var scope = ShadowingKeyAwareSelectableBasedScope.createScope(globalScope, localImports.resourceDescription(),
+				type, ignoreCase);
 		if (localImports.normalizedSelectable() == null) {
 			return scope;
 		}
-		return SelectableBasedScope.createScope(scope, localImports.normalizedSelectable(), type, ignoreCase);
+		return ShadowingKeyAwareSelectableBasedScope.createScope(scope, localImports.normalizedSelectable(), type,
+				ignoreCase);
 	}
 
 	protected LocalImports computeLocalImports(Resource resource) {
