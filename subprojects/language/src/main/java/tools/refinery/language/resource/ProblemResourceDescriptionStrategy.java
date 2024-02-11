@@ -42,6 +42,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String PREFERRED_NAME_TRUE = "true";
 	public static final String IMPORTS = DATA_PREFIX + "IMPORTS";
 	public static final String IMPORTS_SEPARATOR = "|";
+	public static final String MODULE_KIND = DATA_PREFIX + "MODULE_KIND";
 	public static final String COLOR_RELATION = DATA_PREFIX + "COLOR_RELATION";
 	public static final String COLOR_RELATION_TRUE = "true";
 
@@ -135,13 +136,14 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	protected Map<String, String> getUserData(EObject eObject) {
 		var builder = ImmutableMap.<String, String>builder();
-		if (eObject instanceof Problem) {
+		if (eObject instanceof Problem problem) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_PROBLEM);
 			var explicitImports = importCollector.getDirectImports(eObject.eResource());
 			var importsString = explicitImports.toList().stream()
 					.map(importEntry -> importEntry.uri().toString())
 					.collect(Collectors.joining(IMPORTS_SEPARATOR));
 			builder.put(IMPORTS, importsString);
+			builder.put(MODULE_KIND, problem.getKind().getName());
 		} else if (eObject instanceof Node) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
 		} else if (eObject instanceof Relation relation) {

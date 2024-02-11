@@ -24,6 +24,7 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
+import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
@@ -43,6 +44,9 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	@Inject
 	private ProblemDesugarer desugarer;
+
+	@Inject
+	private ImportCollector importCollector;
 
 	@Override
 	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
@@ -110,6 +114,10 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return true;
 		}
 
+		if (eReference == ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE) {
+			return importedModuleShouldBeVisible(candidate, context);
+		}
+
 		var candidateEObjectOrProxy = candidate.getEObjectOrProxy();
 
 		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) &&
@@ -125,6 +133,20 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 		return builtinSymbolAwareShouldBeVisible(candidate, context, eReference, builtinSymbols,
 				candidateEObjectOrProxy);
+	}
+
+	private boolean importedModuleShouldBeVisible(IEObjectDescription candidate, ContentAssistContext context) {
+		var moduleKind = candidate.getUserData(ProblemResourceDescriptionStrategy.MODULE_KIND);
+		if (!ModuleKind.MODULE.getName().equals(moduleKind)) {
+			return false;
+		}
+		var resource = context.getResource();
+		var candidateResourceUri = candidate.getEObjectURI().trimFragment();
+		if (candidateResourceUri.equals(resource.getURI())) {
+			return false;
+		}
+		var imports = importCollector.getDirectImports(resource);
+		return !imports.toUriSet().contains(candidateResourceUri);
 	}
 
 	private static boolean oppositeShouldBeVisible(ReferenceDeclaration candidateReferenceDeclaration,
