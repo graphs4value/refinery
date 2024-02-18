@@ -1,5 +1,5 @@
 <!--
-  SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+  SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
 
   SPDX-License-Identifier: EPL-2.0
 -->
@@ -30,6 +30,10 @@ Alternatively, you can follow the instructions in [CONTRIBUTING.md](CONTRIBUTING
 
 ## Related publications
 
+### Tool demonstration
+
+* K. Marussy, A. Ficsor, O. Semeráth, D. Varró: &ldquo;Refinery: Graph Solver as a Service&rdquo; _ICSE 2024 Demonstrations_ [[doi](https://doi.org/10.1145/3639478.3640045)] [[pdf](https://refinery.tools/papers/icse24-demo.pdf)] [[video](https://youtu.be/Qy_3udNsWsM)]
+
 ### Partial model specification language
 
 * K. Marussy, O. Semeráth, A. Babikian, D. Varró: _A Specification Language for Consistent Model Generation based on Partial Models._
@@ -52,7 +56,7 @@ J. Object Technol. **19**(3): 3:1-22 (2020) [[doi](https://doi.org/10.5381/jot.2
 
 ## License
 
-Copyright (c) 2021-2023 [The Refinery Authors](CONTRIBUTORS.md)
+Copyright (c) 2021-2024 [The Refinery Authors](CONTRIBUTORS.md)
 
 Refinery is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
 
