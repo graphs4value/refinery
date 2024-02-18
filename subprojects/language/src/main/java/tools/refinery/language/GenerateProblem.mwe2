@@ -51,7 +51,7 @@ Workflow {
 
 		language = StandardLanguage {
 			name = 'tools.refinery.language.Problem'
-			fileExtensions = 'problem'
+			fileExtensions = 'problem,refinery'
 			referencedResource = 'platform:/resource/tools.refinery.refinery-language-model/model/problem.genmodel'
 			serializer = {
 				generateStub = false

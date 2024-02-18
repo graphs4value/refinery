@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import org.eclipse.xtext.util.Tuples;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 
 import java.util.*;
@@ -27,8 +28,8 @@ public class ProblemDesugarer {
 
 	private Optional<Problem> doGetBuiltinProblem(Resource resource) {
 		return Optional.ofNullable(resource).map(Resource::getResourceSet)
-				.map(resourceSet -> resourceSet.getResource(ProblemUtil.BUILTIN_LIBRARY_URI, true))
-				.map(Resource::getContents).filter(contents -> !contents.isEmpty()).map(contents -> contents.get(0))
+				.map(resourceSet -> resourceSet.getResource(BuiltinLibrary.BUILTIN_LIBRARY_URI, true))
+				.map(Resource::getContents).filter(contents -> !contents.isEmpty()).map(List::getFirst)
 				.filter(Problem.class::isInstance).map(Problem.class::cast);
 	}
 

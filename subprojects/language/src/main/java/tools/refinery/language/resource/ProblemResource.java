@@ -20,9 +20,12 @@ import org.eclipse.xtext.linking.impl.IllegalNodeException;
 import org.eclipse.xtext.linking.impl.XtextLinkingDiagnostic;
 import org.eclipse.xtext.linking.lazy.LazyLinkingResource;
 import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.util.Triple;
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +42,30 @@ public class ProblemResource extends DerivedStateAwareResource {
 	 * Our own version of this field, because the original is not accessible.
 	 */
 	private int cyclicLinkingDetectionCounter = 0;
+
+	@Override
+	protected void updateInternalState(IParseResult oldParseResult, IParseResult newParseResult) {
+		if (isNewRootElement(oldParseResult, newParseResult) &&
+				newParseResult.getRootASTElement() instanceof Problem newRootProblem &&
+				!newRootProblem.isExplicitKind()) {
+			// Post-process the parsed model to set its URI-dependent module kind.
+			// We can't set the default module kind in {@link tools.refinery.language.serializer
+			// .ProblemTransientValueService}, because the {@link Problem} does not get added into the EMF resource
+			// before parsing is fully completed.
+			var defaultModuleKind = ProblemUtil.getDefaultModuleKind(getURI());
+			newRootProblem.setKind(defaultModuleKind);
+		}
+		super.updateInternalState(oldParseResult, newParseResult);
+	}
+
+	private boolean isNewRootElement(IParseResult oldParseResult, IParseResult newParseResult) {
+		if (oldParseResult == null) {
+			return true;
+		}
+		var oldRootAstElement = oldParseResult.getRootASTElement();
+		var newRootAstElement = newParseResult.getRootASTElement();
+		return oldRootAstElement != newRootAstElement;
+	}
 
 	/**
 	 * Tries to resolve a reference and emits a diagnostic if the reference is unresolvable or ambiguous.

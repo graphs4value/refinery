@@ -8,11 +8,12 @@ package tools.refinery.language.utils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.EcoreUtil2;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
-	public static final String BUILTIN_LIBRARY_NAME = "builtin";
-	public static final URI BUILTIN_LIBRARY_URI = getLibraryUri();
+	public static final String MODULE_EXTENSION = "refinery";
 
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
@@ -22,7 +23,7 @@ public final class ProblemUtil {
 		if (eObject != null) {
 			var eResource = eObject.eResource();
 			if (eResource != null) {
-				return ProblemUtil.BUILTIN_LIBRARY_URI.equals(eResource.getURI());
+				return BuiltinLibrary.BUILTIN_LIBRARY_URI.equals(eResource.getURI());
 			}
 		}
 		return false;
@@ -54,14 +55,24 @@ public final class ProblemUtil {
 		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
 	}
 
-	public static boolean isIndividualNode(Node node) {
+	public static boolean isAtomNode(Node node) {
 		var containingFeature = node.eContainingFeature();
-		return containingFeature == ProblemPackage.Literals.INDIVIDUAL_DECLARATION__NODES
-				|| containingFeature == ProblemPackage.Literals.ENUM_DECLARATION__LITERALS;
+		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {
+			return ((NodeDeclaration) node.eContainer()).getKind() == NodeKind.ATOM;
+		}
+		return containingFeature == ProblemPackage.Literals.ENUM_DECLARATION__LITERALS;
 	}
 
-	public static boolean isNewNode(Node node) {
-		return node.eContainingFeature() == ProblemPackage.Literals.CLASS_DECLARATION__NEW_NODE;
+	public static boolean isMultiNode(Node node) {
+		var containingFeature = node.eContainingFeature();
+		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {
+			return ((NodeDeclaration) node.eContainer()).getKind() == NodeKind.MULTI;
+		}
+		return containingFeature == ProblemPackage.Literals.CLASS_DECLARATION__NEW_NODE;
+	}
+
+	public static boolean isDeclaredNode(Node node) {
+		return node.eContainingFeature() == ProblemPackage.Literals.NODE_DECLARATION__NODES;
 	}
 
 	public static boolean isInvalidMultiplicityConstraint(PredicateDefinition predicateDefinition) {
@@ -116,12 +127,24 @@ public final class ProblemUtil {
 		};
 	}
 
-	private static URI getLibraryUri() {
-		var libraryResource = ProblemUtil.class.getClassLoader()
-				.getResource("tools/refinery/language/%s.problem".formatted(BUILTIN_LIBRARY_NAME));
-		if (libraryResource == null) {
-			throw new AssertionError("Library '%s' was not found".formatted(BUILTIN_LIBRARY_NAME));
+	public static ModuleKind getDefaultModuleKind(Problem problem) {
+		var resource = problem.eResource();
+		if (resource == null) {
+			return ModuleKind.PROBLEM;
 		}
-		return URI.createURI(libraryResource.toString());
+		return getDefaultModuleKind(resource.getURI());
+	}
+
+	public static ModuleKind getDefaultModuleKind(URI uri) {
+		return MODULE_EXTENSION.equals(uri.fileExtension()) ? ModuleKind.MODULE : ModuleKind.PROBLEM;
+	}
+
+	public static boolean isModule(Problem problem) {
+		return problem.getKind() == ModuleKind.MODULE;
+	}
+
+	public static boolean isInModule(EObject eObject) {
+		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
+		return problem != null && isModule(problem);
 	}
 }

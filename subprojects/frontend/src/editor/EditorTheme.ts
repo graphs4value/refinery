@@ -40,7 +40,9 @@ function createTypeHashStyles(
 export default styled('div', {
   name: 'EditorTheme',
   shouldForwardProp: (propName) =>
-    propName !== 'showLineNumbers' && propName !== 'showActiveLine',
+    propName !== 'showLineNumbers' &&
+    propName !== 'showActiveLine' &&
+    propName !== 'colorIdentifiers',
 })<{
   showLineNumbers: boolean;
   showActiveLine: boolean;
@@ -126,7 +128,7 @@ export default styled('div', {
         color: theme.palette.text.secondary,
       },
     },
-    '.tok-problem-individual': {
+    '.tok-problem-atom': {
       '&, & .tok-variableName': {
         color: theme.palette.text.primary,
       },

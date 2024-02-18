@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -14,7 +14,10 @@ import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.parser.IAstFactory;
 import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.parsetree.reconstr.ITransientValueService;
 import org.eclipse.xtext.resource.*;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
@@ -26,16 +29,21 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
 import tools.refinery.language.conversion.ProblemValueConverterService;
 import tools.refinery.language.linking.ProblemLinkingService;
+import tools.refinery.language.naming.ProblemDelegateQualifiedNameProvider;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
+import tools.refinery.language.naming.ProblemQualifiedNameProvider;
+import tools.refinery.language.parser.ProblemEcoreElementFactory;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
-import tools.refinery.language.resource.ProblemDerivedStateComputer;
 import tools.refinery.language.resource.ProblemLocationInFileProvider;
 import tools.refinery.language.resource.ProblemResource;
+import tools.refinery.language.resource.ProblemResourceDescriptionManager;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
+import tools.refinery.language.resource.state.ProblemDerivedStateComputer;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
 import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;
 import tools.refinery.language.serializer.ProblemCrossReferenceSerializer;
+import tools.refinery.language.serializer.ProblemTransientValueService;
 import tools.refinery.language.validation.ProblemDiagnosticConverter;
 
 /**
@@ -50,8 +58,24 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 		return TokenSourceInjectingProblemParser.class;
 	}
 
+	@Override
+	public Class<? extends IAstFactory> bindIAstFactory() {
+		return ProblemEcoreElementFactory.class;
+	}
+
 	public Class<? extends IQualifiedNameConverter> bindIQualifiedNameConverter() {
 		return ProblemQualifiedNameConverter.class;
+	}
+
+	public void configureIQualifiedNameProviderDelegate(Binder binder) {
+		binder.bind(IQualifiedNameProvider.class)
+				.annotatedWith(Names.named(ProblemQualifiedNameProvider.NAMED_DELEGATE))
+				.to(ProblemDelegateQualifiedNameProvider.class);
+	}
+
+	@Override
+	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
+		return ProblemQualifiedNameProvider.class;
 	}
 
 	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
@@ -87,7 +111,7 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	// Method name follows Xtext convention.
 	@SuppressWarnings("squid:S100")
 	public Class<? extends IResourceDescription.Manager> bindIResourceDescription$Manager() {
-		return DerivedStateAwareResourceDescriptionManager.class;
+		return ProblemResourceDescriptionManager.class;
 	}
 
 	public Class<? extends IResourceValidator> bindIResourceValidator() {
@@ -101,6 +125,11 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends ILocationInFileProvider> bindILocationInFileProvider() {
 		return ProblemLocationInFileProvider.class;
+	}
+
+	@Override
+	public Class<? extends ITransientValueService> bindITransientValueService() {
+		return ProblemTransientValueService.class;
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -28,6 +28,8 @@ public class ProblemTokenSource implements TokenSource {
 
 	private boolean seenId;
 
+	private boolean lastVisible;
+
 	public ProblemTokenSource(TokenSource delegate) {
 		this.delegate = delegate;
 	}
@@ -47,18 +49,18 @@ public class ProblemTokenSource implements TokenSource {
 
 	@Override
 	public Token nextToken() {
-		if (!buffer.isEmpty()) {
-			return buffer.removeFirst();
-		}
-		var token = delegate.nextToken();
-		if (isIdentifier(token)) {
-			seenId = true;
-		} else if (seenId && isPlusOrTransitiveClosure(token)) {
-			if (peekForTransitiveClosure()) {
+		boolean fromStream = buffer.isEmpty();
+		var token = fromStream ? delegate.nextToken() : buffer.removeFirst();
+		if (seenId) {
+			if (fromStream && isPlusOrTransitiveClosure(token) && peekForTransitiveClosure()) {
 				token.setType(InternalProblemParser.RULE_TRANSITIVE_CLOSURE);
+			} else if (lastVisible && isQualifiedNameSeparator(token)) {
+				token.setType(InternalProblemParser.RULE_QUALIFIED_NAME_SEPARATOR);
 			}
-		} else if (isVisibleToken(token)) {
-			seenId = false;
+		}
+		lastVisible = isVisibleToken(token);
+		if (lastVisible) {
+			seenId = isIdentifier(token);
 		}
 		return token;
 	}
@@ -76,6 +78,10 @@ public class ProblemTokenSource implements TokenSource {
 		return token.getType() == InternalProblemParser.PlusSign;
 	}
 
+	protected boolean isQualifiedNameSeparator(Token token) {
+		return token.getType() == InternalProblemParser.ColonColon;
+	}
+
 	protected boolean isVisibleToken(Token token) {
 		int tokenId = token.getType();
 		return tokenId != InternalProblemParser.RULE_WS && tokenId != InternalProblemParser.RULE_SL_COMMENT &&
@@ -87,11 +93,16 @@ public class ProblemTokenSource implements TokenSource {
 		if (token.getType() != InternalProblemParser.LeftParenthesis) {
 			return false;
 		}
+		boolean allowFullyQualifiedName = true;
 		while (true) {
 			token = peekWithSkipWhitespace();
+			if (allowFullyQualifiedName && token.getType() == InternalProblemParser.ColonColon) {
+				token = peekWithSkipWhitespace();
+			}
 			if (!isIdentifier(token)) {
 				return false;
 			}
+			allowFullyQualifiedName = false;
 			token = peekWithSkipWhitespace();
 			switch (token.getType()) {
 			case InternalProblemParser.Comma:
@@ -112,11 +123,6 @@ public class ProblemTokenSource implements TokenSource {
 
 	protected Token peekToken() {
 		var token = delegate.nextToken();
-		if (isIdentifier(token)) {
-			seenId = true;
-		} else if (isVisibleToken(token)) {
-			seenId = false;
-		}
 		buffer.addLast(token);
 		return token;
 	}

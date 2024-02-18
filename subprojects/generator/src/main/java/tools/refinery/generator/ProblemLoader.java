@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -9,16 +9,24 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.diagnostics.Severity;
-import org.eclipse.xtext.resource.FileExtensionProvider;
-import org.eclipse.xtext.resource.IResourceFactory;
-import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.resource.*;
+import org.eclipse.xtext.scoping.impl.GlobalResourceDescriptionProvider;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.LazyStringInputStream;
 import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.IResourceValidator;
+import org.eclipse.xtext.validation.Issue;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.ScopeDeclaration;
+import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
+import tools.refinery.language.resource.ProblemResourceDescriptionStrategy.ShadowingKey;
+import tools.refinery.language.scoping.imports.ImportAdapter;
+import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.ByteArrayOutputStream;
@@ -26,11 +34,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
 
+// This class is used as a fluent builder.
+@SuppressWarnings("UnusedReturnValue")
 public class ProblemLoader {
 	private String fileExtension;
 
@@ -43,7 +52,18 @@ public class ProblemLoader {
 	@Inject
 	private IResourceValidator resourceValidator;
 
+	@Inject
+	private ImportCollector importCollector;
+
+	@Inject
+	private GlobalResourceDescriptionProvider globalResourceDescriptionProvider;
+
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
+
 	private CancellationToken cancellationToken = CancellationToken.NONE;
+
+	private final List<Path> extraPaths = new ArrayList<>();
 
 	@Inject
 	public void setFileExtensionProvider(FileExtensionProvider fileExtensionProvider) {
@@ -52,6 +72,15 @@ public class ProblemLoader {
 
 	public ProblemLoader cancellationToken(CancellationToken cancellationToken) {
 		this.cancellationToken = cancellationToken;
+		return this;
+	}
+
+	public ProblemLoader extraPath(String path) {
+		return extraPath(Path.of(path));
+	}
+
+	public ProblemLoader extraPath(Path path) {
+		extraPaths.add(path.toAbsolutePath().normalize());
 		return this;
 	}
 
@@ -66,8 +95,8 @@ public class ProblemLoader {
 	}
 
 	public Problem loadStream(InputStream inputStream, URI uri) throws IOException {
-		var resourceSet = resourceSetProvider.get();
-		var resourceUri = uri == null ? URI.createFileURI("__synthetic." + fileExtension) : uri;
+		var resourceSet = createResourceSet();
+		var resourceUri = uri == null ? URI.createURI("__synthetic." + fileExtension) : uri;
 		var resource = resourceFactory.createResource(resourceUri);
 		resourceSet.getResources().add(resource);
 		resource.load(inputStream, Map.of());
@@ -87,22 +116,45 @@ public class ProblemLoader {
 	}
 
 	public Problem loadUri(URI uri) throws IOException {
-		var resourceSet = resourceSetProvider.get();
+		var resourceSet = createResourceSet();
 		var resource = resourceFactory.createResource(uri);
 		resourceSet.getResources().add(resource);
 		resource.load(Map.of());
 		return loadResource(resource);
 	}
 
+	private XtextResourceSet createResourceSet() {
+		var resourceSet = resourceSetProvider.get();
+		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		adapter.getLibraryPaths().addAll(0, extraPaths);
+		return resourceSet;
+	}
+
 	public Problem loadResource(Resource resource) {
-		var issues = resourceValidator.validate(resource, CheckMode.ALL, () -> {
+		EcoreUtil.resolveAll(resource);
+		CancelIndicator cancelIndicator = () -> {
 			cancellationToken.checkCancelled();
 			return Thread.interrupted();
-		});
+		};
+		var shadowedNames = new LinkedHashMap<ShadowingKey, Set<IEObjectDescription>>();
+		var issues = new ArrayList<Issue>();
+		validateResource(resource, issues, cancelIndicator);
 		cancellationToken.checkCancelled();
-		var errors = issues.stream()
-				.filter(issue -> issue.getSeverity() == Severity.ERROR)
-				.toList();
+		var resourceSet = resource.getResourceSet();
+		if (resourceSet != null) {
+			var imports = importCollector.getAllImports(resource).toUriSet();
+			cancellationToken.checkCancelled();
+			for (var importedUri : imports) {
+				var importedResource = resourceSet.getResource(importedUri, false);
+				if (importedResource == null) {
+					throw new IllegalStateException("Unknown imported resource: " + importedUri);
+				}
+				findShadowedNames(importedResource, shadowedNames);
+				validateResource(importedResource, issues, cancelIndicator);
+			}
+		}
+		addNameClashIssues(issues, shadowedNames);
+		var errors = issues.stream().filter(issue -> issue.getSeverity() == Severity.ERROR).toList();
 		if (!errors.isEmpty()) {
 			throw new ValidationErrorsException(resource.getURI(), errors);
 		}
@@ -112,8 +164,49 @@ public class ProblemLoader {
 		return problem;
 	}
 
-	public Problem loadScopeConstraints(Problem problem, List<String> extraScopes,
-										List<String> overrideScopes) throws IOException {
+	private void findShadowedNames(Resource importedResource,
+								   LinkedHashMap<ShadowingKey, Set<IEObjectDescription>> shadowedNames) {
+		var resourceDescription = globalResourceDescriptionProvider.getResourceDescription(importedResource);
+		for (var eObjectDescription : resourceDescription.getExportedObjects()) {
+			var name = eObjectDescription.getName();
+			if (NamingUtil.isFullyQualified(name)) {
+				var shadowingKey = ProblemResourceDescriptionStrategy.getShadowingKey(eObjectDescription);
+				var entries = shadowedNames.computeIfAbsent(shadowingKey, ignored -> new LinkedHashSet<>());
+				entries.add(eObjectDescription);
+			}
+		}
+		cancellationToken.checkCancelled();
+	}
+
+	private void validateResource(Resource importedResource, ArrayList<Issue> issues,
+								  CancelIndicator cancelIndicator) {
+		issues.addAll(resourceValidator.validate(importedResource, CheckMode.ALL, cancelIndicator));
+		cancellationToken.checkCancelled();
+	}
+
+	private void addNameClashIssues(ArrayList<Issue> issues,
+									LinkedHashMap<ShadowingKey, Set<IEObjectDescription>> shadowedNames) {
+		for (var entry : shadowedNames.entrySet()) {
+			var eObjectDescriptions = entry.getValue();
+			if (eObjectDescriptions.size() <= 1) {
+				continue;
+			}
+			var qualifiedName = qualifiedNameConverter.toString(NamingUtil.stripRootPrefix(entry.getKey().name()));
+			var uris = eObjectDescriptions.stream()
+					.map(eObjectDescription -> eObjectDescription.getEObjectURI().trimFragment().toString())
+					.collect(Collectors.joining(", "));
+			var message = "Object with qualified name %s is also defined in %s".formatted(qualifiedName, uris);
+			for (var eObjectDescription : eObjectDescriptions) {
+				var issue = new Issue.IssueImpl();
+				issue.setSeverity(Severity.ERROR);
+				issue.setMessage(message);
+				issue.setUriToProblem(eObjectDescription.getEObjectURI());
+				issues.add(issue);
+			}
+		}
+	}
+
+	public Problem loadScopeConstraints(Problem problem, List<String> extraScopes, List<String> overrideScopes) throws IOException {
 		var allScopes = new ArrayList<>(extraScopes);
 		allScopes.addAll(overrideScopes);
 		if (allScopes.isEmpty()) {

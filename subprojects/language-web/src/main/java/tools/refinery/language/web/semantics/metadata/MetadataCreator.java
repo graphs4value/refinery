@@ -7,6 +7,7 @@ package tools.refinery.language.web.semantics.metadata;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.name.Named;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -14,6 +15,7 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.ProblemUtil;
@@ -32,6 +34,7 @@ public class MetadataCreator {
 	private IScopeProvider scopeProvider;
 
 	@Inject
+	@Named(ProblemQualifiedNameProvider.NAMED_DELEGATE)
 	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject
@@ -87,14 +90,12 @@ public class MetadataCreator {
 	}
 
 	private NodeKind getNodeKind(Node node) {
-		if (ProblemUtil.isImplicitNode(node)) {
-			return NodeKind.IMPLICIT;
-		} else if (ProblemUtil.isIndividualNode(node)) {
+		if (ProblemUtil.isAtomNode(node)) {
 			return NodeKind.INDIVIDUAL;
-		} else if (ProblemUtil.isNewNode(node)) {
+		} else if (ProblemUtil.isMultiNode(node)) {
 			return NodeKind.NEW;
 		} else {
-			throw new TracedException(node, "Unknown node type");
+			return NodeKind.IMPLICIT;
 		}
 	}
 
@@ -124,17 +125,13 @@ public class MetadataCreator {
 		if (ProblemUtil.isBuiltIn(relation) && !ProblemUtil.isError(relation)) {
 			return getBuiltInDetail();
 		}
-		if (relation instanceof ClassDeclaration classDeclaration) {
-			return getClassDetail(classDeclaration);
-		} else if (relation instanceof ReferenceDeclaration) {
-			return getReferenceDetail(partialRelation);
-		} else if (relation instanceof EnumDeclaration) {
-			return getEnumDetail();
-		} else if (relation instanceof PredicateDefinition predicateDefinition) {
-			return getPredicateDetail(predicateDefinition);
-		} else {
-			throw new TracedException(relation, "Unknown relation");
-		}
+        return switch (relation) {
+            case ClassDeclaration classDeclaration -> getClassDetail(classDeclaration);
+            case ReferenceDeclaration ignored -> getReferenceDetail(partialRelation);
+            case EnumDeclaration ignored -> getEnumDetail();
+            case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
+            default -> throw new TracedException(relation, "Unknown relation");
+        };
 	}
 
 	private RelationDetail getBuiltInDetail() {

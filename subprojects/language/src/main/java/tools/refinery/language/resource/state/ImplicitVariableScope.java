@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.resource;
+package tools.refinery.language.resource.state;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.linking.impl.LinkingHelper;

@@ -58,6 +58,7 @@ public class GenerateCommand {
 	}
 
 	public void run() throws IOException {
+		loader.extraPath(System.getProperty("user.dir"));
 		var problem = isStandardStream(inputPath) ? loader.loadStream(System.in) : loader.loadFile(inputPath);
 		problem = loader.loadScopeConstraints(problem, scopes, overrideScopes);
 		var generator = generatorFactory.createGenerator(problem);

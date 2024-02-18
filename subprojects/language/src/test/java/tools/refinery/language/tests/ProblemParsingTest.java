@@ -42,7 +42,7 @@ class ProblemParsingTest {
 				error invalidTaxStatus(Person p) <->
 					taxStatus(p, CHILD), children(p, _q).
 
-				indiv family.
+				atom family.
 				Family(family).
 				members(family, anne): true.
 				members(family, bob).

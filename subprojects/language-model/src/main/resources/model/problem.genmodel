@@ -64,9 +64,20 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PrimitiveType/REAL"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PrimitiveType/STRING"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ModuleKind">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ModuleKind/PROBLEM"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ModuleKind/MODULE"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//NodeKind">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/NODE"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/ATOM"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/MULTI"/>
+    </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/statements"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Problem/kind"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Problem/explicitKind"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//ClassDeclaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ClassDeclaration/abstract"/>
@@ -144,8 +155,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//NodeAssertionArgument/node"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//AssertionArgument"/>
-    <genClasses ecoreClass="problem.ecore#//IndividualDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//IndividualDeclaration/nodes"/>
+    <genClasses ecoreClass="problem.ecore#//NodeDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//NodeDeclaration/nodes"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//NodeDeclaration/kind"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//WildcardAssertionArgument"/>
     <genClasses ecoreClass="problem.ecore#//ParametricDefinition">
@@ -226,6 +238,10 @@
     <genClasses ecoreClass="problem.ecore#//FlagDeclaration"/>
     <genClasses ecoreClass="problem.ecore#//LogicConstant">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LogicConstant/logicValue"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//ImportStatement">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//ImportStatement/importedModule"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ImportStatement/alias"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

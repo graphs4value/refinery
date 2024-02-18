@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -32,7 +32,7 @@ public class PartialInterpretation2Json {
 			var relation = entry.getKey();
 			var partialSymbol = entry.getValue();
 			var tuples = getTuplesJson(facade, partialSymbol);
-			var name = semanticsUtils.getName(relation).orElse(partialSymbol.name());
+			var name = semanticsUtils.getNameWithoutRootPrefix(relation).orElse(partialSymbol.name());
 			json.add(name, tuples);
 			cancellationToken.checkCancelled();
 		}

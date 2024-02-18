@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -9,13 +9,19 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "https://refinery.tools/emf/2021/Problem"
 
 Problem:
-	("problem" name=Identifier ".")?
+	(kind=ModuleKind name=QualifiedName? ".")?
 	statements+=Statement*;
 
+enum ModuleKind:
+	PROBLEM="problem" | MODULE="module";
+
 Statement:
-	Assertion | ClassDeclaration | EnumDeclaration |
+	ImportStatement | Assertion | ClassDeclaration | EnumDeclaration |
 	PredicateDefinition | /* FunctionDefinition | RuleDefinition | */
-	ScopeDeclaration | IndividualDeclaration;
+	ScopeDeclaration | NodeDeclaration;
+
+ImportStatement:
+	"import" importedModule=[Problem|QualifiedName] ("as" alias=ID)? ".";
 
 ClassDeclaration:
 	abstract?="abstract"? "class"
@@ -252,29 +258,37 @@ RangeMultiplicity:
 ExactMultiplicity:
 	exactValue=INT;
 
-IndividualDeclaration:
-	"indiv" nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+NodeDeclaration:
+	("declare" | "declare"? kind=NodeKind)
+	nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
+
+enum NodeKind:
+	ATOM="atom" | MULTI="multi";
 
 UpperBound returns ecore::EInt:
 	INT | "*";
 
 QualifiedName hidden():
-	Identifier ("::" Identifier)*;
+	"::"? Identifier (QUALIFIED_NAME_SEPARATOR Identifier)*;
 
 NonContainmentQualifiedName hidden():
-	NonContainmentIdentifier ("::" Identifier)*;
+	(NonContainmentIdentifier | "::" Identifier) (QUALIFIED_NAME_SEPARATOR Identifier)*;
 
 Identifier:
 	NonContainmentIdentifier | "contains" | "container";
 
 NonContainmentIdentifier:
-	ID | "contained" | "sum" | "prod" | "min" | "max";
+	ID | "atom" | "multi" | "contained" |
+	"sum" | "prod" | "min" | "max" | "problem" | "module";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);
 
 terminal TRANSITIVE_CLOSURE:
 	"synthetic:TRANSITIVE_CLOSURE";
+
+terminal QUALIFIED_NAME_SEPARATOR:
+	"synthetic::QUALIFIED_NAME_SEPARATOR";
 
 @Override
 terminal ID:

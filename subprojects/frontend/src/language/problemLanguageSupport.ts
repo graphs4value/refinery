@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -27,7 +27,8 @@ const parserWithMetadata = parser.configure({
     styleTags({
       LineComment: t.lineComment,
       BlockComment: t.blockComment,
-      'problem class enum pred fn indiv scope': t.definitionKeyword,
+      'module problem class enum pred fn scope': t.definitionKeyword,
+      'import as declare atom multi': t.definitionKeyword,
       'abstract extends refers contains container opposite': t.modifier,
       'default error contained containment': t.modifier,
       'true false unknown error': t.keyword,
@@ -44,8 +45,9 @@ const parserWithMetadata = parser.configure({
       String: t.string,
       'RelationName/QualifiedName': t.typeName,
       // 'RuleName/QualifiedName': t.typeName,
-      'IndividualNodeName/QualifiedName': t.atom,
+      'AtomNodeName/QualifiedName': t.atom,
       'VariableName/QualifiedName': t.variableName,
+      'ModuleName/QualifiedName': t.typeName,
       '{ }': t.brace,
       '( )': t.paren,
       '[ ]': t.squareBracket,
@@ -54,7 +56,8 @@ const parserWithMetadata = parser.configure({
     }),
     indentNodeProp.add({
       ProblemDeclaration: indentDeclaration,
-      UniqueDeclaration: indentDeclaration,
+      AtomDeclaration: indentDeclaration,
+      NodeDeclaration: indentDeclaration,
       ScopeDeclaration: indentDeclaration,
       PredicateBody: indentPredicateOrRule,
       FunctionBody: indentPredicateOrRule,
@@ -70,7 +73,8 @@ const parserWithMetadata = parser.configure({
       // RuleBody: foldInside,
       Conjunction: foldConjunction,
       // Consequent: foldWholeNode,
-      UniqueDeclaration: foldDeclaration,
+      AtomDeclaration: foldDeclaration,
+      NodeDeclaration: foldDeclaration,
       ScopeDeclaration: foldDeclaration,
       BlockComment: foldBlockComment,
     }),

@@ -129,7 +129,7 @@ class ProblemWebSocketServletIntegrationTest {
 			case 4 -> //noinspection TextBlockMigration
 					session.sendText(
 					"{\"id\":\"bar\",\"request\":{\"resource\":\"test.problem\",\"serviceType\":\"update\"," +
-							"\"requiredStateId\":\"-80000000\",\"deltaText\":\"indiv q.\nnode(q).\n\"," +
+							"\"requiredStateId\":\"-80000000\",\"deltaText\":\"atom q.\nnode(q).\n\"," +
 							"\"deltaOffset\":\"0\",\"deltaReplaceLength\":\"0\"}}",
 					Callback.NOOP
 			);

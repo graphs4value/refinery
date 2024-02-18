@@ -56,15 +56,16 @@ class ProblemSerializerTest {
 		var pred = createPred();
 		var node = ProblemFactory.eINSTANCE.createNode();
 		node.setName("a");
-		var individualDeclaration = ProblemFactory.eINSTANCE.createIndividualDeclaration();
-		individualDeclaration.getNodes().add(node);
-		problem.getStatements().add(individualDeclaration);
+		var atomDeclaration = ProblemFactory.eINSTANCE.createNodeDeclaration();
+		atomDeclaration.setKind(NodeKind.ATOM);
+		atomDeclaration.getNodes().add(node);
+		problem.getStatements().add(atomDeclaration);
 		createAssertion(pred, node, value);
 
 		assertSerializedResult("""
 				pred foo(node p).
 
-				indiv a.
+				atom a.
 				""" + serializedAssertion + "\n");
 	}
 
@@ -79,15 +80,16 @@ class ProblemSerializerTest {
 		var pred = createPred();
 		var node = ProblemFactory.eINSTANCE.createNode();
 		node.setName("a");
-		var individualDeclaration = ProblemFactory.eINSTANCE.createIndividualDeclaration();
-		individualDeclaration.getNodes().add(node);
-		problem.getStatements().add(individualDeclaration);
+		var atomDeclaration = ProblemFactory.eINSTANCE.createNodeDeclaration();
+		atomDeclaration.setKind(NodeKind.ATOM);
+		atomDeclaration.getNodes().add(node);
+		problem.getStatements().add(atomDeclaration);
 		createAssertion(pred, node, value, true);
 
 		assertSerializedResult("""
 				pred foo(node p).
 
-				indiv a.
+				atom a.
 				default\040""" + serializedAssertion + "\n");
 	}
 

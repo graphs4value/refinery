@@ -79,7 +79,7 @@ class ProblemTraceImpl implements ProblemTrace {
 		try {
 			return nodeTrace.getOrThrow(node);
 		} catch (IllegalStateException e) {
-			var qualifiedName = semanticsUtils.getName(node);
+			var qualifiedName = semanticsUtils.getNameWithoutRootPrefix(node);
 			throw new TracedException(node, "No node ID for " + qualifiedName, e);
 		}
 	}
@@ -144,7 +144,7 @@ class ProblemTraceImpl implements ProblemTrace {
 	public PartialRelation getPartialRelation(Relation relation) {
 		var partialRelation = mutableRelationTrace.get(relation);
 		if (partialRelation == null) {
-			var qualifiedName = semanticsUtils.getName(relation);
+			var qualifiedName = semanticsUtils.getNameWithoutRootPrefix(relation);
 			throw new TracedException(relation, "No partial relation for " + qualifiedName);
 		}
 		return partialRelation;

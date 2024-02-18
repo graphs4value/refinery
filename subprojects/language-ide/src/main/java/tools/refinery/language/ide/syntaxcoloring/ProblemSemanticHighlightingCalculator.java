@@ -29,7 +29,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	private static final String CONTAINMENT_CLASS = "containment";
 	private static final String ERROR_CLASS = "error";
 	private static final String NODE_CLASS = "node";
-	private static final String INDIVIDUAL_NODE_CLASS = "individual";
+	private static final String ATOM_NODE_CLASS = "atom";
 	private static final String NEW_NODE_CLASS = "new";
 
 	@Inject
@@ -99,7 +99,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	protected String[] getHighlightClass(EObject eObject, EReference reference) {
 		boolean isError = ProblemUtil.isError(eObject);
-		if (ProblemUtil.isBuiltIn(eObject)) {
+		if (ProblemUtil.isBuiltIn(eObject) && !(eObject instanceof Problem)) {
 			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
 			return new String[]{className};
 		}
@@ -137,10 +137,10 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
 			classesBuilder.add(NODE_CLASS);
 		}
-		if (ProblemUtil.isIndividualNode(node)) {
-			classesBuilder.add(INDIVIDUAL_NODE_CLASS);
+		if (ProblemUtil.isAtomNode(node)) {
+			classesBuilder.add(ATOM_NODE_CLASS);
 		}
-		if (ProblemUtil.isNewNode(node)) {
+		if (ProblemUtil.isMultiNode(node)) {
 			classesBuilder.add(NEW_NODE_CLASS);
 		}
 	}

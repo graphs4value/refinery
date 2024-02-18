@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -13,16 +13,16 @@ import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.validation.Check;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.scoping.imports.ImportAdapter;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class contains custom validation rules.
@@ -32,6 +32,10 @@ import java.util.Set;
  */
 public class ProblemValidator extends AbstractProblemValidator {
 	private static final String ISSUE_PREFIX = "tools.refinery.language.validation.ProblemValidator.";
+
+	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
+
+	public static final String INVALID_IMPORT_ISSUE = ISSUE_PREFIX + "INVALID_IMPORT";
 
 	public static final String SINGLETON_VARIABLE_ISSUE = ISSUE_PREFIX + "SINGLETON_VARIABLE";
 
@@ -65,6 +69,61 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Inject
 	private ProblemDesugarer desugarer;
 
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Check
+	public void checkModuleName(Problem problem) {
+		var nameString = problem.getName();
+		if (nameString == null) {
+			return;
+		}
+		var resource = problem.eResource();
+		if (resource == null) {
+			return;
+		}
+		var resourceSet = resource.getResourceSet();
+		if (resourceSet == null) {
+			return;
+		}
+		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		var expectedName = adapter.getQualifiedName(resource.getURI());
+		if (expectedName == null) {
+			return;
+		}
+		var name = NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(nameString));
+		if (!expectedName.equals(name)) {
+			var moduleKindName = switch (problem.getKind()) {
+				case PROBLEM -> "problem";
+				case MODULE -> "module";
+			};
+			var message = "Expected %s to have name '%s', got '%s' instead.".formatted(
+					moduleKindName, qualifiedNameConverter.toString(expectedName),
+					qualifiedNameConverter.toString(name));
+			error(message, problem, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+					UNEXPECTED_MODULE_NAME_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkImportStatement(ImportStatement importStatement) {
+		var importedModule = importStatement.getImportedModule();
+		if (importedModule == null || importedModule.eIsProxy()) {
+			return;
+		}
+		String message = null;
+		var problem = EcoreUtil2.getContainerOfType(importStatement, Problem.class);
+		if (importedModule == problem) {
+			message = "A module cannot import itself.";
+		} else if (importedModule.getKind() != ModuleKind.MODULE) {
+			message = "Only modules can be imported.";
+		}
+		if (message != null) {
+			error(message, importStatement, ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE,
+					INSIGNIFICANT_INDEX, INVALID_IMPORT_ISSUE);
+		}
+	}
+
 	@Check
 	public void checkSingletonVariable(VariableOrNodeExpr expr) {
 		var variableOrNode = expr.getVariableOrNode();
@@ -84,10 +143,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkNodeConstants(VariableOrNodeExpr expr) {
 		var variableOrNode = expr.getVariableOrNode();
-		if (variableOrNode instanceof Node node && !ProblemUtil.isIndividualNode(node)) {
+		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
 			var name = node.getName();
-			var message = ("Only individuals can be referenced in predicates. " +
-					"Mark '%s' as individual with the declaration 'indiv %s.'").formatted(name, name);
+			var message = ("Only atoms can be referenced in predicates. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
 			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
 					INSIGNIFICANT_INDEX, NODE_CONSTANT_ISSUE);
 		}
@@ -96,16 +155,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkUniqueDeclarations(Problem problem) {
 		var relations = new ArrayList<Relation>();
-		var individuals = new ArrayList<Node>();
+		var nodes = new ArrayList<Node>();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof Relation relation) {
 				relations.add(relation);
-			} else if (statement instanceof IndividualDeclaration individualDeclaration) {
-				individuals.addAll(individualDeclaration.getNodes());
+			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
+				nodes.addAll(nodeDeclaration.getNodes());
 			}
 		}
 		checkUniqueSimpleNames(relations);
-		checkUniqueSimpleNames(individuals);
+		checkUniqueSimpleNames(nodes);
 	}
 
 	@Check
@@ -302,6 +361,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkTypeScope(TypeScope typeScope) {
 		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+		if (typeScope.isIncrement() && ProblemUtil.isInModule(typeScope)) {
+			acceptError("Incremental type scopes are not supported in modules", typeScope, null, 0,
+					INVALID_MULTIPLICITY_ISSUE);
+		}
 	}
 
 	private void checkArity(EObject eObject, EReference reference, int expectedArity) {
@@ -351,9 +414,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	private void checkExistsAssertion(Assertion assertion, LogicValue value) {
-		if (value == LogicValue.TRUE || value == LogicValue.UNKNOWN) {
-			// {@code true} is always a valid value for {@code exists}, while {@code unknown} values may always be
-			// refined to {@code true} if necessary (e.g., for individual nodes).
+		if (value == LogicValue.UNKNOWN) {
+			// {@code unknown} values may always be refined to {@code true} of {@code false} if necessary (e.g., for
+			// atom nodes or removed multi-objects).
 			return;
 		}
 		var arguments = assertion.getArguments();
@@ -361,9 +424,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 			// We already report an error on invalid arity.
 			return;
 		}
-		var node = getNodeArgumentForMultiObjectAssertion(arguments.get(0));
-		if (node != null && !node.eIsProxy() && ProblemUtil.isIndividualNode(node)) {
-			acceptError("Individual nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
+		var node = getNodeArgumentForMultiObjectAssertion(arguments.getFirst());
+		if (node == null || node.eIsProxy()) {
+			return;
+		}
+		if (ProblemUtil.isAtomNode(node) && value != LogicValue.TRUE) {
+			acceptError("Atom nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
+		}
+		if (ProblemUtil.isMultiNode(node) && value != LogicValue.FALSE && ProblemUtil.isInModule(node)) {
+			acceptError("Multi-objects in modules cannot be required to exist.", assertion, null, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
 		}
 	}
 
@@ -402,5 +472,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 			return nodeAssertionArgument.getNode();
 		}
 		throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+	}
+
+	@Check
+	private void checkImplicitNodeInModule(Assertion assertion) {
+		if (!ProblemUtil.isInModule(assertion)) {
+			return;
+		}
+		for (var argument : assertion.getArguments()) {
+			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
+				var node = nodeAssertionArgument.getNode();
+				if (node != null && !node.eIsProxy() && ProblemUtil.isImplicitNode(node)) {
+					var name = node.getName();
+					var message = ("Implicit nodes are not allowed in modules. Explicitly declare '%s' as a node " +
+							"with the declaration 'declare %s.'").formatted(name, name);
+					acceptError(message, nodeAssertionArgument, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE,
+							0, UNSUPPORTED_ASSERTION_ISSUE);
+				}
+			}
+		}
 	}
 }
