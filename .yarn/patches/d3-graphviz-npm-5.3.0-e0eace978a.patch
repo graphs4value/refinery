@@ -1,5 +1,5 @@
 diff --git a/src/dot.js b/src/dot.js
-index 96ae02b6edd947ac9086f3108986c08d91470cba..c4422b08d73f7fe73dc52ad905cf981d1f3cbcc5 100644
+index 97a0a7dbd3892742fa2b9e6badd4214b06579c13..bac59df04900de140ddd024b5dfac4bc1ad9c572 100644
 --- a/src/dot.js
 +++ b/src/dot.js
 @@ -1,4 +1,3 @@

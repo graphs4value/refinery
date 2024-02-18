@@ -23,7 +23,7 @@
   "scripts": {
     "frontend": "yarn workspace @refinery/frontend"
   },
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "yarn@4.1.0",
   "devDependencies": {
     "eslint": "^8.56.0",
     "typescript": "5.3.3"
