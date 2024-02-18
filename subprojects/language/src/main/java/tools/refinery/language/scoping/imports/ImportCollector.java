@@ -150,7 +150,7 @@ public class ImportCollector {
 
 	protected List<URI> getImports(IEObjectDescription eObjectDescription) {
 		var importString = eObjectDescription.getUserData(ProblemResourceDescriptionStrategy.IMPORTS);
-		if (importString == null) {
+		if (importString == null || importString.isEmpty()) {
 			return List.of();
 		}
 		return Splitter.on(ProblemResourceDescriptionStrategy.IMPORTS_SEPARATOR).splitToStream(importString)

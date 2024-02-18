@@ -8,6 +8,7 @@ package tools.refinery.language.resource;
 import com.google.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
@@ -44,6 +45,8 @@ public class LoadOnDemandResourceDescriptionProvider {
 		if (importedResource == null) {
 			return null;
 		}
+		// Force the {@code importedResource} to have all of its derived resource state installed.
+		EcoreUtil.resolveAll(importedResource);
 		return globalResourceDescriptionProvider.getResourceDescription(importedResource);
 	}
 }

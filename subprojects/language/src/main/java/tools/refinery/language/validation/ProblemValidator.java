@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -13,16 +13,16 @@ import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.validation.Check;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.scoping.imports.ImportAdapter;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class contains custom validation rules.
@@ -32,6 +32,10 @@ import java.util.Set;
  */
 public class ProblemValidator extends AbstractProblemValidator {
 	private static final String ISSUE_PREFIX = "tools.refinery.language.validation.ProblemValidator.";
+
+	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
+
+	public static final String INVALID_IMPORT_ISSUE = ISSUE_PREFIX + "INVALID_IMPORT";
 
 	public static final String SINGLETON_VARIABLE_ISSUE = ISSUE_PREFIX + "SINGLETON_VARIABLE";
 
@@ -64,6 +68,61 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Inject
 	private ProblemDesugarer desugarer;
+
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Check
+	public void checkModuleName(Problem problem) {
+		var nameString = problem.getName();
+		if (nameString == null) {
+			return;
+		}
+		var resource = problem.eResource();
+		if (resource == null) {
+			return;
+		}
+		var resourceSet = resource.getResourceSet();
+		if (resourceSet == null) {
+			return;
+		}
+		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		var expectedName = adapter.getQualifiedName(resource.getURI());
+		if (expectedName == null) {
+			return;
+		}
+		var name = NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(nameString));
+		if (!expectedName.equals(name)) {
+			var moduleKindName = switch (problem.getKind()) {
+				case PROBLEM -> "problem";
+				case MODULE -> "module";
+			};
+			var message = "Expected %s to have name '%s', got '%s' instead.".formatted(
+					moduleKindName, qualifiedNameConverter.toString(expectedName),
+					qualifiedNameConverter.toString(name));
+			error(message, problem, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+					UNEXPECTED_MODULE_NAME_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkImportStatement(ImportStatement importStatement) {
+		var importedModule = importStatement.getImportedModule();
+		if (importedModule == null || importedModule.eIsProxy()) {
+			return;
+		}
+		String message = null;
+		var problem = EcoreUtil2.getContainerOfType(importStatement, Problem.class);
+		if (importedModule == problem) {
+			message = "A module cannot import itself.";
+		} else if (importedModule.getKind() != ModuleKind.MODULE) {
+			message = "Only modules can be imported.";
+		}
+		if (message != null) {
+			error(message, importStatement, ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE,
+					INSIGNIFICANT_INDEX, INVALID_IMPORT_ISSUE);
+		}
+	}
 
 	@Check
 	public void checkSingletonVariable(VariableOrNodeExpr expr) {
