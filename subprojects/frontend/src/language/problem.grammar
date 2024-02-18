@@ -23,7 +23,7 @@
 
 statement {
   ImportStatement {
-    kw<"import"> QualifiedName (kw<"as"> identifier)? "."
+    kw<"import"> ModuleName (kw<"as"> ModuleName)? "."
   } |
   Assertion {
     kw<"default">? (NotOp | UnknownOp)? RelationName
@@ -31,7 +31,7 @@ statement {
     (":" Expr)? "."
   } |
   ProblemDeclaration {
-    (ckw<"module"> | kw<"problem">) QualifiedName "."
+    (ckw<"module"> | kw<"problem">) ModuleName "."
   } |
   ClassDefinition {
     kw<"abstract">? kw<"class"> RelationName
@@ -172,6 +172,8 @@ AtomNodeName { QualifiedName }
 VariableName[@dynamicPrecedence=10] { QualifiedName ~name }
 
 NodeName { QualifiedName }
+
+ModuleName { QualifiedName }
 
 QualifiedName[implicitCompletion=true] { "::"? identifier (QualifiedNameSeparator "::" identifier)* }
 

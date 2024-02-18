@@ -47,6 +47,7 @@ const parserWithMetadata = parser.configure({
       // 'RuleName/QualifiedName': t.typeName,
       'AtomNodeName/QualifiedName': t.atom,
       'VariableName/QualifiedName': t.variableName,
+      'ModuleName/QualifiedName': t.typeName,
       '{ }': t.brace,
       '( )': t.paren,
       '[ ]': t.squareBracket,
