@@ -12,16 +12,15 @@ import java.nio.file.Path;
 import java.util.*;
 
 public abstract class ClasspathBasedLibrary implements RefineryLibrary {
+	private final Class<?> context;
 	private final QualifiedName prefix;
-	private final List<QualifiedName> automaticImports;
 	private final URI rootUri;
 
-	protected ClasspathBasedLibrary(QualifiedName prefix, List<QualifiedName> automaticImports) {
-		this.prefix = prefix;
-		this.automaticImports = List.copyOf(automaticImports);
-		var context = this.getClass();
-		var contextPath = context.getCanonicalName().replace('.', '/') + ".class";
-		var contextResource = context.getClassLoader().getResource(contextPath);
+	protected ClasspathBasedLibrary(Class<?> context, QualifiedName prefix) {
+        this.context = context == null ? getClass() : context;
+        this.prefix = prefix;
+		var contextPath = this.context.getCanonicalName().replace('.', '/') + ".class";
+		var contextResource = this.context.getClassLoader().getResource(contextPath);
 		if (contextResource == null) {
 			throw new IllegalStateException("Failed to find library context");
 		}
@@ -32,18 +31,13 @@ public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 	}
 
 	protected ClasspathBasedLibrary(QualifiedName prefix) {
-		this(prefix, List.of());
-	}
-
-	@Override
-	public List<QualifiedName> getAutomaticImports() {
-		return automaticImports;
+		this(null, prefix);
 	}
 
 	@Override
 	public Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths) {
 		if (qualifiedName.startsWith(prefix)) {
-			return getLibraryUri(this.getClass(), qualifiedName);
+			return getLibraryUri(context, qualifiedName);
 		}
 		return Optional.empty();
 	}

@@ -17,6 +17,11 @@ public class BuiltinLibrary extends ClasspathBasedLibrary {
 			() -> new IllegalStateException("Builtin library was not found"));
 
 	public BuiltinLibrary() {
-		super(BUILTIN_LIBRARY_NAME, List.of(BUILTIN_LIBRARY_NAME));
+		super(BUILTIN_LIBRARY_NAME);
+	}
+
+	@Override
+	public List<QualifiedName> getAutomaticImports() {
+		return List.of(BUILTIN_LIBRARY_NAME);
 	}
 }
