@@ -10,6 +10,8 @@ import com.google.inject.Provider;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -18,7 +20,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.scoping.imports.ImportAdapter;
+import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
@@ -34,9 +36,7 @@ import tools.refinery.store.tuple.Tuple;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,13 +66,17 @@ public class SolutionSerializer {
 	private Model model;
 	private ReasoningAdapter reasoningAdapter;
 	private PartialInterpretation<TruthValue, Boolean> existsInterpretation;
+	private Resource originalResource;
 	private Problem originalProblem;
+	private QualifiedName originalProblemName;
 	private Problem problem;
+	private QualifiedName newProblemName;
 	private NodeDeclaration nodeDeclaration;
 	private final MutableIntObjectMap<Node> nodes = IntObjectMaps.mutable.empty();
 
 	public Problem serializeSolution(ProblemTrace trace, Model model) {
-		var uri = URI.createURI("__synthetic." + ProblemUtil.MODULE_EXTENSION);
+		var uri = URI.createURI("__solution_%s.%s".formatted(UUID.randomUUID().toString().replace('-', '_'),
+				ProblemUtil.MODULE_EXTENSION));
 		return serializeSolution(trace, model, uri);
 	}
 
@@ -83,10 +87,14 @@ public class SolutionSerializer {
 		existsInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE,
 				ReasoningAdapter.EXISTS_SYMBOL);
 		originalProblem = trace.getProblem();
+		originalProblemName = qualifiedNameProvider.getFullyQualifiedName(originalProblem);
 		problem = copyProblem(originalProblem, uri);
-		problem.setKind(ModuleKind.MODULE);
+		problem.setKind(ProblemUtil.getDefaultModuleKind(uri));
+		problem.setExplicitKind(false);
+		problem.setName(null);
+		newProblemName = qualifiedNameProvider.getFullyQualifiedName(originalProblem);
 		problem.getStatements().removeIf(SolutionSerializer::shouldRemoveStatement);
-		problem.getNodes().removeIf(this::shouldRemoveNode);
+		removeNonExistentImplicitNodes();
 		nodeDeclaration = ProblemFactory.eINSTANCE.createNodeDeclaration();
 		nodeDeclaration.setKind(NodeKind.NODE);
 		nodeDeclaration.getNodes().addAll(problem.getNodes());
@@ -105,15 +113,28 @@ public class SolutionSerializer {
 		return statement instanceof Assertion || statement instanceof ScopeDeclaration;
 	}
 
-	private boolean shouldRemoveNode(Node newNode) {
-		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(newNode);
-		var scope = scopeProvider.getScope(originalProblem, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE);
-		var originalNode = semanticsUtils.maybeGetElement(originalProblem, scope, qualifiedName, Node.class);
-		if (originalNode == null) {
-			return false;
+	private void removeNonExistentImplicitNodes() {
+		var originalImplicitNodes = originalProblem.getNodes();
+		var newImplicitNodes = problem.getNodes();
+		if (newImplicitNodes.size() != originalImplicitNodes.size()) {
+			throw new IllegalStateException("Expected %d implicit nodes in problem, but got %d after copying"
+					.formatted(originalImplicitNodes.size(), newImplicitNodes.size()));
 		}
-		int nodeId = trace.getNodeId(originalNode);
-		return !isExistingNode(nodeId);
+		var iterator = newImplicitNodes.iterator();
+		for (var originalNode : originalImplicitNodes) {
+			if (!iterator.hasNext()) {
+				throw new AssertionError("Unexpected end of copied implicit node list");
+			}
+			var newNode = iterator.next();
+			if (!Objects.equals(originalNode.getName(), newNode.getName())) {
+				throw new IllegalStateException("Expected copy of '%s' to have the same name, got '%s' instead"
+						.formatted(originalNode.getName(), newNode.getName()));
+			}
+			int nodeId = trace.getNodeId(originalNode);
+			if (!isExistingNode(nodeId)) {
+				iterator.remove();
+			}
+		}
 	}
 
 	private boolean isExistingNode(int nodeId) {
@@ -125,14 +146,10 @@ public class SolutionSerializer {
 	}
 
 	private Problem copyProblem(Problem originalProblem, URI uri) {
-		var newResourceSet = resourceSetProvider.get();
-		ImportAdapter.copySettings(originalProblem, newResourceSet);
-		if (!ProblemUtil.MODULE_EXTENSION.equals(uri.fileExtension())) {
-			uri = uri.appendFileExtension(ProblemUtil.MODULE_EXTENSION);
-		}
+		originalResource = originalProblem.eResource();
+		var resourceSet = originalResource.getResourceSet();
 		var newResource = resourceFactory.createResource(uri);
-		newResourceSet.getResources().add(newResource);
-		var originalResource = originalProblem.eResource();
+		resourceSet.getResources().add(newResource);
 		if (originalResource instanceof XtextResource) {
 			byte[] bytes;
 			try {
@@ -147,7 +164,7 @@ public class SolutionSerializer {
 				throw new IllegalStateException("Failed to copy problem", e);
 			}
 			var contents = newResource.getContents();
-			EcoreUtil.resolveAll(newResourceSet);
+			EcoreUtil.resolveAll(newResource);
 			if (!contents.isEmpty() && contents.getFirst() instanceof Problem newProblem) {
 				return newProblem;
 			}
@@ -159,10 +176,24 @@ public class SolutionSerializer {
 		}
 	}
 
+	private QualifiedName getConvertedName(EObject original) {
+		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(original);
+		if (originalProblemName != null && qualifiedName.startsWith(originalProblemName)) {
+			qualifiedName = qualifiedName.skipFirst(originalProblemName.getSegmentCount());
+		}
+		if (newProblemName != null) {
+			qualifiedName = newProblemName.append(qualifiedName);
+		}
+		return NamingUtil.addRootPrefix(qualifiedName);
+	}
+
 	private Relation findRelation(Relation originalRelation) {
-		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(originalRelation);
-		var scope = scopeProvider.getScope(problem, ProblemPackage.Literals.ASSERTION__RELATION);
-		return semanticsUtils.getElement(problem, scope, qualifiedName, Relation.class);
+		if (originalRelation.eResource() != originalResource) {
+			return originalRelation;
+		}
+		var qualifiedName = getConvertedName(originalRelation);
+		return semanticsUtils.getLocalElement(problem, qualifiedName, Relation.class,
+				ProblemPackage.Literals.RELATION);
 	}
 
 	private Relation findPartialRelation(PartialRelation partialRelation) {
@@ -170,13 +201,11 @@ public class SolutionSerializer {
 	}
 
 	private Node findNode(Node originalNode) {
-		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(originalNode);
-		return findNode(qualifiedName);
-	}
-
-	private Node findNode(QualifiedName qualifiedName) {
-		var scope = scopeProvider.getScope(problem, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE);
-		return semanticsUtils.maybeGetElement(problem, scope, qualifiedName, Node.class);
+		if (originalNode.eResource() != originalResource) {
+			return originalNode;
+		}
+		var qualifiedName = getConvertedName(originalNode);
+		return semanticsUtils.maybeGetLocalElement(problem, qualifiedName, Node.class, ProblemPackage.Literals.NODE);
 	}
 
 	private void addAssertion(Relation relation, LogicValue value, Node... arguments) {
@@ -194,8 +223,8 @@ public class SolutionSerializer {
 	}
 
 	private void addExistsAssertions() {
-		var builtinSymbols = desugarer.getBuiltinSymbols(problem)
-				.orElseThrow(() -> new IllegalStateException("No builtin library in copied problem"));
+		var builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalStateException("No " +
+				"builtin library in copied problem"));
 		// Make sure to output exists assertions in a deterministic order.
 		var sortedNewNodes = new TreeMap<Integer, Node>();
 		for (var pair : trace.getNodeTrace().keyValuesView()) {
@@ -204,8 +233,7 @@ public class SolutionSerializer {
 			var newNode = findNode(originalNode);
 			// Since all implicit nodes that do not exist has already been removed in serializeSolution,
 			// we only need to add !exists assertions to ::new nodes and explicitly declared nodes that do not exist.
-			if (ProblemUtil.isMultiNode(originalNode) ||
-					(ProblemUtil.isDeclaredNode(originalNode) && !isExistingNode(nodeId))) {
+			if (ProblemUtil.isMultiNode(originalNode) || (ProblemUtil.isDeclaredNode(originalNode) && !isExistingNode(nodeId))) {
 				sortedNewNodes.put(nodeId, newNode);
 			} else {
 				nodes.put(nodeId, newNode);
@@ -218,8 +246,8 @@ public class SolutionSerializer {
 	}
 
 	private void addClassAssertions() {
-		var types = trace.getMetamodel().typeHierarchy().getPreservedTypes().keySet().stream()
-				.collect(Collectors.toMap(Function.identity(), this::findPartialRelation));
+		var types =
+				trace.getMetamodel().typeHierarchy().getPreservedTypes().keySet().stream().collect(Collectors.toMap(Function.identity(), this::findPartialRelation));
 		var cursor = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL).getAll();
 		while (cursor.move()) {
 			var key = cursor.getKey();

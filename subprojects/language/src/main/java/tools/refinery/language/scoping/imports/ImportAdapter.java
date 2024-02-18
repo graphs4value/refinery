@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -202,29 +201,5 @@ public class ImportAdapter extends AdapterImpl {
 
 	private static ImportAdapter getAdapter(ResourceSet resourceSet) {
         return (ImportAdapter) EcoreUtil.getAdapter(resourceSet.eAdapters(), ImportAdapter.class);
-	}
-
-	public static void copySettings(EObject context, ResourceSet newResourceSet) {
-		var resource = context.eResource();
-		if (resource == null) {
-			return;
-		}
-		var originalResourceSet = resource.getResourceSet();
-		if (originalResourceSet == null) {
-			return;
-		}
-		copySettings(originalResourceSet, newResourceSet);
-	}
-
-	public static void copySettings(ResourceSet originalResourceSet, ResourceSet newResourceSet) {
-		var originalAdapter = getAdapter(originalResourceSet);
-		if (originalAdapter == null) {
-			return;
-		}
-		var newAdapter = getOrInstall(newResourceSet);
-		newAdapter.libraries.clear();
-		newAdapter.libraries.addAll(originalAdapter.libraries);
-		newAdapter.libraryPaths.clear();
-		newAdapter.libraryPaths.addAll(originalAdapter.libraryPaths);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -68,15 +68,14 @@ class NodeScopingTest {
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.node("b")));
 	}
 
-	@ParameterizedTest
-	@MethodSource("atomNodeReferenceSource")
-	void atomNodeInAssertionTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@Test
+	void atomNodeInAssertionTest() {
 		var problem = parse("""
 				atom a, b.
 				pred predicate(node x, node y) <-> node(x).
-				predicate({PARAM}a, {PARAM}a).
-				?predicate({PARAM}a, {PARAM}b).
-				""", qualifiedNamePrefix, namedProblem);
+				predicate(a, a).
+				?predicate(a, b).
+				""");
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.atomNode("a")));
@@ -85,20 +84,15 @@ class NodeScopingTest {
 		assertThat(problem.assertion(1).arg(1).node(), equalTo(problem.atomNode("b")));
 	}
 
-	@ParameterizedTest
-	@MethodSource("atomNodeReferenceSource")
-	void atomNodeInPredicateTest(String qualifiedNamePrefix, boolean namedProblem) {
+	@Test
+	void atomNodeInPredicateTest() {
 		var problem = parse("""
 				atom b.
-				pred predicate(node a) <-> node({PARAM}b).
-				""", qualifiedNamePrefix, namedProblem);
+				pred predicate(node a) <-> node(b).
+				""");
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(), equalTo(problem.atomNode("b")));
-	}
-
-	static Stream<Arguments> atomNodeReferenceSource() {
-		return Stream.of(Arguments.of("", false), Arguments.of("", true), Arguments.of("test::", true));
 	}
 
 	@Disabled("No nodes are present in builtin.problem currently")
@@ -131,35 +125,28 @@ class NodeScopingTest {
 		return Stream.of(Arguments.of("int::new"), Arguments.of("builtin::int::new"));
 	}
 
-	@ParameterizedTest
-	@MethodSource("classNewNodeReferencesSource")
-	void classNewNodeTest(String qualifiedName, boolean namedProblem) {
+	@Test
+	void classNewNodeTest() {
 		var problem = parse("""
 				class Foo.
 				pred predicate(node x) <-> node(x).
-				predicate({PARAM}).
-				""", qualifiedName, namedProblem);
+				predicate(Foo::new).
+				""");
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.findClass("Foo").get().getNewNode()));
 	}
 
-	@ParameterizedTest
-	@MethodSource("classNewNodeReferencesSource")
-	void classNewNodeInPredicateTest(String qualifiedName, boolean namedProblem) {
+	@Test
+	void classNewNodeInPredicateTest() {
 		var problem = parse("""
 				class Foo.
-				pred predicate(node x) <-> node({PARAM}).
-				""", qualifiedName, namedProblem);
+				pred predicate(node x) <-> node(Foo::new).
+				""");
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(),
 				equalTo(problem.findClass("Foo").get().getNewNode()));
-	}
-
-	static Stream<Arguments> classNewNodeReferencesSource() {
-		return Stream.of(Arguments.of("Foo::new", false), Arguments.of("Foo::new", true),
-				Arguments.of("test::Foo::new", true));
 	}
 
 	@Test
@@ -176,12 +163,12 @@ class NodeScopingTest {
 
 	@ParameterizedTest
 	@MethodSource("enumLiteralReferencesSource")
-	void enumLiteralTest(String qualifiedName, boolean namedProblem) {
+	void enumLiteralTest(String qualifiedName) {
 		var problem = parse("""
 				enum Foo { alpha, beta }
 				pred predicate(Foo a) <-> node(a).
 				predicate({PARAM}).
-				""", qualifiedName, namedProblem);
+				""", qualifiedName);
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.findEnum("Foo").literal("alpha")));
@@ -189,11 +176,11 @@ class NodeScopingTest {
 
 	@ParameterizedTest
 	@MethodSource("enumLiteralReferencesSource")
-	void enumLiteralInPredicateTest(String qualifiedName, boolean namedProblem) {
+	void enumLiteralInPredicateTest(String qualifiedName) {
 		var problem = parse("""
 				enum Foo { alpha, beta }
 				pred predicate(Foo a) <-> node({PARAM}).
-				""", qualifiedName, namedProblem);
+				""", qualifiedName);
 		assertThat(problem.getResourceErrors(), empty());
 		assertThat(problem.nodeNames(), empty());
 		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(),
@@ -201,9 +188,7 @@ class NodeScopingTest {
 	}
 
 	static Stream<Arguments> enumLiteralReferencesSource() {
-		return Stream.of(Arguments.of("alpha", false), Arguments.of("alpha", true), Arguments.of("Foo::alpha", false),
-				Arguments.of("Foo::alpha", true), Arguments.of("test::alpha", true),
-				Arguments.of("test::Foo::alpha", true));
+		return Stream.of(Arguments.of("alpha"), Arguments.of("Foo::alpha"));
 	}
 
 	@Disabled("No enum literals are present in builtin.problem currently")
@@ -222,7 +207,7 @@ class NodeScopingTest {
 	@Disabled("No enum literals are present in builtin.problem currently")
 	@ParameterizedTest
 	@MethodSource("builtInEnumLiteralReferencesSource")
-	void bultInEnumLiteralInPredicateTest(String qualifiedName) {
+	void builtInEnumLiteralInPredicateTest(String qualifiedName) {
 		var problem = parse("""
 				pred predicate() <-> node({PARAM}).
 				""", qualifiedName);
@@ -237,13 +222,8 @@ class NodeScopingTest {
 				Arguments.of("builtin::bool::true"));
 	}
 
-	private WrappedProblem parse(String text, String parameter, boolean namedProblem) {
-		var problemName = namedProblem ? "problem test.\n" : "";
-		return parseHelper.parse(problemName + text.replace("{PARAM}", parameter));
-	}
-
 	private WrappedProblem parse(String text, String parameter) {
-		return parse(text, parameter, false);
+		return parseHelper.parse(text.replace("{PARAM}", parameter));
 	}
 
 	private WrappedProblem parse(String text) {
