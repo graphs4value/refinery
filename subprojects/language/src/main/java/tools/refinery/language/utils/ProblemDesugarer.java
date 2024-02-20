@@ -87,11 +87,7 @@ public class ProblemDesugarer {
 	private Collection<ReferenceDeclaration> doGetAllReferenceDeclarations(ClassDeclaration classDeclaration) {
 		Set<ReferenceDeclaration> referenceDeclarations = new HashSet<>();
 		for (ClassDeclaration superclass : getSuperclassesAndSelf(classDeclaration)) {
-			for (FeatureDeclaration featureDeclaration : superclass.getFeatureDeclarations()) {
-				if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-					referenceDeclarations.add(referenceDeclaration);
-				}
-			}
+            referenceDeclarations.addAll(superclass.getFeatureDeclarations());
 		}
 		return referenceDeclarations;
 	}

@@ -166,6 +166,11 @@ export default styled('div', {
     '.tok-problem-abstract': {
       fontStyle: 'italic',
     },
+    '.tok-problem-datatype': {
+      '&, & .tok-typeName': {
+        color: theme.palette.primary.main,
+      },
+    },
     '.tok-problem-containment': {
       fontWeight: theme.typography.fontWeightEditorBold,
       textDecorationSkipInk: 'none',

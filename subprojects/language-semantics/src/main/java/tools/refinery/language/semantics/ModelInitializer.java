@@ -29,7 +29,10 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
-import tools.refinery.store.reasoning.translator.metamodel.*;
+import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
+import tools.refinery.store.reasoning.translator.metamodel.MetamodelBuilder;
+import tools.refinery.store.reasoning.translator.metamodel.MetamodelTranslator;
+import tools.refinery.store.reasoning.translator.metamodel.ReferenceInfo;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
@@ -243,15 +246,14 @@ public class ModelInitializer {
 
 	private void collectClassDeclarationSymbols(ClassDeclaration classDeclaration) {
 		collectPartialRelation(classDeclaration, 1, null, TruthValue.UNKNOWN);
-		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
-			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-				collectPartialRelation(referenceDeclaration, 2, null, TruthValue.UNKNOWN);
-				var invalidMultiplicityConstraint = referenceDeclaration.getInvalidMultiplicity();
-				if (invalidMultiplicityConstraint != null) {
-					collectPartialRelation(invalidMultiplicityConstraint, 1, TruthValue.FALSE, TruthValue.FALSE);
-				}
-			} else {
-				throw new TracedException(featureDeclaration, "Unknown feature declaration");
+		for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
+			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+				throw new TracedException(referenceDeclaration, "Attributes are not yet supported");
+			}
+			collectPartialRelation(referenceDeclaration, 2, null, TruthValue.UNKNOWN);
+			var invalidMultiplicityConstraint = referenceDeclaration.getInvalidMultiplicity();
+			if (invalidMultiplicityConstraint != null) {
+				collectPartialRelation(invalidMultiplicityConstraint, 1, TruthValue.FALSE, TruthValue.FALSE);
 			}
 		}
 	}
@@ -319,10 +321,8 @@ public class ModelInitializer {
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
 		}
-		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
-			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-				collectReferenceDeclarationMetamodel(classDeclaration, referenceDeclaration);
-			}
+		for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
+			collectReferenceDeclarationMetamodel(classDeclaration, referenceDeclaration);
 		}
 	}
 

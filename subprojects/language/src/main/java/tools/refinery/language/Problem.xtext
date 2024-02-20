@@ -17,7 +17,7 @@ enum ModuleKind:
 
 Statement:
 	ImportStatement | Assertion | ClassDeclaration | EnumDeclaration |
-	PredicateDefinition | /* FunctionDefinition | RuleDefinition | */
+	DatatypeDeclaration | PredicateDefinition | /* FunctionDefinition | RuleDefinition | */
 	ScopeDeclaration | NodeDeclaration;
 
 ImportStatement:
@@ -27,7 +27,7 @@ ClassDeclaration:
 	abstract?="abstract"? "class"
 	name=Identifier
 	("extends" superTypes+=[Relation|QualifiedName] ("," superTypes+=[Relation|QualifiedName])*)?
-	("{" (featureDeclarations+=FeatureDeclaration ";"?)* "}" | ".");
+	("{" (featureDeclarations+=ReferenceDeclaration ";"?)* "}" | ".");
 
 EnumDeclaration:
 	"enum"
@@ -37,8 +37,8 @@ EnumDeclaration:
 EnumLiteral returns Node:
 	name=Identifier;
 
-FeatureDeclaration:
-	ReferenceDeclaration /* | AttributeDeclaration | FlagDeclaration */;
+DatatypeDeclaration:
+	"extern" "datatype" name=Identifier ".";
 
 enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
@@ -53,15 +53,6 @@ ReferenceDeclaration:
 ReferenceMultiplicity returns Multiplicity:
 	"[" Multiplicity "]";
 
-//enum PrimitiveType:
-//	INT="int" | REAL="real" | STRING="string";
-//
-//AttributeDeclaration:
-//	attributeType=PrimitiveType name=Identifier;
-//
-//FlagDeclaration:
-//	"bool" name=Identifier;
-
 PredicateDefinition:
 	("pred" | error?="error" "pred"?)
 	name=Identifier
@@ -73,7 +64,7 @@ Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
 //FunctionDefinition:
-//	"fn" functionType=PrimitiveType name=Identifier
+//	"fn" functionType=[DatatypeDefinition|QualifiedName] name=Identifier
 //	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 //	("=" cases+=Case (";" cases+=Case)*)?
 //	".";

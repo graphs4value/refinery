@@ -21,11 +21,13 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 
+import javax.xml.crypto.Data;
 import java.util.List;
 
 public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighlightingCalculator {
 	private static final String BUILTIN_CLASS = "builtin";
 	private static final String ABSTRACT_CLASS = "abstract";
+	private static final String DATATYPE_CLASS = "datatype";
 	private static final String CONTAINMENT_CLASS = "containment";
 	private static final String ERROR_CLASS = "error";
 	private static final String NODE_CLASS = "node";
@@ -111,6 +113,9 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
 		if (eObject instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			classesBuilder.add(ABSTRACT_CLASS);
+		}
+		if (eObject instanceof DatatypeDeclaration) {
+			classesBuilder.add(DATATYPE_CLASS);
 		}
 		if (eObject instanceof ReferenceDeclaration referenceDeclaration
 				&& desugarer.isContainmentReference(referenceDeclaration)) {

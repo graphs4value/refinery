@@ -42,6 +42,9 @@ statement {
     kw<"enum"> RelationName
     (EnumBody { "{" sep<",", AtomNodeName> "}" } | ".")
   } |
+  DatatypeDeclaration {
+    kw<"extern"> kw<"datatype"> DatatypeName "."
+  } |
   PredicateDefinition {
     (
       (kw<"error"> | ckw<"contained"> | kw<"containment">)? kw<"pred"> |
@@ -50,10 +53,10 @@ statement {
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
-  FunctionDefinition {
-    kw<"fn"> PrimitiveType RelationName ParameterList<Parameter>?
-    FunctionBody { ("=" sep<OrOp, Case>)? "." }
-  } |
+  // FunctionDefinition {
+  //   kw<"fn"> RelationName RelationName ParameterList<Parameter>?
+  //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
+  // } |
   //RuleDefinition {
   //  kw<"rule">
   //  RuleName ParameterList<Parameter>?
@@ -77,7 +80,7 @@ FeatureDeclaration {
       ReferenceKind !feature ~featureHead
     } |
     FeatureDeclarationHeadWithoutKind {
-      (PrimitiveType | kw<"bool">)? ~featureHead
+      ~featureHead
     }
   )
   RelationName
@@ -137,10 +140,6 @@ ReferenceKind {
   kw<"refers"> | ckw<"contains"> | kw<"container">
 }
 
-PrimitiveType {
-  kw<"int"> | kw<"real"> | kw<"string">
-}
-
 LogicValue {
   kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
 }
@@ -164,6 +163,8 @@ Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 // to the VariableName rule,
 // but will go with the transtive closure (and highlight `a` as a relation) if forced.
 RelationName { QualifiedName ~name }
+
+DatatypeName { QualifiedName }
 
 //RuleName { QualifiedName }
 

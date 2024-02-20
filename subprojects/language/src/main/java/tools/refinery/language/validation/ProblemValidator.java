@@ -315,8 +315,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkReferenceType(ReferenceDeclaration referenceDeclaration) {
-		if (referenceDeclaration.getKind() == ReferenceKind.REFERENCE &&
-				!ProblemUtil.isContainerReference(referenceDeclaration)) {
+		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
+				!ProblemUtil.isContainerReference(referenceDeclaration);
+		if (isDefaultReference || referenceDeclaration.getKind() == ReferenceKind.REFERENCE) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
 			return;
 		}
