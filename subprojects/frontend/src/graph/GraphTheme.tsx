@@ -27,10 +27,10 @@ function createEdgeColor(
       '& text': {
         fill: stroke,
       },
-      '& [stroke="black"]': {
+      '.edge-line': {
         stroke,
       },
-      '& [fill="black"]': {
+      '.edge-arrow': {
         fill: fill ?? stroke,
       },
     },
@@ -43,10 +43,8 @@ function createTypeHashStyles(theme: Theme, colorNodes: boolean): CSSObject {
   }
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
-    result[`.node-typeHash-${i}`] = {
-      '& [fill="green"]': {
-        fill: theme.palette.highlight.typeHash[i]?.box,
-      },
+    result[`.node-typeHash-${i} .node-header`] = {
+      fill: theme.palette.highlight.typeHash[i]?.box,
     };
   });
   return result;
@@ -85,25 +83,23 @@ export function createGraphTheme({
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
       },
-      '& [stroke="black"]': {
+      '.node-outline': {
         stroke: theme.palette.text.primary,
       },
-      '& [fill="green"]': {
+      '.node-header': {
         fill:
           theme.palette.mode === 'dark'
             ? theme.palette.primary.dark
             : theme.palette.primary.light,
       },
-      '& [fill="white"]': {
+      '.node-bg': {
         fill: theme.palette.background.default,
       },
     },
-    '.node-INDIVIDUAL': {
-      '& [stroke="black"]': {
-        strokeWidth: 2,
-      },
+    '.node-INDIVIDUAL .node-outline': {
+      strokeWidth: 2,
     },
-    '.node-shadow[fill="white"]': noEmbedIcons
+    '.node-shadow.node-bg': noEmbedIcons
       ? {
           // Inkscape can't handle opacity in exported SVG.
           fill: theme.palette.text.primary,
@@ -112,7 +108,7 @@ export function createGraphTheme({
       : {
           fill: alpha(theme.palette.text.primary, shadowAlapha),
         },
-    '.node-exists-UNKNOWN [stroke="black"]': {
+    '.node-exists-UNKNOWN .node-outline': {
       strokeDasharray: '5 2',
     },
     ...createTypeHashStyles(theme, colorNodes),
@@ -121,10 +117,10 @@ export function createGraphTheme({
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
       },
-      '& [stroke="black"]': {
+      '.edge-line': {
         stroke: theme.palette.text.primary,
       },
-      '& [fill="black"]': {
+      '.edge-arrow': {
         fill: theme.palette.text.primary,
       },
     },

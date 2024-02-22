@@ -166,6 +166,32 @@ function replaceImages(node: SVGGElement) {
   });
 }
 
+function markerColorToClass(svg: SVGSVGElement) {
+  svg.querySelectorAll('.node [stroke="black"]').forEach((node) => {
+    node.removeAttribute('stroke');
+    node.classList.add('node-outline');
+  });
+  svg.querySelectorAll('.node [fill="green"]').forEach((node) => {
+    node.removeAttribute('fill');
+    node.classList.add('node-header');
+  });
+  svg.querySelectorAll('.node [fill="white"]').forEach((node) => {
+    node.removeAttribute('fill');
+    node.classList.add('node-bg');
+  });
+  svg.querySelectorAll('.edge [stroke="black"]').forEach((node) => {
+    node.removeAttribute('stroke');
+    node.classList.add('edge-line');
+  });
+  svg.querySelectorAll('.edge [fill="black"]').forEach((node) => {
+    node.removeAttribute('fill');
+    node.classList.add('edge-arrow');
+  });
+  svg.querySelectorAll('[font-family]').forEach((node) => {
+    node.removeAttribute('font-family');
+  });
+}
+
 export default function postProcessSvg(svg: SVGSVGElement) {
   // svg
   //   .querySelectorAll<SVGTitleElement>('title')
@@ -183,4 +209,5 @@ export default function postProcessSvg(svg: SVGSVGElement) {
     svg.viewBox.baseVal.height + 12,
   ];
   svg.setAttribute('viewBox', viewBox.join(' '));
+  markerColorToClass(svg);
 }
