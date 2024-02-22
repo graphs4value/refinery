@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -7,9 +7,11 @@
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
 import DotGraphVisualizer from './DotGraphVisualizer';
+import ExportButton from './ExportButton';
 import type GraphStore from './GraphStore';
 import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
@@ -19,6 +21,7 @@ function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
   const { ref, width, height } = useResizeDetector({
     refreshMode: 'debounce',
   });
+  const [svgContainer, setSvgContainer] = useState<HTMLElement | undefined>();
 
   const breakpoint = breakpoints.values.sm;
   const dialog =
@@ -36,9 +39,16 @@ function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
       ref={ref}
     >
       <ZoomCanvas>
-        {(fitZoom) => <DotGraphVisualizer graph={graph} fitZoom={fitZoom} />}
+        {(fitZoom) => (
+          <DotGraphVisualizer
+            graph={graph}
+            fitZoom={fitZoom}
+            setSvgContainer={setSvgContainer}
+          />
+        )}
       </ZoomCanvas>
       <VisibilityPanel graph={graph} dialog={dialog} />
+      <ExportButton svgContainer={svgContainer} />
     </Box>
   );
 }

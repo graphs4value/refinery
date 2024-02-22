@@ -30,11 +30,13 @@ function DotGraphVisualizer({
   fitZoom,
   transitionTime,
   animateThreshold,
+  setSvgContainer,
 }: {
   graph: GraphStore;
   fitZoom?: FitZoomCallback;
   transitionTime?: number;
   animateThreshold?: number;
+  setSvgContainer?: (container: HTMLElement | undefined) => void;
 }): JSX.Element {
   const transitionTimeOrDefault =
     transitionTime ?? DotGraphVisualizer.defaultProps.transitionTime;
@@ -48,6 +50,7 @@ function DotGraphVisualizer({
 
   const setElement = useCallback(
     (element: HTMLDivElement | null) => {
+      setSvgContainer?.(element ?? undefined);
       if (disposerRef.current !== undefined) {
         disposerRef.current();
         disposerRef.current = undefined;
@@ -147,6 +150,7 @@ function DotGraphVisualizer({
       transitionTimeOrDefault,
       animateThresholdOrDefault,
       animate,
+      setSvgContainer,
     ],
   );
 
@@ -157,6 +161,7 @@ DotGraphVisualizer.defaultProps = {
   fitZoom: undefined,
   transitionTime: 250,
   animateThreshold: 100,
+  setSvgContainer: undefined,
 };
 
 export default observer(DotGraphVisualizer);

@@ -1,13 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 
 import { type BBox, parsePolygonBBox, parsePathBBox } from './parseBBox';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-const XLINK_NS = 'http://www.w3.org/1999/xlink';
+export const SVG_NS = 'http://www.w3.org/2000/svg';
+export const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
 function modifyAttribute(element: Element, attribute: string, change: number) {
   const valueString = element.getAttribute(attribute);
