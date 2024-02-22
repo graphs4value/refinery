@@ -7,6 +7,11 @@
 import createCache from '@emotion/cache';
 import { serializeStyles } from '@emotion/serialize';
 import type { StyleSheet } from '@emotion/utils';
+import italicFontURL from '@fontsource/open-sans/files/open-sans-latin-400-italic.woff2?url';
+import normalFontURL from '@fontsource/open-sans/files/open-sans-latin-400-normal.woff2?url';
+import boldFontURL from '@fontsource/open-sans/files/open-sans-latin-700-normal.woff2?url';
+import variableItalicFontURL from '@fontsource-variable/open-sans/files/open-sans-latin-wght-italic.woff2?url';
+import variableFontURL from '@fontsource-variable/open-sans/files/open-sans-latin-wght-normal.woff2?url';
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
@@ -15,8 +20,12 @@ import IconButton from '@mui/material/IconButton';
 import { styled, useTheme, type Theme } from '@mui/material/styles';
 import { useCallback } from 'react';
 
+import getLogger from '../utils/getLogger';
+
 import { createGraphTheme } from './GraphTheme';
 import { SVG_NS } from './postProcessSVG';
+
+const log = getLogger('graph.ExportButton');
 
 const PROLOG = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
 
@@ -51,11 +60,91 @@ importSVG(labelSVG, 'icon-TRUE');
 importSVG(labelOutlinedSVG, 'icon-UNKNOWN');
 importSVG(cancelSVG, 'icon-ERROR');
 
-function appendStyles(
+async function fetchAsFontURL(url: string): Promise<string> {
+  const fetchResult = await fetch(url);
+  const buffer = await fetchResult.arrayBuffer();
+  const blob = new Blob([buffer], { type: 'font/woff2' });
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.addEventListener('load', () => {
+      resolve(fileReader.result as string);
+    });
+    fileReader.addEventListener('error', () => {
+      reject(fileReader.error);
+    });
+    fileReader.readAsDataURL(blob);
+  });
+}
+
+let fontCSS: string | undefined;
+let variableFontCSS: string | undefined;
+
+async function fetchFontCSS(): Promise<string> {
+  if (fontCSS !== undefined) {
+    return fontCSS;
+  }
+  const [normalDataURL, boldDataURL, italicDataURL] = await Promise.all([
+    fetchAsFontURL(normalFontURL),
+    fetchAsFontURL(boldFontURL),
+    fetchAsFontURL(italicFontURL),
+  ]);
+  fontCSS = `
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(${normalDataURL}) format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(${boldDataURL}) format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(${italicDataURL}) format('woff2');
+}`;
+  return fontCSS;
+}
+
+async function fetchVariableFontCSS(): Promise<string> {
+  if (variableFontCSS !== undefined) {
+    return variableFontCSS;
+  }
+  const [variableDataURL, variableItalicDataURL] = await Promise.all([
+    fetchAsFontURL(variableFontURL),
+    fetchAsFontURL(variableItalicFontURL),
+  ]);
+  variableFontCSS = `
+@font-face {
+  font-family: 'Open Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 800;
+  src: url(${variableDataURL}) format('woff2-variations');
+}
+@font-face {
+  font-family: 'Open Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 800;
+  src: url(${variableItalicDataURL}) format('woff2-variations');
+}`;
+  return variableFontCSS;
+}
+
+async function appendStyles(
   svgDocument: XMLDocument,
   svg: SVGSVGElement,
   theme: Theme,
-): void {
+  embedFonts?: 'woff2' | 'woff2-variations',
+): Promise<void> {
   const cache = createCache({
     key: 'refinery',
     container: svg,
@@ -69,6 +158,11 @@ function appendStyles(
     noEmbedIcons: true,
   });
   const rules: string[] = [];
+  if (embedFonts === 'woff2') {
+    rules.push(await fetchFontCSS());
+  } else if (embedFonts === 'woff2-variations') {
+    rules.push(await fetchVariableFontCSS());
+  }
   const sheet = {
     insert(rule) {
       rules.push(rule);
@@ -115,7 +209,7 @@ function fixForeignObjects(svgDocument: XMLDocument, svg: SVGSVGElement): void {
   });
 }
 
-function downloadSVG(svgDocument: XMLDocument) {
+function downloadSVG(svgDocument: XMLDocument): void {
   const serializer = new XMLSerializer();
   const svgText = `${PROLOG}\n${serializer.serializeToString(svgDocument)}`;
   const blob = new Blob([svgText], {
@@ -130,6 +224,31 @@ function downloadSVG(svgDocument: XMLDocument) {
   document.body.removeChild(link);
 }
 
+async function exportSVG(
+  svgContainer: HTMLElement | undefined,
+  theme: Theme,
+): Promise<void> {
+  const svg = svgContainer?.querySelector('svg');
+  if (!svg) {
+    return;
+  }
+  const svgDocument = document.implementation.createDocument(
+    SVG_NS,
+    'svg',
+    null,
+  );
+  const copyOfSVG = svgDocument.importNode(svg, true);
+  const originalRoot = svgDocument.childNodes[0];
+  if (originalRoot === undefined) {
+    svgDocument.appendChild(copyOfSVG);
+  } else {
+    svgDocument.replaceChild(copyOfSVG, originalRoot);
+  }
+  fixForeignObjects(svgDocument, copyOfSVG);
+  await appendStyles(svgDocument, copyOfSVG, theme);
+  downloadSVG(svgDocument);
+}
+
 export default function ExportButton({
   svgContainer,
 }: {
@@ -137,26 +256,10 @@ export default function ExportButton({
 }): JSX.Element {
   const theme = useTheme();
   const saveCallback = useCallback(() => {
-    const svg = svgContainer?.querySelector('svg');
-    if (!svg) {
-      return;
-    }
-    const svgDocument = document.implementation.createDocument(
-      SVG_NS,
-      'svg',
-      null,
-    );
-    const copyOfSVG = svgDocument.importNode(svg, true);
-    const originalRoot = svgDocument.childNodes[0];
-    if (originalRoot === undefined) {
-      svgDocument.appendChild(copyOfSVG);
-    } else {
-      svgDocument.replaceChild(copyOfSVG, originalRoot);
-    }
-    fixForeignObjects(svgDocument, copyOfSVG);
-    appendStyles(svgDocument, copyOfSVG, theme);
-    downloadSVG(svgDocument);
-  }, [theme, svgContainer]);
+    exportSVG(svgContainer, theme).catch((error) => {
+      log.error('Failed to export SVG', error);
+    });
+  }, [svgContainer, theme]);
 
   return (
     <ExportButtonRoot>

@@ -42,6 +42,7 @@
     "@emotion/utils": "^1.2.1",
     "@fontsource-variable/jetbrains-mono": "^5.0.19",
     "@fontsource-variable/open-sans": "^5.0.25",
+    "@fontsource/open-sans": "^5.0.24",
     "@hpcc-js/wasm": "^2.16.0",
     "@lezer/common": "^1.2.1",
     "@lezer/highlight": "^1.2.0",
