@@ -21,7 +21,6 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 
 public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighlightingCalculator {

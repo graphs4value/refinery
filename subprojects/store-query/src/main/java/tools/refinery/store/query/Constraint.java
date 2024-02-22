@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -68,5 +68,15 @@ public interface Constraint {
 	default <R, T> AssignedValue<R> aggregateBy(DataVariable<T> inputVariable, Aggregator<R, T> aggregator,
 												Variable... arguments) {
 		return aggregateBy(inputVariable, aggregator, List.of(arguments));
+	}
+
+	default <T> AssignedValue<T> leftJoinBy(DataVariable<T> placeholderVariable, T defaultValue,
+											List<Variable> arguments) {
+		return targetVariable -> new LeftJoinLiteral<>(targetVariable, placeholderVariable, defaultValue, this,
+				arguments);
+	}
+
+	default <T> AssignedValue<T> leftJoinBy(DataVariable<T> inputVariable, T defaultValue, Variable... arguments) {
+		return leftJoinBy(inputVariable, defaultValue, List.of(arguments));
 	}
 }

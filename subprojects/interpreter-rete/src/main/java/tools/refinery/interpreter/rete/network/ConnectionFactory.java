@@ -11,6 +11,7 @@ package tools.refinery.interpreter.rete.network;
 
 import tools.refinery.interpreter.matchers.tuple.Tuple;
 import tools.refinery.interpreter.rete.aggregation.IndexerBasedAggregatorNode;
+import tools.refinery.interpreter.rete.aggregation.LeftJoinNode;
 import tools.refinery.interpreter.rete.boundary.InputConnector;
 import tools.refinery.interpreter.rete.eval.RelationEvaluatorNode;
 import tools.refinery.interpreter.rete.index.DualInputNode;
@@ -78,9 +79,12 @@ class ConnectionFactory {
             Slots slots = avoidActiveNodeConflict(parentTraces.get(0), parentTraces.get(1));
             beta.connectToIndexers(slots.primary, slots.secondary);
         } else if (recipe instanceof IndexerBasedAggregatorRecipe) {
-            final IndexerBasedAggregatorNode aggregator = (IndexerBasedAggregatorNode) freshNode;
-            final IndexerBasedAggregatorRecipe aggregatorRecipe = (IndexerBasedAggregatorRecipe) recipe;
-            aggregator.initializeWith((ProjectionIndexer) resolveIndexer(aggregatorRecipe.getParent()));
+			final IndexerBasedAggregatorNode aggregator = (IndexerBasedAggregatorNode) freshNode;
+			final IndexerBasedAggregatorRecipe aggregatorRecipe = (IndexerBasedAggregatorRecipe) recipe;
+			aggregator.initializeWith((ProjectionIndexer) resolveIndexer(aggregatorRecipe.getParent()));
+		} else if (recipe instanceof OuterJoinNodeRecipe outerJoinNodeRecipe) {
+			var leftJoinNode = (LeftJoinNode) freshNode;
+			leftJoinNode.initializeWith((ProjectionIndexer) resolveIndexer(outerJoinNodeRecipe.getParent()));
         } else if (recipe instanceof MultiParentNodeRecipe) {
             final Receiver receiver = (Receiver) freshNode;
             List<ReteNodeRecipe> parentRecipes = ((MultiParentNodeRecipe) recipe).getParents();

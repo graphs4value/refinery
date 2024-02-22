@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -92,6 +92,22 @@ public final class FunctionalQuery<T> extends Query<T> {
 
 	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
 		return aggregate(aggregator, List.of(arguments));
+	}
+
+	public AssignedValue<T> leftJoin(T defaultValue, List<NodeVariable> arguments) {
+		return targetVariable -> {
+			var placeholderVariable = Variable.of(type);
+			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
+			argumentsWithPlaceholder.addAll(arguments);
+			argumentsWithPlaceholder.add(placeholderVariable);
+			return getDnf()
+					.leftJoinBy(placeholderVariable, defaultValue, argumentsWithPlaceholder)
+					.toLiteral(targetVariable);
+		};
+	}
+
+	public AssignedValue<T> leftJoin(T defaultValue, NodeVariable... arguments) {
+		return leftJoin(defaultValue, List.of(arguments));
 	}
 
 	@Override

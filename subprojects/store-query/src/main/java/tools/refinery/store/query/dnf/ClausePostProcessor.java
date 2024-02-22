@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -112,7 +112,7 @@ class ClausePostProcessor {
 					.formatted(variable, representative));
 		}
 		return equivalencePartition.computeIfAbsent(variable, key -> {
-			var set = new HashSet<Variable>(1);
+			var set = HashSet.<Variable>newHashSet(1);
 			set.add(key);
 			return set;
 		});
@@ -193,7 +193,7 @@ class ClausePostProcessor {
 	}
 
 	private void topologicallySortLiterals() {
-		topologicallySortedLiterals = new LinkedHashSet<>(substitutedLiterals.size());
+		topologicallySortedLiterals = LinkedHashSet.newLinkedHashSet(substitutedLiterals.size());
 		variableToLiteralInputMap = new HashMap<>();
 		literalsWithAllInputsBound = new PriorityQueue<>();
 		int size = substitutedLiterals.size();

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -129,7 +129,12 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 			}
 			builder.append(argument);
 			while (argumentIterator.hasNext()) {
-				builder.append(", ").append(argumentIterator.next());
+				builder.append(", ");
+				argument = argumentIterator.next();
+				if (inputVariable.equals(argument)) {
+					builder.append("@Aggregate(\"").append(aggregator).append("\") ");
+				}
+				builder.append(argument);
 			}
 		}
 		builder.append(")");

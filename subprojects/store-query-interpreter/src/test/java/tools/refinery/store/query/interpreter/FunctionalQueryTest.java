@@ -554,7 +554,6 @@ class FunctionalQueryTest {
 		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
 		queryEngine.flushChanges();
-		queryEngine.flushChanges();
 		assertNullableResults(Map.of(
 				Tuple.of(0), Optional.of(25),
 				Tuple.of(1), Optional.of(32),

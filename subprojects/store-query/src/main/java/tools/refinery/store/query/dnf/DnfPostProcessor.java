@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -26,7 +26,7 @@ class DnfPostProcessor {
 
 	public List<DnfClause> postProcessClauses() {
 		var parameterInfoMap = getParameterInfoMap();
-		var postProcessedClauses = new LinkedHashSet<CanonicalClause>(clauses.size());
+		var postProcessedClauses = LinkedHashSet.<CanonicalClause>newLinkedHashSet(clauses.size());
 		int index = 0;
 		for (var literals : clauses) {
 			var postProcessor = new ClausePostProcessor(parameterInfoMap, literals);
