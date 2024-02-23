@@ -9,7 +9,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
-import ExportSettingsScotre from './graph/ExportSettingsStore';
+import ExportSettingsScotre from './graph/export/ExportSettingsStore';
 import Compressor from './persistence/Compressor';
 import ThemeStore from './theme/ThemeStore';
 

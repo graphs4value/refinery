@@ -6,7 +6,7 @@
 
 import { makeAutoObservable } from 'mobx';
 
-export type ExportFormat = 'svg' | 'png';
+export type ExportFormat = 'svg' | 'pdf' | 'png';
 export type ExportTheme = 'light' | 'dark';
 
 export default class ExportSettingsStore {
@@ -16,7 +16,9 @@ export default class ExportSettingsStore {
 
   transparent = true;
 
-  embedFonts = false;
+  embedSVGFonts = false;
+
+  embedPDFFonts = true;
 
   scale = 100;
 
@@ -42,5 +44,24 @@ export default class ExportSettingsStore {
 
   setScale(scale: number): void {
     this.scale = scale;
+  }
+
+  get embedFonts(): boolean {
+    return this.format === 'pdf' ? this.embedPDFFonts : this.embedSVGFonts;
+  }
+
+  private set embedFonts(embedFonts: boolean) {
+    if (this.format === 'pdf') {
+      this.embedPDFFonts = embedFonts;
+    }
+    this.embedSVGFonts = embedFonts;
+  }
+
+  get canEmbedFonts(): boolean {
+    return this.format === 'svg' || this.format === 'pdf';
+  }
+
+  get canScale(): boolean {
+    return this.format === 'png';
   }
 }

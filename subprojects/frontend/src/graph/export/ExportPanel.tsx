@@ -8,6 +8,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import ImageIcon from '@mui/icons-material/Image';
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ShapeLineIcon from '@mui/icons-material/ShapeLine';
@@ -24,11 +25,11 @@ import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 
-import { useRootStore } from '../RootStoreProvider';
-import getLogger from '../utils/getLogger';
+import { useRootStore } from '../../RootStoreProvider';
+import getLogger from '../../utils/getLogger';
+import type GraphStore from '../GraphStore';
+import SlideInPanel from '../SlideInPanel';
 
-import type GraphStore from './GraphStore';
-import SlideInPanel from './SlideInPanel';
 import exportDiagram from './exportDiagram';
 
 const log = getLogger('graph.ExportPanel');
@@ -138,6 +139,13 @@ function ExportPanel({
           <ShapeLineIcon fontSize="small" /> SVG
         </ToggleButton>
         <ToggleButton
+          value="pdf"
+          selected={exportSettingsStore.format === 'pdf'}
+          onClick={() => exportSettingsStore.setFormat('pdf')}
+        >
+          <InsertDriveFileOutlinedIcon fontSize="small" /> PDF
+        </ToggleButton>
+        <ToggleButton
           value="png"
           selected={exportSettingsStore.format === 'png'}
           onClick={() => exportSettingsStore.setFormat('png')}
@@ -170,7 +178,7 @@ function ExportPanel({
         }
         label="Transparent background"
       />
-      {exportSettingsStore.format === 'svg' && (
+      {exportSettingsStore.canEmbedFonts && (
         <FormControlLabel
           control={
             <Switch
@@ -182,13 +190,17 @@ function ExportPanel({
             <Stack direction="column">
               <Typography>Embed fonts</Typography>
               <Typography variant="caption">
-                +75&thinsp;kB, only supported in browsers
+                {exportSettingsStore.format === 'pdf' ? (
+                  <>+20&thinsp;kB fully embedded</>
+                ) : (
+                  <>+75&thinsp;kB, only supported in browsers</>
+                )}
               </Typography>
             </Stack>
           }
         />
       )}
-      {exportSettingsStore.format === 'png' && (
+      {exportSettingsStore.canScale && (
         <Box mx={4} mt={1} mb={2}>
           <Slider
             aria-label="Image scale"

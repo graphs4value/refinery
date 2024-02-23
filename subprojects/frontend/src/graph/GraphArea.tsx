@@ -11,10 +11,10 @@ import { useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
 import DotGraphVisualizer from './DotGraphVisualizer';
-import ExportPanel from './ExportPanel';
 import type GraphStore from './GraphStore';
 import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
+import ExportPanel from './export/ExportPanel';
 
 function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
   const { breakpoints } = useTheme();

@@ -17,13 +17,13 @@ import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 import type { Theme } from '@mui/material/styles';
 
-import { darkTheme, lightTheme } from '../theme/ThemeProvider';
-import { copyBlob, saveBlob } from '../utils/fileIO';
+import { darkTheme, lightTheme } from '../../theme/ThemeProvider';
+import { copyBlob, saveBlob } from '../../utils/fileIO';
+import type GraphStore from '../GraphStore';
+import { createGraphTheme } from '../GraphTheme';
+import { SVG_NS } from '../postProcessSVG';
 
 import type ExportSettingsStore from './ExportSettingsStore';
-import type GraphStore from './GraphStore';
-import { createGraphTheme } from './GraphTheme';
-import { SVG_NS } from './postProcessSVG';
 
 const PROLOG = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
 const PNG_CONTENT_TYPE = 'image/png';
@@ -283,6 +283,20 @@ async function serializePNG(
   });
 }
 
+let serializePDFCached:
+  | ((svg: SVGSVGElement, embedFonts: boolean) => Promise<Blob>)
+  | undefined;
+
+async function serializePDF(
+  svg: SVGSVGElement,
+  settings: ExportSettingsStore,
+): Promise<Blob> {
+  if (serializePDFCached === undefined) {
+    serializePDFCached = (await import('./serializePDF')).default;
+  }
+  return serializePDFCached(svg, settings.embedFonts);
+}
+
 export default async function exportDiagram(
   svgContainer: HTMLElement | undefined,
   graph: GraphStore,
@@ -319,11 +333,16 @@ export default async function exportDiagram(
     // If we are creating a PNG, font file size doesn't matter,
     // and we can reuse fonts the browser has already downloaded.
     fontsCSS = await fetchVariableFontCSS();
-  } else if (settings.embedFonts) {
+  } else if (settings.format === 'svg' && settings.embedFonts) {
     fontsCSS = await fetchFontCSS();
   }
   appendStyles(svgDocument, copyOfSVG, theme, colorNodes, fontsCSS);
 
+  if (settings.format === 'pdf') {
+    const pdf = await serializePDF(copyOfSVG, settings);
+    await saveBlob(pdf, 'graph.pdf', 'application/pdf', EXPORT_ID);
+    return;
+  }
   const serializedSVG = serializeSVG(svgDocument);
   if (settings.format === 'png') {
     const png = await serializePNG(serializedSVG, svg, settings, theme);
