@@ -18,6 +18,7 @@ import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 import type { Theme } from '@mui/material/styles';
 
 import { darkTheme, lightTheme } from '../theme/ThemeProvider';
+import { copyBlob, saveBlob } from '../utils/fileIO';
 
 import type ExportSettingsStore from './ExportSettingsStore';
 import type GraphStore from './GraphStore';
@@ -25,7 +26,9 @@ import { createGraphTheme } from './GraphTheme';
 import { SVG_NS } from './postProcessSVG';
 
 const PROLOG = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
+const PNG_CONTENT_TYPE = 'image/png';
 const SVG_CONTENT_TYPE = 'image/svg+xml';
+const EXPORT_ID = 'export-image';
 
 const ICONS: Map<string, Element> = new Map();
 
@@ -213,32 +216,6 @@ function serializeSVG(svgDocument: XMLDocument): Blob {
   });
 }
 
-function downloadBlob(blob: Blob, name: string): void {
-  const link = document.createElement('a');
-  const url = window.URL.createObjectURL(blob);
-  try {
-    link.href = url;
-    link.download = name;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-  } finally {
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(link);
-  }
-}
-
-async function copyBlob(blob: Blob): Promise<void> {
-  const { clipboard } = navigator;
-  if ('write' in clipboard) {
-    await clipboard.write([
-      new ClipboardItem({
-        [blob.type]: blob,
-      }),
-    ]);
-  }
-}
-
 async function serializePNG(
   serializedSVG: Blob,
   svg: SVGSVGElement,
@@ -302,7 +279,7 @@ async function serializePNG(
       } else {
         resolve(exportedBlob);
       }
-    }, 'image/png');
+    }, PNG_CONTENT_TYPE);
   });
 }
 
@@ -353,11 +330,11 @@ export default async function exportDiagram(
     if (mode === 'copy') {
       await copyBlob(png);
     } else {
-      downloadBlob(png, 'graph.png');
+      await saveBlob(png, 'graph.png', PNG_CONTENT_TYPE, EXPORT_ID);
     }
   } else if (mode === 'copy') {
     await copyBlob(serializedSVG);
   } else {
-    downloadBlob(serializedSVG, 'graph.svg');
+    await saveBlob(serializedSVG, 'graph.svg', SVG_CONTENT_TYPE, EXPORT_ID);
   }
 }
