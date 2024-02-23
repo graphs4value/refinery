@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -27,6 +27,9 @@ const PaneButtonGroup = styled(ToggleButtonGroup, {
     '.MuiToggleButton-root': {
       fontSize: '1rem',
       lineHeight: '1.5',
+      // Must remove margin along with the border to avoid the button
+      // moving around (into the space of the missing border) when selected.
+      margin: '0',
       border: 'none',
       ...(hideLabel ? {} : { paddingBlock: 6 }),
       '&::before': {
