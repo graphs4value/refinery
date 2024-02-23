@@ -15,38 +15,23 @@ import variableFontURL from '@fontsource-variable/open-sans/files/open-sans-lati
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
-import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import IconButton from '@mui/material/IconButton';
-import { styled, useTheme, type Theme } from '@mui/material/styles';
-import { useCallback } from 'react';
+import type { Theme } from '@mui/material/styles';
 
-import getLogger from '../utils/getLogger';
+import { darkTheme, lightTheme } from '../theme/ThemeProvider';
 
+import type ExportSettingsStore from './ExportSettingsStore';
+import type GraphStore from './GraphStore';
 import { createGraphTheme } from './GraphTheme';
 import { SVG_NS } from './postProcessSVG';
 
-const log = getLogger('graph.ExportButton');
-
 const PROLOG = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
-
-const ExportButtonRoot = styled('div', {
-  name: 'ExportButton-Root',
-})(({ theme }) => ({
-  position: 'absolute',
-  padding: theme.spacing(1),
-  top: 0,
-  right: 0,
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'start',
-}));
+const SVG_CONTENT_TYPE = 'image/svg+xml';
 
 const ICONS: Map<string, Element> = new Map();
 
 function importSVG(svgSource: string, className: string): void {
   const parser = new DOMParser();
-  const svgDocument = parser.parseFromString(svgSource, 'image/svg+xml');
+  const svgDocument = parser.parseFromString(svgSource, SVG_CONTENT_TYPE);
   const root = svgDocument.children[0];
   if (root === undefined) {
     return;
@@ -59,6 +44,21 @@ function importSVG(svgSource: string, className: string): void {
 importSVG(labelSVG, 'icon-TRUE');
 importSVG(labelOutlinedSVG, 'icon-UNKNOWN');
 importSVG(cancelSVG, 'icon-ERROR');
+
+function addBackground(
+  svgDocument: XMLDocument,
+  svg: SVGSVGElement,
+  theme: Theme,
+): void {
+  const viewBox = svg.getAttribute('viewBox')?.split(' ');
+  const rect = svgDocument.createElementNS(SVG_NS, 'rect');
+  rect.setAttribute('x', viewBox?.[0] ?? '0');
+  rect.setAttribute('y', viewBox?.[1] ?? '0');
+  rect.setAttribute('width', viewBox?.[2] ?? '0');
+  rect.setAttribute('height', viewBox?.[3] ?? '0');
+  rect.setAttribute('fill', theme.palette.background.default);
+  svg.prepend(rect);
+}
 
 async function fetchAsFontURL(url: string): Promise<string> {
   const fetchResult = await fetch(url);
@@ -139,12 +139,13 @@ async function fetchVariableFontCSS(): Promise<string> {
   return variableFontCSS;
 }
 
-async function appendStyles(
+function appendStyles(
   svgDocument: XMLDocument,
   svg: SVGSVGElement,
   theme: Theme,
-  embedFonts?: 'woff2' | 'woff2-variations',
-): Promise<void> {
+  colorNodes: boolean,
+  fontsCSS: string,
+): void {
   const cache = createCache({
     key: 'refinery',
     container: svg,
@@ -154,15 +155,10 @@ async function appendStyles(
   // `@emotion/serialize`, but they are compatible in practice.
   const styles = serializeStyles([createGraphTheme], cache.registered, {
     theme,
-    colorNodes: true,
+    colorNodes,
     noEmbedIcons: true,
   });
-  const rules: string[] = [];
-  if (embedFonts === 'woff2') {
-    rules.push(await fetchFontCSS());
-  } else if (embedFonts === 'woff2-variations') {
-    rules.push(await fetchVariableFontCSS());
-  }
+  const rules: string[] = [fontsCSS];
   const sheet = {
     insert(rule) {
       rules.push(rule);
@@ -209,24 +205,112 @@ function fixForeignObjects(svgDocument: XMLDocument, svg: SVGSVGElement): void {
   });
 }
 
-function downloadSVG(svgDocument: XMLDocument): void {
+function serializeSVG(svgDocument: XMLDocument): Blob {
   const serializer = new XMLSerializer();
   const svgText = `${PROLOG}\n${serializer.serializeToString(svgDocument)}`;
-  const blob = new Blob([svgText], {
-    type: 'image/svg+xml',
+  return new Blob([svgText], {
+    type: SVG_CONTENT_TYPE,
   });
-  const link = document.createElement('a');
-  link.href = window.URL.createObjectURL(blob);
-  link.download = 'graph.svg';
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
-async function exportSVG(
-  svgContainer: HTMLElement | undefined,
+function downloadBlob(blob: Blob, name: string): void {
+  const link = document.createElement('a');
+  const url = window.URL.createObjectURL(blob);
+  try {
+    link.href = url;
+    link.download = name;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+  } finally {
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  }
+}
+
+async function copyBlob(blob: Blob): Promise<void> {
+  const { clipboard } = navigator;
+  if ('write' in clipboard) {
+    await clipboard.write([
+      new ClipboardItem({
+        [blob.type]: blob,
+      }),
+    ]);
+  }
+}
+
+async function serializePNG(
+  serializedSVG: Blob,
+  svg: SVGSVGElement,
+  settings: ExportSettingsStore,
   theme: Theme,
+): Promise<Blob> {
+  const scale = settings.scale / 100;
+  const baseWidth = svg.width.baseVal.value;
+  const baseHeight = svg.height.baseVal.value;
+  const exactWidth = baseWidth * scale;
+  const exactHeight = baseHeight * scale;
+  const width = Math.round(exactWidth);
+  const height = Math.round(exactHeight);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const image = document.createElement('img');
+  const url = window.URL.createObjectURL(serializedSVG);
+  try {
+    await new Promise((resolve, reject) => {
+      image.addEventListener('load', () => resolve(undefined));
+      image.addEventListener('error', ({ error }) =>
+        reject(
+          error instanceof Error
+            ? error
+            : new Error(`Failed to load image: ${error}`),
+        ),
+      );
+      image.src = url;
+    });
+  } finally {
+    window.URL.revokeObjectURL(url);
+  }
+
+  const context = canvas.getContext('2d');
+  if (context === null) {
+    throw new Error('Failed to get canvas 2D context');
+  }
+  if (!settings.transparent) {
+    context.fillStyle = theme.palette.background.default;
+    context.fillRect(0, 0, width, height);
+  }
+  context.drawImage(
+    image,
+    0,
+    0,
+    baseWidth,
+    baseHeight,
+    0,
+    0,
+    exactWidth,
+    exactHeight,
+  );
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((exportedBlob) => {
+      if (exportedBlob === null) {
+        reject(new Error('Failed to export PNG blob'));
+      } else {
+        resolve(exportedBlob);
+      }
+    }, 'image/png');
+  });
+}
+
+export default async function exportDiagram(
+  svgContainer: HTMLElement | undefined,
+  graph: GraphStore,
+  settings: ExportSettingsStore,
+  mode: 'download' | 'copy',
 ): Promise<void> {
   const svg = svgContainer?.querySelector('svg');
   if (!svg) {
@@ -244,28 +328,36 @@ async function exportSVG(
   } else {
     svgDocument.replaceChild(copyOfSVG, originalRoot);
   }
+
+  const theme = settings.theme === 'light' ? lightTheme : darkTheme;
+  if (!settings.transparent) {
+    addBackground(svgDocument, copyOfSVG, theme);
+  }
+
   fixForeignObjects(svgDocument, copyOfSVG);
-  await appendStyles(svgDocument, copyOfSVG, theme);
-  downloadSVG(svgDocument);
-}
 
-export default function ExportButton({
-  svgContainer,
-}: {
-  svgContainer: HTMLElement | undefined;
-}): JSX.Element {
-  const theme = useTheme();
-  const saveCallback = useCallback(() => {
-    exportSVG(svgContainer, theme).catch((error) => {
-      log.error('Failed to export SVG', error);
-    });
-  }, [svgContainer, theme]);
+  const { colorNodes } = graph;
+  let fontsCSS = '';
+  if (settings.format === 'png') {
+    // If we are creating a PNG, font file size doesn't matter,
+    // and we can reuse fonts the browser has already downloaded.
+    fontsCSS = await fetchVariableFontCSS();
+  } else if (settings.embedFonts) {
+    fontsCSS = await fetchFontCSS();
+  }
+  appendStyles(svgDocument, copyOfSVG, theme, colorNodes, fontsCSS);
 
-  return (
-    <ExportButtonRoot>
-      <IconButton aria-label="Save SVG" onClick={saveCallback}>
-        <SaveAltIcon />
-      </IconButton>
-    </ExportButtonRoot>
-  );
+  const serializedSVG = serializeSVG(svgDocument);
+  if (settings.format === 'png') {
+    const png = await serializePNG(serializedSVG, svg, settings, theme);
+    if (mode === 'copy') {
+      await copyBlob(png);
+    } else {
+      downloadBlob(png, 'graph.png');
+    }
+  } else if (mode === 'copy') {
+    await copyBlob(serializedSVG);
+  } else {
+    downloadBlob(serializedSVG, 'graph.svg');
+  }
 }

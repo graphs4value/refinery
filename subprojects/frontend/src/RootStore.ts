@@ -9,6 +9,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
+import ExportSettingsScotre from './graph/ExportSettingsStore';
 import Compressor from './persistence/Compressor';
 import ThemeStore from './theme/ThemeStore';
 
@@ -29,16 +30,20 @@ export default class RootStore {
 
   readonly themeStore: ThemeStore;
 
+  readonly exportSettingsStore: ExportSettingsScotre;
+
   disposed = false;
 
   constructor() {
     this.pwaStore = new PWAStore();
     this.themeStore = new ThemeStore();
+    this.exportSettingsStore = new ExportSettingsScotre();
     makeAutoObservable<RootStore, 'compressor' | 'editorStoreClass'>(this, {
       compressor: false,
       editorStoreClass: false,
       pwaStore: false,
       themeStore: false,
+      exportSettingsStore: false,
     });
     (async () => {
       const { default: EditorStore } = await import('./editor/EditorStore');

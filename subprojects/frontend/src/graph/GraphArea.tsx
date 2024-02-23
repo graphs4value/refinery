@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
 import DotGraphVisualizer from './DotGraphVisualizer';
-import ExportButton from './ExportButton';
+import ExportPanel from './ExportPanel';
 import type GraphStore from './GraphStore';
 import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
@@ -48,7 +48,7 @@ function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
         )}
       </ZoomCanvas>
       <VisibilityPanel graph={graph} dialog={dialog} />
-      <ExportButton svgContainer={svgContainer} />
+      <ExportPanel graph={graph} svgContainer={svgContainer} dialog={dialog} />
     </Box>
   );
 }

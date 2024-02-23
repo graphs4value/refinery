@@ -220,7 +220,7 @@ function createResponsiveTheme(
   return responsiveFontSizes(themeWithOverrides);
 }
 
-const lightTheme = (() => {
+export const lightTheme = (() => {
   const primaryText = '#19202b';
   const disabledText = '#a0a1a7';
   const darkBackground = '#f5f5f5';
@@ -282,7 +282,7 @@ const lightTheme = (() => {
   });
 })();
 
-const darkTheme = (() => {
+export const darkTheme = (() => {
   const primaryText = '#ebebff';
   const secondaryText = '#abb2bf';
   const darkBackground = '#21252b';
