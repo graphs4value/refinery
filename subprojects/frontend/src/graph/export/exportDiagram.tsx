@@ -134,7 +134,7 @@ async function fetchVariableFontCSS(): Promise<string> {
 }
 @font-face {
   font-family: 'Open Sans Variable';
-  font-style: normal;
+  font-style: italic;
   font-display: swap;
   font-weight: 300 800;
   src: url(${variableItalicDataURL}) format('woff2-variations');

@@ -20,8 +20,8 @@ public class SecurityHeadersFilter implements Filter {
 					// CodeMirror needs inline styles, see e.g.,
 					// https://discuss.codemirror.net/t/inline-styles-and-content-security-policy/1311/2
 					"style-src 'self' 'unsafe-inline'; " +
-					// Use 'data:' for displaying inline SVG backgrounds.
-					"img-src 'self' data:; " +
+					// Use 'data:' for displaying inline SVG backgrounds and blob for rendering SVG.
+					"img-src 'self' data: blob:; " +
 					"font-src 'self'; " +
 					// Fetch data:application/octet-stream;base64 URIs to unpack compressed URL fragments.
 					"connect-src 'self' data:; " +
