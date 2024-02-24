@@ -5,7 +5,6 @@
  */
 
 interface FilePickerOptions {
-  suggestedName?: string;
   id?: string;
   types?: {
     description?: string;
@@ -13,11 +12,29 @@ interface FilePickerOptions {
   }[];
 }
 
+interface FilePickerSaveOptions extends FilePickerOptions {
+  suggestedName?: string;
+}
+
 interface Window {
   showOpenFilePicker?: (
-    options?: FilePickerOptions,
-  ) => Promise<FileSystemFileHandle>;
+    options?: FilePickerOpenOptions,
+  ) => Promise<FileSystemFileHandle[]>;
   showSaveFilePicker?: (
-    options?: FilePickerOptions,
+    options?: FilePickerSaveOptions,
   ) => Promise<FileSystemFileHandle>;
+}
+
+interface FileSystemHandlePermissionDescriptor {
+  mode?: 'read' | 'readwrite';
+}
+
+interface FileSystemHandle {
+  queryPermission?: (
+    options?: FileSystemHandlePermissionDescriptor,
+  ) => Promise<PermissionStatus>;
+
+  requestPermission?: (
+    options?: FileSystemHandlePermissionDescriptor,
+  ) => Promise<PermissionStatus>;
 }

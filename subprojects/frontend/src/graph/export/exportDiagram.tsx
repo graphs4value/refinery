@@ -340,7 +340,7 @@ export default async function exportDiagram(
 
   if (settings.format === 'pdf') {
     const pdf = await serializePDF(copyOfSVG, settings);
-    await saveBlob(pdf, 'graph.pdf', {
+    await saveBlob(pdf, `${graph.name}.pdf`, {
       id: EXPORT_ID,
       types: [
         {
@@ -359,7 +359,7 @@ export default async function exportDiagram(
     if (mode === 'copy') {
       await copyBlob(png);
     } else {
-      await saveBlob(png, 'graph.png', {
+      await saveBlob(png, `${graph.name}.png`, {
         id: EXPORT_ID,
         types: [
           {
@@ -374,7 +374,7 @@ export default async function exportDiagram(
   } else if (mode === 'copy') {
     await copyBlob(serializedSVG);
   } else {
-    await saveBlob(serializedSVG, 'graph.svg', {
+    await saveBlob(serializedSVG, `${graph.name}.svg`, {
       id: EXPORT_ID,
       types: [
         {

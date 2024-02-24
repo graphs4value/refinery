@@ -85,6 +85,16 @@ const DevModeBadge = styled('div')(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 
+const FileName = styled('span', {
+  shouldForwardProp: (prop) => prop !== 'unsavedChanges',
+})<{ unsavedChanges: boolean }>(({ theme, unsavedChanges }) => ({
+  marginLeft: theme.spacing(1),
+  fontWeight: theme.typography.fontWeightLight,
+  fontSize: '1.25rem',
+  lineHeight: '1.6rem',
+  fontStyle: unsavedChanges ? 'italic' : 'normal',
+}));
+
 export default observer(function TopBar(): JSX.Element {
   const { editorStore, themeStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
@@ -126,6 +136,11 @@ export default observer(function TopBar(): JSX.Element {
         <Typography variant="h6" component="h1" pl={1}>
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
+        {large && editorStore?.simpleName !== undefined && (
+          <FileName unsavedChanges={editorStore.unsavedChanges}>
+            {editorStore.simpleName}
+          </FileName>
+        )}
         <Stack direction="row" alignItems="center" flexGrow={1} marginLeft={1}>
           {medium && !large && (
             <PaneButtons themeStore={themeStore} hideLabel />

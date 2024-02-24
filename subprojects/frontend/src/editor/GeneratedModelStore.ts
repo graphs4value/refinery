@@ -21,7 +21,7 @@ export default class GeneratedModelStore {
   graph: GraphStore | undefined;
 
   constructor(
-    randomSeed: number,
+    private readonly randomSeed: number,
     private readonly editorStore: EditorStore,
   ) {
     const time = new Date().toLocaleTimeString(undefined, { hour12: false });
@@ -50,7 +50,8 @@ export default class GeneratedModelStore {
 
   setSemantics(semantics: SemanticsSuccessResult): void {
     if (this.running) {
-      this.graph = new GraphStore(this.editorStore);
+      const name = `${this.editorStore.simpleNameOrFallback}_solution_${this.randomSeed}`;
+      this.graph = new GraphStore(this.editorStore, name);
       this.graph.setSemantics(semantics);
     }
   }
