@@ -12,10 +12,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class BackendConfigServlet extends HttpServlet {
+	private static final Logger LOG = LoggerFactory.getLogger(BackendConfigServlet.class);
+
 	public static final String WEBSOCKET_URL_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
 			".webSocketUrl";
 
@@ -31,11 +35,19 @@ public class BackendConfigServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		resp.setStatus(HttpStatus.OK_200);
 		resp.setContentType("application/json");
-		var writer = resp.getWriter();
-		writer.write(serializedConfig);
-		writer.flush();
+		try {
+			var writer = resp.getWriter();
+			writer.write(serializedConfig);
+			writer.flush();
+		} catch (IOException e) {
+			LOG.error("Failed to write backend config", e);
+			if (!resp.isCommitted()) {
+				resp.reset();
+				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+		}
 	}
 }
