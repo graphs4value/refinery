@@ -340,7 +340,17 @@ export default async function exportDiagram(
 
   if (settings.format === 'pdf') {
     const pdf = await serializePDF(copyOfSVG, settings);
-    await saveBlob(pdf, 'graph.pdf', 'application/pdf', EXPORT_ID);
+    await saveBlob(pdf, 'graph.pdf', {
+      id: EXPORT_ID,
+      types: [
+        {
+          description: 'PDF files',
+          accept: {
+            'application/pdf': ['.pdf', '.PDF'],
+          },
+        },
+      ],
+    });
     return;
   }
   const serializedSVG = serializeSVG(svgDocument);
@@ -349,11 +359,31 @@ export default async function exportDiagram(
     if (mode === 'copy') {
       await copyBlob(png);
     } else {
-      await saveBlob(png, 'graph.png', PNG_CONTENT_TYPE, EXPORT_ID);
+      await saveBlob(png, 'graph.png', {
+        id: EXPORT_ID,
+        types: [
+          {
+            description: 'PNG graphics',
+            accept: {
+              [PNG_CONTENT_TYPE]: ['.png', '.PNG'],
+            },
+          },
+        ],
+      });
     }
   } else if (mode === 'copy') {
     await copyBlob(serializedSVG);
   } else {
-    await saveBlob(serializedSVG, 'graph.svg', SVG_CONTENT_TYPE, EXPORT_ID);
+    await saveBlob(serializedSVG, 'graph.svg', {
+      id: EXPORT_ID,
+      types: [
+        {
+          description: 'SVG graphics',
+          accept: {
+            [SVG_CONTENT_TYPE]: ['.svg', '.SVG'],
+          },
+        },
+      ],
+    });
   }
 }

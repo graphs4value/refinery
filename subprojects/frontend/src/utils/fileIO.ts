@@ -7,28 +7,13 @@
 export async function saveBlob(
   blob: Blob,
   name: string,
-  mimeType: string,
-  id?: string,
+  options: FilePickerOptions,
 ): Promise<void> {
   if ('showSaveFilePicker' in window) {
-    const options: FilePickerOptions = {
+    const handle = await window.showSaveFilePicker({
+      ...options,
       suggestedName: name,
-    };
-    if (id !== undefined) {
-      options.id = id;
-    }
-    const extensionIndex = name.lastIndexOf('.');
-    if (extensionIndex >= 0) {
-      options.types = [
-        {
-          description: `${name.substring(extensionIndex + 1)} files`,
-          accept: {
-            [mimeType]: [name.substring(extensionIndex)],
-          },
-        },
-      ];
-    }
-    const handle = await window.showSaveFilePicker(options);
+    });
     const writable = await handle.createWritable();
     try {
       await writable.write(blob);
@@ -42,12 +27,9 @@ export async function saveBlob(
   try {
     link.href = url;
     link.download = name;
-    link.style.display = 'none';
-    document.body.appendChild(link);
     link.click();
   } finally {
     window.URL.revokeObjectURL(url);
-    document.body.removeChild(link);
   }
 }
 
