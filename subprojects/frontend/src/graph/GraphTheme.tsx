@@ -27,10 +27,10 @@ function createEdgeColor(
       '& text': {
         fill: stroke,
       },
-      '& [stroke="black"]': {
+      '.edge-line': {
         stroke,
       },
-      '& [fill="black"]': {
+      '.edge-arrow': {
         fill: fill ?? stroke,
       },
     },
@@ -43,50 +43,72 @@ function createTypeHashStyles(theme: Theme, colorNodes: boolean): CSSObject {
   }
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
-    result[`.node-typeHash-${i}`] = {
-      '& [fill="green"]': {
-        fill: theme.palette.highlight.typeHash[i]?.box,
-      },
+    result[`.node-typeHash-${i} .node-header`] = {
+      fill: theme.palette.highlight.typeHash[i]?.box,
     };
   });
   return result;
 }
 
-export default styled('div', {
-  name: 'GraphTheme',
-})<{ colorNodes: boolean }>(({ theme, colorNodes }) => ({
-  '& svg': {
-    userSelect: 'none',
+function iconStyle(
+  svg: string,
+  color: string,
+  noEmbedIcons?: boolean,
+): CSSObject {
+  if (noEmbedIcons) {
+    return {
+      fill: color,
+    };
+  }
+  return {
+    maskImage: svgURL(svg),
+    background: color,
+  };
+}
+
+export function createGraphTheme({
+  theme,
+  colorNodes,
+  noEmbedIcons,
+}: {
+  theme: Theme;
+  colorNodes: boolean;
+  noEmbedIcons?: boolean;
+}): CSSObject {
+  const shadowAlapha = theme.palette.mode === 'dark' ? 0.32 : 0.24;
+
+  return {
     '.node': {
       '& text': {
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
       },
-      '& [stroke="black"]': {
+      '.node-outline': {
         stroke: theme.palette.text.primary,
       },
-      '& [fill="green"]': {
+      '.node-header': {
         fill:
           theme.palette.mode === 'dark'
             ? theme.palette.primary.dark
             : theme.palette.primary.light,
       },
-      '& [fill="white"]': {
+      '.node-bg': {
         fill: theme.palette.background.default,
       },
     },
-    '.node-INDIVIDUAL': {
-      '& [stroke="black"]': {
-        strokeWidth: 2,
-      },
+    '.node-INDIVIDUAL .node-outline': {
+      strokeWidth: 2,
     },
-    '.node-shadow[fill="white"]': {
-      fill: alpha(
-        theme.palette.text.primary,
-        theme.palette.mode === 'dark' ? 0.32 : 0.24,
-      ),
-    },
-    '.node-exists-UNKNOWN [stroke="black"]': {
+    '.node-shadow.node-bg': noEmbedIcons
+      ? {
+          // Inkscape can't handle opacity in exported SVG.
+          fill: theme.palette.text.primary,
+          opacity: shadowAlapha,
+        }
+      : {
+          fill: alpha(theme.palette.text.primary, shadowAlapha),
+        },
+    '.node-exists-UNKNOWN .node-outline': {
       strokeDasharray: '5 2',
     },
     ...createTypeHashStyles(theme, colorNodes),
@@ -95,39 +117,47 @@ export default styled('div', {
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
       },
-      '& [stroke="black"]': {
+      '.edge-line': {
         stroke: theme.palette.text.primary,
       },
-      '& [fill="black"]': {
+      '.edge-arrow': {
         fill: theme.palette.text.primary,
       },
     },
     ...createEdgeColor('UNKNOWN', theme.palette.text.secondary, 'none'),
     ...createEdgeColor('ERROR', theme.palette.error.main),
-    '.icon': {
-      maskSize: '12px 12px',
-      maskPosition: '50% 50%',
-      maskRepeat: 'no-repeat',
-      width: '100%',
-      height: '100%',
-    },
-    '.icon-TRUE': {
-      maskImage: svgURL(labelSVG),
-      background: theme.palette.text.primary,
-    },
-    '.icon-UNKNOWN': {
-      maskImage: svgURL(labelOutlinedSVG),
-      background: theme.palette.text.secondary,
-    },
-    '.icon-ERROR': {
-      maskImage: svgURL(cancelSVG),
-      background: theme.palette.error.main,
-    },
+    ...(noEmbedIcons
+      ? {}
+      : {
+          '.icon': {
+            maskSize: '12px 12px',
+            maskPosition: '50% 50%',
+            maskRepeat: 'no-repeat',
+            width: '100%',
+            height: '100%',
+          },
+        }),
+    '.icon-TRUE': iconStyle(labelSVG, theme.palette.text.primary, noEmbedIcons),
+    '.icon-UNKNOWN': iconStyle(
+      labelOutlinedSVG,
+      theme.palette.text.secondary,
+      noEmbedIcons,
+    ),
+    '.icon-ERROR': iconStyle(cancelSVG, theme.palette.error.main, noEmbedIcons),
     'text.label-UNKNOWN': {
       fill: theme.palette.text.secondary,
     },
     'text.label-ERROR': {
       fill: theme.palette.error.main,
     },
+  };
+}
+
+export default styled('div', {
+  name: 'GraphTheme',
+})<{ colorNodes: boolean }>((args) => ({
+  '& svg': {
+    userSelect: 'none',
+    ...createGraphTheme(args),
   },
 }));

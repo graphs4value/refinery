@@ -35,7 +35,6 @@ export default function graphvizUMDVitePlugin(): PluginOption {
       if (resolvedPath === undefined) {
         return;
       }
-      console.log(resolvedPath);
       if (command === 'serve') {
         url = `/@fs/${resolvedPath}`;
       } else {

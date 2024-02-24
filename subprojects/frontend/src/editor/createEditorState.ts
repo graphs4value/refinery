@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -26,7 +26,7 @@ import {
 } from '@codemirror/language';
 import { lintKeymap, lintGutter } from '@codemirror/lint';
 import { search, searchKeymap } from '@codemirror/search';
-import { EditorState } from '@codemirror/state';
+import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import {
   drawSelection,
   highlightActiveLine,
@@ -45,6 +45,12 @@ import SearchPanel from './SearchPanel';
 import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
 import semanticHighlighting from './semanticHighlighting';
+
+export const historyCompartment = new Compartment();
+
+export function createHistoryExtension(): Extension {
+  return history();
+}
 
 export default function createEditorState(
   initialValue: string,
@@ -66,7 +72,7 @@ export default function createEditorState(
       highlightActiveLine(),
       highlightActiveLineGutter(),
       highlightSpecialChars(),
-      history(),
+      historyCompartment.of([createHistoryExtension()]),
       indentOnInput(),
       rectangularSelection(),
       search({
@@ -103,6 +109,9 @@ export default function createEditorState(
       }),
       keymap.of([
         { key: 'Mod-Shift-f', run: () => store.formatText() },
+        { key: 'Ctrl-o', run: () => store.openFile() },
+        { key: 'Ctrl-s', run: () => store.saveFile() },
+        { key: 'Ctrl-Shift-s', run: () => store.saveFileAs() },
         ...closeBracketsKeymap,
         ...completionKeymap,
         ...foldKeymap,

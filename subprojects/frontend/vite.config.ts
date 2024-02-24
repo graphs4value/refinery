@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -30,6 +30,9 @@ const { mode, isDevelopment, devModePlugins, serverOptions } =
 process.env['NODE_ENV'] ??= mode;
 
 const fontsGlob = [
+  'open-sans-latin-*.ttf',
+  'open-sans-latin-400-{normal,italic}-*.woff2',
+  'open-sans-latin-700-*.woff2',
   'open-sans-latin-wdth-{normal,italic}-*.woff2',
   'jetbrains-mono-latin-wght-{normal,italic}-*.woff2',
 ];

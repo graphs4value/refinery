@@ -27,6 +27,13 @@ import { nanoid } from 'nanoid';
 
 import type PWAStore from '../PWAStore';
 import GraphStore from '../graph/GraphStore';
+import {
+  type OpenResult,
+  type OpenTextFileResult,
+  openTextFile,
+  saveTextFile,
+  saveBlob,
+} from '../utils/fileIO';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
 import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
@@ -35,7 +42,10 @@ import EditorErrors from './EditorErrors';
 import GeneratedModelStore from './GeneratedModelStore';
 import LintPanelStore from './LintPanelStore';
 import SearchPanelStore from './SearchPanelStore';
-import createEditorState from './createEditorState';
+import createEditorState, {
+  createHistoryExtension,
+  historyCompartment,
+} from './createEditorState';
 import { countDiagnostics } from './exposeDiagnostics';
 import { type IOccurrence, setOccurrences } from './findOccurrences';
 import {
@@ -44,6 +54,25 @@ import {
 } from './semanticHighlighting';
 
 const log = getLogger('editor.EditorStore');
+
+const REFINERY_CONTENT_TYPE = 'text/x-refinery';
+
+const FILE_PICKER_OPTIONS: FilePickerOptions = {
+  id: 'problem',
+  types: [
+    {
+      description: 'Refinery files',
+      accept: {
+        [REFINERY_CONTENT_TYPE]: [
+          '.problem',
+          '.PROBLEM',
+          '.refinery',
+          '.REFINERY',
+        ],
+      },
+    },
+  ],
+};
 
 export default class EditorStore {
   readonly id: string;
@@ -75,6 +104,12 @@ export default class EditorStore {
   generatedModels = new Map<string, GeneratedModelStore>();
 
   selectedGeneratedModel: string | undefined;
+
+  fileName: string | undefined;
+
+  private fileHandle: FileSystemFileHandle | undefined;
+
+  unsavedChanges = false;
 
   constructor(
     initialValue: string,
@@ -201,6 +236,9 @@ export default class EditorStore {
     log.trace('Editor transaction', tr);
     this.state = tr.state;
     this.client?.onTransaction(tr);
+    if (tr.docChanged) {
+      this.unsavedChanges = true;
+    }
   }
 
   doCommand(command: Command): boolean {
@@ -402,5 +440,89 @@ export default class EditorStore {
       generating = generating || value.running;
     });
     return generating;
+  }
+
+  openFile(): boolean {
+    openTextFile(FILE_PICKER_OPTIONS)
+      .then((result) => this.fileOpened(result))
+      .catch((error) => log.error('Failed to open file', error));
+    return true;
+  }
+
+  private clearUnsavedChanges(): void {
+    this.unsavedChanges = false;
+  }
+
+  private setFile({ name, handle }: OpenResult): void {
+    log.info('Opened file', name);
+    this.fileName = name;
+    this.fileHandle = handle;
+  }
+
+  private fileOpened(result: OpenTextFileResult): void {
+    this.dispatch({
+      changes: [
+        {
+          from: 0,
+          to: this.state.doc.length,
+          insert: result.text,
+        },
+      ],
+      effects: [historyCompartment.reconfigure([])],
+    });
+    // Clear history by removing and re-adding the history extension. See
+    // https://stackoverflow.com/a/77943295 and
+    // https://discuss.codemirror.net/t/codemirror-6-cm-clearhistory-equivalent/2851/10
+    this.dispatch({
+      effects: [historyCompartment.reconfigure([createHistoryExtension()])],
+    });
+    this.setFile(result);
+    this.clearUnsavedChanges();
+  }
+
+  saveFile(): boolean {
+    if (!this.unsavedChanges) {
+      return false;
+    }
+    if (this.fileHandle === undefined) {
+      return this.saveFileAs();
+    }
+    saveTextFile(this.fileHandle, this.state.sliceDoc())
+      .then(() => this.clearUnsavedChanges())
+      .catch((error) => log.error('Failed to save file', error));
+    return true;
+  }
+
+  saveFileAs(): boolean {
+    const blob = new Blob([this.state.sliceDoc()], {
+      type: REFINERY_CONTENT_TYPE,
+    });
+    saveBlob(blob, this.fileName ?? 'graph.problem', FILE_PICKER_OPTIONS)
+      .then((result) => this.fileSavedAs(result))
+      .catch((error) => log.error('Failed to save file', error));
+    return true;
+  }
+
+  private fileSavedAs(result: OpenResult | undefined) {
+    if (result !== undefined) {
+      this.setFile(result);
+    }
+    this.clearUnsavedChanges();
+  }
+
+  get simpleName(): string | undefined {
+    const { fileName } = this;
+    if (fileName === undefined) {
+      return undefined;
+    }
+    const index = fileName.lastIndexOf('.');
+    if (index < 0) {
+      return fileName;
+    }
+    return fileName.substring(0, index);
+  }
+
+  get simpleNameOrFallback(): string {
+    return this.simpleName ?? 'graph';
   }
 }

@@ -55,6 +55,27 @@ function useWindowControlsOverlayVisible(): boolean {
   return windowControlsOverlayVisible;
 }
 
+function RefineryIcon({ size }: { size: number }): JSX.Element {
+  const theme = useTheme();
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 512 515"
+    >
+      <path
+        d="M447.98 179.335c-139.95-9.583-301.272-50.91-384-147.336v46.117C98.45 129.623 209.442 178.137 294.243 199.1c-84.796 20.963-195.791 69.476-230.265 120.985v46.117c82.73-96.422 244.053-137.752 384.002-147.334z"
+        fill={theme.palette.text.primary}
+      />
+      <path
+        d="M447.98 296.729c-113.755 4.192-287.485 40.727-384 136.557v46.716c95.14-103.612 279.898-137.754 384-143.745z"
+        fill={theme.palette.primary.main}
+      />
+    </svg>
+  );
+}
+
 const DevModeBadge = styled('div')(({ theme }) => ({
   ...theme.typography.button,
   display: 'inline-block',
@@ -62,6 +83,16 @@ const DevModeBadge = styled('div')(({ theme }) => ({
   background: theme.palette.text.primary,
   color: theme.palette.outer.background,
   borderRadius: theme.shape.borderRadius,
+}));
+
+const FileName = styled('span', {
+  shouldForwardProp: (prop) => prop !== 'unsavedChanges',
+})<{ unsavedChanges: boolean }>(({ theme, unsavedChanges }) => ({
+  marginLeft: theme.spacing(1),
+  fontWeight: theme.typography.fontWeightLight,
+  fontSize: '1.25rem',
+  lineHeight: '1.6rem',
+  fontStyle: unsavedChanges ? 'italic' : 'normal',
 }));
 
 export default observer(function TopBar(): JSX.Element {
@@ -101,9 +132,15 @@ export default observer(function TopBar(): JSX.Element {
           py: 0.5,
         }}
       >
-        <Typography variant="h6" component="h1">
+        <RefineryIcon size={24} />
+        <Typography variant="h6" component="h1" pl={1}>
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
+        {large && editorStore?.simpleName !== undefined && (
+          <FileName unsavedChanges={editorStore.unsavedChanges}>
+            {editorStore.simpleName}
+          </FileName>
+        )}
         <Stack direction="row" alignItems="center" flexGrow={1} marginLeft={1}>
           {medium && !large && (
             <PaneButtons themeStore={themeStore} hideLabel />

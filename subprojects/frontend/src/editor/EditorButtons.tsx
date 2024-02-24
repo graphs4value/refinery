@@ -7,11 +7,14 @@
 import type { Diagnostic } from '@codemirror/lint';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckIcon from '@mui/icons-material/Check';
+import FileOpenIcon from '@mui/icons-material/FileOpen';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import FormatPaintIcon from '@mui/icons-material/FormatPaint';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LooksIcon from '@mui/icons-material/Looks';
 import RedoIcon from '@mui/icons-material/Redo';
+import SaveIcon from '@mui/icons-material/Save';
+import SaveAsIcon from '@mui/icons-material/SaveAs';
 import SearchIcon from '@mui/icons-material/Search';
 import UndoIcon from '@mui/icons-material/Undo';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -47,10 +50,37 @@ export default observer(function EditorButtons({
   return (
     <Stack direction="row" flexGrow={1}>
       <IconButton
+        disabled={editorStore === undefined}
+        onClick={() => editorStore?.openFile()}
+        aria-label="Open"
+        color="inherit"
+      >
+        <FileOpenIcon fontSize="small" />
+      </IconButton>
+      <IconButton
+        disabled={editorStore === undefined || !editorStore.unsavedChanges}
+        onClick={() => editorStore?.saveFile()}
+        aria-label="Save"
+        color="inherit"
+      >
+        <SaveIcon fontSize="small" />
+      </IconButton>
+      {'showSaveFilePicker' in window && (
+        <IconButton
+          disabled={editorStore === undefined}
+          onClick={() => editorStore?.saveFileAs()}
+          aria-label="Save as"
+          color="inherit"
+        >
+          <SaveAsIcon fontSize="small" />
+        </IconButton>
+      )}
+      <IconButton
         disabled={editorStore === undefined || !editorStore.canUndo}
         onClick={() => editorStore?.undo()}
         aria-label="Undo"
         color="inherit"
+        sx={{ ml: 1 }}
       >
         <UndoIcon fontSize="small" />
       </IconButton>

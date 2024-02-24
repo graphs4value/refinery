@@ -5,10 +5,16 @@
  */
 
 import { getLogger } from 'loglevel';
-import { makeAutoObservable, runInAction } from 'mobx';
+import {
+  IReactionDisposer,
+  autorun,
+  makeAutoObservable,
+  runInAction,
+} from 'mobx';
 
 import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
+import ExportSettingsScotre from './graph/export/ExportSettingsStore';
 import Compressor from './persistence/Compressor';
 import ThemeStore from './theme/ThemeStore';
 
@@ -29,16 +35,26 @@ export default class RootStore {
 
   readonly themeStore: ThemeStore;
 
+  readonly exportSettingsStore: ExportSettingsScotre;
+
   disposed = false;
+
+  private titleReaction: IReactionDisposer | undefined;
 
   constructor() {
     this.pwaStore = new PWAStore();
     this.themeStore = new ThemeStore();
-    makeAutoObservable<RootStore, 'compressor' | 'editorStoreClass'>(this, {
+    this.exportSettingsStore = new ExportSettingsScotre();
+    makeAutoObservable<
+      RootStore,
+      'compressor' | 'editorStoreClass' | 'titleReaction'
+    >(this, {
       compressor: false,
       editorStoreClass: false,
       pwaStore: false,
       themeStore: false,
+      exportSettingsStore: false,
+      titleReaction: false,
     });
     (async () => {
       const { default: EditorStore } = await import('./editor/EditorStore');
@@ -61,11 +77,21 @@ export default class RootStore {
     this.initialValue = initialValue;
     if (this.editorStoreClass !== undefined) {
       const EditorStore = this.editorStoreClass;
-      this.editorStore = new EditorStore(
+      const editorStore = new EditorStore(
         this.initialValue,
         this.pwaStore,
         (text) => this.compressor.compress(text),
       );
+      this.editorStore = editorStore;
+      this.titleReaction?.();
+      this.titleReaction = autorun(() => {
+        const { simpleName, unsavedChanges } = editorStore;
+        if (simpleName === undefined) {
+          document.title = 'Refinery';
+        } else {
+          document.title = `${unsavedChanges ? '\u25cf ' : ''}${simpleName} - Refinery`;
+        }
+      });
     }
   }
 
@@ -73,6 +99,7 @@ export default class RootStore {
     if (this.disposed) {
       return;
     }
+    this.titleReaction?.();
     this.editorStore?.dispose();
     this.compressor.dispose();
     this.disposed = true;

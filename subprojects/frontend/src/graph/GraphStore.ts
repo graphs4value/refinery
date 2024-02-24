@@ -66,7 +66,10 @@ export default class GraphStore {
 
   selectedSymbol: RelationMetadata | undefined;
 
-  constructor(private readonly editorStore: EditorStore) {
+  constructor(
+    private readonly editorStore: EditorStore,
+    private readonly nameOverride?: string,
+  ) {
     makeAutoObservable<GraphStore, 'editorStore'>(this, {
       editorStore: false,
       semantics: observable.ref,
@@ -189,5 +192,9 @@ export default class GraphStore {
 
   get colorNodes(): boolean {
     return this.editorStore.colorIdentifiers;
+  }
+
+  get name(): string {
+    return this.nameOverride ?? this.editorStore.simpleNameOrFallback;
   }
 }
