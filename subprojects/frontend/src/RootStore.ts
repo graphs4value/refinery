@@ -89,7 +89,11 @@ export default class RootStore {
         if (simpleName === undefined) {
           document.title = 'Refinery';
         } else {
-          document.title = `${unsavedChanges ? '\u25cf ' : ''}${simpleName} - Refinery`;
+          // Chromium web apps don't like whe the file name precedes the app name,
+          // and turn `filename - Refinery` into `Refinery - filename - Refinery`.
+          // We elect to use just `Refinery - filename` instead.
+          // Change indicator in a style similar to VSCodium.
+          document.title = `Refinery - ${unsavedChanges ? '\u25cf ' : ''}${simpleName}`;
         }
       });
     }

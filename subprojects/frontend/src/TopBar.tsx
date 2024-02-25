@@ -92,7 +92,9 @@ const FileName = styled('span', {
   fontWeight: theme.typography.fontWeightLight,
   fontSize: '1.25rem',
   lineHeight: '1.6rem',
-  fontStyle: unsavedChanges ? 'italic' : 'normal',
+  color: unsavedChanges
+    ? theme.palette.text.primary
+    : theme.palette.text.secondary,
 }));
 
 export default observer(function TopBar(): JSX.Element {
