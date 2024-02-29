@@ -63,6 +63,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
 
+	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
+
 	@Inject
 	private ReferenceCounter referenceCounter;
 
@@ -491,6 +493,36 @@ public class ProblemValidator extends AbstractProblemValidator {
 							0, UNSUPPORTED_ASSERTION_ISSUE);
 				}
 			}
+		}
+	}
+
+	@Check
+	private void checkAssignmentExpr(AssignmentExpr assignmentExpr) {
+		var left = assignmentExpr.getLeft();
+		if (left == null) {
+			// Syntactically invalid, so we already emit an error.
+			return;
+		}
+		if (!(left instanceof VariableOrNodeExpr variableOrNodeExpr)) {
+			var message = "Left side of an assignment must be variable.";
+			acceptError(message, assignmentExpr, ProblemPackage.Literals.BINARY_EXPR__LEFT,
+					0, INVALID_ASSIGNMENT_ISSUE);
+			return;
+		}
+		var target = variableOrNodeExpr.getVariableOrNode();
+		if (target == null) {
+			// Syntactically invalid, so we already emit an error.
+			return;
+		}
+		if (target instanceof Parameter) {
+			var message = "Parameters cannot be assigned.";
+			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
+					0, INVALID_ASSIGNMENT_ISSUE);
+		}
+		if (target instanceof Node) {
+			var message = "Nodes cannot be assigned.";
+			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
+					0, INVALID_ASSIGNMENT_ISSUE);
 		}
 	}
 }
