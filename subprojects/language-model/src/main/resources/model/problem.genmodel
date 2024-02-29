@@ -51,8 +51,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/MUL"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/DIV"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/POW"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/MEET"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/JOIN"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//AggregationOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//AggregationOp/SUM"/>
@@ -68,6 +66,10 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/NODE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/ATOM"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/MULTI"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//LatticeBinaryOp">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/MEET"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/JOIN"/>
     </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
@@ -226,7 +228,6 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/modality"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//RangeExpr"/>
-    <genClasses ecoreClass="problem.ecore#//InfConstant"/>
     <genClasses ecoreClass="problem.ecore#//LogicConstant">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LogicConstant/logicValue"/>
     </genClasses>
@@ -235,5 +236,13 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ImportStatement/alias"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//DatatypeDeclaration"/>
+    <genClasses ecoreClass="problem.ecore#//LatticeBinaryExpr">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LatticeBinaryExpr/op"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//CastExpr">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/body"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/targetType"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AssignmentExpr"/>
   </genPackages>
 </genmodel:GenModel>

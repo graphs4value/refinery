@@ -125,6 +125,13 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return oppositeShouldBeVisible(candidateReferenceDeclaration, context);
 		}
 
+		if (eReference.equals(ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE)) {
+			var assignedVariable = getAssignedVariable(context.getCurrentModel());
+			if (assignedVariable != null && Objects.equals(assignedVariable, candidate.getEObjectOrProxy())) {
+				return false;
+			}
+		}
+
 		var builtinSymbolsOption = desugarer.getBuiltinSymbols(context.getRootModel());
 		if (builtinSymbolsOption.isEmpty()) {
 			return true;
@@ -133,6 +140,14 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 		return builtinSymbolAwareShouldBeVisible(candidate, context, eReference, builtinSymbols,
 				candidateEObjectOrProxy);
+	}
+
+	private VariableOrNode getAssignedVariable(EObject context) {
+		var assignmentExpr = EcoreUtil2.getContainerOfType(context, AssignmentExpr.class);
+		if (assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) {
+			return variableOrNodeExpr.getVariableOrNode();
+		}
+		return null;
 	}
 
 	private boolean importedModuleShouldBeVisible(IEObjectDescription candidate, ContentAssistContext context) {

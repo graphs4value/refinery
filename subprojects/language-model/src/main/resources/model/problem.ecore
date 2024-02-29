@@ -199,8 +199,6 @@
     <eLiterals name="MUL" value="2"/>
     <eLiterals name="DIV" value="3"/>
     <eLiterals name="POW" value="4"/>
-    <eLiterals name="MEET" value="5"/>
-    <eLiterals name="JOIN" value="6"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ArithmeticUnaryExpr" eSuperTypes="#//UnaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//UnaryOp"/>
@@ -249,7 +247,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RangeExpr" eSuperTypes="#//BinaryExpr"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InfConstant" eSuperTypes="#//Constant"/>
   <eClassifiers xsi:type="ecore:EClass" name="LogicConstant" eSuperTypes="#//Constant">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="logicValue" eType="#//LogicValue"/>
   </eClassifiers>
@@ -267,4 +264,16 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="alias" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DatatypeDeclaration" eSuperTypes="#//Relation #//Statement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="LatticeBinaryExpr" eSuperTypes="#//BinaryExpr">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//LatticeBinaryOp"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="LatticeBinaryOp">
+    <eLiterals name="MEET"/>
+    <eLiterals name="JOIN" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CastExpr" eSuperTypes="#//Expr">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//Expr" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetType" eType="#//Relation"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpr" eSuperTypes="#//BinaryExpr"/>
 </ecore:EPackage>

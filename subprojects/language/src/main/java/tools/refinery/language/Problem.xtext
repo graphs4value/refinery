@@ -103,7 +103,10 @@ Parameter:
 //	name=Identifier;
 
 Expr:
-	ComparisonExpr;
+	AssignmentExpr;
+
+AssignmentExpr returns Expr:
+	ComparisonExpr ({AssignmentExpr.left=current}"is" right=ComparisonExpr)*;
 
 enum ComparisonOp:
 	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=" |
@@ -113,15 +116,16 @@ ComparisonExpr returns Expr:
 	LatticeExpr ({ComparisonExpr.left=current}
 	op=ComparisonOp right=LatticeExpr)*;
 
-enum LatticeOp returns BinaryOp:
+enum LatticeBinaryOp:
 	MEET="/\\" | JOIN="\\/";
 
 LatticeExpr returns Expr:
-	RangeExpr ({ArithmeticBinaryExpr.left=current}
-	op=LatticeOp right=RangeExpr)*;
+	RangeExpr ({LatticeBinaryExpr.left=current}
+	op=LatticeBinaryOp right=RangeExpr)*;
 
 RangeExpr returns Expr:
-	AdditiveExpr ({RangeExpr.left=current} ".." right=AdditiveExpr)*;
+	AdditiveExpr ({RangeExpr.left=current} ".." ("*" | right=AdditiveExpr))* |
+	{RangeExpr} "*" ".." ("*" | right=AdditiveExpr);
 
 enum AdditiveOp returns BinaryOp:
 	ADD="+" | SUB="-";
@@ -145,8 +149,8 @@ ExponentialExpr returns Expr:
 	op=ExponentialOp right=ExponentialExpr)?;
 
 UnaryExpr returns Expr:
-	ArithmeticUnaryExpr | ModalExpr | NegationExpr | CountExpr | AggregationExpr |
-	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
+	ArithmeticUnaryExpr | ModalExpr | NegationExpr |
+	CountExpr | AggregationExpr | CastExpr;
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -170,7 +174,13 @@ enum AggregationOp:
 	SUM="sum" | PROD="prod" | MIN="min" | MAX="max";
 
 AggregationExpr:
-	op=AggregationOp "{" value=Expr "|" condition=Expr "}";
+	op=AggregationOp "{" value=Expr "|" condition=ComparisonExpr "}";
+
+CastExpr returns Expr:
+	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
+
+CastExprBody returns Expr:
+	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 Atom:
 	relation=[Relation|QualifiedName]
@@ -181,16 +191,13 @@ VariableOrNodeExpr:
 	variableOrNode=[VariableOrNode|QualifiedName];
 
 Constant:
-	RealConstant | IntConstant | InfConstant | StringConstant | LogicConstant;
+	RealConstant | IntConstant | StringConstant | LogicConstant;
 
 IntConstant:
 	intValue=INT;
 
 RealConstant:
 	realValue=Real;
-
-InfConstant:
-	{InfConstant} "*";
 
 StringConstant:
 	stringValue=STRING;

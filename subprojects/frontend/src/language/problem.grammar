@@ -9,6 +9,7 @@
 @external prop implicitCompletion from './props'
 
 @precedence {
+  cast,
   prefix,
   exponential @right,
   multiplicative @left,
@@ -16,6 +17,7 @@
   range @left,
   lattice @left,
   comparison @left,
+  assignment,
   feature @cut
 }
 
@@ -97,13 +99,16 @@ Parameter { Modality? RelationName? VariableName }
 // Being looser with token sequencing enables more consistent syntactic highlighting.
 Conjunction { ("," | NextConjunction[@dynamicPrecedence=-10] { Expr })+ }
 
-Case { Conjunction ("->" Expr)? }
+// Case { Conjunction ("->" Expr)? }
 
 OrOp { ";" }
 
 Expr {
-  UnaryExpr | BinaryExpr | Aggregation | VariableName | Atom | Constant | "(" Expr ")"
+  AssignmentExpr | UnaryExpr | BinaryExpr | CastExpr | Aggregation |
+  VariableName | Atom | Constant | "(" Expr ")"
 }
+
+AssignmentExpr { !assignment VariableName kw<"is"> Expr }
 
 BinaryExpr {
   Expr !comparison ComparisonOp Expr |
@@ -117,6 +122,8 @@ BinaryExpr {
 UnaryExpr {
   !prefix ("+" | "-" | "!" | kw<"count"> | Modality) Expr
 }
+
+CastExpr { !cast Expr kw<"as"> DatatypeName }
 
 Aggregation {
   AggregationOp "{" Expr "|" Expr "}"

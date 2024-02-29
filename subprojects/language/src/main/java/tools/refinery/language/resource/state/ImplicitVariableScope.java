@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -16,10 +16,7 @@ import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ImplicitVariableScope {
 	private final EObject root;
@@ -71,13 +68,12 @@ public class ImplicitVariableScope {
 		if ((hasKnownVariables && hasParent) || (!hasKnownVariables && !hasParent)) {
 			throw new IllegalStateException("Either known variables or parent must be provided, but not both");
 		}
-		if (hasKnownVariables) {
-			return;
+		if (!hasKnownVariables) {
+			if (parent.knownVariables == null) {
+				throw new IllegalStateException("Parent scope must be processed before current scope");
+			}
+			knownVariables = new HashSet<>(parent.knownVariables);
 		}
-		if (parent.knownVariables == null) {
-			throw new IllegalStateException("Parent scope must be processed before current scope");
-		}
-		knownVariables = new HashSet<>(parent.knownVariables);
 	}
 
 	private void processEObject(EObject eObject, IScopeProvider scopeProvider, LinkingHelper linkingHelper,

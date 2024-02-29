@@ -33,7 +33,7 @@ const parserWithMetadata = parser.configure({
       'default error contained containment': t.modifier,
       'true false unknown error': t.keyword,
       'may must current count': t.operatorKeyword,
-      'sum prod min max in': t.operatorKeyword,
+      'sum prod min max in is': t.operatorKeyword,
       // 'new delete': t.keyword,
       NotOp: t.operator,
       UnknownOp: t.operator,
