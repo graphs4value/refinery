@@ -119,7 +119,7 @@ BinaryExpr {
   Expr !comparison ComparisonOp Expr |
   Expr !lattice (LatticeMeet | "\\/") Expr |
   Expr !additive ("+" | "-") Expr |
-  Expr !multiplicative (StarMult | Divide) Expr |
+  Expr !multiplicative (Star | Divide) Expr |
   Expr !exponential "**" Expr |
   Expr !range ".." Expr
 }
@@ -184,6 +184,8 @@ AggregatorName { QualifiedName }
 
 QualifiedName[implicitCompletion=true] { "::"? identifier (QualifiedNameSeparator "::" identifier)* }
 
+StarMult { Star }
+
 kw<term> { @specialize[@name={term},implicitCompletion=true]<identifier, term> }
 
 ckw<term> { @extend[@name={term},implicitCompletion=true]<identifier, term> }
@@ -223,7 +225,7 @@ sep1<separator, content> { content (separator content)* }
 
   IntMult { int }
 
-  StarMult { "*" }
+  Star { "*" }
 
   Real { (exponential | int ("." (int | exponential))?) }
 
