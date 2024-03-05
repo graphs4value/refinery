@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,10 +8,10 @@ package tools.refinery.language.semantics;
 import com.google.inject.Inject;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
-import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.model.ModelStoreBuilder;
@@ -48,9 +48,6 @@ import java.util.*;
 
 public class ModelInitializer {
 	@Inject
-	private ProblemDesugarer desugarer;
-
-	@Inject
 	private SemanticsUtils semanticsUtils;
 
 	@Inject
@@ -58,6 +55,9 @@ public class ModelInitializer {
 
 	@Inject
 	private ImportCollector importCollector;
+
+	@Inject
+	private ImportAdapterProvider importAdapterProvider;
 
 	private Problem problem;
 
@@ -96,8 +96,7 @@ public class ModelInitializer {
 		importedProblems.add(problem);
 		problemTrace.setProblem(problem);
 		try {
-			builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalArgumentException(
-					"Problem has no builtin library"));
+			builtinSymbols = importAdapterProvider.getBuiltinSymbols(problem);
 			var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
 			nodeRelation = nodeInfo.partialRelation();
 			metamodelBuilder.type(nodeRelation);
@@ -681,8 +680,8 @@ public class ModelInitializer {
 			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
 					localScope, literals);
 			boolean positive = switch (comparisonExpr.getOp()) {
-				case EQ -> true;
-				case NOT_EQ -> false;
+				case NODE_EQ -> true;
+				case NODE_NOT_EQ -> false;
 				default -> throw new TracedException(
 						comparisonExpr, "Unsupported operator");
 			};

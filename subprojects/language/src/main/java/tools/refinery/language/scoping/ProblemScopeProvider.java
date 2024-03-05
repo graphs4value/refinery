@@ -9,14 +9,12 @@
  */
 package tools.refinery.language.scoping;
 
-import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.utils.ProblemDesugarer;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -29,9 +27,6 @@ import java.util.LinkedHashSet;
  * on how and when to use it.
  */
 public class ProblemScopeProvider extends AbstractProblemScopeProvider {
-	@Inject
-	private ProblemDesugarer desugarer;
-
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
 		var scope = super.getScope(context, reference);

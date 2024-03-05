@@ -12,7 +12,10 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
-import org.eclipse.xtext.resource.*;
+import org.eclipse.xtext.resource.FileExtensionProvider;
+import org.eclipse.xtext.resource.IEObjectDescription;
+import org.eclipse.xtext.resource.IResourceFactory;
+import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.impl.GlobalResourceDescriptionProvider;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.LazyStringInputStream;
@@ -25,7 +28,7 @@ import tools.refinery.language.model.problem.ScopeDeclaration;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy.ShadowingKey;
-import tools.refinery.language.scoping.imports.ImportAdapter;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.store.util.CancellationToken;
 
@@ -60,6 +63,9 @@ public class ProblemLoader {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private ImportAdapterProvider importAdapterProvider;
 
 	private CancellationToken cancellationToken = CancellationToken.NONE;
 
@@ -125,7 +131,7 @@ public class ProblemLoader {
 
 	private XtextResourceSet createResourceSet() {
 		var resourceSet = resourceSetProvider.get();
-		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		var adapter = importAdapterProvider.getOrInstall(resourceSet);
 		adapter.getLibraryPaths().addAll(0, extraPaths);
 		return resourceSet;
 	}

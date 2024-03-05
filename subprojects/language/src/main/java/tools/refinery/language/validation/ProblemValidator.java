@@ -10,6 +10,7 @@
 package tools.refinery.language.validation;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
@@ -18,11 +19,15 @@ import org.eclipse.xtext.validation.Check;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
-import tools.refinery.language.scoping.imports.ImportAdapter;
-import tools.refinery.language.utils.ProblemDesugarer;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * This class contains custom validation rules.
@@ -32,47 +37,39 @@ import java.util.*;
  */
 public class ProblemValidator extends AbstractProblemValidator {
 	private static final String ISSUE_PREFIX = "tools.refinery.language.validation.ProblemValidator.";
-
 	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
-
 	public static final String INVALID_IMPORT_ISSUE = ISSUE_PREFIX + "INVALID_IMPORT";
-
 	public static final String SINGLETON_VARIABLE_ISSUE = ISSUE_PREFIX + "SINGLETON_VARIABLE";
-
 	public static final String NODE_CONSTANT_ISSUE = ISSUE_PREFIX + "NODE_CONSTANT_ISSUE";
-
 	public static final String DUPLICATE_NAME_ISSUE = ISSUE_PREFIX + "DUPLICATE_NAME";
-
 	public static final String INVALID_MULTIPLICITY_ISSUE = ISSUE_PREFIX + "INVALID_MULTIPLICITY";
-
 	public static final String ZERO_MULTIPLICITY_ISSUE = ISSUE_PREFIX + "ZERO_MULTIPLICITY";
-
 	public static final String MISSING_OPPOSITE_ISSUE = ISSUE_PREFIX + "MISSING_OPPOSITE";
-
 	public static final String INVALID_OPPOSITE_ISSUE = ISSUE_PREFIX + "INVALID_OPPOSITE";
-
 	public static final String INVALID_SUPERTYPE_ISSUE = ISSUE_PREFIX + "INVALID_SUPERTYPE";
-
 	public static final String INVALID_REFERENCE_TYPE_ISSUE = ISSUE_PREFIX + "INVALID_REFERENCE_TYPE";
-
 	public static final String INVALID_ARITY_ISSUE = ISSUE_PREFIX + "INVALID_ARITY";
-
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
-
 	public static final String INVALID_VALUE_ISSUE = ISSUE_PREFIX + "INVALID_VALUE";
-
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
-
+	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
+	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
 
 	@Inject
-	private ProblemDesugarer desugarer;
+	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
-	private IQualifiedNameConverter qualifiedNameConverter;
+	private ImportAdapterProvider importAdapterProvider;
+
+	@Inject
+	private SignatureProvider signatureProvider;
+
+	@Inject
+	private ProblemTypeAnalyzer typeAnalyzer;
 
 	@Check
 	public void checkModuleName(Problem problem) {
@@ -88,7 +85,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (resourceSet == null) {
 			return;
 		}
-		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		var adapter = importAdapterProvider.getOrInstall(resourceSet);
 		var expectedName = adapter.getQualifiedName(resource.getURI());
 		if (expectedName == null) {
 			return;
@@ -158,15 +155,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public void checkUniqueDeclarations(Problem problem) {
 		var relations = new ArrayList<Relation>();
 		var nodes = new ArrayList<Node>();
+		var aggregators = new ArrayList<AggregatorDeclaration>();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof Relation relation) {
 				relations.add(relation);
 			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
 				nodes.addAll(nodeDeclaration.getNodes());
+			} else if (statement instanceof AggregatorDeclaration aggregatorDeclaration) {
+				aggregators.add(aggregatorDeclaration);
 			}
 		}
 		checkUniqueSimpleNames(relations);
 		checkUniqueSimpleNames(nodes);
+		checkUniqueSimpleNames(aggregators);
 	}
 
 	@Check
@@ -353,11 +354,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkAssertion(Assertion assertion) {
-		int argumentCount = assertion.getArguments().size();
-		if (!(assertion.getValue() instanceof LogicConstant)) {
-			var message = "Assertion value must be one of 'true', 'false', 'unknown', or 'error'.";
-			acceptError(message, assertion, ProblemPackage.Literals.ASSERTION__VALUE, 0, INVALID_VALUE_ISSUE);
+		var relation = assertion.getRelation();
+		if (relation instanceof DatatypeDeclaration) {
+			var message = "Assertions for data types are not supported.";
+			acceptError(message, assertion, ProblemPackage.Literals.ASSERTION__RELATION, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
 		}
+		int argumentCount = assertion.getArguments().size();
 		checkArity(assertion, ProblemPackage.Literals.ASSERTION__RELATION, argumentCount);
 	}
 
@@ -376,7 +380,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 			// Feature does not point to a {@link Relation}, we are probably already emitting another error.
 			return;
 		}
-		int arity = ProblemUtil.getArity(relation);
+		int arity = signatureProvider.getArity(relation);
 		if (arity == expectedArity) {
 			return;
 		}
@@ -387,11 +391,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkMultiObjectAssertion(Assertion assertion) {
-		var builtinSymbolsOption = desugarer.getBuiltinSymbols(assertion);
-		if (builtinSymbolsOption.isEmpty()) {
-			return;
-		}
-		var builtinSymbols = builtinSymbolsOption.get();
+		var builtinSymbols = importAdapterProvider.getBuiltinSymbols(assertion);
 		var relation = assertion.getRelation();
 		boolean isExists = builtinSymbols.exists().equals(relation);
 		boolean isEquals = builtinSymbols.equals().equals(relation);
@@ -523,6 +523,38 @@ public class ProblemValidator extends AbstractProblemValidator {
 			var message = "Nodes cannot be assigned.";
 			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
 					0, INVALID_ASSIGNMENT_ISSUE);
+		}
+		if (!(assignmentExpr.eContainer() instanceof Conjunction)) {
+			var message = "Assignments may only appear as top-level expressions.";
+			acceptError(message, assignmentExpr, null, 0, INVALID_ASSIGNMENT_ISSUE);
+		}
+	}
+
+	@Check
+	private void checkInfiniteConstant(InfiniteConstant infiniteConstant) {
+		if (!(infiniteConstant.eContainer() instanceof RangeExpr)) {
+			var message = "Negative and positive infinity literals may only appear in '..' range expressions.";
+			acceptError(message, infiniteConstant, null, 0, TYPE_ERROR);
+		}
+	}
+
+	@Check
+	private void checkTypes(Problem problem) {
+		var diagnostics = typeAnalyzer.getOrComputeTypes(problem).getDiagnostics();
+		for (var diagnostic : diagnostics) {
+			switch (diagnostic.getSeverity()) {
+			case Diagnostic.INFO -> info(diagnostic.getMessage(), diagnostic.getSourceEObject(),
+					diagnostic.getFeature(), diagnostic.getIndex(), diagnostic.getIssueCode(),
+					diagnostic.getIssueData());
+			case Diagnostic.WARNING -> warning(diagnostic.getMessage(), diagnostic.getSourceEObject(),
+					diagnostic.getFeature(), diagnostic.getIndex(), diagnostic.getIssueCode(),
+					diagnostic.getIssueData());
+			case Diagnostic.ERROR -> error(diagnostic.getMessage(), diagnostic.getSourceEObject(),
+					diagnostic.getFeature(), diagnostic.getIndex(), diagnostic.getIssueCode(),
+					diagnostic.getIssueData());
+			default -> throw new IllegalStateException("Unknown severity %s of %s"
+					.formatted(diagnostic.getSeverity(), diagnostic));
+			}
 		}
 	}
 }

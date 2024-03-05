@@ -18,7 +18,6 @@ import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.List;
@@ -27,6 +26,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	private static final String BUILTIN_CLASS = "builtin";
 	private static final String ABSTRACT_CLASS = "abstract";
 	private static final String DATATYPE_CLASS = "datatype";
+	private static final String AGGREGATOR_CLASS = "aggregator";
 	private static final String CONTAINMENT_CLASS = "containment";
 	private static final String ERROR_CLASS = "error";
 	private static final String NODE_CLASS = "node";
@@ -35,9 +35,6 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	@Inject
 	private OperationCanceledManager operationCanceledManager;
-
-	@Inject
-	private ProblemDesugarer desugarer;
 
 	@Inject
 	private TypeHashProvider typeHashProvider;
@@ -116,8 +113,11 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (eObject instanceof DatatypeDeclaration) {
 			classesBuilder.add(DATATYPE_CLASS);
 		}
+		if (eObject instanceof AggregatorDeclaration) {
+			classesBuilder.add(AGGREGATOR_CLASS);
+		}
 		if (eObject instanceof ReferenceDeclaration referenceDeclaration
-				&& desugarer.isContainmentReference(referenceDeclaration)) {
+				&& ProblemUtil.isContainmentReference(referenceDeclaration)) {
 			classesBuilder.add(CONTAINMENT_CLASS);
 		}
 		if (isError && reference != null) {

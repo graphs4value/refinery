@@ -46,6 +46,9 @@ public class ImportCollector {
 	@Inject
 	private Provider<LoadOnDemandResourceDescriptionProvider> loadOnDemandProvider;
 
+	@Inject
+	private ImportAdapterProvider importAdapterProvider;
+
 	public ImportCollection getDirectImports(Resource resource) {
 		return cache.get(DIRECT_IMPORTS_KEY, resource, () -> this.computeDirectImports(resource));
 	}
@@ -58,7 +61,7 @@ public class ImportCollector {
 		if (resourceSet == null) {
 			return ImportCollection.EMPTY;
 		}
-		var adapter = ImportAdapter.getOrInstall(resourceSet);
+		var adapter = importAdapterProvider.getOrInstall(resourceSet);
 		var collection = new ImportCollection();
 		collectAutomaticImports(collection, adapter);
 		collectExplicitImports(problem, collection, adapter);

@@ -30,9 +30,8 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
 import tools.refinery.language.conversion.ProblemValueConverterService;
 import tools.refinery.language.linking.ProblemLinkingService;
-import tools.refinery.language.naming.ProblemDelegateQualifiedNameProvider;
-import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
+import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.parser.ProblemEcoreElementFactory;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
 import tools.refinery.language.resource.ProblemLocationInFileProvider;
@@ -66,12 +65,6 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 
 	public Class<? extends IQualifiedNameConverter> bindIQualifiedNameConverter() {
 		return ProblemQualifiedNameConverter.class;
-	}
-
-	public void configureIQualifiedNameProviderDelegate(Binder binder) {
-		binder.bind(IQualifiedNameProvider.class)
-				.annotatedWith(Names.named(ProblemQualifiedNameProvider.NAMED_DELEGATE))
-				.to(ProblemDelegateQualifiedNameProvider.class);
 	}
 
 	@Override

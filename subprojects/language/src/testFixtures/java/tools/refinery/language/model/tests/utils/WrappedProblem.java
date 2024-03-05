@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -7,9 +7,9 @@ package tools.refinery.language.model.tests.utils;
 
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.util.Diagnostician;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.utils.BuiltinSymbols;
-import tools.refinery.language.utils.ProblemDesugarer;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -32,11 +32,11 @@ public record WrappedProblem(Problem problem) {
 	}
 
 	public WrappedProblem builtin() {
-		return new WrappedProblem(new ProblemDesugarer().getBuiltinProblem(problem).orElseThrow());
-	}
-
-	public BuiltinSymbols builtinSymbols() {
-		return new ProblemDesugarer().getBuiltinSymbols(problem).orElseThrow();
+		var resourceSet = problem.eResource().getResourceSet();
+		var builtinResource = resourceSet.getResource(BuiltinLibrary.BUILTIN_LIBRARY_URI, true);
+		EcoreUtil.resolveAll(builtinResource);
+		var builtinProblem = (Problem) builtinResource.getContents().getFirst();
+		return new WrappedProblem(builtinProblem);
 	}
 
 	public List<String> nodeNames() {

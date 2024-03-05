@@ -166,7 +166,7 @@ export default styled('div', {
     '.tok-problem-abstract': {
       fontStyle: 'italic',
     },
-    '.tok-problem-datatype': {
+    '.tok-problem-datatype, .tok-problem-aggregator': {
       '&, & .tok-typeName': {
         color: theme.palette.primary.main,
       },

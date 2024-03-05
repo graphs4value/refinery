@@ -24,9 +24,9 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.utils.BuiltinSymbols;
-import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ReferenceCounter;
 
@@ -43,10 +43,10 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 	private ReferenceCounter referenceCounter;
 
 	@Inject
-	private ProblemDesugarer desugarer;
+	private ImportCollector importCollector;
 
 	@Inject
-	private ImportCollector importCollector;
+	private ImportAdapterProvider importAdapterProvider;
 
 	@Override
 	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
@@ -132,11 +132,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			}
 		}
 
-		var builtinSymbolsOption = desugarer.getBuiltinSymbols(context.getRootModel());
-		if (builtinSymbolsOption.isEmpty()) {
-			return true;
-		}
-		var builtinSymbols = builtinSymbolsOption.get();
+		var builtinSymbols = importAdapterProvider.getBuiltinSymbols(context.getResource());
 
 		return builtinSymbolAwareShouldBeVisible(candidate, context, eReference, builtinSymbols,
 				candidateEObjectOrProxy);
@@ -144,7 +140,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	private VariableOrNode getAssignedVariable(EObject context) {
 		var assignmentExpr = EcoreUtil2.getContainerOfType(context, AssignmentExpr.class);
-		if (assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) {
+		if (assignmentExpr != null && assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) {
 			return variableOrNodeExpr.getVariableOrNode();
 		}
 		return null;
@@ -202,8 +198,8 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			if (builtinSymbols.exists().equals(candidateEObjectOrProxy)) {
 				return false;
 			}
-			var arity = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
-			return arity == null || arity.equals("1");
+			return ProblemResourceDescriptionStrategy.TYPE_LIKE_TRUE.equals(
+					candidate.getUserData(ProblemResourceDescriptionStrategy.TYPE_LIKE));
 		}
 
 		if (eReference.equals(ProblemPackage.Literals.CLASS_DECLARATION__SUPER_TYPES)) {

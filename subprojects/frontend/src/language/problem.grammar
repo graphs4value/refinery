@@ -11,12 +11,13 @@
 @precedence {
   cast,
   prefix,
+  range @left,
   exponential @right,
   multiplicative @left,
   additive @left,
-  range @left,
   lattice @left,
   comparison @left,
+  boolean @left,
   assignment,
   feature @cut
 }
@@ -45,7 +46,10 @@ statement {
     (EnumBody { "{" sep<",", AtomNodeName> "}" } | ".")
   } |
   DatatypeDeclaration {
-    kw<"extern"> kw<"datatype"> DatatypeName "."
+    kw<"extern"> ckw<"datatype"> DatatypeName "."
+  } |
+  AggregatorDeclaration {
+    kw<"extern"> ckw<"aggregator"> AggregatorName "."
   } |
   PredicateDefinition {
     (
@@ -92,7 +96,7 @@ FeatureDeclaration {
   ";"?
 }
 
-Parameter { Modality? RelationName? VariableName }
+Parameter { RelationName? VariableName }
 
 // Use @dynamicPrecedence to prevent a(b) from being parsed as Expr { a } Expr { b }
 // instead of Atom { a(b) }
@@ -111,22 +115,23 @@ Expr {
 AssignmentExpr { !assignment VariableName kw<"is"> Expr }
 
 BinaryExpr {
+  Expr !boolean ("&&" | "||" | "^^") Expr |
   Expr !comparison ComparisonOp Expr |
   Expr !lattice (LatticeMeet | "\\/") Expr |
-  Expr !range ".." Expr |
   Expr !additive ("+" | "-") Expr |
   Expr !multiplicative (StarMult | Divide) Expr |
-  Expr !exponential "**" Expr
+  Expr !exponential "**" Expr |
+  Expr !range ".." Expr
 }
 
 UnaryExpr {
-  !prefix ("+" | "-" | "!" | kw<"count"> | Modality) Expr
+  !prefix ("+" | "-" | "!" | kw<"count">) Expr
 }
 
 CastExpr { !cast Expr kw<"as"> DatatypeName }
 
 Aggregation {
-  AggregationOp "{" Expr "|" Expr "}"
+  AggregatorName "{" Expr "|" Expr "}"
 }
 
 Atom { RelationName "+"? ParameterList<Expr> }
@@ -149,14 +154,6 @@ ReferenceKind {
 
 LogicValue {
   kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
-}
-
-Modality {
-  kw<"must"> | kw<"may"> | kw<"current">
-}
-
-AggregationOp {
-  ckw<"sum"> | ckw<"prod"> | ckw<"min"> | ckw<"max">
 }
 
 ComparisonOp { SymbolicComparisonOp | kw<"in"> }
@@ -182,6 +179,8 @@ VariableName[@dynamicPrecedence=10] { QualifiedName ~name }
 NodeName { QualifiedName }
 
 ModuleName { QualifiedName }
+
+AggregatorName { QualifiedName }
 
 QualifiedName[implicitCompletion=true] { "::"? identifier (QualifiedNameSeparator "::" identifier)* }
 
@@ -237,7 +236,7 @@ sep1<separator, content> { content (separator content)* }
 
   SymbolicComparisonOp {
     ">" | ">=" | "<" | "<=" | "==" | "!=" |
-    "<:" | ":>" | "===" | "!=="
+    "===" | "!=="
   }
 
   NotOp { "!" }

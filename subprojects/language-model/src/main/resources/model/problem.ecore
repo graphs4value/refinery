@@ -150,12 +150,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//VariableOrNode"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NewVariable" eSuperTypes="#//Variable"/>
-  <eClassifiers xsi:type="ecore:EEnum" name="Modality">
-    <eLiterals name="DEFAULT" value="1"/>
-    <eLiterals name="MAY" value="2"/>
-    <eLiterals name="MUST" value="3"/>
-    <eLiterals name="CURRENT" value="3"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ComparisonOp">
     <eLiterals name="LESS"/>
     <eLiterals name="LESS_EQ" value="1"/>
@@ -164,10 +158,8 @@
     <eLiterals name="EQ" value="4"/>
     <eLiterals name="NOT_EQ" value="5"/>
     <eLiterals name="IN" value="6"/>
-    <eLiterals name="SUBSUMES" value="7"/>
-    <eLiterals name="SUBSUMED_BY" value="8"/>
-    <eLiterals name="ABS_EQ" value="9"/>
-    <eLiterals name="ABS_NOT_EQ" value="10"/>
+    <eLiterals name="NODE_EQ" value="9"/>
+    <eLiterals name="NODE_NOT_EQ" value="10"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
     <eLiterals name="DEFAULT" value="1"/>
@@ -199,6 +191,9 @@
     <eLiterals name="MUL" value="2"/>
     <eLiterals name="DIV" value="3"/>
     <eLiterals name="POW" value="4"/>
+    <eLiterals name="AND" value="5"/>
+    <eLiterals name="OR" value="6"/>
+    <eLiterals name="XOR" value="7"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ArithmeticUnaryExpr" eSuperTypes="#//UnaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//UnaryOp"/>
@@ -208,13 +203,7 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" eType="#//Expr"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//AggregationOp"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="AggregationOp">
-    <eLiterals name="SUM"/>
-    <eLiterals name="PROD" value="1"/>
-    <eLiterals name="MIN" value="2"/>
-    <eLiterals name="MAX" value="3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="aggregator" eType="#//AggregatorDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComparisonExpr" eSuperTypes="#//BinaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//ComparisonOp"/>
@@ -243,9 +232,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="NegationExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="CountExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="Relation" abstract="true" eSuperTypes="#//NamedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ModalExpr" eSuperTypes="#//UnaryExpr">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RangeExpr" eSuperTypes="#//BinaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="LogicConstant" eSuperTypes="#//Constant">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="logicValue" eType="#//LogicValue"/>
@@ -276,4 +262,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetType" eType="#//Relation"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpr" eSuperTypes="#//BinaryExpr"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InfiniteConstant" eSuperTypes="#//Constant"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AggregatorDeclaration" eSuperTypes="#//Statement #//NamedElement"/>
 </ecore:EPackage>

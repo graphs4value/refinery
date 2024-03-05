@@ -7,7 +7,6 @@ package tools.refinery.language.web.semantics.metadata;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.name.Named;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -15,7 +14,6 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.ProblemUtil;
@@ -34,7 +32,6 @@ public class MetadataCreator {
 	private IScopeProvider scopeProvider;
 
 	@Inject
-	@Named(ProblemQualifiedNameProvider.NAMED_DELEGATE)
 	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject

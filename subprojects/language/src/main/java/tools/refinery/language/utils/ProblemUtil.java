@@ -98,18 +98,19 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	public static int getArity(Relation relation) {
+	public static boolean isTypeLike(Relation relation) {
 		if (relation instanceof ClassDeclaration || relation instanceof EnumDeclaration ||
 				relation instanceof DatatypeDeclaration) {
-			return 1;
-		}
-		if (relation instanceof ReferenceDeclaration) {
-			return 2;
+			return true;
 		}
 		if (relation instanceof PredicateDefinition predicateDefinition) {
-			return predicateDefinition.getParameters().size();
+			return predicateDefinition.getParameters().size() == 1;
 		}
-		throw new IllegalArgumentException("Unknown Relation: " + relation);
+		return false;
+	}
+
+	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
+		return referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 	}
 
 	public static boolean isContainerReference(ReferenceDeclaration referenceDeclaration) {
