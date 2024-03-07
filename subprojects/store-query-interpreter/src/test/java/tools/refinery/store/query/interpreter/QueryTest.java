@@ -9,26 +9,26 @@ import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.ParameterDirection;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.term.ParameterDirection;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.query.interpreter.tests.QueryEngineTest;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 import java.util.Map;
 
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.query.term.int_.IntTerms.constant;
-import static tools.refinery.store.query.term.int_.IntTerms.greaterEq;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.literal.Literals.not;
+import static tools.refinery.logic.term.int_.IntTerms.constant;
+import static tools.refinery.logic.term.int_.IntTerms.greaterEq;
 import static tools.refinery.store.query.interpreter.tests.QueryAssertions.assertResults;
 
 class QueryTest {

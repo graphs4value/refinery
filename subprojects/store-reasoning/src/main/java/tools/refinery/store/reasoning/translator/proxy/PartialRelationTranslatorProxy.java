@@ -5,11 +5,11 @@
  */
 package tools.refinery.store.reasoning.translator.proxy;
 
+import tools.refinery.logic.literal.AbstractCallLiteral;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
-import tools.refinery.store.query.literal.AbstractCallLiteral;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;

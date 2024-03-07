@@ -8,8 +8,8 @@ package tools.refinery.store.query.interpreter;
 import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.query.interpreter.tests.QueryEngineTest;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FunctionView;
@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.query.term.int_.IntTerms.INT_SUM;
+import static tools.refinery.logic.literal.Literals.not;
+import static tools.refinery.logic.term.int_.IntTerms.INT_SUM;
 import static tools.refinery.store.query.interpreter.tests.QueryAssertions.assertNullableResults;
 import static tools.refinery.store.query.interpreter.tests.QueryAssertions.assertResults;
 

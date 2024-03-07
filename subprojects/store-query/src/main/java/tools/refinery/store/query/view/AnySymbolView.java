@@ -5,10 +5,10 @@
  */
 package tools.refinery.store.query.view;
 
+import tools.refinery.logic.dnf.FunctionalDependency;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.dnf.FunctionalDependency;
+import tools.refinery.logic.Constraint;
 import tools.refinery.store.representation.AnySymbol;
-import tools.refinery.store.query.Constraint;
 
 import java.util.Set;
 

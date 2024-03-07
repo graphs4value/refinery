@@ -6,7 +6,7 @@
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 import java.util.*;
 

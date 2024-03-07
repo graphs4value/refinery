@@ -8,8 +8,8 @@ package tools.refinery.store.reasoning.scope;
 import com.google.ortools.linearsolver.MPConstraint;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.store.query.dnf.AnyQuery;
-import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.tuple.Tuple;
 

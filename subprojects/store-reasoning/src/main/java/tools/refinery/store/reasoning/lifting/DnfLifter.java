@@ -5,9 +5,9 @@
  */
 package tools.refinery.store.reasoning.lifting;
 
-import tools.refinery.store.query.dnf.*;
-import tools.refinery.store.query.equality.DnfEqualityChecker;
-import tools.refinery.store.query.literal.Literal;
+import tools.refinery.logic.dnf.*;
+import tools.refinery.logic.equality.DnfEqualityChecker;
+import tools.refinery.logic.literal.Literal;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
 

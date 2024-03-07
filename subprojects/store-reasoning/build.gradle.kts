@@ -10,6 +10,6 @@ plugins {
 
 dependencies {
 	api(project(":refinery-store-dse"))
-	testImplementation(testFixtures(project(":refinery-store-query")))
+	testImplementation(testFixtures(project(":refinery-logic")))
 	testImplementation(project(":refinery-store-query-interpreter"))
 }

@@ -6,11 +6,11 @@
 package tools.refinery.store.query.interpreter;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.literal.Connectivity;
+import tools.refinery.logic.literal.RepresentativeElectionLiteral;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.literal.Connectivity;
-import tools.refinery.store.query.literal.RepresentativeElectionLiteral;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;

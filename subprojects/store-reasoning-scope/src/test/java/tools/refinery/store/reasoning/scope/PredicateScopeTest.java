@@ -9,13 +9,15 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
@@ -27,14 +29,12 @@ import tools.refinery.store.reasoning.translator.containment.ContainmentHierarch
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 import tools.refinery.store.reasoning.translator.metamodel.MetamodelTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 
 class PredicateScopeTest {
 	private static final PartialRelation index = new PartialRelation("Index", 1);

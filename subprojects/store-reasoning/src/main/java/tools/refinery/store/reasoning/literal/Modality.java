@@ -5,7 +5,8 @@
  */
 package tools.refinery.store.reasoning.literal;
 
-import tools.refinery.store.query.literal.CallPolarity;
+
+import tools.refinery.logic.literal.CallPolarity;
 
 import java.util.Locale;
 

@@ -5,13 +5,14 @@
  */
 package tools.refinery.store.reasoning.translator.predicate;
 
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.ForbiddenView;
 import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
@@ -19,9 +20,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
 
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 

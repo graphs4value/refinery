@@ -5,10 +5,10 @@
  */
 package tools.refinery.store.reasoning.actions;
 
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 import java.util.List;
 

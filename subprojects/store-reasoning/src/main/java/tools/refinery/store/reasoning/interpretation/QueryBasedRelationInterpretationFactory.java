@@ -9,12 +9,12 @@ import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Set;

@@ -12,7 +12,7 @@ import tools.refinery.interpreter.rete.index.Indexer;
 import tools.refinery.interpreter.rete.matcher.RetePatternMatcher;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.Cursors;
-import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.query.interpreter.internal.QueryInterpreterAdapterImpl;
 import tools.refinery.store.tuple.Tuple;
 

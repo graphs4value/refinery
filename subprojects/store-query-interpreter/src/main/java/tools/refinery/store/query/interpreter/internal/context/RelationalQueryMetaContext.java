@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -48,7 +48,7 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 		}
 		var symbolView = checkKey(implyingKey);
 		var relationViewImplications = symbolView.getImpliedRelationViews();
-		var inputKeyImplications = new HashSet<InputKeyImplication>(relationViewImplications.size());
+		var inputKeyImplications = HashSet.<InputKeyImplication>newHashSet(relationViewImplications.size());
 		for (var relationViewImplication : relationViewImplications) {
 			if (!symbolView.equals(relationViewImplication.implyingView())) {
 				throw new IllegalArgumentException("Relation view %s returned unrelated implication %s".formatted(
@@ -82,7 +82,7 @@ public class RelationalQueryMetaContext extends AbstractQueryMetaContext {
 		}
 		var relationView = checkKey(key);
 		var functionalDependencies = relationView.getFunctionalDependencies();
-		var flattened = new HashMap<Set<Integer>, Set<Integer>>(functionalDependencies.size());
+		var flattened = HashMap.<Set<Integer>, Set<Integer>>newHashMap(functionalDependencies.size());
 		for (var functionalDependency : functionalDependencies) {
 			var forEach = functionalDependency.forEach();
 			checkValidIndices(relationView, forEach);

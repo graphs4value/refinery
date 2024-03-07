@@ -7,7 +7,7 @@ package tools.refinery.store.query.interpreter.internal.matcher;
 
 import tools.refinery.interpreter.matchers.backend.IQueryResultProvider;
 import tools.refinery.interpreter.matchers.backend.IUpdateable;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.query.resultset.AbstractResultSet;
 import tools.refinery.store.query.interpreter.internal.QueryInterpreterAdapterImpl;
 

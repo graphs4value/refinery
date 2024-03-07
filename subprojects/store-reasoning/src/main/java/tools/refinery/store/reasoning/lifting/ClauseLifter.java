@@ -5,13 +5,13 @@
  */
 package tools.refinery.store.reasoning.lifting;
 
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.DnfClause;
-import tools.refinery.store.query.literal.*;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.ParameterDirection;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.DnfClause;
+import tools.refinery.logic.literal.*;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.ParameterDirection;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;

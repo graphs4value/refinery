@@ -7,7 +7,7 @@ package tools.refinery.language.semantics.internal;
 
 import org.eclipse.collections.api.LazyIntIterable;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 abstract class DecisionTreeNode {
 	public DecisionTreeValue getReducedValue() {

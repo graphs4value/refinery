@@ -18,9 +18,9 @@ import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -36,7 +36,7 @@ import static tools.refinery.store.dse.modification.actions.ModificationActionLi
 import static tools.refinery.store.dse.modification.actions.ModificationActionLiterals.delete;
 import static tools.refinery.store.dse.transition.actions.ActionLiterals.add;
 import static tools.refinery.store.dse.transition.actions.ActionLiterals.remove;
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 
 class CRAExamplesTest {
 	private static final Symbol<String> name = Symbol.of("Name", 1, String.class);

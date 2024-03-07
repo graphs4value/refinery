@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.view;
 
-import tools.refinery.store.query.term.*;
+import tools.refinery.logic.term.*;
 import tools.refinery.store.representation.Symbol;
 
 import java.util.ArrayList;

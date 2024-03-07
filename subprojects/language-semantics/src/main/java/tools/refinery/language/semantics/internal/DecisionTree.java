@@ -7,7 +7,7 @@ package tools.refinery.language.semantics.internal;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 class DecisionTree implements MutableSeed<TruthValue> {

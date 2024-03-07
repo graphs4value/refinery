@@ -8,9 +8,9 @@ package tools.refinery.store.dse.transition;
 import tools.refinery.store.dse.transition.actions.Action;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.dse.transition.callback.*;
-import tools.refinery.store.query.dnf.AbstractQueryBuilder;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.AbstractQueryBuilder;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.term.Variable;
 
 import java.util.List;
 

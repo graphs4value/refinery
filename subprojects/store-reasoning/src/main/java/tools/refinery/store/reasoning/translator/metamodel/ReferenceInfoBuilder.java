@@ -11,8 +11,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 
 public final class ReferenceInfoBuilder {
 	private boolean containment;

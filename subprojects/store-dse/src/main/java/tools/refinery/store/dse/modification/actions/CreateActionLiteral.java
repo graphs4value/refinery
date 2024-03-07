@@ -9,7 +9,7 @@ import tools.refinery.store.dse.modification.ModificationAdapter;
 import tools.refinery.store.dse.transition.actions.AbstractActionLiteral;
 import tools.refinery.store.dse.transition.actions.BoundActionLiteral;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.term.NodeVariable;
 
 import java.util.List;
 

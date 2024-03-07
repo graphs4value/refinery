@@ -8,9 +8,9 @@ package tools.refinery.store.reasoning.translator.multiobject;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.query.resultset.ResultSet;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
@@ -20,17 +20,17 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
+import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 
 class PartialCountTest {

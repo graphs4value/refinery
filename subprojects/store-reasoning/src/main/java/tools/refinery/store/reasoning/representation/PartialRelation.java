@@ -5,11 +5,11 @@
  */
 package tools.refinery.store.reasoning.representation;
 
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.term.Parameter;
-import tools.refinery.store.representation.AbstractDomain;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.TruthValueDomain;
+import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.term.Parameter;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValueDomain;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +44,7 @@ public record PartialRelation(String name, int arity) implements PartialSymbol<T
 
 	@Override
 	public int hashCode() {
-		// Compare by identity to make hash table lookups more efficient.
+		// Compare by identity to make hash table look-ups more efficient.
 		return System.identityHashCode(this);
 	}
 

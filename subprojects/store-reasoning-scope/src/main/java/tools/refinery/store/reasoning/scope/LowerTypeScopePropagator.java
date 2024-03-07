@@ -5,26 +5,26 @@
  */
 package tools.refinery.store.reasoning.scope;
 
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.uppercardinality.UpperCardinality;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.dnf.AnyQuery;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.literal.CountCandidateLowerBoundLiteral;
 import tools.refinery.store.reasoning.literal.CountUpperBoundLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.Collection;
 import java.util.List;
 
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.term.int_.IntTerms.*;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.term.int_.IntTerms.*;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 

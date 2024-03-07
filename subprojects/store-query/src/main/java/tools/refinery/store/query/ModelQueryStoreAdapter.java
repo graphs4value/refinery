@@ -7,8 +7,8 @@ package tools.refinery.store.query;
 
 import tools.refinery.store.adapter.ModelStoreAdapter;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.dnf.AnyQuery;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.query.view.AnySymbolView;
 
 import java.util.Collection;

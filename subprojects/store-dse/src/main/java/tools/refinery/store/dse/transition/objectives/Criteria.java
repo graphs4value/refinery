@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.dse.transition.objectives;
 
-import tools.refinery.store.query.dnf.AnyQuery;
+import tools.refinery.logic.dnf.AnyQuery;
 
 import java.util.Collection;
 import java.util.List;

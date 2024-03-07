@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.reasoning.representation;
 
-import tools.refinery.store.representation.AbstractDomain;
+import tools.refinery.logic.AbstractDomain;
 
 public record PartialFunction<A, C>(String name, int arity, AbstractDomain<A, C> abstractDomain)
 		implements AnyPartialFunction, PartialSymbol<A, C> {

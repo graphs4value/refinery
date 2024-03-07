@@ -5,9 +5,9 @@
  */
 package tools.refinery.store.dse.transition.objectives;
 
+import tools.refinery.logic.literal.Reduction;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.literal.Reduction;
 
 import java.util.ArrayList;
 import java.util.Collection;

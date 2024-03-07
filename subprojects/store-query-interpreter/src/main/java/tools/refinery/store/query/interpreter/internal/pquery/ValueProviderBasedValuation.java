@@ -6,8 +6,8 @@
 package tools.refinery.store.query.interpreter.internal.pquery;
 
 import tools.refinery.interpreter.matchers.psystem.IValueProvider;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.valuation.Valuation;
+import tools.refinery.logic.term.DataVariable;
+import tools.refinery.logic.valuation.Valuation;
 
 public record ValueProviderBasedValuation(IValueProvider valueProvider) implements Valuation {
 	@Override

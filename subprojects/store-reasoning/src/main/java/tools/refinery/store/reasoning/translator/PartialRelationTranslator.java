@@ -5,18 +5,19 @@
  */
 package tools.refinery.store.reasoning.translator;
 
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.QueryBuilder;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Criterion;
 import tools.refinery.store.dse.transition.objectives.Objective;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.QueryBuilder;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.NodeVariable;
 import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -36,12 +37,11 @@ import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
 
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 
 @SuppressWarnings("UnusedReturnValue")
 public final class PartialRelationTranslator extends PartialSymbolTranslator<TruthValue, Boolean> {

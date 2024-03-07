@@ -16,8 +16,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;

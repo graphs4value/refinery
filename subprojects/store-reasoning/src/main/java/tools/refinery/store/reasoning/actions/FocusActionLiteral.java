@@ -8,7 +8,7 @@ package tools.refinery.store.reasoning.actions;
 import tools.refinery.store.dse.transition.actions.AbstractActionLiteral;
 import tools.refinery.store.dse.transition.actions.BoundActionLiteral;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 
 import java.util.List;

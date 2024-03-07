@@ -6,8 +6,8 @@
 package tools.refinery.store.query.interpreter.internal.pquery;
 
 import tools.refinery.interpreter.matchers.psystem.aggregations.IMultisetAggregationOperator;
-import tools.refinery.store.query.term.StatefulAggregate;
-import tools.refinery.store.query.term.StatefulAggregator;
+import tools.refinery.logic.term.StatefulAggregate;
+import tools.refinery.logic.term.StatefulAggregator;
 
 import java.util.stream.Stream;
 

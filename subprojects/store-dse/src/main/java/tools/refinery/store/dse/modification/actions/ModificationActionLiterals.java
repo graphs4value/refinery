@@ -6,7 +6,7 @@
 package tools.refinery.store.dse.modification.actions;
 
 import tools.refinery.store.dse.modification.DanglingEdges;
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.term.NodeVariable;
 
 public class ModificationActionLiterals {
 	private ModificationActionLiterals() {

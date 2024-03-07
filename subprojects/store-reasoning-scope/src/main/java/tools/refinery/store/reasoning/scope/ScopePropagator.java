@@ -13,8 +13,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 
 import java.util.*;
 

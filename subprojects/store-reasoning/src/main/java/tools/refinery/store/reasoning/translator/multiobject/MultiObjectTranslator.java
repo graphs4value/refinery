@@ -5,17 +5,21 @@
  */
 package tools.refinery.store.reasoning.translator.multiobject;
 
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.literal.Literals;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityDomain;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.int_.IntTerms;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
+import tools.refinery.logic.term.uppercardinality.UpperCardinality;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.literal.Literals;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.term.int_.IntTerms;
-import tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
@@ -24,15 +28,11 @@ import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityDomain;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.List;
 
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.term.int_.IntTerms.*;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.term.int_.IntTerms.*;
 
 public class MultiObjectTranslator implements ModelStoreConfiguration {
 	public static final Symbol<CardinalityInterval> COUNT_STORAGE = Symbol.of("COUNT", 1, CardinalityInterval.class,

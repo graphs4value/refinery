@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.reasoning.representation;
 
-import tools.refinery.store.representation.AbstractDomain;
+import tools.refinery.logic.AbstractDomain;
 
 public sealed interface PartialSymbol<A, C> extends AnyPartialSymbol permits PartialFunction, PartialRelation {
 	@Override

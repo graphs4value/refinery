@@ -5,7 +5,7 @@
  */
 package tools.refinery.language.semantics.internal;
 
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public enum DecisionTreeValue {
 	UNSET(null),

@@ -5,11 +5,11 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
-import tools.refinery.store.query.dnf.Query;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.actions.PartialActionLiterals;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
@@ -21,7 +21,7 @@ import tools.refinery.store.representation.Symbol;
 
 import java.util.ArrayList;
 
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.candidateMust;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 

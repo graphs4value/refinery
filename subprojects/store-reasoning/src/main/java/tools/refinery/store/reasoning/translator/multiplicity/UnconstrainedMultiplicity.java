@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.reasoning.translator.multiplicity;
 
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 
 // Singleton implementation, because there is only a single complete interval.
 @SuppressWarnings("squid:S6548")

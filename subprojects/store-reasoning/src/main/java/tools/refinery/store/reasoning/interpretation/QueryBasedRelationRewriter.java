@@ -5,10 +5,10 @@
  */
 package tools.refinery.store.reasoning.interpretation;
 
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.AbstractCallLiteral;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.AbstractCallLiteral;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
 

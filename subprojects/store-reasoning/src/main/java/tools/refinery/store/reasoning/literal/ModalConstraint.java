@@ -5,11 +5,11 @@
  */
 package tools.refinery.store.reasoning.literal;
 
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.InvalidQueryException;
-import tools.refinery.store.query.equality.LiteralEqualityHelper;
-import tools.refinery.store.query.literal.Reduction;
-import tools.refinery.store.query.term.Parameter;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.InvalidQueryException;
+import tools.refinery.logic.equality.LiteralEqualityHelper;
+import tools.refinery.logic.literal.Reduction;
+import tools.refinery.logic.term.Parameter;
 import tools.refinery.store.query.view.AnySymbolView;
 
 import java.util.List;

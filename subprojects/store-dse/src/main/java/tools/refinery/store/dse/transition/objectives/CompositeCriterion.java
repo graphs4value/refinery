@@ -5,11 +5,11 @@
  */
 package tools.refinery.store.dse.transition.objectives;
 
-import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.literal.Reduction;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 public abstract sealed class CompositeCriterion implements Criterion permits AndCriterion, OrCriterion {
 	private final List<Criterion> criteria;
@@ -30,9 +30,6 @@ public abstract sealed class CompositeCriterion implements Criterion permits And
 	public List<Criterion> getCriteria() {
 		return criteria;
 	}
-
-	@Override
-	public abstract Reduction getReduction(ModelStore store);
 
 	@Override
 	public void configure(ModelStoreBuilder storeBuilder) {

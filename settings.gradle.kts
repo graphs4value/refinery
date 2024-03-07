@@ -19,6 +19,7 @@ include(
 		"language-model",
 		"language-semantics",
 		"language-web",
+		"logic",
 		"store",
 		"store-dse",
 		"store-dse-visualization",

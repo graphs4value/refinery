@@ -6,7 +6,7 @@
 package tools.refinery.language.semantics.internal;
 
 import tools.refinery.store.reasoning.seed.Seed;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 public interface MutableSeed<T> extends Seed<T> {

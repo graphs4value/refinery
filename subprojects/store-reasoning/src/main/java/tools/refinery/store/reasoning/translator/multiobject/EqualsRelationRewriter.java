@@ -5,25 +5,25 @@
  */
 package tools.refinery.store.reasoning.translator.multiobject;
 
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.AbstractCallLiteral;
-import tools.refinery.store.query.literal.CallLiteral;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.AbstractCallLiteral;
+import tools.refinery.logic.literal.CallLiteral;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
+import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.interpretation.QueryBasedRelationRewriter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
 
 import java.util.List;
 import java.util.Set;
 
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms.constant;
-import static tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms.lessEq;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms.constant;
+import static tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms.lessEq;
 
 class EqualsRelationRewriter extends QueryBasedRelationRewriter {
 	private EqualsRelationRewriter(RelationalQuery may, RelationalQuery must) {

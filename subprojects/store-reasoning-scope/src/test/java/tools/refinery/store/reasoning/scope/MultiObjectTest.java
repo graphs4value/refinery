@@ -20,9 +20,9 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;
