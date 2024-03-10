@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -23,7 +23,7 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, B
 
 	static {
 		var values = TruthValue.values();
-		EMPTY_VALUES = new LinkedHashMap<>(values.length);
+		EMPTY_VALUES = LinkedHashMap.newLinkedHashMap(values.length);
 		for (var value : values) {
 			EMPTY_VALUES.put(value, new InferredContainment(value, Set.of(), Set.of()));
 		}
@@ -53,7 +53,7 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, B
 	}
 
 	public InferredContainment mergeLink(InferredContainment oldValue, TruthValue toMerge) {
-		var newContains = oldValue.contains().merge(toMerge);
+		var newContains = oldValue.contains().meet(toMerge);
 		if (newContains.equals(oldValue.contains())) {
 			return oldValue;
 		}

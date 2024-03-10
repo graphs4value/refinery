@@ -31,11 +31,11 @@ final class InferredContainment {
 											 Set<PartialRelation> forbiddenLinks) {
 		var result = contains;
 		if (!mustLinks.isEmpty()) {
-			result = result.merge(TruthValue.TRUE);
+			result = result.meet(TruthValue.TRUE);
 		}
 		boolean hasErrorLink = mustLinks.stream().anyMatch(forbiddenLinks::contains);
 		if (mustLinks.size() >= 2 || hasErrorLink) {
-			result = result.merge(TruthValue.ERROR);
+			result = result.meet(TruthValue.ERROR);
 		}
 		return result;
 	}

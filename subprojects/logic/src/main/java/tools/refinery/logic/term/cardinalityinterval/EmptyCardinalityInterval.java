@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.logic.term.cardinalityinterval;
 
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 
@@ -18,13 +19,25 @@ public final class EmptyCardinalityInterval implements CardinalityInterval {
 	}
 
 	@Override
-	public int lowerBound() {
-		return 1;
+	@Nullable
+	public Integer getConcrete() {
+		return null;
 	}
 
 	@Override
-	public boolean isEmpty() {
+	@Nullable
+	public Integer getArbitrary() {
+		return null;
+	}
+
+	@Override
+	public boolean isRefinementOf(CardinalityInterval other) {
 		return true;
+	}
+
+	@Override
+	public int lowerBound() {
+		return 1;
 	}
 
 	@Override

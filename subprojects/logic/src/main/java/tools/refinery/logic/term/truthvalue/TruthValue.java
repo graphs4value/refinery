@@ -1,11 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.logic.term.truthvalue;
 
-public enum TruthValue {
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.AbstractValue;
+
+public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 	TRUE("true"),
 
 	FALSE("false"),
@@ -28,14 +31,41 @@ public enum TruthValue {
 		return value ? TRUE : FALSE;
 	}
 
-	public boolean isConsistent() {
-		return this != ERROR;
+	@Override
+	@Nullable
+	public Boolean getArbitrary() {
+		return switch (this) {
+			case TRUE -> true;
+			case FALSE, UNKNOWN -> false;
+			case ERROR -> null;
+		};
 	}
+
+	@Override
+	public boolean isError() {
+		return this == ERROR;
+	}
+
+	public boolean isConsistent() {
+		return !isError();
+	}
+
 
 	public boolean isComplete() {
 		return this != UNKNOWN;
 	}
 
+	@Override
+	@Nullable
+	public Boolean getConcrete() {
+		return switch (this) {
+			case TRUE -> true;
+			case FALSE -> false;
+			default -> null;
+		};
+	}
+
+	@Override
 	public boolean isConcrete() {
 		return this == TRUE || this == FALSE;
 	}
@@ -56,21 +86,23 @@ public enum TruthValue {
 		};
 	}
 
-	public TruthValue merge(TruthValue other) {
-		return switch (this) {
-			case TRUE -> other == UNKNOWN || other == TRUE ? TRUE : ERROR;
-			case FALSE -> other == UNKNOWN || other == FALSE ? FALSE : ERROR;
-			case UNKNOWN -> other;
-			case ERROR -> ERROR;
-		};
-	}
-
+	@Override
 	public TruthValue join(TruthValue other) {
 		return switch (this) {
 			case TRUE -> other == ERROR || other == TRUE ? TRUE : UNKNOWN;
 			case FALSE -> other == ERROR || other == FALSE ? FALSE : UNKNOWN;
 			case UNKNOWN -> UNKNOWN;
 			case ERROR -> other;
+		};
+	}
+
+	@Override
+	public TruthValue meet(TruthValue other) {
+		return switch (this) {
+			case TRUE -> other == UNKNOWN || other == TRUE ? TRUE : ERROR;
+			case FALSE -> other == UNKNOWN || other == FALSE ? FALSE : ERROR;
+			case UNKNOWN -> other;
+			case ERROR -> ERROR;
 		};
 	}
 }

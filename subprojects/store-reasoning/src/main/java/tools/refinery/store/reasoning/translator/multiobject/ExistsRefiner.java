@@ -42,7 +42,7 @@ public class ExistsRefiner extends AbstractPartialInterpretationRefiner<TruthVal
 		}
 		default -> throw new IllegalArgumentException("Unknown TruthValue: " + value);
 		}
-		if (newCount.isEmpty()) {
+		if (newCount.isError()) {
 			return false;
 		}
 		countInterpretation.put(key, newCount);

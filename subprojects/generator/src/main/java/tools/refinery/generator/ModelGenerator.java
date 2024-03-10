@@ -9,6 +9,7 @@ import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
@@ -24,7 +25,7 @@ public class ModelGenerator extends ModelFacade {
 	private boolean lastGenerationSuccessful;
 
 	ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-                          Provider<SolutionSerializer> solutionSerializerProvider) {
+				   Provider<SolutionSerializer> solutionSerializerProvider) {
 		super(problemTrace, store, modelSeed, Concreteness.CANDIDATE);
 		this.solutionSerializerProvider = solutionSerializerProvider;
 		initialVersion = getModel().commit();
@@ -66,7 +67,8 @@ public class ModelGenerator extends ModelFacade {
 	}
 
 	@Override
-	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(PartialSymbol<A, C> partialSymbol) {
+	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
+			PartialSymbol<A, C> partialSymbol) {
 		checkSuccessfulGeneration();
 		return super.getPartialInterpretation(partialSymbol);
 	}

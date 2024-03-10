@@ -5,10 +5,7 @@
  */
 package tools.refinery.logic.term.cardinalityinterval;
 
-import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.logic.AbstractDomain;
-
-import java.util.Optional;
 
 // Singleton pattern, because there is only one domain for truth values.
 @SuppressWarnings("squid:S6548")
@@ -29,41 +26,17 @@ public class CardinalityDomain implements AbstractDomain<CardinalityInterval, In
 	}
 
 	@Override
-	public CardinalityInterval toAbstract(Integer concreteValue) {
-		return CardinalityIntervals.exactly(concreteValue);
-	}
-
-	@Override
-	public Optional<Integer> toConcrete(CardinalityInterval abstractValue) {
-		return isConcrete(abstractValue) ? Optional.of(abstractValue.lowerBound()) : Optional.empty();
-	}
-
-	@Override
-	public boolean isConcrete(CardinalityInterval abstractValue) {
-		if (!(abstractValue instanceof NonEmptyCardinalityInterval nonEmptyValue) ||
-				!((nonEmptyValue.upperBound()) instanceof FiniteUpperCardinality finiteUpperCardinality)) {
-			return false;
-		}
-		return nonEmptyValue.lowerBound() == finiteUpperCardinality.finiteUpperBound();
-	}
-
-	@Override
-	public CardinalityInterval commonRefinement(CardinalityInterval leftValue, CardinalityInterval rightValue) {
-		return leftValue.meet(rightValue);
-	}
-
-	@Override
-	public CardinalityInterval commonAncestor(CardinalityInterval leftValue, CardinalityInterval rightValue) {
-		return leftValue.join(rightValue);
-	}
-
-	@Override
 	public CardinalityInterval unknown() {
 		return CardinalityIntervals.SET;
 	}
 
 	@Override
-	public boolean isError(CardinalityInterval abstractValue) {
-		return abstractValue.isEmpty();
+	public CardinalityInterval error() {
+		return CardinalityIntervals.ERROR;
+	}
+
+	@Override
+	public CardinalityInterval toAbstract(Integer concreteValue) {
+		return CardinalityIntervals.exactly(concreteValue);
 	}
 }

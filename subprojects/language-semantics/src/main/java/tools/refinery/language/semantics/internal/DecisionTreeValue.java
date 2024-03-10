@@ -25,7 +25,7 @@ public enum DecisionTreeValue {
 	}
 
 	public TruthValue merge(TruthValue other) {
-		return truthValue == null ? other : truthValue.merge(other);
+		return truthValue == null ? other : truthValue.meet(other);
 	}
 
 	public DecisionTreeValue overwrite(DecisionTreeValue other) {

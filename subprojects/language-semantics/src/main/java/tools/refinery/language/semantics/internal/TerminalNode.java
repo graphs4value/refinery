@@ -48,7 +48,7 @@ class TerminalNode extends DecisionTreeNode {
 	protected void mergeAllValues(int nextLevel, Tuple tuple, TruthValue value) {
 		otherwise = DecisionTreeValue.fromTruthValue(otherwise.merge(value));
 		children = IntObjectMaps.mutable.from(children.keyValuesView(), IntObjectPair::getOne,
-				pair -> pair.getTwo().merge(value));
+				pair -> pair.getTwo().meet(value));
 		reduceChildren();
 	}
 

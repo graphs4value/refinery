@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.seed;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
@@ -33,7 +34,7 @@ public interface Seed<T> {
 		return builder(symbol.arity(), symbol.valueType(), symbol.defaultValue());
 	}
 
-	static <T> Builder<T> builder(PartialSymbol<T, ?> partialSymbol) {
+	static <T extends AbstractValue<T, ?>> Builder<T> builder(PartialSymbol<T, ?> partialSymbol) {
 		return builder(partialSymbol.arity(), partialSymbol.abstractDomain().abstractType(),
 				partialSymbol.defaultValue());
 	}

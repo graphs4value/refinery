@@ -6,6 +6,7 @@
 package tools.refinery.generator;
 
 import tools.refinery.language.semantics.ProblemTrace;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -52,7 +53,8 @@ public abstract class ModelFacade {
 		return concreteness;
 	}
 
-	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(PartialSymbol<A, C> partialSymbol) {
+	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
+			PartialSymbol<A, C> partialSymbol) {
 		return reasoningAdapter.getPartialInterpretation(concreteness, partialSymbol);
 	}
 }

@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.actions;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.transition.actions.AbstractActionLiteral;
 import tools.refinery.store.dse.transition.actions.BoundActionLiteral;
 import tools.refinery.store.model.Model;
@@ -15,7 +16,7 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 
-public class MergeActionLiteral<A, C> extends AbstractActionLiteral {
+public class MergeActionLiteral<A extends AbstractValue<A, C>, C> extends AbstractActionLiteral {
 	private final PartialSymbol<A, C> partialSymbol;
 	private final List<NodeVariable> parameters;
 	private final A value;

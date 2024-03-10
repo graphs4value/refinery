@@ -28,7 +28,7 @@ class MultiObjectStorageRefiner implements StorageRefiner {
 			return false;
 		}
 		var newParentCount = parentCount.take(1);
-		if (newParentCount.isEmpty()) {
+		if (newParentCount.isError()) {
 			return false;
 		}
 		var childKey = Tuple.of(childNode);

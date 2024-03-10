@@ -64,7 +64,7 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner<TruthV
 		if (mustLinks.contains(factory.linkType)) {
 			return oldValue;
 		}
-		return new InferredContainment(oldValue.contains().merge(TruthValue.TRUE),
+		return new InferredContainment(oldValue.contains().meet(TruthValue.TRUE),
 				addToSet(mustLinks, factory.linkType), oldValue.forbiddenLinks());
 	}
 

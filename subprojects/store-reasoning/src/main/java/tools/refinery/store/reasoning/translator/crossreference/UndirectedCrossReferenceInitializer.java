@@ -73,7 +73,7 @@ class UndirectedCrossReferenceInitializer implements PartialModelInitializer {
 				// Already processed entry.
 				continue;
 			}
-			var mergedValue = value.merge(oppositeValue == null ? defaultValue : oppositeValue);
+			var mergedValue = value.meet(oppositeValue == null ? defaultValue : oppositeValue);
 			mergedMap.put(key, mergedValue);
 			if (first != second) {
 				mergedMap.put(oppositeKey, mergedValue);

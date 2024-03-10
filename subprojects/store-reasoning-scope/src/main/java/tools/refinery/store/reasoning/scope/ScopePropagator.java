@@ -48,7 +48,7 @@ public class ScopePropagator implements ModelStoreConfiguration {
 		}
 		var newValue = scopes.compute(type, (ignoredKey, oldValue) ->
 				oldValue == null ? interval : oldValue.meet(interval));
-		if (newValue.isEmpty()) {
+		if (newValue.isError()) {
 			throw new TranslationException(type, "Unsatisfiable scope for type %s".formatted(type));
 		}
 		return this;

@@ -1,16 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.seed;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
 
-public class SeedInitializer<T> implements PartialModelInitializer {
+public class SeedInitializer<T extends AbstractValue<T, ?>> implements PartialModelInitializer {
 	private final Symbol<T> symbol;
 	private final PartialSymbol<T, ?> partialSymbol;
 

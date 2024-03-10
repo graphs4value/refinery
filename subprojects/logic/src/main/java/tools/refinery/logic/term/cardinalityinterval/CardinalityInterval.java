@@ -5,14 +5,14 @@
  */
 package tools.refinery.logic.term.cardinalityinterval;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 
-public sealed interface CardinalityInterval permits NonEmptyCardinalityInterval, EmptyCardinalityInterval {
+public sealed interface CardinalityInterval extends AbstractValue<CardinalityInterval, Integer>
+		permits NonEmptyCardinalityInterval, EmptyCardinalityInterval {
 	int lowerBound();
 
 	UpperCardinality upperBound();
-
-	boolean isEmpty();
 
 	CardinalityInterval min(CardinalityInterval other);
 
@@ -23,8 +23,4 @@ public sealed interface CardinalityInterval permits NonEmptyCardinalityInterval,
 	CardinalityInterval take(int count);
 
 	CardinalityInterval multiply(CardinalityInterval other);
-
-	CardinalityInterval meet(CardinalityInterval other);
-
-	CardinalityInterval join(CardinalityInterval other);
 }

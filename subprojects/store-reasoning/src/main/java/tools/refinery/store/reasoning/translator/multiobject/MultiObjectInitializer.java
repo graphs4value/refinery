@@ -37,7 +37,7 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		var uniqueTable = new HashMap<CardinalityInterval, CardinalityInterval>();
 		for (int i = 0; i < intervals.length; i++) {
 			var interval = intervals[i];
-			if (interval.isEmpty()) {
+			if (interval.isError()) {
 				throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
 						"Inconsistent existence or equality for node " + i);
 			}

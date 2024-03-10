@@ -15,13 +15,13 @@ class CardinalityIntervalsTest {
 	@Test
 	void betweenEmptyTest() {
 		var interval = CardinalityIntervals.between(2, 1);
-		assertThat(interval.isEmpty(), equalTo(true));
+		assertThat(interval.isError(), equalTo(true));
 	}
 
 	@Test
 	void betweenNegativeUpperBoundTest() {
 		var interval = CardinalityIntervals.between(0, -1);
 		assertThat(interval.upperBound(), equalTo(UpperCardinalities.UNBOUNDED));
-		assertThat(interval.isEmpty(), equalTo(false));
+		assertThat(interval.isError(), equalTo(false));
 	}
 }

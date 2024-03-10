@@ -51,7 +51,7 @@ public class EqualsRefiner extends AbstractPartialInterpretationRefiner<TruthVal
 			return false;
 		}
 		var newCount = currentCount.meet(CardinalityIntervals.LONE);
-		if (newCount.isEmpty()) {
+		if (newCount.isError()) {
 			return false;
 		}
 		countInterpretation.put(unaryKey, newCount);

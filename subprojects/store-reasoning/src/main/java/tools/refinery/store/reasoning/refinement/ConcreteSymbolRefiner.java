@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.refinement;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -13,7 +14,8 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
-public class ConcreteSymbolRefiner<A, C> extends AbstractPartialInterpretationRefiner<A, C> {
+public class ConcreteSymbolRefiner<A extends AbstractValue<A, C>, C>
+		extends AbstractPartialInterpretationRefiner<A, C> {
 	private final Interpretation<A> interpretation;
 
 	public ConcreteSymbolRefiner(ReasoningAdapter adapter, PartialSymbol<A, C> partialSymbol,
@@ -25,14 +27,14 @@ public class ConcreteSymbolRefiner<A, C> extends AbstractPartialInterpretationRe
 	@Override
 	public boolean merge(Tuple key, A value) {
 		var currentValue = interpretation.get(key);
-		var mergedValue = getPartialSymbol().abstractDomain().commonRefinement(currentValue, value);
+		var mergedValue = currentValue.meet(value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			interpretation.put(key, mergedValue);
 		}
 		return true;
 	}
 
-	public static <A1, C1> Factory<A1, C1> of(Symbol<A1> concreteSymbol) {
+	public static <A1 extends AbstractValue<A1, C1>, C1> Factory<A1, C1> of(Symbol<A1> concreteSymbol) {
 		return (adapter, partialSymbol) -> new ConcreteSymbolRefiner<>(adapter, partialSymbol, concreteSymbol);
 	}
 }

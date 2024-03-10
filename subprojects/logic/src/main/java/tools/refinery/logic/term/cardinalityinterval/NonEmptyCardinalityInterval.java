@@ -1,10 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.logic.term.cardinalityinterval;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 
@@ -23,8 +25,34 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 	}
 
 	@Override
-	public boolean isEmpty() {
+	@Nullable
+	public Integer getConcrete() {
+        return isConcrete() ? lowerBound : null;
+    }
+
+	@Override
+	public boolean isConcrete() {
+		return upperBound instanceof FiniteUpperCardinality finiteUpperCardinality &&
+				finiteUpperCardinality.finiteUpperBound() == lowerBound;
+	}
+
+	@Override
+	@NotNull
+	public Integer getArbitrary() {
+		return lowerBound;
+	}
+
+	@Override
+	public boolean isError() {
 		return false;
+	}
+
+	@Override
+	public boolean isRefinementOf(CardinalityInterval other) {
+		if (!(other instanceof NonEmptyCardinalityInterval nonEmptyOther)) {
+			return false;
+		}
+		return lowerBound >= nonEmptyOther.lowerBound() && upperBound.compareTo(nonEmptyOther.upperBound()) <= 0;
 	}
 
 	@Override
