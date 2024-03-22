@@ -147,6 +147,7 @@ function appendStyles(
   svg: SVGSVGElement,
   theme: Theme,
   colorNodes: boolean,
+  hexTypeHashes: string[],
   fontsCSS: string,
 ): void {
   const cache = createCache({
@@ -159,6 +160,7 @@ function appendStyles(
   const styles = serializeStyles([createGraphTheme], cache.registered, {
     theme,
     colorNodes,
+    hexTypeHashes,
     noEmbedIcons: true,
   });
   const rules: string[] = [fontsCSS];
@@ -336,7 +338,14 @@ export default async function exportDiagram(
   } else if (settings.format === 'svg' && settings.embedFonts) {
     fontsCSS = await fetchFontCSS();
   }
-  appendStyles(svgDocument, copyOfSVG, theme, colorNodes, fontsCSS);
+  appendStyles(
+    svgDocument,
+    copyOfSVG,
+    theme,
+    colorNodes,
+    graph.hexTypeHashes,
+    fontsCSS,
+  );
 
   if (settings.format === 'pdf') {
     const pdf = await serializePDF(copyOfSVG, settings);

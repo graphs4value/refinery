@@ -14,6 +14,7 @@ import {
   type CSSObject,
   type Theme,
 } from '@mui/material/styles';
+import { lch } from 'd3-color';
 import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
@@ -21,6 +22,7 @@ import svgURL from '../utils/svgURL';
 function createTypeHashStyles(
   theme: Theme,
   colorIdentifiers: boolean,
+  hexTypeHashes: string[],
 ): CSSObject {
   if (!colorIdentifiers) {
     return {};
@@ -34,6 +36,26 @@ function createTypeHashStyles(
       },
     };
   });
+  hexTypeHashes.forEach((typeHash) => {
+    let color = lch(`#${typeHash}`);
+    if (theme.palette.mode === 'dark') {
+      color = color.brighter();
+      if (color.l < 60) {
+        color.l = 60;
+      }
+    } else {
+      color = color.darker();
+      if (color.l > 60) {
+        color.l = 60;
+      }
+    }
+    result[`.tok-problem-typeHash-_${typeHash}`] = {
+      '&, .tok-typeName': {
+        color: color.formatRgb(),
+        fontWeight: theme.typography.fontWeightEditorTypeHash,
+      },
+    };
+  });
   return result;
 }
 
@@ -42,12 +64,20 @@ export default styled('div', {
   shouldForwardProp: (propName) =>
     propName !== 'showLineNumbers' &&
     propName !== 'showActiveLine' &&
-    propName !== 'colorIdentifiers',
+    propName !== 'colorIdentifiers' &&
+    propName !== 'hexTypeHashes',
 })<{
   showLineNumbers: boolean;
   showActiveLine: boolean;
   colorIdentifiers: boolean;
-}>(({ theme, showLineNumbers, showActiveLine, colorIdentifiers }) => {
+  hexTypeHashes: string[];
+}>(({
+  theme,
+  showLineNumbers,
+  showActiveLine,
+  colorIdentifiers,
+  hexTypeHashes,
+}) => {
   const editorFontStyle: CSSObject = {
     ...theme.typography.editor,
     fontWeight: theme.typography.fontWeightEditorNormal,
@@ -157,7 +187,7 @@ export default styled('div', {
         fontStyle: 'normal',
       },
     },
-    ...createTypeHashStyles(theme, colorIdentifiers),
+    ...createTypeHashStyles(theme, colorIdentifiers, hexTypeHashes),
   };
 
   const matchingStyle: CSSObject = {

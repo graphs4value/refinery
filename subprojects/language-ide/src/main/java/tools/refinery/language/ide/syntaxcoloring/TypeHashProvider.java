@@ -5,16 +5,17 @@
  */
 package tools.refinery.language.ide.syntaxcoloring;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.GlobalResourceDescriptionProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
+import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportCollector;
@@ -65,21 +66,30 @@ public class TypeHashProvider {
 
 	private Map<String, String> computeHashes(Problem problem) {
 		var resourceDescriptions = getResourceDescriptions(problem);
+		var map = new HashMap<String, String>();
 		var qualifiedNameStrings = new TreeSet<String>();
 		for (var resourceDescription : resourceDescriptions) {
 			for (var description : resourceDescription.getExportedObjectsByType(ProblemPackage.Literals.RELATION)) {
 				if (ProblemResourceDescriptionStrategy.COLOR_RELATION_TRUE.equals(
 						description.getUserData(ProblemResourceDescriptionStrategy.COLOR_RELATION))) {
 					var qualifiedNameString = qualifiedNameConverter.toString(description.getQualifiedName());
+					var presetColor = getPresetColor(description);
+					if (presetColor != null) {
+						map.put(qualifiedNameString, presetColor);
+					}
 					qualifiedNameStrings.add(qualifiedNameString);
 				}
 			}
 		}
 		var stringList = new ArrayList<>(qualifiedNameStrings);
 		int size = stringList.size();
-		if (size == 0) {
-			return Map.of();
+		if (size != 0) {
+			shuffleColors(size, stringList, map);
 		}
+		return Collections.unmodifiableMap(map);
+	}
+
+	private static void shuffleColors(int size, ArrayList<String> stringList, Map<String, String> map) {
 		// The use of a non-cryptographic random generator is safe here, because we only use it to shuffle the color
 		// IDs in a pseudo-random way. The shuffle depends on the size of the list of identifiers before padding to
 		// make sure that adding a new class randomizes all color IDs.
@@ -91,15 +101,13 @@ public class TypeHashProvider {
 		}
 		size += padding;
 		Collections.shuffle(stringList, random);
-		var mapBuilder = ImmutableMap.<String, String>builder();
 		for (int i = 0; i < size; i++) {
 			var key = stringList.get(i);
 			if (key != null) {
 				int colorId = i % COLOR_COUNT;
-				mapBuilder.put(key, Integer.toString(colorId));
+				map.putIfAbsent(key, Integer.toString(colorId));
 			}
 		}
-		return mapBuilder.build();
 	}
 
 	private List<IResourceDescription> getResourceDescriptions(Problem problem) {
@@ -126,5 +134,9 @@ public class TypeHashProvider {
 			}
 		}
 		return resourceDescriptions;
+	}
+
+	private String getPresetColor(IEObjectDescription description) {
+		return description.getUserData(DocumentationCommentParser.COLOR_TAG);
 	}
 }

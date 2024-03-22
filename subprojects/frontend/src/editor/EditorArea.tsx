@@ -39,6 +39,7 @@ export default observer(function EditorArea({
         showLineNumbers={editorStore.showLineNumbers}
         showActiveLine={!editorStore.hasSelection}
         colorIdentifiers={editorStore.colorIdentifiers}
+        hexTypeHashes={editorStore.hexTypeHashes}
         ref={editorParentRef}
       />
     </Box>

@@ -49,6 +49,8 @@ export function isVisibilityAllowed(
   return true;
 }
 
+const TYPE_HASH_HEX_PREFFIX = '_';
+
 export default class GraphStore {
   semantics: SemanticsSuccessResult = {
     nodes: [],
@@ -65,6 +67,10 @@ export default class GraphStore {
   scopes = false;
 
   selectedSymbol: RelationMetadata | undefined;
+
+  hexTypeHashes: string[] = [];
+
+  private typeHashesMap = new Map<string, number>();
 
   constructor(
     private readonly editorStore: EditorStore,
@@ -188,6 +194,36 @@ export default class GraphStore {
       this.visibility.delete(key);
     });
     this.setSelectedSymbol(this.selectedSymbol);
+    this.updateTypeHashes();
+  }
+
+  /**
+   * Maintains a list of past and current color codes to avoid flashing
+   * when the graph view updates.
+   *
+   * As long as the previously used colors are still in in `typeHashesMap`,
+   * the view will not flash while Graphviz is recomputing, because we'll
+   * keep emitting styles for the colors.
+   */
+  private updateTypeHashes(): void {
+    this.semantics.nodes.forEach(({ typeHash }) => {
+      if (
+        typeHash !== undefined &&
+        typeHash.startsWith(TYPE_HASH_HEX_PREFFIX)
+      ) {
+        const key = typeHash.substring(TYPE_HASH_HEX_PREFFIX.length);
+        this.typeHashesMap.set(key, 0);
+      }
+    });
+    this.hexTypeHashes = Array.from(this.typeHashesMap.keys());
+    this.hexTypeHashes.forEach((typeHash) => {
+      const age = this.typeHashesMap.get(typeHash);
+      if (age !== undefined && age < 10) {
+        this.typeHashesMap.set(typeHash, age + 1);
+      } else {
+        this.typeHashesMap.delete(typeHash);
+      }
+    });
   }
 
   get colorNodes(): boolean {

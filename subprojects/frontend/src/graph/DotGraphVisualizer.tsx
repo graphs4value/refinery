@@ -154,7 +154,13 @@ function DotGraphVisualizer({
     ],
   );
 
-  return <GraphTheme ref={setElement} colorNodes={graph.colorNodes} />;
+  return (
+    <GraphTheme
+      ref={setElement}
+      colorNodes={graph.colorNodes}
+      hexTypeHashes={graph.hexTypeHashes}
+    />
+  );
 }
 
 DotGraphVisualizer.defaultProps = {

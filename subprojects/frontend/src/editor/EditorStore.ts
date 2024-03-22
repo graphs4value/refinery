@@ -111,6 +111,8 @@ export default class EditorStore {
 
   unsavedChanges = false;
 
+  hexTypeHashes: string[] = [];
+
   constructor(
     initialValue: string,
     pwaStore: PWAStore,
@@ -275,8 +277,12 @@ export default class EditorStore {
     this.doCommand(nextDiagnostic);
   }
 
-  updateSemanticHighlighting(ranges: IHighlightRange[]): void {
+  updateSemanticHighlighting(
+    ranges: IHighlightRange[],
+    hexTypeHashes: string[],
+  ): void {
     this.dispatch(setSemanticHighlighting(ranges));
+    this.hexTypeHashes = hexTypeHashes;
   }
 
   updateOccurrences(write: IOccurrence[], read: IOccurrence[]): void {
