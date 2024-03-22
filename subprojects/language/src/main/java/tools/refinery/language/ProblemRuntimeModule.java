@@ -12,6 +12,7 @@ package tools.refinery.language;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
+import org.eclipse.xtext.documentation.impl.AbstractMultiLineCommentProvider;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -143,5 +144,12 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 
 	public Class<? extends IDiagnosticConverter> bindIDiagnosticConverter() {
 		return ProblemDiagnosticConverter.class;
+	}
+
+	public void configureAbstractMultiLineCommentProvider(Binder binder) {
+		// Only parse documentation tags from Javadoc-style comments.
+		binder.bind(String.class)
+				.annotatedWith(Names.named(AbstractMultiLineCommentProvider.START_TAG))
+				.toInstance("/\\*\\*");
 	}
 }

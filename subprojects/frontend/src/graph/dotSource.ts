@@ -10,6 +10,7 @@ import type {
 } from '../xtext/xtextServiceResults';
 
 import type GraphStore from './GraphStore';
+import obfuscateColor from './obfuscateColor';
 
 const EDGE_WEIGHT = 1;
 const CONTAINMENT_WEIGHT = 5;
@@ -143,7 +144,7 @@ function createNodes(
       classList.push('node-empty');
     }
     if (node.typeHash !== undefined) {
-      classList.push(`node-typeHash-${node.typeHash}`);
+      classList.push(`node-typeHash-${obfuscateColor(node.typeHash)}`);
     }
     const classes = classList.join(' ');
     const name = nodeName(graph, node);

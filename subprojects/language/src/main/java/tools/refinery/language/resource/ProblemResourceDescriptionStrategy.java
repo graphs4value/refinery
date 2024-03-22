@@ -18,6 +18,7 @@ import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
+import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.model.problem.*;
@@ -55,6 +56,9 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	@Inject
 	private ImportCollector importCollector;
+
+	@Inject
+	private DocumentationCommentParser documentationCommentParser;
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
@@ -154,6 +158,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError()) {
 			builder.put(ERROR_PREDICATE, ERROR_PREDICATE_TRUE);
 		}
+		var documentationMap = documentationCommentParser.parseDocumentation(eObject);
+		builder.putAll(documentationMap);
 		return builder.build();
 	}
 
