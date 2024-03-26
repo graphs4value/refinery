@@ -23,6 +23,13 @@ interface Row {
   value: string;
 }
 
+declare module '@mui/x-data-grid' {
+  // Declare our custom prop type for `TableToolbar`.
+  interface ToolbarPropsOverrides {
+    graph: GraphStore;
+  }
+}
+
 function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
   const {
     selectedSymbol,
@@ -37,7 +44,7 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
       defs.push({
         field: `n${i}`,
         headerName: String(i + 1),
-        valueGetter: (row) => row.row.nodes[i] ?? '',
+        valueGetter: (_, row) => row.nodes[i] ?? '',
         flex: 1,
       });
     }
@@ -96,7 +103,7 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
             graph,
           },
         }}
-        density="compact"
+        initialState={{ density: 'compact' }}
         rowSelection={false}
         columns={columns}
         rows={rows}
