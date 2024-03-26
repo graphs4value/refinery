@@ -20,13 +20,13 @@ FROM --platform=$BUILDPLATFORM jlink-base AS jlink-arm64-on-amd64
 # target architecture. We forcibly override the target for the objcopy tool.
 # The cross toolchain is not available in Amazon Linux 2023.
 RUN apt-get update && \
-    apt-get install binutils-aarch64-linux-gnu && \
+    apt-get -y install binutils-aarch64-linux-gnu && \
     ln -sf /usr/bin/aarch64-linux-gnu-objcopy /usr/bin/objcopy && \
     rm -rf /var/lib/apt/lists/*
 
 FROM --platform=$BUILDPLATFORM jlink-base AS jlink-amd64-on-arm64
 RUN apt-get update && \
-    apt-get install binutils-x86-64-linux-gnu && \
+    apt-get -y install binutils-x86-64-linux-gnu && \
     ln -sf /usr/bin/x86_64-linux-gnu-objcopy /usr/bin/objcopy && \
     rm -rf /var/lib/apt/lists/*
 
