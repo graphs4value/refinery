@@ -27,10 +27,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          java-version: 21
           distribution: temurin
       - name: Cache Gradle packages
         uses: actions/cache@v3
@@ -62,16 +62,15 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn
       - name: Gradle build
-        if: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         run: |
           ./gradlew build -Pci --info
-      - name: Gradle build and Sonar analyze
+      - name: Sonar analyze
         if: ${{ steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed by Sonar to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew build sonar -Pci --info
+          ./gradlew sonar -Pci --info
   reuse-check:
     name: REUSE Compliance Check
     runs-on: ubuntu-latest
