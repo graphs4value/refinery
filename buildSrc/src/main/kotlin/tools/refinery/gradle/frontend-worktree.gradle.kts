@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -14,11 +14,7 @@ plugins {
 	id("tools.refinery.gradle.internal.frontend-conventions")
 }
 
-val yarn1Version = providers.gradleProperty("frontend.yarn1Version")
-
 frontend {
-	yarnGlobalInstallScript.set(yarn1Version.map { version -> "install -g yarn@$version" })
-	yarnInstallScript.set(frontend.yarnVersion.map { version -> "set version $version --only-if-needed" })
 	installScript.set(provider {
 		if (project.hasProperty("ci")) "install --immutable --inline-builds" else "install"
 	})
@@ -59,20 +55,6 @@ tasks {
 		doLast {
 			putFrontedProperty("installedNodeVersion", frontend.nodeVersion.get())
 		}
-	}
-
-	installYarnGlobally {
-		onlyIf {
-			getFrontendProperty("installedYarn1Version") != yarn1Version.get()
-		}
-		doLast {
-			putFrontedProperty("installedYarn1Version", yarn1Version.get())
-		}
-		outputs.dir(frontend.nodeInstallDirectory.map { dir -> "$dir/lib/node_modules/yarn" })
-	}
-
-	installYarn {
-		outputs.file(frontend.yarnVersion.map { version -> ".yarn/releases/yarn-$version.cjs" })
 	}
 
 	installFrontend {

@@ -5,6 +5,7 @@
 *._trace
 .classpath
 .idea/
+.frontend-gradle-plugin/
 .gradle/
 .launch
 .log/

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -16,13 +16,13 @@ tasks {
 		enabled = false
 	}
 
-	installYarnGlobally {
-		dependsOn(rootProject.tasks.named("installYarnGlobally"))
+	resolvePackageManager {
+		dependsOn(rootProject.tasks.named("resolvePackageManager"))
 		enabled = false
 	}
 
-	installYarn {
-		dependsOn(rootProject.tasks.named("installYarn"))
+	installPackageManager {
+		dependsOn(rootProject.tasks.named("installPackageManager"))
 		enabled = false
 	}
 
