@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -9,8 +9,9 @@ const path = require('node:path');
 // Allow the Codium ESLint plugin to find `tsconfig.json` from the repository root.
 const project = [
   path.join(__dirname, 'tsconfig.json'),
-  path.join(__dirname, 'tsconfig.node.json'),
-  path.join(__dirname, 'tsconfig.shared.json'),
+  path.join(__dirname, 'subprojects/frontend/tsconfig.json'),
+  path.join(__dirname, 'subprojects/frontend/tsconfig.node.json'),
+  path.join(__dirname, 'subprojects/frontend/tsconfig.shared.json'),
 ];
 
 /** @type {import('eslint').Linter.Config} */
@@ -44,7 +45,12 @@ module.exports = {
   env: {
     browser: true,
   },
-  ignorePatterns: ['build/**/*', 'dev-dist/**/*', 'src/**/*.typegen.ts'],
+  ignorePatterns: [
+    'build/**/*',
+    'subprojects/*/build/**/*',
+    'subprojects/*/dev-dist/**/*',
+    'subprojects/*/src/**/*.typegen.ts',
+  ],
   rules: {
     // In typescript, some class methods implementing an inderface do not use `this`:
     // https://github.com/typescript-eslint/typescript-eslint/issues/1103
@@ -88,7 +94,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['types/**/*.d.ts'],
+      files: ['subprojects/*/types/**/*.d.ts'],
       rules: {
         // We don't have control over exports of external modules.
         'import/prefer-default-export': 'off',
@@ -104,10 +110,11 @@ module.exports = {
     {
       files: [
         '.eslintrc.cjs',
-        'config/*.ts',
-        'config/*.cjs',
+        'scripts/*.cjs',
+        'subprojects/*/config/*.ts',
+        'subprojects/*/config/*.cjs',
         'prettier.config.cjs',
-        'vite.config.ts',
+        'subprojects/*/vite.config.ts',
       ],
       env: {
         browser: false,

@@ -32,8 +32,8 @@ val sourcesWithoutTypes = fileTree("src") {
 val sourcesWithTypes: FileCollection = fileTree("src") + fileTree("types")
 
 val buildScripts: FileCollection = fileTree("config") + files(
-		".eslintrc.cjs",
-		"prettier.config.cjs",
+		rootProject.file(".eslintrc.cjs"),
+		rootProject.file("prettier.config.cjs"),
 		"vite.config.ts",
 )
 
@@ -44,8 +44,8 @@ val installationState = files(
 )
 
 val sharedConfigFiles: FileCollection = installationState + files(
+		rootProject.file("tsconfig.base.json"),
 		"tsconfig.json",
-		"tsconfig.base.json",
 		"tsconfig.node.json",
 		"tsconfig.shared.json",
 )
@@ -75,7 +75,6 @@ tasks {
 		inputs.files(assembleFiles)
 		outputs.dir(productionResources)
 	}
-
 
 	val typeCheckFrontend by registering(RunYarn::class) {
 		dependsOn(installFrontend)

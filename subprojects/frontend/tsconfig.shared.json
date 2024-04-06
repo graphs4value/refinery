@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "lib": ["ES2022"],
