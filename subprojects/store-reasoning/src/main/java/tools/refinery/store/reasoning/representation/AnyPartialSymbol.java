@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.reasoning.representation;
 
-import tools.refinery.store.representation.AnyAbstractDomain;
+import tools.refinery.logic.AnyAbstractDomain;
 
 public sealed interface AnyPartialSymbol permits AnyPartialFunction, PartialSymbol {
 	String name();

@@ -16,7 +16,12 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.QualifiedName;
+import tools.refinery.language.expressions.CompositeTermInterpreter;
+import tools.refinery.language.expressions.TermInterpreter;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.library.RefineryLibrary;
+import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.utils.BuiltinSymbols;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -25,15 +30,12 @@ import java.util.*;
 public class ImportAdapter extends AdapterImpl {
 	private static final Logger LOG = Logger.getLogger(ImportAdapter.class);
 	private static final List<RefineryLibrary> DEFAULT_LIBRARIES;
+	private static final List<TermInterpreter> DEFAULT_TERM_INTERPRETERS;
 	private static final List<Path> DEFAULT_PATHS;
 
 	static {
-		var serviceLoader = ServiceLoader.load(RefineryLibrary.class);
-		var defaultLibraries = new ArrayList<RefineryLibrary>();
-		for (var service : serviceLoader) {
-			defaultLibraries.add(service);
-		}
-		DEFAULT_LIBRARIES = List.copyOf(defaultLibraries);
+		DEFAULT_LIBRARIES = loadServices(RefineryLibrary.class);
+		DEFAULT_TERM_INTERPRETERS = loadServices(TermInterpreter.class);
 		var pathEnv = System.getenv("REFINERY_LIBRARY_PATH");
 		if (pathEnv == null) {
 			DEFAULT_PATHS = List.of();
@@ -45,16 +47,29 @@ public class ImportAdapter extends AdapterImpl {
 		}
 	}
 
-	private final List<RefineryLibrary> libraries;
-	private final List<Path> libraryPaths;
+	private static <T> List<T> loadServices(Class<T> serviceClass) {
+		var serviceLoader = ServiceLoader.load(serviceClass);
+		var services = new ArrayList<T>();
+		for (var service : serviceLoader) {
+			services.add(service);
+		}
+		return List.copyOf(services);
+	}
+
+	private ResourceSet resourceSet;
+	private final List<RefineryLibrary> libraries = new ArrayList<>(DEFAULT_LIBRARIES);
+	private final List<TermInterpreter> termInterpreters = new ArrayList<>(DEFAULT_TERM_INTERPRETERS);
+	private final TermInterpreter termInterpreter = new CompositeTermInterpreter(termInterpreters);
+	private final List<Path> libraryPaths = new ArrayList<>(DEFAULT_PATHS);
 	private final Cache<QualifiedName, QualifiedName> failedResolutions =
 			CacheBuilder.newBuilder().maximumSize(100).build();
 	private final Map<QualifiedName, URI> qualifiedNameToUriMap = new LinkedHashMap<>();
 	private final Map<URI, QualifiedName> uriToQualifiedNameMap = new LinkedHashMap<>();
+	private Problem builtinProblem;
+	private BuiltinSymbols builtinSymbols;
 
-	private ImportAdapter(ResourceSet resourceSet) {
-		libraries = new ArrayList<>(DEFAULT_LIBRARIES);
-		libraryPaths = new ArrayList<>(DEFAULT_PATHS);
+	void setResourceSet(ResourceSet resourceSet) {
+		this.resourceSet = resourceSet;
 		for (var resource : resourceSet.getResources()) {
 			resourceAdded(resource);
 		}
@@ -67,6 +82,14 @@ public class ImportAdapter extends AdapterImpl {
 
 	public List<RefineryLibrary> getLibraries() {
 		return libraries;
+	}
+
+	public List<TermInterpreter> getTermInterpreters() {
+		return termInterpreters;
+	}
+
+	public TermInterpreter getTermInterpreter() {
+		return termInterpreter;
 	}
 
 	public List<Path> getLibraryPaths() {
@@ -190,16 +213,26 @@ public class ImportAdapter extends AdapterImpl {
 		}
 	}
 
-	public static ImportAdapter getOrInstall(ResourceSet resourceSet) {
-		var adapter = getAdapter(resourceSet);
-		if (adapter == null) {
-			adapter = new ImportAdapter(resourceSet);
-			resourceSet.eAdapters().add(adapter);
+	public Problem getBuiltinProblem() {
+		if (builtinProblem == null) {
+			var builtinResource = resourceSet.getResource(BuiltinLibrary.BUILTIN_LIBRARY_URI, true);
+			if (builtinResource == null) {
+				throw new IllegalStateException("Failed to load builtin resource");
+			}
+			var contents = builtinResource.getContents();
+			if (contents.isEmpty()) {
+				throw new IllegalStateException("builtin resource is empty");
+			}
+			builtinProblem = (Problem) contents.getFirst();
+			EcoreUtil.resolveAll(builtinResource);
 		}
-		return adapter;
+		return builtinProblem;
 	}
 
-	private static ImportAdapter getAdapter(ResourceSet resourceSet) {
-        return (ImportAdapter) EcoreUtil.getAdapter(resourceSet.eAdapters(), ImportAdapter.class);
+	public BuiltinSymbols getBuiltinSymbols() {
+		if (builtinSymbols == null) {
+			builtinSymbols = new BuiltinSymbols(getBuiltinProblem());
+		}
+		return builtinSymbols;
 	}
 }

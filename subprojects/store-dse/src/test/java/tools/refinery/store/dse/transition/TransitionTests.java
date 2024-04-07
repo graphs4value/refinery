@@ -6,17 +6,17 @@
 package tools.refinery.store.dse.transition;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.dnf.FunctionalQuery;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.int_.IntTerms;
 import tools.refinery.store.dse.modification.ModificationAdapter;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.FunctionalQuery;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.term.int_.IntTerms;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -27,8 +27,8 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.literal.Literals.not;
 
 class TransitionBuildTests {
 	Symbol<Boolean> person = new Symbol<>("Person", 1, Boolean.class, false);

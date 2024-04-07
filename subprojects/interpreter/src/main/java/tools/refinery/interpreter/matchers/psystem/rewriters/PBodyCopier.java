@@ -137,7 +137,9 @@ public class PBodyCopier extends AbstractRewriterTraceSource {
         } else if (constraint instanceof PatternMatchCounter) {
             copyPatternMatchCounterConstraint((PatternMatchCounter) constraint);
         } else if (constraint instanceof AggregatorConstraint) {
-            copyAggregatorConstraint((AggregatorConstraint) constraint);
+			copyAggregatorConstraint((AggregatorConstraint) constraint);
+		} else if (constraint instanceof LeftJoinConstraint leftJoinConstraint) {
+			copyLeftJoinConstraint((LeftJoinConstraint) constraint);
         } else if (constraint instanceof ExpressionEvaluation) {
             copyExpressionEvaluationConstraint((ExpressionEvaluation) constraint);
         } else {
@@ -255,6 +257,15 @@ public class PBodyCopier extends AbstractRewriterTraceSource {
         addTrace(constraint, new AggregatorConstraint(constraint.getAggregator(), body, variablesTuple,
                 constraint.getReferredQuery(), mappedResultVariable, constraint.getAggregatedColumn()));
     }
+
+	protected void copyLeftJoinConstraint(LeftJoinConstraint constraint) {
+		PVariable[] mappedVariables = extractMappedVariables(constraint);
+		PVariable mappedResultVariable = variableMapping.get(constraint.getResultVariable());
+		Tuple variablesTuple = Tuples.flatTupleOf((Object[]) mappedVariables);
+		addTrace(constraint, new LeftJoinConstraint(body, variablesTuple,
+				constraint.getReferredQuery(), mappedResultVariable, constraint.getOptionalColumn(),
+				constraint.getDefaultValue()));
+	}
 
     protected void copyExpressionEvaluationConstraint(ExpressionEvaluation expressionEvaluation) {
         PVariable mappedOutputVariable = variableMapping.get(expressionEvaluation.getOutputVariable());

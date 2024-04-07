@@ -5,22 +5,22 @@
  */
 package tools.refinery.store.reasoning.translator.crossreference;
 
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
-import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.term.int_.IntTerms.constant;
-import static tools.refinery.store.query.term.int_.IntTerms.less;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.term.int_.IntTerms.constant;
+import static tools.refinery.logic.term.int_.IntTerms.less;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 
 class CrossReferenceUtils {

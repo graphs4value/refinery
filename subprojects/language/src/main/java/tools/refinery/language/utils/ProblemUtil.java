@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -81,6 +81,9 @@ public final class ProblemUtil {
 	}
 
 	public static boolean hasMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
+		if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+			return false;
+		}
 		var opposite = referenceDeclaration.getOpposite();
 		if (opposite != null && opposite.getKind() == ReferenceKind.CONTAINMENT) {
 			return false;
@@ -95,17 +98,19 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	public static int getArity(Relation relation) {
-		if (relation instanceof ClassDeclaration || relation instanceof EnumDeclaration) {
-			return 1;
-		}
-		if (relation instanceof ReferenceDeclaration) {
-			return 2;
+	public static boolean isTypeLike(Relation relation) {
+		if (relation instanceof ClassDeclaration || relation instanceof EnumDeclaration ||
+				relation instanceof DatatypeDeclaration) {
+			return true;
 		}
 		if (relation instanceof PredicateDefinition predicateDefinition) {
-			return predicateDefinition.getParameters().size();
+			return predicateDefinition.getParameters().size() == 1;
 		}
-		throw new IllegalArgumentException("Unknown Relation: " + relation);
+		return false;
+	}
+
+	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
+		return referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 	}
 
 	public static boolean isContainerReference(ReferenceDeclaration referenceDeclaration) {
@@ -116,7 +121,7 @@ public final class ProblemUtil {
 		return switch (kind) {
 			case CONTAINMENT -> false;
 			case CONTAINER -> true;
-			case REFERENCE -> {
+			case DEFAULT, REFERENCE -> {
 				var opposite = referenceDeclaration.getOpposite();
 				if (opposite == null) {
 					yield false;

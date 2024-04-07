@@ -5,14 +5,14 @@
  */
 package tools.refinery.store.dse.transition.objectives;
 
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.Reduction;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.ModelQueryStoreAdapter;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.Reduction;
 
 public class CountObjective implements Objective {
 	private final RelationalQuery query;

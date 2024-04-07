@@ -5,10 +5,11 @@
  */
 package tools.refinery.store.reasoning.actions;
 
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 import java.util.List;
 
@@ -17,8 +18,8 @@ public final class PartialActionLiterals {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public static <A, C> MergeActionLiteral<A, C> merge(PartialSymbol<A, C> partialSymbol, A value,
-														NodeVariable... parameters) {
+	public static <A extends AbstractValue<A, C>, C> MergeActionLiteral<A, C> merge(
+			PartialSymbol<A, C> partialSymbol, A value, NodeVariable... parameters) {
 		return new MergeActionLiteral<>(partialSymbol, value, List.of(parameters));
 	}
 

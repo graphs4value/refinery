@@ -1,11 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.translator.opposite;
 
-
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.AnyVersionedMap;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -17,7 +17,7 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.Set;
 
-class OppositeInterpretation<A, C> extends AbstractPartialInterpretation<A, C> {
+class OppositeInterpretation<A extends AbstractValue<A, C>, C> extends AbstractPartialInterpretation<A, C> {
 	private final PartialInterpretation<A, C> opposite;
 
 	private OppositeInterpretation(ReasoningAdapter adapter, Concreteness concreteness,
@@ -36,7 +36,7 @@ class OppositeInterpretation<A, C> extends AbstractPartialInterpretation<A, C> {
 		return new OppositeCursor<>(opposite.getAll());
 	}
 
-	public static <A1, C1> Factory<A1, C1> of(PartialSymbol<A1, C1> oppositeSymbol) {
+	public static <A1 extends AbstractValue<A1, C1>, C1> Factory<A1, C1> of(PartialSymbol<A1, C1> oppositeSymbol) {
 		return (adapter, concreteness, partialSymbol) -> {
 			var opposite = adapter.getPartialInterpretation(concreteness, oppositeSymbol);
 			return new OppositeInterpretation<>(adapter, concreteness, partialSymbol, opposite);

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -51,7 +51,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		if (contents.isEmpty()) {
 			return null;
 		}
-		EObject object = contents.get(0);
+		EObject object = contents.getFirst();
 		if (object instanceof Problem problem) {
 			return problem;
 		}
@@ -71,10 +71,8 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
 				installOrRemoveNewNode(adapter, classDeclaration);
-				for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
-					if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-						installOrRemoveInvalidMultiplicityPredicate(adapter, classDeclaration, referenceDeclaration);
-					}
+				for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
+					installOrRemoveInvalidMultiplicityPredicate(adapter, classDeclaration, referenceDeclaration);
 				}
 			}
 		}
@@ -157,9 +155,8 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 				if (classDeclaration.isAbstract()) {
 					abstractClassDeclarations.add(classDeclaration);
 				}
-				for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
-					if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration &&
-							ProblemUtil.hasMultiplicityConstraint(referenceDeclaration)) {
+				for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
+					if (ProblemUtil.hasMultiplicityConstraint(referenceDeclaration)) {
 						referenceDeclarationsWithMultiplicity.add(referenceDeclaration);
 					}
 				}

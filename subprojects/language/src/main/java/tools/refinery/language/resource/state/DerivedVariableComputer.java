@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -44,15 +44,14 @@ public class DerivedVariableComputer {
 				knownVariables.add(name);
 			}
 		}
-		if (definition instanceof PredicateDefinition predicateDefinition) {
-			installDerivedPredicateDefinitionState(predicateDefinition, knownVariables);
-		} else if (definition instanceof FunctionDefinition functionDefinition) {
-			installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
-		} else if (definition instanceof RuleDefinition ruleDefinition) {
-			installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
-		} else {
-			throw new IllegalArgumentException("Unknown ParametricDefinition: " + definition);
-		}
+        switch (definition) {
+            case PredicateDefinition predicateDefinition ->
+                    installDerivedPredicateDefinitionState(predicateDefinition, knownVariables);
+            case FunctionDefinition functionDefinition ->
+                    installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
+            case RuleDefinition ruleDefinition -> installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
+            default -> throw new IllegalArgumentException("Unknown ParametricDefinition: " + definition);
+        }
 	}
 
 	protected void installDerivedPredicateDefinitionState(PredicateDefinition definition, Set<String> knownVariables) {

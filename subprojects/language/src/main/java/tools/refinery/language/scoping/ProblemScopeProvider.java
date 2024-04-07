@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -9,17 +9,15 @@
  */
 package tools.refinery.language.scoping;
 
-import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.utils.ProblemDesugarer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 /**
  * This class contains custom scoping description.
@@ -29,9 +27,6 @@ import java.util.List;
  * on how and when to use it.
  */
 public class ProblemScopeProvider extends AbstractProblemScopeProvider {
-	@Inject
-	private ProblemDesugarer desugarer;
-
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
 		var scope = super.getScope(context, reference);
@@ -58,7 +53,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	}
 
 	protected IScope getVariableScope(EObject context, IScope delegateScope) {
-		List<Variable> variables = new ArrayList<>();
+		Collection<Variable> variables = new LinkedHashSet<>();
 		addSingletonVariableToScope(context, variables);
 		EObject currentContext = context;
 		while (currentContext != null && !(currentContext instanceof ParametricDefinition)) {
@@ -73,7 +68,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		return Scopes.scopeFor(variables, parentScope);
 	}
 
-	protected void addSingletonVariableToScope(EObject context, List<Variable> variables) {
+	protected void addSingletonVariableToScope(EObject context, Collection<Variable> variables) {
 		if (context instanceof VariableOrNodeExpr expr) {
 			Variable singletonVariable = expr.getSingletonVariable();
 			if (singletonVariable != null) {
@@ -82,17 +77,20 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		}
 	}
 
-	protected void addExistentiallyQualifiedVariableToScope(EObject currentContext, List<Variable> variables) {
-		if (currentContext instanceof ExistentialQuantifier quantifier) {
-			variables.addAll(quantifier.getImplicitVariables());
-		} else if (currentContext instanceof Match match) {
-			variables.addAll(match.getCondition().getImplicitVariables());
-		} else if (currentContext instanceof Consequent consequent) {
+	protected void addExistentiallyQualifiedVariableToScope(EObject currentContext, Collection<Variable> variables) {
+		switch (currentContext) {
+		case ExistentialQuantifier quantifier -> variables.addAll(quantifier.getImplicitVariables());
+		case Match match -> variables.addAll(match.getCondition().getImplicitVariables());
+		case Consequent consequent -> {
 			for (var literal : consequent.getActions()) {
 				if (literal instanceof NewAction newAction && newAction.getVariable() != null) {
 					variables.add(newAction.getVariable());
 				}
 			}
+		}
+		default -> {
+			// Nothing to add.
+		}
 		}
 	}
 
@@ -105,10 +103,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		if (!(relation instanceof ClassDeclaration classDeclaration)) {
 			return IScope.NULLSCOPE;
 		}
-		var referenceDeclarations = classDeclaration.getFeatureDeclarations()
-				.stream()
-				.filter(ReferenceDeclaration.class::isInstance)
-				.toList();
+		var referenceDeclarations = classDeclaration.getFeatureDeclarations();
 		return Scopes.scopeFor(referenceDeclarations);
 	}
 }

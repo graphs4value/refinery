@@ -8,7 +8,6 @@ package tools.refinery.language.resource;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
@@ -19,10 +18,9 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
 import tools.refinery.language.documentation.DocumentationCommentParser;
-import tools.refinery.language.naming.ProblemQualifiedNameProvider;
-import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.Map;
@@ -32,13 +30,15 @@ import java.util.stream.Collectors;
 public class ProblemResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
 	private static final String DATA_PREFIX = "tools.refinery.language.resource.ProblemResourceDescriptionStrategy.";
 
-	public static final String ARITY = DATA_PREFIX + "ARITY";
+	public static final String TYPE_LIKE = DATA_PREFIX + "ARITY";
+	public static final String TYPE_LIKE_TRUE = "true";
 	public static final String ERROR_PREDICATE = DATA_PREFIX + "ERROR_PREDICATE";
 	public static final String ERROR_PREDICATE_TRUE = "true";
 	public static final String SHADOWING_KEY = DATA_PREFIX + "SHADOWING_KEY";
 	public static final String SHADOWING_KEY_PROBLEM = "problem";
 	public static final String SHADOWING_KEY_NODE = "node";
 	public static final String SHADOWING_KEY_RELATION = "relation";
+	public static final String SHADOWING_KEY_AGGREGATOR = "aggregator";
 	public static final String PREFERRED_NAME = DATA_PREFIX + "PREFERRED_NAME";
 	public static final String PREFERRED_NAME_TRUE = "true";
 	public static final String IMPORTS = DATA_PREFIX + "IMPORTS";
@@ -51,8 +51,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
-	@Named(ProblemQualifiedNameProvider.NAMED_DELEGATE)
-	private IQualifiedNameProvider delegateQualifiedNameProvider;
+	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject
 	private ImportCollector importCollector;
@@ -123,7 +122,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (problem == null) {
 			return QualifiedName.EMPTY;
 		}
-		var qualifiedName = delegateQualifiedNameProvider.getFullyQualifiedName(problem);
+		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(problem);
         return qualifiedName == null ? QualifiedName.EMPTY : qualifiedName;
     }
 
@@ -152,8 +151,11 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
 		} else if (eObject instanceof Relation relation) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
-			int arity = ProblemUtil.getArity(relation);
-			builder.put(ARITY, Integer.toString(arity));
+			if (ProblemUtil.isTypeLike(relation)) {
+				builder.put(TYPE_LIKE, TYPE_LIKE_TRUE);
+			}
+		} else if (eObject instanceof AggregatorDeclaration) {
+			builder.put(SHADOWING_KEY, SHADOWING_KEY_AGGREGATOR);
 		}
 		if (eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError()) {
 			builder.put(ERROR_PREDICATE, ERROR_PREDICATE_TRUE);

@@ -6,7 +6,7 @@
 package tools.refinery.language.semantics.internal;
 
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.LinkedHashMap;

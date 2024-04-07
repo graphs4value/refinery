@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.multiplicity;
 
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 
 public sealed interface Multiplicity permits ConstrainedMultiplicity, UnconstrainedMultiplicity {
 	CardinalityInterval multiplicity();

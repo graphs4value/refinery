@@ -7,9 +7,9 @@ package tools.refinery.store.reasoning.translator.multiplicity;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
-import tools.refinery.store.representation.cardinality.NonEmptyCardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.cardinalityinterval.NonEmptyCardinalityInterval;
 
 public record ConstrainedMultiplicity(NonEmptyCardinalityInterval multiplicity, PartialRelation errorSymbol)
 		implements Multiplicity {

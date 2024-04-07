@@ -5,25 +5,25 @@
  */
 package tools.refinery.store.reasoning.internal;
 
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.DnfBuilder;
-import tools.refinery.store.query.dnf.DnfClause;
-import tools.refinery.store.query.literal.AbstractCallLiteral;
-import tools.refinery.store.query.literal.AbstractCountLiteral;
-import tools.refinery.store.query.literal.CallPolarity;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.term.Aggregator;
-import tools.refinery.store.query.term.ConstantTerm;
-import tools.refinery.store.query.term.Term;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.term.int_.IntTerms;
-import tools.refinery.store.query.term.uppercardinality.UpperCardinalityTerms;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.DnfBuilder;
+import tools.refinery.logic.dnf.DnfClause;
+import tools.refinery.logic.literal.AbstractCallLiteral;
+import tools.refinery.logic.literal.AbstractCountLiteral;
+import tools.refinery.logic.literal.CallPolarity;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.Aggregator;
+import tools.refinery.logic.term.ConstantTerm;
+import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.int_.IntTerms;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
 
 import java.util.*;
 import java.util.function.BinaryOperator;

@@ -17,6 +17,7 @@ import org.eclipse.xtext.scoping.impl.GlobalResourceDescriptionProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.utils.ProblemUtil;
@@ -55,7 +56,7 @@ public class TypeHashProvider {
 		if (qualifiedName == null) {
 			return null;
 		}
-		var qualifiedNameString = qualifiedNameConverter.toString(qualifiedName);
+		var qualifiedNameString = qualifiedNameConverter.toString(NamingUtil.addRootPrefix(qualifiedName));
 		var problem = EcoreUtil2.getContainerOfType(relation, Problem.class);
 		if (problem == null) {
 			return null;

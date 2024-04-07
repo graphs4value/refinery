@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.seed;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -29,7 +30,7 @@ public class ModelSeed {
 		return nodeCount;
 	}
 
-	public <A> Seed<A> getSeed(PartialSymbol<A, ?> partialSymbol) {
+	public <A extends AbstractValue<A, ?>> Seed<A> getSeed(PartialSymbol<A, ?> partialSymbol) {
 		var seed = seeds.get(partialSymbol);
 		if (seed == null) {
 			throw new IllegalArgumentException("No seed for partial symbol " + partialSymbol);
@@ -48,7 +49,8 @@ public class ModelSeed {
 		return Collections.unmodifiableSet(seeds.keySet());
 	}
 
-	public <A> Cursor<Tuple, A> getCursor(PartialSymbol<A, ?> partialSymbol, A defaultValue) {
+	public <A extends AbstractValue<A, ?>> Cursor<Tuple, A> getCursor(PartialSymbol<A, ?> partialSymbol,
+																	  A defaultValue) {
 		return getSeed(partialSymbol).getCursor(defaultValue, nodeCount);
 	}
 
@@ -67,7 +69,7 @@ public class ModelSeed {
 			this.nodeCount = nodeCount;
 		}
 
-		public <A> Builder seed(PartialSymbol<A, ?> partialSymbol, Seed<A> seed) {
+		public <A extends AbstractValue<A, ?>> Builder seed(PartialSymbol<A, ?> partialSymbol, Seed<A> seed) {
 			if (seed.arity() != partialSymbol.arity()) {
 				throw new IllegalStateException("Expected seed of arity %d for partial symbol %s, but got %d instead"
 						.formatted(partialSymbol.arity(), partialSymbol, seed.arity()));
@@ -82,7 +84,8 @@ public class ModelSeed {
 			return this;
 		}
 
-		public <A> Builder seed(PartialSymbol<A, ?> partialSymbol, Consumer<Seed.Builder<A>> callback) {
+		public <A extends AbstractValue<A, ?>> Builder seed(PartialSymbol<A, ?> partialSymbol,
+															Consumer<Seed.Builder<A>> callback) {
 			var builder = Seed.builder(partialSymbol);
 			callback.accept(builder);
 			return seed(partialSymbol, builder.build());

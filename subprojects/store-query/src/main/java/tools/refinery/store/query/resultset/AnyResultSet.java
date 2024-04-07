@@ -6,7 +6,7 @@
 package tools.refinery.store.query.resultset;
 
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.AnyQuery;
+import tools.refinery.logic.dnf.AnyQuery;
 
 public sealed interface AnyResultSet permits ResultSet {
 	ModelQueryAdapter getAdapter();

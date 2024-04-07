@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.query.interpreter.internal.pquery;
 
-import tools.refinery.store.query.term.Term;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.interpreter.matchers.psystem.IExpressionEvaluator;
 import tools.refinery.interpreter.matchers.psystem.IValueProvider;
 

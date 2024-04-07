@@ -13,3 +13,17 @@ abstract class contained extends node.
 pred contains(container, contained contained).
 
 error invalidContainer(contained contained).
+
+extern datatype boolean.
+
+extern datatype int.
+
+extern datatype real.
+
+extern datatype string.
+
+extern aggregator min.
+
+extern aggregator max.
+
+extern aggregator sum.

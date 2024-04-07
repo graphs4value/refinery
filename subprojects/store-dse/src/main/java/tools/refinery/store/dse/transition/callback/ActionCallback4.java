@@ -6,7 +6,7 @@
 package tools.refinery.store.dse.transition.callback;
 
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.term.NodeVariable;
 
 import java.util.List;
 

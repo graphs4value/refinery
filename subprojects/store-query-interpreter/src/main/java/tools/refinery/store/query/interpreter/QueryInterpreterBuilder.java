@@ -7,9 +7,9 @@ package tools.refinery.store.query.interpreter;
 
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.store.query.dnf.AnyQuery;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.rewriter.DnfRewriter;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.rewriter.DnfRewriter;
 import tools.refinery.interpreter.api.InterpreterEngineOptions;
 import tools.refinery.interpreter.matchers.backend.IQueryBackendFactory;
 import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;

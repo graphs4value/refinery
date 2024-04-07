@@ -101,6 +101,14 @@ tasks {
 publishing.publications {
 	create<MavenPublication>("mavenJava") {
 		from(components["java"])
+		pom {
+			licenses {
+				license {
+					name = "Eclipse Public License - v 2.0"
+					url = "https://www.eclipse.org/legal/epl-2.0/"
+				}
+			}
+		}
 	}
 }
 

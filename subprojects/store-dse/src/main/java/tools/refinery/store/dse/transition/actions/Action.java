@@ -9,9 +9,9 @@ import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.dnf.SymbolicParameter;
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.SymbolicParameter;
+import tools.refinery.logic.term.NodeVariable;
 
 import java.util.*;
 

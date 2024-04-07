@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[versions]
+junit = "5.10.2"
+
+[libraries]
+asm = { group = "org.ow2.asm", name = "asm", version = "9.6" }
+jna = { group = "net.java.dev.jna", name = "jna", version = "5.14.0" }
+junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
+
+[plugins]
+versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }

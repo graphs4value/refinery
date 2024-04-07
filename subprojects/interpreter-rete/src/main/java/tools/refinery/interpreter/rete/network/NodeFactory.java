@@ -20,6 +20,7 @@ import tools.refinery.interpreter.matchers.tuple.Tuples;
 import tools.refinery.interpreter.rete.aggregation.ColumnAggregatorNode;
 import tools.refinery.interpreter.rete.aggregation.CountNode;
 import tools.refinery.interpreter.rete.aggregation.IAggregatorNode;
+import tools.refinery.interpreter.rete.aggregation.LeftJoinNode;
 import tools.refinery.interpreter.rete.aggregation.timely.FaithfulParallelTimelyColumnAggregatorNode;
 import tools.refinery.interpreter.rete.aggregation.timely.FaithfulSequentialTimelyColumnAggregatorNode;
 import tools.refinery.interpreter.rete.aggregation.timely.FirstOnlyParallelTimelyColumnAggregatorNode;
@@ -72,18 +73,25 @@ class NodeFactory {
             return parentNode.constructIndex(toMask(recipe.getMask()), traces);
             // already traced
         } else if (recipe instanceof AggregatorIndexerRecipe) {
-            int indexOfAggregateResult = recipe.getParent().getArity();
-            int resultPosition = recipe.getMask().getSourceIndices().lastIndexOf(indexOfAggregateResult);
+			int indexOfAggregateResult = recipe.getParent().getArity();
+			int resultPosition = recipe.getMask().getSourceIndices().lastIndexOf(indexOfAggregateResult);
 
-            IAggregatorNode aggregatorNode = (IAggregatorNode) parentNode;
-            final Indexer result = (resultPosition == -1) ? aggregatorNode.getAggregatorOuterIndexer()
-                    : aggregatorNode.getAggregatorOuterIdentityIndexer(resultPosition);
+			IAggregatorNode aggregatorNode = (IAggregatorNode) parentNode;
+			final Indexer result = (resultPosition == -1) ? aggregatorNode.getAggregatorOuterIndexer()
+					: aggregatorNode.getAggregatorOuterIdentityIndexer(resultPosition);
 
-            for (TraceInfo traceInfo : traces)
-                result.assignTraceInfo(traceInfo);
-            return result;
-        } else
-            throw new IllegalArgumentException("Unkown Indexer recipe: " + recipe);
+			for (TraceInfo traceInfo : traces)
+				result.assignTraceInfo(traceInfo);
+			return result;
+		} else if (recipe instanceof OuterJoinIndexerRecipe) {
+			var leftJoinNode = (LeftJoinNode) parentNode;
+			var result = leftJoinNode.getOuterIndexer();
+			for (TraceInfo traceInfo : traces)
+				result.assignTraceInfo(traceInfo);
+			return result;
+        } else {
+			throw new IllegalArgumentException("Unkown Indexer recipe: " + recipe);
+		}
     }
 
     /**
@@ -134,6 +142,8 @@ class NodeFactory {
             return instantiateNode(reteContainer, (CountAggregatorRecipe) recipe);
         if (recipe instanceof SingleColumnAggregatorRecipe)
             return instantiateNode(reteContainer, (SingleColumnAggregatorRecipe) recipe);
+		if (recipe instanceof OuterJoinNodeRecipe outerJoinNodeRecipe)
+			return instantiateNode(reteContainer, outerJoinNodeRecipe);
         if (recipe instanceof DiscriminatorDispatcherRecipe)
             return instantiateNode(reteContainer, (DiscriminatorDispatcherRecipe) recipe);
         if (recipe instanceof DiscriminatorBucketRecipe)
@@ -245,6 +255,10 @@ class NodeFactory {
             return new ColumnAggregatorNode(reteContainer, operator, coreMask, aggregatedColumn);
         }
     }
+
+	private Supplier instantiateNode(ReteContainer reteContainer, OuterJoinNodeRecipe recipe) {
+		return new LeftJoinNode(reteContainer, recipe.getDefaultValue());
+	}
 
     private Supplier instantiateNode(ReteContainer reteContainer, TransitiveClosureRecipe recipe) {
         return new TransitiveClosureNode(reteContainer);

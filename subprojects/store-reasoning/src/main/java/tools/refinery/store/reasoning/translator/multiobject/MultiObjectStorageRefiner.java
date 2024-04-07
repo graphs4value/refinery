@@ -9,8 +9,8 @@ import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 class MultiObjectStorageRefiner implements StorageRefiner {
@@ -28,7 +28,7 @@ class MultiObjectStorageRefiner implements StorageRefiner {
 			return false;
 		}
 		var newParentCount = parentCount.take(1);
-		if (newParentCount.isEmpty()) {
+		if (newParentCount.isError()) {
 			return false;
 		}
 		var childKey = Tuple.of(childNode);

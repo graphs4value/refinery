@@ -7,8 +7,8 @@ package tools.refinery.store.query;
 
 import tools.refinery.store.adapter.ModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
-import tools.refinery.store.query.dnf.AnyQuery;
-import tools.refinery.store.query.rewriter.DnfRewriter;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.rewriter.DnfRewriter;
 
 import java.util.Collection;
 import java.util.List;

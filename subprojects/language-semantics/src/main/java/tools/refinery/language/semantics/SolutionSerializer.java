@@ -21,7 +21,8 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
-import tools.refinery.language.utils.ProblemDesugarer;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -30,7 +31,7 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.typehierarchy.InferredType;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.io.ByteArrayInputStream;
@@ -57,10 +58,13 @@ public class SolutionSerializer {
 	private IScopeProvider scopeProvider;
 
 	@Inject
-	private ProblemDesugarer desugarer;
+	private NodeNameProvider nameProvider;
 
 	@Inject
-	private NodeNameProvider nameProvider;
+	private ImportAdapterProvider importAdapterProvider;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	private ProblemTrace trace;
 	private Model model;
@@ -223,8 +227,7 @@ public class SolutionSerializer {
 	}
 
 	private void addExistsAssertions() {
-		var builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalStateException("No " +
-				"builtin library in copied problem"));
+		var builtinSymbols = importAdapterProvider.getBuiltinSymbols(problem);
 		// Make sure to output exists assertions in a deterministic order.
 		var sortedNewNodes = new TreeMap<Integer, Node>();
 		for (var pair : trace.getNodeTrace().keyValuesView()) {
@@ -336,7 +339,7 @@ public class SolutionSerializer {
 		var assertion = ProblemFactory.eINSTANCE.createAssertion();
 		assertion.setDefault(true);
 		assertion.setRelation(relation);
-		int arity = ProblemUtil.getArity(relation);
+		int arity = signatureProvider.getArity(relation);
 		for (int i = 0; i < arity; i++) {
 			var argument = ProblemFactory.eINSTANCE.createWildcardAssertionArgument();
 			assertion.getArguments().add(argument);

@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.reasoning.internal;
 
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.rewriter.AbstractRecursiveRewriter;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.rewriter.AbstractRecursiveRewriter;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.representation.PartialRelation;

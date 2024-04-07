@@ -7,10 +7,10 @@ package tools.refinery.store.query.interpreter.internal;
 
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelListener;
-import tools.refinery.store.query.dnf.AnyQuery;
-import tools.refinery.store.query.dnf.FunctionalQuery;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.FunctionalQuery;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.query.resultset.AnyResultSet;
 import tools.refinery.store.query.resultset.EmptyResultSet;
 import tools.refinery.store.query.resultset.ResultSet;

@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.adapter.ModelAdapter;
 import tools.refinery.store.reasoning.internal.ReasoningBuilderImpl;
 import tools.refinery.store.reasoning.interpretation.AnyPartialInterpretation;
@@ -27,17 +28,19 @@ public interface ReasoningAdapter extends ModelAdapter {
 
 	default AnyPartialInterpretation getPartialInterpretation(Concreteness concreteness,
 															  AnyPartialSymbol partialSymbol) {
-		return getPartialInterpretation(concreteness, (PartialSymbol<?, ?>) partialSymbol);
+		var typedPartialSymbol = (PartialSymbol<?, ?>) partialSymbol;
+		return getPartialInterpretation(concreteness, typedPartialSymbol);
 	}
 
-	<A, C> PartialInterpretation<A, C> getPartialInterpretation(Concreteness concreteness,
-																PartialSymbol<A, C> partialSymbol);
+	<A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
+			Concreteness concreteness, PartialSymbol<A, C> partialSymbol);
 
 	default AnyPartialInterpretationRefiner getRefiner(AnyPartialSymbol partialSymbol) {
-		return getRefiner((PartialSymbol<?, ?>) partialSymbol);
+		var typedPartialSymbol = (PartialSymbol<?, ?>) partialSymbol;
+		return getRefiner(typedPartialSymbol);
 	}
 
-	<A, C> PartialInterpretationRefiner<A, C> getRefiner(PartialSymbol<A, C> partialSymbol);
+	<A extends AbstractValue<A, C>, C> PartialInterpretationRefiner<A, C> getRefiner(PartialSymbol<A, C> partialSymbol);
 
 	@Nullable
 	Tuple1 split(int parentMultiObject);

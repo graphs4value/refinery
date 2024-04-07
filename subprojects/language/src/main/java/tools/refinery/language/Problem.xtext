@@ -17,7 +17,8 @@ enum ModuleKind:
 
 Statement:
 	ImportStatement | Assertion | ClassDeclaration | EnumDeclaration |
-	PredicateDefinition | /* FunctionDefinition | RuleDefinition | */
+	DatatypeDeclaration | AggregatorDeclaration | PredicateDefinition |
+	/* FunctionDefinition | RuleDefinition | */
 	ScopeDeclaration | NodeDeclaration;
 
 ImportStatement:
@@ -27,7 +28,7 @@ ClassDeclaration:
 	abstract?="abstract"? "class"
 	name=Identifier
 	("extends" superTypes+=[Relation|QualifiedName] ("," superTypes+=[Relation|QualifiedName])*)?
-	("{" (featureDeclarations+=FeatureDeclaration ";"?)* "}" | ".");
+	("{" (featureDeclarations+=ReferenceDeclaration ";"?)* "}" | ".");
 
 EnumDeclaration:
 	"enum"
@@ -37,8 +38,11 @@ EnumDeclaration:
 EnumLiteral returns Node:
 	name=Identifier;
 
-FeatureDeclaration:
-	ReferenceDeclaration /* | AttributeDeclaration | FlagDeclaration */;
+DatatypeDeclaration:
+	"extern" "datatype" name=Identifier ".";
+
+AggregatorDeclaration:
+	"extern" "aggregator" name=Identifier ".";
 
 enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
@@ -53,15 +57,6 @@ ReferenceDeclaration:
 ReferenceMultiplicity returns Multiplicity:
 	"[" Multiplicity "]";
 
-//enum PrimitiveType:
-//	INT="int" | REAL="real" | STRING="string";
-//
-//AttributeDeclaration:
-//	attributeType=PrimitiveType name=Identifier;
-//
-//FlagDeclaration:
-//	"bool" name=Identifier;
-
 PredicateDefinition:
 	("pred" | error?="error" "pred"?)
 	name=Identifier
@@ -73,14 +68,13 @@ Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
 //FunctionDefinition:
-//	"fn" functionType=PrimitiveType name=Identifier
+//	"fn" functionType=[DatatypeDefinition|QualifiedName] name=Identifier
 //	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 //	("=" cases+=Case (";" cases+=Case)*)?
 //	".";
 //
 //Case:
 //	Conjunction ({Match.condition=current} "->" value=Expr)?;
-
 //RuleDefinition:
 //	"rule"
 //	name=Identifier
@@ -112,25 +106,32 @@ Parameter:
 //	name=Identifier;
 
 Expr:
-	ComparisonExpr;
+	AssignmentExpr;
+
+AssignmentExpr returns Expr:
+	BooleanExpr ({AssignmentExpr.left=current} "is" right=BooleanExpr)*;
+
+enum BooleanBinaryOp returns BinaryOp:
+	AND="&&" | OR="||" | XOR="^^";
+
+BooleanExpr returns Expr:
+	ComparisonExpr ({ArithmeticBinaryExpr.left=current}
+	op=BooleanBinaryOp right=ComparisonExpr)*;
 
 enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=" |
-	IN="in" | SUBSUMES=":>" | SUBSUMED_BY="<:" | ABS_EQ="===" | ABS_NOT_EQ="!==";
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="===" | NOT_EQ="!==" |
+	IN="in" | NODE_EQ="==" | NODE_NOT_EQ="!=";
 
 ComparisonExpr returns Expr:
 	LatticeExpr ({ComparisonExpr.left=current}
 	op=ComparisonOp right=LatticeExpr)*;
 
-enum LatticeOp returns BinaryOp:
+enum LatticeBinaryOp:
 	MEET="/\\" | JOIN="\\/";
 
 LatticeExpr returns Expr:
-	RangeExpr ({ArithmeticBinaryExpr.left=current}
-	op=LatticeOp right=RangeExpr)*;
-
-RangeExpr returns Expr:
-	AdditiveExpr ({RangeExpr.left=current} ".." right=AdditiveExpr)*;
+	AdditiveExpr ({LatticeBinaryExpr.left=current}
+	op=LatticeBinaryOp right=AdditiveExpr)*;
 
 enum AdditiveOp returns BinaryOp:
 	ADD="+" | SUB="-";
@@ -150,12 +151,15 @@ enum ExponentialOp returns BinaryOp:
 	POW="**";
 
 ExponentialExpr returns Expr:
-	UnaryExpr ({ArithmeticBinaryExpr.left=current}
+	RangeExpr ({ArithmeticBinaryExpr.left=current}
 	op=ExponentialOp right=ExponentialExpr)?;
 
+RangeExpr returns Expr:
+	UnaryExpr ({RangeExpr.left=current} ".." right=UnaryExpr)*;
+
 UnaryExpr returns Expr:
-	ArithmeticUnaryExpr | ModalExpr | NegationExpr | CountExpr | AggregationExpr |
-	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
+	ArithmeticUnaryExpr | NegationExpr |
+	CountExpr | AggregationExpr | CastExpr;
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -163,23 +167,21 @@ enum UnaryOp:
 ArithmeticUnaryExpr:
 	op=UnaryOp body=UnaryExpr;
 
-enum Modality:
-	MAY="may" | MUST="must" | CURRENT="current";
-
-ModalExpr:
-	modality=Modality body=UnaryExpr;
-
 NegationExpr:
 	"!" body=UnaryExpr;
 
 CountExpr:
 	"count" body=UnaryExpr;
 
-enum AggregationOp:
-	SUM="sum" | PROD="prod" | MIN="min" | MAX="max";
-
 AggregationExpr:
-	op=AggregationOp "{" value=Expr "|" condition=Expr "}";
+	aggregator=[AggregatorDeclaration|QualifiedName]
+	"{" value=Expr "|" condition=ComparisonExpr "}";
+
+CastExpr returns Expr:
+	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
+
+CastExprBody returns Expr:
+	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 Atom:
 	relation=[Relation|QualifiedName]
@@ -190,7 +192,7 @@ VariableOrNodeExpr:
 	variableOrNode=[VariableOrNode|QualifiedName];
 
 Constant:
-	RealConstant | IntConstant | InfConstant | StringConstant | LogicConstant;
+	RealConstant | IntConstant | StringConstant | InfiniteConstant | LogicConstant;
 
 IntConstant:
 	intValue=INT;
@@ -198,11 +200,11 @@ IntConstant:
 RealConstant:
 	realValue=Real;
 
-InfConstant:
-	{InfConstant} "*";
-
 StringConstant:
 	stringValue=STRING;
+
+InfiniteConstant:
+	{InfiniteConstant} "*";
 
 enum LogicValue:
 	TRUE="true" | FALSE="false" | UNKNOWN="unknown" | ERROR="error";
@@ -278,8 +280,8 @@ Identifier:
 	NonContainmentIdentifier | "contains" | "container";
 
 NonContainmentIdentifier:
-	ID | "atom" | "multi" | "contained" |
-	"sum" | "prod" | "min" | "max" | "problem" | "module";
+	ID | "atom" | "multi" | "contained" | "problem" | "module" |
+	"datatype" | "aggregator";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

@@ -6,7 +6,7 @@
 package tools.refinery.store.dse.transition.callback;
 
 import tools.refinery.store.dse.transition.RuleBuilder;
-import tools.refinery.store.query.term.NodeVariable;
+import tools.refinery.logic.term.NodeVariable;
 
 @FunctionalInterface
 public interface RuleCallback1 {

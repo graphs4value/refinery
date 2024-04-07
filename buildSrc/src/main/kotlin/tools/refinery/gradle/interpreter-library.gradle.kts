@@ -8,7 +8,6 @@ package tools.refinery.gradle
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
-	id("maven-publish")
 	id("tools.refinery.gradle.java-library")
 	id("tools.refinery.gradle.sonarqube")
 }

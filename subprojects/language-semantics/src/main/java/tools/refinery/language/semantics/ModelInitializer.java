@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,20 +8,24 @@ package tools.refinery.language.semantics;
 import com.google.inject.Inject;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
-import tools.refinery.language.utils.ProblemDesugarer;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.dnf.InvalidClauseException;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.*;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.dnf.InvalidClauseException;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.*;
-import tools.refinery.store.query.term.NodeVariable;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
@@ -29,24 +33,20 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
-import tools.refinery.store.reasoning.translator.metamodel.*;
+import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
+import tools.refinery.store.reasoning.translator.metamodel.MetamodelBuilder;
+import tools.refinery.store.reasoning.translator.metamodel.MetamodelTranslator;
+import tools.refinery.store.reasoning.translator.metamodel.ReferenceInfo;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.predicate.PredicateTranslator;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.*;
 
 public class ModelInitializer {
-	@Inject
-	private ProblemDesugarer desugarer;
-
 	@Inject
 	private SemanticsUtils semanticsUtils;
 
@@ -55,6 +55,9 @@ public class ModelInitializer {
 
 	@Inject
 	private ImportCollector importCollector;
+
+	@Inject
+	private ImportAdapterProvider importAdapterProvider;
 
 	private Problem problem;
 
@@ -93,8 +96,7 @@ public class ModelInitializer {
 		importedProblems.add(problem);
 		problemTrace.setProblem(problem);
 		try {
-			builtinSymbols = desugarer.getBuiltinSymbols(problem).orElseThrow(() -> new IllegalArgumentException(
-					"Problem has no builtin library"));
+			builtinSymbols = importAdapterProvider.getBuiltinSymbols(problem);
 			var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
 			nodeRelation = nodeInfo.partialRelation();
 			metamodelBuilder.type(nodeRelation);
@@ -202,24 +204,28 @@ public class ModelInitializer {
 	private void collectNodes() {
 		for (var importedProblem : importedProblems) {
 			for (var statement : importedProblem.getStatements()) {
-				if (statement instanceof NodeDeclaration nodeDeclaration) {
-					for (var node : nodeDeclaration.getNodes()) {
-						collectNode(node);
-					}
-				} else if (statement instanceof ClassDeclaration classDeclaration) {
-					var newNode = classDeclaration.getNewNode();
-					if (newNode != null) {
-						collectNode(newNode);
-					}
-				} else if (statement instanceof EnumDeclaration enumDeclaration) {
-					for (var literal : enumDeclaration.getLiterals()) {
-						collectNode(literal);
-					}
-				}
+				collectNodes(statement);
 			}
 		}
 		for (var node : problem.getNodes()) {
 			collectNode(node);
+		}
+	}
+
+	private void collectNodes(Statement statement) {
+		if (statement instanceof NodeDeclaration nodeDeclaration) {
+			for (var node : nodeDeclaration.getNodes()) {
+				collectNode(node);
+			}
+		} else if (statement instanceof ClassDeclaration classDeclaration) {
+			var newNode = classDeclaration.getNewNode();
+			if (newNode != null) {
+				collectNode(newNode);
+			}
+		} else if (statement instanceof EnumDeclaration enumDeclaration) {
+			for (var literal : enumDeclaration.getLiterals()) {
+				collectNode(literal);
+			}
 		}
 	}
 
@@ -243,15 +249,14 @@ public class ModelInitializer {
 
 	private void collectClassDeclarationSymbols(ClassDeclaration classDeclaration) {
 		collectPartialRelation(classDeclaration, 1, null, TruthValue.UNKNOWN);
-		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
-			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-				collectPartialRelation(referenceDeclaration, 2, null, TruthValue.UNKNOWN);
-				var invalidMultiplicityConstraint = referenceDeclaration.getInvalidMultiplicity();
-				if (invalidMultiplicityConstraint != null) {
-					collectPartialRelation(invalidMultiplicityConstraint, 1, TruthValue.FALSE, TruthValue.FALSE);
-				}
-			} else {
-				throw new TracedException(featureDeclaration, "Unknown feature declaration");
+		for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
+			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+				throw new TracedException(referenceDeclaration, "Attributes are not yet supported");
+			}
+			collectPartialRelation(referenceDeclaration, 2, null, TruthValue.UNKNOWN);
+			var invalidMultiplicityConstraint = referenceDeclaration.getInvalidMultiplicity();
+			if (invalidMultiplicityConstraint != null) {
+				collectPartialRelation(invalidMultiplicityConstraint, 1, TruthValue.FALSE, TruthValue.FALSE);
 			}
 		}
 	}
@@ -319,10 +324,8 @@ public class ModelInitializer {
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
 		}
-		for (var featureDeclaration : classDeclaration.getFeatureDeclarations()) {
-			if (featureDeclaration instanceof ReferenceDeclaration referenceDeclaration) {
-				collectReferenceDeclarationMetamodel(classDeclaration, referenceDeclaration);
-			}
+		for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
+			collectReferenceDeclarationMetamodel(classDeclaration, referenceDeclaration);
 		}
 	}
 
@@ -681,8 +684,8 @@ public class ModelInitializer {
 			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
 					localScope, literals);
 			boolean positive = switch (comparisonExpr.getOp()) {
-				case EQ -> true;
-				case NOT_EQ -> false;
+				case NODE_EQ -> true;
+				case NODE_NOT_EQ -> false;
 				default -> throw new TracedException(
 						comparisonExpr, "Unsupported operator");
 			};
@@ -726,14 +729,18 @@ public class ModelInitializer {
 	private void collectScopes() {
 		for (var importedProblem : importedProblems) {
 			for (var statement : importedProblem.getStatements()) {
-				if (statement instanceof ScopeDeclaration scopeDeclaration) {
-					for (var typeScope : scopeDeclaration.getTypeScopes()) {
-						if (typeScope.isIncrement()) {
-							collectTypeScopeIncrement(typeScope);
-						} else {
-							collectTypeScope(typeScope);
-						}
-					}
+				collectScopes(statement);
+			}
+		}
+	}
+
+	private void collectScopes(Statement statement) {
+		if (statement instanceof ScopeDeclaration scopeDeclaration) {
+			for (var typeScope : scopeDeclaration.getTypeScopes()) {
+				if (typeScope.isIncrement()) {
+					collectTypeScopeIncrement(typeScope);
+				} else {
+					collectTypeScope(typeScope);
 				}
 			}
 		}

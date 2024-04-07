@@ -9,15 +9,15 @@ import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.Variable;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.store.query.interpreter.tests.QueryEngineTest;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FilteredView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
@@ -29,8 +29,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.term.int_.IntTerms.*;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.term.int_.IntTerms.*;
 import static tools.refinery.store.query.interpreter.tests.QueryAssertions.assertNullableResults;
 import static tools.refinery.store.query.interpreter.tests.QueryAssertions.assertResults;
 
@@ -553,7 +553,6 @@ class FunctionalQueryTest {
 		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
 		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
 		queryEngine.flushChanges();
 		assertNullableResults(Map.of(
 				Tuple.of(0), Optional.of(25),

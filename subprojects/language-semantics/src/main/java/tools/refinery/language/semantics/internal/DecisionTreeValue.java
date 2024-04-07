@@ -5,7 +5,7 @@
  */
 package tools.refinery.language.semantics.internal;
 
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public enum DecisionTreeValue {
 	UNSET(null),
@@ -25,7 +25,7 @@ public enum DecisionTreeValue {
 	}
 
 	public TruthValue merge(TruthValue other) {
-		return truthValue == null ? other : truthValue.merge(other);
+		return truthValue == null ? other : truthValue.meet(other);
 	}
 
 	public DecisionTreeValue overwrite(DecisionTreeValue other) {

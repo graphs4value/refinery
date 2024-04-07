@@ -131,7 +131,7 @@ public class MetamodelBuilder {
 			var oppositeInfo = referenceInfoMap.get(opposite);
 			validateOpposite(linkType, info, opposite, oppositeInfo);
 			targetMultiplicity = oppositeInfo.multiplicity();
-			defaultValue = defaultValue.merge(oppositeInfo.defaultValue());
+			defaultValue = defaultValue.meet(oppositeInfo.defaultValue());
 			if (oppositeInfo.containment()) {
 				// Skip processing this reference and process it once we encounter its containment opposite.
 				return;

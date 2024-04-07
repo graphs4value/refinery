@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criterion;
@@ -25,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("UnusedReturnValue")
-public abstract sealed class PartialSymbolTranslator<A, C> implements AnyPartialSymbolTranslator
-		permits PartialRelationTranslator {
+public abstract sealed class PartialSymbolTranslator<A extends AbstractValue<A, C>, C>
+		implements AnyPartialSymbolTranslator permits PartialRelationTranslator {
 	private final PartialSymbol<A, C> partialSymbol;
 	private boolean configured = false;
 	protected PartialInterpretationRefiner.Factory<A, C> interpretationRefiner;

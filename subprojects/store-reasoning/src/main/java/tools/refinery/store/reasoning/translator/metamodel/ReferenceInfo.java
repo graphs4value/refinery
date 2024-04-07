@@ -7,7 +7,7 @@ package tools.refinery.store.reasoning.translator.metamodel;
 
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public record ReferenceInfo(boolean containment, PartialRelation sourceType, Multiplicity multiplicity,
 							PartialRelation targetType, PartialRelation opposite, TruthValue defaultValue) {

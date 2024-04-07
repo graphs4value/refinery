@@ -399,4 +399,15 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="connectivity" eType="#//Connectivity"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="Connectivity" instanceClassName="tools.refinery.interpreter.matchers.psystem.basicenumerables.Connectivity"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OuterJoinNodeRecipe" eSuperTypes="#//ReteNodeRecipe">
+    <eOperations name="getArity" unique="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="body" value="&lt;%tools.refinery.interpreter.rete.recipes.ProjectionIndexerRecipe%> _parent = this.getParent();&#xA;&lt;%tools.refinery.interpreter.rete.recipes.Mask%> _mask = _parent.getMask();&#xA;&lt;%org.eclipse.emf.common.util.EList%>&lt;&lt;%java.lang.Integer%>> _sourceIndices = _mask.getSourceIndices();&#xA;return _sourceIndices.size();"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//ProjectionIndexerRecipe"
+        containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="defaultValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OuterJoinIndexerRecipe" eSuperTypes="#//IndexerRecipe"/>
 </ecore:EPackage>

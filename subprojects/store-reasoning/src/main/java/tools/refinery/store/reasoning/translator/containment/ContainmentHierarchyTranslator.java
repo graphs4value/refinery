@@ -5,16 +5,18 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.Connectivity;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.literal.RepresentativeElectionLiteral;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.dnf.RelationalQuery;
-import tools.refinery.store.query.literal.Connectivity;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.literal.RepresentativeElectionLiteral;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -28,17 +30,15 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
-import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.query.term.int_.IntTerms.constant;
-import static tools.refinery.store.query.term.int_.IntTerms.less;
+import static tools.refinery.logic.term.int_.IntTerms.constant;
+import static tools.refinery.logic.term.int_.IntTerms.less;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.ReasoningAdapter.EXISTS_SYMBOL;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.focus;

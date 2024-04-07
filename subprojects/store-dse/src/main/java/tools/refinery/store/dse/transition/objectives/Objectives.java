@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.dse.transition.objectives;
 
-import tools.refinery.store.query.dnf.FunctionalQuery;
-import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.FunctionalQuery;
+import tools.refinery.logic.dnf.RelationalQuery;
 
 import java.util.Collection;
 import java.util.List;

@@ -10,7 +10,7 @@ import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntObjectPair;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.representation.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 class TerminalNode extends DecisionTreeNode {
 	private MutableIntObjectMap<TruthValue> children;
@@ -48,7 +48,7 @@ class TerminalNode extends DecisionTreeNode {
 	protected void mergeAllValues(int nextLevel, Tuple tuple, TruthValue value) {
 		otherwise = DecisionTreeValue.fromTruthValue(otherwise.merge(value));
 		children = IntObjectMaps.mutable.from(children.keyValuesView(), IntObjectPair::getOne,
-				pair -> pair.getTwo().merge(value));
+				pair -> pair.getTwo().meet(value));
 		reduceChildren();
 	}
 

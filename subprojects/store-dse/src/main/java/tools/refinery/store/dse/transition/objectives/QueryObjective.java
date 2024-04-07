@@ -9,7 +9,7 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.store.query.dnf.FunctionalQuery;
+import tools.refinery.logic.dnf.FunctionalQuery;
 
 public class QueryObjective implements Objective {
 	protected final FunctionalQuery<? extends Number> objectiveFunction;

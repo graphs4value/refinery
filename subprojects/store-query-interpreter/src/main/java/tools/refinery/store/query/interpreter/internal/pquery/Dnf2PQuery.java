@@ -1,25 +1,10 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.query.interpreter.internal.pquery;
 
-import tools.refinery.interpreter.matchers.psystem.annotations.ParameterReference;
-import tools.refinery.interpreter.matchers.psystem.basicdeferred.*;
-import tools.refinery.interpreter.matchers.psystem.basicenumerables.*;
-import tools.refinery.interpreter.matchers.psystem.basicenumerables.Connectivity;
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.DnfClause;
-import tools.refinery.store.query.dnf.SymbolicParameter;
-import tools.refinery.store.query.literal.*;
-import tools.refinery.store.query.term.ConstantTerm;
-import tools.refinery.store.query.term.StatefulAggregator;
-import tools.refinery.store.query.term.StatelessAggregator;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.query.view.AnySymbolView;
-import tools.refinery.store.util.CycleDetectingMapper;
 import tools.refinery.interpreter.matchers.backend.IQueryBackendFactory;
 import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
 import tools.refinery.interpreter.matchers.context.IInputKey;
@@ -28,11 +13,27 @@ import tools.refinery.interpreter.matchers.psystem.PVariable;
 import tools.refinery.interpreter.matchers.psystem.aggregations.BoundAggregator;
 import tools.refinery.interpreter.matchers.psystem.aggregations.IMultisetAggregationOperator;
 import tools.refinery.interpreter.matchers.psystem.annotations.PAnnotation;
+import tools.refinery.interpreter.matchers.psystem.annotations.ParameterReference;
+import tools.refinery.interpreter.matchers.psystem.basicdeferred.*;
+import tools.refinery.interpreter.matchers.psystem.basicenumerables.Connectivity;
+import tools.refinery.interpreter.matchers.psystem.basicenumerables.*;
 import tools.refinery.interpreter.matchers.psystem.queries.PParameter;
 import tools.refinery.interpreter.matchers.psystem.queries.PParameterDirection;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
 import tools.refinery.interpreter.matchers.tuple.Tuple;
 import tools.refinery.interpreter.matchers.tuple.Tuples;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.DnfClause;
+import tools.refinery.logic.dnf.FunctionalDependency;
+import tools.refinery.logic.dnf.SymbolicParameter;
+import tools.refinery.logic.literal.*;
+import tools.refinery.logic.term.ConstantTerm;
+import tools.refinery.logic.term.StatefulAggregator;
+import tools.refinery.logic.term.StatelessAggregator;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.util.CycleDetectingMapper;
+import tools.refinery.store.query.view.AnySymbolView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,15 +80,7 @@ public class Dnf2PQuery {
 		pQuery.setParameters(parameterList);
 
 		for (var functionalDependency : dnfQuery.getFunctionalDependencies()) {
-			var functionalDependencyAnnotation = new PAnnotation("FunctionalDependency");
-			for (var forEachVariable : functionalDependency.forEach()) {
-				var reference = new ParameterReference(forEachVariable.getUniqueName());
-				functionalDependencyAnnotation.addAttribute("forEach", reference);
-			}
-			for (var uniqueVariable : functionalDependency.unique()) {
-				var reference = new ParameterReference(uniqueVariable.getUniqueName());
-				functionalDependencyAnnotation.addAttribute("unique", reference);
-			}
+			var functionalDependencyAnnotation = getFunctionalDependencyAnnotation(functionalDependency);
 			pQuery.addAnnotation(functionalDependencyAnnotation);
 		}
 
@@ -108,26 +101,33 @@ public class Dnf2PQuery {
 		return pQuery;
 	}
 
-	private void translateLiteral(Literal literal, PBody body) {
-		if (literal instanceof EquivalenceLiteral equivalenceLiteral) {
-			translateEquivalenceLiteral(equivalenceLiteral, body);
-		} else if (literal instanceof CallLiteral callLiteral) {
-			translateCallLiteral(callLiteral, body);
-		} else if (literal instanceof ConstantLiteral constantLiteral) {
-			translateConstantLiteral(constantLiteral, body);
-		} else if (literal instanceof AssignLiteral<?> assignLiteral) {
-			translateAssignLiteral(assignLiteral, body);
-		} else if (literal instanceof CheckLiteral checkLiteral) {
-			translateCheckLiteral(checkLiteral, body);
-		} else if (literal instanceof CountLiteral countLiteral) {
-			translateCountLiteral(countLiteral, body);
-		} else if (literal instanceof AggregationLiteral<?, ?> aggregationLiteral) {
-			translateAggregationLiteral(aggregationLiteral, body);
-		} else if (literal instanceof RepresentativeElectionLiteral representativeElectionLiteral) {
-			translateRepresentativeElectionLiteral(representativeElectionLiteral, body);
-		} else {
-			throw new IllegalArgumentException("Unknown literal: " + literal.toString());
+	private static PAnnotation getFunctionalDependencyAnnotation(FunctionalDependency<Variable> functionalDependency) {
+		var functionalDependencyAnnotation = new PAnnotation("FunctionalDependency");
+		for (var forEachVariable : functionalDependency.forEach()) {
+			var reference = new ParameterReference(forEachVariable.getUniqueName());
+			functionalDependencyAnnotation.addAttribute("forEach", reference);
 		}
+		for (var uniqueVariable : functionalDependency.unique()) {
+			var reference = new ParameterReference(uniqueVariable.getUniqueName());
+			functionalDependencyAnnotation.addAttribute("unique", reference);
+		}
+		return functionalDependencyAnnotation;
+	}
+
+	private void translateLiteral(Literal literal, PBody body) {
+        switch (literal) {
+            case EquivalenceLiteral equivalenceLiteral -> translateEquivalenceLiteral(equivalenceLiteral, body);
+            case CallLiteral callLiteral -> translateCallLiteral(callLiteral, body);
+            case ConstantLiteral constantLiteral -> translateConstantLiteral(constantLiteral, body);
+            case AssignLiteral<?> assignLiteral -> translateAssignLiteral(assignLiteral, body);
+            case CheckLiteral checkLiteral -> translateCheckLiteral(checkLiteral, body);
+            case CountLiteral countLiteral -> translateCountLiteral(countLiteral, body);
+            case AggregationLiteral<?, ?> aggregationLiteral -> translateAggregationLiteral(aggregationLiteral, body);
+			case LeftJoinLiteral<?> leftJoinLiteral -> translateLeftJoinLiteral(leftJoinLiteral, body);
+            case RepresentativeElectionLiteral representativeElectionLiteral ->
+                    translateRepresentativeElectionLiteral(representativeElectionLiteral, body);
+            case null, default -> throw new IllegalArgumentException("Unknown literal: " + literal);
+        }
 	}
 
 	private void translateEquivalenceLiteral(EquivalenceLiteral equivalenceLiteral, PBody body) {
@@ -242,6 +242,21 @@ public class Dnf2PQuery {
 		var resultVariable = body.getOrCreateVariableByName(aggregationLiteral.getResultVariable().getUniqueName());
 		new AggregatorConstraint(boundAggregator, body, substitution, wrappedCall.pattern(), resultVariable,
 				aggregatedColumn);
+	}
+
+	private <T> void translateLeftJoinLiteral(LeftJoinLiteral<T> leftJoinLiteral, PBody body) {
+		var wrappedCall = wrapperFactory.maybeWrapConstraint(leftJoinLiteral);
+		var substitution = translateSubstitution(wrappedCall.remappedArguments(), body);
+		var placeholderVariable = body.getOrCreateVariableByName(
+				leftJoinLiteral.getPlaceholderVariable().getUniqueName());
+		var optionalColumn = substitution.invertIndex().get(placeholderVariable);
+		if (optionalColumn == null) {
+			throw new IllegalStateException("Placeholder variable %s not found in substitution %s"
+					.formatted(placeholderVariable, substitution));
+		}
+		var resultVariable = body.getOrCreateVariableByName(leftJoinLiteral.getResultVariable().getUniqueName());
+		new LeftJoinConstraint(body, substitution, wrappedCall.pattern(), resultVariable, optionalColumn,
+				leftJoinLiteral.getDefaultValue());
 	}
 
 	private void translateRepresentativeElectionLiteral(RepresentativeElectionLiteral literal, PBody body) {

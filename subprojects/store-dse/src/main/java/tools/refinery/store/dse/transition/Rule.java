@@ -9,7 +9,7 @@ import tools.refinery.store.dse.transition.actions.Action;
 import tools.refinery.store.dse.transition.actions.BoundAction;
 import tools.refinery.store.dse.transition.callback.*;
 import tools.refinery.store.model.Model;
-import tools.refinery.store.query.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.RelationalQuery;
 
 public class Rule {
 	private final String name;

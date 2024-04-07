@@ -8,7 +8,7 @@ package tools.refinery.store.reasoning.translator.metamodel;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

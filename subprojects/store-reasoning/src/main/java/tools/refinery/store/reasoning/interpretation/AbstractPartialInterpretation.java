@@ -5,11 +5,13 @@
  */
 package tools.refinery.store.reasoning.interpretation;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 
-public abstract class AbstractPartialInterpretation<A, C> implements PartialInterpretation<A, C> {
+public abstract class AbstractPartialInterpretation<A extends AbstractValue<A, C>, C>
+		implements PartialInterpretation<A, C> {
 	private final ReasoningAdapter adapter;
 	private final PartialSymbol<A, C> partialSymbol;
 	private final Concreteness concreteness;

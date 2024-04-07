@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.internal;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -19,8 +20,8 @@ import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 
@@ -49,7 +50,7 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		createPartialInterpretations();
 
 		var refinerFactories = storeAdapter.getSymbolRefiners();
-		refiners = new HashMap<>(refinerFactories.size());
+		refiners = HashMap.newHashMap(refinerFactories.size());
 		createRefiners();
 
 		storageRefiners = storeAdapter.createStorageRefiner(model);
@@ -69,7 +70,7 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		for (int i = 0; i < concretenessLength; i++) {
 			var concreteness = Concreteness.values()[i];
 			if (supportedInterpretations.contains(concreteness)) {
-				partialInterpretations[i] = new HashMap<>(interpretationFactories.size());
+				partialInterpretations[i] = HashMap.newHashMap(interpretationFactories.size());
 			}
 		}
 		// Create the partial interpretations in order so that factories may refer to interpretations of symbols
@@ -87,7 +88,7 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		}
 	}
 
-	private <A, C> PartialInterpretation<A, C> createPartialInterpretation(
+	private <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> createPartialInterpretation(
 			Concreteness concreteness, PartialInterpretation.Factory<A, C> interpreter, AnyPartialSymbol symbol) {
 		// The builder only allows well-typed assignment of interpreters to symbols.
 		@SuppressWarnings("unchecked")
@@ -107,7 +108,7 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		}
 	}
 
-	private <A, C> PartialInterpretationRefiner<A, C> createRefiner(
+	private <A extends AbstractValue<A, C>, C> PartialInterpretationRefiner<A, C> createRefiner(
 			PartialInterpretationRefiner.Factory<A, C> factory, AnyPartialSymbol symbol) {
 		// The builder only allows well-typed assignment of interpreters to symbols.
 		@SuppressWarnings("unchecked")
@@ -126,8 +127,8 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 	}
 
 	@Override
-	public <A, C> PartialInterpretation<A, C> getPartialInterpretation(Concreteness concreteness,
-																	   PartialSymbol<A, C> partialSymbol) {
+	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
+			Concreteness concreteness, PartialSymbol<A, C> partialSymbol) {
 		var map = partialInterpretations[concreteness.ordinal()];
 		if (map == null) {
 			throw new IllegalArgumentException("No interpretation for concreteness: " + concreteness);
@@ -143,7 +144,8 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 	}
 
 	@Override
-	public <A, C> PartialInterpretationRefiner<A, C> getRefiner(PartialSymbol<A, C> partialSymbol) {
+	public <A extends AbstractValue<A, C>, C> PartialInterpretationRefiner<A, C> getRefiner(
+			PartialSymbol<A, C> partialSymbol) {
 		var refiner = refiners.get(partialSymbol);
 		if (refiner == null) {
 			throw new IllegalArgumentException("No refiner for partial symbol: " + partialSymbol);

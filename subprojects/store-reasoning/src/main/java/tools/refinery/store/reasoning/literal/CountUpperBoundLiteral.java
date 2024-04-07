@@ -5,15 +5,15 @@
  */
 package tools.refinery.store.reasoning.literal;
 
-import tools.refinery.store.query.Constraint;
-import tools.refinery.store.query.literal.AbstractCallLiteral;
-import tools.refinery.store.query.literal.AbstractCountLiteral;
-import tools.refinery.store.query.literal.Literal;
-import tools.refinery.store.query.substitution.Substitution;
-import tools.refinery.store.query.term.DataVariable;
-import tools.refinery.store.query.term.Variable;
-import tools.refinery.store.representation.cardinality.UpperCardinalities;
-import tools.refinery.store.representation.cardinality.UpperCardinality;
+import tools.refinery.logic.Constraint;
+import tools.refinery.logic.literal.AbstractCallLiteral;
+import tools.refinery.logic.literal.AbstractCountLiteral;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.substitution.Substitution;
+import tools.refinery.logic.term.DataVariable;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
+import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 
 import java.util.List;
 

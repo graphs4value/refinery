@@ -13,13 +13,13 @@
   <eClassifiers xsi:type="ecore:EClass" name="ClassDeclaration" eSuperTypes="#//Statement #//Relation">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="featureDeclarations" upperBound="-1"
-        eType="#//FeatureDeclaration" containment="true"/>
+        eType="#//ReferenceDeclaration" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="newNode" eType="#//Node"
         transient="true" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superTypes" upperBound="-1"
         eType="#//Relation"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ReferenceDeclaration" eSuperTypes="#//FeatureDeclaration">
+  <eClassifiers xsi:type="ecore:EClass" name="ReferenceDeclaration" eSuperTypes="#//Relation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="opposite" eType="#//ReferenceDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
         containment="true"/>
@@ -150,12 +150,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//VariableOrNode"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NewVariable" eSuperTypes="#//Variable"/>
-  <eClassifiers xsi:type="ecore:EEnum" name="Modality">
-    <eLiterals name="DEFAULT" value="1"/>
-    <eLiterals name="MAY" value="2"/>
-    <eLiterals name="MUST" value="3"/>
-    <eLiterals name="CURRENT" value="3"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ComparisonOp">
     <eLiterals name="LESS"/>
     <eLiterals name="LESS_EQ" value="1"/>
@@ -164,14 +158,13 @@
     <eLiterals name="EQ" value="4"/>
     <eLiterals name="NOT_EQ" value="5"/>
     <eLiterals name="IN" value="6"/>
-    <eLiterals name="SUBSUMES" value="7"/>
-    <eLiterals name="SUBSUMED_BY" value="8"/>
-    <eLiterals name="ABS_EQ" value="9"/>
-    <eLiterals name="ABS_NOT_EQ" value="10"/>
+    <eLiterals name="NODE_EQ" value="9"/>
+    <eLiterals name="NODE_NOT_EQ" value="10"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
-    <eLiterals name="REFERENCE" value="1"/>
-    <eLiterals name="CONTAINMENT" value="2"/>
+    <eLiterals name="DEFAULT" value="1"/>
+    <eLiterals name="REFERENCE" value="2"/>
+    <eLiterals name="CONTAINMENT" value="3"/>
     <eLiterals name="CONTAINER" value="3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expr" abstract="true"/>
@@ -198,8 +191,9 @@
     <eLiterals name="MUL" value="2"/>
     <eLiterals name="DIV" value="3"/>
     <eLiterals name="POW" value="4"/>
-    <eLiterals name="MEET" value="5"/>
-    <eLiterals name="JOIN" value="6"/>
+    <eLiterals name="AND" value="5"/>
+    <eLiterals name="OR" value="6"/>
+    <eLiterals name="XOR" value="7"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ArithmeticUnaryExpr" eSuperTypes="#//UnaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//UnaryOp"/>
@@ -209,13 +203,7 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" eType="#//Expr"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//AggregationOp"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="AggregationOp">
-    <eLiterals name="SUM"/>
-    <eLiterals name="PROD" value="1"/>
-    <eLiterals name="MIN" value="2"/>
-    <eLiterals name="MAX" value="3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="aggregator" eType="#//AggregatorDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComparisonExpr" eSuperTypes="#//BinaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//ComparisonOp"/>
@@ -225,7 +213,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDefinition" eSuperTypes="#//ParametricDefinition #//Relation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cases" upperBound="-1"
         eType="#//Case" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="functionType" eType="#//PrimitiveType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionType" eType="#//DatatypeDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Case" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//Case #//ExistentialQuantifier">
@@ -244,22 +232,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="NegationExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="CountExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="Relation" abstract="true" eSuperTypes="#//NamedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ModalExpr" eSuperTypes="#//UnaryExpr">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RangeExpr" eSuperTypes="#//BinaryExpr"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InfConstant" eSuperTypes="#//Constant"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FeatureDeclaration" abstract="true"
-      eSuperTypes="#//Relation"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeDeclaration" eSuperTypes="#//FeatureDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributeType" eType="#//PrimitiveType"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="FlagDeclaration" eSuperTypes="#//FeatureDeclaration"/>
-  <eClassifiers xsi:type="ecore:EEnum" name="PrimitiveType">
-    <eLiterals name="INT"/>
-    <eLiterals name="REAL" value="1"/>
-    <eLiterals name="STRING" value="2"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LogicConstant" eSuperTypes="#//Constant">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="logicValue" eType="#//LogicValue"/>
   </eClassifiers>
@@ -276,4 +249,19 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="importedModule" eType="#//Problem"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="alias" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DatatypeDeclaration" eSuperTypes="#//Relation #//Statement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="LatticeBinaryExpr" eSuperTypes="#//BinaryExpr">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//LatticeBinaryOp"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="LatticeBinaryOp">
+    <eLiterals name="MEET"/>
+    <eLiterals name="JOIN" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CastExpr" eSuperTypes="#//Expr">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//Expr" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetType" eType="#//Relation"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpr" eSuperTypes="#//BinaryExpr"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InfiniteConstant" eSuperTypes="#//Constant"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AggregatorDeclaration" eSuperTypes="#//Statement #//NamedElement"/>
 </ecore:EPackage>

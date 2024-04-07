@@ -7,9 +7,10 @@ package tools.refinery.store.reasoning.lifting;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.refinery.store.query.dnf.Dnf;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.ParameterDirection;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.term.ParameterDirection;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.query.view.MustView;
@@ -20,15 +21,14 @@ import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static tools.refinery.store.query.literal.Literals.check;
-import static tools.refinery.store.query.literal.Literals.not;
-import static tools.refinery.store.query.term.int_.IntTerms.*;
-import static tools.refinery.store.query.tests.QueryMatchers.structurallyEqualTo;
+import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.literal.Literals.not;
+import static tools.refinery.logic.term.int_.IntTerms.*;
+import static tools.refinery.logic.tests.QueryMatchers.structurallyEqualTo;
 
 class DnfLifterTest {
 	private static final Symbol<TruthValue> friendSymbol = Symbol.of("friend", 2, TruthValue.class,
@@ -49,7 +49,7 @@ class DnfLifterTest {
 	@Test
 	void liftPartialRelationCallTest() {
 		var input = Query.of("Actual", (builder, p1) -> builder.clause((v1) -> List.of(
-			friend.call(p1, v1)
+				friend.call(p1, v1)
 		))).getDnf();
 		var actual = sut.lift(Modality.MUST, Concreteness.PARTIAL, input);
 
@@ -204,7 +204,7 @@ class DnfLifterTest {
 
 	@Test
 	void liftPartialRelationTransitiveCallTest() {
-		var input = Query.of("Actual", (builder, p1, p2)-> builder.clause(
+		var input = Query.of("Actual", (builder, p1, p2) -> builder.clause(
 				friend.callTransitive(p1, p2),
 				not(person.call(p2))
 		)).getDnf();
@@ -233,7 +233,7 @@ class DnfLifterTest {
 
 	@Test
 	void liftPartialSymbolTransitiveCallTest() {
-		var input = Query.of("Actual", (builder, p1, p2)-> builder.clause(
+		var input = Query.of("Actual", (builder, p1, p2) -> builder.clause(
 				friendMustView.callTransitive(p1, p2),
 				not(person.call(p2))
 		)).getDnf();
@@ -332,7 +332,8 @@ class DnfLifterTest {
 
 		var expected = Query.of("Expected", (builder, p1, p2) -> builder.clause(
 				ModalConstraint.of(Modality.MAY, Concreteness.PARTIAL, friend).call(p1, p2),
-				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, ReasoningAdapter.EQUALS_SYMBOL).call(p1, p2))
+				not(ModalConstraint.of(Modality.MUST, Concreteness.PARTIAL, ReasoningAdapter.EQUALS_SYMBOL).call(p1,
+                        p2))
 		)).getDnf();
 
 		assertThat(actual, structurallyEqualTo(expected));

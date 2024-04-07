@@ -16,12 +16,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LogicValue/UNKNOWN"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LogicValue/ERROR"/>
     </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Modality">
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/DEFAULT"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MAY"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MUST"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/CURRENT"/>
-    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ComparisonOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/LESS"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/LESS_EQ"/>
@@ -30,12 +24,11 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NOT_EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/IN"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/SUBSUMES"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/SUBSUMED_BY"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/ABS_EQ"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/ABS_NOT_EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NODE_EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NODE_NOT_EQ"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ReferenceKind">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/DEFAULT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/REFERENCE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINER"/>
@@ -50,19 +43,9 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/MUL"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/DIV"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/POW"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/MEET"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/JOIN"/>
-    </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//AggregationOp">
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//AggregationOp/SUM"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//AggregationOp/PROD"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//AggregationOp/MIN"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//AggregationOp/MAX"/>
-    </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//PrimitiveType">
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PrimitiveType/INT"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PrimitiveType/REAL"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PrimitiveType/STRING"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/AND"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/OR"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//BinaryOp/XOR"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ModuleKind">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ModuleKind/PROBLEM"/>
@@ -72,6 +55,10 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/NODE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/ATOM"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//NodeKind/MULTI"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//LatticeBinaryOp">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/MEET"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/JOIN"/>
     </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
@@ -202,7 +189,7 @@
     <genClasses ecoreClass="problem.ecore#//AggregationExpr">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AggregationExpr/value"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AggregationExpr/condition"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//AggregationExpr/op"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AggregationExpr/aggregator"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//ComparisonExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ComparisonExpr/op"/>
@@ -210,7 +197,7 @@
     <genClasses ecoreClass="problem.ecore#//QuantifiedUnaryExpr"/>
     <genClasses ecoreClass="problem.ecore#//FunctionDefinition">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/cases"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//FunctionDefinition/functionType"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/functionType"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Case"/>
     <genClasses ecoreClass="problem.ecore#//Conjunction">
@@ -226,16 +213,7 @@
     <genClasses ecoreClass="problem.ecore#//NegationExpr"/>
     <genClasses ecoreClass="problem.ecore#//CountExpr"/>
     <genClasses ecoreClass="problem.ecore#//Relation"/>
-    <genClasses ecoreClass="problem.ecore#//ModalExpr">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/modality"/>
-    </genClasses>
     <genClasses ecoreClass="problem.ecore#//RangeExpr"/>
-    <genClasses ecoreClass="problem.ecore#//InfConstant"/>
-    <genClasses ecoreClass="problem.ecore#//FeatureDeclaration"/>
-    <genClasses ecoreClass="problem.ecore#//AttributeDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//AttributeDeclaration/attributeType"/>
-    </genClasses>
-    <genClasses ecoreClass="problem.ecore#//FlagDeclaration"/>
     <genClasses ecoreClass="problem.ecore#//LogicConstant">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LogicConstant/logicValue"/>
     </genClasses>
@@ -243,5 +221,16 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//ImportStatement/importedModule"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ImportStatement/alias"/>
     </genClasses>
+    <genClasses ecoreClass="problem.ecore#//DatatypeDeclaration"/>
+    <genClasses ecoreClass="problem.ecore#//LatticeBinaryExpr">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LatticeBinaryExpr/op"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//CastExpr">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/body"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/targetType"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AssignmentExpr"/>
+    <genClasses ecoreClass="problem.ecore#//InfiniteConstant"/>
+    <genClasses ecoreClass="problem.ecore#//AggregatorDeclaration"/>
   </genPackages>
 </genmodel:GenModel>

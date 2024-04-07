@@ -10,9 +10,9 @@ import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 public class ExistsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, Boolean> {
@@ -42,7 +42,7 @@ public class ExistsRefiner extends AbstractPartialInterpretationRefiner<TruthVal
 		}
 		default -> throw new IllegalArgumentException("Unknown TruthValue: " + value);
 		}
-		if (newCount.isEmpty()) {
+		if (newCount.isError()) {
 			return false;
 		}
 		countInterpretation.put(key, newCount);

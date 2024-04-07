@@ -19,6 +19,7 @@ include(
 		"language-model",
 		"language-semantics",
 		"language-web",
+		"logic",
 		"store",
 		"store-dse",
 		"store-dse-visualization",
@@ -26,6 +27,7 @@ include(
 		"store-query-interpreter",
 		"store-reasoning",
 		"store-reasoning-scope",
+		"store-reasoning-smt",
 )
 
 for (project in rootProject.children) {
@@ -33,3 +35,5 @@ for (project in rootProject.children) {
 	project.name = "${rootProject.name}-$projectName"
 	project.projectDir = file("subprojects/$projectName")
 }
+
+includeBuild("z3")

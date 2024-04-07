@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.view;
 
-import tools.refinery.store.query.term.Parameter;
+import tools.refinery.logic.term.Parameter;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple1;
 

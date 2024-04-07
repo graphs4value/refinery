@@ -1,13 +1,15 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.representation;
 
-import tools.refinery.store.representation.AbstractDomain;
+import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.AbstractValue;
 
-public sealed interface PartialSymbol<A, C> extends AnyPartialSymbol permits PartialFunction, PartialRelation {
+public sealed interface PartialSymbol<A extends AbstractValue<A, C>, C> extends AnyPartialSymbol
+		permits PartialFunction, PartialRelation {
 	@Override
 	AbstractDomain<A, C> abstractDomain();
 
@@ -17,7 +19,8 @@ public sealed interface PartialSymbol<A, C> extends AnyPartialSymbol permits Par
 		return new PartialRelation(name, arity);
 	}
 
-	static <A, C> PartialFunction<A, C> of(String name, int arity, AbstractDomain<A, C> abstractDomain) {
+	static <A extends AbstractValue<A, C>, C> PartialFunction<A, C> of(
+			String name, int arity, AbstractDomain<A, C> abstractDomain) {
 		return new PartialFunction<>(name, arity, abstractDomain);
 	}
 }

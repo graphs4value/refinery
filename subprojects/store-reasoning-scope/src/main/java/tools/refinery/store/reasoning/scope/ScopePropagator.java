@@ -13,8 +13,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.FiniteUpperCardinality;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 
 import java.util.*;
 
@@ -48,7 +48,7 @@ public class ScopePropagator implements ModelStoreConfiguration {
 		}
 		var newValue = scopes.compute(type, (ignoredKey, oldValue) ->
 				oldValue == null ? interval : oldValue.meet(interval));
-		if (newValue.isEmpty()) {
+		if (newValue.isError()) {
 			throw new TranslationException(type, "Unsatisfiable scope for type %s".formatted(type));
 		}
 		return this;

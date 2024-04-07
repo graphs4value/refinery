@@ -6,36 +6,44 @@
 package tools.refinery.language.naming;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import com.google.inject.Singleton;
+import org.eclipse.xtext.naming.DefaultDeclarativeQualifiedNameProvider;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
-import org.eclipse.xtext.util.IResourceScopeCache;
-import org.eclipse.xtext.util.Tuples;
-import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
+import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.utils.ProblemUtil;
 
-public class ProblemQualifiedNameProvider extends IQualifiedNameProvider.AbstractImpl {
-	private static final String PREFIX = "tools.refinery.language.naming.ProblemQualifiedNameProvider.";
-	public static final String NAMED_DELEGATE = PREFIX + "NAMED_DELEGATE";
-	public static final String CACHE_KEY = PREFIX + "CACHE_KEY";
+@Singleton
+public class ProblemQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
-	@Named(NAMED_DELEGATE)
-	private IQualifiedNameProvider delegate;
+	private ImportAdapterProvider importAdapterProvider;
 
-	@Inject
-	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
-
-	@Override
-	public QualifiedName getFullyQualifiedName(EObject obj) {
-		return cache.get(Tuples.pair(obj, CACHE_KEY), obj.eResource(), () -> computeFullyQualifiedName(obj));
-	}
-
-	public QualifiedName computeFullyQualifiedName(EObject obj) {
-		var qualifiedName = delegate.getFullyQualifiedName(obj);
-		if (qualifiedName != null && ProblemResourceDescriptionStrategy.shouldExport(obj)) {
-			return NamingUtil.addRootPrefix(qualifiedName);
+	protected QualifiedName qualifiedName(Problem problem) {
+		var qualifiedNameString = problem.getName();
+		if (qualifiedNameString != null) {
+			return NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(qualifiedNameString));
 		}
-		return qualifiedName;
+		if (!ProblemUtil.isModule(problem)) {
+			return null;
+		}
+		var resource = problem.eResource();
+		if (resource == null) {
+			return null;
+		}
+		var resourceUri = resource.getURI();
+		if (resourceUri == null) {
+			return null;
+		}
+		var resourceSet = resource.getResourceSet();
+		if (resourceSet == null) {
+			return null;
+		}
+		var adapter = importAdapterProvider.getOrInstall(resourceSet);
+		// If a module has no explicitly specified name, return the qualified name it was resolved under.
+		return adapter.getQualifiedName(resourceUri);
 	}
 }

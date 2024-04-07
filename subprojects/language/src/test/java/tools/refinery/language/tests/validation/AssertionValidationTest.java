@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -35,7 +35,7 @@ class AssertionValidationTest {
 				""");
 		var issues = problem.validate();
 		assertThat(issues, hasItem(hasProperty("issueCode",
-				is(ProblemValidator.INVALID_VALUE_ISSUE))));
+				is(ProblemValidator.TYPE_ERROR))));
 	}
 
 	@ParameterizedTest

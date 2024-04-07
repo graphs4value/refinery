@@ -6,10 +6,11 @@
 package tools.refinery.store.reasoning;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.dnf.Query;
-import tools.refinery.store.query.term.Variable;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.query.view.ForbiddenView;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -18,14 +19,13 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static tools.refinery.store.query.literal.Literals.not;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.ReasoningAdapter.EQUALS_SYMBOL;
 import static tools.refinery.store.reasoning.ReasoningAdapter.EXISTS_SYMBOL;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;

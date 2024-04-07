@@ -9,13 +9,16 @@
 @external prop implicitCompletion from './props'
 
 @precedence {
+  cast,
   prefix,
+  range @left,
   exponential @right,
   multiplicative @left,
   additive @left,
-  range @left,
   lattice @left,
   comparison @left,
+  boolean @left,
+  assignment,
   feature @cut
 }
 
@@ -42,6 +45,12 @@ statement {
     kw<"enum"> RelationName
     (EnumBody { "{" sep<",", AtomNodeName> "}" } | ".")
   } |
+  DatatypeDeclaration {
+    kw<"extern"> ckw<"datatype"> DatatypeName "."
+  } |
+  AggregatorDeclaration {
+    kw<"extern"> ckw<"aggregator"> AggregatorName "."
+  } |
   PredicateDefinition {
     (
       (kw<"error"> | ckw<"contained"> | kw<"containment">)? kw<"pred"> |
@@ -50,10 +59,10 @@ statement {
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
-  FunctionDefinition {
-    kw<"fn"> PrimitiveType RelationName ParameterList<Parameter>?
-    FunctionBody { ("=" sep<OrOp, Case>)? "." }
-  } |
+  // FunctionDefinition {
+  //   kw<"fn"> RelationName RelationName ParameterList<Parameter>?
+  //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
+  // } |
   //RuleDefinition {
   //  kw<"rule">
   //  RuleName ParameterList<Parameter>?
@@ -77,7 +86,7 @@ FeatureDeclaration {
       ReferenceKind !feature ~featureHead
     } |
     FeatureDeclarationHeadWithoutKind {
-      (PrimitiveType | kw<"bool">)? ~featureHead
+      ~featureHead
     }
   )
   RelationName
@@ -87,36 +96,42 @@ FeatureDeclaration {
   ";"?
 }
 
-Parameter { Modality? RelationName? VariableName }
+Parameter { RelationName? VariableName }
 
 // Use @dynamicPrecedence to prevent a(b) from being parsed as Expr { a } Expr { b }
 // instead of Atom { a(b) }
 // Being looser with token sequencing enables more consistent syntactic highlighting.
 Conjunction { ("," | NextConjunction[@dynamicPrecedence=-10] { Expr })+ }
 
-Case { Conjunction ("->" Expr)? }
+// Case { Conjunction ("->" Expr)? }
 
 OrOp { ";" }
 
 Expr {
-  UnaryExpr | BinaryExpr | Aggregation | VariableName | Atom | Constant | "(" Expr ")"
+  AssignmentExpr | UnaryExpr | BinaryExpr | CastExpr | Aggregation |
+  VariableName | Atom | Constant | "(" Expr ")"
 }
 
+AssignmentExpr { !assignment VariableName kw<"is"> Expr }
+
 BinaryExpr {
+  Expr !boolean ("&&" | "||" | "^^") Expr |
   Expr !comparison ComparisonOp Expr |
   Expr !lattice (LatticeMeet | "\\/") Expr |
-  Expr !range ".." Expr |
   Expr !additive ("+" | "-") Expr |
-  Expr !multiplicative (StarMult | Divide) Expr |
-  Expr !exponential "**" Expr
+  Expr !multiplicative (Star | Divide) Expr |
+  Expr !exponential "**" Expr |
+  Expr !range ".." Expr
 }
 
 UnaryExpr {
-  !prefix ("+" | "-" | "!" | kw<"count"> | Modality) Expr
+  !prefix ("+" | "-" | "!" | kw<"count">) Expr
 }
 
+CastExpr { !cast Expr kw<"as"> DatatypeName }
+
 Aggregation {
-  AggregationOp "{" Expr "|" Expr "}"
+  AggregatorName "{" Expr "|" Expr "}"
 }
 
 Atom { RelationName "+"? ParameterList<Expr> }
@@ -137,20 +152,8 @@ ReferenceKind {
   kw<"refers"> | ckw<"contains"> | kw<"container">
 }
 
-PrimitiveType {
-  kw<"int"> | kw<"real"> | kw<"string">
-}
-
 LogicValue {
   kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
-}
-
-Modality {
-  kw<"must"> | kw<"may"> | kw<"current">
-}
-
-AggregationOp {
-  ckw<"sum"> | ckw<"prod"> | ckw<"min"> | ckw<"max">
 }
 
 ComparisonOp { SymbolicComparisonOp | kw<"in"> }
@@ -165,6 +168,8 @@ Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 // but will go with the transtive closure (and highlight `a` as a relation) if forced.
 RelationName { QualifiedName ~name }
 
+DatatypeName { QualifiedName }
+
 //RuleName { QualifiedName }
 
 AtomNodeName { QualifiedName }
@@ -175,7 +180,11 @@ NodeName { QualifiedName }
 
 ModuleName { QualifiedName }
 
+AggregatorName { QualifiedName }
+
 QualifiedName[implicitCompletion=true] { "::"? identifier (QualifiedNameSeparator "::" identifier)* }
+
+StarMult { Star }
 
 kw<term> { @specialize[@name={term},implicitCompletion=true]<identifier, term> }
 
@@ -216,7 +225,7 @@ sep1<separator, content> { content (separator content)* }
 
   IntMult { int }
 
-  StarMult { "*" }
+  Star { "*" }
 
   Real { (exponential | int ("." (int | exponential))?) }
 
@@ -229,7 +238,7 @@ sep1<separator, content> { content (separator content)* }
 
   SymbolicComparisonOp {
     ">" | ">=" | "<" | "<=" | "==" | "!=" |
-    "<:" | ":>" | "===" | "!=="
+    "===" | "!=="
   }
 
   NotOp { "!" }

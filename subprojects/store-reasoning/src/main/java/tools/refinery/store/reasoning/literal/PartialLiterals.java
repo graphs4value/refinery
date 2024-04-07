@@ -5,8 +5,8 @@
  */
 package tools.refinery.store.reasoning.literal;
 
-import tools.refinery.store.query.InvalidQueryException;
-import tools.refinery.store.query.literal.CallLiteral;
+import tools.refinery.logic.InvalidQueryException;
+import tools.refinery.logic.literal.CallLiteral;
 
 public final class PartialLiterals {
 	private PartialLiterals() {

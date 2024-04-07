@@ -7,8 +7,8 @@ package tools.refinery.store.reasoning.translator.multiobject;
 
 import tools.refinery.store.query.view.TuplePreservingView;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 class MultiView extends TuplePreservingView<CardinalityInterval> {

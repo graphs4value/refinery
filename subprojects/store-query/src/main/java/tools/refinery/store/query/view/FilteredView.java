@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.query.view;
 
-import tools.refinery.store.query.InvalidQueryException;
+import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.representation.Symbol;
 

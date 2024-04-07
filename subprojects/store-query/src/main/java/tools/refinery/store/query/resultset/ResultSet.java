@@ -6,7 +6,7 @@
 package tools.refinery.store.query.resultset;
 
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.query.dnf.Query;
+import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.tuple.Tuple;
 
 public non-sealed interface ResultSet<T> extends AnyResultSet {

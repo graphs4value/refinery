@@ -13,12 +13,17 @@ import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.IntSets;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
+import tools.refinery.logic.term.uppercardinality.UnboundedUpperCardinality;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
+import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.store.dse.propagation.BoundPropagator;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.representation.cardinality.*;
 import tools.refinery.store.tuple.Tuple;
 
 class BoundScopePropagator implements BoundPropagator {

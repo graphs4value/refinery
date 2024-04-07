@@ -12,9 +12,9 @@ import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.representation.TruthValue;
-import tools.refinery.store.representation.cardinality.CardinalityInterval;
-import tools.refinery.store.representation.cardinality.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Arrays;
@@ -37,7 +37,7 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		var uniqueTable = new HashMap<CardinalityInterval, CardinalityInterval>();
 		for (int i = 0; i < intervals.length; i++) {
 			var interval = intervals[i];
-			if (interval.isEmpty()) {
+			if (interval.isError()) {
 				throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
 						"Inconsistent existence or equality for node " + i);
 			}

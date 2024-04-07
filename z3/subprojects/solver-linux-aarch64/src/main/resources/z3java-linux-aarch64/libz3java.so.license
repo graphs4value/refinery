@@ -1,0 +1,6 @@
+Copyright (c) Microsoft Corporations
+
+SPDX-License-Identifier: MIT
+
+This file was created from the Z3 4.12.6 release sources using the
+z3/docker/cross_build.sh script in this repository.
