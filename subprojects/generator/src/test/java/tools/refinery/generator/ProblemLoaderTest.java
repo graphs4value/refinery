@@ -47,7 +47,9 @@ class ProblemLoaderTest {
 			modifiedProblem.eResource().save(outputStream, Map.of());
 			serializedProblem = outputStream.toString(StandardCharsets.UTF_8);
 		}
-		assertThat(serializedProblem, is(PREFIX + expectedScopes));
+		var normalizedResult = serializedProblem.replace("\r\n", "\n");
+		var normalizedExpected = (PREFIX + expectedScopes).formatted("\r\n", "\n");
+		assertThat(normalizedResult, is(normalizedExpected));
 	}
 
 	static Stream<Arguments> loadScopeConstraintsTest() {

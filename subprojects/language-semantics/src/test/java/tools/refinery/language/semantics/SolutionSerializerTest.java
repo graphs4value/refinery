@@ -72,7 +72,9 @@ class SolutionSerializerTest {
 			solution.eResource().save(outputStream, Map.of());
 			actualOutput = outputStream.toString();
 		}
-		assertThat(actualOutput, is(prefix + "\n" + expectedOutput));
+		var normalizedResult = actualOutput.replace("\r\n", "\n");
+		var normalizedExpected = (prefix + "\n" + expectedOutput).replace("\r\n", "\n");
+		assertThat(normalizedResult, is(normalizedExpected));
 	}
 
 	static Stream<Arguments> solutionSerializerTest() {
