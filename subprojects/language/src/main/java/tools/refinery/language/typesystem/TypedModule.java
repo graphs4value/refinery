@@ -11,6 +11,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.expressions.BuiltinTermInterpreter;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.model.problem.*;
@@ -166,6 +168,7 @@ public class TypedModule {
 		return ExprType.NODE;
 	}
 
+	@NotNull
 	public ExprType getExpressionType(Expr expr) {
 		// We can't use computeIfAbsent here, because translating referenced queries calls this method in a reentrant
 		// way, which would cause a ConcurrentModificationException with computeIfAbsent.
@@ -179,6 +182,7 @@ public class TypedModule {
 		return type.unwrapIfSet();
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(Expr expr) {
 		return switch (expr) {
 			case LogicConstant logicConstant -> computeExpressionType(logicConstant);
@@ -206,6 +210,7 @@ public class TypedModule {
 		};
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(LogicConstant expr) {
 		return switch (expr.getLogicValue()) {
 			case TRUE, FALSE -> BuiltinTermInterpreter.BOOLEAN_TYPE;
@@ -214,6 +219,7 @@ public class TypedModule {
 		};
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(VariableOrNodeExpr expr) {
 		var target = expr.getVariableOrNode();
 		if (target == null || target.eIsProxy()) {
@@ -239,12 +245,14 @@ public class TypedModule {
 		};
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(AssignmentExpr expr) {
 		// Force the left side to type check. Since the left side is a variable, it will force the right side to also
 		// type check in order to infer the variable type.
 		return getExpressionType(expr.getLeft()) == ExprType.INVALID ? ExprType.INVALID : ExprType.LITERAL;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(Atom atom) {
 		var relation = atom.getRelation();
 		if (relation == null || relation.eIsProxy()) {
@@ -271,6 +279,7 @@ public class TypedModule {
 		return ok ? signature.resultType() : ExprType.INVALID;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(NegationExpr negationExpr) {
 		var body = negationExpr.getBody();
 		if (body == null) {
@@ -281,7 +290,7 @@ public class TypedModule {
 			// Negation of literals yields another (non-enumerable) literal.
 			return ExprType.LITERAL;
 		}
-		if (actualType == DataExprType.INVALID) {
+		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
 		if (actualType instanceof MutableType) {
@@ -299,6 +308,7 @@ public class TypedModule {
 		return ExprType.INVALID;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(ArithmeticUnaryExpr expr) {
 		var op = expr.getOp();
 		var body = expr.getBody();
@@ -306,7 +316,7 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		var actualType = getExpressionType(body);
-		if (actualType == DataExprType.INVALID) {
+		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
 		if (actualType instanceof MutableType) {
@@ -324,14 +334,16 @@ public class TypedModule {
 		return ExprType.INVALID;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(CountExpr countExpr) {
 		return coerceIntoLiteral(countExpr.getBody()) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(AggregationExpr expr) {
 		var aggregator = expr.getAggregator();
 		if (aggregator == null || aggregator.eIsProxy()) {
-			return null;
+			return ExprType.INVALID;
 		}
 		// Avoid short-circuiting to let us type check both the value and the condition.
 		boolean ok = coerceIntoLiteral(expr.getCondition());
@@ -356,6 +368,7 @@ public class TypedModule {
 		return ExprType.INVALID;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(ComparisonExpr expr) {
 		var left = expr.getLeft();
 		var right = expr.getRight();
@@ -378,11 +391,13 @@ public class TypedModule {
 		return BuiltinTermInterpreter.BOOLEAN_TYPE;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(LatticeBinaryExpr expr) {
 		// Lattice operations are always supported for data types.
 		return getCommonDataType(expr);
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(RangeExpr expr) {
 		var left = expr.getLeft();
 		var right = expr.getRight();
@@ -405,6 +420,7 @@ public class TypedModule {
 		return commonType;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(ArithmeticBinaryExpr expr) {
 		var op = expr.getOp();
 		var left = expr.getLeft();
@@ -415,6 +431,24 @@ public class TypedModule {
 		// Avoid short-circuiting to let us type check both arguments.
 		var leftType = getExpressionType(left);
 		var rightType = getExpressionType(right);
+		var result = computeBinaryExpressionType(left, leftType, right, rightType, op);
+		if (result != null) {
+			return result;
+		}
+		var messageBuilder = new StringBuilder("Unsupported operator for ");
+		if (leftType.equals(rightType)) {
+			messageBuilder.append("data type ").append(leftType);
+		} else {
+			messageBuilder.append("data types ").append(leftType).append(" and ").append(rightType);
+		}
+		messageBuilder.append(".");
+		error(messageBuilder.toString(), expr, null, 0, ProblemValidator.TYPE_ERROR);
+		return ExprType.INVALID;
+	}
+
+	@Nullable
+	private ExprType computeBinaryExpressionType(Expr left, ExprType leftType, Expr right, ExprType rightType,
+												 BinaryOp op) {
 		if (leftType == ExprType.INVALID || rightType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
@@ -442,22 +476,15 @@ public class TypedModule {
 				return result.get();
 			}
 		}
-		var messageBuilder = new StringBuilder("Unsupported operator for ");
-		if (leftType.equals(rightType)) {
-			messageBuilder.append("data type ").append(leftType);
-		} else {
-			messageBuilder.append("data types ").append(leftType).append(" and ").append(rightType);
-		}
-		messageBuilder.append(".");
-		error(messageBuilder.toString(), expr, null, 0, ProblemValidator.TYPE_ERROR);
-		return ExprType.INVALID;
+		return null;
 	}
 
+	@NotNull
 	private ExprType computeExpressionType(CastExpr expr) {
 		var body = expr.getBody();
 		var targetRelation = expr.getTargetType();
 		if (body == null || !(targetRelation instanceof DatatypeDeclaration targetDeclaration)) {
-			return null;
+			return ExprType.INVALID;
 		}
 		var actualType = getExpressionType(body);
 		if (actualType == ExprType.INVALID) {
