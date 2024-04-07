@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+# SPDX-FileCopyrightText: 2021-2024 The Refinery Authors
 #
 # SPDX-License-Identifier: EPL-2.0
 
@@ -13,10 +13,19 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - ubuntu-20.04
+          - windows-latest
+          - macos-13 # Intel
+          - macos-14 # ARM
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check for Sonar secret
         id: check-secret
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -24,59 +33,59 @@ jobs:
             echo 'is_SONAR_TOKEN_set=true' >> $GITHUB_OUTPUT
           fi
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 21
-          distribution: temurin
+          distribution: corretto
       - name: Cache Gradle packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', 'gradle.properties', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle
+          key: ${{ matrix.os }}-gradle-${{ hashFiles('**/*.gradle', 'gradle.properties', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ matrix.os }}-gradle
       - name: Cache Sonar packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         with:
           path: |
             ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          key: ${{ matrix.os }}-sonar
+          restore-keys: ${{ matrix.os }}-sonar
       - name: Cache node distribution
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             **/.node
-          key: ${{ runner.os }}-node-${{ hashFiles('gradle.properties') }}
-          restore-keys: ${{ runner.os }}-node
+          key: ${{ matrix.os }}-node-${{ hashFiles('gradle.properties') }}
+          restore-keys: ${{ matrix.os }}-node
       - name: Cache yarn packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             **/.yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn
+          key: ${{ matrix.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ matrix.os }}-yarn
       - name: Gradle build
         run: |
-          ./gradlew build -Pci --info
+          ./gradlew build -Pci --info --stacktrace --max-workers 4 --no-daemon
       - name: Sonar analyze
         if: ${{ steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed by Sonar to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew sonar -Pci --info
+          ./gradlew sonar -Pci --info --stacktrace --max-workers 4 --no-daemon
   reuse-check:
     name: REUSE Compliance Check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@v1
+      uses: fsfe/reuse-action@a46482ca367aef4454a87620aa37c2be4b2f8106
       with:
         args: --include-meson-subprojects lint
