@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: MIT AND EPL-2.0
+ *
+ * FIle based on
+ * https://github.com/facebook/docusaurus/blob/73016d4936164ba38d4b86ec2aa8c168b5904a21/packages/docusaurus-tsconfig/tsconfig.json
+ * but copied instead of adding an `extends` declaration to let SonarQube see its contents.
+ */
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": [
+      "node",
+      "@docusaurus/module-type-aliases",
+      "@docusaurus/theme-classic"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@site/*": ["./*"]
+    }
+  },
+  "include": ["."],
+  "exclude": [
+    ".docusaurus",
+    ".yarn",
+    "build"
+  ]
+}

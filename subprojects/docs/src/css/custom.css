@@ -1,0 +1,40 @@
+/*
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+@import '@fontsource-variable/open-sans/wdth.css';
+@import '@fontsource-variable/open-sans/wdth-italic.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght-italic.css';
+
+:root {
+  --ifm-font-family-base: 'Open Sans Variable',
+    'Open Sans',
+    'Roboto',
+    'Helvetica',
+    'Arial',
+    sans-serif;
+  --ifm-fony-family-monospace: 'JetBrains Mono Variable',
+    'JetBrains Mono',
+    'Cascadia Code',
+    'Fira Code',
+    monospace;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+code,
+kbd {
+  font-feature-settings: 'liga', 'calt';
+}
+
+.navbar__title {
+  font-weight: 500;
+  font-size: 1.25rem;
+}

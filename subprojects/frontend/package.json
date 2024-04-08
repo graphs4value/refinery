@@ -11,7 +11,7 @@
   "private": true,
   "scripts": {
     "build": "MODE=production vite build",
-    "serve": "MODE=development vite serve",
+    "dev": "MODE=development vite serve",
     "typegen": "xstate typegen \"src/**/*.ts?(x)\"",
     "typecheck": "yarn run g:tsc -p subprojects/frontend/tsconfig.shared.json && yarn run g:tsc -p subprojects/frontend/tsconfig.node.json && yarn run g:tsc -p subprojects/frontend/tsconfig.json",
     "lint": "yarn run g:lint subprojects/frontend",
@@ -67,7 +67,7 @@
     "mobx": "^6.12.3",
     "mobx-react-lite": "^4.0.7",
     "ms": "^2.1.3",
-    "nanoid": "^5.0.6",
+    "nanoid": "^5.0.7",
     "notistack": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

@@ -18,9 +18,11 @@
   },
   "homepage": "https://refinery.tools",
   "workspaces": [
+    "subprojects/docs",
     "subprojects/frontend"
   ],
   "scripts": {
+    "docs": "yarn workspace @refinery/docs",
     "frontend": "yarn workspace @refinery/frontend",
     "typecheck": "yarn run g:tsc -p tsconfig.json",
     "lint": "yarn run g:lint",

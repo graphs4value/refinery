@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+#
+# SPDX-License-Identifier: CC0-1.0
+
+dev-dist/
+*.typegen.ts

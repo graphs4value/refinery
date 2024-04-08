@@ -9,6 +9,7 @@ const path = require('node:path');
 // Allow the Codium ESLint plugin to find `tsconfig.json` from the repository root.
 const project = [
   path.join(__dirname, 'tsconfig.json'),
+  path.join(__dirname, 'subprojects/docs/tsconfig.json'),
   path.join(__dirname, 'subprojects/frontend/tsconfig.json'),
   path.join(__dirname, 'subprojects/frontend/tsconfig.node.json'),
   path.join(__dirname, 'subprojects/frontend/tsconfig.shared.json'),
@@ -48,8 +49,10 @@ module.exports = {
   ignorePatterns: [
     'build/**/*',
     'subprojects/*/build/**/*',
-    'subprojects/*/dev-dist/**/*',
-    'subprojects/*/src/**/*.typegen.ts',
+    'subprojects/docs/.docusaurus/**/*',
+    'subprojects/docs/.yarn/**/*',
+    'subprojects/frontend/dev-dist/**/*',
+    'subprojects/frontend/src/**/*.typegen.ts',
   ],
   rules: {
     // In typescript, some class methods implementing an inderface do not use `this`:
@@ -108,6 +111,13 @@ module.exports = {
       },
     },
     {
+      files: ['*.cts'],
+      rules: {
+        // Allow `import type` in CommonJS TypeScript modules.
+        'import/no-import-module-exports': 'off',
+      },
+    },
+    {
       files: [
         '.eslintrc.cjs',
         'scripts/*.cjs',
@@ -130,6 +140,21 @@ module.exports = {
         'no-console': 'off',
         // Access to the environment in configuration files.
         'no-process-env': 'off',
+      },
+    },
+    {
+      files: ['subprojects/docs/src/**/*'],
+      rules: {
+        'import/no-unresolved': [
+          'error',
+          {
+            ignore: [
+              // These imports are resolved by Docusaurus, not TypeScript.
+              '^@theme/',
+              '^@theme-original/',
+            ],
+          },
+        ],
       },
     },
   ],

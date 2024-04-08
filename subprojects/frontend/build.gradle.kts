@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -25,40 +25,34 @@ val productionAssets: Configuration by configurations.creating {
 	isCanBeResolved = false
 }
 
-val sourcesWithoutTypes = fileTree("src") {
+val sourcesWithoutTypes: FileCollection = fileTree("src") {
 	exclude("**/*.typegen.ts")
 }
 
 val sourcesWithTypes: FileCollection = fileTree("src") + fileTree("types")
 
-val buildScripts: FileCollection = fileTree("config") + files(
-		rootProject.file(".eslintrc.cjs"),
-		rootProject.file("prettier.config.cjs"),
-		"vite.config.ts",
+val installationState: FileCollection = files(
+	rootProject.file("yarn.lock"),
+	rootProject.file("package.json"),
+	"package.json",
 )
 
-val installationState = files(
-		rootProject.file("yarn.lock"),
-		rootProject.file("package.json"),
-		"package.json",
+val assembleConfigFiles: FileCollection = installationState + files(
+	rootProject.file("tsconfig.base.json"),
+	"tsconfig.json",
+	"tsconfig.node.json",
+	"tsconfig.shared.json",
+	"vite.config.ts",
+) + fileTree("config")
+
+val assembleSources: FileCollection = sourcesWithTypes + fileTree("public") + files("index.html")
+
+val assembleFiles: FileCollection = assembleSources + assembleConfigFiles
+
+val lintingFiles: FileCollection = sourcesWithTypes + assembleConfigFiles + files(
+	rootProject.file(".eslintrc.cjs"),
+	rootProject.file("prettier.config.cjs"),
 )
-
-val sharedConfigFiles: FileCollection = installationState + files(
-		rootProject.file("tsconfig.base.json"),
-		"tsconfig.json",
-		"tsconfig.node.json",
-		"tsconfig.shared.json",
-)
-
-val assembleConfigFiles = sharedConfigFiles + file("vite.config.ts") + fileTree("config") {
-	include("**/*.ts")
-}
-
-val assembleSources = sourcesWithTypes + fileTree("public") + file("index.html")
-
-val assembleFiles = assembleSources + assembleConfigFiles
-
-val lintingFiles: FileCollection = sourcesWithTypes + buildScripts + sharedConfigFiles
 
 tasks {
 	val generateXStateTypes by registering(RunYarn::class) {
@@ -110,16 +104,6 @@ tasks {
 	check {
 		dependsOn(typeCheckFrontend)
 		dependsOn(lintFrontend)
-	}
-
-	register<RunYarn>("serveFrontend") {
-		dependsOn(installFrontend)
-		dependsOn(generateXStateTypes)
-		inputs.files(assembleFiles)
-		outputs.dir(viteOutputDir.map { it.dir("development") })
-		script.set("run serve")
-		group = "run"
-		description = "Start a Vite dev server with hot module replacement."
 	}
 
 	clean {
