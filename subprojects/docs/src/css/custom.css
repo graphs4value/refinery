@@ -121,3 +121,7 @@ code {
   --ifm-footer-link-color: var(--ifm-color-content-secondary) !important;
   box-shadow: 0 -1px var(--refinery-outer-border-color);
 }
+
+.hero__title {
+  font-weight: 800;
+}
