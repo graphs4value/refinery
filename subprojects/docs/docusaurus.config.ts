@@ -26,7 +26,7 @@ export default {
   baseUrl: '/',
   baseUrlIssueBanner: false,
   trailingSlash: true,
-  staticDirectories: ['static'],
+  staticDirectories: ['static', 'build/javadocs'],
   plugins: [
     [
       '@docusaurus/plugin-content-docs',

@@ -16,9 +16,39 @@ frontend {
 	assembleScript.set("run build")
 }
 
+val javadocs: Configuration by configurations.creating {
+	isCanBeConsumed = false
+	isCanBeResolved = true
+}
+
+dependencies {
+	javadocs(project(":refinery-generator", "javadocElements"))
+	javadocs(project(":refinery-generator-cli", "javadocElements"))
+	javadocs(project(":refinery-interpreter", "javadocElements"))
+	javadocs(project(":refinery-interpreter-localsearch", "javadocElements"))
+	javadocs(project(":refinery-interpreter-rete", "javadocElements"))
+	javadocs(project(":refinery-interpreter-rete-recipes", "javadocElements"))
+	javadocs(project(":refinery-language", "javadocElements"))
+	javadocs(project(":refinery-language-ide", "javadocElements"))
+	javadocs(project(":refinery-language-model", "javadocElements"))
+	javadocs(project(":refinery-language-semantics", "javadocElements"))
+	javadocs(project(":refinery-language-web", "javadocElements"))
+	javadocs(project(":refinery-logic", "javadocElements"))
+	javadocs(project(":refinery-store", "javadocElements"))
+	javadocs(project(":refinery-store-dse", "javadocElements"))
+	javadocs(project(":refinery-store-dse-visualization", "javadocElements"))
+	javadocs(project(":refinery-store-query", "javadocElements"))
+	javadocs(project(":refinery-store-query-interpreter", "javadocElements"))
+	javadocs(project(":refinery-store-reasoning", "javadocElements"))
+	javadocs(project(":refinery-store-reasoning-scope", "javadocElements"))
+	javadocs(project(":refinery-store-reasoning-smt", "javadocElements"))
+}
+
 val srcDir = "src"
 
 val docusaurusOutputDir = layout.buildDirectory.dir("docusaurus")
+
+val javadocsDir = layout.buildDirectory.dir("javadocs/api/javadoc")
 
 val configFiles: FileCollection = files(
 	rootProject.file("yarn.lock"),
@@ -36,8 +66,27 @@ val lintConfigFiles: FileCollection = configFiles + files(
 )
 
 tasks {
+	val extractJavadocs by registering {
+		dependsOn(javadocs)
+		outputs.dir(javadocsDir)
+		doFirst {
+			delete(javadocsDir)
+		}
+		doLast {
+			javadocs.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+				copy {
+					from(zipTree(artifact.file))
+					into(javadocsDir.map { root -> root.dir(artifact.moduleVersion.id.name) })
+				}
+			}
+		}
+	}
+
 	assembleFrontend {
-		inputs.dir("src")
+		dependsOn(extractJavadocs)
+		inputs.dir(srcDir)
+		inputs.dir("static")
+		inputs.dir(javadocsDir)
 		inputs.files(configFiles)
 		outputs.dir(docusaurusOutputDir)
 	}
