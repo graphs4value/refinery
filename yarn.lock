@@ -2960,6 +2960,7 @@ __metadata:
     "@fontsource-variable/jetbrains-mono": "npm:^5.0.20"
     "@fontsource-variable/open-sans": "npm:^5.0.28"
     "@fontsource/open-sans": "npm:^5.0.27"
+    "@material-icons/svg": "npm:^1.0.33"
     "@mdx-js/react": "npm:^3.0.1"
     "@swc/core": "npm:^1.4.12"
     "@types/babel__core": "npm:^7.20.5"

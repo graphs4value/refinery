@@ -35,6 +35,14 @@
   --ifm-color-primary-lightest: #04b3c7;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-blockquote-color: var(--ifm-color-content-secondary);
+  /* elevation=4 shadow from Material UI. */
+  --ifm-global-shadow-md: 0px 2px 4px -1px rgba(0,0,0,0.2),
+    0px 4px 5px 0px rgba(0,0,0,0.14),
+    0px 1px 10px 0px rgba(0,0,0,0.12) !important;
+  /* elevation=8 shadow from Material UI. */
+  --ifm-global-shadow-tl: 0px 5px 5px -3px rgba(0,0,0,0.2),
+    0px 8px 10px 1px rgba(0,0,0,0.14),
+    0px 3px 14px 2px rgba(0,0,0,0.12) !important;
 }
 
 [data-theme='dark'] {
@@ -59,14 +67,11 @@ code {
 
 .navbar {
   --ifm-navbar-background-color: var(--ifm-background-surface-color) !important;
-}
-
-.navbar {
-  box-shadow: 0 1px var(--refinery-outer-border-color);
+  --ifm-navbar-shadow: 0 1px var(--refinery-outer-border-color) !important;
 }
 
 [data-theme='dark'] .navbar {
-  box-shadow: var(--ifm-global-shadow-lw);
+  --ifm-navbar-shadow: var(--ifm-global-shadow-lw) !important;
 }
 
 .button, .navbar__link, .footer__link-item {
@@ -86,12 +91,15 @@ code {
 }
 
 .navbar__link--try-now {
-  margin: 0 0.5rem 0 0.25rem;
-  padding: 0.25rem 1.25rem;
   color: var(--ifm-font-color-base-inverse);
   background: var(--ifm-color-primary);
-  border-radius: 50em;
   transition: background var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
+}
+
+.navbar__inner .navbar__link--try-now {
+  margin: 0 0.5rem 0 0.25rem;
+  padding: 0.25rem 1.25rem;
+  border-radius: 50em;
 }
 
 .navbar__link--try-now:hover {
@@ -102,6 +110,10 @@ code {
 .navbar__link--try-now:active {
   color: var(--ifm-font-color-base-inverse);
   background: var(--ifm-color-primary-darker);
+}
+
+.menu {
+  --ifm-menu-color: var(--ifm-color-content-secondary) !important;
 }
 
 .footer {
