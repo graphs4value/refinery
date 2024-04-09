@@ -60,9 +60,9 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	}
 
 	public ThreadPoolExecutorServiceProvider() {
-		executorThreadCount = getCount("REFINERY_XTEXT_THREAD_COUNT").orElse(0);
+		executorThreadCount = getCount("REFINERY_XTEXT_THREAD_COUNT").orElse(1);
 		lockExecutorThreadCount = getCount("REFINERY_XTEXT_LOCKING_THREAD_COUNT").orElse(executorThreadCount);
-		int semanticsCount = getCount("REFINERY_XTEXT_SEMANTICS_THREAD_COUNT").orElse(0);
+		int semanticsCount = getCount("REFINERY_XTEXT_SEMANTICS_THREAD_COUNT").orElse(executorThreadCount);
 		if (semanticsCount == 0 || executorThreadCount == 0) {
 			semanticsExecutorThreadCount = 0;
 		} else {

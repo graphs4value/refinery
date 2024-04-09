@@ -150,6 +150,7 @@ module.exports = {
           {
             ignore: [
               // These imports are resolved by Docusaurus, not TypeScript.
+              '^@docusaurus/',
               '^@theme/',
               '^@theme-original/',
             ],

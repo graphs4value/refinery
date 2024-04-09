@@ -1,8 +1,9 @@
-<!--
-  SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
-
-  SPDX-License-Identifier: EPL-2.0
--->
+---
+SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+SPDX-License-Identifier: EPL-2.0
+sidebar_position: 1
+sidebar_label: Contributing
+---
 
 # Contributing to Refinery
 
@@ -48,4 +49,3 @@ If you do not plan on making changes to such files, feel free to skip the Eclips
 8. Select _File > Import... > Gradle > Existing Gradle Project_ and import the cloned repository in Eclipse.
     * Make sure to select the root of the repository (containing this file) as the _Project root directory_ and that the _Gradle distribution_ is _Gradle wrapper_.
     * If you have previously imported the project into Eclipse, this step will likely fail. In that case, you should remove the projects from Eclipse, run `git clean -fxd` in the repository, and start over from step 8.
-

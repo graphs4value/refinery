@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: MIT AND EPL-2.0
  */
 
+import type { Options as DocsOptions } from '@docusaurus/plugin-content-docs';
 import type { Options as PagesOptions } from '@docusaurus/plugin-content-pages';
 import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
 import type { UserThemeConfig } from '@docusaurus/theme-common';
 import type { Config } from '@docusaurus/types';
 import { Config as SwcConfig } from '@swc/core';
+import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
 
 const markdownOptions = {
@@ -18,12 +20,34 @@ const markdownOptions = {
 
 export default {
   title: 'Refinery',
+  tagline: 'An efficient graph solver for generating well-formed models',
+  titleDelimiter: '⚗️',
   url: 'https://refinery.tools',
   baseUrl: '/',
   baseUrlIssueBanner: false,
   trailingSlash: true,
   staticDirectories: ['static'],
   plugins: [
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'docs',
+        path: 'src/docs',
+        routeBasePath: '/docs',
+        sidebarPath: undefined,
+        ...markdownOptions,
+      } satisfies DocsOptions,
+    ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'api',
+        path: 'src/docs-api',
+        routeBasePath: '/api',
+        sidebarPath: undefined,
+        ...markdownOptions,
+      } satisfies DocsOptions,
+    ],
     [
       '@docusaurus/plugin-content-pages',
       markdownOptions satisfies PagesOptions,
@@ -43,16 +67,123 @@ export default {
     colorMode: {
       respectPrefersColorScheme: true,
     },
+    prism: {
+      theme: themes.oneLight,
+      darkTheme: themes.oneDark,
+    },
     navbar: {
       title: 'Refinery',
+      logo: {
+        src: '/logo.svg',
+        srcDark: '/logo-dark.svg',
+      },
       hideOnScroll: true,
+      items: [
+        {
+          label: 'Learn',
+          to: '/docs',
+        },
+        {
+          label: 'Develop',
+          to: '/api',
+        },
+        {
+          label: 'GitHub',
+          position: 'right',
+          href: 'https://github.com/graphs4value/refinery',
+        },
+        {
+          label: 'Try now',
+          position: 'right',
+          href: 'https://refinery.services/',
+          className: 'navbar__link--try-now',
+        },
+      ],
     },
     footer: {
+      links: [
+        {
+          title: 'Learn',
+          items: [
+            {
+              label: 'Introduction',
+              to: '/docs',
+            },
+            {
+              label: 'Tutorials',
+              to: '/docs/category/tutorials',
+            },
+            {
+              label: 'Langauge reference',
+              to: '/docs/category/language',
+            },
+            {
+              label: 'Run in Docker',
+              to: '/docs/docker',
+            },
+          ],
+        },
+        {
+          title: 'Develop',
+          items: [
+            {
+              label: 'Programming guide',
+              to: '/api',
+            },
+            {
+              label: 'Contributing',
+              to: '/api/contributing',
+            },
+            {
+              label: 'Javadoc',
+              to: '/api/javadoc',
+            },
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'Try now',
+              href: 'https://refinery.services/',
+            },
+            {
+              label: 'GitHub',
+              href: 'https://github.com/graphs4value/refinery',
+            },
+            {
+              label: 'License',
+              to: '/license',
+            },
+          ],
+        },
+        {
+          title: 'Supporters',
+          items: [
+            {
+              label: 'BME MIT FTSRG',
+              href: 'https://ftsrg.mit.bme.hu/en/',
+            },
+            {
+              label: 'McGill ECE',
+              href: 'https://www.mcgill.ca/',
+            },
+            {
+              label: '2022 Amazon Research Awards',
+              href: 'https://www.amazon.science/research-awards/recipients/daniel-varro-fall-2021',
+            },
+            {
+              label: 'LiU Software and Systems',
+              href: 'https://liu.se/en/organisation/liu/ida/sas',
+            },
+          ],
+        },
+      ],
       copyright: `
         Copyright &copy; 2021-2024
-        <a href="https://github.com/graphs4value/refinery/blob/main/CONTRIBUTORS.md" target="_blank">The Refinery Authors</a>.
+        <a href="https://github.com/graphs4value/refinery/blob/main/CONTRIBUTORS.md#the-refinery-authors" target="_blank">The Refinery Authors</a>.
         Available under the
-        <a href="https://www.eclipse.org/legal/epl-2.0/" target="_blank">Eclipse Public License - v 2.0</a>.
+        <a href="/license/">Eclipse Public License - v 2.0</a>.
       `,
     },
   } satisfies UserThemeConfig,
@@ -83,4 +214,57 @@ export default {
       } satisfies SwcConfig,
     }),
   },
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        href: '/favicon.svg',
+        type: 'image/svg+xml',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        href: '/favicon.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        href: '/favicon-96x96.png',
+        type: 'image/png',
+        sizes: '96x96',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        href: '/apple-touch-icon.png',
+        type: 'image/png',
+        sizes: '180x180',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'theme-color',
+        media: '(prefers-color-scheme:light)',
+        content: '#f5f5f5',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'theme-color',
+        media: '(prefers-color-scheme:dark)',
+        content: '#282c34',
+      },
+    },
+  ],
 } satisfies Config;
