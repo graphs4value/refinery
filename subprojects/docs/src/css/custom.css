@@ -16,7 +16,7 @@
     'Helvetica',
     'Arial',
     sans-serif;
-  --ifm-fony-family-monospace: 'JetBrains Mono Variable',
+  --ifm-font-family-monospace: 'JetBrains Mono Variable',
     'JetBrains Mono',
     'Cascadia Code',
     'Fira Code',
@@ -72,6 +72,13 @@ code {
 .button, .navbar__link, .footer__link-item {
   text-transform: uppercase;
   font-variation-settings: 'wdth' 87.5;
+}
+
+.button--play::before {
+  content: '▶';
+  display: inline-block;
+  transform: translatey(-0.1em);
+  padding-right: 1ch;
 }
 
 .button, .navbar__link {
