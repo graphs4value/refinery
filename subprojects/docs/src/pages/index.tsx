@@ -13,6 +13,54 @@ import { useState } from 'react';
 import styles from './index.module.css';
 import videoCover from './video-cover.webp?url';
 
+function Hero() {
+  return (
+    <header className={clsx('hero', 'hero--dark', styles['hero'])}>
+      <div className="container">
+        <h1 className="hero__title">Refinery</h1>
+        <p className="hero__subtitle">
+          An efficient graph solver for generating well-formed models
+        </p>
+        <div className={styles['buttons']}>
+          <Link
+            href="https://refinery.services/"
+            className={clsx(
+              'button',
+              'button--lg',
+              'button--primary',
+              styles['button'],
+            )}
+          >
+            Try online
+          </Link>
+          <Link
+            to="/docs/docker"
+            className={clsx(
+              'button',
+              'button--lg',
+              'button--secondary',
+              styles['button'],
+            )}
+          >
+            Try in Docker
+          </Link>
+          <Link
+            to="/docs/tutorials/file-system"
+            className={clsx(
+              'button',
+              'button--lg',
+              'button--secondary',
+              styles['button'],
+            )}
+          >
+            Tutorial
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 function Video() {
   const [started, setStarted] = useState(false);
   return (
@@ -61,49 +109,7 @@ function Video() {
 export default function Home() {
   return (
     <Layout>
-      <header className={clsx('hero', 'hero--dark', styles['hero'])}>
-        <div className="container">
-          <h1 className="hero__title">Refinery</h1>
-          <p className="hero__subtitle">
-            An efficient graph solver for generating well-formed models
-          </p>
-          <div className={styles['buttons']}>
-            <Link
-              href="https://refinery.services/"
-              className={clsx(
-                'button',
-                'button--lg',
-                'button--primary',
-                styles['button'],
-              )}
-            >
-              Try online
-            </Link>
-            <Link
-              to="/docs/docker"
-              className={clsx(
-                'button',
-                'button--lg',
-                'button--secondary',
-                styles['button'],
-              )}
-            >
-              Try in Docker
-            </Link>
-            <Link
-              to="/docs/tutorials/file-system"
-              className={clsx(
-                'button',
-                'button--lg',
-                'button--secondary',
-                styles['button'],
-              )}
-            >
-              Tutorial
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Hero />
       <Video />
     </Layout>
   );
