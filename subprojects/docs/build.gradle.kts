@@ -48,7 +48,9 @@ val srcDir = "src"
 
 val docusaurusOutputDir = layout.buildDirectory.dir("docusaurus")
 
-val javadocsDir = layout.buildDirectory.dir("javadocs/api/javadoc")
+val javadocsDir = layout.buildDirectory.dir("javadocs")
+
+val javadocsDocsDir = javadocsDir.map { root -> root.dir("api/javadoc") }
 
 val configFiles: FileCollection = files(
 	rootProject.file("yarn.lock"),
@@ -76,7 +78,7 @@ tasks {
 			javadocs.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
 				copy {
 					from(zipTree(artifact.file))
-					into(javadocsDir.map { root -> root.dir(artifact.moduleVersion.id.name) })
+					into(javadocsDocsDir.map { root -> root.dir(artifact.moduleVersion.id.name) })
 				}
 			}
 		}
