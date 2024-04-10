@@ -28,7 +28,7 @@ docker run --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery
 
 Once Docker pulls and starts the container, you can navigate to http://localhost:8888 to open the model generation interface and start editing.
 
-Alternatively, you can follow the [instructions to set up a local development environment](/api/contributing) and compile and run Refinery from source.
+Alternatively, you can follow the [instructions to set up a local development environment](/develop/contributing) and compile and run Refinery from source.
 
 ## Updating
 

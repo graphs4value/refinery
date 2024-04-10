@@ -50,7 +50,7 @@ val docusaurusOutputDir = layout.buildDirectory.dir("docusaurus")
 
 val javadocsDir = layout.buildDirectory.dir("javadocs")
 
-val javadocsDocsDir = javadocsDir.map { root -> root.dir("api/javadoc") }
+val javadocsDocsDir = javadocsDir.map { root -> root.dir("develop/javadoc") }
 
 val configFiles: FileCollection = files(
 	rootProject.file("yarn.lock"),

@@ -34,7 +34,7 @@ function Hero() {
             Try online
           </Link>
           <Link
-            to="/docs/docker"
+            to="/learn/docker"
             className={clsx(
               'button',
               'button--lg',
@@ -45,7 +45,7 @@ function Hero() {
             Try in Docker
           </Link>
           <Link
-            to="/docs/tutorials/file-system"
+            to="/learn/tutorials/file-system"
             className={clsx(
               'button',
               'button--lg',

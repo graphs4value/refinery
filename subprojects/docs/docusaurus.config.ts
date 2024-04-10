@@ -21,7 +21,6 @@ const markdownOptions = {
 export default {
   title: 'Refinery',
   tagline: 'An efficient graph solver for generating well-formed models',
-  titleDelimiter: '⚗️',
   url: 'https://refinery.tools',
   baseUrl: '/',
   baseUrlIssueBanner: false,
@@ -31,9 +30,9 @@ export default {
     [
       '@docusaurus/plugin-content-docs',
       {
-        id: 'docs',
-        path: 'src/docs',
-        routeBasePath: '/docs',
+        id: 'learn',
+        path: 'src/learn',
+        routeBasePath: '/learn',
         sidebarPath: undefined,
         ...markdownOptions,
       } satisfies DocsOptions,
@@ -41,9 +40,9 @@ export default {
     [
       '@docusaurus/plugin-content-docs',
       {
-        id: 'api',
-        path: 'src/docs-api',
-        routeBasePath: '/api',
+        id: 'develop',
+        path: 'src/develop',
+        routeBasePath: '/develop',
         sidebarPath: undefined,
         ...markdownOptions,
       } satisfies DocsOptions,
@@ -81,11 +80,11 @@ export default {
       items: [
         {
           label: 'Learn',
-          to: '/docs',
+          to: '/learn',
         },
         {
           label: 'Develop',
-          to: '/api',
+          to: '/develop',
         },
         {
           label: 'GitHub',
@@ -107,19 +106,19 @@ export default {
           items: [
             {
               label: 'Introduction',
-              to: '/docs',
+              to: '/learn',
             },
             {
               label: 'Tutorials',
-              to: '/docs/category/tutorials',
+              to: '/learn/tutorials',
             },
             {
               label: 'Langauge reference',
-              to: '/docs/category/language',
+              to: '/learn/language',
             },
             {
               label: 'Run in Docker',
-              to: '/docs/docker',
+              to: '/learn/docker',
             },
           ],
         },
@@ -128,15 +127,15 @@ export default {
           items: [
             {
               label: 'Programming guide',
-              to: '/api',
+              to: '/develop',
             },
             {
               label: 'Contributing',
-              to: '/api/contributing',
+              to: '/develop/contributing',
             },
             {
               label: 'Javadoc',
-              to: '/api/javadoc',
+              to: '/develop/javadoc',
             },
           ],
         },
