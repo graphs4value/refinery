@@ -250,6 +250,13 @@ export default {
       },
     },
     {
+      tagName: 'link',
+      attributes: {
+        rel: 'manifest',
+        href: '/manifest.webmanifest',
+      },
+    },
+    {
       tagName: 'meta',
       attributes: {
         name: 'theme-color',
