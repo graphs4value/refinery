@@ -63,7 +63,7 @@ function fixIDs(id: string, svgDocument: XMLDocument) {
       idMap.set(`url(#${oldId})`, `url(#${newId})`);
       node.setAttribute('id', newId);
     } else {
-      node.setAttribute('id', '');
+      node.removeAttribute('id');
     }
   });
   svgDocument.querySelectorAll('[clip-path]').forEach((node) => {

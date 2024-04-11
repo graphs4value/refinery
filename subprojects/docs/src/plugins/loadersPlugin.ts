@@ -50,9 +50,23 @@ export default function loadersPlugin(): Plugin {
         }
         loader.options = {
           ...(typeof loader.options === 'object' ? loader.options : {}),
-          // Disable SVGO, because it interferes styling figures exported from Refinery with CSS.
-          svgo: false,
-          svgoConfig: undefined,
+          svgo: true,
+          svgoConfig: {
+            plugins: [
+              {
+                name: 'preset-default',
+                params: {
+                  overrides: {
+                    removeTitle: false,
+                    removeViewBox: false,
+                    // Disable SVGO, because it interferes styling figures exported from Refinery with CSS.
+                    inlineStyles: false,
+                    cleanupIds: false,
+                  },
+                },
+              },
+            ],
+          },
         };
         svgoDisabled = true;
       });
