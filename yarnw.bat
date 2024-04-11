@@ -5,7 +5,6 @@
 @echo off
 setlocal
 set script_dir=%~dp0
-cmd /C %script_dir%gradlew.bat installPackageManager
 set node_bin=%script_dir%.node
 set Path=%node_bin%;%Path%
 %node_bin%\yarn.CMD %*
