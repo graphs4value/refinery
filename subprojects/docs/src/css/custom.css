@@ -125,3 +125,7 @@ code {
 .hero__title {
   font-weight: 800;
 }
+
+.markdown svg {
+  max-width: 100%;
+}

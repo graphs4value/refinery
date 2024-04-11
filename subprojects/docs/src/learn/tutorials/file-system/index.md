@@ -42,7 +42,9 @@ import Link from '@docusaurus/Link';
 - Notice that the syntax is essentially identical to [Xcore](https://wiki.eclipse.org/Xcore).
 - Review the partial model visualization. You should get something like this:
 
-![Initial model](fig1.png)
+import Fig1 from './fig1.svg';
+
+<Fig1 title="Initial model" />
 
 - Add some statements about a partial model:
 
@@ -64,7 +66,9 @@ File(img).
 scope node = 10.
 ```
 
-![Partial model extended with new facts](fig2.png)
+import Fig2 from './fig2.svg';
+
+<Fig2 title="Partial model extended with new facts" />
 
 ### Partial models
 
@@ -72,7 +76,9 @@ scope node = 10.
 
 - Check the disabled `equals` and `exist` predicates. check the visual annotation of those predicates in the visualization (dashed line, shadow).
 
-![Object existence and equality](fig3.png)
+import Fig3 from './fig3.svg';
+
+<Fig3 title="Object existence and equality" />
 
 ### Information merging
 
@@ -95,7 +101,9 @@ element(resources, img).
 
 - Inconsistent models parts in a partial model typically make the problem trivially unsatisfiable.
 
-![Inconsistent partial model](fig4.png)
+import Fig4 from './fig4.svg';
+
+<Fig4 title="Inconsistent partial model" />
 
 - However, the model can be saved if the inconsistent part may not exist...
 

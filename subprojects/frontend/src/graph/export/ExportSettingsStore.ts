@@ -7,7 +7,7 @@
 import { makeAutoObservable } from 'mobx';
 
 export type ExportFormat = 'svg' | 'pdf' | 'png';
-export type ExportTheme = 'light' | 'dark';
+export type ExportTheme = 'light' | 'dark' | 'dynamic';
 
 export default class ExportSettingsStore {
   format: ExportFormat = 'svg';
@@ -28,14 +28,24 @@ export default class ExportSettingsStore {
 
   setFormat(format: ExportFormat): void {
     this.format = format;
+    if (this.theme === 'dynamic' && this.format !== 'svg') {
+      this.theme = 'light';
+    }
   }
 
   setTheme(theme: ExportTheme): void {
     this.theme = theme;
+    if (this.theme === 'dynamic') {
+      this.format = 'svg';
+      this.transparent = true;
+    }
   }
 
   toggleTransparent(): void {
     this.transparent = !this.transparent;
+    if (!this.transparent && this.theme === 'dynamic') {
+      this.theme = 'light';
+    }
   }
 
   toggleEmbedFonts(): void {
@@ -55,10 +65,24 @@ export default class ExportSettingsStore {
       this.embedPDFFonts = embedFonts;
     }
     this.embedSVGFonts = embedFonts;
+    if (this.embedSVGFonts && this.theme === 'dynamic') {
+      this.theme = 'light';
+    }
+  }
+
+  get canSetDynamicTheme(): boolean {
+    return this.format === 'svg';
+  }
+
+  get canChangeTransparency(): boolean {
+    return this.theme !== 'dynamic';
   }
 
   get canEmbedFonts(): boolean {
-    return this.format === 'svg' || this.format === 'pdf';
+    return (
+      (this.format === 'svg' || this.format === 'pdf') &&
+      this.theme !== 'dynamic'
+    );
   }
 
   get canScale(): boolean {

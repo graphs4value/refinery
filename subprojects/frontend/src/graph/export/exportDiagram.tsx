@@ -16,6 +16,7 @@ import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 import type { Theme } from '@mui/material/styles';
+import { nanoid } from 'nanoid';
 
 import { darkTheme, lightTheme } from '../../theme/ThemeProvider';
 import { copyBlob, saveBlob } from '../../utils/fileIO';
@@ -47,6 +48,36 @@ function importSVG(svgSource: string, className: string): void {
 importSVG(labelSVG, 'icon-TRUE');
 importSVG(labelOutlinedSVG, 'icon-UNKNOWN');
 importSVG(cancelSVG, 'icon-ERROR');
+
+function fixIDs(id: string, svgDocument: XMLDocument) {
+  const idMap = new Map<string, string>();
+  let i = 0;
+  svgDocument.querySelectorAll('[id]').forEach((node) => {
+    const oldId = node.getAttribute('id');
+    if (oldId === null) {
+      return;
+    }
+    if (oldId.endsWith(',clip')) {
+      const newId = `refinery-${id}-clip-${i}`;
+      i += 1;
+      idMap.set(`url(#${oldId})`, `url(#${newId})`);
+      node.setAttribute('id', newId);
+    } else {
+      node.setAttribute('id', '');
+    }
+  });
+  svgDocument.querySelectorAll('[clip-path]').forEach((node) => {
+    const oldPath = node.getAttribute('clip-path');
+    if (oldPath === null) {
+      return;
+    }
+    const newPath = idMap.get(oldPath);
+    if (newPath === undefined) {
+      return;
+    }
+    node.setAttribute('clip-path', newPath);
+  });
+}
 
 function addBackground(
   svgDocument: XMLDocument,
@@ -142,40 +173,54 @@ async function fetchVariableFontCSS(): Promise<string> {
   return variableFontCSS;
 }
 
+interface ThemeVariant {
+  selector: string;
+  theme: Theme;
+}
+
 function appendStyles(
+  id: string,
   svgDocument: XMLDocument,
   svg: SVGSVGElement,
-  theme: Theme,
+  themes: ThemeVariant[],
   colorNodes: boolean,
   hexTypeHashes: string[],
   fontsCSS: string,
 ): void {
-  const cache = createCache({
-    key: 'refinery',
-    container: svg,
-    prepend: true,
-  });
-  // @ts-expect-error `CSSObject` types don't match up between `@mui/material` and
-  // `@emotion/serialize`, but they are compatible in practice.
-  const styles = serializeStyles([createGraphTheme], cache.registered, {
-    theme,
-    colorNodes,
-    hexTypeHashes,
-    noEmbedIcons: true,
-  });
+  const className = `refinery-${id}`;
+  svg.classList.add(className);
   const rules: string[] = [fontsCSS];
-  const sheet = {
-    insert(rule) {
-      rules.push(rule);
-    },
-  } as StyleSheet;
-  cache.insert('', styles, sheet, false);
+  themes.forEach(({ selector, theme }) => {
+    const cache = createCache({
+      key: 'refinery',
+      container: svg,
+      prepend: true,
+    });
+    // @ts-expect-error `CSSObject` types don't match up between `@mui/material` and
+    // `@emotion/serialize`, but they are compatible in practice.
+    const styles = serializeStyles([createGraphTheme], cache.registered, {
+      theme,
+      colorNodes,
+      hexTypeHashes,
+      noEmbedIcons: true,
+    });
+    const sheet = {
+      insert(rule) {
+        rules.push(rule);
+      },
+    } as StyleSheet;
+    cache.insert(`${selector} .${className}`, styles, sheet, false);
+  });
   const styleElement = svgDocument.createElementNS(SVG_NS, 'style');
   svg.prepend(styleElement);
   styleElement.innerHTML = rules.join('');
 }
 
-function fixForeignObjects(svgDocument: XMLDocument, svg: SVGSVGElement): void {
+function fixForeignObjects(
+  id: string,
+  svgDocument: XMLDocument,
+  svg: SVGSVGElement,
+): void {
   const foreignObjects: SVGForeignObjectElement[] = [];
   svg
     .querySelectorAll('foreignObject')
@@ -197,7 +242,7 @@ function fixForeignObjects(svgDocument: XMLDocument, svg: SVGSVGElement): void {
     object.children[0]?.classList?.forEach((className) => {
       useElement.classList.add(className);
       if (ICONS.has(className)) {
-        useElement.setAttribute('href', `#${className}`);
+        useElement.setAttribute('href', `#refinery-${id}-${className}`);
       }
     });
     object.replaceWith(useElement);
@@ -206,6 +251,7 @@ function fixForeignObjects(svgDocument: XMLDocument, svg: SVGSVGElement): void {
   svg.prepend(defs);
   ICONS.forEach((value) => {
     const importedValue = svgDocument.importNode(value, true);
+    importedValue.id = `refinery-${id}-${importedValue.id}`;
     defs.appendChild(importedValue);
   });
 }
@@ -322,12 +368,37 @@ export default async function exportDiagram(
     svgDocument.replaceChild(copyOfSVG, originalRoot);
   }
 
-  const theme = settings.theme === 'light' ? lightTheme : darkTheme;
+  const id = nanoid();
+  fixIDs(id, svgDocument);
+
+  let theme: Theme;
+  let themes: ThemeVariant[];
+  if (settings.theme === 'dynamic') {
+    theme = lightTheme;
+    themes = [
+      {
+        selector: '',
+        theme: lightTheme,
+      },
+      {
+        selector: '[data-theme="dark"]',
+        theme: darkTheme,
+      },
+    ];
+  } else {
+    theme = settings.theme === 'light' ? lightTheme : darkTheme;
+    themes = [
+      {
+        selector: '',
+        theme,
+      },
+    ];
+  }
   if (!settings.transparent) {
     addBackground(svgDocument, copyOfSVG, theme);
   }
 
-  fixForeignObjects(svgDocument, copyOfSVG);
+  fixForeignObjects(id, svgDocument, copyOfSVG);
 
   const { colorNodes } = graph;
   let fontsCSS = '';
@@ -339,9 +410,10 @@ export default async function exportDiagram(
     fontsCSS = await fetchFontCSS();
   }
   appendStyles(
+    id,
     svgDocument,
     copyOfSVG,
-    theme,
+    themes,
     colorNodes,
     graph.hexTypeHashes,
     fontsCSS,

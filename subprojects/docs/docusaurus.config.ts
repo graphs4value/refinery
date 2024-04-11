@@ -52,6 +52,7 @@ export default {
       markdownOptions satisfies PagesOptions,
     ],
     '@docusaurus/plugin-sitemap',
+    './src/plugins/loadersPlugin.ts',
     './src/plugins/swcMinifyPlugin.ts',
   ],
   themes: [
