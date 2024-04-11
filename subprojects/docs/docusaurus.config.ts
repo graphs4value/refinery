@@ -176,6 +176,10 @@ export default {
               label: 'LiU Software and Systems',
               href: 'https://liu.se/en/organisation/liu/ida/sas',
             },
+            {
+              label: 'WASP',
+              href: 'https://wasp-sweden.org/',
+            },
           ],
         },
       ],
