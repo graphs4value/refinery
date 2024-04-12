@@ -18,6 +18,13 @@ const markdownOptions = {
   remarkPlugins: [[smartypants, { dashes: 'oldschool' }]],
 };
 
+const docsOptions = {
+  ...markdownOptions,
+  sidebarPath: undefined,
+  editUrl:
+    'https://github.com/graphs4value/refinery/edit/main/subprojects/docs',
+} satisfies DocsOptions;
+
 export default {
   title: 'Refinery',
   tagline: 'An efficient graph solver for generating well-formed models',
@@ -33,8 +40,7 @@ export default {
         id: 'learn',
         path: 'src/learn',
         routeBasePath: '/learn',
-        sidebarPath: undefined,
-        ...markdownOptions,
+        ...docsOptions,
       } satisfies DocsOptions,
     ],
     [
@@ -43,8 +49,7 @@ export default {
         id: 'develop',
         path: 'src/develop',
         routeBasePath: '/develop',
-        sidebarPath: undefined,
-        ...markdownOptions,
+        ...docsOptions,
       } satisfies DocsOptions,
     ],
     [
