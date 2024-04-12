@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import BookIcon from '@mui/icons-material/Book';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import HomeIcon from '@mui/icons-material/Home';
 import AppBar from '@mui/material/AppBar';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -164,27 +166,41 @@ export default observer(function TopBar(): JSX.Element {
             <PaneButtons themeStore={themeStore} />
           </Stack>
         )}
-        <Stack
-          direction="row"
-          marginLeft={1}
-          marginRight={1}
-          gap={1}
-          alignItems="center"
-        >
-          <GenerateButton editorStore={editorStore} hideWarnings={!veryLarge} />
+        <Stack direction="row" marginLeft={1} gap={1} alignItems="center">
           {large && (
-            <Tooltip title="Check us out at GitHub">
-              <IconButton
-                href="https://github.com/graphs4value/refinery"
-                target="_blank"
-                color="inherit"
-              >
-                <GitHubIcon />
-              </IconButton>
-            </Tooltip>
+            <Stack direction="row" alignItems="center">
+              <Tooltip title="Refinery home page">
+                <IconButton
+                  href="https://refinery.tools/"
+                  target="_blank"
+                  color="inherit"
+                >
+                  <HomeIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Refinery documentation">
+                <IconButton
+                  href="https://refinery.tools/learn/"
+                  target="_blank"
+                  color="inherit"
+                >
+                  <BookIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Check us out at GitHub">
+                <IconButton
+                  href="https://github.com/graphs4value/refinery"
+                  target="_blank"
+                  color="inherit"
+                >
+                  <GitHubIcon />
+                </IconButton>
+              </Tooltip>
+            </Stack>
           )}
+          <GenerateButton editorStore={editorStore} hideWarnings={!veryLarge} />
+          <ToggleDarkModeButton />
         </Stack>
-        <ToggleDarkModeButton />
       </Toolbar>
     </AppBar>
   );
