@@ -199,7 +199,7 @@ function VisibilityPanel({
       dialog={dialog}
       title="Customize view"
       icon={icon}
-      iconLabel="Show filter panel"
+      iconLabel="Filter panel"
       buttons={
         <>
           <Button

@@ -9,6 +9,7 @@ import AppBar from '@mui/material/AppBar';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -134,7 +135,7 @@ export default observer(function TopBar(): JSX.Element {
           py: 0.5,
         }}
       >
-        <RefineryIcon size={24} />
+        <RefineryIcon size={32} />
         <Typography variant="h6" component="h1" pl={1}>
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
@@ -172,14 +173,15 @@ export default observer(function TopBar(): JSX.Element {
         >
           <GenerateButton editorStore={editorStore} hideWarnings={!veryLarge} />
           {large && (
-            <IconButton
-              aria-label="GitHub"
-              href="https://github.com/graphs4value/refinery"
-              target="_blank"
-              color="inherit"
-            >
-              <GitHubIcon />
-            </IconButton>
+            <Tooltip title="Check us out at GitHub">
+              <IconButton
+                href="https://github.com/graphs4value/refinery"
+                target="_blank"
+                color="inherit"
+              >
+                <GitHubIcon />
+              </IconButton>
+            </Tooltip>
           )}
         </Stack>
         <ToggleDarkModeButton />
