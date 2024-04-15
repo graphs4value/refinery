@@ -9,6 +9,7 @@ import type { Options as DocsOptions } from '@docusaurus/plugin-content-docs';
 import type { Options as PagesOptions } from '@docusaurus/plugin-content-pages';
 import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
 import type { UserThemeConfig } from '@docusaurus/theme-common';
+import type { UserThemeConfig as AlgoliaConfig } from '@docusaurus/theme-search-algolia';
 import type { Config } from '@docusaurus/types';
 import { Config as SwcConfig } from '@swc/core';
 import { themes } from 'prism-react-renderer';
@@ -67,6 +68,7 @@ export default {
         customCss: [require.resolve('./src/css/custom.css')],
       } satisfies ClassicThemeOptions,
     ],
+    '@docusaurus/theme-search-algolia',
   ],
   themeConfig: {
     colorMode: {
@@ -195,7 +197,12 @@ export default {
         <a href="/license/">Eclipse Public License - v 2.0</a>.
       `,
     },
-  } satisfies UserThemeConfig,
+    algolia: {
+      appId: 'KYHOYEO80F',
+      apiKey: '152acfb8d1ad9e10f29f083a6b017a69',
+      indexName: 'refinery',
+    },
+  } satisfies UserThemeConfig & AlgoliaConfig,
   webpack: {
     // Speed up builds by using a native Javascript loader.
     // See: https://github.com/facebook/docusaurus/issues/4765#issuecomment-841135926

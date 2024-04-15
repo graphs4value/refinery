@@ -93,25 +93,30 @@ code {
 }
 
 .navbar__link--try-now {
-  color: var(--ifm-font-color-base-inverse);
-  background: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  background: rgb(3 138 153 / 12%);
   transition: background var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
 }
 
 .navbar__inner .navbar__link--try-now {
-  margin: 0 0.5rem 0 0.25rem;
+  margin: 0 0.75rem 0 0.5rem;
   padding: 0.25rem 1.25rem;
   border-radius: 50em;
 }
 
-.navbar__link--try-now:hover {
-  color: var(--ifm-font-color-base-inverse);
-  background: var(--ifm-color-primary-dark);
+.navbar__link--try-now:hover,
+.navbar__link--try-now:active {
+  color: var(--ifm-color-primary);
+  background: rgb(3 138 153 / 16%);
 }
 
-.navbar__link--try-now:active {
-  color: var(--ifm-font-color-base-inverse);
-  background: var(--ifm-color-primary-darker);
+[data-theme="dark"] .navbar__link--try-now {
+  background: rgb(86 182 194 / 16%);
+}
+
+[data-theme="dark"] .navbar__link--try-now:hover,
+[data-theme="dark"] .navbar__link--try-now:active {
+  background: rgb(86 182 194 / 24%);
 }
 
 .menu {

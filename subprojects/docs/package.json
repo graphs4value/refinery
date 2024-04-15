@@ -36,6 +36,7 @@
     "@docusaurus/plugin-sitemap": "^3.2.1",
     "@docusaurus/theme-classic": "^3.2.1",
     "@docusaurus/theme-common": "^3.2.1",
+    "@docusaurus/theme-search-algolia": "^3.2.1",
     "@fontsource-variable/jetbrains-mono": "^5.0.20",
     "@fontsource-variable/open-sans": "^5.0.28",
     "@fontsource/open-sans": "^5.0.27",
@@ -43,20 +44,25 @@
     "@mdx-js/react": "^3.0.1",
     "@swc/core": "^1.4.13",
     "clsx": "^2.1.0",
+    "mdast-util-mdx": "^3.0.0",
     "prism-react-renderer": "^2.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remark-smartypants": "^2.1.0",
     "swc-loader": "^0.2.6",
     "terser-webpack-plugin": "^5.3.10",
+    "unified": "^11.0.4",
+    "unist-util-visit": "^5.0.0",
     "webpack": "^5.91.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.2.1",
     "@docusaurus/types": "^3.2.1",
     "@types/babel__core": "^7.20.5",
+    "@types/mdast": "^4.0.3",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.75",
-    "@types/react-dom": "^18.2.24"
+    "@types/react-dom": "^18.2.24",
+    "@types/unist": "^3.0.2"
   }
 }
