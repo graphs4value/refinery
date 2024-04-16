@@ -15,8 +15,10 @@ import { Config as SwcConfig } from '@swc/core';
 import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
 
+import remarkPosix2Windows from './src/plugins/remarkPosix2Windows';
+
 const markdownOptions = {
-  remarkPlugins: [[smartypants, { dashes: 'oldschool' }]],
+  remarkPlugins: [[smartypants, { dashes: 'oldschool' }], remarkPosix2Windows],
 };
 
 const docsOptions = {
@@ -75,6 +77,7 @@ export default {
       respectPrefersColorScheme: true,
     },
     prism: {
+      additionalLanguages: ['bash', 'java'],
       theme: themes.oneLight,
       darkTheme: themes.oneDark,
     },
