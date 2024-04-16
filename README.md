@@ -42,8 +42,8 @@ J. Object Technol. **19**(3): 3:1-22 (2020) [[doi](https://doi.org/10.5381/jot.2
 ### Consitent graph generation techniques
 
 * O. Semeráth, A. Nagy, D. Varró: &ldquo;A graph solver for the automated generation of consistent domain-specific models.&rdquo; _ICSE 2018:_ 969-980 [[doi](https://doi.org/10.1145/3180155.3180186)] [[pdf](https://dl.acm.org/doi/pdf/10.1145/3180155.3180186)]
-* K. Marussy, O. Semeráth, D. Varró: _Automated Generation of Consistent Graph Models With Multiplicity Reasoning._ IEEE Trans. Software Eng. **48**(5): 1610-1629 (2022) [[doi](https://doi.org/10.1109/TSE.2020.3025732)] [[pdf](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9201551)]
-* A.. Babikian, O. Semeráth, A. Li, K. Marussy, D. Varró: _Automated generation of consistent models using qualitative abstractions and exploration strategies._ Softw. Syst. Model. **21**(5): 1763-1787 (2022) [[doi](https://doi.org/10.1007/s10270-021-00918-6)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10270-021-00918-6.pdf?pdf=button)]
+* K. Marussy, O. Semeráth, D. Varró: _Automated Generation of Consistent Graph Models With Multiplicity Reasoning._ IEEE Trans. Softw. Eng. **48**(5): 1610-1629 (2022) [[doi](https://doi.org/10.1109/TSE.2020.3025732)] [[pdf](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9201551)]
+* A. Babikian, O. Semeráth, A. Li, K. Marussy, D. Varró: _Automated generation of consistent models using qualitative abstractions and exploration strategies._ Softw. Syst. Model. **21**(5): 1763-1787 (2022) [[doi](https://doi.org/10.1007/s10270-021-00918-6)] [[pdf](https://link.springer.com/content/pdf/10.1007/s10270-021-00918-6.pdf?pdf=button)]
 
 ### Diverse and realistic graph generation
 

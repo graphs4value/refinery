@@ -9,6 +9,8 @@
 @import '@fontsource-variable/jetbrains-mono/wght.css';
 @import '@fontsource-variable/jetbrains-mono/wght-italic.css';
 
+@import './sr-only.css';
+
 :root {
   --ifm-font-family-base: 'Open Sans Variable',
     'Open Sans',

@@ -26,6 +26,10 @@
   }
 }
 
+.section__title {
+  text-align: center;
+}
+
 .section--video {
   background: var(--ifm-background-surface-color);
 }
