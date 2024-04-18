@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+.page {
+  margin-bottom: 2rem;
+}
+
 .buttons {
   display: flex;
   flex-direction: row;
@@ -12,7 +16,7 @@
 }
 
 .section {
-  padding: 4rem 0;
+  padding: 2rem 0;
 }
 
 @media (max-width: 576px) {
@@ -28,62 +32,10 @@
 
 .section__title {
   text-align: center;
+  margin-bottom: var(--ifm-leading);
 }
 
 .section--video {
+  padding: 4rem 0;
   background: var(--ifm-background-surface-color);
-}
-
-.video__container {
-  position: relative;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 560/315;
-  box-shadow: var(--ifm-global-shadow-lw);
-  transition: box-shadow var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
-}
-
-.video__container:hover,
-.video__container:focus-within {
-  box-shadow: var(--ifm-global-shadow-md);
-}
-
-.video, .video__button, .video__cover {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.video__button {
-  margin: 0;
-  padding: 0;
-  border: none;
-  cursor: pointer;
-}
-
-.video__cover {
-  z-index: 1;
-}
-
-.video__play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  aspect-ratio: 1/1;
-  height: 16rem;
-  width: auto;
-  max-height: 50%;
-  background: var(--ifm-color-primary);
-  mask-image: url(@material-icons/svg/svg/play_circle/outline.svg);
-  mask-size: contain;
-  transition: background var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
-}
-
-.video__button:hover .video__play,
-.video__button:focus .video__play {
-  background: var(--ifm-color-primary-dark);
 }

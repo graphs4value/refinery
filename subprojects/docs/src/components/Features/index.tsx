@@ -90,7 +90,7 @@ export default function Features() {
           generation processes.
         </Feature>
       </div>
-      <div className="row">
+      <div className={clsx('row', styles['row--last'])}>
         <Feature
           icon={<Fi4 />}
           title="Advanced web-based editor"

@@ -46,6 +46,7 @@
   --ifm-global-shadow-tl: 0px 5px 5px -3px rgba(0,0,0,0.2),
     0px 8px 10px 1px rgba(0,0,0,0.14),
     0px 3px 14px 2px rgba(0,0,0,0.12) !important;
+  --refinery-highlight: #ca1243;
 }
 
 [data-theme='dark'] {
@@ -63,6 +64,7 @@
   --ifm-color-primary-lighter: #75c3cd;
   --ifm-color-primary-lightest: #94d1d8;
   --ifm-card-background-color: var(--ifm-background-surface-color) !important;
+  --refinery-highlight: #e06c75;
 }
 
 code {

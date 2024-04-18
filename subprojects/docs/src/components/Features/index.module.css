@@ -17,7 +17,7 @@
 }
 
 [data-theme='dark'] :global(.fiforeground) {
-  fill: #ebebff;
+  fill: var(--ifm-font-color-base);
 }
 
 [data-theme='dark'] :global(.fiempty) {
@@ -123,4 +123,8 @@
   .feature--even .feature__text {
     text-align: right;
   }
+}
+
+.row--last {
+  margin-bottom: calc(-1 * var(--ifm-leading));
 }

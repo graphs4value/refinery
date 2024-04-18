@@ -8,6 +8,10 @@
   fill: var(--ifm-color-primary);
 }
 
+:global(.videohighlight) {
+  fill: var(--refinery-highlight);
+}
+
 [data-theme='dark'] :global(.videocolor) {
   fill: var(--ifm-color-primary-darker);
 }
