@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
@@ -146,23 +147,30 @@ function VisibilityPanel({
     const row = (
       <tr key={metadata.name}>
         <td>
-          <Checkbox
-            checked={visibility !== 'none'}
-            aria-label={`Show true and error values of ${metadata.simpleName}`}
-            onClick={() =>
-              graph.setVisibility(name, visibility === 'none' ? 'must' : 'none')
-            }
-          />
+          <Tooltip title="Show true and error values" placement="top">
+            <Checkbox
+              checked={visibility !== 'none'}
+              aria-label={`Show true and error values of ${metadata.simpleName}`}
+              onClick={() =>
+                graph.setVisibility(
+                  name,
+                  visibility === 'none' ? 'must' : 'none',
+                )
+              }
+            />
+          </Tooltip>
         </td>
         <td>
-          <Checkbox
-            checked={visibility === 'all'}
-            disabled={!isVisibilityAllowed(metadata, 'all')}
-            aria-label={`Show all values of ${metadata.simpleName}`}
-            onClick={() =>
-              graph.setVisibility(name, visibility === 'all' ? 'must' : 'all')
-            }
-          />
+          <Tooltip title="Show all values" placement="top">
+            <Checkbox
+              checked={visibility === 'all'}
+              disabled={!isVisibilityAllowed(metadata, 'all')}
+              aria-label={`Show all values of ${metadata.simpleName}`}
+              onClick={() =>
+                graph.setVisibility(name, visibility === 'all' ? 'must' : 'all')
+              }
+            />
+          </Tooltip>
         </td>
         <td
           onClick={() => graph.cycleVisibility(name)}
