@@ -9,6 +9,7 @@ import CloudOffIcon from '@mui/icons-material/CloudOff';
 import SyncIcon from '@mui/icons-material/Sync';
 import SyncProblemIcon from '@mui/icons-material/SyncProblem';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { keyframes, styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 
@@ -37,37 +38,51 @@ export default observer(function ConnectButton({
     (editorStore.opening || editorStore.opened)
   ) {
     return (
-      <IconButton
-        onClick={() => editorStore.disconnect()}
-        aria-label="Disconnect"
-        color="inherit"
+      <Tooltip
+        title={
+          editorStore.opening
+            ? 'Connecting (click to cancel)'
+            : 'Connected (click to disconnect)'
+        }
       >
-        {editorStore.opening ? (
-          <AnimatedSyncIcon fontSize="small" />
-        ) : (
-          <CloudIcon fontSize="small" />
-        )}
-      </IconButton>
+        <IconButton
+          onClick={() => editorStore.disconnect()}
+          aria-label="Disconnect"
+          color="inherit"
+        >
+          {editorStore.opening ? (
+            <AnimatedSyncIcon fontSize="small" />
+          ) : (
+            <CloudIcon fontSize="small" />
+          )}
+        </IconButton>
+      </Tooltip>
     );
   }
 
+  let title: string;
   let disconnectedIcon: JSX.Element;
   if (editorStore === undefined) {
+    title = 'Connecting';
     disconnectedIcon = <SyncIcon fontSize="small" />;
   } else if (editorStore.connectionErrors.length > 0) {
+    title = 'Connection error (click to retry)';
     disconnectedIcon = <SyncProblemIcon fontSize="small" />;
   } else {
+    title = 'Disconnected (click to connect)';
     disconnectedIcon = <CloudOffIcon fontSize="small" />;
   }
 
   return (
-    <IconButton
-      disabled={editorStore === undefined}
-      onClick={() => editorStore?.connect()}
-      aria-label="Connect"
-      color="inherit"
-    >
-      {disconnectedIcon}
-    </IconButton>
+    <Tooltip title={title}>
+      <IconButton
+        disabled={editorStore === undefined}
+        onClick={() => editorStore?.connect()}
+        aria-label="Connect"
+        color="inherit"
+      >
+        {disconnectedIcon}
+      </IconButton>
+    </Tooltip>
   );
 });

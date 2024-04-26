@@ -7,18 +7,21 @@
 import { makeAutoObservable } from 'mobx';
 
 export type ExportFormat = 'svg' | 'pdf' | 'png';
-export type ExportTheme = 'light' | 'dark';
+export type StaticTheme = 'light' | 'dark';
+export type ExportTheme = StaticTheme | 'dynamic';
 
 export default class ExportSettingsStore {
   format: ExportFormat = 'svg';
 
-  theme: ExportTheme = 'light';
+  private staticTheme: StaticTheme = 'light';
 
-  transparent = true;
+  private _theme: ExportTheme = 'light';
 
-  embedSVGFonts = false;
+  private _transparent = true;
 
-  embedPDFFonts = true;
+  private embedSVGFonts = false;
+
+  private embedPDFFonts = true;
 
   scale = 100;
 
@@ -31,11 +34,14 @@ export default class ExportSettingsStore {
   }
 
   setTheme(theme: ExportTheme): void {
-    this.theme = theme;
+    this._theme = theme;
+    if (theme !== 'dynamic') {
+      this.staticTheme = theme;
+    }
   }
 
   toggleTransparent(): void {
-    this.transparent = !this.transparent;
+    this._transparent = !this._transparent;
   }
 
   toggleEmbedFonts(): void {
@@ -46,7 +52,18 @@ export default class ExportSettingsStore {
     this.scale = scale;
   }
 
+  get theme(): ExportTheme {
+    return this.format === 'svg' ? this._theme : this.staticTheme;
+  }
+
+  get transparent(): boolean {
+    return this.theme === 'dynamic' ? true : this._transparent;
+  }
+
   get embedFonts(): boolean {
+    if (this.theme === 'dynamic') {
+      return false;
+    }
     return this.format === 'pdf' ? this.embedPDFFonts : this.embedSVGFonts;
   }
 
@@ -57,8 +74,19 @@ export default class ExportSettingsStore {
     this.embedSVGFonts = embedFonts;
   }
 
+  get canSetDynamicTheme(): boolean {
+    return this.format === 'svg';
+  }
+
+  get canChangeTransparency(): boolean {
+    return this.theme !== 'dynamic';
+  }
+
   get canEmbedFonts(): boolean {
-    return this.format === 'svg' || this.format === 'pdf';
+    return (
+      (this.format === 'svg' || this.format === 'pdf') &&
+      this.theme !== 'dynamic'
+    );
   }
 
   get canScale(): boolean {

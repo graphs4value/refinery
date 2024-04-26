@@ -1,0 +1,71 @@
+{
+  "//": [
+    "SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>",
+    "",
+    "SPDX-License-Identifier: EPL-2.0"
+  ],
+  "name": "@refinery/docs",
+  "version": "0.0.0",
+  "description": "Documentation for Refinery",
+  "private": true,
+  "scripts": {
+    "build": "WEBPACK_URL_LOADER_LIMIT=0 docusaurus build --out-dir build/docusaurus",
+    "serve": "docusaurus serve --dir build/docusaurus --no-open",
+    "dev": "WEBPACK_URL_LOADER_LIMIT=0 docusaurus start --no-open",
+    "docusaurus": "docusaurus",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "typecheck": "yarn run g:tsc -p subprojects/docs/tsconfig.json",
+    "lint": "yarn run g:lint subprojects/docs",
+    "lint:fix": "yarn run lint --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphs4value/refinery.git"
+  },
+  "author": "The Refinery Authors <https://refinery.tools/>",
+  "license": "EPL-2.0",
+  "bugs": {
+    "url": "https://github.com/graphs4value/refinery/issues"
+  },
+  "homepage": "https://refinery.tools",
+  "dependencies": {
+    "@docusaurus/core": "^3.2.1",
+    "@docusaurus/plugin-content-docs": "^3.2.1",
+    "@docusaurus/plugin-content-pages": "^3.2.1",
+    "@docusaurus/plugin-sitemap": "^3.2.1",
+    "@docusaurus/theme-classic": "^3.2.1",
+    "@docusaurus/theme-common": "^3.2.1",
+    "@docusaurus/theme-search-algolia": "^3.2.1",
+    "@fontsource-variable/jetbrains-mono": "^5.0.21",
+    "@fontsource-variable/open-sans": "^5.0.29",
+    "@fontsource/open-sans": "^5.0.28",
+    "@material-icons/svg": "^1.0.33",
+    "@mdx-js/react": "^3.0.1",
+    "@swc/core": "^1.5.0",
+    "clsx": "^2.1.1",
+    "mdast-util-mdx": "^3.0.0",
+    "prism-react-renderer": "^2.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remark-smartypants": "^3.0.1",
+    "responsive-loader": "^3.1.2",
+    "sharp": "^0.33.3",
+    "swc-loader": "^0.2.6",
+    "terser-webpack-plugin": "^5.3.10",
+    "unified": "^11.0.4",
+    "unist-util-visit": "^5.0.0",
+    "webpack": "^5.91.0"
+  },
+  "devDependencies": {
+    "@docusaurus/mdx-loader": "^3.2.1",
+    "@docusaurus/module-type-aliases": "^3.2.1",
+    "@docusaurus/types": "^3.2.1",
+    "@types/babel__core": "^7.20.5",
+    "@types/mdast": "^4.0.3",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@types/unist": "^3.0.2"
+  }
+}

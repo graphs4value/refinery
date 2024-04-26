@@ -1,0 +1,41 @@
+/*
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+.page {
+  margin-bottom: 2rem;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.section {
+  padding: 2rem 0;
+}
+
+@media (max-width: 576px) {
+  .hero, .section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .button {
+    flex-grow: 1;
+  }
+}
+
+.section__title {
+  text-align: center;
+  margin-bottom: var(--ifm-leading);
+}
+
+.section--video {
+  padding: 4rem 0;
+  background: var(--ifm-background-surface-color);
+}

@@ -17,14 +17,13 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useState } from 'react';
+import { useResizeDetector } from 'react-resize-detector';
 
 import type SearchPanelStore from './SearchPanelStore';
-
-const SPLIT_MEDIA_QUERY = '@media (max-width: 1200px)';
 
 const DimLabel = styled(FormControlLabel)(({ theme }) => ({
   '.MuiFormControlLabel-label': {
@@ -43,7 +42,8 @@ export default observer(function SearchToolbar({
     query: { search, valid, caseSensitive, literal, regexp, replace },
     invalidRegexp,
   } = searchPanelStore;
-  const split = useMediaQuery(SPLIT_MEDIA_QUERY);
+  const { width, ref } = useResizeDetector();
+  const split = width !== undefined && width <= 1200;
   const [showRepalceState, setShowReplaceState] = useState(false);
 
   const showReplace = !split || showRepalceState || replace !== '';
@@ -61,16 +61,19 @@ export default observer(function SearchToolbar({
     <Toolbar
       variant="dense"
       sx={{ py: 0.5, alignItems: 'center', minHeight: 'auto' }}
+      ref={ref}
     >
       <Stack
         direction={split ? 'column' : 'row'}
         sx={{
           alignItems: 'center',
           flexGrow: 1,
-          [SPLIT_MEDIA_QUERY]: {
-            alignItems: 'start',
-            gap: 0.5,
-          },
+          ...(split
+            ? {
+                alignItems: 'start',
+                gap: 0.5,
+              }
+            : {}),
         }}
       >
         <Stack direction="row" flexWrap="wrap" alignItems="center" rowGap={0.5}>
@@ -121,22 +124,24 @@ export default observer(function SearchToolbar({
             mr={1}
             rowGap={0.5}
           >
-            <IconButton
-              aria-label="Previous"
-              disabled={!valid}
-              onClick={() => searchPanelStore.findPrevious()}
-              color="inherit"
-            >
-              <KeyboardArrowUpIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              aria-label="Next"
-              disabled={!valid}
-              onClick={() => searchPanelStore.findNext()}
-              color="inherit"
-            >
-              <KeyboardArrowDownIcon fontSize="small" />
-            </IconButton>
+            <Tooltip title="Previous match">
+              <IconButton
+                disabled={!valid}
+                onClick={() => searchPanelStore.findPrevious()}
+                color="inherit"
+              >
+                <KeyboardArrowUpIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Next match">
+              <IconButton
+                disabled={!valid}
+                onClick={() => searchPanelStore.findNext()}
+                color="inherit"
+              >
+                <KeyboardArrowDownIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Stack>
           <Stack
             direction="row"
@@ -187,24 +192,25 @@ export default observer(function SearchToolbar({
               label="Regexp"
             />
             {split && (
-              <ToggleButton
-                value="show-replace"
-                selected={showReplace}
-                onClick={() => {
-                  if (showReplace) {
-                    searchPanelStore.updateQuery({ replace: '' });
-                    setShowReplaceState(false);
-                  } else {
-                    setShowReplaceState(true);
-                  }
-                }}
-                aria-label="Show replace options"
-                aria-controls={replaceId}
-                size="small"
-                className="iconOnly"
-              >
-                <FindReplaceIcon fontSize="small" />
-              </ToggleButton>
+              <Tooltip title="Replace">
+                <ToggleButton
+                  value="show-replace"
+                  selected={showReplace}
+                  onClick={() => {
+                    if (showReplace) {
+                      searchPanelStore.updateQuery({ replace: '' });
+                      setShowReplaceState(false);
+                    } else {
+                      setShowReplaceState(true);
+                    }
+                  }}
+                  aria-controls={replaceId}
+                  size="small"
+                  className="iconOnly"
+                >
+                  <FindReplaceIcon fontSize="small" />
+                </ToggleButton>
+              </Tooltip>
             )}
           </Stack>
         </Stack>
@@ -263,9 +269,7 @@ export default observer(function SearchToolbar({
         alignSelf="stretch"
         alignItems="start"
         mt="1px"
-        sx={{
-          [SPLIT_MEDIA_QUERY]: { display: 'none' },
-        }}
+        sx={split ? { display: 'none' } : {}}
       >
         <IconButton
           aria-label="Close find/replace"

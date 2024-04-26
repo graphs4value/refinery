@@ -1,0 +1,79 @@
+/*
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+:global(.videocolor) {
+  fill: var(--ifm-color-primary);
+}
+
+:global(.videohighlight) {
+  fill: var(--refinery-highlight);
+}
+
+[data-theme='dark'] :global(.videocolor) {
+  fill: var(--ifm-color-primary-darker);
+}
+
+.video__container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 560/315;
+  box-shadow: var(--ifm-global-shadow-lw);
+  transition: box-shadow var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
+}
+
+.video__container:hover,
+.video__container:focus-within {
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+.video,
+.video__button,
+.video__image,
+.video__svg,
+.video__svg > svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video__svg text {
+  font-family: var(--ifm-font-family-base);
+}
+
+.video__button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background-size: cover;
+}
+
+.video__cover {
+  z-index: 1;
+}
+
+:global(.videoplay) {
+  fill: rgb(255 255 255 / 40%);
+  transition: fill var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
+}
+
+.video__container:hover :global(.videoplay),
+.video__container:focus-within :global(.videoplay) {
+  fill: rgb(255 255 255 / 70%);
+}
+
+:global(.videotitle) * {
+  fill: #303846;
+  transition: fill var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
+}
+
+.video__container:hover :global(.videotitle) *,
+.video__container:focus-within :global(.videotitle) * {
+  fill: #21252b;
+}

@@ -33,7 +33,7 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
           }}
           variant="standard"
           size="medium"
-          placeholder="Symbol"
+          placeholder={`Select symbol to view\u2026`}
         />
       )}
       options={relations}

@@ -8,6 +8,7 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Slide from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import React, { useCallback, useId, useState } from 'react';
 
@@ -58,15 +59,19 @@ export default function SlideInPanel({
 
   return (
     <SlideInPanelRoot anchor={anchor}>
-      <IconButton
-        role="switch"
-        aria-checked={show}
-        aria-controls={dialog ? undefined : id}
-        aria-label={iconLabel}
-        onClick={() => setShow(!show)}
+      <Tooltip
+        title={iconLabel}
+        placement={anchor === 'left' ? 'right' : 'left'}
       >
-        {icon(show)}
-      </IconButton>
+        <IconButton
+          role="switch"
+          aria-checked={show}
+          aria-controls={dialog ? undefined : id}
+          onClick={() => setShow(!show)}
+        >
+          {icon(show)}
+        </IconButton>
+      </Tooltip>
       {dialog ? (
         <Dialog open={show} onClose={close} maxWidth="xl">
           <SlideInDialog close={close} dialog title={title} buttons={buttons}>

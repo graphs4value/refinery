@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -55,7 +55,7 @@ tasks {
 		}
 	}
 
-	register<JavaExec>("serveBackend") {
+	register<JavaExec>("serve") {
 		dependsOn(webapp)
 		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
 		dependsOn(mainRuntimeClasspath)
@@ -67,7 +67,7 @@ tasks {
 		description = "Start a Jetty web server serving the Xtext API and assets."
 	}
 
-	register<JavaExec>("serveBackendOnly") {
+	register<JavaExec>("serveBackend") {
 		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
 		dependsOn(mainRuntimeClasspath)
 		classpath(mainRuntimeClasspath)

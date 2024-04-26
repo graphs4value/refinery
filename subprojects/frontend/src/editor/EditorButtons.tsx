@@ -22,6 +22,7 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
 import { observer } from 'mobx-react-lite';
 
 import ConnectButton from './ConnectButton';
@@ -49,103 +50,113 @@ export default observer(function EditorButtons({
 }): JSX.Element {
   return (
     <Stack direction="row" flexGrow={1}>
-      <IconButton
-        disabled={editorStore === undefined}
-        onClick={() => editorStore?.openFile()}
-        aria-label="Open"
-        color="inherit"
-      >
-        <FileOpenIcon fontSize="small" />
-      </IconButton>
-      <IconButton
-        disabled={editorStore === undefined || !editorStore.unsavedChanges}
-        onClick={() => editorStore?.saveFile()}
-        aria-label="Save"
-        color="inherit"
-      >
-        <SaveIcon fontSize="small" />
-      </IconButton>
-      {'showSaveFilePicker' in window && (
+      <Tooltip title="Open">
         <IconButton
           disabled={editorStore === undefined}
-          onClick={() => editorStore?.saveFileAs()}
-          aria-label="Save as"
+          onClick={() => editorStore?.openFile()}
           color="inherit"
         >
-          <SaveAsIcon fontSize="small" />
+          <FileOpenIcon fontSize="small" />
         </IconButton>
+      </Tooltip>
+      <Tooltip title="Save">
+        <IconButton
+          disabled={editorStore === undefined || !editorStore.unsavedChanges}
+          onClick={() => editorStore?.saveFile()}
+          color="inherit"
+        >
+          <SaveIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      {'showSaveFilePicker' in window && (
+        <Tooltip title={`Save as\u2026`}>
+          <IconButton
+            disabled={editorStore === undefined}
+            onClick={() => editorStore?.saveFileAs()}
+            color="inherit"
+          >
+            <SaveAsIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       )}
-      <IconButton
-        disabled={editorStore === undefined || !editorStore.canUndo}
-        onClick={() => editorStore?.undo()}
-        aria-label="Undo"
-        color="inherit"
-        sx={{ ml: 1 }}
-      >
-        <UndoIcon fontSize="small" />
-      </IconButton>
-      <IconButton
-        disabled={editorStore === undefined || !editorStore.canRedo}
-        onClick={() => editorStore?.redo()}
-        aria-label="Redo"
-        color="inherit"
-      >
-        <RedoIcon fontSize="small" />
-      </IconButton>
+      <Tooltip title="Undo">
+        <IconButton
+          disabled={editorStore === undefined || !editorStore.canUndo}
+          onClick={() => editorStore?.undo()}
+          color="inherit"
+          sx={{ ml: 1 }}
+        >
+          <UndoIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Redo">
+        <IconButton
+          disabled={editorStore === undefined || !editorStore.canRedo}
+          onClick={() => editorStore?.redo()}
+          color="inherit"
+        >
+          <RedoIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
       <ToggleButtonGroup size="small" className="rounded" sx={{ mx: 1 }}>
-        <ToggleButton
-          selected={editorStore?.showLineNumbers ?? false}
-          disabled={editorStore === undefined}
-          onClick={() => editorStore?.toggleLineNumbers()}
-          aria-label="Show line numbers"
-          value="show-line-numbers"
-        >
-          <FormatListNumberedIcon fontSize="small" />
-        </ToggleButton>
-        <ToggleButton
-          selected={editorStore?.colorIdentifiers ?? false}
-          disabled={editorStore === undefined}
-          onClick={() => editorStore?.toggleColorIdentifiers()}
-          aria-label="Color identifiers"
-          value="color-identifiers"
-        >
-          <LooksIcon fontSize="small" />
-        </ToggleButton>
-        <ToggleButton
-          selected={editorStore?.searchPanel?.state ?? false}
-          disabled={editorStore === undefined}
-          onClick={() => editorStore?.searchPanel?.toggle()}
-          aria-label="Show find/replace"
-          {...(editorStore !== undefined &&
-            editorStore.searchPanel.state && {
-              'aria-controls': editorStore.searchPanel.id,
-            })}
-          value="show-search-panel"
-        >
-          <SearchIcon fontSize="small" />
-        </ToggleButton>
-        <ToggleButton
-          selected={editorStore?.lintPanel?.state ?? false}
-          disabled={editorStore === undefined}
-          onClick={() => editorStore?.lintPanel.toggle()}
-          aria-label="Show diagnostics panel"
-          {...(editorStore !== undefined &&
-            editorStore.lintPanel.state && {
-              'aria-controls': editorStore.lintPanel.id,
-            })}
-          value="show-lint-panel"
-        >
-          {getLintIcon(editorStore?.delayedErrors?.highestDiagnosticLevel)}
-        </ToggleButton>
+        <Tooltip title="Line numbers">
+          <ToggleButton
+            selected={editorStore?.showLineNumbers ?? false}
+            disabled={editorStore === undefined}
+            onClick={() => editorStore?.toggleLineNumbers()}
+            value="show-line-numbers"
+          >
+            <FormatListNumberedIcon fontSize="small" />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Color identifiers">
+          <ToggleButton
+            selected={editorStore?.colorIdentifiers ?? false}
+            disabled={editorStore === undefined}
+            onClick={() => editorStore?.toggleColorIdentifiers()}
+            value="color-identifiers"
+          >
+            <LooksIcon fontSize="small" />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Find and replace">
+          <ToggleButton
+            selected={editorStore?.searchPanel?.state ?? false}
+            disabled={editorStore === undefined}
+            onClick={() => editorStore?.searchPanel?.toggle()}
+            {...(editorStore !== undefined &&
+              editorStore.searchPanel.state && {
+                'aria-controls': editorStore.searchPanel.id,
+              })}
+            value="show-search-panel"
+          >
+            <SearchIcon fontSize="small" />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Diagnostics panel">
+          <ToggleButton
+            selected={editorStore?.lintPanel?.state ?? false}
+            disabled={editorStore === undefined}
+            onClick={() => editorStore?.lintPanel.toggle()}
+            {...(editorStore !== undefined &&
+              editorStore.lintPanel.state && {
+                'aria-controls': editorStore.lintPanel.id,
+              })}
+            value="show-lint-panel"
+          >
+            {getLintIcon(editorStore?.delayedErrors?.highestDiagnosticLevel)}
+          </ToggleButton>
+        </Tooltip>
       </ToggleButtonGroup>
-      <IconButton
-        disabled={editorStore === undefined || !editorStore.opened}
-        onClick={() => editorStore?.formatText()}
-        aria-label="Automatic format"
-        color="inherit"
-      >
-        <FormatPaintIcon fontSize="small" />
-      </IconButton>
+      <Tooltip title="Automatic format">
+        <IconButton
+          disabled={editorStore === undefined || !editorStore.opened}
+          onClick={() => editorStore?.formatText()}
+          color="inherit"
+        >
+          <FormatPaintIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
       <ConnectButton editorStore={editorStore} />
     </Stack>
   );

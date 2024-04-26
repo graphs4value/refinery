@@ -1,10 +1,11 @@
-# SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+# SPDX-FileCopyrightText: 2021-2024 The Refinery Authors
 #
 # SPDX-License-Identifier: CC0-1.0
 
 .yarn/releases/** binary
 .yarn/plugins/** binary
 *.cjs eol=lf
+*.cts eol=lf
 *.css eol=lf
 *.js eol=lf
 *.json eol=lf

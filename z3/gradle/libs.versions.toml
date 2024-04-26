@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [versions]
-junit = "5.10.2"
+junit = "5.11.0-M1"
 
 [libraries]
 asm = { group = "org.ow2.asm", name = "asm", version = "9.6" }

@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2024 The Refinery Authors
+#
+# SPDX-License-Identifier: EPL-2.0
+
+position: 2
+label: Language reference
+link:
+  type: generated-index
+  slug: /language
+  description: Learn more about the Refinery partial modeling language!

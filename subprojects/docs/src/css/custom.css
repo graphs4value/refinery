@@ -1,0 +1,142 @@
+/*
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+@import '@fontsource-variable/open-sans/wdth.css';
+@import '@fontsource-variable/open-sans/wdth-italic.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght-italic.css';
+
+@import './sr-only.css';
+
+:root {
+  --ifm-font-family-base: 'Open Sans Variable',
+    'Open Sans',
+    'Roboto',
+    'Helvetica',
+    'Arial',
+    sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono Variable',
+    'JetBrains Mono',
+    'Cascadia Code',
+    'Fira Code',
+    monospace;
+  --ifm-code-font-size: 95%;
+  --ifm-background-surface-color: #f5f5f5;
+  --refinery-outer-border-color: rgb(0 0 0 / 0.21);
+  --ifm-font-color-base: #19202b;
+  --ifm-color-content-secondary: #696c77;
+  --ifm-color-primary: #038a99;
+  --ifm-color-primary-dark: #037c8a;
+  --ifm-color-primary-darker: #037582;
+  --ifm-color-primary-darkest: #02616b;
+  --ifm-color-primary-light: #0398a8;
+  --ifm-color-primary-lighter: #039fb0;
+  --ifm-color-primary-lightest: #04b3c7;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-blockquote-color: var(--ifm-color-content-secondary);
+  --ifm-card-background-color: #fff;
+  /* elevation=4 shadow from Material UI. */
+  --ifm-global-shadow-md: 0px 2px 4px -1px rgba(0,0,0,0.2),
+    0px 4px 5px 0px rgba(0,0,0,0.14),
+    0px 1px 10px 0px rgba(0,0,0,0.12) !important;
+  /* elevation=8 shadow from Material UI. */
+  --ifm-global-shadow-tl: 0px 5px 5px -3px rgba(0,0,0,0.2),
+    0px 8px 10px 1px rgba(0,0,0,0.14),
+    0px 3px 14px 2px rgba(0,0,0,0.12) !important;
+  --refinery-highlight: #ca1243;
+}
+
+[data-theme='dark'] {
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-background-color: #21252b !important;
+  --ifm-background-surface-color: #282c34 !important;
+  --refinery-outer-border-color: transparent;
+  --ifm-font-color-base: #ebebff !important;
+  --ifm-color-content-secondary: #abb2bf !important;
+  --ifm-color-primary: #56b6c2;
+  --ifm-color-primary-dark: #43acb9;
+  --ifm-color-primary-darker: #3fa2af;
+  --ifm-color-primary-darkest: #348690;
+  --ifm-color-primary-light: #6bbfc9;
+  --ifm-color-primary-lighter: #75c3cd;
+  --ifm-color-primary-lightest: #94d1d8;
+  --ifm-card-background-color: var(--ifm-background-surface-color) !important;
+  --refinery-highlight: #e06c75;
+}
+
+code {
+  font-feature-settings: 'liga', 'calt';
+}
+
+.navbar {
+  --ifm-navbar-background-color: var(--ifm-background-surface-color) !important;
+  --ifm-navbar-shadow: 0 1px var(--refinery-outer-border-color) !important;
+}
+
+[data-theme='dark'] .navbar {
+  --ifm-navbar-shadow: var(--ifm-global-shadow-lw) !important;
+}
+
+.button, .navbar__link, .footer__link-item {
+  text-transform: uppercase;
+  font-variation-settings: 'wdth' 87.5;
+}
+
+.button--play::before {
+  content: '▶';
+  display: inline-block;
+  transform: translatey(-0.1em);
+  padding-right: 1ch;
+}
+
+.button, .navbar__link {
+  font-weight: 600;
+}
+
+.navbar__link--try-now {
+  color: var(--ifm-color-primary);
+  background: rgb(3 138 153 / 12%);
+  transition: background var(--ifm-button-transition-duration) var(--ifm-transition-timing-default);
+}
+
+.navbar__inner .navbar__link--try-now {
+  margin: 0 0.75rem 0 0.5rem;
+  padding: 0.25rem 1.25rem;
+  border-radius: 50em;
+}
+
+.navbar__link--try-now:hover,
+.navbar__link--try-now:active {
+  color: var(--ifm-color-primary);
+  background: rgb(3 138 153 / 16%);
+}
+
+[data-theme="dark"] .navbar__link--try-now {
+  background: rgb(86 182 194 / 16%);
+}
+
+[data-theme="dark"] .navbar__link--try-now:hover,
+[data-theme="dark"] .navbar__link--try-now:active {
+  background: rgb(86 182 194 / 24%);
+}
+
+.menu {
+  --ifm-menu-color: var(--ifm-color-content-secondary) !important;
+}
+
+.footer {
+  --ifm-footer-background-color: var(--ifm-background-surface-color) !important;
+  --ifm-footer-link-color: var(--ifm-color-content-secondary) !important;
+  box-shadow: 0 -1px var(--refinery-outer-border-color);
+}
+
+.hero__title {
+  font-weight: 800;
+}
+
+.markdown svg {
+  max-width: 100%;
+}

@@ -1,0 +1,130 @@
+/*
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+:global(.fibackground) {
+  fill: url(#fi-lg);
+}
+
+:global(.fiforeground) {
+  fill: #303846;
+}
+
+:global(.fiempty) {
+  fill: #fff;
+}
+
+[data-theme='dark'] :global(.fiforeground) {
+  fill: var(--ifm-font-color-base);
+}
+
+[data-theme='dark'] :global(.fiempty) {
+  fill: var(--ifm-background-color);
+}
+
+.lg {
+  position: absolute;
+  visibility: hidden;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+.lg__start {
+  stop-color: var(--ifm-color-primary-lighter);
+}
+
+.lg__end {
+  stop-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .lg__start {
+  stop-color: var(--ifm-color-primary-light);
+}
+
+[data-theme='dark'] .lg__end {
+  stop-color: var(--ifm-color-primary-darker);
+}
+
+.feature__container {
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+  justify-content: stretch;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--ifm-leading);
+  gap: 1rem;
+}
+
+.feature__icon {
+  display: flex;
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  aspect-ratio: 1/1;
+}
+
+.feature__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.feature__contents {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.feature__title {
+  margin: 0;
+}
+
+.feature__text {
+  margin: 0;
+  text-align: center;
+}
+
+@container (min-width: 660px) {
+  .feature {
+    flex-direction: row;
+  }
+
+  .feature--even {
+    flex-direction: row-reverse;
+  }
+
+  .feature__icon {
+    flex-shrink: 0;
+  }
+
+  .feature__contents {
+    align-items: flex-start;
+  }
+
+  .feature--even .feature__contents {
+    align-items: flex-end;
+  }
+
+  .feature__title,
+  .feature__text {
+    text-align: left;
+  }
+
+  .feature--even .feature__title,
+  .feature--even .feature__text {
+    text-align: right;
+  }
+}
+
+.row--last {
+  margin-bottom: calc(-1 * var(--ifm-leading));
+}

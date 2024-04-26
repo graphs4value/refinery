@@ -6,6 +6,7 @@
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ContrastIcon from '@mui/icons-material/Contrast';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import ImageIcon from '@mui/icons-material/Image';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
@@ -48,6 +49,13 @@ const SwitchButtonGroup = styled(ToggleButtonGroup, {
   '& svg': {
     margin: '0 6px 0 0',
   },
+}));
+
+const AutoThemeMessage = styled(Typography, {
+  name: 'ExportPanel-AutoThemeMessage',
+})(({ theme }) => ({
+  width: '260px',
+  marginInline: theme.spacing(2),
 }));
 
 function getLabel(value: number): string {
@@ -127,7 +135,7 @@ function ExportPanel({
       dialog={dialog}
       title="Export diagram"
       icon={icon}
-      iconLabel="Show export panel"
+      iconLabel={`Export image\u2026`}
       buttons={buttons}
     >
       <SwitchButtonGroup size="small" className="rounded">
@@ -155,29 +163,40 @@ function ExportPanel({
       </SwitchButtonGroup>
       <SwitchButtonGroup size="small" className="rounded">
         <ToggleButton
-          value="svg"
+          value="light"
           selected={exportSettingsStore.theme === 'light'}
           onClick={() => exportSettingsStore.setTheme('light')}
         >
           <LightModeIcon fontSize="small" /> Light
         </ToggleButton>
         <ToggleButton
-          value="png"
+          value="dark"
           selected={exportSettingsStore.theme === 'dark'}
           onClick={() => exportSettingsStore.setTheme('dark')}
         >
           <DarkModeIcon fontSize="small" /> Dark
         </ToggleButton>
+        {exportSettingsStore.canSetDynamicTheme && (
+          <ToggleButton
+            value="dynamic"
+            selected={exportSettingsStore.theme === 'dynamic'}
+            onClick={() => exportSettingsStore.setTheme('dynamic')}
+          >
+            <ContrastIcon fontSize="small" /> Auto
+          </ToggleButton>
+        )}
       </SwitchButtonGroup>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={exportSettingsStore.transparent}
-            onClick={() => exportSettingsStore.toggleTransparent()}
-          />
-        }
-        label="Transparent background"
-      />
+      {exportSettingsStore.canChangeTransparency && (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={exportSettingsStore.transparent}
+              onClick={() => exportSettingsStore.toggleTransparent()}
+            />
+          }
+          label="Transparent background"
+        />
+      )}
       {exportSettingsStore.canEmbedFonts && (
         <FormControlLabel
           control={
@@ -199,6 +218,17 @@ function ExportPanel({
             </Stack>
           }
         />
+      )}
+      {exportSettingsStore.theme === 'dynamic' && (
+        <>
+          <AutoThemeMessage mt={2}>
+            For embedding into HTML directly
+          </AutoThemeMessage>
+          <AutoThemeMessage variant="caption" mt={1}>
+            Set <code>data-theme=&quot;dark&quot;</code> on a containing element
+            to use a dark theme
+          </AutoThemeMessage>
+        </>
       )}
       {exportSettingsStore.canScale && (
         <Box mx={4} mt={1} mb={2}>
