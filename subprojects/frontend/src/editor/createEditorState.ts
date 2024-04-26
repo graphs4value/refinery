@@ -5,12 +5,14 @@
  */
 
 import {
+  acceptCompletion,
+  autocompletion,
   closeBrackets,
   closeBracketsKeymap,
-  autocompletion,
   completionKeymap,
 } from '@codemirror/autocomplete';
 import {
+  copyLineDown,
   defaultKeymap,
   history,
   historyKeymap,
@@ -25,7 +27,7 @@ import {
   syntaxHighlighting,
 } from '@codemirror/language';
 import { lintKeymap, lintGutter } from '@codemirror/lint';
-import { search, searchKeymap } from '@codemirror/search';
+import { search, searchKeymap, selectNextOccurrence } from '@codemirror/search';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import {
   drawSelection,
@@ -109,13 +111,20 @@ export default function createEditorState(
       }),
       keymap.of([
         { key: 'Mod-Shift-f', run: () => store.formatText() },
-        { key: 'Ctrl-o', run: () => store.openFile() },
-        { key: 'Ctrl-s', run: () => store.saveFile() },
-        { key: 'Ctrl-Shift-s', run: () => store.saveFileAs() },
+        { key: 'Mod-o', run: () => store.openFile() },
+        {
+          key: 'Mod-s',
+          run: () => store.saveFile(),
+          shift: () => store.saveFileAs(),
+          preventDefault: true,
+        },
         ...closeBracketsKeymap,
         ...completionKeymap,
         ...foldKeymap,
         ...historyKeymap,
+        // Enable accepting completions with tab, overrides `Tab` from
+        // `indentWithTab` if there is an active completion.
+        { key: 'Tab', run: acceptCompletion },
         indentWithTab,
         // Override keys in `lintKeymap` to go through the `EditorStore`.
         { key: 'Mod-Shift-m', run: () => store.lintPanel.open() },
@@ -130,6 +139,13 @@ export default function createEditorState(
           key: 'Escape',
           run: () => store.searchPanel.close(),
           scope: 'editor search-panel',
+        },
+        // Override `Mod-d` from `searchKeymap`.
+        {
+          key: 'Mod-d',
+          run: copyLineDown,
+          shift: selectNextOccurrence,
+          preventDefault: true,
         },
         ...searchKeymap,
         ...defaultKeymap,
