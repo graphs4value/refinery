@@ -116,7 +116,7 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner<TruthV
 			this.sourceType = sourceType;
 			this.targetType = targetType;
 			trueLink = new InferredContainment(TruthValue.TRUE, Set.of(linkType), Set.of());
-			falseLinkUnknownContains = new InferredContainment(TruthValue.FALSE, Set.of(), Set.of(linkType));
+			falseLinkUnknownContains = new InferredContainment(TruthValue.UNKNOWN, Set.of(), Set.of(linkType));
 		}
 
 		@Override
