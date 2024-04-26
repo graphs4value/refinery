@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: MIT AND EPL-2.0
  */
 
+import type { MDXOptions } from '@docusaurus/mdx-loader';
 import type { Options as DocsOptions } from '@docusaurus/plugin-content-docs';
 import type { Options as PagesOptions } from '@docusaurus/plugin-content-pages';
 import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
@@ -17,7 +18,7 @@ import smartypants from 'remark-smartypants';
 
 import remarkPosix2Windows from './src/plugins/remarkPosix2Windows';
 
-const markdownOptions = {
+const markdownOptions: Partial<MDXOptions> = {
   remarkPlugins: [[smartypants, { dashes: 'oldschool' }], remarkPosix2Windows],
 };
 
