@@ -68,7 +68,10 @@ function createTabItem(
 
 function transformNode(node: Code): MdxJsxFlowElement[] {
   const posixCode = node.value;
-  const windowsCode = posixCode.replaceAll(/(?<=^\w*)\.\//gm, '.\\');
+  const windowsCode = posixCode.replaceAll(
+    /(^\w*)\.\//gm,
+    (_substring, prefix: string) => `${prefix}.\\`,
+  );
   return [
     {
       type: 'mdxJsxFlowElement',
