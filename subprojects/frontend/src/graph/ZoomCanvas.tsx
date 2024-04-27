@@ -40,6 +40,8 @@ export type FitZoomCallback = ((newSize?: {
 }) => void) &
   ((newSize: boolean) => void);
 
+const useZoom = 'zoom' in document.body.style;
+
 export default function ZoomCanvas({
   children,
   fitPadding,
@@ -83,8 +85,12 @@ export default function ZoomCanvas({
       if (newSize === undefined || typeof newSize === 'boolean') {
         const elementRect = elementRef.current.getBoundingClientRect();
         const currentFactor = d3.zoomTransform(canvasRef.current).k;
-        width = elementRect.width / currentFactor;
-        height = elementRect.height / currentFactor;
+        if (useZoom) {
+          ({ width, height } = elementRect);
+        } else {
+          width = elementRect.width / currentFactor;
+          height = elementRect.height / currentFactor;
+        }
       } else {
         ({ width, height } = newSize);
       }
@@ -194,11 +200,20 @@ export default function ZoomCanvas({
             position: 'absolute',
             top: '50%',
             left: '50%',
-            transform: `
-              translate(${zoom.x}px, ${zoom.y}px)
-              scale(${zoom.k})
-              translate(-50%, -50%)
-            `,
+            ...(useZoom
+              ? {
+                  transform: `
+                    translate(calc(${zoom.x / zoom.k}px - 50%), calc(${zoom.y / zoom.k}px - 50%))
+                  `,
+                  zoom: zoom.k,
+                }
+              : {
+                  transform: `
+                    translate(${zoom.x}px, ${zoom.y}px)
+                    scale(${zoom.k})
+                    translate(-50%, -50%)
+                  `,
+                }),
             transformOrigin: '0 0',
           }}
           ref={elementRef}
