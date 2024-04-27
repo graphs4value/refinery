@@ -227,6 +227,25 @@ function binarySerach(
   return undefined;
 }
 
+function getEdgeLabel(
+  name: string,
+  containment: boolean,
+  value: string,
+): string {
+  if (value !== 'ERROR') {
+    return containment ? `<<b>${name}</b>>` : `"${name}"`;
+  }
+  // No need to set an id for the image for animation,
+  // because it will be the only `<use>` element in its group.
+  return `<<table fixedsize="TRUE" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td><img src="#ERROR"/></td>
+      <td width="3.9375"></td>
+      <td align="left">${containment ? `<b>${name}</b>` : name}</td>
+    </tr>
+  </table>>`;
+}
+
 function createRelationEdges(
   graph: GraphStore,
   nodeData: NodeData[],
@@ -243,10 +262,10 @@ function createRelationEdges(
   let weight = EDGE_WEIGHT;
   let penwidth = 1;
   const name = graph.getName(relation);
-  let label = `"${name}"`;
+  let containment = false;
   if (detail.type === 'reference' && detail.containment) {
     weight = CONTAINMENT_WEIGHT;
-    label = `<<b>${name}</b>>`;
+    containment = true;
     penwidth = 2;
   } else if (
     detail.type === 'opposite' &&
@@ -311,8 +330,10 @@ function createRelationEdges(
       edgeWeight *= UNKNOWN_WEIGHT_FACTOR;
     }
 
+    const id = `${fromNode.name},${toNode.name},${relation.name}`;
+    const label = getEdgeLabel(name, containment, value);
     lines.push(`n${from} -> n${to} [
-      id="${fromNode.name},${toNode.name},${relation.name}",
+      id="${id}",
       dir="${dir}",
       constraint=${edgeConstraint},
       weight=${edgeWeight},

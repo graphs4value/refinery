@@ -135,6 +135,10 @@ function hrefToClass(node: SVGGElement) {
   });
 }
 
+function parseCoordinate(element: SVGElement, attribute: string): number {
+  return Number(element.getAttribute(attribute)?.replace('px', '') ?? '0');
+}
+
 function replaceImages(node: SVGGElement) {
   node.querySelectorAll<SVGImageElement>('image').forEach((image) => {
     const href =
@@ -142,13 +146,17 @@ function replaceImages(node: SVGGElement) {
     if (href === 'undefined' || !href?.startsWith('#')) {
       return;
     }
-    const width = image.getAttribute('width')?.replace('px', '') ?? '';
-    const height = image.getAttribute('height')?.replace('px', '') ?? '';
+    const width = parseCoordinate(image, 'width');
+    const height = parseCoordinate(image, 'height');
+    const x = parseCoordinate(image, 'x');
+    const y = parseCoordinate(image, 'y');
+    const size = Math.min(width, height);
+    const sizeString = String(size);
     const use = document.createElementNS(SVG_NS, 'use');
-    use.setAttribute('x', image.getAttribute('x') ?? '');
-    use.setAttribute('y', image.getAttribute('y') ?? '');
-    use.setAttribute('width', width);
-    use.setAttribute('height', height);
+    use.setAttribute('x', String(x + (width - size) / 2));
+    use.setAttribute('y', String(y + (height - size) / 2));
+    use.setAttribute('width', sizeString);
+    use.setAttribute('height', sizeString);
     const iconName = `icon-${href.replace('#', '')}`;
     use.setAttribute('href', `#refinery-${iconName}`);
     use.classList.add('icon', iconName);
@@ -193,14 +201,11 @@ function markerColorToClass(svg: SVGSVGElement) {
 }
 
 export default function postProcessSvg(svg: SVGSVGElement) {
-  // svg
-  //   .querySelectorAll<SVGTitleElement>('title')
-  //   .forEach((title) => title.parentElement?.removeChild(title));
   svg.querySelectorAll<SVGGElement>('g.node').forEach((node) => {
     optimizeNodeShapes(node);
     hrefToClass(node);
-    replaceImages(node);
   });
+  replaceImages(svg);
   // Increase padding to fit box shadows for multi-objects.
   const viewBox = [
     svg.viewBox.baseVal.x - 6,
