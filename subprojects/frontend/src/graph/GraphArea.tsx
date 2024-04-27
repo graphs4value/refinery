@@ -12,6 +12,7 @@ import { useResizeDetector } from 'react-resize-detector';
 
 import DotGraphVisualizer from './DotGraphVisualizer';
 import type GraphStore from './GraphStore';
+import SVGIcons from './SVGIcons';
 import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
 import ExportPanel from './export/ExportPanel';
@@ -38,6 +39,7 @@ function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
       position="relative"
       ref={ref}
     >
+      <SVGIcons />
       <ZoomCanvas>
         {(fitZoom) => (
           <DotGraphVisualizer

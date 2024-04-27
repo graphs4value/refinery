@@ -144,14 +144,14 @@ function replaceImages(node: SVGGElement) {
     }
     const width = image.getAttribute('width')?.replace('px', '') ?? '';
     const height = image.getAttribute('height')?.replace('px', '') ?? '';
-    const foreign = document.createElementNS(SVG_NS, 'foreignObject');
-    foreign.setAttribute('x', image.getAttribute('x') ?? '');
-    foreign.setAttribute('y', image.getAttribute('y') ?? '');
-    foreign.setAttribute('width', width);
-    foreign.setAttribute('height', height);
-    const div = document.createElement('div');
-    div.classList.add('icon', `icon-${href.replace('#', '')}`);
-    foreign.appendChild(div);
+    const use = document.createElementNS(SVG_NS, 'use');
+    use.setAttribute('x', image.getAttribute('x') ?? '');
+    use.setAttribute('y', image.getAttribute('y') ?? '');
+    use.setAttribute('width', width);
+    use.setAttribute('height', height);
+    const iconName = `icon-${href.replace('#', '')}`;
+    use.setAttribute('href', `#refinery-${iconName}`);
+    use.classList.add('icon', iconName);
     const sibling = image.nextElementSibling;
     // Since dot doesn't respect the `id` attribute on table cells with a single image,
     // compute the ID based on the ID of the next element (the label).
@@ -160,9 +160,9 @@ function replaceImages(node: SVGGElement) {
       sibling.tagName.toLowerCase() === 'g' &&
       sibling.id !== ''
     ) {
-      foreign.id = `${sibling.id},icon`;
+      use.id = `${sibling.id},icon`;
     }
-    image.parentNode?.replaceChild(foreign, image);
+    image.parentNode?.replaceChild(use, image);
   });
 }
 

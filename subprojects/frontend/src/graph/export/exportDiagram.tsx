@@ -12,9 +12,6 @@ import normalFontURL from '@fontsource/open-sans/files/open-sans-latin-400-norma
 import boldFontURL from '@fontsource/open-sans/files/open-sans-latin-700-normal.woff2?url';
 import variableItalicFontURL from '@fontsource-variable/open-sans/files/open-sans-latin-wght-italic.woff2?url';
 import variableFontURL from '@fontsource-variable/open-sans/files/open-sans-latin-wght-normal.woff2?url';
-import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
-import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
-import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 import type { Theme } from '@mui/material/styles';
 import { nanoid } from 'nanoid';
 
@@ -22,6 +19,7 @@ import { darkTheme, lightTheme } from '../../theme/ThemeProvider';
 import { copyBlob, saveBlob } from '../../utils/fileIO';
 import type GraphStore from '../GraphStore';
 import { createGraphTheme } from '../GraphTheme';
+import icons from '../icons';
 import { SVG_NS } from '../postProcessSVG';
 
 import type ExportSettingsStore from './ExportSettingsStore';
@@ -30,24 +28,6 @@ const PROLOG = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
 const PNG_CONTENT_TYPE = 'image/png';
 const SVG_CONTENT_TYPE = 'image/svg+xml';
 const EXPORT_ID = 'export-image';
-
-const ICONS: Map<string, Element> = new Map();
-
-function importSVG(svgSource: string, className: string): void {
-  const parser = new DOMParser();
-  const svgDocument = parser.parseFromString(svgSource, SVG_CONTENT_TYPE);
-  const root = svgDocument.children[0];
-  if (root === undefined) {
-    return;
-  }
-  root.id = className;
-  root.classList.add(className);
-  ICONS.set(className, root);
-}
-
-importSVG(labelSVG, 'icon-TRUE');
-importSVG(labelOutlinedSVG, 'icon-UNKNOWN');
-importSVG(cancelSVG, 'icon-ERROR');
 
 function fixIDs(id: string, svgDocument: XMLDocument) {
   const idMap = new Map<string, string>();
@@ -202,7 +182,7 @@ function appendStyles(
       theme,
       colorNodes,
       hexTypeHashes,
-      noEmbedIcons: true,
+      useOpacity: true,
     });
     const sheet = {
       insert(rule) {
@@ -216,42 +196,25 @@ function appendStyles(
   styleElement.innerHTML = rules.join('');
 }
 
-function fixForeignObjects(
+function fixIcons(
   id: string,
   svgDocument: XMLDocument,
   svg: SVGSVGElement,
 ): void {
-  const foreignObjects: SVGForeignObjectElement[] = [];
-  svg
-    .querySelectorAll('foreignObject')
-    .forEach((object) => foreignObjects.push(object));
-  foreignObjects.forEach((object) => {
-    const useElement = svgDocument.createElementNS(SVG_NS, 'use');
-    let x = Number(object.getAttribute('x') ?? '0');
-    let y = Number(object.getAttribute('y') ?? '0');
-    const width = Number(object.getAttribute('width') ?? '0');
-    const height = Number(object.getAttribute('height') ?? '0');
-    const size = Math.min(width, height);
-    x += (width - size) / 2;
-    y += (height - size) / 2;
-    useElement.setAttribute('x', String(x));
-    useElement.setAttribute('y', String(y));
-    useElement.setAttribute('width', String(size));
-    useElement.setAttribute('height', String(size));
-    useElement.id = object.id;
-    object.children[0]?.classList?.forEach((className) => {
-      useElement.classList.add(className);
-      if (ICONS.has(className)) {
-        useElement.setAttribute('href', `#refinery-${id}-${className}`);
-      }
-    });
-    object.replaceWith(useElement);
+  const prefix = `refinery-${id}-`;
+  const hrefPrefix = `#${prefix}`;
+  svg.querySelectorAll('use').forEach((use) => {
+    const href = use.getAttribute('href');
+    if (href === null) {
+      return;
+    }
+    use.setAttribute('href', href.replace(/^#refinery-/, hrefPrefix));
   });
   const defs = svgDocument.createElementNS(SVG_NS, 'defs');
   svg.prepend(defs);
-  ICONS.forEach((value) => {
+  icons.forEach((value) => {
     const importedValue = svgDocument.importNode(value, true);
-    importedValue.id = `refinery-${id}-${importedValue.id}`;
+    importedValue.id = `${prefix}${importedValue.id}`;
     defs.appendChild(importedValue);
   });
 }
@@ -398,7 +361,7 @@ export default async function exportDiagram(
     addBackground(svgDocument, copyOfSVG, theme);
   }
 
-  fixForeignObjects(id, svgDocument, copyOfSVG);
+  fixIcons(id, svgDocument, copyOfSVG);
 
   const { colorNodes } = graph;
   let fontsCSS = '';
