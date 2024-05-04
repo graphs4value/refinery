@@ -10,7 +10,7 @@ junit = "5.11.0-M1"
 mockito = "5.11.0"
 mwe2 = "2.18.0.M2"
 slf4j = "2.0.13"
-xtext = "2.35.0.M0"
+xtext = "2.35.0.M1"
 
 [libraries]
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
