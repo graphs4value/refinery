@@ -19,8 +19,7 @@ import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -37,6 +36,11 @@ class AggregatorBatchingTest {
 					personView.call(p1),
 					output.assign(valuesView.aggregate(new InstrumentedAggregator(), p1, Variable.of()))
 			));
+	private final Query<Integer> queryMax = Query.of(Integer.class, (builder, p1, output) -> builder
+			.clause(
+					personView.call(p1),
+					output.assign(valuesView.aggregate(new InstrumentedAggregatorMax(), p1, Variable.of()))
+			));
 
 	private int extractCount = 0;
 
@@ -47,6 +51,7 @@ class AggregatorBatchingTest {
 		var valuesInterpretation = model.getInterpretation(values);
 		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		var resultSet = queryEngine.getResultSet(query);
+		var resultSetMax = queryEngine.getResultSet(queryMax);
 
 		assertThat(extractCount, is(1));
 
@@ -68,6 +73,11 @@ class AggregatorBatchingTest {
 				Tuple.of(1), Optional.of(0),
 				Tuple.of(2), Optional.empty()
 		), resultSet);
+		assertNullableResults(Map.of(
+				Tuple.of(0), Optional.of(3),
+				Tuple.of(1), Optional.of(1),
+				Tuple.of(2), Optional.empty()
+		), resultSetMax);
 	}
 
 	@Test
@@ -123,7 +133,7 @@ class AggregatorBatchingTest {
 		var store = ModelStore.builder()
 				.symbols(person, values)
 				.with(QueryInterpreterAdapter.builder()
-						.query(query))
+						.queries(query, queryMax))
 				.build();
 		return store.createEmptyModel();
 	}
@@ -181,6 +191,63 @@ class AggregatorBatchingTest {
 		@Override
 		public StatefulAggregate<Integer, Integer> deepCopy() {
 			return new InstrumentedAggregate(sum);
+		}
+	}
+
+	class InstrumentedAggregatorMax implements StatefulAggregator<Integer, Integer> {
+		@Override
+		public Class<Integer> getResultType() {
+			return Integer.class;
+		}
+
+		@Override
+		public Class<Integer> getInputType() {
+			return Integer.class;
+		}
+
+		@Override
+		public StatefulAggregate<Integer, Integer> createEmptyAggregate() {
+			return new InstrumentedAggregateMax();
+		}
+	}
+	class InstrumentedAggregateMax implements StatefulAggregate<Integer, Integer> {
+		private final List<Integer> numbers;
+
+		public InstrumentedAggregateMax() {
+			this.numbers = new ArrayList<>();
+		}
+		public InstrumentedAggregateMax(List<Integer> numbers) {
+			this.numbers = new ArrayList<>();
+			this.numbers.addAll(numbers);
+		}
+
+		@Override
+		public void add(Integer value) {
+			numbers.add(value);
+		}
+
+		@Override
+		public void remove(Integer value) {
+			numbers.remove(value);
+		}
+
+		@Override
+		public Integer getResult() {
+			if(numbers.isEmpty()){
+				return null;
+			} else {
+				return Collections.max(numbers);
+			}
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return numbers.isEmpty();
+		}
+
+		@Override
+		public StatefulAggregate<Integer, Integer> deepCopy() {
+			return new InstrumentedAggregateMax(numbers);
 		}
 	}
 }

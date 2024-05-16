@@ -30,6 +30,7 @@ import tools.refinery.interpreter.rete.network.mailbox.timeless.PosetAwareMailbo
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 /**
  * Timeless implementation of the column aggregator node.
@@ -300,7 +301,7 @@ public class ColumnAggregatorNode<Domain, Accumulator, AggregateResult>
 		if (updates.isEmpty()) {
 			return;
 		}
-		var oldValues = CollectionsFactory.<Tuple, AggregateResult>createMap();
+		var oldValues = CollectionsFactory.<Tuple, Optional<AggregateResult>>createMap();
 		for (var entry : updates) {
 			var update = entry.getKey();
 			var key = groupMask.transform(update);
@@ -316,7 +317,8 @@ public class ColumnAggregatorNode<Domain, Accumulator, AggregateResult>
 
 			var oldMainAccumulator = memory.get(key);
 			oldValues.computeIfAbsent(key, ignoredKey ->
-					oldMainAccumulator == null ? NEUTRAL : operator.getAggregate(oldMainAccumulator));
+					Optional.ofNullable(oldMainAccumulator == null ? NEUTRAL :
+							operator.getAggregate(oldMainAccumulator)));
 			Accumulator newMainAccumulator = oldMainAccumulator == null ? operator.createNeutral() :
 					oldMainAccumulator;
 			for (int i = 0; i < count; i++) {
@@ -329,7 +331,7 @@ public class ColumnAggregatorNode<Domain, Accumulator, AggregateResult>
 			var oldValue = entry.getValue();
 			var newMainAccumulator = getMainAccumulator(key);
 			var newValue = operator.getAggregate(newMainAccumulator);
-			propagateAggregateResultUpdate(key, oldValue, newValue, timestamp);
+			propagateAggregateResultUpdate(key, oldValue.orElse(null), newValue, timestamp);
 		}
 	}
 
