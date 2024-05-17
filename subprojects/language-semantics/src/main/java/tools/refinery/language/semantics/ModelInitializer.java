@@ -521,7 +521,12 @@ public class ModelInitializer {
 		for (int i = 0; i < arity; i++) {
 			var argument = arguments.get(i);
 			if (argument instanceof NodeAssertionArgument nodeArgument) {
-				nodes[i] = getNodeId(nodeArgument.getNode());
+				var variableOrNode = nodeArgument.getNode();
+				if (variableOrNode instanceof Node node) {
+					nodes[i] = getNodeId(node);
+				} else {
+					throw new TracedException(argument, "Invalid assertion argument: " + variableOrNode);
+				}
 			} else if (argument instanceof WildcardAssertionArgument) {
 				nodes[i] = -1;
 			} else {

@@ -31,11 +31,11 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	public IScope getScope(EObject context, EReference reference) {
 		var scope = super.getScope(context, reference);
 		if (reference == ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE) {
-			return getNodesScope(context, scope);
+			// On the right side of a rule, assertion arguments may refer to variables.
+			var rule = EcoreUtil2.getContainerOfType(context, RuleDefinition.class);
+			return rule == null ? getNodesScope(context, scope) : getVariableScope(context, scope);
 		}
-		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE
-				|| reference == ProblemPackage.Literals.NEW_ACTION__PARENT
-				|| reference == ProblemPackage.Literals.DELETE_ACTION__VARIABLE_OR_NODE) {
+		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
 			return getVariableScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) {
@@ -81,13 +81,6 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		switch (currentContext) {
 		case ExistentialQuantifier quantifier -> variables.addAll(quantifier.getImplicitVariables());
 		case Match match -> variables.addAll(match.getCondition().getImplicitVariables());
-		case Consequent consequent -> {
-			for (var literal : consequent.getActions()) {
-				if (literal instanceof NewAction newAction && newAction.getVariable() != null) {
-					variables.add(newAction.getVariable());
-				}
-			}
-		}
 		default -> {
 			// Nothing to add.
 		}

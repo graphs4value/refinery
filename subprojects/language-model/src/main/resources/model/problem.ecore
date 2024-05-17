@@ -38,6 +38,9 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="concreteness" eType="#//Concreteness"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="binding" eType="#//ParameterBinding"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Variable" abstract="true" eSuperTypes="#//VariableOrNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="Atom" eSuperTypes="#//Expr">
@@ -109,7 +112,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="stringValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NodeAssertionArgument" eSuperTypes="#//AssertionArgument">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="node" eType="#//Node"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="node" eType="#//VariableOrNode"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssertionArgument" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="NodeDeclaration" eSuperTypes="#//Statement">
@@ -128,6 +131,7 @@
         eType="#//Consequent" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="preconditions" upperBound="-1"
         eType="#//Conjunction" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//RuleKind"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Consequent">
     <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
@@ -135,21 +139,12 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="AssertionAction" eSuperTypes="#//Action">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="atom" eType="#//Atom" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="#//LogicValue"
-        defaultValueLiteral="TRUE"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="overwrite" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
-        defaultValueLiteral="FALSE"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DeleteAction" eSuperTypes="#//Action">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableOrNode" eType="#//VariableOrNode"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="NewAction" eSuperTypes="#//Action">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//NewVariable"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//VariableOrNode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
+        eType="#//AssertionArgument" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="NewVariable" eSuperTypes="#//Variable"/>
   <eClassifiers xsi:type="ecore:EEnum" name="ComparisonOp">
     <eLiterals name="LESS"/>
     <eLiterals name="LESS_EQ" value="1"/>
@@ -264,4 +259,27 @@
   <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpr" eSuperTypes="#//BinaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="InfiniteConstant" eSuperTypes="#//Constant"/>
   <eClassifiers xsi:type="ecore:EClass" name="AggregatorDeclaration" eSuperTypes="#//Statement #//NamedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ModalExpr" eSuperTypes="#//UnaryExpr">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="concreteness" eType="#//Concreteness"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Modality">
+    <eLiterals name="NONE"/>
+    <eLiterals name="MUST" value="1"/>
+    <eLiterals name="MAY" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Concreteness">
+    <eLiterals name="PARTIAL"/>
+    <eLiterals name="CANDIDATE" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="RuleKind">
+    <eLiterals name="REFINEMENT"/>
+    <eLiterals name="PROPAGATION" value="1"/>
+    <eLiterals name="DECISION" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ParameterBinding">
+    <eLiterals name="SINGLE"/>
+    <eLiterals name="FOCUS" value="1"/>
+    <eLiterals name="MULTI" value="2"/>
+  </eClassifiers>
 </ecore:EPackage>

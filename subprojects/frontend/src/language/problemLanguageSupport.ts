@@ -14,7 +14,12 @@ import {
 } from '@codemirror/language';
 import { styleTags, tags as t } from '@lezer/highlight';
 
-import { foldBlockComment, foldConjunction, foldDeclaration } from './folding';
+import {
+  foldBlockComment,
+  foldConjunction,
+  foldDeclaration,
+  foldWholeNode,
+} from './folding';
 import {
   indentBlockComment,
   indentDeclaration,
@@ -30,11 +35,13 @@ const parserWithMetadata = parser.configure({
       'module problem class enum pred fn scope': t.definitionKeyword,
       'import as declare atom multi': t.definitionKeyword,
       'extern datatype aggregator': t.definitionKeyword,
+      rule: t.definitionKeyword,
       'abstract extends refers contains container opposite': t.modifier,
       default: t.modifier,
+      'propagation decision': t.modifier,
       'true false unknown error': t.keyword,
+      'candidate may must': t.operatorKeyword,
       'count in is': t.operatorKeyword,
-      // 'new delete': t.keyword,
       NotOp: t.operator,
       UnknownOp: t.operator,
       OrOp: t.separator,
@@ -45,7 +52,7 @@ const parserWithMetadata = parser.configure({
       'RelationName/QualifiedName': t.typeName,
       'DatatypeName/QualifiedName': t.keyword,
       'AggregatorName/QualifiedName': t.operatorKeyword,
-      // 'RuleName/QualifiedName': t.typeName,
+      'RuleName/QualifiedName': t.typeName,
       'AtomNodeName/QualifiedName': t.atom,
       'VariableName/QualifiedName': t.variableName,
       'ModuleName/QualifiedName': t.typeName,
@@ -62,7 +69,7 @@ const parserWithMetadata = parser.configure({
       ScopeDeclaration: indentDeclaration,
       PredicateBody: indentPredicateOrRule,
       // FunctionBody: indentPredicateOrRule,
-      // RuleBody: indentPredicateOrRule,
+      RuleBody: indentPredicateOrRule,
       BlockComment: indentBlockComment,
     }),
     foldNodeProp.add({
@@ -71,9 +78,9 @@ const parserWithMetadata = parser.configure({
       ParameterList: foldInside,
       PredicateBody: foldInside,
       // FunctionBody: foldInside,
-      // RuleBody: foldInside,
+      RuleBody: foldInside,
       Conjunction: foldConjunction,
-      // Consequent: foldWholeNode,
+      Consequent: foldWholeNode,
       AtomDeclaration: foldDeclaration,
       NodeDeclaration: foldDeclaration,
       ScopeDeclaration: foldDeclaration,
@@ -92,7 +99,7 @@ const problemLanguage = LRLanguage.define({
       },
       line: '%',
     },
-    indentOnInput: /^\s*(?:\{|\}|\(|\)|->|;|\.)$/,
+    indentOnInput: /^\s*(?:\{|\}|\(|\)|->|==>|;|\.)$/,
   },
 });
 

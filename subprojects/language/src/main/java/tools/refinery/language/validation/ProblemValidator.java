@@ -472,7 +472,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 			return null;
 		}
 		if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
-			return nodeAssertionArgument.getNode();
+			var variableOrNode = nodeAssertionArgument.getNode();
+			if (variableOrNode == null || variableOrNode instanceof Node) {
+				return (Node) variableOrNode;
+			}
 		}
 		throw new IllegalArgumentException("Unknown assertion argument: " + argument);
 	}
@@ -484,8 +487,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		for (var argument : assertion.getArguments()) {
 			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
-				var node = nodeAssertionArgument.getNode();
-				if (node != null && !node.eIsProxy() && ProblemUtil.isImplicitNode(node)) {
+				var variableOrNode = nodeAssertionArgument.getNode();
+				if (variableOrNode instanceof Node node &&
+						!variableOrNode.eIsProxy() &&
+						ProblemUtil.isImplicitNode(node)) {
 					var name = node.getName();
 					var message = ("Implicit nodes are not allowed in modules. Explicitly declare '%s' as a node " +
 							"with the declaration 'declare %s.'").formatted(name, name);
