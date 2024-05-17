@@ -30,17 +30,17 @@
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"
   },
-  "packageManager": "yarn@4.2.1",
+  "packageManager": "yarn@4.2.2",
   "dependencies": {
     "react": "^18.3.1"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.10",
-    "@types/node": "^20.12.8",
-    "@types/react": "^18.3.1",
-    "@typescript-eslint/eslint-plugin": "^7.8.0",
-    "@typescript-eslint/parser": "^7.8.0",
-    "corepack": "^0.28.0",
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.2",
+    "@typescript-eslint/eslint-plugin": "^7.9.0",
+    "@typescript-eslint/parser": "^7.9.0",
+    "corepack": "^0.28.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",

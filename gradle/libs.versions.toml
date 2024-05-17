@@ -4,11 +4,11 @@
 
 [versions]
 eclipseCollections = "12.0.0.M3"
-jetty = "12.0.8"
+jetty = "12.0.9"
 jmh = "1.37"
-junit = "5.11.0-M1"
-mockito = "5.11.0"
-mwe2 = "2.18.0.M2"
+junit = "5.11.0-M2"
+mockito = "5.12.0"
+mwe2 = "2.18.0.M3"
 slf4j = "2.0.13"
 xtext = "2.35.0.M1"
 
@@ -37,10 +37,10 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.12.0.M2" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.12.0.M3" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
-ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.9.3963" }
+ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.10.4067" }
 refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version = "4.12.6" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
