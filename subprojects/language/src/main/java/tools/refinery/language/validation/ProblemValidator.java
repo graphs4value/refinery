@@ -340,10 +340,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
-		if (parametricDefinition instanceof RuleDefinition) {
+		if (parametricDefinition instanceof RuleDefinition rule) {
 			if (parameter.getParameterType() != null && parameter.getModality() == Modality.NONE) {
 				acceptError("Parameter type modality must be specified.", parameter,
 						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
+			}
+			var kind = rule.getKind();
+			var binding = parameter.getBinding();
+			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
+				acceptError("Parameter binding annotations are not supported in propagation rules.", parameter,
+						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			} else if (kind != RuleKind.DECISION && binding == ParameterBinding.MULTI) {
+				acceptError("Explicit multi-object bindings are only supported in decision rules.", parameter,
+						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		} else {
 			if (parameter.getConcreteness() != Concreteness.PARTIAL || parameter.getModality() != Modality.NONE) {
