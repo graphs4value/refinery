@@ -49,8 +49,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_SUPERTYPE_ISSUE = ISSUE_PREFIX + "INVALID_SUPERTYPE";
 	public static final String INVALID_REFERENCE_TYPE_ISSUE = ISSUE_PREFIX + "INVALID_REFERENCE_TYPE";
 	public static final String INVALID_ARITY_ISSUE = ISSUE_PREFIX + "INVALID_ARITY";
+	public static final String INVALID_MODALITY_ISSUE = ISSUE_PREFIX + "INVALID_MODALITY";
+	public static final String INVALID_RULE_ISSUE = ISSUE_PREFIX + "INVALID_RULE";
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
-	public static final String INVALID_VALUE_ISSUE = ISSUE_PREFIX + "INVALID_VALUE";
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
@@ -336,8 +337,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkParameterType(Parameter parameter) {
+	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
+		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
+		if (parametricDefinition instanceof RuleDefinition) {
+			if (parameter.getParameterType() != null && parameter.getModality() == Modality.NONE) {
+				acceptError("Parameter type modality must be specified.", parameter,
+						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
+			}
+		} else {
+			if (parameter.getConcreteness() != Concreteness.PARTIAL || parameter.getModality() != Modality.NONE) {
+				acceptError("Modal parameter types are only supported in rule definitions.", parameter, null, 0,
+						INVALID_MODALITY_ISSUE);
+			}
+			if (parameter.getBinding() != ParameterBinding.SINGLE) {
+				acceptError("Parameter binding annotations are only supported in rule definitions.", parameter,
+						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			}
+		}
 	}
 
 	@Check
@@ -349,6 +366,18 @@ public class ProblemValidator extends AbstractProblemValidator {
 					.formatted(argumentCount);
 			acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
 					INVALID_TRANSITIVE_CLOSURE_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkRuleDefinition(RuleDefinition ruleDefinition) {
+		if (ruleDefinition.getKind() != RuleKind.REFINEMENT && ruleDefinition.getPreconditions().isEmpty()) {
+			acceptError("Decision and propagation rules must have at least one precondition.", ruleDefinition,
+					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
+		}
+		if (ruleDefinition.getConsequents().size() != 1) {
+			acceptError("Rules must have exactly one consequent.", ruleDefinition,
+					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
 		}
 	}
 
