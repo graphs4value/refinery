@@ -121,11 +121,10 @@
     <genClasses ecoreClass="problem.ecore#//ExistentialQuantifier">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ExistentialQuantifier/implicitVariables"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//Assertion">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Assertion/arguments"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Assertion/relation"/>
-      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Assertion/value"/>
+    <genClasses ecoreClass="problem.ecore#//AbstractAssertion">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AbstractAssertion/arguments"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AbstractAssertion/relation"/>
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AbstractAssertion/value"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Node"/>
     <genClasses ecoreClass="problem.ecore#//ScopeDeclaration">
@@ -181,11 +180,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Consequent/actions"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Action"/>
-    <genClasses ecoreClass="problem.ecore#//AssertionAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AssertionAction/value"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AssertionAction/relation"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AssertionAction/arguments"/>
-    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AssertionAction"/>
     <genClasses ecoreClass="problem.ecore#//Expr"/>
     <genClasses ecoreClass="problem.ecore#//VariableOrNodeExpr">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//VariableOrNodeExpr/variableOrNode"/>
@@ -250,6 +245,9 @@
     <genClasses ecoreClass="problem.ecore#//ModalExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/concreteness"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/modality"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//Assertion">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

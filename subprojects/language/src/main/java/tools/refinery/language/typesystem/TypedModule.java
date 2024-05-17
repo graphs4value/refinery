@@ -8,7 +8,6 @@ package tools.refinery.language.typesystem;
 import com.google.inject.Inject;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
@@ -97,17 +96,17 @@ public class TypedModule {
 	}
 
 	private void checkTypes(Assertion assertion) {
-		var relation = assertion.getRelation();
-		var value = assertion.getValue();
-		checkAssertion(assertion, relation, value, ProblemPackage.Literals.ASSERTION__RELATION);
-		checkNodeAssertionArgumentTypes(assertion.getArguments(), false);
+		checkAssertionValueType(assertion);
+		checkNodeAssertionArgumentTypes(assertion, false);
 	}
 
-	private void checkAssertion(EObject assertion, Relation relation, Expr value, EReference relationReference) {
+	private void checkAssertionValueType(AbstractAssertion assertion) {
+		var relation = assertion.getRelation();
 		if (relation == null) {
 			return;
 		}
 		var type = signatureProvider.getSignature(relation).resultType();
+		var value = assertion.getValue();
 		if (type == ExprType.LITERAL) {
 			if (value == null) {
 				return;
@@ -117,14 +116,14 @@ public class TypedModule {
 		}
 		if (value == null) {
 			var message = "Assertion value of type %s is required.".formatted(type);
-			error(message, assertion, relationReference, 0, ProblemValidator.TYPE_ERROR);
+			error(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__VALUE, 0,
+                    ProblemValidator.TYPE_ERROR);
 		}
 		expectType(value, type);
 	}
 
-	private void checkNodeAssertionArgumentTypes(Collection<AssertionArgument> assertionArguments,
-												 boolean allowVariables) {
-		for (var argument : assertionArguments) {
+	private void checkNodeAssertionArgumentTypes(AbstractAssertion assertion, boolean allowVariables) {
+		for (var argument : assertion.getArguments()) {
 			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
 				checkNodeAssertionArgumentType(nodeAssertionArgument, allowVariables);
 			}
@@ -150,10 +149,8 @@ public class TypedModule {
 	}
 
 	private void checkTypes(AssertionAction assertionAction) {
-		var relation = assertionAction.getRelation();
-		var value = assertionAction.getValue();
-		checkAssertion(assertionAction, relation, value, ProblemPackage.Literals.ASSERTION_ACTION__RELATION);
-		checkNodeAssertionArgumentTypes(assertionAction.getArguments(), true);
+		checkAssertionValueType(assertionAction);
+		checkNodeAssertionArgumentTypes(assertionAction, true);
 	}
 
 	public List<FeatureBasedDiagnostic> getDiagnostics() {

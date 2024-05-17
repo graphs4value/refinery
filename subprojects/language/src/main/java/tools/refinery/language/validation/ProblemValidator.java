@@ -382,16 +382,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkAssertion(Assertion assertion) {
+	public void checkAssertion(AbstractAssertion assertion) {
 		var relation = assertion.getRelation();
 		if (relation instanceof DatatypeDeclaration) {
 			var message = "Assertions for data types are not supported.";
-			acceptError(message, assertion, ProblemPackage.Literals.ASSERTION__RELATION, 0,
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 			return;
 		}
 		int argumentCount = assertion.getArguments().size();
-		checkArity(assertion, ProblemPackage.Literals.ASSERTION__RELATION, argumentCount);
+		checkArity(assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, argumentCount);
 	}
 
 	@Check

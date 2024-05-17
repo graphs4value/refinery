@@ -55,11 +55,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="implicitVariables" upperBound="-1"
         eType="#//ImplicitVariable" transient="true" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Assertion" eSuperTypes="#//Statement">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssertion" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
         eType="#//AssertionArgument" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="default" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
-        defaultValueLiteral="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
         containment="true"/>
@@ -137,14 +135,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
         eType="#//Action" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AssertionAction" eSuperTypes="#//Action">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
-        eType="#//AssertionArgument" containment="true"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true" interface="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AssertionAction" eSuperTypes="#//Action #//AbstractAssertion"/>
   <eClassifiers xsi:type="ecore:EEnum" name="ComparisonOp">
     <eLiterals name="LESS"/>
     <eLiterals name="LESS_EQ" value="1"/>
@@ -281,5 +273,9 @@
     <eLiterals name="SINGLE"/>
     <eLiterals name="FOCUS" value="1"/>
     <eLiterals name="MULTI" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Assertion" eSuperTypes="#//Statement #//AbstractAssertion">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="default" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="false"/>
   </eClassifiers>
 </ecore:EPackage>

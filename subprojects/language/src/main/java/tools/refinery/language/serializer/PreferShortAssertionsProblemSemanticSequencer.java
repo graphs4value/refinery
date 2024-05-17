@@ -12,8 +12,10 @@ import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransi
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.LogicConstant;
 import tools.refinery.language.model.problem.LogicValue;
-import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.services.ProblemGrammarAccess;
+
+import static tools.refinery.language.model.problem.ProblemPackage.Literals.ABSTRACT_ASSERTION__ARGUMENTS;
+import static tools.refinery.language.model.problem.ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION;
 
 public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemanticSequencer {
 	@Inject
@@ -27,13 +29,13 @@ public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemant
 			return;
 		}
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, ProblemPackage.Literals.ASSERTION__RELATION) == ValueTransient.YES) {
+			if (transientValues.isValueTransient(semanticObject, ABSTRACT_ASSERTION__RELATION) == ValueTransient.YES) {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject,
-						ProblemPackage.Literals.ASSERTION__RELATION));
+						ABSTRACT_ASSERTION__RELATION));
 			}
-			if (transientValues.isListTransient(semanticObject, ProblemPackage.Literals.ASSERTION__ARGUMENTS) == ListTransient.YES) {
+			if (transientValues.isListTransient(semanticObject, ABSTRACT_ASSERTION__ARGUMENTS) == ListTransient.YES) {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject,
-						ProblemPackage.Literals.ASSERTION__ARGUMENTS));
+						ABSTRACT_ASSERTION__ARGUMENTS));
 			}
 		}
 		var feeder = createSequencerFeeder(context, semanticObject);
