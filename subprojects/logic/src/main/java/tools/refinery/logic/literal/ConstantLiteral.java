@@ -14,6 +14,8 @@ import tools.refinery.logic.term.Variable;
 import java.util.Objects;
 import java.util.Set;
 
+// {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
+@SuppressWarnings("squid:S2160")
 public class ConstantLiteral extends AbstractLiteral {
 	private final NodeVariable variable;
 	private final int nodeId;
@@ -30,7 +32,6 @@ public class ConstantLiteral extends AbstractLiteral {
 	public int getNodeId() {
 		return nodeId;
 	}
-
 
 	@Override
 	public Set<Variable> getOutputVariables() {

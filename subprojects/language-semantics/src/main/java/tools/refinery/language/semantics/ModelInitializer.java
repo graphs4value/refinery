@@ -31,6 +31,7 @@ import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
+import tools.refinery.store.dse.transition.actions.ActionLiterals;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.actions.PartialActionLiterals;
@@ -968,7 +969,7 @@ public class ModelInitializer {
 				}
 			}
 			for (var action : body.getActions()) {
-				actionLiterals.add(toActionLiteral(action, localScope));
+				toActionLiterals(action, localScope, actionLiterals);
 			}
 			builder.action(actionLiterals);
 		} catch (RuntimeException e) {
@@ -976,8 +977,9 @@ public class ModelInitializer {
 		}
 	}
 
-	private ActionLiteral toActionLiteral(
-			Action action, HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> localScope) {
+	private void toActionLiterals(
+			Action action, HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> localScope,
+			List<ActionLiteral> actionLiterals) {
 		if (!(action instanceof AssertionAction assertionAction)) {
 			throw new TracedException(action, "Unknown action");
 		}
@@ -991,11 +993,18 @@ public class ModelInitializer {
 				throw new TracedException(problemArgument, "Invalid argument");
 			}
 			var variableOrNode = nodeAssertionArgument.getNode();
-			if (!(variableOrNode instanceof tools.refinery.language.model.problem.Variable problemVariable)) {
-				throw new TracedException(problemArgument, "Invalid argument");
+			switch (variableOrNode) {
+			case tools.refinery.language.model.problem.Variable problemVariable ->
+					arguments[i] = localScope.get(problemVariable);
+			case Node node -> {
+				int nodeId = getNodeId(node);
+				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
+				actionLiterals.add(ActionLiterals.constant(tempVariable, nodeId));
+				arguments[i] = tempVariable;
 			}
-			arguments[i] = localScope.get(problemVariable);
+			default -> throw new TracedException(problemArgument, "Invalid argument");
+			}
 		}
-		return PartialActionLiterals.merge(partialRelation, truthValue, arguments);
+		actionLiterals.add(PartialActionLiterals.merge(partialRelation, truthValue, arguments));
 	}
 }

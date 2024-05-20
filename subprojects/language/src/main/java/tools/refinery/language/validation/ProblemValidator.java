@@ -153,6 +153,22 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
+	public void checkNodeAssertionArgumentConstants(NodeAssertionArgument argument) {
+		var rule = EcoreUtil2.getContainerOfType(argument, RuleDefinition.class);
+		if (rule == null) {
+			return;
+		}
+		var variableOrNode = argument.getNode();
+		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
+			var name = node.getName();
+			var message = ("Only atoms can be referenced in rule actions. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
+			error(message, argument, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE,
+					INSIGNIFICANT_INDEX, NODE_CONSTANT_ISSUE);
+		}
+	}
+
+	@Check
 	public void checkUniqueDeclarations(Problem problem) {
 		var relations = new ArrayList<Relation>();
 		var nodes = new ArrayList<Node>();
@@ -360,7 +376,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 						INVALID_MODALITY_ISSUE);
 			}
 			if (parameter.getBinding() != ParameterBinding.SINGLE) {
-				acceptError("Parameter binding annotations are only supported in rule definitions.", parameter,
+				acceptError("Parameter binding annotations are only supported in decision rules.", parameter,
 						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		}
