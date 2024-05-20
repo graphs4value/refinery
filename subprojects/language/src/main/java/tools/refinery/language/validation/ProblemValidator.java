@@ -520,18 +520,17 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Nullable
 	private Node getNodeArgumentForMultiObjectAssertion(AssertionArgument argument) {
-		if (argument instanceof WildcardAssertionArgument) {
-			acceptError("Wildcard arguments for 'exists' are not supported.", argument, null, 0,
-					UNSUPPORTED_ASSERTION_ISSUE);
-			return null;
-		}
-		if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
-			var variableOrNode = nodeAssertionArgument.getNode();
-			if (variableOrNode == null || variableOrNode instanceof Node) {
-				return (Node) variableOrNode;
+		return switch (argument) {
+			case null -> null;
+			case WildcardAssertionArgument ignoredWildcardAssertionArgument -> {
+				acceptError("Wildcard arguments for 'exists' are not supported.", argument, null, 0,
+						UNSUPPORTED_ASSERTION_ISSUE);
+				yield null;
 			}
-		}
-		throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+			case NodeAssertionArgument nodeAssertionArgument ->
+					nodeAssertionArgument.getNode() instanceof Node node ? node : null;
+			default -> throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+		};
 	}
 
 	@Check
