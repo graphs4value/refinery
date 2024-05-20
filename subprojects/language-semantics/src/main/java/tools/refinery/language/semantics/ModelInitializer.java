@@ -15,10 +15,7 @@ import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.logic.Constraint;
-import tools.refinery.logic.dnf.AbstractQueryBuilder;
-import tools.refinery.logic.dnf.InvalidClauseException;
-import tools.refinery.logic.dnf.Query;
-import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.dnf.*;
 import tools.refinery.logic.literal.*;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Variable;
@@ -689,9 +686,9 @@ public class ModelInitializer {
 		}
 		case Atom atom -> {
 			var target = getPartialRelation(atom.getRelation());
-			var polarity = atom.isTransitiveClosure() ? CallPolarity.TRANSITIVE : CallPolarity.POSITIVE;
+			var constraint = atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
 			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
-			literals.add(extractedOuter.modality.wrapConstraint(target).call(polarity, argumentList));
+			literals.add(extractedOuter.modality.wrapConstraint(constraint).call(CallPolarity.POSITIVE, argumentList));
 		}
 		case NegationExpr negationExpr -> {
 			var body = negationExpr.getBody();
@@ -700,18 +697,11 @@ public class ModelInitializer {
 				throw new TracedException(extractedInner.body(), "Cannot negate literal");
 			}
 			var target = getPartialRelation(atom.getRelation());
-			Constraint constraint;
-			if (atom.isTransitiveClosure()) {
-				constraint = Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
-						target.callTransitive(p1, p2)
-				)).getDnf();
-			} else {
-				constraint = target;
-			}
+			Constraint constraint = atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
 			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-			var argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
+			List<Variable> argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
 			var innerModality = extractedInner.modality().merge(outerModality.negate());
-			literals.add(innerModality.wrapConstraint(constraint).call(CallPolarity.NEGATIVE, argumentList));
+			literals.add(createNegationLiteral(innerModality, constraint, argumentList, localScope));
 		}
 		case ComparisonExpr comparisonExpr -> {
 			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
@@ -722,10 +712,61 @@ public class ModelInitializer {
 				default -> throw new TracedException(
 						comparisonExpr, "Unsupported operator");
 			};
-			literals.add(outerModality.createEquivalence(positive, argumentList.get(0), argumentList.get(1)));
+			literals.add(createEquivalenceLiteral(outerModality, positive, argumentList.get(0), argumentList.get(1),
+					localScope));
 		}
 		default -> throw new TracedException(extractedOuter.body(), "Unsupported literal");
 		}
+	}
+
+	private Constraint getTransitiveWrapper(Constraint target) {
+		return Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
+				target.callTransitive(p1, p2)
+		)).getDnf();
+	}
+
+	private static Literal createNegationLiteral(
+			ConcreteModality innerModality, Constraint constraint, List<Variable> argumentList,
+			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
+		if (innerModality.isSet()) {
+			boolean needsQuantification = false;
+			var filteredArguments = new LinkedHashSet<Variable>();
+			for (var argument : argumentList) {
+				if (localScope.containsValue(argument)) {
+					filteredArguments.add(argument);
+				} else {
+					needsQuantification = true;
+				}
+			}
+			// If there are any quantified arguments, set a helper pattern to be lifted so that the appropriate
+			// {@code EXISTS} call are added by the {@code DnfLifter}.
+			if (needsQuantification) {
+				var filteredArgumentList = List.copyOf(filteredArguments);
+				var quantifiedConstraint = Dnf.builder(constraint.name() + "#quantified")
+						.parameters(filteredArgumentList)
+						.clause(
+								constraint.call(CallPolarity.POSITIVE, argumentList)
+						)
+						.build();
+				return innerModality.wrapConstraint(quantifiedConstraint)
+						.call(CallPolarity.NEGATIVE, filteredArgumentList);
+			}
+		}
+		return innerModality.wrapConstraint(constraint).call(CallPolarity.NEGATIVE, argumentList);
+	}
+
+	private Literal createEquivalenceLiteral(
+			ConcreteModality outerModality, boolean positive, Variable left, Variable right,
+			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
+		if (!outerModality.isSet()) {
+			return new EquivalenceLiteral(positive, left, right);
+		}
+		if (positive) {
+			return outerModality.wrapConstraint(ReasoningAdapter.EQUALS_SYMBOL).call(left, right);
+		}
+		// Interpret {@code x != y} as {@code !equals(x, y)} at all times, even in modal operators.
+		return createNegationLiteral(outerModality.negate(), ReasoningAdapter.EQUALS_SYMBOL, List.of(left, right),
+				localScope);
 	}
 
 	private record ConcreteModality(@Nullable Concreteness concreteness, @Nullable Modality modality) {
@@ -758,18 +799,14 @@ public class ModelInitializer {
 		}
 
 		public Constraint wrapConstraint(Constraint inner) {
-			if (concreteness != null && modality != null) {
+			if (isSet()) {
 				return new ModalConstraint(modality, concreteness, inner);
 			}
 			return inner;
 		}
 
-		public Literal createEquivalence(boolean positive, Variable left, Variable right) {
-			if (concreteness != null && modality != null) {
-				var polarity = positive ? CallPolarity.POSITIVE : CallPolarity.NEGATIVE;
-				return wrapConstraint(ReasoningAdapter.EQUALS_SYMBOL).call(polarity, left, right);
-			}
-			return new EquivalenceLiteral(positive, left, right);
+		public boolean isSet() {
+			return concreteness != null || modality != null;
 		}
 	}
 
