@@ -170,12 +170,15 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkUniqueDeclarations(Problem problem) {
-		var relations = new ArrayList<Relation>();
+		var relations = new ArrayList<NamedElement>();
 		var nodes = new ArrayList<Node>();
 		var aggregators = new ArrayList<AggregatorDeclaration>();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof Relation relation) {
 				relations.add(relation);
+			} else if (statement instanceof RuleDefinition ruleDefinition) {
+				// Rule definitions and predicates live in the same namespace.
+				relations.add(ruleDefinition);
 			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
 				nodes.addAll(nodeDeclaration.getNodes());
 			} else if (statement instanceof AggregatorDeclaration aggregatorDeclaration) {
