@@ -83,7 +83,7 @@ RuleDefinition:
 	kind=RuleKind? "rule"
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-	(":" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
+	("<->" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
 	("==>" consequents+=Consequent (";" consequents+=Consequent)*)?
 	".";
 
