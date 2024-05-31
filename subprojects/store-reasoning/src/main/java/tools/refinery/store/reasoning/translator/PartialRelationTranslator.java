@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -290,7 +290,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 			candidateMay = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
 		}
 		if (candidateMust == null) {
-			candidateMust = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
+			candidateMust = reasoningBuilder.lift(Modality.MUST, Concreteness.CANDIDATE, query);
 		}
 	}
 
