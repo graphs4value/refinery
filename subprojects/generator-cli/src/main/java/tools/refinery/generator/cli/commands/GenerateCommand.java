@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,9 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Parameters(commandDescription = "Generate a model from a partial model")
 public class GenerateCommand {
+	private static final Pattern EXTENSION_REGEX = Pattern.compile("(.+)\\.([^./\\\\]+)");
+
 	@Inject
 	private ProblemLoader loader;
 
@@ -31,6 +34,7 @@ public class GenerateCommand {
 	private List<String> scopes = new ArrayList<>();
 	private List<String> overrideScopes = new ArrayList<>();
 	private long randomSeed = 1;
+	private int count = 1;
 
 	@Parameter(description = "input path", required = true)
 	public void setInputPath(String inputPath) {
@@ -57,21 +61,47 @@ public class GenerateCommand {
 		this.randomSeed = randomSeed;
 	}
 
+	@Parameter(names = {"-solution-number", "-n"}, description = "Maximum number of solutions")
+	public void setCount(int count) {
+		if (count <= 0) {
+			throw new IllegalArgumentException("Count must be positive");
+		}
+		this.count = count;
+	}
+
 	public void run() throws IOException {
+		if (count > 1 && isStandardStream(outputPath)) {
+			throw new IllegalArgumentException("Must provide output path if count is larger than 1");
+		}
 		loader.extraPath(System.getProperty("user.dir"));
 		var problem = isStandardStream(inputPath) ? loader.loadStream(System.in) : loader.loadFile(inputPath);
 		problem = loader.loadScopeConstraints(problem, scopes, overrideScopes);
+		generatorFactory.partialInterpretationBasedNeighbourhoods(count >= 2);
 		var generator = generatorFactory.createGenerator(problem);
 		generator.setRandomSeed(randomSeed);
+		generator.setMaxNumberOfSolutions(count);
 		generator.generate();
-		var solution = generator.serializeSolution();
-		var solutionResource = solution.eResource();
 		var saveOptions = Map.of();
-		if (isStandardStream(outputPath)) {
-			printSolution(solutionResource, saveOptions);
+		if (count == 1) {
+			var solution = generator.serializeSolution();
+			var solutionResource = solution.eResource();
+			if (isStandardStream(outputPath)) {
+				printSolution(solutionResource, saveOptions);
+			} else {
+				try (var outputStream = new FileOutputStream(outputPath)) {
+					solutionResource.save(outputStream, saveOptions);
+				}
+			}
 		} else {
-			try (var outputStream = new FileOutputStream(outputPath)) {
-				solutionResource.save(outputStream, saveOptions);
+			int solutionCount = generator.getSolutionCount();
+			for (int i = 0; i < solutionCount; i++) {
+				generator.loadSolution(i);
+				var solution = generator.serializeSolution();
+				var solutionResource = solution.eResource();
+				var pathWithIndex = getFileNameWithIndex(outputPath, i + 1);
+				try (var outputStream = new FileOutputStream(pathWithIndex)) {
+					solutionResource.save(outputStream, saveOptions);
+				}
 			}
 		}
 	}
@@ -84,5 +114,13 @@ public class GenerateCommand {
 	@SuppressWarnings("squid:S106")
 	private void printSolution(Resource solutionResource, Map<?, ?> saveOptions) throws IOException {
 		solutionResource.save(System.out, saveOptions);
+	}
+
+	private String getFileNameWithIndex(String simpleName, int index) {
+		var match = EXTENSION_REGEX.matcher(simpleName);
+		if (match.matches()) {
+			return "%s_%03d.%s".formatted(match.group(1), index, match.group(2));
+		}
+		return "%s_%03d".formatted(simpleName, index);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -11,6 +11,7 @@ import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
+import tools.refinery.store.dse.transition.statespace.SolutionStore;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
@@ -22,7 +23,8 @@ public class ModelGenerator extends ModelFacade {
 	private final Version initialVersion;
 	private final Provider<SolutionSerializer> solutionSerializerProvider;
 	private long randomSeed = 1;
-	private boolean lastGenerationSuccessful;
+	private int maxNumberOfSolutions = 1;
+	private SolutionStore solutionStore;
 
 	ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
 				   Provider<SolutionSerializer> solutionSerializerProvider) {
@@ -37,26 +39,51 @@ public class ModelGenerator extends ModelFacade {
 
 	public void setRandomSeed(long randomSeed) {
 		this.randomSeed = randomSeed;
-		this.lastGenerationSuccessful = false;
+		this.solutionStore = null;
 	}
 
+	public int getMaxNumberOfSolutions() {
+		return maxNumberOfSolutions;
+	}
+
+	public void setMaxNumberOfSolutions(int maxNumberOfSolutions) {
+		this.maxNumberOfSolutions = maxNumberOfSolutions;
+		this.solutionStore = null;
+	}
+
+	public int getSolutionCount() {
+		if (!isLastGenerationSuccessful()) {
+			return 0;
+		}
+		return this.solutionStore.getSolutions().size();
+	}
+
+	public void loadSolution(int index) {
+		if (index >= getSolutionCount()) {
+			throw new IndexOutOfBoundsException("No such solution");
+		}
+		getModel().restore(solutionStore.getSolutions().get(index).version());
+	}
+
+	// It makes more sense to check for success than for failure.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isLastGenerationSuccessful() {
-		return lastGenerationSuccessful;
+		return solutionStore != null;
 	}
 
 	// This method only makes sense if it returns {@code true} on success.
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean tryGenerate() {
-		lastGenerationSuccessful = false;
+		solutionStore = null;
 		randomSeed++;
-		var bestFirst = new BestFirstStoreManager(getModelStore(), 1);
+		var bestFirst = new BestFirstStoreManager(getModelStore(), maxNumberOfSolutions);
 		bestFirst.startExploration(initialVersion, randomSeed);
 		var solutions = bestFirst.getSolutionStore().getSolutions();
 		if (solutions.isEmpty()) {
 			return false;
 		}
 		getModel().restore(solutions.getFirst().version());
-		lastGenerationSuccessful = true;
+		solutionStore = bestFirst.getSolutionStore();
 		return true;
 	}
 
@@ -80,7 +107,7 @@ public class ModelGenerator extends ModelFacade {
 	}
 
 	private void checkSuccessfulGeneration() {
-		if (!lastGenerationSuccessful) {
+		if (!isLastGenerationSuccessful()) {
 			throw new IllegalStateException("No generated model is available");
 		}
 	}
