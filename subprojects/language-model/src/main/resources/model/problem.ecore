@@ -153,6 +153,7 @@
     <eLiterals name="REFERENCE" value="2"/>
     <eLiterals name="CONTAINMENT" value="3"/>
     <eLiterals name="CONTAINER" value="3"/>
+    <eLiterals name="PARTIAL" value="4"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expr" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableOrNodeExpr" eSuperTypes="#//Expr">

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -143,7 +143,7 @@ public class MetamodelBuilder {
 									targetType, linkType, sourceType));
 				}
 				undirectedCrossReferences.put(linkType, new UndirectedCrossReferenceInfo(sourceType,
-						info.multiplicity(), defaultValue));
+						info.multiplicity(), defaultValue, info.partial()));
 				return;
 			}
 			oppositeReferences.put(opposite, linkType);
@@ -153,7 +153,7 @@ public class MetamodelBuilder {
 			return;
 		}
 		directedCrossReferences.put(linkType, new DirectedCrossReferenceInfo(sourceType, info.multiplicity(),
-				targetType, targetMultiplicity, defaultValue));
+				targetType, targetMultiplicity, defaultValue, info.partial()));
 	}
 
 	private void processContainmentInfo(PartialRelation linkType, ReferenceInfo info,
@@ -195,6 +195,10 @@ public class MetamodelBuilder {
 		}
 		if (oppositeInfo.containment() && info.containment()) {
 			throw new TranslationException(opposite, "Opposite %s of containment %s cannot be containment"
+					.formatted(opposite, linkType));
+		}
+		if (info.partial() != oppositeInfo.partial()) {
+			throw new TranslationException(opposite, "Either both %s and %s have to be partial or neither of them"
 					.formatted(opposite, linkType));
 		}
 	}

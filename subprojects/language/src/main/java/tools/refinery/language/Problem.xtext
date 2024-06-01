@@ -45,7 +45,7 @@ AggregatorDeclaration:
 	"extern" "aggregator" name=Identifier ".";
 
 enum ReferenceKind:
-	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
+	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container" | PARTIAL="partial";
 
 ReferenceDeclaration:
 	(referenceType=[Relation|NonContainmentQualifiedName] |

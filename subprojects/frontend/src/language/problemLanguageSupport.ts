@@ -36,7 +36,7 @@ const parserWithMetadata = parser.configure({
       'import as declare atom multi': t.definitionKeyword,
       'extern datatype aggregator': t.definitionKeyword,
       rule: t.definitionKeyword,
-      'abstract extends refers contains container opposite': t.modifier,
+      'abstract extends refers contains container partial opposite': t.modifier,
       default: t.modifier,
       'propagation decision': t.modifier,
       'true false unknown error': t.keyword,

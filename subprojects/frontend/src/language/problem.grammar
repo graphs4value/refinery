@@ -161,7 +161,7 @@ AssertionActionArgument { VariableName | StarArgument }
 Constant { Real | String | StarMult | LogicValue }
 
 ReferenceKind {
-  kw<"refers"> | ckw<"contains"> | kw<"container">
+  kw<"refers"> | ckw<"contains"> | kw<"container"> | kw<"partial">
 }
 
 LogicValue {

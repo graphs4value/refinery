@@ -347,6 +347,7 @@ public class ModelInitializer {
 		var target = getPartialRelation(referenceDeclaration.getReferenceType());
 		targetTypes.add(target);
 		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
+		boolean partial = referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
 		var opposite = referenceDeclaration.getOpposite();
 		PartialRelation oppositeRelation = null;
 		if (opposite != null) {
@@ -367,6 +368,7 @@ public class ModelInitializer {
 					.target(target)
 					.opposite(oppositeRelation)
 					.defaultValue(defaultValue)
+					.partial(partial)
 					.build());
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);

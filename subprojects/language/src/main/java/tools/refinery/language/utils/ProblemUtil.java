@@ -42,13 +42,11 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isImplicit(EObject eObject) {
-		if (eObject instanceof Node node) {
-			return isImplicitNode(node);
-		} else if (eObject instanceof Variable variable) {
-			return isImplicitVariable(variable);
-		} else {
-			return false;
-		}
+		return switch (eObject) {
+			case Node node -> isImplicitNode(node);
+			case Variable variable -> isImplicitVariable(variable);
+			default -> false;
+		};
 	}
 
 	public static boolean isError(EObject eObject) {
@@ -119,7 +117,7 @@ public final class ProblemUtil {
 			return false;
 		}
 		return switch (kind) {
-			case CONTAINMENT -> false;
+			case CONTAINMENT, PARTIAL -> false;
 			case CONTAINER -> true;
 			case DEFAULT, REFERENCE -> {
 				var opposite = referenceDeclaration.getOpposite();

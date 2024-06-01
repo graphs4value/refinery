@@ -318,6 +318,11 @@ public class ProblemValidator extends AbstractProblemValidator {
 						referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 						INVALID_OPPOSITE_ISSUE);
 			}
+		} else if (kind == ReferenceKind.PARTIAL && opposite != null && opposite.getKind() != ReferenceKind.PARTIAL) {
+			acceptError("Opposite '%s' of partial reference '%s' is not a partial reference."
+							.formatted(opposite.getName(), referenceDeclaration.getName()),
+					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
+					INVALID_OPPOSITE_ISSUE);
 		}
 	}
 
