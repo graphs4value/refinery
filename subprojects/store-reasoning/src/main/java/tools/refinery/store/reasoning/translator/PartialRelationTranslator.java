@@ -52,6 +52,8 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	private RelationalQuery must;
 	private RelationalQuery candidateMay;
 	private RelationalQuery candidateMust;
+	private RelationalQuery candidateMayMerged;
+	private RelationalQuery candidateMustMerged;
 	private RoundingMode roundingMode;
 
 	private PartialRelationTranslator(PartialRelation partialRelation) {
@@ -202,6 +204,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		liftQueries(storeBuilder);
 		createFallbackQueriesFromSymbol();
 		setFallbackCandidateQueries();
+		mergeCandidateQueries();
 		createFallbackRewriter();
 		createFallbackInterpretation();
 		createFallbackRefiner();
@@ -272,9 +275,11 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		}
 		if (candidateMay == null) {
 			candidateMay = queryBasedRelationRewriter.getCandidateMay();
+			candidateMayMerged = candidateMay;
 		}
 		if (candidateMust == null) {
 			candidateMust = queryBasedRelationRewriter.getCandidateMust();
+			candidateMustMerged = candidateMust;
 		}
 	}
 
@@ -309,15 +314,31 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		}
 	}
 
+	private void mergeCandidateQueries() {
+		if (candidateMayMerged == null) {
+			candidateMayMerged = createQuery("candidateMayMerged", (builder, arguments) -> builder
+					.clause(
+							candidateMay.call(arguments),
+							may.call(arguments)
+					));
+		}
+		if (candidateMustMerged == null) {
+			candidateMustMerged = createQuery("candidateMustMerged", (builder, arguments) -> builder
+					.clause(candidateMust.call(arguments))
+					.clause(must.call(arguments)));
+		}
+	}
+
 	private void createFallbackRewriter() {
 		if (rewriter == null) {
-			rewriter = new QueryBasedRelationRewriter(may, must, candidateMay, candidateMust);
+			rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
 		}
 	}
 
 	private void createFallbackInterpretation() {
 		if (interpretationFactory == null) {
-			interpretationFactory = new QueryBasedRelationInterpretationFactory(may, must, candidateMay, candidateMust);
+			interpretationFactory = new QueryBasedRelationInterpretationFactory(may, must, candidateMayMerged,
+					candidateMustMerged);
 		}
 	}
 
@@ -353,14 +374,6 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		var invalidCandidate = createQuery("invalidCandidate", (builder, parameters) -> builder
 				.clause(
 						PartialLiterals.candidateMust(partialRelation.call(parameters)),
-						not(PartialLiterals.candidateMay(partialRelation.call(parameters)))
-				)
-				.clause(
-						PartialLiterals.candidateMust(partialRelation.call(parameters)),
-						not(PartialLiterals.may(partialRelation.call(parameters)))
-				)
-				.clause(
-						PartialLiterals.must(partialRelation.call(parameters)),
 						not(PartialLiterals.candidateMay(partialRelation.call(parameters)))
 				));
 		var reject = createQuery("reject", (builder, parameters) -> {
