@@ -54,12 +54,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
 	public static final String VARIABLE_WITHOUT_EXISTS = ISSUE_PREFIX + "VARIABLE_WITHOUT_EXISTS";
+	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
 
 	@Inject
 	private ExistsVariableCollector existsVariableCollector;
+
+	@Inject
+	private ActionTargetCollector actionTargetCollector;
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -332,6 +336,17 @@ public class ProblemValidator extends AbstractProblemValidator {
 							.formatted(opposite.getName(), referenceDeclaration.getName()),
 					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 					INVALID_OPPOSITE_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkPartialReference(ReferenceDeclaration referenceDeclaration) {
+		if (referenceDeclaration.getKind() == ReferenceKind.PARTIAL &&
+				!actionTargetCollector.isActionTarget(referenceDeclaration)) {
+			var message = "Add decision or propagation rules to refine partial relation '%s'."
+							.formatted(referenceDeclaration.getName());
+			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__KIND, 0,
+					UNUSED_PARTIAL_RELATION);
 		}
 	}
 
