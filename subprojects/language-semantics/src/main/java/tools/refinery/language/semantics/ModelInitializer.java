@@ -36,6 +36,7 @@ import tools.refinery.store.reasoning.actions.PartialActionLiterals;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -1005,6 +1006,7 @@ public class ModelInitializer {
 				parametersToFocus.add(problemParameter);
 			}
 		}
+		toMonomorphicMatchingLiterals(parametersToFocus, parameterMap, commonLiterals);
 		var builder = Rule.builder(name).parameters(parameters);
 		var preconditions = ruleDefinition.getPreconditions();
 		if (preconditions.isEmpty()) {
@@ -1018,6 +1020,21 @@ public class ModelInitializer {
 			buildConsequent(consequent, parameterMap, parametersToFocus, builder);
 		}
 		return builder.build();
+	}
+
+	private static void toMonomorphicMatchingLiterals(
+			ArrayList<tools.refinery.language.model.problem.Variable> parametersToFocus,
+			HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> parameterMap,
+			ArrayList<Literal> commonLiterals) {
+		int focusCount = parametersToFocus.size();
+		for (int i = 0; i < focusCount; i++) {
+			var leftFocus = parameterMap.get(parametersToFocus.get(i));
+			for (int j = i + 1; j < focusCount; j++) {
+				var rightFocus = parameterMap.get(parametersToFocus.get(j));
+				commonLiterals.add(Literals.not(PartialLiterals.must(
+						ReasoningAdapter.EQUALS_SYMBOL.call(leftFocus, rightFocus))));
+			}
+		}
 	}
 
 	private void buildConsequent(
