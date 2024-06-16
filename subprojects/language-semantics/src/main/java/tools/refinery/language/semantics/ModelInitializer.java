@@ -14,6 +14,7 @@ import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.language.validation.ActionTargetCollector;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.*;
 import tools.refinery.logic.literal.*;
@@ -66,6 +67,9 @@ public class ModelInitializer {
 
 	@Inject
 	private ImportAdapterProvider importAdapterProvider;
+
+	@Inject
+	private ActionTargetCollector actionTargetCollector;
 
 	private Problem problem;
 
@@ -593,7 +597,7 @@ public class ModelInitializer {
 	private void collectPredicateDefinition(PredicateDefinition predicateDefinition, ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var query = toQuery(partialRelation.name(), predicateDefinition);
-		boolean mutable = targetTypes.contains(partialRelation);
+		boolean mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
 		TruthValue defaultValue;
 		if (predicateDefinition.isError()) {
 			defaultValue = TruthValue.FALSE;
@@ -606,6 +610,15 @@ public class ModelInitializer {
 		}
 		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
 		storeBuilder.with(translator);
+	}
+
+	private boolean isActionTarget(PredicateDefinition predicateDefinition) {
+		for (var importedProblem : importedProblems) {
+			if (actionTargetCollector.isActionTarget(importedProblem, predicateDefinition)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private RelationalQuery toQuery(String name, PredicateDefinition predicateDefinition) {
