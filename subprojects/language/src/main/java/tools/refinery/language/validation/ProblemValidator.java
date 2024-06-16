@@ -24,10 +24,7 @@ import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class contains custom validation rules.
@@ -56,9 +53,13 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
+	public static final String VARIABLE_WITHOUT_EXISTS = ISSUE_PREFIX + "VARIABLE_WITHOUT_EXISTS";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
+
+	@Inject
+	private ExistsVariableCollector existsVariableCollector;
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -129,6 +130,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Variable variable && ProblemUtil.isImplicitVariable(variable)
 				&& !ProblemUtil.isSingletonVariable(variable)) {
+			if (EcoreUtil2.getContainerOfType(variable, ParametricDefinition.class) instanceof RuleDefinition &&
+					EcoreUtil2.getContainerOfType(variable, NegationExpr.class) == null &&
+					// If there is an exists constraint, it is the only constraint.
+					existsVariableCollector.missingExistsConstraint(variable)) {
+				// Existentially quantified variables in rules should not be singletons,
+				// because we have to add an {@code exists} constraint as well.
+				return;
+			}
 			var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
 			if (problem != null && referenceCounter.countReferences(problem, variable) <= 1) {
 				var name = variable.getName();
@@ -411,6 +420,28 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (ruleDefinition.getConsequents().size() != 1) {
 			acceptError("Rules must have exactly one consequent.", ruleDefinition,
 					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
+		}
+		var unquantifiedVariables = new HashSet<Variable>();
+		for (var variable : EcoreUtil2.getAllContentsOfType(ruleDefinition, Variable.class)) {
+			if (existsVariableCollector.missingExistsConstraint(variable)) {
+				unquantifiedVariables.add(variable);
+			}
+		}
+		for (var expr : EcoreUtil2.getAllContentsOfType(ruleDefinition, VariableOrNodeExpr.class)) {
+			if (expr.getVariableOrNode() instanceof Variable variable && unquantifiedVariables.contains(variable)) {
+				unquantifiedVariables.remove(variable);
+				var name = variable.getName();
+				String message;
+				if (ProblemUtil.isSingletonVariable(variable)) {
+					message = ("Remove the singleton variable marker '_' and clarify the quantification of variable " +
+                            "'%s'.").formatted(name);
+				} else {
+					message = ("Add a 'must exists(%s)', 'may exists(%s)', or 'may !exists(%s)' constraint to " +
+							"clarify the quantification of variable '%s'.").formatted(name, name, name, name);
+				}
+				acceptWarning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
+						VARIABLE_WITHOUT_EXISTS);
+			}
 		}
 	}
 
