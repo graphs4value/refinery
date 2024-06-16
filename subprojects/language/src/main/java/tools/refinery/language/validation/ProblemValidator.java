@@ -413,10 +413,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkRuleDefinition(RuleDefinition ruleDefinition) {
-		if (ruleDefinition.getKind() != RuleKind.REFINEMENT && ruleDefinition.getPreconditions().isEmpty()) {
-			acceptError("Decision and propagation rules must have at least one precondition.", ruleDefinition,
-					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
-		}
 		if (ruleDefinition.getConsequents().size() != 1) {
 			acceptError("Rules must have exactly one consequent.", ruleDefinition,
 					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);

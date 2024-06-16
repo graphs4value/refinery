@@ -938,18 +938,30 @@ public class ModelInitializer {
 	}
 
 	private void collectRule(RuleDefinition ruleDefinition, ModelStoreBuilder storeBuilder) {
-		var name = semanticsUtils.getNameWithoutRootPrefix(ruleDefinition)
-				.orElseGet(() -> "::rule" + ruleCount);
-		ruleCount++;
-		var rule = toRule(name, ruleDefinition);
-		switch (ruleDefinition.getKind()) {
-		case DECISION -> storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
-				.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
-		case PROPAGATION -> storeBuilder.tryGetAdapter(PropagationBuilder.class)
-				.ifPresent(propagationBuilder -> propagationBuilder.rule(rule));
-		case REFINEMENT -> {
-			// Rules not marked for decision or propagation are not invoked automatically.
-		}
+		try {
+			var name = semanticsUtils.getNameWithoutRootPrefix(ruleDefinition)
+					.orElseGet(() -> "::rule" + ruleCount);
+			ruleCount++;
+			var rule = toRule(name, ruleDefinition);
+			switch (ruleDefinition.getKind()) {
+			case DECISION -> storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
+					.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
+			case PROPAGATION -> storeBuilder.tryGetAdapter(PropagationBuilder.class)
+					.ifPresent(propagationBuilder -> propagationBuilder.rule(rule));
+			case REFINEMENT -> {
+				// Rules not marked for decision or propagation are not invoked automatically.
+			}
+			}
+		} catch (InvalidClauseException e) {
+			int clauseIndex = e.getClauseIndex();
+			var bodies = ruleDefinition.getPreconditions();
+			if (clauseIndex < bodies.size()) {
+				throw new TracedException(bodies.get(clauseIndex), e);
+			} else {
+				throw new TracedException(ruleDefinition, e);
+			}
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(ruleDefinition, e);
 		}
 	}
 
@@ -981,8 +993,13 @@ public class ModelInitializer {
 			}
 		}
 		var builder = Rule.builder(name).parameters(parameters);
-		for (var precondition : ruleDefinition.getPreconditions()) {
-			buildConjunction(precondition, parameterMap, commonLiterals, builder);
+		var preconditions = ruleDefinition.getPreconditions();
+		if (preconditions.isEmpty()) {
+			builder.clause(commonLiterals);
+		} else {
+			for (var precondition : preconditions) {
+				buildConjunction(precondition, parameterMap, commonLiterals, builder);
+			}
 		}
 		for (var consequent : ruleDefinition.getConsequents()) {
 			buildConsequent(consequent, parameterMap, parametersToFocus, builder);
