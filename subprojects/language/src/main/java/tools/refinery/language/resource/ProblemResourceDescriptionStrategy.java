@@ -154,6 +154,9 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			if (ProblemUtil.isTypeLike(relation)) {
 				builder.put(TYPE_LIKE, TYPE_LIKE_TRUE);
 			}
+		} else if (eObject instanceof RuleDefinition) {
+			// Rule definitions and predicates live in the same namespace.
+			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
 		} else if (eObject instanceof AggregatorDeclaration) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_AGGREGATOR);
 		}

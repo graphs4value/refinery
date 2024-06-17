@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -53,38 +53,30 @@ class PartialClauseRewriter {
 			markAsDone(literal);
 			return;
 		}
-		if (callLiteral instanceof CountLowerBoundLiteral countLowerBoundLiteral) {
-			rewriteCountLowerBound(countLowerBoundLiteral);
-			return;
-		}
-		if (callLiteral instanceof CountUpperBoundLiteral countUpperBoundLiteral) {
-			rewriteCountUpperBound(countUpperBoundLiteral);
-			return;
-		}
-		if (callLiteral instanceof CountCandidateLowerBoundLiteral countCandidateLowerBoundLiteral) {
-			rewriteCountCandidateLowerBound(countCandidateLowerBoundLiteral);
-			return;
-		}
-		if (callLiteral instanceof CountCandidateUpperBoundLiteral countCandidateUpperBoundLiteral) {
-			rewriteCountCandidateUpperBound(countCandidateUpperBoundLiteral);
-			return;
-		}
-		var target = callLiteral.getTarget();
-		if (target instanceof Dnf dnf) {
-			rewriteRecursively(callLiteral, dnf);
-		} else if (target instanceof ModalConstraint modalConstraint) {
-			var modality = modalConstraint.modality();
-			var concreteness = modalConstraint.concreteness();
-			var constraint = modalConstraint.constraint();
-			if (constraint instanceof Dnf dnf) {
-				rewriteRecursively(callLiteral, modality, concreteness, dnf);
-			} else if (constraint instanceof PartialRelation partialRelation) {
-				rewrite(callLiteral, modality, concreteness, partialRelation);
-			} else {
-				throw new IllegalArgumentException("Cannot interpret modal constraint: " + modalConstraint);
+		switch (callLiteral) {
+		case CountLowerBoundLiteral countLowerBoundLiteral -> rewriteCountLowerBound(countLowerBoundLiteral);
+		case CountUpperBoundLiteral countUpperBoundLiteral -> rewriteCountUpperBound(countUpperBoundLiteral);
+		case CountCandidateLowerBoundLiteral countCandidateLowerBoundLiteral ->
+				rewriteCountCandidateLowerBound(countCandidateLowerBoundLiteral);
+		case CountCandidateUpperBoundLiteral countCandidateUpperBoundLiteral ->
+				rewriteCountCandidateUpperBound(countCandidateUpperBoundLiteral);
+		default -> {
+			var target = callLiteral.getTarget();
+			switch (target) {
+			case Dnf dnf -> rewriteRecursively(callLiteral, dnf);
+			case ModalConstraint modalConstraint -> {
+				var modality = modalConstraint.modality();
+				var concreteness = modalConstraint.concreteness();
+				var constraint = modalConstraint.constraint();
+				switch (constraint) {
+				case Dnf dnf -> rewriteRecursively(callLiteral, modality, concreteness, dnf);
+				case PartialRelation partialRelation -> rewrite(callLiteral, modality, concreteness, partialRelation);
+				default -> throw new IllegalArgumentException("Cannot interpret modal constraint: " + modalConstraint);
+				}
 			}
-		} else {
-			markAsDone(literal);
+			default -> markAsDone(literal);
+			}
+		}
 		}
 	}
 
@@ -111,11 +103,11 @@ class PartialClauseRewriter {
 				.call(CallPolarity.POSITIVE, countResult.rewrittenArguments()));
 		switch (variablesToCount.size()) {
 		case 0 -> literals.add(outputVariable.assign(new ConstantTerm<>(type, one)));
-		case 1 -> literals.add(view.call(variablesToCount.get(0),
+		case 1 -> literals.add(view.call(variablesToCount.getFirst(),
 				outputVariable));
 		default -> {
 			var firstCount = Variable.of(type);
-			literals.add(view.call(variablesToCount.get(0), firstCount));
+			literals.add(view.call(variablesToCount.getFirst(), firstCount));
 			int length = variablesToCount.size();
 			Term<T> accumulator = firstCount;
 			for (int i = 1; i < length; i++) {
@@ -137,11 +129,11 @@ class PartialClauseRewriter {
 	}
 
 	private void rewriteCountCandidateLowerBound(CountCandidateLowerBoundLiteral literal) {
-		rewriteCandidateCount(literal, "lower", Modality.MAY);
+		rewriteCandidateCount(literal, "lower", Modality.MUST);
 	}
 
 	private void rewriteCountCandidateUpperBound(CountCandidateUpperBoundLiteral literal) {
-		rewriteCandidateCount(literal, "upper", Modality.MUST);
+		rewriteCandidateCount(literal, "upper", Modality.MAY);
 	}
 
 	private void rewriteCandidateCount(AbstractCountLiteral<Integer> literal, String name, Modality modality) {

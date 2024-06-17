@@ -21,6 +21,7 @@ public final class ReferenceInfoBuilder {
 	private PartialRelation targetType;
 	private PartialRelation opposite;
 	private TruthValue defaultValue = TruthValue.UNKNOWN;
+	private boolean partial;
 
 	ReferenceInfoBuilder() {
 	}
@@ -72,6 +73,11 @@ public final class ReferenceInfoBuilder {
 		return this;
 	}
 
+	public ReferenceInfoBuilder partial(boolean partial) {
+		this.partial = partial;
+		return this;
+	}
+
 	public ReferenceInfo build() {
 		if (sourceType == null) {
 			throw new IllegalStateException("Source type is required");
@@ -79,6 +85,6 @@ public final class ReferenceInfoBuilder {
 		if (targetType == null) {
 			throw new IllegalStateException("Target type is required");
 		}
-		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue);
+		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue, partial);
 	}
 }

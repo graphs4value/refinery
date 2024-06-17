@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -8,39 +8,87 @@ package tools.refinery.store.statecoding.neighbourhood;
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
-import tools.refinery.store.model.AnyInterpretation;
-import tools.refinery.store.model.Interpretation;
+import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.ObjectCode;
+import tools.refinery.store.statecoding.StateCodeCalculator;
+import tools.refinery.store.statecoding.StateCoderResult;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.store.tuple.Tuple0;
 
 import java.util.*;
 
-public abstract class AbstractNeighbourhoodCalculator {
-	protected final Model model;
-	protected final List<AnyInterpretation> nullImpactValues;
-	protected final LinkedHashMap<AnyInterpretation, long[]> impactValues;
-	protected final MutableIntLongMap individualHashValues = IntLongMaps.mutable.empty();
+public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCalculator {
+	private final Model model;
+	private final IntSet individuals;
+	private List<T> nullImpactValues;
+	private LinkedHashMap<T, long[]> impactValues;
+	private MutableIntLongMap individualHashValues;
+	private ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
+	private ObjectCodeImpl nextObjectCode = new ObjectCodeImpl();
 
 	protected static final long PRIME = 31;
 
-	protected AbstractNeighbourhoodCalculator(Model model, List<? extends AnyInterpretation> interpretations,
-											  IntSet individuals) {
+	protected AbstractNeighbourhoodCalculator(Model model, IntSet individuals) {
 		this.model = model;
-		this.nullImpactValues = new ArrayList<>();
-		this.impactValues = new LinkedHashMap<>();
+		this.individuals = individuals;
+	}
+
+	protected Model getModel() {
+		return model;
+	}
+
+	protected abstract List<T> getInterpretations();
+
+	protected abstract int getArity(T interpretation);
+
+	protected abstract Object getNullValue(T interpretation);
+
+	// We need the wildcard here, because we don't know the value type.
+	@SuppressWarnings("squid:S1452")
+	protected abstract Cursor<Tuple, ?> getCursor(T interpretation);
+
+	@Override
+	public StateCoderResult calculateCodes() {
+		model.checkCancelled();
+		ensureInitialized();
+		previousObjectCode.clear();
+		nextObjectCode.clear();
+		initializeWithIndividuals(previousObjectCode);
+
+		int rounds = 0;
+		do {
+			model.checkCancelled();
+			constructNextObjectCodes(previousObjectCode, nextObjectCode);
+			var tempObjectCode = previousObjectCode;
+			previousObjectCode = nextObjectCode;
+			nextObjectCode = tempObjectCode;
+			nextObjectCode.clear();
+			rounds++;
+		} while (rounds <= 7 && rounds <= previousObjectCode.getEffectiveSize());
+
+		long result = calculateLastSum(previousObjectCode);
+		return new StateCoderResult((int) result, previousObjectCode);
+	}
+
+	private void ensureInitialized() {
+		if (impactValues != null) {
+			return;
+		}
+
+		nullImpactValues = new ArrayList<>();
+		impactValues = new LinkedHashMap<>();
+		individualHashValues = IntLongMaps.mutable.empty();
 		// Random isn't used for cryptographical purposes but just to assign distinguishable identifiers to symbols.
 		@SuppressWarnings("squid:S2245")
 		Random random = new Random(1);
 
 		var individualsInOrder = individuals.toSortedList(Integer::compare);
-		for(int i = 0; i<individualsInOrder.size(); i++) {
+		for (int i = 0; i < individualsInOrder.size(); i++) {
 			individualHashValues.put(individualsInOrder.get(i), random.nextLong());
 		}
 
-		for (AnyInterpretation interpretation : interpretations) {
-			int arity = interpretation.getSymbol().arity();
+		for (var interpretation : getInterpretations()) {
+			int arity = getArity(interpretation);
 			if (arity == 0) {
 				nullImpactValues.add(interpretation);
 			} else {
@@ -50,6 +98,88 @@ public abstract class AbstractNeighbourhoodCalculator {
 				}
 				impactValues.put(interpretation, impact);
 			}
+
+		}
+	}
+
+	private long calculateLastSum(ObjectCode codes) {
+		long result = 0;
+		for (var nullImpactValue : nullImpactValues) {
+			result = result * PRIME + Objects.hashCode(getNullValue(nullImpactValue));
+		}
+
+		for (int i = 0; i < codes.getSize(); i++) {
+			final long hash = codes.get(i);
+			result += hash*PRIME;
+		}
+
+		return result;
+	}
+
+	private void constructNextObjectCodes(ObjectCodeImpl previous, ObjectCodeImpl next) {
+		for (var impactValueEntry : this.impactValues.entrySet()) {
+			model.checkCancelled();
+			var interpretation = impactValueEntry.getKey();
+			var cursor = getCursor(interpretation);
+			int arity = getArity(interpretation);
+			long[] impactValue = impactValueEntry.getValue();
+			impactCalculation(previous, next, impactValue, cursor, arity);
+		}
+	}
+
+	protected void impactCalculation(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValue,
+									 Cursor<Tuple, ?> cursor, int arity) {
+		switch (arity) {
+		case 1 -> {
+			while (cursor.move()) {
+				impactCalculation1(previous, next, impactValue, cursor);
+			}
+		}
+		case 2 -> {
+			while (cursor.move()) {
+				impactCalculation2(previous, next, impactValue, cursor);
+			}
+		}
+		default -> {
+			while (cursor.move()) {
+				impactCalculationN(previous, next, impactValue, cursor);
+			}
+		}
+		}
+	}
+
+	private void impactCalculation1(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues,
+									Cursor<Tuple, ?> cursor) {
+
+		Tuple tuple = cursor.getKey();
+		int o = tuple.get(0);
+		Object value = cursor.getValue();
+		long tupleHash = getTupleHash1(tuple, value, previous);
+		addHash(next, o, impactValues[0], tupleHash);
+	}
+
+	private void impactCalculation2(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues,
+									Cursor<Tuple, ?> cursor) {
+		final Tuple tuple = cursor.getKey();
+		final int o1 = tuple.get(0);
+		final int o2 = tuple.get(1);
+
+		Object value = cursor.getValue();
+		long tupleHash = getTupleHash2(tuple, value, previous);
+
+		addHash(next, o1, impactValues[0], tupleHash);
+		addHash(next, o2, impactValues[1], tupleHash);
+	}
+
+	private void impactCalculationN(ObjectCodeImpl previous, ObjectCodeImpl next, long[] impactValues,
+									Cursor<Tuple, ?> cursor) {
+		final Tuple tuple = cursor.getKey();
+
+		Object value = cursor.getValue();
+		long tupleHash = getTupleHashN(tuple, value, previous);
+
+		for (int i = 0; i < tuple.getSize(); i++) {
+			addHash(next, tuple.get(i), impactValues[i], tupleHash);
 		}
 	}
 
@@ -87,14 +217,5 @@ public abstract class AbstractNeighbourhoodCalculator {
 	protected void addHash(ObjectCodeImpl objectCodeImpl, int o, long impact, long tupleHash) {
 		long x = tupleHash * impact;
 		objectCodeImpl.set(o, objectCodeImpl.get(o) + x);
-	}
-
-	protected long calculateModelCode(long lastSum) {
-		long result = 0;
-		for (var nullImpactValue : nullImpactValues) {
-			result = result * PRIME + Objects.hashCode(((Interpretation<?>) nullImpactValue).get(Tuple0.INSTANCE));
-		}
-		result += lastSum;
-		return result;
 	}
 }

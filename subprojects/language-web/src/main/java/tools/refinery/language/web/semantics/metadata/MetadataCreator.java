@@ -51,7 +51,7 @@ public class MetadataCreator {
 		this.problemTrace = problemTrace;
 		var problem = problemTrace.getProblem();
 		nodeScope = scopeProvider.getScope(problem, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE);
-		relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ASSERTION__RELATION);
+		relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION);
 	}
 
 	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {

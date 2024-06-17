@@ -57,6 +57,18 @@ class OppositeValidationTest {
 			class Foo {
 				Foo foo[] opposite foo
 			}
+			""", """
+			class Foo {
+				partial Bar bar opposite foo
+			}
+
+			class Bar {
+				partial Foo foo opposite bar
+			}
+			""", """
+			class Foo {
+				partial Foo foo[] opposite foo
+			}
 			"""})
 	void validOppositeTest(String text) {
 		var problem = parseHelper.parse(text);
@@ -188,7 +200,7 @@ class OppositeValidationTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"Foo foo", "container Foo foo"})
+	@ValueSource(strings = {"Foo foo", "container Foo foo", "partial Foo foo"})
 	void containerInvalidOppositeTest(String reference) {
 		var problem = parseHelper.parse("""
 				class Foo {
@@ -203,7 +215,27 @@ class OppositeValidationTest {
 		assertThat(issues, hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
 				hasProperty("issueCode", is(ProblemValidator.INVALID_OPPOSITE_ISSUE)),
-				hasProperty("message", stringContainsInOrder("foo", "bar"))
+				hasProperty("message", stringContainsInOrder("foo", "container", "bar"))
+		)));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"Foo foo", "contains Foo foo", "container Foo foo"})
+	void partialWithConcreteOppositeTest(String reference) {
+		var problem = parseHelper.parse("""
+				class Foo {
+					partial Bar bar opposite foo
+				}
+
+				class Bar {
+					%s opposite bar
+				}
+				""".formatted(reference));
+		var issues = problem.validate();
+		assertThat(issues, hasItem(allOf(
+				hasProperty("severity", is(Diagnostic.ERROR)),
+				hasProperty("issueCode", is(ProblemValidator.INVALID_OPPOSITE_ISSUE)),
+				hasProperty("message", stringContainsInOrder("foo", "partial", "bar"))
 		)));
 	}
 }

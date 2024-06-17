@@ -5,20 +5,21 @@
  */
 package tools.refinery.language.validation;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import org.eclipse.xtext.util.Tuples;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 import tools.refinery.language.model.problem.Problem;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Singleton
 public class ReferenceCounter {
+	private static final String REFERENCE_COUNTS =
+			"tools.refinery.language.validation.ReferenceCounter.REFERENCE_COUNTS";
+
 	@Inject
 	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
 
@@ -35,7 +36,7 @@ public class ReferenceCounter {
 		if (resource == null) {
 			return doGetReferenceCounts(problem);
 		}
-		return cache.get(Tuples.create(problem, "referenceCounts"), resource, () -> doGetReferenceCounts(problem));
+		return cache.get(Tuples.create(problem, REFERENCE_COUNTS), resource, () -> doGetReferenceCounts(problem));
 	}
 
 	protected Map<EObject, Integer> doGetReferenceCounts(Problem problem) {

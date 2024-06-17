@@ -15,8 +15,11 @@ import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.interpretation.PartialNeighbourhoodCalculator;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderAdapter;
+import tools.refinery.store.statecoding.neighbourhood.NeighbourhoodCalculator;
 import tools.refinery.store.util.CancellationToken;
 
 import java.util.Collection;
@@ -33,6 +36,8 @@ public final class ModelGeneratorFactory {
 
 	private boolean debugPartialInterpretations;
 
+	private boolean partialInterpretationBasedNeighbourhoods;
+
 	public ModelGeneratorFactory cancellationToken(CancellationToken cancellationToken) {
 		this.cancellationToken = cancellationToken;
 		return this;
@@ -43,6 +48,10 @@ public final class ModelGeneratorFactory {
 		return this;
 	}
 
+	public void partialInterpretationBasedNeighbourhoods(boolean partialInterpretationBasedNeighbourhoods) {
+		this.partialInterpretationBasedNeighbourhoods = partialInterpretationBasedNeighbourhoods;
+	}
+
 	public ModelGenerator createGenerator(Problem problem) {
 		var initializer = initializerProvider.get();
 		initializer.readProblem(problem);
@@ -51,7 +60,8 @@ public final class ModelGeneratorFactory {
 				.cancellationToken(cancellationToken)
 				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder())
-				.with(StateCoderAdapter.builder())
+				.with(StateCoderAdapter.builder()
+						.stateCodeCalculatorFactory(getStateCoderCalculatorFactory()))
 				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
@@ -62,7 +72,13 @@ public final class ModelGeneratorFactory {
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {
-		return debugPartialInterpretations ? Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE) :
+		return debugPartialInterpretations || partialInterpretationBasedNeighbourhoods ?
+				Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE) :
 				Set.of(Concreteness.CANDIDATE);
+	}
+
+	private StateCodeCalculatorFactory getStateCoderCalculatorFactory() {
+		return partialInterpretationBasedNeighbourhoods ? PartialNeighbourhoodCalculator.FACTORY :
+				NeighbourhoodCalculator::new;
 	}
 }

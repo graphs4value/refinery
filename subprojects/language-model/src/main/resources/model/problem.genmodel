@@ -32,6 +32,7 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/REFERENCE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINER"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/PARTIAL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//UnaryOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//UnaryOp/PLUS"/>
@@ -59,6 +60,25 @@
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//LatticeBinaryOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/MEET"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/JOIN"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Modality">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/NONE"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MUST"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MAY"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Concreteness">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Concreteness/PARTIAL"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Concreteness/CANDIDATE"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//RuleKind">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/REFINEMENT"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/PROPAGATION"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/DECISION"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ParameterBinding">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/SINGLE"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/FOCUS"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/MULTI"/>
     </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
@@ -88,6 +108,9 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Parameter">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Parameter/parameterType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/concreteness"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/modality"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/binding"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Variable"/>
     <genClasses ecoreClass="problem.ecore#//Atom">
@@ -99,11 +122,10 @@
     <genClasses ecoreClass="problem.ecore#//ExistentialQuantifier">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ExistentialQuantifier/implicitVariables"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//Assertion">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Assertion/arguments"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Assertion/relation"/>
-      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Assertion/value"/>
+    <genClasses ecoreClass="problem.ecore#//AbstractAssertion">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AbstractAssertion/arguments"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AbstractAssertion/relation"/>
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AbstractAssertion/value"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Node"/>
     <genClasses ecoreClass="problem.ecore#//ScopeDeclaration">
@@ -153,24 +175,13 @@
     <genClasses ecoreClass="problem.ecore#//RuleDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//RuleDefinition/consequents"/>
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//RuleDefinition/preconditions"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//RuleDefinition/kind"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Consequent">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Consequent/actions"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Action"/>
-    <genClasses ecoreClass="problem.ecore#//AssertionAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AssertionAction/atom"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//AssertionAction/value"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//AssertionAction/overwrite"/>
-    </genClasses>
-    <genClasses ecoreClass="problem.ecore#//DeleteAction">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//DeleteAction/variableOrNode"/>
-    </genClasses>
-    <genClasses ecoreClass="problem.ecore#//NewAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//NewAction/variable"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//NewAction/parent"/>
-    </genClasses>
-    <genClasses ecoreClass="problem.ecore#//NewVariable"/>
+    <genClasses ecoreClass="problem.ecore#//AssertionAction"/>
     <genClasses ecoreClass="problem.ecore#//Expr"/>
     <genClasses ecoreClass="problem.ecore#//VariableOrNodeExpr">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//VariableOrNodeExpr/variableOrNode"/>
@@ -232,5 +243,12 @@
     <genClasses ecoreClass="problem.ecore#//AssignmentExpr"/>
     <genClasses ecoreClass="problem.ecore#//InfiniteConstant"/>
     <genClasses ecoreClass="problem.ecore#//AggregatorDeclaration"/>
+    <genClasses ecoreClass="problem.ecore#//ModalExpr">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/concreteness"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/modality"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//Assertion">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

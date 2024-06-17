@@ -10,7 +10,14 @@ import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public record ReferenceInfo(boolean containment, PartialRelation sourceType, Multiplicity multiplicity,
-							PartialRelation targetType, PartialRelation opposite, TruthValue defaultValue) {
+							PartialRelation targetType, PartialRelation opposite, TruthValue defaultValue,
+							boolean partial) {
+	public ReferenceInfo {
+		if (containment && partial) {
+			throw new IllegalArgumentException("Containment references cannot be partial");
+		}
+	}
+
 	public static ReferenceInfoBuilder builder() {
 		return new ReferenceInfoBuilder();
 	}
