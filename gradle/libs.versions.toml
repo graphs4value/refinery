@@ -4,7 +4,7 @@
 
 [versions]
 eclipseCollections = "12.0.0.M3"
-jetty = "12.0.9"
+jetty = "12.0.10"
 jmh = "1.37"
 junit = "5.11.0-M2"
 mockito = "5.12.0"
@@ -18,8 +18,8 @@ eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-co
 ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.36.0" }
 ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.37.0" }
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.38.0" }
-gradlePlugin-frontend = { group = "org.siouan", name = "frontend-jdk17", version = "8.0.0" }
-gradlePlugin-shadow = { group = "com.github.johnrengelman", name = "shadow", version = "8.1.1" }
+gradlePlugin-frontend = { group = "org.siouan", name = "frontend-jdk17", version = "8.1.0" }
+gradlePlugin-shadow = { group = "io.github.goooler.shadow", name = "shadow-gradle-plugin", version = "8.1.7" }
 gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "5.0.0.4638" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.11.0" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
