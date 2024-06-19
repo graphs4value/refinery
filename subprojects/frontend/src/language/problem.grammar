@@ -63,11 +63,11 @@ statement {
   //   kw<"fn"> RelationName RelationName ParameterList<Parameter>?
   //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
   // } |
-  //RuleDefinition {
-  //  kw<"rule">
-  //  RuleName ParameterList<Parameter>?
-  //  RuleBody { ":" sep<OrOp, Conjunction> "==>" sep<OrOp, Consequent> "." }
-  //} |
+  RuleDefinition {
+    (ckw<"decision"> | ckw<"propagation">)? kw<"rule">
+    RuleName ParameterList<Parameter>?
+    RuleBody { ("<->" sep<OrOp, Conjunction>)? ("==>" sep<OrOp, Consequent>)? "." }
+  } |
   AtomDeclaration {
     kw<"declare">? ckw<"atom"> sep<",", AtomNodeName> "."
   } |
@@ -96,7 +96,12 @@ FeatureDeclaration {
   ";"?
 }
 
-Parameter { RelationName? VariableName }
+Parameter {
+  kw<"candidate">? (kw<"may"> | kw<"must">)?
+  RelationName?
+  (AndBinding | StarBinding)?
+  VariableName
+}
 
 // Use @dynamicPrecedence to prevent a(b) from being parsed as Expr { a } Expr { b }
 // instead of Atom { a(b) }
@@ -125,7 +130,12 @@ BinaryExpr {
 }
 
 UnaryExpr {
-  !prefix ("+" | "-" | "!" | kw<"count">) Expr
+  !prefix
+  (
+    "+" | "-" | "!" | kw<"count"> |
+    kw<"candidate"> | kw<"may"> | kw<"must">
+  )
+  Expr
 }
 
 CastExpr { !cast Expr kw<"as"> DatatypeName }
@@ -136,20 +146,22 @@ Aggregation {
 
 Atom { RelationName "+"? ParameterList<Expr> }
 
-//Consequent { ("," | Action)+ }
+Consequent { ("," | Action)+ }
 
-//Action {
-//   ckw<"new"> VariableName ("<:" VariableName)? |
-//   kw<"delete"> VariableName |
-//   Literal
-//}
+Action {
+  (NotOp | UnknownOp)? RelationName
+  ParameterList<AssertionActionArgument>
+  (":" Expr)?
+}
 
 AssertionArgument { NodeName | StarArgument }
+
+AssertionActionArgument { VariableName | StarArgument }
 
 Constant { Real | String | StarMult | LogicValue }
 
 ReferenceKind {
-  kw<"refers"> | ckw<"contains"> | kw<"container">
+  kw<"refers"> | ckw<"contains"> | kw<"container"> | kw<"partial">
 }
 
 LogicValue {
@@ -170,7 +182,7 @@ RelationName { QualifiedName ~name }
 
 DatatypeName { QualifiedName }
 
-//RuleName { QualifiedName }
+RuleName { QualifiedName }
 
 AtomNodeName { QualifiedName }
 
@@ -246,6 +258,10 @@ sep1<separator, content> { content (separator content)* }
   UnknownOp { "?" }
 
   StarArgument { "*" }
+
+  StarBinding { "*" }
+
+  AndBinding { "&" }
 
   "{" "}" "(" ")" "[" "]" "." ".." "," ":" "->" "<->" "+" "-" "**" "=" "+="
 }

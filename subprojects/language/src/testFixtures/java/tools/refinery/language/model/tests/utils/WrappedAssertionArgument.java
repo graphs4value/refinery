@@ -15,6 +15,6 @@ public record WrappedAssertionArgument(AssertionArgument assertionArgument) {
 	}
 
 	public Node node() {
-		return ((NodeAssertionArgument) assertionArgument).getNode();
+		return (Node) ((NodeAssertionArgument) assertionArgument).getNode();
 	}
 }

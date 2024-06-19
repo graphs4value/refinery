@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -67,7 +67,7 @@ public class Action {
 		var outputVariables = actionLiteral.getOutputVariables();
 		int size = outputVariables.size();
 		if (size == 0) {
-			// Identity mappings use a {@code null} allocation to avoid iterating over the output tuple.
+			// Empty mappings use a {@code null} allocation to avoid iterating over the output tuple.
 			return;
 		}
 		if (size >= 2 && new HashSet<>(outputVariables).size() != size) {

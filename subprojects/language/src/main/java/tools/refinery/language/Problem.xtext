@@ -18,7 +18,7 @@ enum ModuleKind:
 Statement:
 	ImportStatement | Assertion | ClassDeclaration | EnumDeclaration |
 	DatatypeDeclaration | AggregatorDeclaration | PredicateDefinition |
-	/* FunctionDefinition | RuleDefinition | */
+	/* FunctionDefinition | */ RuleDefinition |
 	ScopeDeclaration | NodeDeclaration;
 
 ImportStatement:
@@ -45,7 +45,7 @@ AggregatorDeclaration:
 	"extern" "aggregator" name=Identifier ".";
 
 enum ReferenceKind:
-	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
+	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container" | PARTIAL="partial";
 
 ReferenceDeclaration:
 	(referenceType=[Relation|NonContainmentQualifiedName] |
@@ -75,35 +75,40 @@ Conjunction:
 //
 //Case:
 //	Conjunction ({Match.condition=current} "->" value=Expr)?;
-//RuleDefinition:
-//	"rule"
-//	name=Identifier
-//	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-//	(":" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
-//	"==>" consequents+=Consequent (";" consequents+=Consequent)*)?
-//	".";
+
+enum RuleKind:
+	DECISION="decision" | PROPAGATION="propagation";
+
+RuleDefinition:
+	kind=RuleKind? "rule"
+	name=Identifier
+	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+	("<->" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
+	("==>" consequents+=Consequent (";" consequents+=Consequent)*)?
+	".";
+
+enum ParameterBinding:
+	FOCUS="&" | MULTI="*";
 
 Parameter:
-	parameterType=[Relation|QualifiedName]? name=Identifier;
+	(
+		(concreteness=Concreteness? modality=Modality)?
+		parameterType=[Relation|QualifiedName]
+	)? binding=ParameterBinding? name=Identifier;
 
-//Consequent:
-//	actions+=Action ("," actions+=Action)*;
-//
-//Action:
-//	AssertionAction | DeleteAction | NewAction;
-//
-//AssertionAction:
-//	value=ShortLogicValue? atom=Atom |
-//	atom=Atom (overwrite?=":=" | "<:") value=LogicValue;
-//
-//DeleteAction:
-//	"delete" variableOrNode=[VariableOrNode|QualifiedName];
-//
-//NewAction:
-//	"new" variable=NewVariable ("<:" parent=[VariableOrNode|QualifiedName])?;
-//
-//NewVariable:
-//	name=Identifier;
+Consequent:
+	actions+=Action ("," actions+=Action)*;
+
+Action:
+	AssertionAction;
+
+AssertionAction:
+	relation=[Relation|QualifiedName]
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")"
+	":" value=Expr |
+	value=ShortLogicConstant
+	relation=[Relation|QualifiedName]
+	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")";
 
 Expr:
 	AssignmentExpr;
@@ -159,7 +164,7 @@ RangeExpr returns Expr:
 
 UnaryExpr returns Expr:
 	ArithmeticUnaryExpr | NegationExpr |
-	CountExpr | AggregationExpr | CastExpr;
+	CountExpr | AggregationExpr | ModalExpr | CastExpr;
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -176,6 +181,15 @@ CountExpr:
 AggregationExpr:
 	aggregator=[AggregatorDeclaration|QualifiedName]
 	"{" value=Expr "|" condition=ComparisonExpr "}";
+
+enum Concreteness:
+	CANDIDATE="candidate";
+
+enum Modality:
+	MUST="must" | MAY="may";
+
+ModalExpr:
+	concreteness=Concreteness? modality=Modality body=UnaryExpr;
 
 CastExpr returns Expr:
 	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
@@ -281,7 +295,7 @@ Identifier:
 
 NonContainmentIdentifier:
 	ID | "atom" | "multi" | "contained" | "problem" | "module" |
-	"datatype" | "aggregator";
+	"datatype" | "aggregator" | "decision" | "propagation";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

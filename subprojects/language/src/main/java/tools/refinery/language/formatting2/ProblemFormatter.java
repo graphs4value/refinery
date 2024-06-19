@@ -35,7 +35,7 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		surroundNewLines(doc, assertion, this::singleNewLine);
 		var region = regionFor(assertion);
 		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__DEFAULT), this::oneSpace);
-		doc.append(region.feature(ProblemPackage.Literals.ASSERTION__RELATION), this::noSpace);
+		doc.append(region.feature(ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION), this::noSpace);
 		formatParenthesizedList(region, doc);
 		for (var argument : assertion.getArguments()) {
 			doc.format(argument);

@@ -5,7 +5,8 @@
  */
 package tools.refinery.language.typesystem;
 
-public sealed interface FixedType extends ExprType permits NodeType, LiteralType, InvalidType, DataExprType {
+public sealed interface FixedType extends ExprType permits NodeType, LiteralType, ModalLiteralType, InvalidType,
+		DataExprType {
 	@Override
 	default FixedType getActualType() {
 		return this;

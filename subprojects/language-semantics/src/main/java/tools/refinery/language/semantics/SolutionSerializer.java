@@ -310,7 +310,7 @@ public class SolutionSerializer {
 		var relation = findPartialRelation(partialRelation);
 		var cursor = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, partialRelation).getAll();
 		// Make sure to output assertions in a deterministic order.
-		var sortedTuples = new TreeSet<Tuple>();
+		var sortedTuples = new TreeMap<Tuple, LogicValue>();
 		while (cursor.move()) {
 			var tuple = cursor.getKey();
 			var from = nodes.get(tuple.get(0));
@@ -320,17 +320,20 @@ public class SolutionSerializer {
 				continue;
 			}
 			var value = cursor.getValue();
-			if (!value.isConcrete()) {
-				throw new IllegalStateException("Invalid %s %s for tuple %s".formatted(partialRelation, value, tuple));
-			}
-			if (value.may()) {
-				sortedTuples.add(tuple);
-			}
+			var logicValue = switch (value) {
+				case TRUE -> LogicValue.TRUE;
+				case FALSE -> throw new IllegalStateException("Invalid %s %s for tuple %s"
+						.formatted(partialRelation, value, tuple));
+				case UNKNOWN -> LogicValue.UNKNOWN;
+				case ERROR -> LogicValue.ERROR;
+			};
+			sortedTuples.put(tuple, logicValue);
 		}
-		for (var tuple : sortedTuples) {
+		for (var entry : sortedTuples.entrySet()) {
+			var tuple = entry.getKey();
 			var from = nodes.get(tuple.get(0));
 			var to = nodes.get(tuple.get(1));
-			addAssertion(relation, LogicValue.TRUE, from, to);
+			addAssertion(relation, entry.getValue(), from, to);
 		}
 	}
 

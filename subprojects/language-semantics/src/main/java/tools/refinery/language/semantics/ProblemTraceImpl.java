@@ -152,7 +152,7 @@ class ProblemTraceImpl implements ProblemTrace {
 
 	@Override
 	public PartialRelation getPartialRelation(QualifiedName qualifiedName) {
-		var relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ASSERTION__RELATION);
+		var relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION);
 		return getPartialRelation(getElement(relationScope, qualifiedName, Relation.class));
 	}
 

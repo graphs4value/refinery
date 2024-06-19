@@ -8,6 +8,7 @@ package tools.refinery.language.typesystem;
 public sealed interface ExprType permits FixedType, MutableType {
 	NodeType NODE = new NodeType();
 	LiteralType LITERAL = new LiteralType();
+	ModalLiteralType MODAL_LITERAL = new ModalLiteralType();
 	InvalidType INVALID = new InvalidType();
 
 	FixedType getActualType();

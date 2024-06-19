@@ -9,7 +9,7 @@ import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
 	application
-	id("com.github.johnrengelman.shadow")
+	id("io.github.goooler.shadow")
 	id("tools.refinery.gradle.internal.java-conventions")
 }
 

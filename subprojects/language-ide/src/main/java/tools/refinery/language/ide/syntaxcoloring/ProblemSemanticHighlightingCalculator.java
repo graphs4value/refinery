@@ -125,7 +125,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {
-			highlightNode(node, reference, classesBuilder);
+			highlightNode(node, classesBuilder);
 		}
 		if (eObject instanceof Relation relation) {
 			var typeHash = typeHashProvider.getTypeHash(relation);
@@ -137,10 +137,8 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		return classes.toArray(new String[0]);
 	}
 
-	private static void highlightNode(Node node, EReference reference, ImmutableList.Builder<String> classesBuilder) {
-		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
-			classesBuilder.add(NODE_CLASS);
-		}
+	private static void highlightNode(Node node, ImmutableList.Builder<String> classesBuilder) {
+		classesBuilder.add(NODE_CLASS);
 		if (ProblemUtil.isAtomNode(node)) {
 			classesBuilder.add(ATOM_NODE_CLASS);
 		}

@@ -16,6 +16,10 @@ public final class ActionLiterals {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly");
 	}
 
+	public static ConstantActionLiteral constant(NodeVariable variable, int nodeId) {
+		return new ConstantActionLiteral(variable, nodeId);
+	}
+
 	public static <T> PutActionLiteral<T> put(Symbol<T> symbol, T value, NodeVariable... parameters) {
 		return new PutActionLiteral<>(symbol, value, List.of(parameters));
 	}

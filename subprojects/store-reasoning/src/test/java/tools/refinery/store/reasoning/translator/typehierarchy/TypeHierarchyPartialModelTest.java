@@ -149,7 +149,7 @@ class TypeHierarchyPartialModelTest {
 
 		var personCandidateInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, person);
 		assertThat(personCandidateInterpretation.get(Tuple.of(1)), is(TruthValue.TRUE));
-		assertThat(personCandidateInterpretation.get(Tuple.of(3)), is(TruthValue.FALSE));
+		assertThat(personCandidateInterpretation.get(Tuple.of(3)), is(TruthValue.ERROR));
 
 		var memberInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, member);
 		assertThat(memberInterpretation.get(Tuple.of(1)), is(TruthValue.TRUE));
@@ -157,7 +157,7 @@ class TypeHierarchyPartialModelTest {
 
 		var memberCandidateInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, member);
 		assertThat(memberCandidateInterpretation.get(Tuple.of(1)), is(TruthValue.TRUE));
-		assertThat(memberCandidateInterpretation.get(Tuple.of(3)), is(TruthValue.FALSE));
+		assertThat(memberCandidateInterpretation.get(Tuple.of(3)), is(TruthValue.ERROR));
 
 		var studentInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, student);
 		assertThat(studentInterpretation.get(Tuple.of(1)), is(TruthValue.FALSE));
@@ -165,7 +165,7 @@ class TypeHierarchyPartialModelTest {
 
 		var studentCandidateInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, student);
 		assertThat(studentCandidateInterpretation.get(Tuple.of(1)), is(TruthValue.FALSE));
-		assertThat(studentCandidateInterpretation.get(Tuple.of(3)), is(TruthValue.FALSE));
+		assertThat(studentCandidateInterpretation.get(Tuple.of(3)), is(TruthValue.ERROR));
 
 		var teacherInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, teacher);
 		assertThat(teacherInterpretation.get(Tuple.of(1)), is(TruthValue.TRUE));

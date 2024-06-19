@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+# SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
 #
 # SPDX-License-Identifier: EPL-2.0
 
@@ -44,28 +44,15 @@ RUN dnf install -y findutils && \
 COPY --link --from=jlink /jlink /usr/lib/java
 ENV JAVA_HOME="/usr/lib/java" PATH="/usr/lib/java/bin:${PATH}"
 # Layer with platform-independent dependencies, slow changing.
-ADD --link lib /app/lib
+ADD --link common_lib /app/lib
 
-FROM base AS refinery-amd64
+FROM base AS base-amd64
 # Layer with platform-dependent dependencies, slow changing.
-ADD --link lib_amd64 /app/lib
-# Layer with platform-dependent startup script containing references to all
-# dependency version.
-ADD --link app_amd64_bin /app/bin
+ADD --link common_amd64_lib /app/lib
 
-FROM base AS refinery-arm64
+FROM base AS base-arm64
 # Layer with platform-dependent dependencies, slow changing.
-ADD --link lib_arm64 /app/lib
-# Layer with platform-dependent startup script containing references to all
-# dependency version.
-ADD --link app_arm64_bin /app/bin
+ADD --link common_arm64_lib /app/lib
 
-FROM refinery-$TARGETARCH
-# Layer with platform-independent application jars.
-ADD --link app_lib /app/lib
-# Common settings added on top.
-ENV REFINERY_LISTEN_HOST=0.0.0.0 REFINERY_LISTEN_PORT=8888
-EXPOSE 8888
-USER 1000
-WORKDIR /app
-ENTRYPOINT /app/bin/refinery-language-web
+FROM base-$TARGETARCH
+

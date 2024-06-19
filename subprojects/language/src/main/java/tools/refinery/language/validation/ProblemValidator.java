@@ -24,10 +24,7 @@ import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class contains custom validation rules.
@@ -49,15 +46,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_SUPERTYPE_ISSUE = ISSUE_PREFIX + "INVALID_SUPERTYPE";
 	public static final String INVALID_REFERENCE_TYPE_ISSUE = ISSUE_PREFIX + "INVALID_REFERENCE_TYPE";
 	public static final String INVALID_ARITY_ISSUE = ISSUE_PREFIX + "INVALID_ARITY";
+	public static final String INVALID_MODALITY_ISSUE = ISSUE_PREFIX + "INVALID_MODALITY";
+	public static final String INVALID_RULE_ISSUE = ISSUE_PREFIX + "INVALID_RULE";
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
-	public static final String INVALID_VALUE_ISSUE = ISSUE_PREFIX + "INVALID_VALUE";
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
+	public static final String VARIABLE_WITHOUT_EXISTS = ISSUE_PREFIX + "VARIABLE_WITHOUT_EXISTS";
+	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
+
+	@Inject
+	private ExistsVariableCollector existsVariableCollector;
+
+	@Inject
+	private ActionTargetCollector actionTargetCollector;
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -128,6 +134,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Variable variable && ProblemUtil.isImplicitVariable(variable)
 				&& !ProblemUtil.isSingletonVariable(variable)) {
+			if (EcoreUtil2.getContainerOfType(variable, ParametricDefinition.class) instanceof RuleDefinition &&
+					EcoreUtil2.getContainerOfType(variable, NegationExpr.class) == null &&
+					// If there is an exists constraint, it is the only constraint.
+					existsVariableCollector.missingExistsConstraint(variable)) {
+				// Existentially quantified variables in rules should not be singletons,
+				// because we have to add an {@code exists} constraint as well.
+				return;
+			}
 			var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
 			if (problem != null && referenceCounter.countReferences(problem, variable) <= 1) {
 				var name = variable.getName();
@@ -152,13 +166,32 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
+	public void checkNodeAssertionArgumentConstants(NodeAssertionArgument argument) {
+		var rule = EcoreUtil2.getContainerOfType(argument, RuleDefinition.class);
+		if (rule == null) {
+			return;
+		}
+		var variableOrNode = argument.getNode();
+		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
+			var name = node.getName();
+			var message = ("Only atoms can be referenced in rule actions. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
+			error(message, argument, ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE,
+					INSIGNIFICANT_INDEX, NODE_CONSTANT_ISSUE);
+		}
+	}
+
+	@Check
 	public void checkUniqueDeclarations(Problem problem) {
-		var relations = new ArrayList<Relation>();
+		var relations = new ArrayList<NamedElement>();
 		var nodes = new ArrayList<Node>();
 		var aggregators = new ArrayList<AggregatorDeclaration>();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof Relation relation) {
 				relations.add(relation);
+			} else if (statement instanceof RuleDefinition ruleDefinition) {
+				// Rule definitions and predicates live in the same namespace.
+				relations.add(ruleDefinition);
 			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
 				nodes.addAll(nodeDeclaration.getNodes());
 			} else if (statement instanceof AggregatorDeclaration aggregatorDeclaration) {
@@ -298,6 +331,22 @@ public class ProblemValidator extends AbstractProblemValidator {
 						referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 						INVALID_OPPOSITE_ISSUE);
 			}
+		} else if (kind == ReferenceKind.PARTIAL && opposite != null && opposite.getKind() != ReferenceKind.PARTIAL) {
+			acceptError("Opposite '%s' of partial reference '%s' is not a partial reference."
+							.formatted(opposite.getName(), referenceDeclaration.getName()),
+					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
+					INVALID_OPPOSITE_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkPartialReference(ReferenceDeclaration referenceDeclaration) {
+		if (referenceDeclaration.getKind() == ReferenceKind.PARTIAL &&
+				!actionTargetCollector.isActionTarget(referenceDeclaration)) {
+			var message = "Add decision or propagation rules to refine partial relation '%s'."
+							.formatted(referenceDeclaration.getName());
+			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__KIND, 0,
+					UNUSED_PARTIAL_RELATION);
 		}
 	}
 
@@ -336,8 +385,33 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkParameterType(Parameter parameter) {
+	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
+		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
+		if (parametricDefinition instanceof RuleDefinition rule) {
+			if (parameter.getParameterType() != null && parameter.getModality() == Modality.NONE) {
+				acceptError("Parameter type modality must be specified.", parameter,
+						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
+			}
+			var kind = rule.getKind();
+			var binding = parameter.getBinding();
+			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
+				acceptError("Parameter binding annotations are not supported in propagation rules.", parameter,
+						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			} else if (kind != RuleKind.DECISION && binding == ParameterBinding.MULTI) {
+				acceptError("Explicit multi-object bindings are only supported in decision rules.", parameter,
+						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			}
+		} else {
+			if (parameter.getConcreteness() != Concreteness.PARTIAL || parameter.getModality() != Modality.NONE) {
+				acceptError("Modal parameter types are only supported in rule definitions.", parameter, null, 0,
+						INVALID_MODALITY_ISSUE);
+			}
+			if (parameter.getBinding() != ParameterBinding.SINGLE) {
+				acceptError("Parameter binding annotations are only supported in decision rules.", parameter,
+						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			}
+		}
 	}
 
 	@Check
@@ -353,16 +427,46 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkAssertion(Assertion assertion) {
+	public void checkRuleDefinition(RuleDefinition ruleDefinition) {
+		if (ruleDefinition.getConsequents().size() != 1) {
+			acceptError("Rules must have exactly one consequent.", ruleDefinition,
+					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
+		}
+		var unquantifiedVariables = new HashSet<Variable>();
+		for (var variable : EcoreUtil2.getAllContentsOfType(ruleDefinition, Variable.class)) {
+			if (existsVariableCollector.missingExistsConstraint(variable)) {
+				unquantifiedVariables.add(variable);
+			}
+		}
+		for (var expr : EcoreUtil2.getAllContentsOfType(ruleDefinition, VariableOrNodeExpr.class)) {
+			if (expr.getVariableOrNode() instanceof Variable variable && unquantifiedVariables.contains(variable)) {
+				unquantifiedVariables.remove(variable);
+				var name = variable.getName();
+				String message;
+				if (ProblemUtil.isSingletonVariable(variable)) {
+					message = ("Remove the singleton variable marker '_' and clarify the quantification of variable " +
+                            "'%s'.").formatted(name);
+				} else {
+					message = ("Add a 'must exists(%s)', 'may exists(%s)', or 'may !exists(%s)' constraint to " +
+							"clarify the quantification of variable '%s'.").formatted(name, name, name, name);
+				}
+				acceptWarning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
+						VARIABLE_WITHOUT_EXISTS);
+			}
+		}
+	}
+
+	@Check
+	public void checkAssertion(AbstractAssertion assertion) {
 		var relation = assertion.getRelation();
 		if (relation instanceof DatatypeDeclaration) {
 			var message = "Assertions for data types are not supported.";
-			acceptError(message, assertion, ProblemPackage.Literals.ASSERTION__RELATION, 0,
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 			return;
 		}
 		int argumentCount = assertion.getArguments().size();
-		checkArity(assertion, ProblemPackage.Literals.ASSERTION__RELATION, argumentCount);
+		checkArity(assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, argumentCount);
 	}
 
 	@Check
@@ -466,15 +570,17 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Nullable
 	private Node getNodeArgumentForMultiObjectAssertion(AssertionArgument argument) {
-		if (argument instanceof WildcardAssertionArgument) {
-			acceptError("Wildcard arguments for 'exists' are not supported.", argument, null, 0,
-					UNSUPPORTED_ASSERTION_ISSUE);
-			return null;
-		}
-		if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
-			return nodeAssertionArgument.getNode();
-		}
-		throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+		return switch (argument) {
+			case null -> null;
+			case WildcardAssertionArgument ignoredWildcardAssertionArgument -> {
+				acceptError("Wildcard arguments for 'exists' are not supported.", argument, null, 0,
+						UNSUPPORTED_ASSERTION_ISSUE);
+				yield null;
+			}
+			case NodeAssertionArgument nodeAssertionArgument ->
+					nodeAssertionArgument.getNode() instanceof Node node ? node : null;
+			default -> throw new IllegalArgumentException("Unknown assertion argument: " + argument);
+		};
 	}
 
 	@Check
@@ -484,8 +590,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		for (var argument : assertion.getArguments()) {
 			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
-				var node = nodeAssertionArgument.getNode();
-				if (node != null && !node.eIsProxy() && ProblemUtil.isImplicitNode(node)) {
+				var variableOrNode = nodeAssertionArgument.getNode();
+				if (variableOrNode instanceof Node node &&
+						!variableOrNode.eIsProxy() &&
+						ProblemUtil.isImplicitNode(node)) {
 					var name = node.getName();
 					var message = ("Implicit nodes are not allowed in modules. Explicitly declare '%s' as a node " +
 							"with the declaration 'declare %s.'").formatted(name, name);

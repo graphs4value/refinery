@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 20232-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -52,12 +52,11 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
-		if (!(multiplicity instanceof ConstrainedMultiplicity constrainedMultiplicity)) {
+		if (!(multiplicity instanceof ConstrainedMultiplicity(var cardinalityInterval, var errorSymbol))) {
 			return;
 		}
 
-		var name = constrainedMultiplicity.errorSymbol().name();
-		var cardinalityInterval = constrainedMultiplicity.multiplicity();
+		var name = errorSymbol.name();
 		var node = Variable.of("node");
 		var other = Variable.of("other");
 		List<Variable> arguments = inverse ? List.of(other, node) : List.of(node, other);
@@ -98,8 +97,7 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 			));
 		}
 
-		if (cardinalityInterval.upperBound() instanceof FiniteUpperCardinality finiteUpperCardinality) {
-			int upperBound = finiteUpperCardinality.finiteUpperBound();
+		if (cardinalityInterval.upperBound() instanceof FiniteUpperCardinality(int upperBound)) {
 			mustBuilder.clause(Integer.class, existingContents -> List.of(
 					must(nodeType.call(node)),
 					new CountLowerBoundLiteral(existingContents, linkType, arguments),
@@ -128,7 +126,7 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 				output.assign(missingBuilder.build().aggregate(INT_SUM, Variable.of()))
 		));
 
-		storeBuilder.with(PartialRelationTranslator.of(constrainedMultiplicity.errorSymbol())
+		storeBuilder.with(PartialRelationTranslator.of(errorSymbol)
 				.mayNever()
 				.must(mustBuilder.build())
 				.candidateMay(candidateMayBuilder.build())

@@ -40,7 +40,11 @@ export type FitZoomCallback = ((newSize?: {
 }) => void) &
   ((newSize: boolean) => void);
 
-const useZoom = 'zoom' in document.body.style;
+// `zoom: reset;` is specific to WebKit (but not Blink).
+// `transform: scale();` makes zooming in on WebKit blurry,
+// but we should prefer it for Blink for performance reasons
+// and also for Gecko, where `zoom:` is broken for zooming in SVG.
+const useZoom = CSS.supports('zoom: reset');
 
 export default function ZoomCanvas({
   children,

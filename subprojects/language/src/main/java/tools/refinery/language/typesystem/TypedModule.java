@@ -63,6 +63,7 @@ public class TypedModule {
 		for (var statement : problem.getStatements()) {
 			switch (statement) {
 			case PredicateDefinition predicateDefinition -> checkTypes(predicateDefinition);
+			case RuleDefinition ruleDefinition -> checkTypes(ruleDefinition);
 			case Assertion assertion -> checkTypes(assertion);
 			default -> {
 				// Nothing to type check.
@@ -79,13 +80,33 @@ public class TypedModule {
 		}
 	}
 
+	private void checkTypes(RuleDefinition ruleDefinition) {
+		for (var conjunction : ruleDefinition.getPreconditions()) {
+			for (var literal : conjunction.getLiterals()) {
+				expectType(literal, ExprType.MODAL_LITERAL);
+			}
+		}
+		for (var consequent : ruleDefinition.getConsequents()) {
+			for (var action : consequent.getActions()) {
+				if (action instanceof AssertionAction assertionAction) {
+					checkTypes(assertionAction);
+				}
+			}
+		}
+	}
+
 	private void checkTypes(Assertion assertion) {
+		checkAssertionValueType(assertion);
+		checkNodeAssertionArgumentTypes(assertion, false);
+	}
+
+	private void checkAssertionValueType(AbstractAssertion assertion) {
 		var relation = assertion.getRelation();
-		var value = assertion.getValue();
 		if (relation == null) {
 			return;
 		}
 		var type = signatureProvider.getSignature(relation).resultType();
+		var value = assertion.getValue();
 		if (type == ExprType.LITERAL) {
 			if (value == null) {
 				return;
@@ -95,9 +116,41 @@ public class TypedModule {
 		}
 		if (value == null) {
 			var message = "Assertion value of type %s is required.".formatted(type);
-			error(message, assertion, ProblemPackage.Literals.ASSERTION__RELATION, 0, ProblemValidator.TYPE_ERROR);
+			error(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__VALUE, 0,
+                    ProblemValidator.TYPE_ERROR);
 		}
 		expectType(value, type);
+	}
+
+	private void checkNodeAssertionArgumentTypes(AbstractAssertion assertion, boolean allowVariables) {
+		for (var argument : assertion.getArguments()) {
+			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
+				checkNodeAssertionArgumentType(nodeAssertionArgument, allowVariables);
+			}
+		}
+	}
+
+	private void checkNodeAssertionArgumentType(NodeAssertionArgument nodeAssertionArgument, boolean allowVariables) {
+		var variableOrNode = nodeAssertionArgument.getNode();
+		if (variableOrNode == null || variableOrNode.eIsProxy()) {
+			return;
+		}
+		if (allowVariables && variableOrNode instanceof Variable variable) {
+			var variableType = getVariableType(variable);
+			if (variableType == ExprType.INVALID || variableType == ExprType.NODE) {
+				return;
+			}
+		}
+		if (variableOrNode instanceof Node) {
+			return;
+		}
+		error("Assertion argument must be a node.", nodeAssertionArgument,
+				ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE, 0, ProblemValidator.TYPE_ERROR);
+	}
+
+	private void checkTypes(AssertionAction assertionAction) {
+		checkAssertionValueType(assertionAction);
+		checkNodeAssertionArgumentTypes(assertionAction, true);
 	}
 
 	public List<FeatureBasedDiagnostic> getDiagnostics() {
@@ -202,6 +255,7 @@ public class TypedModule {
 			case RangeExpr rangeExpr -> computeExpressionType(rangeExpr);
 			case ArithmeticBinaryExpr arithmeticBinaryExpr -> computeExpressionType(arithmeticBinaryExpr);
 			case CastExpr castExpr -> computeExpressionType(castExpr);
+			case ModalExpr modalExpr -> computeExpressionType(modalExpr);
 			default -> {
 				error("Unknown expression: " + expr.getClass().getSimpleName(), expr, null, 0,
 						ProblemValidator.UNKNOWN_EXPRESSION_ISSUE);
@@ -289,6 +343,9 @@ public class TypedModule {
 		if (actualType == ExprType.LITERAL) {
 			// Negation of literals yields another (non-enumerable) literal.
 			return ExprType.LITERAL;
+		}
+		if (actualType == ExprType.MODAL_LITERAL) {
+			return ExprType.MODAL_LITERAL;
 		}
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
@@ -503,6 +560,28 @@ public class TypedModule {
 			return targetType;
 		}
 		var message = "Casting from %s to %s is not supported.".formatted(actualType, targetType);
+		error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
+		return ExprType.INVALID;
+	}
+
+	@NotNull
+	private ExprType computeExpressionType(ModalExpr expr) {
+		var body = expr.getBody();
+		if (body == null) {
+			return ExprType.INVALID;
+		}
+		var actualType = getExpressionType(body);
+		if (actualType == ExprType.LITERAL || BuiltinTermInterpreter.BOOLEAN_TYPE.equals(actualType)) {
+			return ExprType.MODAL_LITERAL;
+		}
+		if (actualType == ExprType.INVALID) {
+			return ExprType.INVALID;
+		}
+		if (actualType instanceof MutableType) {
+			error(OPERAND_TYPE_ERROR_MESSAGE, body, null, 0, ProblemValidator.TYPE_ERROR);
+			return ExprType.INVALID;
+		}
+		var message = "Data type %s does not support modal operators.".formatted(actualType);
 		error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 		return ExprType.INVALID;
 	}
