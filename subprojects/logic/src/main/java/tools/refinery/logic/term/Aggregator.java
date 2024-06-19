@@ -5,6 +5,8 @@
  */
 package tools.refinery.logic.term;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.stream.Stream;
 
 public interface Aggregator<R, T> {
@@ -12,7 +14,9 @@ public interface Aggregator<R, T> {
 
 	Class<T> getInputType();
 
+	@NotNull
 	R aggregateStream(Stream<T> stream);
 
+	@NotNull
 	R getEmptyResult();
 }

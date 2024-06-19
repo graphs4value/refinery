@@ -5,6 +5,8 @@
  */
 package tools.refinery.logic.term;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.stream.Stream;
 
 public interface StatelessAggregator<R, T> extends Aggregator<R, T> {
@@ -12,6 +14,7 @@ public interface StatelessAggregator<R, T> extends Aggregator<R, T> {
 
 	R remove(R current, T value);
 
+	@NotNull
 	@Override
 	default R aggregateStream(Stream<T> stream) {
 		var accumulator = getEmptyResult();

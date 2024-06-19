@@ -5,11 +5,14 @@
  */
 package tools.refinery.logic.term;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface StatefulAggregate<R, T> {
 	void add(T value);
 
 	void remove(T value);
 
+	@NotNull
 	R getResult();
 
 	boolean isEmpty();

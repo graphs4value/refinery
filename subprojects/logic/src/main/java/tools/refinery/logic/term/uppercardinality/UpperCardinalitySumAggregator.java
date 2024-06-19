@@ -5,10 +5,11 @@
  */
 package tools.refinery.logic.term.uppercardinality;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.term.StatefulAggregate;
 import tools.refinery.logic.term.StatefulAggregator;
 
-// Singleton implementation, since there is only one way to aggregate upper cardinalities.
+// Singleton implementation, since there is only one way to sum upper cardinalities.
 @SuppressWarnings("squid:S6548")
 public class UpperCardinalitySumAggregator implements StatefulAggregator<UpperCardinality, UpperCardinality> {
 	public static final UpperCardinalitySumAggregator INSTANCE = new UpperCardinalitySumAggregator();
@@ -46,8 +47,8 @@ public class UpperCardinalitySumAggregator implements StatefulAggregator<UpperCa
 
 		@Override
 		public void add(UpperCardinality value) {
-			if (value instanceof FiniteUpperCardinality finiteUpperCardinality) {
-				sumFiniteUpperBounds += finiteUpperCardinality.finiteUpperBound();
+			if (value instanceof FiniteUpperCardinality(var finiteUpperBound)) {
+				sumFiniteUpperBounds += finiteUpperBound;
 			} else if (value instanceof UnboundedUpperCardinality) {
 				countUnbounded += 1;
 			} else {
@@ -57,8 +58,8 @@ public class UpperCardinalitySumAggregator implements StatefulAggregator<UpperCa
 
 		@Override
 		public void remove(UpperCardinality value) {
-			if (value instanceof FiniteUpperCardinality finiteUpperCardinality) {
-				sumFiniteUpperBounds -= finiteUpperCardinality.finiteUpperBound();
+			if (value instanceof FiniteUpperCardinality(var finiteUpperBound)) {
+				sumFiniteUpperBounds -= finiteUpperBound;
 			} else if (value instanceof UnboundedUpperCardinality) {
 				countUnbounded -= 1;
 			} else {
@@ -66,6 +67,7 @@ public class UpperCardinalitySumAggregator implements StatefulAggregator<UpperCa
 			}
 		}
 
+		@NotNull
 		@Override
 		public UpperCardinality getResult() {
 			return countUnbounded > 0 ? UpperCardinalities.UNBOUNDED : UpperCardinalities.atMost(sumFiniteUpperBounds);

@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.interpreter;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
@@ -167,6 +168,7 @@ class AggregatorBatchingTest {
 			sum -= value;
 		}
 
+		@NotNull
 		@Override
 		public Integer getResult() {
 			extractCount++;
