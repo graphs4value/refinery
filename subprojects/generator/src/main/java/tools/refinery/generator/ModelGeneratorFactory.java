@@ -25,6 +25,8 @@ import tools.refinery.store.util.CancellationToken;
 import java.util.Collection;
 import java.util.Set;
 
+// This class is used as a fluent builder, so it's not necessary to use the return value of all of its methods.
+@SuppressWarnings("UnusedReturnValue")
 public final class ModelGeneratorFactory {
 	@Inject
 	private Provider<ModelInitializer> initializerProvider;
@@ -38,6 +40,8 @@ public final class ModelGeneratorFactory {
 
 	private boolean partialInterpretationBasedNeighbourhoods;
 
+	private int stateCoderDepth = NeighbourhoodCalculator.DEFAULT_DEPTH;
+
 	public ModelGeneratorFactory cancellationToken(CancellationToken cancellationToken) {
 		this.cancellationToken = cancellationToken;
 		return this;
@@ -48,8 +52,15 @@ public final class ModelGeneratorFactory {
 		return this;
 	}
 
-	public void partialInterpretationBasedNeighbourhoods(boolean partialInterpretationBasedNeighbourhoods) {
+	public ModelGeneratorFactory partialInterpretationBasedNeighbourhoods(
+			boolean partialInterpretationBasedNeighbourhoods) {
 		this.partialInterpretationBasedNeighbourhoods = partialInterpretationBasedNeighbourhoods;
+		return this;
+	}
+
+	public ModelGeneratorFactory stateCoderDepth(int stateCoderDepth) {
+		this.stateCoderDepth = stateCoderDepth;
+		return this;
 	}
 
 	public ModelGenerator createGenerator(Problem problem) {
@@ -68,7 +79,7 @@ public final class ModelGeneratorFactory {
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
 		return new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
-                solutionSerializerProvider);
+				solutionSerializerProvider);
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {
@@ -78,7 +89,8 @@ public final class ModelGeneratorFactory {
 	}
 
 	private StateCodeCalculatorFactory getStateCoderCalculatorFactory() {
-		return partialInterpretationBasedNeighbourhoods ? PartialNeighbourhoodCalculator.FACTORY :
-				NeighbourhoodCalculator::new;
+		return partialInterpretationBasedNeighbourhoods ?
+				PartialNeighbourhoodCalculator.factory(Concreteness.PARTIAL, stateCoderDepth) :
+				NeighbourhoodCalculator.factory(stateCoderDepth);
 	}
 }

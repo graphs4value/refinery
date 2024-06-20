@@ -27,7 +27,7 @@ public class StateCoderBuilderImpl extends AbstractModelAdapterBuilder<StateCode
 		implements StateCoderBuilder {
 	private final Set<AnySymbol> excluded = new HashSet<>();
 	private final MutableIntSet individuals = IntSets.mutable.empty();
-	private StateCodeCalculatorFactory calculator = NeighbourhoodCalculator::new;
+	private StateCodeCalculatorFactory calculator = NeighbourhoodCalculator.factory();
 	private StateEquivalenceChecker checker = new StateEquivalenceCheckerImpl();
 
 	@Override

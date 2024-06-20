@@ -21,13 +21,12 @@ import java.util.List;
 
 public class PartialNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator<PartialInterpretation<?, ?>> {
 	private final ModelQueryAdapter queryAdapter;
+	private final Concreteness concreteness;
 
-	public static final StateCodeCalculatorFactory FACTORY =
-			(model, ignoredInterpretations, individuals) -> new PartialNeighbourhoodCalculator(model, individuals);
-
-	protected PartialNeighbourhoodCalculator(Model model, IntSet individuals) {
-		super(model, individuals);
+	protected PartialNeighbourhoodCalculator(Model model, IntSet individuals, Concreteness concreteness, int depth) {
+		super(model, individuals, depth);
 		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
+		this.concreteness = concreteness;
 	}
 
 	@Override
@@ -42,7 +41,7 @@ public class PartialNeighbourhoodCalculator extends AbstractNeighbourhoodCalcula
 		var partialSymbols = adapter.getStoreAdapter().getPartialSymbols();
 		return partialSymbols.stream()
 				.<PartialInterpretation<?, ?>>map(partialSymbol ->
-						adapter.getPartialInterpretation(Concreteness.PARTIAL, (PartialSymbol<?, ?>) partialSymbol))
+						adapter.getPartialInterpretation(concreteness, (PartialSymbol<?, ?>) partialSymbol))
 				.toList();
 	}
 
@@ -59,5 +58,10 @@ public class PartialNeighbourhoodCalculator extends AbstractNeighbourhoodCalcula
 	@Override
 	protected Cursor<Tuple, ?> getCursor(PartialInterpretation<?, ?> interpretation) {
 		return interpretation.getAll();
+	}
+
+	public static StateCodeCalculatorFactory factory(Concreteness concreteness, int depth) {
+		return (model, interpretations, individuals) -> new PartialNeighbourhoodCalculator(model, individuals,
+				concreteness, depth);
 	}
 }

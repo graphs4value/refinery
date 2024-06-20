@@ -9,16 +9,19 @@ import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 
 public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator<Interpretation<?>> {
+	public static final int DEFAULT_DEPTH = 7;
+
 	private final List<Interpretation<?>> interpretations;
 
-	public NeighbourhoodCalculator(Model model, List<? extends Interpretation<?>> interpretations,
-								   IntSet individuals) {
-		super(model, individuals);
+	protected NeighbourhoodCalculator(Model model, List<? extends Interpretation<?>> interpretations,
+									  IntSet individuals, int depth) {
+		super(model, individuals, depth);
 		this.interpretations = List.copyOf(interpretations);
 	}
 
@@ -40,5 +43,14 @@ public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator<Int
 	@Override
 	protected Cursor<Tuple, ?> getCursor(Interpretation<?> interpretation) {
 		return interpretation.getAll();
+	}
+
+	public static StateCodeCalculatorFactory factory(int depth) {
+		return (model, interpretations, individuals) -> new NeighbourhoodCalculator(model, interpretations,
+				individuals, depth);
+	}
+
+	public static StateCodeCalculatorFactory factory() {
+		return factory(DEFAULT_DEPTH);
 	}
 }

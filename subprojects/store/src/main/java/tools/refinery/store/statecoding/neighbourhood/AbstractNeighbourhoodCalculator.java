@@ -20,6 +20,7 @@ import java.util.*;
 public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCalculator {
 	private final Model model;
 	private final IntSet individuals;
+	private final int depth;
 	private List<T> nullImpactValues;
 	private LinkedHashMap<T, long[]> impactValues;
 	private MutableIntLongMap individualHashValues;
@@ -28,9 +29,10 @@ public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCal
 
 	protected static final long PRIME = 31;
 
-	protected AbstractNeighbourhoodCalculator(Model model, IntSet individuals) {
+	protected AbstractNeighbourhoodCalculator(Model model, IntSet individuals, int depth) {
 		this.model = model;
 		this.individuals = individuals;
+		this.depth = depth;
 	}
 
 	protected Model getModel() {
@@ -64,7 +66,7 @@ public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCal
 			nextObjectCode = tempObjectCode;
 			nextObjectCode.clear();
 			rounds++;
-		} while (rounds <= 7 && rounds <= previousObjectCode.getEffectiveSize());
+		} while (rounds <= depth && rounds <= previousObjectCode.getEffectiveSize());
 
 		long result = calculateLastSum(previousObjectCode);
 		return new StateCoderResult((int) result, previousObjectCode);
