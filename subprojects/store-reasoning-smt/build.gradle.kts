@@ -8,6 +8,11 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 }
 
+mavenArtifact {
+	name = "Store Reasoning SMT"
+	description = "SMT reasoner for the model store"
+}
+
 dependencies {
 	api(project(":refinery-store-reasoning"))
 	implementation(libs.refinery.z3)

@@ -8,6 +8,10 @@ plugins {
 	id("tools.refinery.gradle.interpreter-library")
 }
 
+mavenArtifact {
+	name = "Query Interpreter"
+}
+
 dependencies {
 	implementation(libs.slf4j.log4j)
 	// Code in this subproject inherits from Eclipse Collection implementation classes, so this can't be `runtimeOnly`.

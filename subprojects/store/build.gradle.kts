@@ -9,6 +9,10 @@ plugins {
 	id("tools.refinery.gradle.jmh")
 }
 
+mavenArtifact {
+	description = "Model store"
+}
+
 dependencies {
 	api(libs.eclipseCollections.api)
 	runtimeOnly(libs.eclipseCollections)

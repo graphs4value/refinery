@@ -9,6 +9,11 @@ plugins {
 	id("tools.refinery.gradle.xtext-generated")
 }
 
+mavenArtifact {
+	name = "Language IDE"
+	description = "IDE support for the partial modeling language"
+}
+
 dependencies {
 	api(project(":refinery-language"))
 	api(libs.xtext.ide)

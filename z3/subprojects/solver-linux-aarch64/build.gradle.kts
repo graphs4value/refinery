@@ -8,6 +8,8 @@ plugins {
 	id("tools.refinery.z3.gradle.java-library")
 }
 
+mavenArtifact.nameSuffix = "Linux aarch64"
+
 tasks.jar {
 	// License information is redundant here, since it already gets added to the POM.
 	exclude("**/*.license")

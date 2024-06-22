@@ -11,6 +11,8 @@ plugins {
 val classifier = "z3-${version}-x64-win"
 val library = "z3java-win32-x86-64"
 
+mavenArtifact.nameSuffix = "Win32 x86_64"
+
 dependencies {
 	z3("Z3Prover:z3:${version}:${classifier}@zip")
 }

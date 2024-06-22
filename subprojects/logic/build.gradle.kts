@@ -9,6 +9,10 @@ plugins {
 	id("tools.refinery.gradle.java-test-fixtures")
 }
 
+mavenArtifact {
+	description = "Logic expressions"
+}
+
 dependencies {
 	testFixturesApi(libs.hamcrest)
 }

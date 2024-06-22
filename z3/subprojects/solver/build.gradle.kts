@@ -14,11 +14,6 @@ val classifier = "z3-${version}-x64-glibc-2.31"
 val extractedClassesDir = layout.buildDirectory.dir("z3-extracted")
 val extractedSourcesDir = layout.buildDirectory.dir("z3-sources")
 
-java {
-	withJavadocJar()
-	withSourcesJar()
-}
-
 val z3Source: Configuration by configurations.creating {
 	isCanBeConsumed = false
 	isCanBeResolved = true
@@ -81,13 +76,6 @@ tasks.named<Javadoc>("javadoc") {
 		builtBy(extractZ3Source)
 		include("**/*.java")
 	})
-	options {
-		this as StandardJavadocDocletOptions
-		addBooleanOption("Xdoclint:none", true)
-		// {@code -Xmaxwarns 0} will print all warnings, so we must keep at least one.
-		addStringOption("Xmaxwarns", "1")
-		quiet()
-	}
 }
 
 dependencies {

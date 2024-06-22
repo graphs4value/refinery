@@ -8,6 +8,11 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 }
 
+mavenArtifact {
+	name = "Store DSE Visualization"
+	description = "Design-space exploration visualizer for the model store"
+}
+
 dependencies {
 	api(project(":refinery-store-query"))
 	implementation(libs.slf4j.api)

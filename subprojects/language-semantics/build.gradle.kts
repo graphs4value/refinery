@@ -8,6 +8,10 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 }
 
+mavenArtifact {
+	description = "Semantics for the partial modeling language"
+}
+
 dependencies {
 	api(libs.eclipseCollections.api)
 	api(project(":refinery-language"))

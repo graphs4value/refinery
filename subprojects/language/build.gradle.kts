@@ -14,6 +14,10 @@ plugins {
 	id("tools.refinery.gradle.xtext-generated")
 }
 
+mavenArtifact {
+	description = "Partial modeling language"
+}
+
 val generatedIdeSources: Configuration by configurations.creating {
 	isCanBeConsumed = true
 	isCanBeResolved = false

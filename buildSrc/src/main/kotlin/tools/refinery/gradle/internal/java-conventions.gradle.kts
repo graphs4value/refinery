@@ -6,12 +6,13 @@
 package tools.refinery.gradle.internal
 
 import org.gradle.accessors.dm.LibrariesForLibs
+import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.plugins.ide.eclipse.model.ProjectDependency
 import tools.refinery.gradle.utils.EclipseUtils
 
 plugins {
-    jacoco
-    java
+	jacoco
+	java
 	`maven-publish`
 	id("tools.refinery.gradle.eclipse")
 }
@@ -68,8 +69,7 @@ tasks {
 	jar {
 		manifest {
 			attributes(
-					"Bundle-SymbolicName" to "${project.group}.${project.name}",
-					"Bundle-Version" to project.version
+				"Bundle-SymbolicName" to "${project.group}.${project.name}", "Bundle-Version" to project.version
 			)
 		}
 	}
@@ -98,15 +98,42 @@ tasks {
 	}
 }
 
+open class MavenArtifactExtension(project: Project) {
+	var name: String = project.name.split("-").drop(1).joinToString(" ", transform = String::capitalized)
+	var description: String? = null
+}
+
+val artifactExtension = project.extensions.create<MavenArtifactExtension>("mavenArtifact", project)
+
 publishing.publications {
 	create<MavenPublication>("mavenJava") {
 		from(components["java"])
 		pom {
+			name = provider { "Refinery ${artifactExtension.name}" }
+			description = provider {
+				val prefix = artifactExtension.description ?: artifactExtension.name.lowercase().capitalized()
+				"$prefix in Refinery, an efficient graph solver for generating well-formed models"
+			}
+			url = "https://refinery.tools/"
 			licenses {
 				license {
 					name = "Eclipse Public License - v 2.0"
 					url = "https://www.eclipse.org/legal/epl-2.0/"
 				}
+			}
+			developers {
+				developer {
+					name = "The Refinery Authors"
+					url = "https://refinery.tools/"
+				}
+			}
+			scm {
+				connection = "scm:git:https://github.com/graphs4value/refinery.git"
+				developerConnection = "scm:git:ssh://github.com:graphs4value/refinery.git"
+				url = "https://github.com/graphs4value/refinery"
+			}
+			issueManagement {
+				url = "https://github.com/graphs4value/refinery/issues"
 			}
 		}
 	}

@@ -8,6 +8,11 @@ plugins {
 	id("tools.refinery.gradle.interpreter-library")
 }
 
+mavenArtifact {
+	name = "Query Interpreter RETE"
+	description = "RETE-based query interpreter"
+}
+
 dependencies {
 	implementation(project(":refinery-interpreter"))
 	implementation(project(":refinery-interpreter-rete-recipes"))

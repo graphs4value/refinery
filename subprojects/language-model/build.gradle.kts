@@ -12,6 +12,10 @@ plugins {
 	id("tools.refinery.gradle.sonarqube")
 }
 
+mavenArtifact {
+	description = "Abstract syntax for the partial modeling language"
+}
+
 dependencies {
 	api(libs.ecore)
 	api(libs.ecore.xmi)

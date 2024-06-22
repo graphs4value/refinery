@@ -8,6 +8,11 @@ plugins {
 	id("tools.refinery.gradle.java-application")
 }
 
+mavenArtifact {
+	name = "Generator CLI"
+	description = "CLI for model generation"
+}
+
 dependencies {
 	implementation(project(":refinery-generator"))
 	implementation(libs.jcommander)

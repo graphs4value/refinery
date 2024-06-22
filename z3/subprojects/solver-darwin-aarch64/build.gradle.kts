@@ -11,6 +11,8 @@ plugins {
 val classifier = "z3-${version}-arm64-osx-11.0"
 val library = "z3java-darwin-aarch64"
 
+mavenArtifact.nameSuffix = "Darwin aarch64"
+
 dependencies {
 	z3("Z3Prover:z3:${version}:${classifier}@zip")
 }
