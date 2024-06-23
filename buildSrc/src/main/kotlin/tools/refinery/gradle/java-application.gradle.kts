@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -23,6 +23,14 @@ val libs = the<LibrariesForLibs>()
 dependencies {
 	implementation(libs.slf4j.simple)
 	implementation(libs.slf4j.log4j)
+}
+
+// See https://github.com/johnrengelman/shadow/issues/586
+// https://github.com/johnrengelman/shadow/issues/651
+components.named<AdhocComponentWithVariants>("java") {
+	withVariantsFromConfiguration(configurations.shadowRuntimeElements.get()) {
+		skip()
+	}
 }
 
 for (taskName in listOf("distZip", "shadowDistTar", "shadowDistZip")) {

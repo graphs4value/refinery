@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -24,6 +24,8 @@ val frontendFiles: FileCollection = files(
 ) + fileTree("scripts") {
 	include("**/*.cjs")
 }
+
+val mavenRepositoryDir = layout.buildDirectory.map { it.dir("repo") }
 
 tasks {
 	val typeCheckFrontend by registering(RunYarn::class) {
@@ -57,6 +59,27 @@ tasks {
 	check {
 		dependsOn(typeCheckFrontend)
 		dependsOn(lintFrontend)
+	}
+}
+
+val cleanMavenRepository by tasks.registering(Delete::class) {
+	delete(mavenRepositoryDir)
+}
+
+val mavenRepositoryTar by tasks.registering(Tar::class) {
+	dependsOn(cleanMavenRepository)
+	from(mavenRepositoryDir)
+	archiveFileName = "refinery-maven-repository.tar"
+	destinationDirectory = layout.buildDirectory
+}
+
+gradle.projectsEvaluated {
+	mavenRepositoryTar.configure {
+		for (subproject in rootProject.subprojects) {
+			if (subproject.plugins.hasPlugin(JavaPlugin::class)) {
+				dependsOn(subproject.tasks.named("publishMavenJavaPublicationToFileRepository"))
+			}
+		}
 	}
 }
 
