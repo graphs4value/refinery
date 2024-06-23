@@ -30,6 +30,7 @@
   },
   "homepage": "https://refinery.tools",
   "dependencies": {
+    "@algolia/client-search": "^4.23.3",
     "@docusaurus/core": "^3.4.0",
     "@docusaurus/plugin-content-docs": "^3.4.0",
     "@docusaurus/plugin-content-pages": "^3.4.0",
@@ -50,9 +51,11 @@
     "react-dom": "^18.3.1",
     "remark-smartypants": "^3.0.1",
     "responsive-loader": "^3.1.2",
+    "search-insights": "^2.14.0",
     "sharp": "^0.33.4",
     "swc-loader": "^0.2.6",
     "terser-webpack-plugin": "^5.3.10",
+    "typescript": "5.5.2",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
     "webpack": "^5.92.1"

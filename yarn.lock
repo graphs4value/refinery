@@ -124,7 +124,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@algolia/client-search@npm:4.23.3":
+"@algolia/client-search@npm:4.23.3, @algolia/client-search@npm:^4.23.3":
   version: 4.23.3
   resolution: "@algolia/client-search@npm:4.23.3"
   dependencies:
@@ -3382,6 +3382,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@refinery/docs@workspace:subprojects/docs"
   dependencies:
+    "@algolia/client-search": "npm:^4.23.3"
     "@docusaurus/core": "npm:^3.4.0"
     "@docusaurus/mdx-loader": "npm:^3.4.0"
     "@docusaurus/module-type-aliases": "npm:^3.4.0"
@@ -3411,9 +3412,11 @@ __metadata:
     react-dom: "npm:^18.3.1"
     remark-smartypants: "npm:^3.0.1"
     responsive-loader: "npm:^3.1.2"
+    search-insights: "npm:^2.14.0"
     sharp: "npm:^0.33.4"
     swc-loader: "npm:^0.2.6"
     terser-webpack-plugin: "npm:^5.3.10"
+    typescript: "npm:5.5.2"
     unified: "npm:^11.0.5"
     unist-util-visit: "npm:^5.0.0"
     webpack: "npm:^5.92.1"
@@ -15018,6 +15021,13 @@ __metadata:
     ajv-formats: "npm:^2.1.1"
     ajv-keywords: "npm:^5.1.0"
   checksum: 10c0/8dab7e7800316387fd8569870b4b668cfcecf95ac551e369ea799bbcbfb63fb0365366d4b59f64822c9f7904d8c5afcfaf5a6124a4b08783e558cd25f299a6b4
+  languageName: node
+  linkType: hard
+
+"search-insights@npm:^2.14.0":
+  version: 2.14.0
+  resolution: "search-insights@npm:2.14.0"
+  checksum: 10c0/2b404fa30fbd962e1e4831c595801aa97cac3b00047f2f351f7c3baa7b5d701f0c22f61d3e0de12037273fc8b52abf543a9e82a91303c1a5fa5c05395ceece1a
   languageName: node
   linkType: hard
 
