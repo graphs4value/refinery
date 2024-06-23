@@ -102,20 +102,32 @@ const VisibilityDialogScroll = styled('div', {
       width: 'min-content',
     },
     '& td:nth-of-type(3)': {
-      cursor: 'pointer',
-      userSelect: 'none',
-      WebkitTapHighlightColor: 'transparent',
+      position: 'relative',
     },
 
     '& thead th, .VisibilityDialog-custom tr:last-child td': {
       borderBottom: `1px solid ${theme.palette.divider}`,
     },
-    // Hack to apply `text-overflow`.
-    '.VisibilityDialog-nowrap': {
+    '.VisibilityDialog-toggleVisibility': {
+      // Hack to apply `text-overflow`.
       maxWidth: '100%',
       overflow: 'hidden',
       wordWrap: 'nowrap',
       textOverflow: 'ellipsis',
+      background: 'transparent',
+      border: 'none',
+      font: 'inherit',
+      lineHeight: 'inherit',
+      cursor: 'pointer',
+      WebkitTapHighlightColor: 'transparent',
+      '&::after': {
+        content: '" "',
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+      },
     },
     '.VisibilityDialog-empty': {
       display: 'flex',
@@ -172,13 +184,15 @@ function VisibilityPanel({
             />
           </Tooltip>
         </td>
-        <td
-          onClick={() => graph.cycleVisibility(name)}
-          aria-label="Toggle visiblity"
-        >
-          <div className="VisibilityDialog-nowrap">
+        <td>
+          <button
+            type="button"
+            onClick={() => graph.cycleVisibility(name)}
+            aria-label={`Toggle visibility of ${metadata.simpleName}`}
+            className="VisibilityDialog-toggleVisibility"
+          >
             <RelationName metadata={metadata} abbreviate={graph.abbreviate} />
-          </div>
+          </button>
         </td>
       </tr>
     );
