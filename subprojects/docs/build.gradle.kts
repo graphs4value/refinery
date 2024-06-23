@@ -133,6 +133,17 @@ tasks {
 		delete(".docusaurus")
 		delete(".yarn")
 	}
+
+	val siteZip by registering(Zip::class) {
+		dependsOn(assembleFrontend)
+		from(docusaurusOutputDir)
+		archiveFileName = "refinery-docs.zip"
+		destinationDirectory = layout.buildDirectory
+	}
+
+	assemble {
+		dependsOn(siteZip)
+	}
 }
 
 sonarqube.properties {

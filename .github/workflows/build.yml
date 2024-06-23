@@ -80,12 +80,58 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./gradlew sonar -Pci --info --stacktrace --max-workers 4 --no-daemon
+      - name: Upload site artifact
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-zip
+          path: subprojects/docs/build/refinery-docs.zip
+          compression-level: 0
   reuse-check:
     name: REUSE Compliance Check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@a46482ca367aef4454a87620aa37c2be4b2f8106
-      with:
-        args: --include-meson-subprojects lint
+      - uses: actions/checkout@v4
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@a46482ca367aef4454a87620aa37c2be4b2f8106
+        with:
+          args: --include-meson-subprojects lint
+  publish-site:
+    name: Publish to GitHub Pages
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-zip
+          path: site-zip
+      - name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@ea88154188003ca5aeb616063b2d0dd6a9cf86e2
+        with:
+          gpg_private_key: ${{ secrets.PGP_KEY }}
+          fingerprint: ${{ secrets.PGP_FINGERPRINT }}
+          passphrase: ${{ secrets.PGP_PASSWORD }}
+          git_config_global: true
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: Commit and push to graphs4value.github.io
+        env:
+          GH_PAGES_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.sha }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          mkdir graphs4value.github.io
+          pushd graphs4value.github.io
+          git config --global init.defaultBranch main
+          git config --global user.name "Graphs4Value bot"
+          git config --global user.email "refinery@refinery.tools"
+          git init
+          git remote add origin "https://x-access-token:${GH_PAGES_TOKEN}@github.com/graphs4value/graphs4value.github.io.git"
+          unzip ../site-zip/refinery-docs.zip
+          git add .
+          git commit -S -m "Update from https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+          git push --force origin main
+          popd
