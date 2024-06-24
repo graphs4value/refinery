@@ -6,8 +6,4 @@
 
 set -euo pipefail
 
-(cd .. && ./gradlew distTar)
-
-./prepare_context.sh
-
-./bake.sh "${1-false}" "${@:2}"
+grep '^version=' ../gradle.properties | cut -d'=' -f2

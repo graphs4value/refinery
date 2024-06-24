@@ -30,8 +30,8 @@ RUN apt-get update && \
     ln -sf /usr/bin/x86_64-linux-gnu-objcopy /usr/bin/objcopy && \
     rm -rf /var/lib/apt/lists/*
 
-FROM --platform=$BUILDPLATFORM jlink-$TARGETARCH-on-$BUILDARCH as jlink
-RUN jlink --no-header-files --no-man-pages --compress=2 \
+FROM --platform=$BUILDPLATFORM jlink-$TARGETARCH-on-$BUILDARCH AS jlink
+RUN jlink --no-header-files --no-man-pages \
     --module-path=/crossjdk/jmods --strip-debug --add-modules \
     java.base,java.logging,java.xml,jdk.zipfs \
     --output /jlink
@@ -44,15 +44,14 @@ RUN dnf install -y findutils && \
 COPY --link --from=jlink /jlink /usr/lib/java
 ENV JAVA_HOME="/usr/lib/java" PATH="/usr/lib/java/bin:${PATH}"
 # Layer with platform-independent dependencies, slow changing.
-ADD --link common_lib /app/lib
+ADD --link extracted/common_lib /app/lib
 
 FROM base AS base-amd64
 # Layer with platform-dependent dependencies, slow changing.
-ADD --link common_amd64_lib /app/lib
+ADD --link extracted/common_amd64_lib /app/lib
 
 FROM base AS base-arm64
 # Layer with platform-dependent dependencies, slow changing.
-ADD --link common_arm64_lib /app/lib
+ADD --link extracted/common_arm64_lib /app/lib
 
 FROM base-$TARGETARCH
-

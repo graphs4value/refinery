@@ -4,21 +4,21 @@
 
 FROM base AS cli-base
 # Layer with platform-dependent dependencies, slow changing.
-ADD --link cli_lib /app/lib
+ADD --link extracted/cli_lib /app/lib
 
 FROM cli-base AS cli-amd64
 # Layer with platform-dependent startup script containing references to all
 # dependency versions.
-ADD --link cli_amd64_bin /app/bin
+ADD --link extracted/cli_amd64_bin /app/bin
 
 FROM cli-base AS cli-arm64
 # Layer with platform-dependent startup script containing references to all
 # dependency versions.
-ADD --link cli_arm64_bin /app/bin
+ADD --link extracted/cli_arm64_bin /app/bin
 
 FROM cli-$TARGETARCH
 # Layer with platform-independent application jars.
-ADD --link cli_app_lib /app/lib
+ADD --link extracted/cli_app_lib /app/lib
 # Common settings added on top.
 ENV REFINERY_LIBRARY_PATH=/data
 USER 1000
