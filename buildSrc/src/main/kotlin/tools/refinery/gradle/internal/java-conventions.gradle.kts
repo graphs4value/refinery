@@ -7,7 +7,6 @@ package tools.refinery.gradle.internal
 
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.configurationcache.extensions.capitalized
-import org.gradle.plugins.ide.eclipse.model.ProjectDependency
 import tools.refinery.gradle.utils.EclipseUtils
 
 plugins {
@@ -156,6 +155,43 @@ tasks {
 	}
 }
 
+fun collectDependentProjects(configuration: Configuration, dependentProjects: MutableCollection<Project>) {
+	for (dependency in configuration.dependencies) {
+		if (dependency is ProjectDependency) {
+			val dependentProject = dependency.dependencyProject
+			if (dependentProject.plugins.hasPlugin(JavaPlugin::class) && dependentProjects.add(dependentProject)) {
+				collectDependentProjectsTransitively(dependentProject, dependentProjects)
+			}
+		}
+	}
+}
+
+fun collectDependentProjectsTransitively(dependentProject: Project, dependentProjects: MutableCollection<Project>) {
+	val apiConfiguration = dependentProject.configurations.findByName("api")
+	if (apiConfiguration != null) {
+		collectDependentProjects(apiConfiguration, dependentProjects)
+	}
+	collectDependentProjects(configurations.implementation.get(), dependentProjects)
+}
+
+gradle.projectsEvaluated {
+	tasks.javadoc {
+		val dependentProjects = HashSet<Project>()
+		collectDependentProjectsTransitively(project, dependentProjects)
+		val links = ArrayList<JavadocOfflineLink>()
+		for (dependentProject in dependentProjects) {
+			dependsOn(dependentProject.tasks.javadoc)
+			val javadocDir = dependentProject.layout.buildDirectory.map { it.dir("docs/javadoc") }
+			inputs.dir(javadocDir)
+			links += JavadocOfflineLink("../${dependentProject.name}", javadocDir.get().asFile.path)
+		}
+		options {
+			this as StandardJavadocDocletOptions
+			linksOffline = (linksOffline ?: listOf()) + links
+		}
+	}
+}
+
 signing {
 	// The underlying property cannot be set publicly.
 	@Suppress("UsePropertyAccessSyntax")
@@ -175,7 +211,7 @@ eclipse {
 		// If a project has a main dependency on a project and a test dependency on the testFixtures of a project,
 		// it will be erroneously added as a test-only dependency to Eclipse. As a workaround, we add all project
 		// dependencies as main dependencies (we do not deliberately use test-only project dependencies).
-		if (entry is ProjectDependency) {
+		if (entry is org.gradle.plugins.ide.eclipse.model.ProjectDependency) {
 			entry.entryAttributes.remove("test")
 		}
 	}
