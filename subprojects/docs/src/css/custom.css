@@ -80,9 +80,14 @@ code {
   --ifm-navbar-shadow: var(--ifm-global-shadow-lw) !important;
 }
 
-.button, .navbar__link, .footer__link-item {
+.button, .navbar__link, .footer__link-item, .DocSearch-Button-Placeholder {
   text-transform: uppercase;
   font-variation-settings: 'wdth' 87.5;
+}
+
+.DocSearch-Button-Placeholder {
+  padding: 0 9px 0 6px !important;
+  font-family: var(--ifm-font-family-base);
 }
 
 .button--play::before {

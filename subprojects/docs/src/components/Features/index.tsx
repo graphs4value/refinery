@@ -58,21 +58,6 @@ Feature.defaultProps = {
 export default function Features() {
   return (
     <div className="container">
-      <svg xmlns="ttp://www.w3.org/2000/svg" className={styles['lg']}>
-        <defs>
-          <linearGradient
-            id="fi-lg"
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="366"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" className={styles['lg__start']} />
-            <stop offset="100%" className={styles['lg__end']} />
-          </linearGradient>
-        </defs>
-      </svg>
       <h2 className="sr-only">Features</h2>
       <div className="row">
         <Feature icon={<Fi1 />} title="Diverse graph generation">

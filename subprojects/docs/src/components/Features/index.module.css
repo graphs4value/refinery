@@ -5,7 +5,7 @@
  */
 
 :global(.fibackground) {
-  fill: url(#fi-lg);
+  fill: var(--ifm-color-primary-light);
 }
 
 :global(.fiforeground) {
@@ -16,37 +16,16 @@
   fill: #fff;
 }
 
+[data-theme='dark'] :global(.fibackground) {
+  fill: var(--ifm-color-primary);
+}
+
 [data-theme='dark'] :global(.fiforeground) {
   fill: var(--ifm-font-color-base);
 }
 
 [data-theme='dark'] :global(.fiempty) {
   fill: var(--ifm-background-color);
-}
-
-.lg {
-  position: absolute;
-  visibility: hidden;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-}
-
-.lg__start {
-  stop-color: var(--ifm-color-primary-lighter);
-}
-
-.lg__end {
-  stop-color: var(--ifm-color-primary);
-}
-
-[data-theme='dark'] .lg__start {
-  stop-color: var(--ifm-color-primary-light);
-}
-
-[data-theme='dark'] .lg__end {
-  stop-color: var(--ifm-color-primary-darker);
 }
 
 .feature__container {
