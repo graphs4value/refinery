@@ -30,7 +30,7 @@
   },
   "homepage": "https://refinery.tools",
   "dependencies": {
-    "@algolia/client-search": "^4.23.3",
+    "@algolia/client-search": "^4.24.0",
     "@docusaurus/core": "^3.4.0",
     "@docusaurus/plugin-content-docs": "^3.4.0",
     "@docusaurus/plugin-content-pages": "^3.4.0",
@@ -66,7 +66,7 @@
     "@docusaurus/types": "^3.4.0",
     "@types/babel__core": "^7.20.5",
     "@types/mdast": "^4.0.4",
-    "@types/node": "^20.14.8",
+    "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/unist": "^3.0.2"
