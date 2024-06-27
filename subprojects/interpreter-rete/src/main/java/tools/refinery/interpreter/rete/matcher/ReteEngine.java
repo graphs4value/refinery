@@ -9,33 +9,29 @@
 
 package tools.refinery.interpreter.rete.matcher;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
 import org.apache.log4j.Logger;
-import tools.refinery.interpreter.rete.boundary.Disconnectable;
-import tools.refinery.interpreter.rete.boundary.ReteBoundary;
-import tools.refinery.interpreter.rete.construction.RetePatternBuildException;
-import tools.refinery.interpreter.rete.construction.plancompiler.ReteRecipeCompiler;
-import tools.refinery.interpreter.rete.network.Network;
-import tools.refinery.interpreter.rete.network.NodeProvisioner;
-import tools.refinery.interpreter.rete.network.ReteContainer;
 import tools.refinery.interpreter.matchers.InterpreterRuntimeException;
-import tools.refinery.interpreter.matchers.backend.IQueryBackend;
-import tools.refinery.interpreter.matchers.backend.IQueryBackendFactory;
-import tools.refinery.interpreter.matchers.backend.IQueryBackendHintProvider;
-import tools.refinery.interpreter.matchers.backend.IQueryResultProvider;
-import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
+import tools.refinery.interpreter.matchers.backend.*;
 import tools.refinery.interpreter.matchers.context.IQueryBackendContext;
 import tools.refinery.interpreter.matchers.context.IQueryRuntimeContext;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
 import tools.refinery.interpreter.matchers.tuple.TupleMask;
 import tools.refinery.interpreter.matchers.util.CollectionsFactory;
+import tools.refinery.interpreter.rete.boundary.Disconnectable;
+import tools.refinery.interpreter.rete.boundary.ReteBoundary;
+import tools.refinery.interpreter.rete.construction.RetePatternBuildException;
+import tools.refinery.interpreter.rete.construction.plancompiler.ReteRecipeCompiler;
 import tools.refinery.interpreter.rete.index.Indexer;
+import tools.refinery.interpreter.rete.network.Network;
+import tools.refinery.interpreter.rete.network.NodeProvisioner;
+import tools.refinery.interpreter.rete.network.ReteContainer;
 import tools.refinery.interpreter.rete.traceability.RecipeTraceInfo;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * @author Gabor Bergmann
@@ -262,6 +258,7 @@ public class ReteEngine implements IQueryBackend {
      * @since 2.4
      */
     public <T> T constructionWrapper(final Callable<T> payload) {
+		ensureInitialized();
         T result = null;
 //		context.modelReadLock();
 //		    try {
@@ -533,7 +530,15 @@ public class ReteEngine implements IQueryBackend {
 
     }
 
-    @Override
+	/**
+	 * @since 2.9
+	 */
+	public boolean isDisposedOrUninitialized() {
+		return disposedOrUninitialized;
+	}
+
+
+	@Override
     public IQueryResultProvider getResultProvider(PQuery query)  {
         return accessMatcher(query);
     }
