@@ -70,8 +70,10 @@ class ProblemTraceImpl implements ProblemTrace {
 		return nodeTrace;
 	}
 
-	void collectNode(Node node) {
-		mutableNodeTrace.getIfAbsentPut(node, mutableNodeTrace.size());
+	int collectNode(Node node) {
+		var nextId = mutableNodeTrace.size();
+		mutableNodeTrace.getIfAbsentPut(node, nextId);
+		return nextId;
 	}
 
 	@Override

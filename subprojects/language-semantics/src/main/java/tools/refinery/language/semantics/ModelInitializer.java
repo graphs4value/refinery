@@ -52,7 +52,9 @@ import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultipl
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.predicate.PredicateTranslator;
+import tools.refinery.store.statecoding.StateCoderBuilder;
 import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.tuple.Tuple1;
 
 import java.util.*;
 
@@ -77,6 +79,8 @@ public class ModelInitializer {
 	private final Set<Problem> importedProblems = new HashSet<>();
 
 	private BuiltinSymbols builtinSymbols;
+
+	private final List<Tuple1> individuals = new ArrayList<>();
 
 	private PartialRelation nodeRelation;
 
@@ -190,6 +194,8 @@ public class ModelInitializer {
 			}
 			collectPredicates(storeBuilder);
 			collectRules(storeBuilder);
+			storeBuilder.tryGetAdapter(StateCoderBuilder.class)
+					.ifPresent(stateCoderBuilder -> stateCoderBuilder.individuals(individuals));
 		} catch (TranslationException e) {
 			throw problemTrace.wrapException(e);
 		}
@@ -224,29 +230,33 @@ public class ModelInitializer {
 			}
 		}
 		for (var node : problem.getNodes()) {
-			collectNode(node);
+			collectNode(node, false);
 		}
 	}
 
 	private void collectNodes(Statement statement) {
 		if (statement instanceof NodeDeclaration nodeDeclaration) {
+			boolean individual = nodeDeclaration.getKind() == NodeKind.ATOM;
 			for (var node : nodeDeclaration.getNodes()) {
-				collectNode(node);
+				collectNode(node, individual);
 			}
 		} else if (statement instanceof ClassDeclaration classDeclaration) {
 			var newNode = classDeclaration.getNewNode();
 			if (newNode != null) {
-				collectNode(newNode);
+				collectNode(newNode, false);
 			}
 		} else if (statement instanceof EnumDeclaration enumDeclaration) {
 			for (var literal : enumDeclaration.getLiterals()) {
-				collectNode(literal);
+				collectNode(literal, true);
 			}
 		}
 	}
 
-	private void collectNode(Node node) {
-		problemTrace.collectNode(node);
+	private void collectNode(Node node, boolean individual) {
+		int nodeId = problemTrace.collectNode(node);
+		if (individual) {
+			individuals.add(Tuple.of(nodeId));
+		}
 	}
 
 	private void collectPartialSymbols() {
