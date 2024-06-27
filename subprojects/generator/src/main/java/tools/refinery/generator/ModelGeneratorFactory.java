@@ -15,11 +15,11 @@ import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.interpretation.PartialNeighbourhoodCalculator;
+import tools.refinery.store.reasoning.interpretation.PartialNeighborhoodCalculator;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderAdapter;
-import tools.refinery.store.statecoding.neighbourhood.NeighbourhoodCalculator;
+import tools.refinery.store.statecoding.neighborhood.NeighborhoodCalculator;
 import tools.refinery.store.util.CancellationToken;
 
 import java.util.Collection;
@@ -40,7 +40,7 @@ public final class ModelGeneratorFactory {
 
 	private boolean partialInterpretationBasedNeighbourhoods;
 
-	private int stateCoderDepth = NeighbourhoodCalculator.DEFAULT_DEPTH;
+	private int stateCoderDepth = NeighborhoodCalculator.DEFAULT_DEPTH;
 
 	public ModelGeneratorFactory cancellationToken(CancellationToken cancellationToken) {
 		this.cancellationToken = cancellationToken;
@@ -90,7 +90,7 @@ public final class ModelGeneratorFactory {
 
 	private StateCodeCalculatorFactory getStateCoderCalculatorFactory() {
 		return partialInterpretationBasedNeighbourhoods ?
-				PartialNeighbourhoodCalculator.factory(Concreteness.PARTIAL, stateCoderDepth) :
-				NeighbourhoodCalculator.factory(stateCoderDepth);
+				PartialNeighborhoodCalculator.factory(Concreteness.PARTIAL, stateCoderDepth) :
+				NeighborhoodCalculator.factory(stateCoderDepth);
 	}
 }

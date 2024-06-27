@@ -3,11 +3,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.statecoding.neighbourhood;
+package tools.refinery.store.statecoding.neighborhood;
 
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
-import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.statecoding.ObjectCode;
@@ -17,9 +16,9 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.*;
 
-public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCalculator {
+public abstract class AbstractNeighborhoodCalculator<T> implements StateCodeCalculator {
 	private final Model model;
-	private final IntSet individuals;
+	private final IndividualsSet individuals;
 	private final int depth;
 	private List<T> nullImpactValues;
 	private LinkedHashMap<T, long[]> impactValues;
@@ -29,7 +28,7 @@ public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCal
 
 	protected static final long PRIME = 31;
 
-	protected AbstractNeighbourhoodCalculator(Model model, IntSet individuals, int depth) {
+	protected AbstractNeighborhoodCalculator(Model model, IndividualsSet individuals, int depth) {
 		this.model = model;
 		this.individuals = individuals;
 		this.depth = depth;
@@ -84,10 +83,7 @@ public abstract class AbstractNeighbourhoodCalculator<T> implements StateCodeCal
 		@SuppressWarnings("squid:S2245")
 		Random random = new Random(1);
 
-		var individualsInOrder = individuals.toSortedList(Integer::compare);
-		for (int i = 0; i < individualsInOrder.size(); i++) {
-			individualHashValues.put(individualsInOrder.get(i), random.nextLong());
-		}
+		individuals.stream().forEach(o -> individualHashValues.put(o, random.nextLong()));
 
 		for (var interpretation : getInterpretations()) {
 			int arity = getArity(interpretation);

@@ -14,6 +14,8 @@ import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.statecoding.StateCoderStoreAdapter;
 import tools.refinery.store.statecoding.StateEquivalenceChecker;
+import tools.refinery.store.statecoding.neighborhood.IndividualsSet;
+import tools.refinery.store.statecoding.neighborhood.IndividualsArray;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -21,7 +23,7 @@ import java.util.Objects;
 public class StateCoderStoreAdapterImpl implements StateCoderStoreAdapter {
 	final ModelStore store;
 	final Collection<Symbol<?>> symbols;
-	final IntSet individuals;
+	final IndividualsSet individuals;
 
 	final StateEquivalenceChecker equivalenceChecker;
 	final StateCodeCalculatorFactory codeCalculatorFactory;
@@ -36,7 +38,7 @@ public class StateCoderStoreAdapterImpl implements StateCoderStoreAdapter {
 		this.equivalenceChecker = equivalenceChecker;
 		this.store = store;
 		this.symbols = symbols;
-		this.individuals = individuals;
+		this.individuals = new IndividualsArray(individuals.toSortedArray());
 	}
 
 	@Override

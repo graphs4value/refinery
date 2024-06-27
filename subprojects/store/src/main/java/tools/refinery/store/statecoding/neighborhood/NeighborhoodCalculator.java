@@ -3,9 +3,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.statecoding.neighbourhood;
+package tools.refinery.store.statecoding.neighborhood;
 
-import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
@@ -14,13 +13,13 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 
-public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator<Interpretation<?>> {
+public class NeighborhoodCalculator extends AbstractNeighborhoodCalculator<Interpretation<?>> {
 	public static final int DEFAULT_DEPTH = 7;
 
 	private final List<Interpretation<?>> interpretations;
 
-	protected NeighbourhoodCalculator(Model model, List<? extends Interpretation<?>> interpretations,
-									  IntSet individuals, int depth) {
+	protected NeighborhoodCalculator(Model model, List<? extends Interpretation<?>> interpretations,
+									 IndividualsSet individuals, int depth) {
 		super(model, individuals, depth);
 		this.interpretations = List.copyOf(interpretations);
 	}
@@ -46,7 +45,7 @@ public class NeighbourhoodCalculator extends AbstractNeighbourhoodCalculator<Int
 	}
 
 	public static StateCodeCalculatorFactory factory(int depth) {
-		return (model, interpretations, individuals) -> new NeighbourhoodCalculator(model, interpretations,
+		return (model, interpretations, individuals) -> new NeighborhoodCalculator(model, interpretations,
 				individuals, depth);
 	}
 

@@ -15,7 +15,7 @@ import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderBuilder;
 import tools.refinery.store.statecoding.StateCoderStoreAdapter;
 import tools.refinery.store.statecoding.StateEquivalenceChecker;
-import tools.refinery.store.statecoding.neighbourhood.NeighbourhoodCalculator;
+import tools.refinery.store.statecoding.neighborhood.NeighborhoodCalculator;
 import tools.refinery.store.statecoding.stateequivalence.StateEquivalenceCheckerImpl;
 import tools.refinery.store.tuple.Tuple1;
 
@@ -27,7 +27,7 @@ public class StateCoderBuilderImpl extends AbstractModelAdapterBuilder<StateCode
 		implements StateCoderBuilder {
 	private final Set<AnySymbol> excluded = new HashSet<>();
 	private final MutableIntSet individuals = IntSets.mutable.empty();
-	private StateCodeCalculatorFactory calculator = NeighbourhoodCalculator.factory();
+	private StateCodeCalculatorFactory calculator = NeighborhoodCalculator.factory();
 	private StateEquivalenceChecker checker = new StateEquivalenceCheckerImpl();
 
 	@Override

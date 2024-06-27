@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.statecoding.neighbourhood;
+package tools.refinery.store.statecoding.neighborhood;
 
 import tools.refinery.store.statecoding.ObjectCode;
 

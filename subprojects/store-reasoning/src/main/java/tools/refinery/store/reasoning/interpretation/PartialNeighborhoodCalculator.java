@@ -5,7 +5,6 @@
  */
 package tools.refinery.store.reasoning.interpretation;
 
-import org.eclipse.collections.api.set.primitive.IntSet;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -14,16 +13,18 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderResult;
-import tools.refinery.store.statecoding.neighbourhood.AbstractNeighbourhoodCalculator;
+import tools.refinery.store.statecoding.neighborhood.AbstractNeighborhoodCalculator;
+import tools.refinery.store.statecoding.neighborhood.IndividualsSet;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 
-public class PartialNeighbourhoodCalculator extends AbstractNeighbourhoodCalculator<PartialInterpretation<?, ?>> {
+public class PartialNeighborhoodCalculator extends AbstractNeighborhoodCalculator<PartialInterpretation<?, ?>> {
 	private final ModelQueryAdapter queryAdapter;
 	private final Concreteness concreteness;
 
-	protected PartialNeighbourhoodCalculator(Model model, IntSet individuals, Concreteness concreteness, int depth) {
+	protected PartialNeighborhoodCalculator(Model model, IndividualsSet individuals, Concreteness concreteness,
+											int depth) {
 		super(model, individuals, depth);
 		queryAdapter = model.getAdapter(ModelQueryAdapter.class);
 		this.concreteness = concreteness;
@@ -61,7 +62,7 @@ public class PartialNeighbourhoodCalculator extends AbstractNeighbourhoodCalcula
 	}
 
 	public static StateCodeCalculatorFactory factory(Concreteness concreteness, int depth) {
-		return (model, interpretations, individuals) -> new PartialNeighbourhoodCalculator(model, individuals,
+		return (model, interpretations, individuals) -> new PartialNeighborhoodCalculator(model, individuals,
 				concreteness, depth);
 	}
 }

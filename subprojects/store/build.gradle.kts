@@ -14,6 +14,6 @@ mavenArtifact {
 }
 
 dependencies {
-	api(libs.eclipseCollections.api)
+	implementation(libs.eclipseCollections.api)
 	runtimeOnly(libs.eclipseCollections)
 }
