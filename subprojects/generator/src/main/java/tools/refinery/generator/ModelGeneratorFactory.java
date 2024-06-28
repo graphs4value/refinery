@@ -38,7 +38,7 @@ public final class ModelGeneratorFactory {
 
 	private boolean debugPartialInterpretations;
 
-	private boolean partialInterpretationBasedNeighbourhoods;
+	private boolean partialInterpretationBasedNeighborhoods;
 
 	private int stateCoderDepth = NeighborhoodCalculator.DEFAULT_DEPTH;
 
@@ -52,9 +52,9 @@ public final class ModelGeneratorFactory {
 		return this;
 	}
 
-	public ModelGeneratorFactory partialInterpretationBasedNeighbourhoods(
-			boolean partialInterpretationBasedNeighbourhoods) {
-		this.partialInterpretationBasedNeighbourhoods = partialInterpretationBasedNeighbourhoods;
+	public ModelGeneratorFactory partialInterpretationBasedNeighborhoods(
+			boolean partialInterpretationBasedNeighborhoods) {
+		this.partialInterpretationBasedNeighborhoods = partialInterpretationBasedNeighborhoods;
 		return this;
 	}
 
@@ -83,13 +83,13 @@ public final class ModelGeneratorFactory {
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {
-		return debugPartialInterpretations || partialInterpretationBasedNeighbourhoods ?
+		return debugPartialInterpretations || partialInterpretationBasedNeighborhoods ?
 				Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE) :
 				Set.of(Concreteness.CANDIDATE);
 	}
 
 	private StateCodeCalculatorFactory getStateCoderCalculatorFactory() {
-		return partialInterpretationBasedNeighbourhoods ?
+		return partialInterpretationBasedNeighborhoods ?
 				PartialNeighborhoodCalculator.factory(Concreteness.PARTIAL, stateCoderDepth) :
 				NeighborhoodCalculator.factory(stateCoderDepth);
 	}

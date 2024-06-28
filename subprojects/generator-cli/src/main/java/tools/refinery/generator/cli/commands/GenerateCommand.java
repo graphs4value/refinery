@@ -76,7 +76,7 @@ public class GenerateCommand {
 		loader.extraPath(System.getProperty("user.dir"));
 		var problem = isStandardStream(inputPath) ? loader.loadStream(System.in) : loader.loadFile(inputPath);
 		problem = loader.loadScopeConstraints(problem, scopes, overrideScopes);
-		generatorFactory.partialInterpretationBasedNeighbourhoods(count >= 2);
+		generatorFactory.partialInterpretationBasedNeighborhoods(count >= 2);
 		var generator = generatorFactory.createGenerator(problem);
 		generator.setRandomSeed(randomSeed);
 		generator.setMaxNumberOfSolutions(count);
