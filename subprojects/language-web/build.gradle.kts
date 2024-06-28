@@ -22,6 +22,7 @@ dependencies {
 	implementation(project(":refinery-generator"))
 	implementation(project(":refinery-language"))
 	implementation(project(":refinery-language-ide"))
+	implementation(project(":refinery-store-reasoning-scope"))
 	implementation(libs.gson)
 	implementation(libs.jetty.server)
 	implementation(libs.jetty.servlet)

@@ -32,14 +32,19 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 	private final int lowerBound;
 
 	private LowerTypeScopePropagator(BoundScopePropagator adapter, int lowerBound, RelationalQuery allQuery,
-									 RelationalQuery multiQuery) {
-		super(adapter, allQuery, multiQuery);
+									 RelationalQuery multiQuery, PartialRelation type) {
+		super(adapter, allQuery, multiQuery, type);
 		this.lowerBound = lowerBound;
 	}
 
 	@Override
 	protected void doUpdateBounds() {
 		constraint.setLb((lowerBound - getSingleCount()));
+	}
+
+	@Override
+	public String getName() {
+		return "lower type scope bound for '%s'".formatted(getType().name());
 	}
 
 	static class Factory extends TypeScopePropagator.Factory {
@@ -62,7 +67,7 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 
 		@Override
 		public TypeScopePropagator createPropagator(BoundScopePropagator adapter) {
-			return new LowerTypeScopePropagator(adapter, lowerBound, allMay, multiMay);
+			return new LowerTypeScopePropagator(adapter, lowerBound, allMay, multiMay, type);
 		}
 
 		@Override

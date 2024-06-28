@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.dse.propagation.impl.rule;
 
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.actions.BoundAction;
@@ -54,7 +55,7 @@ class BoundPropagationRule {
 			var tuple = cursor.getKey();
 			var result = action.fire(tuple);
 			if (!result) {
-				return PropagationResult.REJECTED;
+				return new PropagationRejectedResult(rule, "Propagation rule '%s' failed.".formatted(rule.getName()));
 			}
 			firedActivations.add(tuple);
 		}

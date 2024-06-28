@@ -18,14 +18,18 @@ import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.web.semantics.metadata.MetadataCreator;
+import tools.refinery.language.model.problem.ScopeDeclaration;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.web.semantics.metadata.MetadataCreator;
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
+import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.seed.PropagatedModel;
+import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 class SemanticsWorker implements Callable<SemanticsResult> {
@@ -74,16 +78,10 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			return getTracedErrorResult(e.getSourceElement(), message);
 		}
 		cancellationToken.checkCancelled();
-		metadataCreator.setProblemTrace(semantics.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), Concreteness.PARTIAL);
-		cancellationToken.checkCancelled();
-		var relationsMetadata = metadataCreator.getRelationsMetadata();
-		cancellationToken.checkCancelled();
-		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics, cancellationToken);
-		var modelResult = new SemanticsModelResult(nodesMetadata, relationsMetadata, partialInterpretation);
-		var error = semantics.isRejected() ? PropagatedModel.PROPAGATION_FAILED_MESSAGE : null;
-		return new SemanticsResult(modelResult, error);
+		var modelResult = createSemanticsModelResult(semantics);
+		return createSemanticsResult(modelResult, semantics.getPropagationResult());
 	}
+
 
 	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {
 		if (sourceElement == null || !problem.eResource().equals(sourceElement.eResource())) {
@@ -91,12 +89,51 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		}
 		var diagnostic = new FeatureBasedDiagnostic(Diagnostic.ERROR, message, sourceElement, null, 0,
 				CheckType.EXPENSIVE, DIAGNOSTIC_ID);
+		var issues = convertIssues(List.of(diagnostic));
+		return new SemanticsResult(issues);
+	}
+
+	private List<ValidationResult.Issue> convertIssues(List<FeatureBasedDiagnostic> diagnostics) {
 		var xtextIssues = new ArrayList<Issue>();
-		diagnosticConverter.convertValidatorDiagnostic(diagnostic, xtextIssues::add);
-		var issues = xtextIssues.stream()
+		for (var diagnostic : diagnostics) {
+			diagnosticConverter.convertValidatorDiagnostic(diagnostic, xtextIssues::add);
+		}
+		return xtextIssues.stream()
 				.map(issue -> new ValidationResult.Issue(issue.getMessage(), "error", issue.getLineNumber(),
 						issue.getColumn(), issue.getOffset(), issue.getLength()))
 				.toList();
-		return new SemanticsResult(issues);
+	}
+
+	private SemanticsModelResult createSemanticsModelResult(ModelSemantics semantics) {
+		metadataCreator.setProblemTrace(semantics.getProblemTrace());
+		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), Concreteness.PARTIAL);
+		cancellationToken.checkCancelled();
+		var relationsMetadata = metadataCreator.getRelationsMetadata();
+		cancellationToken.checkCancelled();
+		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics, cancellationToken);
+		return new SemanticsModelResult(nodesMetadata, relationsMetadata, partialInterpretation);
+	}
+
+	private SemanticsResult createSemanticsResult(SemanticsModelResult modelResult,
+                                                  PropagationResult propagationResult) {
+		if (!(propagationResult instanceof PropagationRejectedResult rejectedResult)) {
+			return new SemanticsResult(modelResult);
+		}
+		var message = rejectedResult.formatMessage();
+		if (!(rejectedResult.reason() instanceof ScopePropagator)) {
+			return new SemanticsResult(modelResult, message);
+		}
+		var diagnostics = new ArrayList<FeatureBasedDiagnostic>();
+		for (var statement : problem.getStatements()) {
+			if (statement instanceof ScopeDeclaration scopeDeclaration) {
+				diagnostics.add(new FeatureBasedDiagnostic(Diagnostic.ERROR, message, scopeDeclaration, null, 0,
+						CheckType.EXPENSIVE, DIAGNOSTIC_ID));
+			}
+		}
+		if (diagnostics.isEmpty()) {
+			return new SemanticsResult(modelResult, message);
+		}
+		var issues = convertIssues(diagnostics);
+		return new SemanticsResult(modelResult, issues);
 	}
 }

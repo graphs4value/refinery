@@ -24,7 +24,7 @@ public interface ReasoningStoreAdapter extends ModelStoreAdapter {
 
 	default Model createInitialModel(ModelSeed modelSeed) {
 		var result = tryCreateInitialModel(modelSeed);
-		result.throwIfRejected();
+		result.propagationResult().throwIfRejected();
 		return result.model();
 	}
 

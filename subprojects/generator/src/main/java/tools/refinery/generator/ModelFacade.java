@@ -7,6 +7,7 @@ package tools.refinery.generator;
 
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -21,7 +22,7 @@ import tools.refinery.store.reasoning.translator.TranslationException;
 public abstract class ModelFacade {
 	private final ProblemTrace problemTrace;
 	private final ModelStore store;
-	private final PropagatedModel propagatedModel;
+	private final PropagationResult propagationResult;
 	private final Model model;
 	private final ReasoningAdapter reasoningAdapter;
 	private final Concreteness concreteness;
@@ -30,12 +31,14 @@ public abstract class ModelFacade {
                           Concreteness concreteness) {
 		this.problemTrace = problemTrace;
 		this.store = store;
+		PropagatedModel propagatedModel;
 		try {
 			propagatedModel = store.getAdapter(ReasoningStoreAdapter.class).tryCreateInitialModel(modelSeed);
 		} catch (TranslationException e) {
 			throw problemTrace.wrapException(e);
 		}
 		model = propagatedModel.model();
+		propagationResult = propagatedModel.propagationResult();
 		reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 		this.concreteness = concreteness;
 	}
@@ -52,12 +55,8 @@ public abstract class ModelFacade {
 		return model;
 	}
 
-	public boolean isRejected() {
-		return propagatedModel.isRejected();
-	}
-
-	public void throwIfRejected() {
-		propagatedModel.throwIfRejected();
+	public PropagationResult getPropagationResult() {
+		return propagationResult;
 	}
 
 	public Concreteness getConcreteness() {

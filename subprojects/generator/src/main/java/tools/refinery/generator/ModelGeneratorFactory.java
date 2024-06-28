@@ -80,7 +80,7 @@ public final class ModelGeneratorFactory {
 		var store = storeBuilder.build();
 		var generator = new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				solutionSerializerProvider);
-		generator.throwIfRejected();
+		generator.getPropagationResult().throwIfRejected();
 		return generator;
 	}
 

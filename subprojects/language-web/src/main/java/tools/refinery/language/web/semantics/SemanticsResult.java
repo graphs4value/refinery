@@ -27,4 +27,8 @@ public record SemanticsResult(SemanticsModelResult model, String error,
 	public SemanticsResult(List<ValidationResult.Issue> issues) {
 		this(null, null, issues);
 	}
+
+	public SemanticsResult(SemanticsModelResult model, List<ValidationResult.Issue> issues) {
+		this(model, null, issues);
+	}
 }

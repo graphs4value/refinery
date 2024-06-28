@@ -30,14 +30,19 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 	private final int upperBound;
 
 	private UpperTypeScopePropagator(BoundScopePropagator adapter, int upperBound, RelationalQuery allQuery,
-									 RelationalQuery multiQuery) {
-		super(adapter, allQuery, multiQuery);
+									 RelationalQuery multiQuery, PartialRelation type) {
+		super(adapter, allQuery, multiQuery, type);
 		this.upperBound = upperBound;
 	}
 
 	@Override
 	protected void doUpdateBounds() {
 		constraint.setUb((upperBound - getSingleCount()));
+	}
+
+	@Override
+	public String getName() {
+		return "upper type scope bound for '%s'".formatted(getType().name());
 	}
 
 	static class Factory extends TypeScopePropagator.Factory {
@@ -60,7 +65,7 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 
 		@Override
 		public TypeScopePropagator createPropagator(BoundScopePropagator adapter) {
-			return new UpperTypeScopePropagator(adapter, upperBound, allMust, multiMust);
+			return new UpperTypeScopePropagator(adapter, upperBound, allMust, multiMust, type);
 		}
 
 		@Override
@@ -86,9 +91,9 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 
 			storeBuilder.getAdapter(ReasoningBuilder.class).objective(Objectives.value(excessObjects));
 			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder -> {
-                dseBuilder.accept(Criteria.whenNoMatch(excessObjects));
+				dseBuilder.accept(Criteria.whenNoMatch(excessObjects));
 				dseBuilder.exclude(Criteria.whenHasMatch(tooManyObjects));
-            });
+			});
 		}
 	}
 }

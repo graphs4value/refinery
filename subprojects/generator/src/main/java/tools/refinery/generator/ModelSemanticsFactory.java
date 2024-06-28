@@ -31,7 +31,7 @@ public final class ModelSemanticsFactory {
 
 	public ModelSemantics createSemantics(Problem problem) {
 		var semantics = tryCreateSemantics(problem);
-		semantics.throwIfRejected();
+		semantics.getPropagationResult().throwIfRejected();
 		return semantics;
 	}
 
