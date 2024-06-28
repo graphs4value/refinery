@@ -80,6 +80,10 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/FOCUS"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/MULTI"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Derivation">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Derivation/PROPAGATED"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Derivation/COMPUTED"/>
+    </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/statements"/>
@@ -111,6 +115,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/concreteness"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/modality"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/binding"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/derivation"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Variable"/>
     <genClasses ecoreClass="problem.ecore#//Atom">
@@ -246,6 +251,7 @@
     <genClasses ecoreClass="problem.ecore#//ModalExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/concreteness"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/modality"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ModalExpr/derivation"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Assertion">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>

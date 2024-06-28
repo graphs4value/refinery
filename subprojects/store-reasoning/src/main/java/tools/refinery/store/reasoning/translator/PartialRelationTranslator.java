@@ -22,10 +22,7 @@ import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
-import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
-import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
-import tools.refinery.store.reasoning.interpretation.QueryBasedRelationInterpretationFactory;
-import tools.refinery.store.reasoning.interpretation.QueryBasedRelationRewriter;
+import tools.refinery.store.reasoning.interpretation.*;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -150,7 +147,8 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	}
 
 	public PartialRelationTranslator mayNever() {
-		var never = createQuery(partialRelation.name() + "#never", (builder, parameters) -> {});
+		var never = createQuery(partialRelation.name() + "#never", (builder, parameters) -> {
+		});
 		may(never);
 		return this;
 	}
@@ -331,7 +329,11 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 
 	private void createFallbackRewriter() {
 		if (rewriter == null) {
-			rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
+			if (query == null) {
+				rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
+			} else {
+				rewriter = new QueryBasedComputedRewriter(may, must, candidateMayMerged, candidateMustMerged, query);
+			}
 		}
 	}
 

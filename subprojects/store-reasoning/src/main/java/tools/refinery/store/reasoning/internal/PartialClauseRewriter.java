@@ -70,7 +70,10 @@ class PartialClauseRewriter {
 				var constraint = modalConstraint.constraint();
 				switch (constraint) {
 				case Dnf dnf -> rewriteRecursively(callLiteral, modality, concreteness, dnf);
-				case PartialRelation partialRelation -> rewrite(callLiteral, modality, concreteness, partialRelation);
+				case PartialRelation partialRelation ->
+						rewrite(callLiteral, modality, concreteness, false, partialRelation);
+				case ComputedConstraint(var partialRelation) ->
+						rewrite(callLiteral, modality, concreteness, true, partialRelation);
 				default -> throw new IllegalArgumentException("Cannot interpret modal constraint: " + modalConstraint);
 				}
 			}
@@ -199,10 +202,16 @@ class PartialClauseRewriter {
 	}
 
 	private void rewrite(AbstractCallLiteral callLiteral, Modality modality, Concreteness concreteness,
-						 PartialRelation partialRelation) {
+						 boolean computed, PartialRelation partialRelation) {
 		var relationRewriter = rewriter.getRelationRewriter(partialRelation);
-		var literals = relationRewriter.rewriteLiteral(
-				unmodifiablePositiveVariables, callLiteral, modality, concreteness);
+		List<Literal> literals;
+		if (computed) {
+			literals = relationRewriter.rewriteComputed(unmodifiablePositiveVariables, callLiteral, modality,
+					concreteness);
+		} else {
+			literals = relationRewriter.rewriteLiteral(unmodifiablePositiveVariables, callLiteral, modality,
+					concreteness);
+		}
 		int length = literals.size();
 		for (int i = length - 1; i >= 0; i--) {
 			workList.addFirst(literals.get(i));

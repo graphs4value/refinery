@@ -92,7 +92,7 @@ enum ParameterBinding:
 
 Parameter:
 	(
-		(concreteness=Concreteness? modality=Modality)?
+		(derivation=Derivation? concreteness=Concreteness? modality=Modality)?
 		parameterType=[Relation|QualifiedName]
 	)? binding=ParameterBinding? name=Identifier;
 
@@ -182,6 +182,9 @@ AggregationExpr:
 	aggregator=[AggregatorDeclaration|QualifiedName]
 	"{" value=Expr "|" condition=ComparisonExpr "}";
 
+enum Derivation:
+	COMPUTED="computed";
+
 enum Concreteness:
 	CANDIDATE="candidate";
 
@@ -189,7 +192,9 @@ enum Modality:
 	MUST="must" | MAY="may";
 
 ModalExpr:
-	concreteness=Concreteness? modality=Modality body=UnaryExpr;
+	derivation=Derivation?
+	concreteness=Concreteness?
+	modality=Modality body=UnaryExpr;
 
 CastExpr returns Expr:
 	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
