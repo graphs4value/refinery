@@ -5,6 +5,10 @@
  */
 package tools.refinery.store.reasoning.internal;
 
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.FunctionalQuery;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.objectives.Objective;
@@ -12,11 +16,8 @@ import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.logic.dnf.Dnf;
-import tools.refinery.logic.dnf.FunctionalQuery;
-import tools.refinery.logic.dnf.Query;
-import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.reasoning.ReasoningBuilder;
+import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -34,7 +35,7 @@ import tools.refinery.store.statecoding.StateCoderBuilder;
 
 import java.util.*;
 
-public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningStoreAdapterImpl>
+public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningStoreAdapter>
 		implements ReasoningBuilder {
 	private final DnfLifter lifter = new DnfLifter();
 	private final PartialQueryRewriter queryRewriter = new PartialQueryRewriter(lifter);
@@ -143,7 +144,7 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	}
 
 	@Override
-	public ReasoningStoreAdapterImpl doBuild(ModelStore store) {
+	public ReasoningStoreAdapter doBuild(ModelStore store) {
 		return new ReasoningStoreAdapterImpl(store, requiredInterpretations,
 				Collections.unmodifiableMap(symbolInterpreters), Collections.unmodifiableMap(symbolRefiners),
 				getStorageRefiners(store), Collections.unmodifiableList(initializers));
@@ -151,7 +152,7 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 
 	private Map<AnySymbol, StorageRefiner.Factory<?>> getStorageRefiners(ModelStore store) {
 		var symbols = store.getSymbols();
-		var storageRefiners = new LinkedHashMap<AnySymbol, StorageRefiner.Factory<?>>(symbols.size());
+		var storageRefiners = HashMap.<AnySymbol, StorageRefiner.Factory<?>>newHashMap(symbols.size());
 		for (var symbol : symbols) {
 			var refiner = registeredStorageRefiners.remove(symbol);
 			if (refiner == null) {
