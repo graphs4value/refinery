@@ -44,7 +44,8 @@ class BoundPropagationRule {
 
 	public PropagationResult fireAll() {
 		if (!firedActivations.isEmpty()) {
-			throw new IllegalStateException("Stuck propagation rule '%s'.".formatted(rule.getName()));
+			return new PropagationRejectedResult(rule, "Propagation rule '%s' got stuck.".formatted(rule.getName()),
+					true);
 		}
 		if (resultSet.size() == 0) {
 			return PropagationResult.UNCHANGED;

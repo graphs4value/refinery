@@ -8,6 +8,7 @@ package tools.refinery.language.web.semantics;
 import com.google.inject.Inject;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.CheckType;
@@ -18,11 +19,14 @@ import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ScopeDeclaration;
+import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.web.semantics.metadata.MetadataCreator;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.translator.TranslationException;
@@ -79,18 +83,31 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		}
 		cancellationToken.checkCancelled();
 		var modelResult = createSemanticsModelResult(semantics);
-		return createSemanticsResult(modelResult, semantics.getPropagationResult());
+		return createSemanticsResult(modelResult, semantics.getProblemTrace(), semantics.getPropagationResult());
 	}
 
-
 	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {
+		var diagnostics = getTracedDiagnostics(sourceElement, null, message);
+		return getSemanticsResultWithDiagnostics(null, message, diagnostics);
+	}
+
+	private List<FeatureBasedDiagnostic> getTracedDiagnostics(
+			EObject sourceElement, EStructuralFeature feature, String message) {
 		if (sourceElement == null || !problem.eResource().equals(sourceElement.eResource())) {
-			return new SemanticsResult(message);
+			return List.of();
 		}
-		var diagnostic = new FeatureBasedDiagnostic(Diagnostic.ERROR, message, sourceElement, null, 0,
+		var diagnostic = new FeatureBasedDiagnostic(Diagnostic.ERROR, message, sourceElement, feature, 0,
 				CheckType.EXPENSIVE, DIAGNOSTIC_ID);
-		var issues = convertIssues(List.of(diagnostic));
-		return new SemanticsResult(issues);
+		return List.of(diagnostic);
+	}
+
+	private SemanticsResult getSemanticsResultWithDiagnostics(
+			SemanticsModelResult modelResult, String message, List<FeatureBasedDiagnostic> diagnostics) {
+		if (diagnostics.isEmpty()) {
+			return new SemanticsResult(modelResult, message);
+		}
+		var issues = convertIssues(diagnostics);
+		return new SemanticsResult(modelResult, issues);
 	}
 
 	private List<ValidationResult.Issue> convertIssues(List<FeatureBasedDiagnostic> diagnostics) {
@@ -114,26 +131,30 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		return new SemanticsModelResult(nodesMetadata, relationsMetadata, partialInterpretation);
 	}
 
-	private SemanticsResult createSemanticsResult(SemanticsModelResult modelResult,
-                                                  PropagationResult propagationResult) {
+	private SemanticsResult createSemanticsResult(
+			SemanticsModelResult modelResult, ProblemTrace trace, PropagationResult propagationResult) {
 		if (!(propagationResult instanceof PropagationRejectedResult rejectedResult)) {
 			return new SemanticsResult(modelResult);
 		}
 		var message = rejectedResult.formatMessage();
-		if (!(rejectedResult.reason() instanceof ScopePropagator)) {
-			return new SemanticsResult(modelResult, message);
-		}
-		var diagnostics = new ArrayList<FeatureBasedDiagnostic>();
-		for (var statement : problem.getStatements()) {
-			if (statement instanceof ScopeDeclaration scopeDeclaration) {
-				diagnostics.add(new FeatureBasedDiagnostic(Diagnostic.ERROR, message, scopeDeclaration, null, 0,
-						CheckType.EXPENSIVE, DIAGNOSTIC_ID));
-			}
-		}
-		if (diagnostics.isEmpty()) {
-			return new SemanticsResult(modelResult, message);
-		}
-		var issues = convertIssues(diagnostics);
-		return new SemanticsResult(modelResult, issues);
+		List<FeatureBasedDiagnostic> diagnostics = switch (rejectedResult.reason()) {
+			case ScopePropagator ignored -> getScopePropagatorDiagnostics(message);
+			case Rule rule -> getRuleDiagnostics(rule, trace, message);
+			default -> List.of();
+		};
+		return getSemanticsResultWithDiagnostics(modelResult, message, diagnostics);
+	}
+
+	private List<FeatureBasedDiagnostic> getScopePropagatorDiagnostics(String message) {
+		return problem.getStatements().stream()
+				.filter(ScopeDeclaration.class::isInstance)
+				.map(eObject -> new FeatureBasedDiagnostic(Diagnostic.ERROR, message, eObject, null, 0,
+						CheckType.EXPENSIVE, DIAGNOSTIC_ID))
+				.toList();
+	}
+
+	private List<FeatureBasedDiagnostic> getRuleDiagnostics(Rule rule, ProblemTrace trace, String message) {
+		var ruleDefinition = trace.getRuleDefinition(rule);
+		return getTracedDiagnostics(ruleDefinition, ProblemPackage.Literals.NAMED_ELEMENT__NAME, message);
 	}
 }

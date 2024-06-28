@@ -41,7 +41,8 @@ public final class ModelSemanticsFactory {
 		var storeBuilder = ModelStore.builder()
 				.cancellationToken(cancellationToken)
 				.with(QueryInterpreterAdapter.builder())
-				.with(PropagationAdapter.builder())
+				.with(PropagationAdapter.builder()
+						.throwOnFatalRejection(false))
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(Set.of(Concreteness.PARTIAL)));
 		initializer.configureStoreBuilder(storeBuilder);

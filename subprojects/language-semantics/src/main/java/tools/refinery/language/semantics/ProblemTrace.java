@@ -10,6 +10,8 @@ import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.Relation;
+import tools.refinery.language.model.problem.RuleDefinition;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
@@ -35,6 +37,8 @@ public interface ProblemTrace {
 	Map<AnyPartialSymbol, Relation> getInverseRelationTrace();
 
 	Relation getRelation(AnyPartialSymbol partialSymbol);
+
+	RuleDefinition getRuleDefinition(Rule rule);
 
 	RuntimeException wrapException(TranslationException translationException);
 

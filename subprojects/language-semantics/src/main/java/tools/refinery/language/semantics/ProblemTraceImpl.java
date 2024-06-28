@@ -13,10 +13,8 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemPackage;
-import tools.refinery.language.model.problem.Relation;
+import tools.refinery.language.model.problem.*;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
@@ -46,6 +44,7 @@ class ProblemTraceImpl implements ProblemTrace {
 			Collections.unmodifiableMap(mutableRelationTrace);
 	private final Map<AnyPartialSymbol, Relation> mutableInverseTrace = new HashMap<>();
 	private final Map<AnyPartialSymbol, Relation> inverseTrace = Collections.unmodifiableMap(mutableInverseTrace);
+	private final Map<Rule, RuleDefinition> mutableInverseRuleDefinitionTrace = new LinkedHashMap<>();
 
 	@Override
 	public Problem getProblem() {
@@ -127,6 +126,23 @@ class ProblemTraceImpl implements ProblemTrace {
 			throw new IllegalArgumentException("No relation for partial symbol: " + partialSymbol);
 		}
 		return relation;
+	}
+
+	void putRuleDefinition(RuleDefinition ruleDefinition, Rule rule) {
+		var oldRuleDefinition = mutableInverseRuleDefinitionTrace.put(rule, ruleDefinition);
+		if (oldRuleDefinition != null) {
+			throw new TracedException(oldRuleDefinition, "Rule definition %s was already mapped to rule"
+					.formatted(rule.getName()));
+		}
+	}
+
+	@Override
+	public RuleDefinition getRuleDefinition(Rule rule) {
+		var ruleDefinition = mutableInverseRuleDefinitionTrace.get(rule);
+		if (ruleDefinition == null) {
+			throw new IllegalArgumentException("No definition for rule: " + rule.getName());
+		}
+		return ruleDefinition;
 	}
 
 	@Override

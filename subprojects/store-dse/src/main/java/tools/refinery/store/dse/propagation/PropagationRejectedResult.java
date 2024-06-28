@@ -5,7 +5,11 @@
  */
 package tools.refinery.store.dse.propagation;
 
-public record PropagationRejectedResult(Object reason, String message) implements PropagationResult {
+public record PropagationRejectedResult(Object reason, String message, boolean fatal) implements PropagationResult {
+	public PropagationRejectedResult(Object reason, String message) {
+		this(reason, message, false);
+	}
+
 	@Override
 	public PropagationResult andThen(PropagationResult next) {
 		return this;
@@ -18,7 +22,7 @@ public record PropagationRejectedResult(Object reason, String message) implement
 
 	@Override
 	public void throwIfRejected() {
-		throw new IllegalArgumentException(formatMessage());
+		throw new IllegalStateException(formatMessage());
 	}
 
 	public String formatMessage() {

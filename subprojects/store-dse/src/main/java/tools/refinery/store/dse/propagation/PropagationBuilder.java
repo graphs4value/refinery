@@ -27,6 +27,8 @@ public interface PropagationBuilder extends ModelAdapterBuilder {
 
 	PropagationBuilder propagator(Propagator propagator);
 
+	PropagationBuilder throwOnFatalRejection(boolean throwOnFatalRejection);
+
 	@Override
 	PropagationStoreAdapter build(ModelStore store);
 }

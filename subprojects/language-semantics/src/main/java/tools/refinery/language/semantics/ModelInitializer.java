@@ -967,6 +967,7 @@ public class ModelInitializer {
 					.orElseGet(() -> "::rule" + ruleCount);
 			ruleCount++;
 			var rule = toRule(name, ruleDefinition);
+			problemTrace.putRuleDefinition(ruleDefinition, rule);
 			switch (ruleDefinition.getKind()) {
 			case DECISION -> storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
 					.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
