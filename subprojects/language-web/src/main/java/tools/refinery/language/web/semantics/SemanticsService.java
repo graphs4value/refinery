@@ -5,7 +5,6 @@
  */
 package tools.refinery.language.web.semantics;
 
-import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -21,9 +20,11 @@ import org.slf4j.LoggerFactory;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
@@ -74,7 +75,7 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		}
 		var problem = getProblem(doc);
 		if (problem == null) {
-			return new SemanticsSuccessResult(List.of(), List.of(), new JsonObject());
+			return new SemanticsResult(SemanticsModelResult.EMPTY);
 		}
 		var worker = workerProvider.get();
 		worker.setProblem(problem, cancelIndicator);
@@ -101,14 +102,14 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			if (message == null) {
 				message = "Partial interpretation error";
 			}
-			return new SemanticsInternalErrorResult(message);
+			return new SemanticsResult(message);
 		} catch (TimeoutException e) {
 			future.cancel(true);
 			if (!warmedUpCurrently) {
 				warmedUp.set(true);
 			}
 			LOG.trace("Semantics service timeout", e);
-			return new SemanticsInternalErrorResult("Partial interpretation timed out");
+			return new SemanticsResult("Partial interpretation timed out");
 		}
 		if (LOG.isTraceEnabled()) {
 			long end = System.currentTimeMillis();
@@ -133,7 +134,7 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		if (contents.isEmpty()) {
 			return null;
 		}
-		var model = contents.get(0);
+		var model = contents.getFirst();
 		if (!(model instanceof Problem problem)) {
 			return null;
 		}

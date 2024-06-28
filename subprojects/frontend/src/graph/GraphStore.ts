@@ -9,7 +9,7 @@ import { makeAutoObservable, observable } from 'mobx';
 import type EditorStore from '../editor/EditorStore';
 import type {
   RelationMetadata,
-  SemanticsSuccessResult,
+  SemanticsModelResult,
 } from '../xtext/xtextServiceResults';
 
 export type Visibility = 'all' | 'must' | 'none';
@@ -52,7 +52,7 @@ export function isVisibilityAllowed(
 const TYPE_HASH_HEX_PREFFIX = '_';
 
 export default class GraphStore {
-  semantics: SemanticsSuccessResult = {
+  semantics: SemanticsModelResult = {
     nodes: [],
     relations: [],
     partialInterpretation: {},
@@ -175,7 +175,7 @@ export default class GraphStore {
     }
   }
 
-  setSemantics(semantics: SemanticsSuccessResult) {
+  setSemantics(semantics: SemanticsModelResult) {
     this.semantics = semantics;
     this.relationMetadata.clear();
     this.semantics.relations.forEach((metadata) => {

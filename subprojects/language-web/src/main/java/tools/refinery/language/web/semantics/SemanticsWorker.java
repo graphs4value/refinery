@@ -21,6 +21,7 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.semantics.metadata.MetadataCreator;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.seed.PropagatedModel;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
 
@@ -63,9 +64,9 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		cancellationToken.checkCancelled();
 		ModelSemantics semantics;
 		try {
-			semantics = semanticsFactory.cancellationToken(cancellationToken).createSemantics(problem);
+			semantics = semanticsFactory.cancellationToken(cancellationToken).tryCreateSemantics(problem);
 		} catch (TranslationException e) {
-			return new SemanticsInternalErrorResult(e.getMessage());
+			return new SemanticsResult(e.getMessage());
 		} catch (TracedException e) {
 			var cause = e.getCause();
 			// Suppress the type of the cause exception.
@@ -79,12 +80,14 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics, cancellationToken);
-		return new SemanticsSuccessResult(nodesMetadata, relationsMetadata, partialInterpretation);
+		var modelResult = new SemanticsModelResult(nodesMetadata, relationsMetadata, partialInterpretation);
+		var error = semantics.isRejected() ? PropagatedModel.PROPAGATION_FAILED_MESSAGE : null;
+		return new SemanticsResult(modelResult, error);
 	}
 
 	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {
 		if (sourceElement == null || !problem.eResource().equals(sourceElement.eResource())) {
-			return new SemanticsInternalErrorResult(message);
+			return new SemanticsResult(message);
 		}
 		var diagnostic = new FeatureBasedDiagnostic(Diagnostic.ERROR, message, sourceElement, null, 0,
 				CheckType.EXPENSIVE, DIAGNOSTIC_ID);
@@ -94,6 +97,6 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 				.map(issue -> new ValidationResult.Issue(issue.getMessage(), "error", issue.getLineNumber(),
 						issue.getColumn(), issue.getOffset(), issue.getLength()))
 				.toList();
-		return new SemanticsIssuesResult(issues);
+		return new SemanticsResult(issues);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -15,11 +15,13 @@ import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
+import tools.refinery.store.reasoning.seed.PropagatedModel;
 import tools.refinery.store.reasoning.translator.TranslationException;
 
 public abstract class ModelFacade {
 	private final ProblemTrace problemTrace;
 	private final ModelStore store;
+	private final PropagatedModel propagatedModel;
 	private final Model model;
 	private final ReasoningAdapter reasoningAdapter;
 	private final Concreteness concreteness;
@@ -29,10 +31,11 @@ public abstract class ModelFacade {
 		this.problemTrace = problemTrace;
 		this.store = store;
 		try {
-			model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+			propagatedModel = store.getAdapter(ReasoningStoreAdapter.class).tryCreateInitialModel(modelSeed);
 		} catch (TranslationException e) {
 			throw problemTrace.wrapException(e);
 		}
+		model = propagatedModel.model();
 		reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 		this.concreteness = concreteness;
 	}
@@ -47,6 +50,14 @@ public abstract class ModelFacade {
 
 	public Model getModel() {
 		return model;
+	}
+
+	public boolean isRejected() {
+		return propagatedModel.isRejected();
+	}
+
+	public void throwIfRejected() {
+		propagatedModel.throwIfRejected();
 	}
 
 	public Concreteness getConcreteness() {

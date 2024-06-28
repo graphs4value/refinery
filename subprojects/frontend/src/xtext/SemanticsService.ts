@@ -1,8 +1,10 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
+import { runInAction } from 'mobx';
 
 import type EditorStore from '../editor/EditorStore';
 
@@ -17,16 +19,21 @@ export default class SemanticsService {
 
   onPush(push: unknown): void {
     const result = SemanticsResult.parse(push);
-    if ('issues' in result) {
-      this.validationService.setSemanticsIssues(result.issues);
-    } else {
-      this.validationService.setSemanticsIssues([]);
+    runInAction(() => {
+      if ('issues' in result && result.issues !== undefined) {
+        this.validationService.setSemanticsIssues(result.issues);
+      } else {
+        this.validationService.setSemanticsIssues([]);
+      }
       if ('error' in result) {
         this.store.setSemanticsError(result.error);
       } else {
-        this.store.setSemantics(result);
+        this.store.setSemanticsError(undefined);
       }
-    }
-    this.store.analysisCompleted();
+      if ('model' in result && result.model !== undefined) {
+        this.store.setSemantics(result.model);
+      }
+      this.store.analysisCompleted();
+    });
   }
 }

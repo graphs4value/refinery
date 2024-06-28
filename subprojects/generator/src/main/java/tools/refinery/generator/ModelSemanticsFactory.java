@@ -30,6 +30,12 @@ public final class ModelSemanticsFactory {
 	}
 
 	public ModelSemantics createSemantics(Problem problem) {
+		var semantics = tryCreateSemantics(problem);
+		semantics.throwIfRejected();
+		return semantics;
+	}
+
+	public ModelSemantics tryCreateSemantics(Problem problem) {
 		var initializer = initializerProvider.get();
 		initializer.readProblem(problem);
 		var storeBuilder = ModelStore.builder()

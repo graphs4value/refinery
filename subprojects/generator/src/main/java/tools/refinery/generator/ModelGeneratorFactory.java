@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -78,8 +78,10 @@ public final class ModelGeneratorFactory {
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		return new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
+		var generator = new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				solutionSerializerProvider);
+		generator.throwIfRejected();
+		return generator;
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {
