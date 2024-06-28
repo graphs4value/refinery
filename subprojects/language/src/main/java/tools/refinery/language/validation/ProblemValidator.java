@@ -55,6 +55,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
 	public static final String VARIABLE_WITHOUT_EXISTS = ISSUE_PREFIX + "VARIABLE_WITHOUT_EXISTS";
 	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
+	public static final String UNUSED_PARAMETER = ISSUE_PREFIX + "UNUSED_PARAMETER";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
@@ -344,7 +345,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (referenceDeclaration.getKind() == ReferenceKind.PARTIAL &&
 				!actionTargetCollector.isActionTarget(referenceDeclaration)) {
 			var message = "Add decision or propagation rules to refine partial relation '%s'."
-							.formatted(referenceDeclaration.getName());
+					.formatted(referenceDeclaration.getName());
 			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__KIND, 0,
 					UNUSED_PARTIAL_RELATION);
 		}
@@ -445,13 +446,71 @@ public class ProblemValidator extends AbstractProblemValidator {
 				String message;
 				if (ProblemUtil.isSingletonVariable(variable)) {
 					message = ("Remove the singleton variable marker '_' and clarify the quantification of variable " +
-                            "'%s'.").formatted(name);
+							"'%s'.").formatted(name);
 				} else {
 					message = ("Add a 'must exists(%s)', 'may exists(%s)', or 'may !exists(%s)' constraint to " +
 							"clarify the quantification of variable '%s'.").formatted(name, name, name, name);
 				}
 				acceptWarning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
 						VARIABLE_WITHOUT_EXISTS);
+			}
+		}
+	}
+
+	@Check
+	public void checkRuleParameters(RuleDefinition ruleDefinition) {
+		var useCounts = new LinkedHashMap<Parameter, Integer>();
+		for (var parameter : ruleDefinition.getParameters()) {
+			useCounts.put(parameter, 0);
+		}
+		var consequents = ruleDefinition.getConsequents();
+		for (var consequent : consequents) {
+			countRuleParameterUsages(consequent, useCounts);
+		}
+		var isError = ruleDefinition.getKind() == RuleKind.PROPAGATION;
+		int consequentCount = consequents.size();
+		for (var entry : useCounts.entrySet()) {
+			if (entry.getValue() < consequentCount) {
+				var parameter = entry.getKey();
+				var message = "Unused rule parameter '%s'.".formatted(parameter.getName());
+				if (isError) {
+					acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, UNUSED_PARAMETER);
+				} else {
+					acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
+							UNUSED_PARAMETER);
+				}
+			}
+		}
+	}
+
+	@Check
+	public void checkPropagationRuleConsequent(Consequent consequent) {
+		var rule = EcoreUtil2.getContainerOfType(consequent, RuleDefinition.class);
+		if (rule == null || rule.getKind() != RuleKind.PROPAGATION) {
+			return;
+		}
+		if (consequent.getActions().size() > 1) {
+			acceptError("Propagation rules must have exactly one action.", consequent, null, 0, INVALID_RULE_ISSUE);
+		}
+	}
+
+	private static void countRuleParameterUsages(Consequent consequent, Map<Parameter, Integer> useCounts) {
+		var usedParameters = new HashSet<Parameter>();
+		for (var action : consequent.getActions()) {
+			if (action instanceof AssertionAction assertionAction) {
+				collectUsedParameters(assertionAction, usedParameters);
+			}
+		}
+		for (var usedParameter : usedParameters) {
+			useCounts.compute(usedParameter, (ignored, value) -> value == null ? 0 : value + 1);
+		}
+	}
+
+	private static void collectUsedParameters(AssertionAction assertionAction, HashSet<Parameter> usedParameters) {
+		for (var argument : assertionAction.getArguments()) {
+			if (argument instanceof NodeAssertionArgument nodeAssertionArgument &&
+					nodeAssertionArgument.getNode() instanceof Parameter usedParameter) {
+				usedParameters.add(usedParameter);
 			}
 		}
 	}
