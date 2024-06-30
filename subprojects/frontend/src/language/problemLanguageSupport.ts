@@ -40,7 +40,7 @@ const parserWithMetadata = parser.configure({
       default: t.modifier,
       'propagation decision': t.modifier,
       'true false unknown error': t.keyword,
-      'computed candidate may must': t.operatorKeyword,
+      'candidate may must': t.operatorKeyword,
       'count in is': t.operatorKeyword,
       NotOp: t.operator,
       UnknownOp: t.operator,

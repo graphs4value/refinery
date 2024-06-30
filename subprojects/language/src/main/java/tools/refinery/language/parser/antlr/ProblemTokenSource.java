@@ -28,6 +28,8 @@ public class ProblemTokenSource implements TokenSource {
 
 	private boolean seenId;
 
+	private boolean seenComputed;
+
 	private boolean lastVisible;
 
 	public ProblemTokenSource(TokenSource delegate) {
@@ -57,10 +59,13 @@ public class ProblemTokenSource implements TokenSource {
 			} else if (lastVisible && isQualifiedNameSeparator(token)) {
 				token.setType(InternalProblemParser.RULE_QUALIFIED_NAME_SEPARATOR);
 			}
+		} else if (seenComputed && isPlusOrTransitiveClosure(token) && peekForTransitiveClosure()) {
+			token.setType(InternalProblemParser.RULE_TRANSITIVE_CLOSURE);
 		}
 		lastVisible = isVisibleToken(token);
 		if (lastVisible) {
 			seenId = isIdentifier(token);
+			seenComputed = isComputed(token);
 		}
 		return token;
 	}
@@ -80,6 +85,10 @@ public class ProblemTokenSource implements TokenSource {
 
 	protected boolean isQualifiedNameSeparator(Token token) {
 		return token.getType() == InternalProblemParser.ColonColon;
+	}
+
+	protected boolean isComputed(Token token) {
+		return token.getType() == InternalProblemParser.LessThanSignHyphenMinus;
 	}
 
 	protected boolean isVisibleToken(Token token) {

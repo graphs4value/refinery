@@ -199,8 +199,8 @@ CastExprBody returns Expr:
 	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 Atom:
-	computed?="computed"?
 	relation=[Relation|QualifiedName]
+	computed?="<-"?
 	transitiveClosure?=TRANSITIVE_CLOSURE?
 	"(" (arguments+=Expr ("," arguments+=Expr)*)? ")";
 
