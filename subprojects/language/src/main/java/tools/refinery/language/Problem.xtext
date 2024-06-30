@@ -200,7 +200,7 @@ CastExprBody returns Expr:
 
 Atom:
 	relation=[Relation|QualifiedName]
-	computed?="<-"?
+	computed?="$"?
 	transitiveClosure?=TRANSITIVE_CLOSURE?
 	"(" (arguments+=Expr ("," arguments+=Expr)*)? ")";
 

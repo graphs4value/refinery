@@ -144,7 +144,7 @@ Aggregation {
   AggregatorName "{" Expr "|" Expr "}"
 }
 
-Atom { RelationName "<-"? "+"? ParameterList<Expr> }
+Atom { RelationName ComputedValue? "+"? ParameterList<Expr> }
 
 Consequent { ("," | Action)+ }
 
@@ -263,5 +263,7 @@ sep1<separator, content> { content (separator content)* }
 
   AndBinding { "&" }
 
-  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "->" "<-" "<->" "==>" "+" "-" "**" "=" "+="
+  ComputedValue { "$" }
+
+  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
 }

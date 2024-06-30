@@ -88,7 +88,7 @@ public class ProblemTokenSource implements TokenSource {
 	}
 
 	protected boolean isComputed(Token token) {
-		return token.getType() == InternalProblemParser.LessThanSignHyphenMinus;
+		return token.getType() == InternalProblemParser.DollarSign;
 	}
 
 	protected boolean isVisibleToken(Token token) {
