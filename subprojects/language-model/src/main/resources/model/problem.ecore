@@ -41,7 +41,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="concreteness" eType="#//Concreteness"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="binding" eType="#//ParameterBinding"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="derivation" eType="#//Derivation"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Variable" abstract="true" eSuperTypes="#//VariableOrNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="Atom" eSuperTypes="#//Expr">
@@ -49,6 +48,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
         eType="#//Expr" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="computed" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ImplicitVariable" eSuperTypes="#//Variable"/>
   <eClassifiers xsi:type="ecore:EClass" name="ExistentialQuantifier" abstract="true"
@@ -256,7 +256,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModalExpr" eSuperTypes="#//UnaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="concreteness" eType="#//Concreteness"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="derivation" eType="#//Derivation"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Modality">
     <eLiterals name="NONE"/>
@@ -280,9 +279,5 @@
   <eClassifiers xsi:type="ecore:EClass" name="Assertion" eSuperTypes="#//Statement #//AbstractAssertion">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="default" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
         defaultValueLiteral="false"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="Derivation">
-    <eLiterals name="PROPAGATED"/>
-    <eLiterals name="COMPUTED" value="1"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -710,8 +710,7 @@ public class ModelInitializer {
 			}
 		}
 		case Atom atom -> {
-			var target = extractedOuter.modality.wrapPartialRelation(getPartialRelation(atom.getRelation()));
-			var constraint = atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
+			var constraint = getConstraint(atom);
 			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
 			literals.add(extractedOuter.modality.wrapConstraint(constraint).call(CallPolarity.POSITIVE, argumentList));
 		}
@@ -724,8 +723,7 @@ public class ModelInitializer {
 			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
 			List<Variable> argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
 			var innerModality = extractedInner.modality().merge(outerModality.negate());
-			var target = innerModality.wrapPartialRelation(getPartialRelation(atom.getRelation()));
-			Constraint constraint = atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
+			var constraint = getConstraint(atom);
 			literals.add(createNegationLiteral(innerModality, constraint, argumentList, localScope));
 		}
 		case ComparisonExpr comparisonExpr -> {
@@ -744,6 +742,12 @@ public class ModelInitializer {
 		}
 	}
 
+	private Constraint getConstraint(Atom atom) {
+		var target = getPartialRelation(atom.getRelation());
+		var computedTarget = atom.isComputed() ? new ComputedConstraint(target) : target;
+		return atom.isTransitiveClosure() ? getTransitiveWrapper(computedTarget) : computedTarget;
+	}
+
 	private Constraint getTransitiveWrapper(Constraint target) {
 		return Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
 				target.callTransitive(p1, p2)
@@ -753,7 +757,7 @@ public class ModelInitializer {
 	private static Literal createNegationLiteral(
 			ConcreteModality innerModality, Constraint constraint, List<Variable> argumentList,
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
-		if (innerModality.isModal()) {
+		if (innerModality.isSet()) {
 			boolean needsQuantification = false;
 			var filteredArguments = new LinkedHashSet<Variable>();
 			for (var argument : argumentList) {
@@ -783,7 +787,7 @@ public class ModelInitializer {
 	private Literal createEquivalenceLiteral(
 			ConcreteModality outerModality, boolean positive, Variable left, Variable right,
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
-		if (!outerModality.isModal()) {
+		if (!outerModality.isSet()) {
 			return new EquivalenceLiteral(positive, left, right);
 		}
 		if (positive) {
@@ -794,15 +798,12 @@ public class ModelInitializer {
 				localScope);
 	}
 
-	private record ConcreteModality(@Nullable Derivation derivation, @Nullable Concreteness concreteness,
-									@Nullable Modality modality) {
-		public static final ConcreteModality NULL = new ConcreteModality(null, (Concreteness) null, null);
+	private record ConcreteModality(@Nullable Concreteness concreteness, @Nullable Modality modality) {
+		public static final ConcreteModality NULL = new ConcreteModality((Concreteness) null, null);
 
-		public ConcreteModality(Derivation derivation,
-								tools.refinery.language.model.problem.Concreteness concreteness,
+		public ConcreteModality(tools.refinery.language.model.problem.Concreteness concreteness,
 								tools.refinery.language.model.problem.Modality modality) {
 			this(
-					derivation,
 					switch (concreteness) {
 						case PARTIAL -> Concreteness.PARTIAL;
 						case CANDIDATE -> Concreteness.CANDIDATE;
@@ -817,36 +818,24 @@ public class ModelInitializer {
 
 		public ConcreteModality negate() {
 			var negatedModality = modality == null ? null : modality.negate();
-			return new ConcreteModality(derivation, concreteness, negatedModality);
+			return new ConcreteModality(concreteness, negatedModality);
 		}
 
 		public ConcreteModality merge(ConcreteModality outer) {
-			var mergedDerivation = derivation == null ? outer.derivation() : derivation;
 			var mergedConcreteness = concreteness == null ? outer.concreteness() : concreteness;
 			var mergedModality = modality == null ? outer.modality() : modality;
-			return new ConcreteModality(mergedDerivation, mergedConcreteness, mergedModality);
+			return new ConcreteModality(mergedConcreteness, mergedModality);
 		}
 
 		public Constraint wrapConstraint(Constraint inner) {
-			if (modality != null) {
-				if (concreteness == null) {
-					throw new IllegalStateException("Missing concreteness");
-				}
+			if (isSet()) {
 				return new ModalConstraint(modality, concreteness, inner);
 			}
 			return inner;
 		}
 
-		public boolean isModal() {
+		public boolean isSet() {
 			return concreteness != null || modality != null;
-		}
-
-		public Constraint wrapPartialRelation(PartialRelation partialRelation) {
-			return isComputed() ? new ComputedConstraint(partialRelation) : partialRelation;
-		}
-
-		public boolean isComputed() {
-			return derivation == Derivation.COMPUTED;
 		}
 	}
 
@@ -855,8 +844,8 @@ public class ModelInitializer {
 
 	private ExtractedModalExpr extractModalExpr(Expr expr) {
 		if (expr instanceof ModalExpr modalExpr) {
-			return new ExtractedModalExpr(new ConcreteModality(modalExpr.getDerivation(), modalExpr.getConcreteness(),
-					modalExpr.getModality()), modalExpr.getBody());
+			return new ExtractedModalExpr(new ConcreteModality(modalExpr.getConcreteness(), modalExpr.getModality()),
+					modalExpr.getBody());
 		}
 		return new ExtractedModalExpr(ConcreteModality.NULL, expr);
 	}
@@ -1018,9 +1007,9 @@ public class ModelInitializer {
 			parameterMap.put(problemParameter, parameter);
 			var parameterType = problemParameter.getParameterType();
 			if (parameterType != null) {
-				var modality = new ConcreteModality(problemParameter.getDerivation(),
-						problemParameter.getConcreteness(), problemParameter.getModality());
-				var partialType = modality.wrapPartialRelation(getPartialRelation(parameterType));
+				var partialType = getPartialRelation(parameterType);
+				var modality = new ConcreteModality(problemParameter.getConcreteness(),
+						problemParameter.getModality());
 				commonLiterals.add(modality.wrapConstraint(partialType).call(parameter));
 			}
 			if (ruleDefinition.getKind() == RuleKind.DECISION &&
