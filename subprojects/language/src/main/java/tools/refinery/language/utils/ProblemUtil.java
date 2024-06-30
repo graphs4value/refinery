@@ -53,6 +53,10 @@ public final class ProblemUtil {
 		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
 	}
 
+	public static boolean isComputedValue(EObject eObject) {
+		return eObject instanceof PredicateDefinition predicateDefinition && !predicateDefinition.getBodies().isEmpty();
+	}
+
 	public static boolean isAtomNode(Node node) {
 		var containingFeature = node.eContainingFeature();
 		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {

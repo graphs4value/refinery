@@ -46,6 +46,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String MODULE_KIND = DATA_PREFIX + "MODULE_KIND";
 	public static final String COLOR_RELATION = DATA_PREFIX + "COLOR_RELATION";
 	public static final String COLOR_RELATION_TRUE = "true";
+	public static final String COMPUTED_VALUE = DATA_PREFIX + "COMPUTED_VALUE";
+	public static final String COMPUTED_VALUE_TRUE = "true";
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -160,8 +162,11 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		} else if (eObject instanceof AggregatorDeclaration) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_AGGREGATOR);
 		}
-		if (eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError()) {
+		if (ProblemUtil.isError(eObject)) {
 			builder.put(ERROR_PREDICATE, ERROR_PREDICATE_TRUE);
+		}
+		if (ProblemUtil.isComputedValue(eObject)) {
+			builder.put(COMPUTED_VALUE, COMPUTED_VALUE_TRUE);
 		}
 		var documentationMap = documentationCommentParser.parseDocumentation(eObject);
 		builder.putAll(documentationMap);

@@ -106,6 +106,12 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		}
 		var errorPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE);
 		if (ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(errorPredicate)) {
+			var definitionContext = EcoreUtil2.getContainerOfType(context.getCurrentModel(),
+					ParametricDefinition.class);
+			if (definitionContext instanceof RuleDefinition) {
+				var computedValue = candidate.getUserData(ProblemResourceDescriptionStrategy.COMPUTED_VALUE);
+				return ProblemResourceDescriptionStrategy.COMPUTED_VALUE_TRUE.equals(computedValue);
+			}
 			return false;
 		}
 

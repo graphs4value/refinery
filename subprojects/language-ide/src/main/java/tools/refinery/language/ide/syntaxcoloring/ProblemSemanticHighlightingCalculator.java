@@ -51,7 +51,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (!(object instanceof NamedElement)) {
 			return;
 		}
-		String[] highlightClass = getHighlightClass(object, null);
+		String[] highlightClass = getHighlightClass(object, null, null);
 		if (highlightClass.length > 0) {
 			highlightFeature(acceptor, object, ProblemPackage.Literals.NAMED_ELEMENT__NAME, highlightClass);
 		}
@@ -72,40 +72,43 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		}
 	}
 
-	protected void highlightSingleValue(EObject object, EReference reference, IHighlightedPositionAcceptor acceptor) {
-		EObject valueObj = (EObject) object.eGet(reference);
-		String[] highlightClass = getHighlightClass(valueObj, reference);
+	protected void highlightSingleValue(EObject owner, EReference reference, IHighlightedPositionAcceptor acceptor) {
+		EObject valueObj = (EObject) owner.eGet(reference);
+		String[] highlightClass = getHighlightClass(valueObj, owner, reference);
 		if (highlightClass.length > 0) {
-			highlightFeature(acceptor, object, reference, highlightClass);
+			highlightFeature(acceptor, owner, reference, highlightClass);
 		}
 	}
 
-	protected void highlightManyValues(EObject object, EReference reference, IHighlightedPositionAcceptor acceptor) {
+	protected void highlightManyValues(EObject owner, EReference reference, IHighlightedPositionAcceptor acceptor) {
 		@SuppressWarnings("unchecked")
-		EList<? extends EObject> values = (EList<? extends EObject>) object.eGet(reference);
-		List<INode> nodes = NodeModelUtils.findNodesForFeature(object, reference);
+		EList<? extends EObject> values = (EList<? extends EObject>) owner.eGet(reference);
+		List<INode> nodes = NodeModelUtils.findNodesForFeature(owner, reference);
 		int size = Math.min(values.size(), nodes.size());
 		for (var i = 0; i < size; i++) {
 			EObject valueInList = values.get(i);
 			INode node = nodes.get(i);
-			String[] highlightClass = getHighlightClass(valueInList, reference);
+			String[] highlightClass = getHighlightClass(valueInList, owner, reference);
 			if (highlightClass.length > 0) {
 				highlightNode(acceptor, node, highlightClass);
 			}
 		}
 	}
 
-	protected String[] getHighlightClass(EObject eObject, EReference reference) {
-		boolean isError = ProblemUtil.isError(eObject);
+	protected String[] getHighlightClass(EObject eObject, EObject owner, EReference reference) {
+		// References to error patterns should be highlighted as errors, but error pattern definitions and
+		// references to the computed values of error patterns shouldn't.
+		boolean isError = ProblemUtil.isError(eObject) && reference != null &&
+				!(owner instanceof Atom atom && atom.isComputed());
 		if (ProblemUtil.isBuiltIn(eObject) && !(eObject instanceof Problem)) {
 			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
 			return new String[]{className};
 		}
-		return getUserDefinedElementHighlightClass(eObject, reference, isError);
+		return getUserDefinedElementHighlightClass(eObject, isError);
 	}
 
 	@NotNull
-	private String[] getUserDefinedElementHighlightClass(EObject eObject, EReference reference, boolean isError) {
+	private String[] getUserDefinedElementHighlightClass(EObject eObject, boolean isError) {
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
 		if (eObject instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			classesBuilder.add(ABSTRACT_CLASS);
@@ -120,8 +123,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 				&& ProblemUtil.isContainmentReference(referenceDeclaration)) {
 			classesBuilder.add(CONTAINMENT_CLASS);
 		}
-		if (isError && reference != null) {
-			// References to error patterns should be highlighted as errors, but error pattern definitions shouldn't.
+		if (isError) {
 			classesBuilder.add(ERROR_CLASS);
 		}
 		if (eObject instanceof Node node) {
