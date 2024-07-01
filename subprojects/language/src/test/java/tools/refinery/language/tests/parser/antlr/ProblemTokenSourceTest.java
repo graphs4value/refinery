@@ -66,9 +66,7 @@ class ProblemTokenSourceTest {
 	@ValueSource(strings = {
 			"equals+(a, b)",
 			"equals + (a, b)",
-			"equals+(a::x, b)",
-			"equals$+(a, b)",
-			"equals$ + (a, b)"
+			"equals+(a::x, b)"
 	})
 	void transitiveClosureInTokenStreamTest(String text) {
 		var tokenList = createTokenList(text);

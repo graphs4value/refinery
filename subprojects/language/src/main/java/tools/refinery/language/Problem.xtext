@@ -58,6 +58,7 @@ ReferenceMultiplicity returns Multiplicity:
 	"[" Multiplicity "]";
 
 PredicateDefinition:
+	shadow?="shadow"?
 	("pred" | error?="error" "pred"?)
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
@@ -200,7 +201,6 @@ CastExprBody returns Expr:
 
 Atom:
 	relation=[Relation|QualifiedName]
-	computed?="$"?
 	transitiveClosure?=TRANSITIVE_CLOSURE?
 	"(" (arguments+=Expr ("," arguments+=Expr)*)? ")";
 
@@ -297,7 +297,7 @@ Identifier:
 
 NonContainmentIdentifier:
 	ID | "atom" | "multi" | "contained" | "problem" | "module" |
-	"datatype" | "aggregator" | "decision" | "propagation";
+	"datatype" | "aggregator" | "decision" | "propagation" | "computed";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

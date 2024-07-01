@@ -22,6 +22,7 @@ import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 @Singleton
 public class ProblemDerivedStateComputer implements IDerivedStateComputer {
@@ -59,7 +60,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	}
 
 	protected void installDerivedProblemState(Problem problem, Adapter adapter, boolean preLinkingPhase) {
-		installDerivedClassDeclarationState(problem, adapter);
+		installDerivedDeclarationState(problem, adapter);
 		if (preLinkingPhase) {
 			return;
 		}
@@ -67,13 +68,15 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		derivedVariableComputer.installDerivedVariables(problem, nodeNames);
 	}
 
-	protected void installDerivedClassDeclarationState(Problem problem, Adapter adapter) {
+	protected void installDerivedDeclarationState(Problem problem, Adapter adapter) {
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
 				installOrRemoveNewNode(adapter, classDeclaration);
 				for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
 					installOrRemoveInvalidMultiplicityPredicate(adapter, classDeclaration, referenceDeclaration);
 				}
+			} else if (statement instanceof PredicateDefinition predicateDefinition) {
+				installOrRemoveComputedValuePredicate(adapter, predicateDefinition);
 			}
 		}
 	}
@@ -118,6 +121,27 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		}
 	}
 
+	protected void installOrRemoveComputedValuePredicate(Adapter adapter, PredicateDefinition predicateDefinition) {
+		if (ProblemUtil.hasComputedValue(predicateDefinition)) {
+			var computedValue = adapter.createComputedValuePredicateIfAbsent(predicateDefinition, key -> {
+				var predicate = ProblemFactory.eINSTANCE.createPredicateDefinition();
+				predicate.setShadow(true);
+				predicate.setName("definition");
+				return predicate;
+			});
+			var parameters = computedValue.getParameters();
+			parameters.clear();
+			parameters.addAll(EcoreUtil.copyAll(predicateDefinition.getParameters()));
+			predicateDefinition.setComputedValue(computedValue);
+		} else {
+			var computedValue = predicateDefinition.getComputedValue();
+			if (computedValue != null) {
+				predicateDefinition.setComputedValue(null);
+				adapter.removeComputedValuePredicate(computedValue);
+			}
+		}
+	}
+
 	protected Set<String> installDerivedNodes(Problem problem) {
 		var collector = nodeNameCollectorProvider.get();
 		collector.collectNodeNames(problem);
@@ -148,6 +172,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	protected void discardDerivedProblemState(Problem problem, Adapter adapter) {
 		var abstractClassDeclarations = new HashSet<ClassDeclaration>();
 		var referenceDeclarationsWithMultiplicity = new HashSet<ReferenceDeclaration>();
+		var predicateDefinitionsWithComputedValue = new HashSet<PredicateDefinition>();
 		problem.getNodes().clear();
 		for (var statement : problem.getStatements()) {
 			if (statement instanceof ClassDeclaration classDeclaration) {
@@ -160,9 +185,13 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 						referenceDeclarationsWithMultiplicity.add(referenceDeclaration);
 					}
 				}
+			} else if (statement instanceof PredicateDefinition predicateDefinition &&
+					ProblemUtil.hasComputedValue(predicateDefinition)) {
+				predicateDefinitionsWithComputedValue.add(predicateDefinition);
 			}
 		}
-		adapter.retainAll(abstractClassDeclarations, referenceDeclarationsWithMultiplicity);
+		adapter.retainAll(abstractClassDeclarations, referenceDeclarationsWithMultiplicity,
+				predicateDefinitionsWithComputedValue);
 		derivedVariableComputer.discardDerivedVariables(problem);
 	}
 
@@ -185,6 +214,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	protected static class Adapter extends AdapterImpl {
 		private final Map<ClassDeclaration, Node> newNodes = new HashMap<>();
 		private final Map<ReferenceDeclaration, PredicateDefinition> invalidMultiplicityPredicates = new HashMap<>();
+		private final Map<PredicateDefinition, PredicateDefinition> computedValuePredicates = new HashMap<>();
 
 		public Node createNewNodeIfAbsent(ClassDeclaration classDeclaration,
 										  Function<ClassDeclaration, Node> createNode) {
@@ -205,10 +235,21 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			invalidMultiplicityPredicates.remove(referenceDeclaration);
 		}
 
+		public PredicateDefinition createComputedValuePredicateIfAbsent(
+				PredicateDefinition predicateDefinition, UnaryOperator<PredicateDefinition> createPredicate) {
+			return computedValuePredicates.computeIfAbsent(predicateDefinition, createPredicate);
+		}
+
+		public void removeComputedValuePredicate(PredicateDefinition predicateDefinition) {
+			computedValuePredicates.remove(predicateDefinition);
+		}
+
 		public void retainAll(Collection<ClassDeclaration> abstractClassDeclarations,
-							  Collection<ReferenceDeclaration> referenceDeclarationsWithMultiplicity) {
+							  Collection<ReferenceDeclaration> referenceDeclarationsWithMultiplicity,
+							  Collection<PredicateDefinition> predicateDefinitionsWithComputedValue) {
 			newNodes.keySet().retainAll(abstractClassDeclarations);
 			invalidMultiplicityPredicates.keySet().retainAll(referenceDeclarationsWithMultiplicity);
+			computedValuePredicates.keySet().retainAll(predicateDefinitionsWithComputedValue);
 		}
 
 		@Override

@@ -51,6 +51,6 @@ public record ComputedConstraint(PartialRelation partialRelation) implements Con
 	}
 
 	private String formatName(String constraintName) {
-		return constraintName + "$";
+		return "@Computed " + constraintName;
 	}
 }

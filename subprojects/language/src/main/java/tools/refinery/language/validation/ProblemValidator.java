@@ -49,7 +49,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_MODALITY_ISSUE = ISSUE_PREFIX + "INVALID_MODALITY";
 	public static final String INVALID_RULE_ISSUE = ISSUE_PREFIX + "INVALID_RULE";
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
-	public static final String INVALID_COMPUTED_VALUE_ISSUE = ISSUE_PREFIX + "INVALID_COMPUTED_VALUE";
+	public static final String SHADOW_RELATION_ISSUE = ISSUE_PREFIX + "SHADOW_RELATION";
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
@@ -426,16 +426,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 			acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
 					INVALID_TRANSITIVE_CLOSURE_ISSUE);
 		}
-		if (atom.isComputed()) {
-			var target = atom.getRelation();
-			if (target != null && !target.eIsProxy() && !ProblemUtil.isComputedValue(target)) {
-				var message = "Relation '%s' has no computed value.".formatted(target.getName());
-				acceptError(message, atom, ProblemPackage.Literals.ATOM__COMPUTED, 0, INVALID_COMPUTED_VALUE_ISSUE);
-			}
+		var target = atom.getRelation();
+		if (target != null && !target.eIsProxy() && ProblemUtil.isShadow(target)) {
 			var definitionContext = EcoreUtil2.getContainerOfType(atom, ParametricDefinition.class);
-			if (!(definitionContext instanceof RuleDefinition)) {
-				var message = "Computed value references may only appear in rule definitions.";
-				acceptError(message, atom, ProblemPackage.Literals.ATOM__COMPUTED, 0, INVALID_COMPUTED_VALUE_ISSUE);
+			if (!(definitionContext instanceof RuleDefinition)){
+				var message = "Shadow relation '%s' may only appear in rule definitions.".formatted(target.getName());
+				acceptError(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, SHADOW_RELATION_ISSUE);
 			}
 		}
 	}

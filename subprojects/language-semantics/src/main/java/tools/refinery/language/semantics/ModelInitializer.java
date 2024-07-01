@@ -607,16 +607,22 @@ public class ModelInitializer {
 	private void collectPredicateDefinition(PredicateDefinition predicateDefinition, ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var query = toQuery(partialRelation.name(), predicateDefinition);
-		boolean mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
+		boolean mutable;
 		TruthValue defaultValue;
-		if (predicateDefinition.isError()) {
-			defaultValue = TruthValue.FALSE;
+		if (predicateDefinition.isShadow()) {
+			mutable = false;
+			defaultValue = TruthValue.UNKNOWN;
 		} else {
-			var seed = modelSeed.getSeed(partialRelation);
-			defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
-			var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
-			// The symbol should be mutable if there is at least one non-default entry in the seed.
-			mutable = mutable || cursor.move();
+			mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
+			if (predicateDefinition.isError()) {
+				defaultValue = TruthValue.FALSE;
+			} else {
+				var seed = modelSeed.getSeed(partialRelation);
+				defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+				var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
+				// The symbol should be mutable if there is at least one non-default entry in the seed.
+				mutable = mutable || cursor.move();
+			}
 		}
 		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
 		storeBuilder.with(translator);
@@ -743,9 +749,15 @@ public class ModelInitializer {
 	}
 
 	private Constraint getConstraint(Atom atom) {
-		var target = getPartialRelation(atom.getRelation());
-		var computedTarget = atom.isComputed() ? new ComputedConstraint(target) : target;
-		return atom.isTransitiveClosure() ? getTransitiveWrapper(computedTarget) : computedTarget;
+		var relation = atom.getRelation();
+		Constraint target;
+		if (ProblemUtil.isComputedValuePredicate(relation)) {
+			var originalTarget = getPartialRelation((PredicateDefinition) relation.eContainer());
+			target = new ComputedConstraint(originalTarget);
+		} else {
+			target = getPartialRelation(relation);
+		}
+		return atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
 	}
 
 	private Constraint getTransitiveWrapper(Constraint target) {

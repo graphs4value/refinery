@@ -38,7 +38,7 @@ const parserWithMetadata = parser.configure({
       rule: t.definitionKeyword,
       'abstract extends refers contains container partial opposite': t.modifier,
       default: t.modifier,
-      'propagation decision': t.modifier,
+      'shadow propagation decision': t.modifier,
       'true false unknown error': t.keyword,
       'candidate may must': t.operatorKeyword,
       'count in is': t.operatorKeyword,
@@ -61,7 +61,6 @@ const parserWithMetadata = parser.configure({
       '[ ]': t.squareBracket,
       '. .. , ; :': t.separator,
       '<-> = += -> ==>': t.definitionOperator,
-      ComputedValue: t.operator,
     }),
     indentNodeProp.add({
       ProblemDeclaration: indentDeclaration,

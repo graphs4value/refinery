@@ -52,10 +52,8 @@ statement {
     kw<"extern"> ckw<"aggregator"> AggregatorName "."
   } |
   PredicateDefinition {
-    (
-      (kw<"error"> | ckw<"contained"> | kw<"containment">)? kw<"pred"> |
-      kw<"error">
-    )
+    ckw<"shadow">?
+    (kw<"error">? kw<"pred"> | kw<"error">)
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
@@ -144,7 +142,7 @@ Aggregation {
   AggregatorName "{" Expr "|" Expr "}"
 }
 
-Atom { RelationName ComputedValue? "+"? ParameterList<Expr> }
+Atom { RelationName "+"? ParameterList<Expr> }
 
 Consequent { ("," | Action)+ }
 
@@ -262,8 +260,6 @@ sep1<separator, content> { content (separator content)* }
   StarBinding { "*" }
 
   AndBinding { "&" }
-
-  ComputedValue { "$" }
 
   "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
 }

@@ -98,8 +98,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	protected String[] getHighlightClass(EObject eObject, EObject owner, EReference reference) {
 		// References to error patterns should be highlighted as errors, but error pattern definitions and
 		// references to the computed values of error patterns shouldn't.
-		boolean isError = ProblemUtil.isError(eObject) && reference != null &&
-				!(owner instanceof Atom atom && atom.isComputed());
+		boolean isError = ProblemUtil.isError(eObject) && reference != null;
 		if (ProblemUtil.isBuiltIn(eObject) && !(eObject instanceof Problem)) {
 			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
 			return new String[]{className};
