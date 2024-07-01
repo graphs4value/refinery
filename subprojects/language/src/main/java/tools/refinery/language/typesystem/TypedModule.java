@@ -75,7 +75,7 @@ public class TypedModule {
 	private void checkTypes(PredicateDefinition predicateDefinition) {
 		for (var conjunction : predicateDefinition.getBodies()) {
 			for (var literal : conjunction.getLiterals()) {
-				coerceIntoLiteral(literal);
+				coerceIntoLiteral(literal, predicateDefinition.isShadow());
 			}
 		}
 	}
@@ -83,7 +83,7 @@ public class TypedModule {
 	private void checkTypes(RuleDefinition ruleDefinition) {
 		for (var conjunction : ruleDefinition.getPreconditions()) {
 			for (var literal : conjunction.getLiterals()) {
-				expectType(literal, ExprType.MODAL_LITERAL);
+				coerceIntoLiteral(literal, true);
 			}
 		}
 		for (var consequent : ruleDefinition.getConsequents()) {
@@ -393,7 +393,7 @@ public class TypedModule {
 
 	@NotNull
 	private ExprType computeExpressionType(CountExpr countExpr) {
-		return coerceIntoLiteral(countExpr.getBody()) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
+		return coerceIntoLiteral(countExpr.getBody(), false) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
 	}
 
 	@NotNull
@@ -403,7 +403,7 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		// Avoid short-circuiting to let us type check both the value and the condition.
-		boolean ok = coerceIntoLiteral(expr.getCondition());
+		boolean ok = coerceIntoLiteral(expr.getCondition(), false);
 		var value = expr.getValue();
 		var actualType = getExpressionType(value);
 		if (actualType == ExprType.INVALID) {
@@ -617,12 +617,12 @@ public class TypedModule {
 		}
 	}
 
-	private boolean coerceIntoLiteral(Expr expr) {
+	private boolean coerceIntoLiteral(Expr expr, boolean allowModal) {
 		if (expr == null) {
 			return false;
 		}
 		var actualType = getExpressionType(expr);
-		if (actualType == ExprType.LITERAL) {
+		if (actualType == ExprType.LITERAL || (allowModal && actualType == ExprType.MODAL_LITERAL)) {
 			return true;
 		}
 		return expectType(expr, actualType, BuiltinTermInterpreter.BOOLEAN_TYPE);

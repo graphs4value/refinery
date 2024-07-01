@@ -65,8 +65,8 @@ class PartialClauseRewriter {
 			switch (target) {
 			case Dnf dnf -> rewriteRecursively(callLiteral, dnf);
 			case ModalConstraint modalConstraint -> {
-				var modality = modalConstraint.modality();
-				var concreteness = modalConstraint.concreteness();
+				var modality = modalConstraint.modality().toModality();
+				var concreteness = modalConstraint.concreteness().toConcreteness();
 				var constraint = modalConstraint.constraint();
 				switch (constraint) {
 				case Dnf dnf -> rewriteRecursively(callLiteral, modality, concreteness, dnf);
@@ -102,7 +102,7 @@ class PartialClauseRewriter {
 		var variablesToCount = countResult.variablesToCount();
 
 		var literals = new ArrayList<Literal>();
-		literals.add(new ModalConstraint(modality, Concreteness.PARTIAL, literal.getTarget())
+		literals.add(ModalConstraint.of(modality, Concreteness.PARTIAL, literal.getTarget())
 				.call(CallPolarity.POSITIVE, countResult.rewrittenArguments()));
 		switch (variablesToCount.size()) {
 		case 0 -> literals.add(outputVariable.assign(new ConstantTerm<>(type, one)));
@@ -144,10 +144,10 @@ class PartialClauseRewriter {
 		var builder = countResult.builder();
 
 		var literals = new ArrayList<Literal>();
-		literals.add(new ModalConstraint(modality, Concreteness.CANDIDATE, literal.getTarget())
+		literals.add(ModalConstraint.of(modality, Concreteness.CANDIDATE, literal.getTarget())
 				.call(CallPolarity.POSITIVE, countResult.rewrittenArguments()));
 		for (var variable : countResult.variablesToCount()) {
-			literals.add(new ModalConstraint(modality, Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL)
+			literals.add(ModalConstraint.of(modality, Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL)
 					.call(variable));
 		}
 		builder.clause(literals);

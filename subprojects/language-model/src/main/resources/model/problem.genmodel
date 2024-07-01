@@ -62,11 +62,12 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/JOIN"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Modality">
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/NONE"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/UNSPECIFIED"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MUST"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/MAY"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Concreteness">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Concreteness/UNSPECIFIED"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Concreteness/PARTIAL"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Concreteness/CANDIDATE"/>
     </genEnums>
@@ -110,8 +111,6 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Parameter">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Parameter/parameterType"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/concreteness"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/modality"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/binding"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Variable"/>

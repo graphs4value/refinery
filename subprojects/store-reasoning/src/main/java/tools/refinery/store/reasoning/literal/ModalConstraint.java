@@ -14,16 +14,13 @@ import tools.refinery.store.query.view.AnySymbolView;
 
 import java.util.List;
 
-public record ModalConstraint(Modality modality, Concreteness concreteness, Constraint constraint)
+public record ModalConstraint(ModalitySpecification modality, ConcretenessSpecification concreteness,
+							  Constraint constraint)
 		implements Constraint {
 	public ModalConstraint {
 		if (constraint instanceof AnySymbolView || constraint instanceof ModalConstraint) {
 			throw new InvalidQueryException("Already concrete constraints cannot be abstracted");
 		}
-	}
-
-	public ModalConstraint(Modality modality, Constraint constraint) {
-		this(modality, Concreteness.PARTIAL, constraint);
 	}
 
 	@Override
@@ -63,17 +60,19 @@ public record ModalConstraint(Modality modality, Concreteness concreteness, Cons
 	}
 
 	private String formatName(String constraintName) {
-		if (concreteness == Concreteness.PARTIAL) {
+		if (concreteness == ConcretenessSpecification.PARTIAL) {
 			return "%s %s".formatted(modality, constraintName);
 		}
 		return "%s %s %s".formatted(modality, concreteness, constraintName);
 	}
 
 	public static Constraint of(Modality modality, Concreteness concreteness, Constraint constraint) {
-		if (constraint instanceof AnySymbolView || constraint instanceof ModalConstraint) {
-			// Symbol views and lifted constraints are already concrete. Thus, they cannot be abstracted at all.
-			return constraint;
-		}
-		return new ModalConstraint(modality, concreteness, constraint);
+		return switch (constraint) {
+			case AnySymbolView anySymbolView -> anySymbolView;
+			case ModalConstraint(var otherModality, var otherConcreteness, var innerConstraint) ->
+					new ModalConstraint(otherModality.orElse(modality.toSpecification()),
+							otherConcreteness.orElse(concreteness.toSpecification()), innerConstraint);
+			default -> new ModalConstraint(modality.toSpecification(), concreteness.toSpecification(), constraint);
+		};
 	}
 }

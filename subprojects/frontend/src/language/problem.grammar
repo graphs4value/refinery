@@ -95,9 +95,8 @@ FeatureDeclaration {
 }
 
 Parameter {
-  kw<"candidate">? (kw<"may"> | kw<"must">)?
   RelationName?
-  (AndBinding | StarBinding)?
+  (FocusBinding | MultiBinding)?
   VariableName
 }
 
@@ -257,9 +256,9 @@ sep1<separator, content> { content (separator content)* }
 
   StarArgument { "*" }
 
-  StarBinding { "*" }
+  FocusBinding { "+" }
 
-  AndBinding { "&" }
+  MultiBinding { "?" }
 
   "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
 }

@@ -6,8 +6,9 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
-import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.library.BuiltinLibrary;
+import tools.refinery.language.model.problem.Concreteness;
+import tools.refinery.language.model.problem.Modality;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
@@ -33,8 +34,6 @@ import tools.refinery.store.dse.transition.actions.ActionLiterals;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.actions.PartialActionLiterals;
-import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
@@ -810,32 +809,33 @@ public class ModelInitializer {
 				localScope);
 	}
 
-	private record ConcreteModality(@Nullable Concreteness concreteness, @Nullable Modality modality) {
-		public static final ConcreteModality NULL = new ConcreteModality((Concreteness) null, null);
+	private record ConcreteModality(ConcretenessSpecification concreteness, ModalitySpecification modality) {
+		public static final ConcreteModality NULL =
+				new ConcreteModality(ConcretenessSpecification.UNSPECIFIED, ModalitySpecification.UNSPECIFIED);
 
-		public ConcreteModality(tools.refinery.language.model.problem.Concreteness concreteness,
-								tools.refinery.language.model.problem.Modality modality) {
+		public ConcreteModality(Concreteness concreteness, Modality modality) {
 			this(
 					switch (concreteness) {
-						case PARTIAL -> Concreteness.PARTIAL;
-						case CANDIDATE -> Concreteness.CANDIDATE;
+						case UNSPECIFIED -> ConcretenessSpecification.UNSPECIFIED;
+						case PARTIAL -> ConcretenessSpecification.PARTIAL;
+						case CANDIDATE -> ConcretenessSpecification.CANDIDATE;
 					},
 					switch (modality) {
-						case MUST -> Modality.MUST;
-						case MAY -> Modality.MAY;
-						case NONE -> throw new IllegalArgumentException("Invalid modality");
+						case UNSPECIFIED -> ModalitySpecification.UNSPECIFIED;
+						case MUST -> ModalitySpecification.MUST;
+						case MAY -> ModalitySpecification.MAY;
 					}
 			);
 		}
 
 		public ConcreteModality negate() {
-			var negatedModality = modality == null ? null : modality.negate();
+			var negatedModality = modality.negate();
 			return new ConcreteModality(concreteness, negatedModality);
 		}
 
 		public ConcreteModality merge(ConcreteModality outer) {
-			var mergedConcreteness = concreteness == null ? outer.concreteness() : concreteness;
-			var mergedModality = modality == null ? outer.modality() : modality;
+			var mergedConcreteness = concreteness.orElse(outer.concreteness);
+			var mergedModality = modality.orElse(outer.modality);
 			return new ConcreteModality(mergedConcreteness, mergedModality);
 		}
 
@@ -847,7 +847,8 @@ public class ModelInitializer {
 		}
 
 		public boolean isSet() {
-			return concreteness != null || modality != null;
+			return concreteness != ConcretenessSpecification.UNSPECIFIED ||
+					modality != ModalitySpecification.UNSPECIFIED;
 		}
 	}
 
@@ -1020,9 +1021,7 @@ public class ModelInitializer {
 			var parameterType = problemParameter.getParameterType();
 			if (parameterType != null) {
 				var partialType = getPartialRelation(parameterType);
-				var modality = new ConcreteModality(problemParameter.getConcreteness(),
-						problemParameter.getModality());
-				commonLiterals.add(modality.wrapConstraint(partialType).call(parameter));
+				commonLiterals.add(partialType.call(parameter));
 			}
 			if (ruleDefinition.getKind() == RuleKind.DECISION &&
 					problemParameter.getBinding() == ParameterBinding.SINGLE) {
@@ -1033,19 +1032,23 @@ public class ModelInitializer {
 			}
 		}
 		toMonomorphicMatchingLiterals(parametersToFocus, parameterMap, commonLiterals);
-		var builder = Rule.builder(name).parameters(parameters);
+		var queryBuilder =	Query.builder(name).parameters(parameters);
 		var preconditions = ruleDefinition.getPreconditions();
 		if (preconditions.isEmpty()) {
-			builder.clause(commonLiterals);
+			queryBuilder.clause(commonLiterals);
 		} else {
 			for (var precondition : preconditions) {
-				buildConjunction(precondition, parameterMap, commonLiterals, builder);
+				buildConjunction(precondition, parameterMap, commonLiterals, queryBuilder);
 			}
 		}
+		var precondition = queryBuilder.build();
+		var ruleBuilder = Rule.builder(name)
+				.parameters(parameters)
+				.clause(PartialLiterals.must(precondition.call(parameters)));
 		for (var consequent : ruleDefinition.getConsequents()) {
-			buildConsequent(consequent, parameterMap, parametersToFocus, builder);
+			buildConsequent(consequent, parameterMap, parametersToFocus, ruleBuilder);
 		}
-		return builder.build();
+		return ruleBuilder.build();
 	}
 
 	private static void toMonomorphicMatchingLiterals(

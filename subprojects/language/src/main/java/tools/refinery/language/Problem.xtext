@@ -89,13 +89,10 @@ RuleDefinition:
 	".";
 
 enum ParameterBinding:
-	FOCUS="&" | MULTI="*";
+	FOCUS="+" | MULTI="?";
 
 Parameter:
-	(
-		(concreteness=Concreteness? modality=Modality)?
-		parameterType=[Relation|QualifiedName]
-	)? binding=ParameterBinding? name=Identifier;
+	parameterType=[Relation|QualifiedName]? binding=ParameterBinding? name=Identifier;
 
 Consequent:
 	actions+=Action ("," actions+=Action)*;
@@ -184,14 +181,14 @@ AggregationExpr:
 	"{" value=Expr "|" condition=ComparisonExpr "}";
 
 enum Concreteness:
-	CANDIDATE="candidate";
+	PARTIAL="partial" | CANDIDATE="candidate";
 
 enum Modality:
 	MUST="must" | MAY="may";
 
 ModalExpr:
-	concreteness=Concreteness?
-	modality=Modality body=UnaryExpr;
+	(concreteness=Concreteness => modality=Modality? | modality=Modality)
+	body=UnaryExpr;
 
 CastExpr returns Expr:
 	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;

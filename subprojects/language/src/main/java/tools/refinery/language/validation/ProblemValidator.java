@@ -54,15 +54,11 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
-	public static final String VARIABLE_WITHOUT_EXISTS = ISSUE_PREFIX + "VARIABLE_WITHOUT_EXISTS";
 	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
 	public static final String UNUSED_PARAMETER = ISSUE_PREFIX + "UNUSED_PARAMETER";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
-
-	@Inject
-	private ExistsVariableCollector existsVariableCollector;
 
 	@Inject
 	private ActionTargetCollector actionTargetCollector;
@@ -136,14 +132,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Variable variable && ProblemUtil.isImplicitVariable(variable)
 				&& !ProblemUtil.isSingletonVariable(variable)) {
-			if (EcoreUtil2.getContainerOfType(variable, ParametricDefinition.class) instanceof RuleDefinition &&
-					EcoreUtil2.getContainerOfType(variable, NegationExpr.class) == null &&
-					// If there is an exists constraint, it is the only constraint.
-					existsVariableCollector.missingExistsConstraint(variable)) {
-				// Existentially quantified variables in rules should not be singletons,
-				// because we have to add an {@code exists} constraint as well.
-				return;
-			}
 			var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
 			if (problem != null && referenceCounter.countReferences(problem, variable) <= 1) {
 				var name = variable.getName();
@@ -391,10 +379,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
 		if (parametricDefinition instanceof RuleDefinition rule) {
-			if (parameter.getParameterType() != null && parameter.getModality() == Modality.NONE) {
-				acceptError("Parameter type modality must be specified.", parameter,
-						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
-			}
 			var kind = rule.getKind();
 			var binding = parameter.getBinding();
 			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
@@ -405,10 +389,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		} else {
-			if (parameter.getConcreteness() != Concreteness.PARTIAL || parameter.getModality() != Modality.NONE) {
-				acceptError("Modal parameter types are only supported in rule definitions.", parameter, null, 0,
-						INVALID_MODALITY_ISSUE);
-			}
 			if (parameter.getBinding() != ParameterBinding.SINGLE) {
 				acceptError("Parameter binding annotations are only supported in decision rules.", parameter,
 						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
@@ -441,28 +421,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (ruleDefinition.getConsequents().size() != 1) {
 			acceptError("Rules must have exactly one consequent.", ruleDefinition,
 					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
-		}
-		var unquantifiedVariables = new HashSet<Variable>();
-		for (var variable : EcoreUtil2.getAllContentsOfType(ruleDefinition, Variable.class)) {
-			if (existsVariableCollector.missingExistsConstraint(variable)) {
-				unquantifiedVariables.add(variable);
-			}
-		}
-		for (var expr : EcoreUtil2.getAllContentsOfType(ruleDefinition, VariableOrNodeExpr.class)) {
-			if (expr.getVariableOrNode() instanceof Variable variable && unquantifiedVariables.contains(variable)) {
-				unquantifiedVariables.remove(variable);
-				var name = variable.getName();
-				String message;
-				if (ProblemUtil.isSingletonVariable(variable)) {
-					message = ("Remove the singleton variable marker '_' and clarify the quantification of variable " +
-							"'%s'.").formatted(name);
-				} else {
-					message = ("Add a 'must exists(%s)', 'may exists(%s)', or 'may !exists(%s)' constraint to " +
-							"clarify the quantification of variable '%s'.").formatted(name, name, name, name);
-				}
-				acceptWarning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
-						VARIABLE_WITHOUT_EXISTS);
-			}
 		}
 	}
 

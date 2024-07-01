@@ -41,8 +41,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="concreteness" eType="#//Concreteness"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="binding" eType="#//ParameterBinding"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Variable" abstract="true" eSuperTypes="#//VariableOrNode"/>
@@ -260,13 +258,14 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" eType="#//Modality"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Modality">
-    <eLiterals name="NONE"/>
+    <eLiterals name="UNSPECIFIED"/>
     <eLiterals name="MUST" value="1"/>
     <eLiterals name="MAY" value="2"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Concreteness">
-    <eLiterals name="PARTIAL"/>
-    <eLiterals name="CANDIDATE" value="1"/>
+    <eLiterals name="UNSPECIFIED"/>
+    <eLiterals name="PARTIAL" value="1"/>
+    <eLiterals name="CANDIDATE" value="2"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="RuleKind">
     <eLiterals name="REFINEMENT"/>
