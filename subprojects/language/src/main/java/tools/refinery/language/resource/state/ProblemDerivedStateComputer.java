@@ -126,7 +126,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			var computedValue = adapter.createComputedValuePredicateIfAbsent(predicateDefinition, key -> {
 				var predicate = ProblemFactory.eINSTANCE.createPredicateDefinition();
 				predicate.setShadow(true);
-				predicate.setName("definition");
+				predicate.setName("computed");
 				return predicate;
 			});
 			var parameters = computedValue.getParameters();
