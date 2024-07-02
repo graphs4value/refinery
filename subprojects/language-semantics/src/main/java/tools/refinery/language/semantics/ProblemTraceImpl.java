@@ -45,6 +45,8 @@ class ProblemTraceImpl implements ProblemTrace {
 	private final Map<AnyPartialSymbol, Relation> mutableInverseTrace = new HashMap<>();
 	private final Map<AnyPartialSymbol, Relation> inverseTrace = Collections.unmodifiableMap(mutableInverseTrace);
 	private final Map<Rule, RuleDefinition> mutableInverseRuleDefinitionTrace = new LinkedHashMap<>();
+	private final Map<Rule, RuleDefinition> inverseRuleDefinitionTrace = Collections.unmodifiableMap(
+			mutableInverseRuleDefinitionTrace);
 
 	@Override
 	public Problem getProblem() {
@@ -134,6 +136,11 @@ class ProblemTraceImpl implements ProblemTrace {
 			throw new TracedException(oldRuleDefinition, "Rule definition %s was already mapped to rule"
 					.formatted(rule.getName()));
 		}
+	}
+
+	@Override
+	public Map<Rule, RuleDefinition> getInverseRuleDefinitionTrace() {
+		return inverseRuleDefinitionTrace;
 	}
 
 	@Override
