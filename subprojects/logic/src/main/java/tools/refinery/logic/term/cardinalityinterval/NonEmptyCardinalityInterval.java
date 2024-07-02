@@ -32,8 +32,7 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 
 	@Override
 	public boolean isConcrete() {
-		return upperBound instanceof FiniteUpperCardinality finiteUpperCardinality &&
-				finiteUpperCardinality.finiteUpperBound() == lowerBound;
+		return upperBound instanceof FiniteUpperCardinality(var finiteUpperBound) && finiteUpperBound == lowerBound;
 	}
 
 	@Override
@@ -49,10 +48,10 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 
 	@Override
 	public boolean isRefinementOf(CardinalityInterval other) {
-		if (!(other instanceof NonEmptyCardinalityInterval nonEmptyOther)) {
+		if (!(other instanceof NonEmptyCardinalityInterval(var otherLowerBound, var otherUpperBound))) {
 			return false;
 		}
-		return lowerBound >= nonEmptyOther.lowerBound() && upperBound.compareTo(nonEmptyOther.upperBound()) <= 0;
+		return lowerBound >= otherLowerBound && upperBound.compareTo(otherUpperBound) <= 0;
 	}
 
 	@Override
@@ -98,9 +97,9 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 	private CardinalityInterval lift(CardinalityInterval other, IntBinaryOperator lowerOperator,
 									 BinaryOperator<UpperCardinality> upperOperator,
 									 CardinalityInterval whenEmpty) {
-		if (other instanceof NonEmptyCardinalityInterval nonEmptyOther) {
-			return CardinalityIntervals.between(lowerOperator.applyAsInt(lowerBound, nonEmptyOther.lowerBound),
-					upperOperator.apply(upperBound, nonEmptyOther.upperBound));
+		if (other instanceof NonEmptyCardinalityInterval(var otherLowerBound, var otherUpperBound)) {
+			return CardinalityIntervals.between(lowerOperator.applyAsInt(lowerBound, otherLowerBound),
+					upperOperator.apply(upperBound, otherUpperBound));
 		}
 		if (other instanceof EmptyCardinalityInterval) {
 			return whenEmpty;
@@ -115,8 +114,8 @@ public record NonEmptyCardinalityInterval(int lowerBound, UpperCardinality upper
 
 	@Override
 	public String toString() {
-		if (upperBound instanceof FiniteUpperCardinality finiteUpperCardinality &&
-				finiteUpperCardinality.finiteUpperBound() == lowerBound) {
+		if (upperBound instanceof FiniteUpperCardinality(var finiteUpperBound) &&
+				finiteUpperBound == lowerBound) {
 			return "[%d]".formatted(lowerBound);
 		}
 		return "[%d..%s]".formatted(lowerBound, upperBound);

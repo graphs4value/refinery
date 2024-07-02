@@ -30,10 +30,10 @@ import static tools.refinery.logic.literal.Literals.check;
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.logic.term.int_.IntTerms.constant;
 import static tools.refinery.logic.term.int_.IntTerms.less;
+import static tools.refinery.store.reasoning.ReasoningAdapter.EQUALS_SYMBOL;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
-import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
 public class CrossReferenceUtils {
 	private CrossReferenceUtils() {
@@ -93,7 +93,6 @@ public class CrossReferenceUtils {
 		var lowerBoundCardinality = UpperCardinalities.atMost(lowerBound);
 		propagationBuilder.rule(Rule.of(name + "#lowerSource", (builder, p1, p2) -> builder
 				.clause(UpperCardinality.class, upperBound -> List.of(
-						not(MULTI_VIEW.call(p1)),
 						must(sourceType.call(p1)),
 						new CountUpperBoundLiteral(upperBound, linkType, List.of(p1, Variable.of())),
 						check(UpperCardinalityTerms.lessEq(upperBound,
@@ -127,7 +126,6 @@ public class CrossReferenceUtils {
 		var lowerBoundCardinality = UpperCardinalities.atMost(lowerBound);
 		propagationBuilder.rule(Rule.of(name + "#lowerTarget", (builder, p1, p2) -> builder
 				.clause(UpperCardinality.class, upperBound -> List.of(
-						not(MULTI_VIEW.call(p2)),
 						must(targetType.call(p2)),
 						new CountUpperBoundLiteral(upperBound, linkType, List.of(Variable.of(), p2)),
 						check(UpperCardinalityTerms.lessEq(upperBound,
