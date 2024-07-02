@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 public class MetamodelBuilder {
 	private final ContainedTypeHierarchyBuilder typeHierarchyBuilder = new ContainedTypeHierarchyBuilder();
 	private final Map<PartialRelation, ReferenceInfo> referenceInfoMap = new LinkedHashMap<>();
+	private final Set<PartialRelation> containerTypes = new HashSet<>();
 	private final Set<PartialRelation> containedTypes = new HashSet<>();
 	private final Map<PartialRelation, ContainmentInfo> containmentHierarchy = new LinkedHashMap<>();
 	private final Map<PartialRelation, DirectedCrossReferenceInfo> directedCrossReferences = new LinkedHashMap<>();
@@ -28,6 +29,7 @@ public class MetamodelBuilder {
 	private final Map<PartialRelation, PartialRelation> oppositeReferences = new LinkedHashMap<>();
 
 	MetamodelBuilder() {
+		typeHierarchyBuilder.type(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, true);
 		typeHierarchyBuilder.type(ContainmentHierarchyTranslator.CONTAINED_SYMBOL, true);
 	}
 
@@ -105,6 +107,7 @@ public class MetamodelBuilder {
 			var info = entry.getValue();
 			processReferenceInfo(linkType, info);
 		}
+		typeHierarchyBuilder.setContainerTypes(containerTypes);
 		typeHierarchyBuilder.setContainedTypes(containedTypes);
 		var typeHierarchy = typeHierarchyBuilder.build();
 		return new Metamodel(typeHierarchy, Collections.unmodifiableMap(containmentHierarchy),
@@ -169,6 +172,7 @@ public class MetamodelBuilder {
 			throw new TranslationException(opposite, "Invalid opposite %s with multiplicity %s of containment %s"
 					.formatted(opposite, targetMultiplicity, linkType));
 		}
+		containerTypes.add(sourceType);
 		containedTypes.add(targetType);
 		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType));
 	}

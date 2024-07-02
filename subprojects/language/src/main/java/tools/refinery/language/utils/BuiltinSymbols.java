@@ -12,6 +12,7 @@ public final class BuiltinSymbols {
     private final ClassDeclaration node;
     private final PredicateDefinition equals;
     private final PredicateDefinition exists;
+	private final ClassDeclaration container;
     private final ClassDeclaration contained;
     private final PredicateDefinition contains;
     private final PredicateDefinition invalidContainer;
@@ -21,6 +22,7 @@ public final class BuiltinSymbols {
 		node = getDeclaration(ClassDeclaration.class, "node");
 		equals = getDeclaration(PredicateDefinition.class, "equals");
 		exists = getDeclaration(PredicateDefinition.class, "exists");
+		container = getDeclaration(ClassDeclaration.class, "container");
 		contained = getDeclaration(ClassDeclaration.class, "contained");
 		contains = getDeclaration(PredicateDefinition.class, "contains");
 		invalidContainer = getDeclaration(PredicateDefinition.class, "invalidContainer");
@@ -41,6 +43,10 @@ public final class BuiltinSymbols {
     public PredicateDefinition exists() {
         return exists;
     }
+
+	public ClassDeclaration container() {
+		return container;
+	}
 
     public ClassDeclaration contained() {
         return contained;

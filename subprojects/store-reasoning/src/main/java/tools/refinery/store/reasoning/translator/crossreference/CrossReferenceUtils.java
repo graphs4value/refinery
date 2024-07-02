@@ -30,7 +30,6 @@ import static tools.refinery.logic.literal.Literals.check;
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.logic.term.int_.IntTerms.constant;
 import static tools.refinery.logic.term.int_.IntTerms.less;
-import static tools.refinery.store.reasoning.ReasoningAdapter.EQUALS_SYMBOL;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;

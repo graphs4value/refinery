@@ -22,6 +22,7 @@ import tools.refinery.store.representation.Symbol;
 import java.util.ArrayList;
 
 import static tools.refinery.logic.literal.Literals.not;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.candidateMust;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 
@@ -92,7 +93,7 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 					)
 					.action(() -> {
 						var actionLiterals = new ArrayList<ActionLiteral>();
-						actionLiterals.add(PartialActionLiterals.add(type, instance));
+						actionLiterals.add(add(type, instance));
 						for (var subtype : result.getDirectSubtypes()) {
 							actionLiterals.add(PartialActionLiterals.remove(subtype, instance));
 						}

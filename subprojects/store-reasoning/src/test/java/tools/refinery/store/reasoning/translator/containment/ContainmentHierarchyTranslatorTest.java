@@ -26,8 +26,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator.CONTAINED_SYMBOL;
-import static tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator.CONTAINS_SYMBOL;
+import static tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator.*;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.COUNT_SYMBOL;
 
 class ContainmentHierarchyTranslatorTest {
@@ -41,8 +40,9 @@ class ContainmentHierarchyTranslatorTest {
 	void beforeEach() {
 
 		var typeHierarchy = TypeHierarchy.builder()
+				.type(CONTAINER_SYMBOL, true)
 				.type(CONTAINED_SYMBOL, true)
-				.type(c1)
+				.type(c1, CONTAINER_SYMBOL)
 				.type(c2, c1, CONTAINED_SYMBOL)
 				.build();
 
@@ -64,6 +64,7 @@ class ContainmentHierarchyTranslatorTest {
 	void treeTest() {
 		var modelSeed = ModelSeed.builder(3)
 				.seed(COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
+				.seed(CONTAINER_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(CONTAINED_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(CONTAINS_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(c1, builder -> builder
@@ -97,6 +98,7 @@ class ContainmentHierarchyTranslatorTest {
 	void loopTest() {
 		var modelSeed = ModelSeed.builder(3)
 				.seed(COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
+				.seed(CONTAINER_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(CONTAINED_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(CONTAINS_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(c1, builder -> builder.reducedValue(TruthValue.UNKNOWN))

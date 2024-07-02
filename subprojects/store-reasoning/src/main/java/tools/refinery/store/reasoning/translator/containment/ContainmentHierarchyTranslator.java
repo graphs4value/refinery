@@ -50,6 +50,7 @@ import static tools.refinery.store.reasoning.actions.PartialActionLiterals.focus
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 
 public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
+	public static final PartialRelation CONTAINER_SYMBOL = new PartialRelation("container", 1);
 	public static final PartialRelation CONTAINED_SYMBOL = new PartialRelation("contained", 1);
 	public static final PartialRelation INVALID_CONTAINER = new PartialRelation("invalidContainer",
 			1);

@@ -51,7 +51,7 @@ final class ExtendedTypeInfo implements Comparable<ExtendedTypeInfo> {
 	}
 
 	public Set<PartialRelation> getAllSupertypesAndSelf() {
-		var allSubtypesAndSelf = new HashSet<PartialRelation>(allSupertypes.size() + 1);
+		var allSubtypesAndSelf = HashSet.<PartialRelation>newHashSet(allSupertypes.size() + 1);
 		addMust(allSubtypesAndSelf);
 		return allSubtypesAndSelf;
 	}

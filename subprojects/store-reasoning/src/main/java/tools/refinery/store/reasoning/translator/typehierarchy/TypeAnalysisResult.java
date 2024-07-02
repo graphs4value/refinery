@@ -13,12 +13,14 @@ import java.util.*;
 public final class TypeAnalysisResult {
 	private final ExtendedTypeInfo extendedTypeInfo;
 	private final List<PartialRelation> directSubtypes;
+	private final Set<PartialRelation> concreteSubtypesAndSelf;
 	private final List<ExtendedTypeInfo> allExternalTypeInfoList;
 	private final InferredType inferredType;
 
-	public TypeAnalysisResult(ExtendedTypeInfo extendedTypeInfo, List<ExtendedTypeInfo> allExternalTypeInfoList) {
+	TypeAnalysisResult(ExtendedTypeInfo extendedTypeInfo, List<ExtendedTypeInfo> allExternalTypeInfoList) {
 		this.extendedTypeInfo = extendedTypeInfo;
 		directSubtypes = List.copyOf(extendedTypeInfo.getDirectSubtypes());
+		concreteSubtypesAndSelf = Collections.unmodifiableSet(extendedTypeInfo.getConcreteSubtypesAndSelf());
 		this.allExternalTypeInfoList = allExternalTypeInfoList;
 		inferredType = propagateMust(extendedTypeInfo.getAllSupertypesAndSelf(),
 				extendedTypeInfo.getConcreteSubtypesAndSelf());
@@ -30,6 +32,10 @@ public final class TypeAnalysisResult {
 
 	public List<PartialRelation> getDirectSubtypes() {
 		return directSubtypes;
+	}
+
+	public Set<PartialRelation> getConcreteSubtypesAndSelf() {
+		return concreteSubtypesAndSelf;
 	}
 
 	public boolean isAbstractType() {

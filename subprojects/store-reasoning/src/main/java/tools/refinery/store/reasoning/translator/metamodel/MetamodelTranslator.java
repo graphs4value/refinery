@@ -7,6 +7,7 @@ package tools.refinery.store.reasoning.translator.metamodel;
 
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
+import tools.refinery.store.reasoning.translator.containment.ContainerTypeInferenceTranslator;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.crossreference.DirectedCrossReferenceTranslator;
 import tools.refinery.store.reasoning.translator.crossreference.UndirectedCrossReferenceTranslator;
@@ -24,6 +25,8 @@ public class MetamodelTranslator implements ModelStoreConfiguration {
 	public void apply(ModelStoreBuilder storeBuilder) {
 		storeBuilder.with(new TypeHierarchyTranslator(metamodel.typeHierarchy()));
 		storeBuilder.with(new ContainmentHierarchyTranslator(metamodel.containmentHierarchy()));
+		storeBuilder.with(new ContainerTypeInferenceTranslator(metamodel.typeHierarchy(),
+				metamodel.containmentHierarchy()));
 		for (var entry : metamodel.directedCrossReferences().entrySet()) {
 			storeBuilder.with(new DirectedCrossReferenceTranslator(entry.getKey(), entry.getValue()));
 		}

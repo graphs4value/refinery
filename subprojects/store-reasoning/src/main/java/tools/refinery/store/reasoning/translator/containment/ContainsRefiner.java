@@ -30,12 +30,14 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, B
 	}
 
 	private final Interpretation<InferredContainment> interpretation;
+	private final PartialInterpretationRefiner<TruthValue, Boolean> containerRefiner;
 	private final PartialInterpretationRefiner<TruthValue, Boolean> containedRefiner;
 
 	private ContainsRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 							Symbol<InferredContainment> containsStorage) {
 		super(adapter, partialSymbol);
 		interpretation = adapter.getModel().getInterpretation(containsStorage);
+		containerRefiner = adapter.getRefiner(ContainmentHierarchyTranslator.CONTAINER_SYMBOL);
 		containedRefiner = adapter.getRefiner(ContainmentHierarchyTranslator.CONTAINED_SYMBOL);
 	}
 
@@ -47,7 +49,8 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, B
 			interpretation.put(key, newValue);
 		}
 		if (value.must()) {
-			return containedRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+			return containerRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
+					containedRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
 		}
 		return true;
 	}
