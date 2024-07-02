@@ -19,7 +19,6 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.representation.Symbol;
 
@@ -73,7 +72,6 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		}
 		storeBuilder.with(translator);
 		storeBuilder.with(new InvalidMultiplicityErrorTranslator(type, linkType, false, info.multiplicity()));
-		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(this::configureLowerMultiplicityPropagator);
 	}
 
 	private void configureWithDefaultUnknown(PartialRelationTranslator translator) {
@@ -127,33 +125,23 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		var name = linkType.name();
 		var type = info.type();
 		var mayNewSource = CrossReferenceUtils.createMayHelper(linkType, type, info.multiplicity(), false);
-		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder -> propagationBuilder
-				.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
-					builder.clause(
-							may(linkType.call(p1, p2)),
-							not(may(type.call(p1)))
-					);
-					if (info.isConstrained()) {
-						builder.clause(
-								may(linkType.call(p1, p2)),
-								not(must(linkType.call(p1, p2))),
-								not(mayNewSource.call(p1))
-						);
-					}
-					builder.action(
-							remove(linkType, p1, p2)
-					);
-				})));
-	}
-
-	private void configureLowerMultiplicityPropagator(PropagationBuilder propagationBuilder) {
-		var name = linkType.name();
-		if (info.multiplicity() instanceof ConstrainedMultiplicity constrainedMultiplicity) {
-			int lowerBound = constrainedMultiplicity.multiplicity().lowerBound();
-			if (lowerBound >= 1) {
-				var type = info.type();
-				CrossReferenceUtils.configureSourceLowerBound(linkType, type, lowerBound, propagationBuilder);
+		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
+		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
+		propagationBuilder.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
+			builder.clause(
+					may(linkType.call(p1, p2)),
+					not(may(type.call(p1)))
+			);
+			if (info.isConstrained()) {
+				builder.clause(
+						may(linkType.call(p1, p2)),
+						not(must(linkType.call(p1, p2))),
+						not(mayNewSource.call(p1))
+				);
 			}
-		}
+			builder.action(
+					remove(linkType, p1, p2)
+			);
+		}));
 	}
 }

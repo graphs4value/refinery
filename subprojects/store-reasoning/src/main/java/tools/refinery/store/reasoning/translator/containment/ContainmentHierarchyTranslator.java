@@ -30,7 +30,6 @@ import tools.refinery.store.reasoning.refinement.RefinementBasedInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
-import tools.refinery.store.reasoning.translator.crossreference.CrossReferenceUtils;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
@@ -113,7 +112,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 			translateInvalidMultiplicity(storeBuilder, linkType, info);
 		}
 		translateFocusNotContained(storeBuilder);
-		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(this::configurePropagationBuilder);
+		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(this::configureSingleContainerPropagator);
 	}
 
 	private void translateContainmentLinkType(ModelStoreBuilder storeBuilder, PartialRelation linkType,
@@ -266,27 +265,6 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				.action(
 						focus(multi, Variable.of())
 				)));
-	}
-
-	private void configurePropagationBuilder(PropagationBuilder propagationBuilder) {
-		configureLowerMultiplicityPropagator(propagationBuilder);
-		configureSingleContainerPropagator(propagationBuilder);
-	}
-
-	private void configureLowerMultiplicityPropagator(PropagationBuilder propagationBuilder) {
-		for (var entry : containmentInfoMap.entrySet()) {
-			var info = entry.getValue();
-			if (info.multiplicity() instanceof ConstrainedMultiplicity constrainedMultiplicity) {
-				int lowerBound = constrainedMultiplicity.multiplicity().lowerBound();
-				if (lowerBound >= 1) {
-					var linkType = entry.getKey();
-					var sourceType = info.sourceType();
-					CrossReferenceUtils.configureSourceLowerBound(linkType, sourceType, lowerBound,
-                            propagationBuilder);
-				}
-			}
-		}
-		CrossReferenceUtils.configureTargetLowerBound(CONTAINS_SYMBOL, CONTAINED_SYMBOL, 1, propagationBuilder);
 	}
 
 	private void configureSingleContainerPropagator(PropagationBuilder propagationBuilder) {
