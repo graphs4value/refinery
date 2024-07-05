@@ -357,26 +357,46 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkReferenceType(ReferenceDeclaration referenceDeclaration) {
+		var referenceType = referenceDeclaration.getReferenceType();
+		if (referenceType == null || referenceType.eIsProxy()) {
+			return;
+		}
 		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
 				!ProblemUtil.isContainerReference(referenceDeclaration);
 		if (isDefaultReference || referenceDeclaration.getKind() == ReferenceKind.REFERENCE) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
-			return;
+			if (ProblemUtil.isShadow(referenceType)) {
+				var message = "Shadow relations '%s' is not allowed in reference types."
+						.formatted(referenceType.getName());
+				acceptError(message, referenceDeclaration,
+						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, SHADOW_RELATION_ISSUE);
+			}
+		} else if (!(referenceType instanceof ClassDeclaration)) {
+			var message = "Reference type '%s' of the containment or container reference '%s' is not a class."
+					.formatted(referenceType.getName(), referenceDeclaration.getName());
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE,
+					0, INVALID_REFERENCE_TYPE_ISSUE);
 		}
-		var referenceType = referenceDeclaration.getReferenceType();
-		if (referenceType == null || referenceType.eIsProxy() || referenceType instanceof ClassDeclaration) {
-			// Either correct, or a missing reference type where we are probably already emitting another error.
-			return;
+	}
+
+	@Check
+	public void checkPredicateDefinition(PredicateDefinition predicateDefinition) {
+		if (predicateDefinition.isError() && predicateDefinition.isShadow()) {
+			var message = "Shadow predicates cannot be marked as error predicates.";
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__ERROR, 0,
+					SHADOW_RELATION_ISSUE);
 		}
-		var message = "Reference type '%s' of the containment or container reference '%s' is not a class."
-				.formatted(referenceType.getName(), referenceDeclaration.getName());
-		acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0,
-				INVALID_REFERENCE_TYPE_ISSUE);
 	}
 
 	@Check
 	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
+		var type = parameter.getParameterType();
+		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
+			var message = "Shadow relations '%s' is not allowed in parameter types.".formatted(type.getName());
+			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+					SHADOW_RELATION_ISSUE);
+		}
 		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
 		if (parametricDefinition instanceof RuleDefinition rule) {
 			var kind = rule.getKind();
@@ -399,7 +419,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkAtom(Atom atom) {
 		int argumentCount = atom.getArguments().size();
-		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
 		if (atom.isTransitiveClosure() && argumentCount != 2) {
 			var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
 					.formatted(argumentCount);
@@ -407,12 +426,13 @@ public class ProblemValidator extends AbstractProblemValidator {
 					INVALID_TRANSITIVE_CLOSURE_ISSUE);
 		}
 		var target = atom.getRelation();
-		if (target != null && !target.eIsProxy() && ProblemUtil.isShadow(target)) {
-			var definitionContext = EcoreUtil2.getContainerOfType(atom, ParametricDefinition.class);
-			if (!(definitionContext instanceof RuleDefinition)){
-				var message = "Shadow relation '%s' may only appear in rule definitions.".formatted(target.getName());
-				acceptError(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, SHADOW_RELATION_ISSUE);
-			}
+		if (target == null || target.eIsProxy()) {
+			return;
+		}
+		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
+		if (ProblemUtil.isShadow(target) && !ProblemUtil.mayReferToShadow(atom)) {
+			var message = "Shadow relation '%s' is not allowed in a non-shadow context.".formatted(target.getName());
+			acceptError(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, SHADOW_RELATION_ISSUE);
 		}
 	}
 
@@ -485,11 +505,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkAssertion(AbstractAssertion assertion) {
 		var relation = assertion.getRelation();
+		if (relation == null || relation.eIsProxy()) {
+			return;
+		}
 		if (relation instanceof DatatypeDeclaration) {
 			var message = "Assertions for data types are not supported.";
 			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 			return;
+		}
+		if (ProblemUtil.isShadow(relation)) {
+			var message = "Shadow relation '%s' may not have any assertions.".formatted(relation.getName());
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
+					SHADOW_RELATION_ISSUE);
 		}
 		int argumentCount = assertion.getArguments().size();
 		checkArity(assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, argumentCount);
@@ -497,10 +525,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkTypeScope(TypeScope typeScope) {
-		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
 		if (typeScope.isIncrement() && ProblemUtil.isInModule(typeScope)) {
 			acceptError("Incremental type scopes are not supported in modules", typeScope, null, 0,
 					INVALID_MULTIPLICITY_ISSUE);
+		}
+		var type = typeScope.getTargetType();
+		if (type == null || type.eIsProxy()) {
+			return;
+		}
+		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+		if (ProblemUtil.isShadow(type)) {
+			var message = "Shadow relations '%s' is not allowed in type scopes.".formatted(type.getName());
+			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
+					SHADOW_RELATION_ISSUE);
 		}
 	}
 

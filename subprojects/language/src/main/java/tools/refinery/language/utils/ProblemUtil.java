@@ -57,6 +57,15 @@ public final class ProblemUtil {
 		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isShadow();
 	}
 
+	public static boolean mayReferToShadow(EObject context) {
+		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
+		return switch (definitionContext) {
+			case PredicateDefinition predicateDefinition -> predicateDefinition.isShadow();
+			case RuleDefinition ignored -> true;
+			case null, default -> false;
+		};
+	}
+
 	public static boolean isAtomNode(Node node) {
 		var containingFeature = node.eContainingFeature();
 		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {

@@ -130,7 +130,7 @@ UnaryExpr {
   !prefix
   (
     "+" | "-" | "!" | kw<"count"> |
-    kw<"candidate"> | kw<"may"> | kw<"must">
+    kw<"candidate"> kw<"partial"> | kw<"may"> | kw<"must">
   )
   Expr
 }

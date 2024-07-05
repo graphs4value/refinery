@@ -115,6 +115,13 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return true;
 		}
 
+		var shadowPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.SHADOW_PREDICATE);
+		if (ProblemResourceDescriptionStrategy.SHADOW_PREDICATE_TRUE.equals(shadowPredicate) &&
+				!(ProblemPackage.Literals.ATOM__RELATION.equals(eReference) &&
+						ProblemUtil.mayReferToShadow(context.getCurrentModel()))) {
+			return false;
+		}
+
 		if (eReference == ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE) {
 			return importedModuleShouldBeVisible(candidate, context);
 		}

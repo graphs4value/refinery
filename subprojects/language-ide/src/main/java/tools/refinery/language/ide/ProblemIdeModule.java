@@ -10,14 +10,12 @@
 package tools.refinery.language.ide;
 
 import org.eclipse.xtext.ide.editor.contentassist.IPrefixMatcher;
+import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
 import org.eclipse.xtext.ide.editor.contentassist.antlr.IContentAssistParser;
 import org.eclipse.xtext.ide.editor.partialEditing.IPartialEditingContentAssistParser;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
-import tools.refinery.language.ide.contentassist.FuzzyMatcher;
-import tools.refinery.language.ide.contentassist.ProblemCrossrefProposalProvider;
-import tools.refinery.language.ide.contentassist.TokenSourceInjectingPartialProblemContentAssistParser;
-import tools.refinery.language.ide.contentassist.TokenSourceInjectingProblemParser;
+import tools.refinery.language.ide.contentassist.*;
 import tools.refinery.language.ide.syntaxcoloring.ProblemSemanticHighlightingCalculator;
 
 /**
@@ -40,6 +38,10 @@ public class ProblemIdeModule extends AbstractProblemIdeModule {
 	@Override
 	public Class<? extends IPrefixMatcher> bindIPrefixMatcher() {
 		return FuzzyMatcher.class;
+	}
+
+	public Class<? extends IdeContentProposalProvider> bindIdeContentProposalProvider() {
+		return ProblemContentProposalProvider.class;
 	}
 
 	public Class<? extends IdeCrossrefProposalProvider> bindIdeCrossrefProposalProvider() {

@@ -187,7 +187,7 @@ enum Modality:
 	MUST="must" | MAY="may";
 
 ModalExpr:
-	(concreteness=Concreteness => modality=Modality? | modality=Modality)
+	(concreteness=Concreteness => modality=Modality? | modality=Modality => concreteness=Concreteness?)
 	body=UnaryExpr;
 
 CastExpr returns Expr:
