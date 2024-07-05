@@ -3572,12 +3572,15 @@ __metadata:
     eslint-plugin-import: "npm:^2.29.1"
     eslint-plugin-jsx-a11y: "npm:^6.9.0"
     eslint-plugin-mobx: "npm:^0.0.10"
-    eslint-plugin-prettier: "npm:^5.1.3"
+    eslint-plugin-prettier: "patch:eslint-plugin-prettier@npm%3A5.1.3#~/.yarn/patches/eslint-plugin-prettier-npm-5.1.3-496c3b84df.patch"
     eslint-plugin-react: "npm:^7.34.3"
     eslint-plugin-react-hooks: "npm:^4.6.2"
     prettier: "npm:^3.3.2"
     react: "npm:^18.3.1"
     typescript: "npm:5.5.3"
+  dependenciesMeta:
+    eslint-plugin-prettier@5.1.3:
+      unplugged: true
   languageName: unknown
   linkType: soft
 
@@ -8604,7 +8607,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-prettier@npm:^5.1.3":
+"eslint-plugin-prettier@npm:5.1.3":
   version: 5.1.3
   resolution: "eslint-plugin-prettier@npm:5.1.3"
   dependencies:
@@ -8621,6 +8624,26 @@ __metadata:
     eslint-config-prettier:
       optional: true
   checksum: 10c0/f45d5fc1fcfec6b0cf038a7a65ddd10a25df4fe3f9e1f6b7f0d5100e66f046a26a2492e69ee765dddf461b93c114cf2e1eb18d4970aafa6f385448985c136e09
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-prettier@patch:eslint-plugin-prettier@npm%3A5.1.3#~/.yarn/patches/eslint-plugin-prettier-npm-5.1.3-496c3b84df.patch":
+  version: 5.1.3
+  resolution: "eslint-plugin-prettier@patch:eslint-plugin-prettier@npm%3A5.1.3#~/.yarn/patches/eslint-plugin-prettier-npm-5.1.3-496c3b84df.patch::version=5.1.3&hash=24f438"
+  dependencies:
+    prettier-linter-helpers: "npm:^1.0.0"
+    synckit: "npm:^0.8.6"
+  peerDependencies:
+    "@types/eslint": ">=8.0.0"
+    eslint: ">=8.0.0"
+    eslint-config-prettier: "*"
+    prettier: ">=3.0.0"
+  peerDependenciesMeta:
+    "@types/eslint":
+      optional: true
+    eslint-config-prettier:
+      optional: true
+  checksum: 10c0/0d9b986771f9e608a822f145973983a62941acfdd15ac91a994e9554b03bbe6f4aae0573bddc07d29df12030595b69366f7f60a9af8b0160d9d4924bf51fbc22
   languageName: node
   linkType: hard
 
