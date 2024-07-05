@@ -75,7 +75,7 @@ const GenerateButton = observer(function GenerateButton({
   if (errorCount > 0) {
     diagnostics.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
   }
-  if (!(hideWarnings ?? false) && warningCount > 0) {
+  if (!hideWarnings && warningCount > 0) {
     diagnostics.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
   }
   const summary = diagnostics.join(' and ');
@@ -110,9 +110,5 @@ const GenerateButton = observer(function GenerateButton({
     </AnimatedButton>
   );
 });
-
-GenerateButton.defaultProps = {
-  hideWarnings: false,
-};
 
 export default GenerateButton;

@@ -98,13 +98,6 @@ function Publication({
   );
 }
 
-Publication.defaultProps = {
-  doi: undefined,
-  pdf: undefined,
-  video: undefined,
-  children: undefined,
-};
-
 function Publications() {
   return (
     <div className="row">

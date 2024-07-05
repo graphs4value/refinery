@@ -22,8 +22,10 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Tooltip from '@mui/material/Tooltip';
+import MuiTooltip from '@mui/material/Tooltip';
 import { observer } from 'mobx-react-lite';
+
+import Tooltip from '../Tooltip';
 
 import ConnectButton from './ConnectButton';
 import type EditorStore from './EditorStore';
@@ -99,7 +101,7 @@ export default observer(function EditorButtons({
         </IconButton>
       </Tooltip>
       <ToggleButtonGroup size="small" className="rounded" sx={{ mx: 1 }}>
-        <Tooltip title="Line numbers">
+        <MuiTooltip title="Line numbers">
           <ToggleButton
             selected={editorStore?.showLineNumbers ?? false}
             disabled={editorStore === undefined}
@@ -108,8 +110,8 @@ export default observer(function EditorButtons({
           >
             <FormatListNumberedIcon fontSize="small" />
           </ToggleButton>
-        </Tooltip>
-        <Tooltip title="Color identifiers">
+        </MuiTooltip>
+        <MuiTooltip title="Color identifiers">
           <ToggleButton
             selected={editorStore?.colorIdentifiers ?? false}
             disabled={editorStore === undefined}
@@ -118,8 +120,8 @@ export default observer(function EditorButtons({
           >
             <LooksIcon fontSize="small" />
           </ToggleButton>
-        </Tooltip>
-        <Tooltip title="Find and replace">
+        </MuiTooltip>
+        <MuiTooltip title="Find and replace">
           <ToggleButton
             selected={editorStore?.searchPanel?.state ?? false}
             disabled={editorStore === undefined}
@@ -132,8 +134,8 @@ export default observer(function EditorButtons({
           >
             <SearchIcon fontSize="small" />
           </ToggleButton>
-        </Tooltip>
-        <Tooltip title="Diagnostics panel">
+        </MuiTooltip>
+        <MuiTooltip title="Diagnostics panel">
           <ToggleButton
             selected={editorStore?.lintPanel?.state ?? false}
             disabled={editorStore === undefined}
@@ -146,7 +148,7 @@ export default observer(function EditorButtons({
           >
             {getLintIcon(editorStore?.delayedErrors?.highestDiagnosticLevel)}
           </ToggleButton>
-        </Tooltip>
+        </MuiTooltip>
       </ToggleButtonGroup>
       <Tooltip title="Automatic format">
         <IconButton

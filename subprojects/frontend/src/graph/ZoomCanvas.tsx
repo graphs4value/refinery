@@ -55,9 +55,8 @@ export default function ZoomCanvas({
   fitPadding?: number;
   transitionTime?: number;
 }): JSX.Element {
-  const fitPaddingOrDefault = fitPadding ?? ZoomCanvas.defaultProps.fitPadding;
-  const transitionTimeOrDefault =
-    transitionTime ?? ZoomCanvas.defaultProps.transitionTime;
+  const fitPaddingOrDefault = fitPadding ?? 8;
+  const transitionTimeOrDefault = transitionTime ?? 250;
 
   const canvasRef = useRef<HTMLDivElement | undefined>();
   const elementRef = useRef<HTMLDivElement | undefined>();
@@ -235,9 +234,3 @@ export default function ZoomCanvas({
     </Box>
   );
 }
-
-ZoomCanvas.defaultProps = {
-  children: undefined,
-  fitPadding: 8,
-  transitionTime: 250,
-};

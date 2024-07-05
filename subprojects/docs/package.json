@@ -66,7 +66,7 @@
     "@docusaurus/types": "^3.4.0",
     "@types/babel__core": "^7.20.5",
     "@types/mdast": "^4.0.4",
-    "@types/node": "^20.14.9",
+    "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/unist": "^3.0.2"
