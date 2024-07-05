@@ -4,11 +4,11 @@
 
 [versions]
 eclipseCollections = "12.0.0.M3"
-jetty = "12.0.10"
+jetty = "12.0.11"
 jmh = "1.37"
 junit = "5.11.0-M2"
 mockito = "5.12.0"
-mwe2 = "2.18.0"
+mwe2 = "2.19.0.M1"
 slf4j = "2.0.13"
 xtext = "2.35.0"
 
@@ -20,7 +20,7 @@ ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", ver
 ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.38.0" }
 gradlePlugin-frontend = { group = "org.siouan", name = "frontend-jdk21", version = "8.1.0" }
 gradlePlugin-shadow = { group = "io.github.goooler.shadow", name = "shadow-gradle-plugin", version = "8.1.8" }
-gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "5.0.0.4638" }
+gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "5.1.0.4882" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.11.0" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
 jcommander = { group = "org.jcommander", name = "jcommander", version = "1.83" }
@@ -37,7 +37,7 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.12.0" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.13.0.M1" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.10.4067" }
