@@ -16,10 +16,11 @@ import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
+
+import Tooltip from '../Tooltip';
 
 import type GraphStore from './GraphStore';
 import { isVisibilityAllowed } from './GraphStore';

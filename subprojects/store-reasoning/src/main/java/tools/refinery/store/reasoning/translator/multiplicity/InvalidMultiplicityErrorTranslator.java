@@ -11,6 +11,8 @@ import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
+import tools.refinery.store.dse.propagation.PropagationBuilder;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
@@ -24,9 +26,12 @@ import tools.refinery.store.reasoning.translator.TranslationException;
 import java.util.List;
 
 import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.logic.term.int_.IntTerms.*;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.candidateMust;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
+import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
+import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 
 public class InvalidMultiplicityErrorTranslator implements ModelStoreConfiguration {
 	private final PartialRelation nodeType;
@@ -132,5 +137,50 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 				.candidateMay(candidateMayBuilder.build())
 				.candidateMust(candidateMustBuilder.build())
 				.objective(Objectives.value(objective)));
+
+		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(this::configureLowerMultiplicityPropagator);
+	}
+
+	private void configureLowerMultiplicityPropagator(PropagationBuilder propagationBuilder) {
+		if (!(multiplicity instanceof ConstrainedMultiplicity constrainedMultiplicity)) {
+			return;
+		}
+		int lowerBound = constrainedMultiplicity.multiplicity().lowerBound();
+		if (lowerBound < 1) {
+			return;
+		}
+		var name = linkType.name();
+		var lowerBoundCardinality = UpperCardinalities.atMost(lowerBound);
+		var lowerSuffix = inverse ? "#lowerTarget" : "#lowerSource";
+		propagationBuilder.rule(Rule.of(name + lowerSuffix, (builder, p1, p2) -> builder
+				.clause(UpperCardinality.class, upperBound -> List.of(
+						must(nodeType.call(inverse ? p2 : p1)),
+						new CountUpperBoundLiteral(upperBound, linkType,
+								inverse ? List.of(Variable.of(), p2) : List.of(p1, Variable.of())),
+						check(UpperCardinalityTerms.lessEq(upperBound,
+								UpperCardinalityTerms.constant(lowerBoundCardinality))),
+						may(linkType.call(p1, p2)),
+						not(must(linkType.call(p1, p2)))
+				))
+				.action(
+						add(linkType, p1, p2)
+				)
+		));
+		var missingSuffix = inverse ? "#missingSource" : "#missingTarget";
+		propagationBuilder.rule(Rule.of(name + missingSuffix, (builder, p1) -> builder
+				.clause(UpperCardinality.class, upperBound -> List.of(
+						may(nodeType.call(p1)),
+						// Violation of monotonicity: stop the propagation of inconsistencies, since the
+						// {@code invalidMultiplicity} pattern will already mark the model as invalid.
+						not(must(nodeType.call(p1))),
+						new CountUpperBoundLiteral(upperBound, linkType,
+								inverse ? List.of(Variable.of(), p1) : List.of(p1, Variable.of())),
+						check(UpperCardinalityTerms.less(upperBound,
+								UpperCardinalityTerms.constant(lowerBoundCardinality)))
+				))
+				.action(
+						remove(nodeType, p1)
+				)
+		));
 	}
 }

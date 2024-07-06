@@ -50,11 +50,6 @@ function Feature({
   );
 }
 
-Feature.defaultProps = {
-  offset: undefined,
-  even: false,
-};
-
 export default function Features() {
   return (
     <div className="container">

@@ -53,6 +53,19 @@ public final class ProblemUtil {
 		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
 	}
 
+	public static boolean isShadow(EObject eObject) {
+		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isShadow();
+	}
+
+	public static boolean mayReferToShadow(EObject context) {
+		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
+		return switch (definitionContext) {
+			case PredicateDefinition predicateDefinition -> predicateDefinition.isShadow();
+			case RuleDefinition ignored -> true;
+			case null, default -> false;
+		};
+	}
+
 	public static boolean isAtomNode(Node node) {
 		var containingFeature = node.eContainingFeature();
 		if (containingFeature == ProblemPackage.Literals.NODE_DECLARATION__NODES) {
@@ -73,9 +86,12 @@ public final class ProblemUtil {
 		return node.eContainingFeature() == ProblemPackage.Literals.NODE_DECLARATION__NODES;
 	}
 
-	public static boolean isInvalidMultiplicityConstraint(PredicateDefinition predicateDefinition) {
-		return predicateDefinition.eContainingFeature() ==
-				ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY;
+	public static boolean isInvalidMultiplicityConstraint(Relation relation) {
+		return relation.eContainingFeature() == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY;
+	}
+
+	public static boolean isComputedValuePredicate(Relation relation) {
+		return relation.eContainingFeature() == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
 	}
 
 	public static boolean hasMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
@@ -94,6 +110,10 @@ public final class ProblemUtil {
 			return rangeMultiplicity.getLowerBound() > 0 || rangeMultiplicity.getUpperBound() >= 0;
 		}
 		return true;
+	}
+
+	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
+		return !predicateDefinition.isShadow() && !predicateDefinition.getBodies().isEmpty();
 	}
 
 	public static boolean isTypeLike(Relation relation) {

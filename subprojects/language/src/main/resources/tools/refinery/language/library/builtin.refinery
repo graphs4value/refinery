@@ -8,6 +8,8 @@ pred exists(node).
 
 pred equals(left, right).
 
+abstract class container extends node.
+
 abstract class contained extends node.
 
 pred contains(container, contained contained).

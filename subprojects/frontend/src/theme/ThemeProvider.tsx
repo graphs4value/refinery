@@ -385,10 +385,6 @@ function ThemeAndContrastThemeProvider({
   );
 }
 
-ThemeAndContrastThemeProvider.defaultProps = {
-  children: undefined,
-};
-
 export function ContrastThemeProvider({
   children,
 }: {
@@ -404,10 +400,6 @@ export function ContrastThemeProvider({
     </MaterialUiThemeProvider>
   );
 }
-
-ContrastThemeProvider.defaultProps = {
-  children: undefined,
-};
 
 const ThemeProvider = observer(function ThemeProvider({
   children,
@@ -427,9 +419,5 @@ const ThemeProvider = observer(function ThemeProvider({
     </ThemeAndContrastThemeProvider>
   );
 });
-
-ThemeProvider.defaultProps = {
-  children: undefined,
-};
 
 export default ThemeProvider;

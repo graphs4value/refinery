@@ -96,7 +96,3 @@ export default function SlideInPanel({
     </SlideInPanelRoot>
   );
 }
-
-SlideInPanel.defaultProps = {
-  children: undefined,
-};

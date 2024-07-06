@@ -151,8 +151,3 @@ export default function DirectionalSplitPane({
     </Stack>
   );
 }
-
-DirectionalSplitPane.defaultProps = {
-  primaryOnly: false,
-  secondaryOnly: false,
-};

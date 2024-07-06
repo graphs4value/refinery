@@ -58,6 +58,7 @@ ReferenceMultiplicity returns Multiplicity:
 	"[" Multiplicity "]";
 
 PredicateDefinition:
+	shadow?="shadow"?
 	("pred" | error?="error" "pred"?)
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
@@ -88,13 +89,10 @@ RuleDefinition:
 	".";
 
 enum ParameterBinding:
-	FOCUS="&" | MULTI="*";
+	FOCUS="+" | MULTI="?";
 
 Parameter:
-	(
-		(concreteness=Concreteness? modality=Modality)?
-		parameterType=[Relation|QualifiedName]
-	)? binding=ParameterBinding? name=Identifier;
+	parameterType=[Relation|QualifiedName]? binding=ParameterBinding? name=Identifier;
 
 Consequent:
 	actions+=Action ("," actions+=Action)*;
@@ -183,13 +181,14 @@ AggregationExpr:
 	"{" value=Expr "|" condition=ComparisonExpr "}";
 
 enum Concreteness:
-	CANDIDATE="candidate";
+	PARTIAL="partial" | CANDIDATE="candidate";
 
 enum Modality:
 	MUST="must" | MAY="may";
 
 ModalExpr:
-	concreteness=Concreteness? modality=Modality body=UnaryExpr;
+	(concreteness=Concreteness => modality=Modality? | modality=Modality => concreteness=Concreteness?)
+	body=UnaryExpr;
 
 CastExpr returns Expr:
 	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
@@ -295,7 +294,7 @@ Identifier:
 
 NonContainmentIdentifier:
 	ID | "atom" | "multi" | "contained" | "problem" | "module" |
-	"datatype" | "aggregator" | "decision" | "propagation";
+	"datatype" | "aggregator" | "decision" | "propagation" | "computed";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

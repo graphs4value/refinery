@@ -38,6 +38,8 @@ public interface ProblemTrace {
 
 	Relation getRelation(AnyPartialSymbol partialSymbol);
 
+	Map<Rule, RuleDefinition> getInverseRuleDefinitionTrace();
+
 	RuleDefinition getRuleDefinition(Rule rule);
 
 	RuntimeException wrapException(TranslationException translationException);

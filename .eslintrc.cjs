@@ -94,6 +94,8 @@ module.exports = {
     'react/jsx-props-no-spreading': 'off',
     // We use the `react-jsx` runtime, so there is no need to import `React`.
     'react/react-in-jsx-scope': 'off',
+    // `defaultProps` are deprecated in React 18.
+    'react/require-default-props': 'off',
   },
   overrides: [
     {

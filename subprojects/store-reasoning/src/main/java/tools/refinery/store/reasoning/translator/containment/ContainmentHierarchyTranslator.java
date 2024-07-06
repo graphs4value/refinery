@@ -5,14 +5,18 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
+import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.logic.literal.Connectivity;
 import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.literal.RepresentativeElectionLiteral;
+import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.int_.IntTerms;
 import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
+import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
@@ -35,16 +39,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static tools.refinery.logic.term.int_.IntTerms.constant;
-import static tools.refinery.logic.term.int_.IntTerms.less;
 import static tools.refinery.logic.literal.Literals.check;
 import static tools.refinery.logic.literal.Literals.not;
+import static tools.refinery.logic.term.int_.IntTerms.constant;
+import static tools.refinery.logic.term.int_.IntTerms.less;
 import static tools.refinery.store.reasoning.ReasoningAdapter.EXISTS_SYMBOL;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.focus;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 
 public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
+	public static final PartialRelation CONTAINER_SYMBOL = new PartialRelation("container", 1);
 	public static final PartialRelation CONTAINED_SYMBOL = new PartialRelation("contained", 1);
 	public static final PartialRelation INVALID_CONTAINER = new PartialRelation("invalidContainer",
 			1);
@@ -107,6 +112,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 			translateInvalidMultiplicity(storeBuilder, linkType, info);
 		}
 		translateFocusNotContained(storeBuilder);
+		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(this::configureSingleContainerPropagator);
 	}
 
 	private void translateContainmentLinkType(ModelStoreBuilder storeBuilder, PartialRelation linkType,
@@ -119,10 +125,10 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 		var mayNewSourceHelper = Query.of(name + "#mayNewSourceHelper", (builder, parent) -> {
 			var literals = new ArrayList<Literal>();
 			literals.add(may(sourceType.call(parent)));
-			if (upperCardinality instanceof FiniteUpperCardinality finiteUpperCardinality) {
+			if (upperCardinality instanceof FiniteUpperCardinality(var finiteUpperBound)) {
 				var existingCount = Variable.of("existingCount", Integer.class);
 				literals.add(new CountLowerBoundLiteral(existingCount, linkType, List.of(parent, Variable.of())));
-				literals.add(check(less(existingCount, constant(finiteUpperCardinality.finiteUpperBound()))));
+				literals.add(check(less(existingCount, constant(finiteUpperBound))));
 			}
 			builder.clause(literals);
 		});
@@ -259,5 +265,35 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				.action(
 						focus(multi, Variable.of())
 				)));
+	}
+
+	private void configureSingleContainerPropagator(PropagationBuilder propagationBuilder) {
+		var possibleContainment = Dnf.of(CONTAINS_SYMBOL.name() + "#possible", builder -> {
+			var p1 = builder.parameter("source");
+			var p2 = builder.parameter("target");
+			var output = builder.parameter("containmentLink", PartialRelation.class);
+			for (var containmentLink : containmentInfoMap.keySet()) {
+				builder.clause(
+						must(CONTAINS_SYMBOL.call(p1, p2)),
+						may(containmentLink.call(p1, p2)),
+						output.assign(new ConstantTerm<>(PartialRelation.class, containmentLink))
+				);
+			}
+		});
+		for (var containmentLink : containmentInfoMap.keySet()) {
+			propagationBuilder.rule(Rule.of(containmentLink.name() + "#single", (builder, p1, p2) -> builder
+					.clause(Integer.class, containmentCount -> List.of(
+							must(CONTAINS_SYMBOL.call(p1, p2)),
+							may(containmentLink.call(p1, p2)),
+							not(must(containmentLink.call(p1, p2))),
+							containmentCount.assign(possibleContainment.count(p1, p2,
+                                    Variable.of(PartialRelation.class))),
+							check(IntTerms.eq(containmentCount, constant(1)))
+					))
+					.action(
+							add(containmentLink, p1, p2)
+					)
+			));
+		}
 	}
 }

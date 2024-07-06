@@ -49,7 +49,7 @@ function RelationName({
   abbreviate?: boolean;
 }): JSX.Element {
   const { name, simpleName } = metadata;
-  if (abbreviate ?? RelationName.defaultProps.abbreviate) {
+  if (abbreviate) {
     return <FormattedName name={simpleName} metadata={metadata} />;
   }
   if (name.endsWith(simpleName)) {
@@ -64,9 +64,5 @@ function RelationName({
   }
   return <FormattedName name={name} metadata={metadata} />;
 }
-
-RelationName.defaultProps = {
-  abbreviate: false,
-};
 
 export default observer(RelationName);

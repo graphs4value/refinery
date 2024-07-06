@@ -104,6 +104,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			// Do not propose names with a root prefix unless explicitly asked for.
 			return false;
 		}
+
 		var errorPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE);
 		if (ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(errorPredicate)) {
 			return false;
@@ -112,6 +113,13 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		var eReference = getEReference(crossReference);
 		if (eReference == null) {
 			return true;
+		}
+
+		var shadowPredicate = candidate.getUserData(ProblemResourceDescriptionStrategy.SHADOW_PREDICATE);
+		if (ProblemResourceDescriptionStrategy.SHADOW_PREDICATE_TRUE.equals(shadowPredicate) &&
+				!(ProblemPackage.Literals.ATOM__RELATION.equals(eReference) &&
+						ProblemUtil.mayReferToShadow(context.getCurrentModel()))) {
+			return false;
 		}
 
 		if (eReference == ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE) {

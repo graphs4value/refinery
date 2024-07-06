@@ -20,10 +20,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 class ProblemTraceImpl implements ProblemTrace {
 	@Inject
@@ -45,6 +42,8 @@ class ProblemTraceImpl implements ProblemTrace {
 	private final Map<AnyPartialSymbol, Relation> mutableInverseTrace = new HashMap<>();
 	private final Map<AnyPartialSymbol, Relation> inverseTrace = Collections.unmodifiableMap(mutableInverseTrace);
 	private final Map<Rule, RuleDefinition> mutableInverseRuleDefinitionTrace = new LinkedHashMap<>();
+	private final Map<Rule, RuleDefinition> inverseRuleDefinitionTrace = Collections.unmodifiableMap(
+			mutableInverseRuleDefinitionTrace);
 
 	@Override
 	public Problem getProblem() {
@@ -131,9 +130,20 @@ class ProblemTraceImpl implements ProblemTrace {
 	void putRuleDefinition(RuleDefinition ruleDefinition, Rule rule) {
 		var oldRuleDefinition = mutableInverseRuleDefinitionTrace.put(rule, ruleDefinition);
 		if (oldRuleDefinition != null) {
-			throw new TracedException(oldRuleDefinition, "Rule definition %s was already mapped to rule"
+			throw new TracedException(oldRuleDefinition, "Rule %s was already mapped to rule definition"
 					.formatted(rule.getName()));
 		}
+	}
+
+	void putPropagationRuleDefinition(RuleDefinition ruleDefinition, Collection<Rule> rules) {
+		for (var rule : rules) {
+			putRuleDefinition(ruleDefinition, rule);
+		}
+	}
+
+	@Override
+	public Map<Rule, RuleDefinition> getInverseRuleDefinitionTrace() {
+		return inverseRuleDefinitionTrace;
 	}
 
 	@Override

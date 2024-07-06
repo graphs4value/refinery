@@ -68,6 +68,8 @@ class MetamodelTest {
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(1), CardinalityIntervals.SET)
 						.put(Tuple.of(4), CardinalityIntervals.SET))
+				.seed(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINED_SYMBOL, builder -> builder
 						.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINS_SYMBOL, builder -> builder
@@ -126,6 +128,8 @@ class MetamodelTest {
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(Tuple.of(0), CardinalityIntervals.SET)
 						.put(Tuple.of(1), CardinalityIntervals.SET))
+				.seed(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, builder -> builder
+						.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINED_SYMBOL, builder -> builder
 						.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINS_SYMBOL, builder -> builder

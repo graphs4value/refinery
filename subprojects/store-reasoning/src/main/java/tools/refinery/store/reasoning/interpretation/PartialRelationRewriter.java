@@ -18,4 +18,9 @@ import java.util.Set;
 public interface PartialRelationRewriter {
 	List<Literal> rewriteLiteral(Set<Variable> positiveVariables, AbstractCallLiteral literal, Modality modality,
 								 Concreteness concreteness);
+
+	default List<Literal> rewriteComputed(Set<Variable> positiveVariables, AbstractCallLiteral literal,
+										  Modality modality, Concreteness concreteness) {
+		return rewriteLiteral(positiveVariables, literal, modality, concreteness);
+	}
 }

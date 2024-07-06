@@ -154,7 +154,10 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	}
 
 	private List<FeatureBasedDiagnostic> getRuleDiagnostics(Rule rule, ProblemTrace trace, String message) {
-		var ruleDefinition = trace.getRuleDefinition(rule);
+		var ruleDefinition = trace.getInverseRuleDefinitionTrace().get(rule);
+		if (ruleDefinition == null) {
+			return List.of();
+		}
 		return getTracedDiagnostics(ruleDefinition, ProblemPackage.Literals.NAMED_ELEMENT__NAME, message);
 	}
 }

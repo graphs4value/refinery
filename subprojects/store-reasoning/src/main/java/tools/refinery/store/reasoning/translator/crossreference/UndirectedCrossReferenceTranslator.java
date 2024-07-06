@@ -24,7 +24,7 @@ import tools.refinery.store.representation.Symbol;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
-import static tools.refinery.store.reasoning.actions.PartialActionLiterals.merge;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
@@ -125,6 +125,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		var name = linkType.name();
 		var type = info.type();
 		var mayNewSource = CrossReferenceUtils.createMayHelper(linkType, type, info.multiplicity(), false);
+		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
 		propagationBuilder.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
 			builder.clause(
@@ -139,7 +140,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 				);
 			}
 			builder.action(
-					merge(linkType, TruthValue.FALSE, p1, p2)
+					remove(linkType, p1, p2)
 			);
 		}));
 	}

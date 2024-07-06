@@ -27,8 +27,7 @@ import java.util.LinkedHashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator.CONTAINED_SYMBOL;
-import static tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator.CONTAINS_SYMBOL;
+import static tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator.*;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.COUNT_SYMBOL;
 
 class DefaultContainmentTest {
@@ -42,8 +41,9 @@ class DefaultContainmentTest {
 	@ValueSource(booleans = {false, true})
 	void defaultContainmentTest(boolean reverse) {
 		var typeHierarchy = TypeHierarchy.builder()
+				.type(CONTAINER_SYMBOL, true)
 				.type(CONTAINED_SYMBOL, true)
-				.type(c1)
+				.type(c1, CONTAINER_SYMBOL)
 				.type(c2, CONTAINED_SYMBOL)
 				.type(c3, CONTAINED_SYMBOL)
 				.build();
@@ -60,6 +60,7 @@ class DefaultContainmentTest {
 
 		var modelSeed = ModelSeed.builder(3)
 				.seed(COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
+				.seed(CONTAINER_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(CONTAINED_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(CONTAINS_SYMBOL, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(c1, builder -> builder

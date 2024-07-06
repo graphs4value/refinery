@@ -49,19 +49,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_MODALITY_ISSUE = ISSUE_PREFIX + "INVALID_MODALITY";
 	public static final String INVALID_RULE_ISSUE = ISSUE_PREFIX + "INVALID_RULE";
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
+	public static final String SHADOW_RELATION_ISSUE = ISSUE_PREFIX + "SHADOW_RELATION";
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
-	public static final String VARIABLE_WITHOUT_EXISTS = ISSUE_PREFIX + "VARIABLE_WITHOUT_EXISTS";
 	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
 	public static final String UNUSED_PARAMETER = ISSUE_PREFIX + "UNUSED_PARAMETER";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
-
-	@Inject
-	private ExistsVariableCollector existsVariableCollector;
 
 	@Inject
 	private ActionTargetCollector actionTargetCollector;
@@ -135,14 +132,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Variable variable && ProblemUtil.isImplicitVariable(variable)
 				&& !ProblemUtil.isSingletonVariable(variable)) {
-			if (EcoreUtil2.getContainerOfType(variable, ParametricDefinition.class) instanceof RuleDefinition &&
-					EcoreUtil2.getContainerOfType(variable, NegationExpr.class) == null &&
-					// If there is an exists constraint, it is the only constraint.
-					existsVariableCollector.missingExistsConstraint(variable)) {
-				// Existentially quantified variables in rules should not be singletons,
-				// because we have to add an {@code exists} constraint as well.
-				return;
-			}
 			var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
 			if (problem != null && referenceCounter.countReferences(problem, variable) <= 1) {
 				var name = variable.getName();
@@ -368,32 +357,48 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkReferenceType(ReferenceDeclaration referenceDeclaration) {
+		var referenceType = referenceDeclaration.getReferenceType();
+		if (referenceType == null || referenceType.eIsProxy()) {
+			return;
+		}
 		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
 				!ProblemUtil.isContainerReference(referenceDeclaration);
 		if (isDefaultReference || referenceDeclaration.getKind() == ReferenceKind.REFERENCE) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
-			return;
+			if (ProblemUtil.isShadow(referenceType)) {
+				var message = "Shadow relations '%s' is not allowed in reference types."
+						.formatted(referenceType.getName());
+				acceptError(message, referenceDeclaration,
+						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, SHADOW_RELATION_ISSUE);
+			}
+		} else if (!(referenceType instanceof ClassDeclaration)) {
+			var message = "Reference type '%s' of the containment or container reference '%s' is not a class."
+					.formatted(referenceType.getName(), referenceDeclaration.getName());
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE,
+					0, INVALID_REFERENCE_TYPE_ISSUE);
 		}
-		var referenceType = referenceDeclaration.getReferenceType();
-		if (referenceType == null || referenceType.eIsProxy() || referenceType instanceof ClassDeclaration) {
-			// Either correct, or a missing reference type where we are probably already emitting another error.
-			return;
+	}
+
+	@Check
+	public void checkPredicateDefinition(PredicateDefinition predicateDefinition) {
+		if (predicateDefinition.isError() && predicateDefinition.isShadow()) {
+			var message = "Shadow predicates cannot be marked as error predicates.";
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__ERROR, 0,
+					SHADOW_RELATION_ISSUE);
 		}
-		var message = "Reference type '%s' of the containment or container reference '%s' is not a class."
-				.formatted(referenceType.getName(), referenceDeclaration.getName());
-		acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0,
-				INVALID_REFERENCE_TYPE_ISSUE);
 	}
 
 	@Check
 	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
+		var type = parameter.getParameterType();
+		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
+			var message = "Shadow relations '%s' is not allowed in parameter types.".formatted(type.getName());
+			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+					SHADOW_RELATION_ISSUE);
+		}
 		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
 		if (parametricDefinition instanceof RuleDefinition rule) {
-			if (parameter.getParameterType() != null && parameter.getModality() == Modality.NONE) {
-				acceptError("Parameter type modality must be specified.", parameter,
-						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
-			}
 			var kind = rule.getKind();
 			var binding = parameter.getBinding();
 			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
@@ -404,10 +409,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		} else {
-			if (parameter.getConcreteness() != Concreteness.PARTIAL || parameter.getModality() != Modality.NONE) {
-				acceptError("Modal parameter types are only supported in rule definitions.", parameter, null, 0,
-						INVALID_MODALITY_ISSUE);
-			}
 			if (parameter.getBinding() != ParameterBinding.SINGLE) {
 				acceptError("Parameter binding annotations are only supported in decision rules.", parameter,
 						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
@@ -418,12 +419,20 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkAtom(Atom atom) {
 		int argumentCount = atom.getArguments().size();
-		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
 		if (atom.isTransitiveClosure() && argumentCount != 2) {
 			var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
 					.formatted(argumentCount);
 			acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
 					INVALID_TRANSITIVE_CLOSURE_ISSUE);
+		}
+		var target = atom.getRelation();
+		if (target == null || target.eIsProxy()) {
+			return;
+		}
+		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
+		if (ProblemUtil.isShadow(target) && !ProblemUtil.mayReferToShadow(atom)) {
+			var message = "Shadow relation '%s' is not allowed in a non-shadow context.".formatted(target.getName());
+			acceptError(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, SHADOW_RELATION_ISSUE);
 		}
 	}
 
@@ -432,28 +441,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (ruleDefinition.getConsequents().size() != 1) {
 			acceptError("Rules must have exactly one consequent.", ruleDefinition,
 					ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, INVALID_RULE_ISSUE);
-		}
-		var unquantifiedVariables = new HashSet<Variable>();
-		for (var variable : EcoreUtil2.getAllContentsOfType(ruleDefinition, Variable.class)) {
-			if (existsVariableCollector.missingExistsConstraint(variable)) {
-				unquantifiedVariables.add(variable);
-			}
-		}
-		for (var expr : EcoreUtil2.getAllContentsOfType(ruleDefinition, VariableOrNodeExpr.class)) {
-			if (expr.getVariableOrNode() instanceof Variable variable && unquantifiedVariables.contains(variable)) {
-				unquantifiedVariables.remove(variable);
-				var name = variable.getName();
-				String message;
-				if (ProblemUtil.isSingletonVariable(variable)) {
-					message = ("Remove the singleton variable marker '_' and clarify the quantification of variable " +
-							"'%s'.").formatted(name);
-				} else {
-					message = ("Add a 'must exists(%s)', 'may exists(%s)', or 'may !exists(%s)' constraint to " +
-							"clarify the quantification of variable '%s'.").formatted(name, name, name, name);
-				}
-				acceptWarning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
-						VARIABLE_WITHOUT_EXISTS);
-			}
 		}
 	}
 
@@ -467,30 +454,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		for (var consequent : consequents) {
 			countRuleParameterUsages(consequent, useCounts);
 		}
-		var isError = ruleDefinition.getKind() == RuleKind.PROPAGATION;
 		int consequentCount = consequents.size();
 		for (var entry : useCounts.entrySet()) {
 			if (entry.getValue() < consequentCount) {
 				var parameter = entry.getKey();
 				var message = "Unused rule parameter '%s'.".formatted(parameter.getName());
-				if (isError) {
-					acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, UNUSED_PARAMETER);
-				} else {
-					acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
-							UNUSED_PARAMETER);
-				}
+				acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
+						UNUSED_PARAMETER);
 			}
-		}
-	}
-
-	@Check
-	public void checkPropagationRuleConsequent(Consequent consequent) {
-		var rule = EcoreUtil2.getContainerOfType(consequent, RuleDefinition.class);
-		if (rule == null || rule.getKind() != RuleKind.PROPAGATION) {
-			return;
-		}
-		if (consequent.getActions().size() > 1) {
-			acceptError("Propagation rules must have exactly one action.", consequent, null, 0, INVALID_RULE_ISSUE);
 		}
 	}
 
@@ -502,14 +473,15 @@ public class ProblemValidator extends AbstractProblemValidator {
 			}
 		}
 		for (var usedParameter : usedParameters) {
-			useCounts.compute(usedParameter, (ignored, value) -> value == null ? 0 : value + 1);
+			useCounts.compute(usedParameter, (ignored, value) -> value == null ? null : value + 1);
 		}
 	}
 
 	private static void collectUsedParameters(AssertionAction assertionAction, HashSet<Parameter> usedParameters) {
 		for (var argument : assertionAction.getArguments()) {
 			if (argument instanceof NodeAssertionArgument nodeAssertionArgument &&
-					nodeAssertionArgument.getNode() instanceof Parameter usedParameter) {
+					nodeAssertionArgument.getNode() instanceof Parameter usedParameter &&
+					!usedParameter.eIsProxy()) {
 				usedParameters.add(usedParameter);
 			}
 		}
@@ -518,11 +490,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Check
 	public void checkAssertion(AbstractAssertion assertion) {
 		var relation = assertion.getRelation();
+		if (relation == null || relation.eIsProxy()) {
+			return;
+		}
 		if (relation instanceof DatatypeDeclaration) {
 			var message = "Assertions for data types are not supported.";
 			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 			return;
+		}
+		if (ProblemUtil.isShadow(relation)) {
+			var message = "Shadow relation '%s' may not have any assertions.".formatted(relation.getName());
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
+					SHADOW_RELATION_ISSUE);
 		}
 		int argumentCount = assertion.getArguments().size();
 		checkArity(assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, argumentCount);
@@ -530,10 +510,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkTypeScope(TypeScope typeScope) {
-		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
 		if (typeScope.isIncrement() && ProblemUtil.isInModule(typeScope)) {
 			acceptError("Incremental type scopes are not supported in modules", typeScope, null, 0,
 					INVALID_MULTIPLICITY_ISSUE);
+		}
+		var type = typeScope.getTargetType();
+		if (type == null || type.eIsProxy()) {
+			return;
+		}
+		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+		if (ProblemUtil.isShadow(type)) {
+			var message = "Shadow relations '%s' is not allowed in type scopes.".formatted(type.getName());
+			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
+					SHADOW_RELATION_ISSUE);
 		}
 	}
 
