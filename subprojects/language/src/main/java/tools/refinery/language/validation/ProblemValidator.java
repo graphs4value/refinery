@@ -454,30 +454,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		for (var consequent : consequents) {
 			countRuleParameterUsages(consequent, useCounts);
 		}
-		var isError = ruleDefinition.getKind() == RuleKind.PROPAGATION;
 		int consequentCount = consequents.size();
 		for (var entry : useCounts.entrySet()) {
 			if (entry.getValue() < consequentCount) {
 				var parameter = entry.getKey();
 				var message = "Unused rule parameter '%s'.".formatted(parameter.getName());
-				if (isError) {
-					acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, UNUSED_PARAMETER);
-				} else {
-					acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
-							UNUSED_PARAMETER);
-				}
+				acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
+						UNUSED_PARAMETER);
 			}
-		}
-	}
-
-	@Check
-	public void checkPropagationRuleConsequent(Consequent consequent) {
-		var rule = EcoreUtil2.getContainerOfType(consequent, RuleDefinition.class);
-		if (rule == null || rule.getKind() != RuleKind.PROPAGATION) {
-			return;
-		}
-		if (consequent.getActions().size() > 1) {
-			acceptError("Propagation rules must have exactly one action.", consequent, null, 0, INVALID_RULE_ISSUE);
 		}
 	}
 
@@ -489,14 +473,15 @@ public class ProblemValidator extends AbstractProblemValidator {
 			}
 		}
 		for (var usedParameter : usedParameters) {
-			useCounts.compute(usedParameter, (ignored, value) -> value == null ? 0 : value + 1);
+			useCounts.compute(usedParameter, (ignored, value) -> value == null ? null : value + 1);
 		}
 	}
 
 	private static void collectUsedParameters(AssertionAction assertionAction, HashSet<Parameter> usedParameters) {
 		for (var argument : assertionAction.getArguments()) {
 			if (argument instanceof NodeAssertionArgument nodeAssertionArgument &&
-					nodeAssertionArgument.getNode() instanceof Parameter usedParameter) {
+					nodeAssertionArgument.getNode() instanceof Parameter usedParameter &&
+					!usedParameter.eIsProxy()) {
 				usedParameters.add(usedParameter);
 			}
 		}
