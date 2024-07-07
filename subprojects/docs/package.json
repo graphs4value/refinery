@@ -43,7 +43,7 @@
     "@fontsource/open-sans": "^5.0.28",
     "@material-icons/svg": "^1.0.33",
     "@mdx-js/react": "^3.0.1",
-    "@swc/core": "^1.6.7",
+    "@swc/core": "^1.6.13",
     "clsx": "^2.1.1",
     "mdast-util-mdx": "^3.0.0",
     "prism-react-renderer": "^2.3.1",
