@@ -15,12 +15,15 @@ val mwe2: Configuration by configurations.creating {
 	isCanBeConsumed = false
 	isCanBeResolved = true
 	extendsFrom(configurations.implementation.get())
+	exclude(group = "log4j", module = "log4j")
 }
 
 val libs = the<LibrariesForLibs>()
 
 dependencies {
 	mwe2(libs.mwe2.launch)
+	mwe2(libs.slf4j.simple)
+	mwe2(libs.slf4j.log4j)
 }
 
 eclipse.classpath.plusConfigurations += mwe2

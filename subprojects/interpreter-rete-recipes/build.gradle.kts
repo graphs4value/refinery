@@ -23,7 +23,6 @@ dependencies {
 	mwe2(libs.ecore.codegen)
 	mwe2(libs.mwe.utils)
 	mwe2(libs.mwe2.lib)
-	mwe2(libs.slf4j.simple)
 	mwe2(libs.xtext.core)
 	mwe2(libs.xtext.xbase)
 }
