@@ -29,7 +29,6 @@ val generatedWebSources: Configuration by configurations.creating {
 }
 
 dependencies {
-	api(platform(libs.xtext.bom))
 	api(libs.ecore)
 	api(libs.xtext.core)
 	api(libs.xtext.xbase)

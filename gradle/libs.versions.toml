@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: EPL-2.0
 
 [versions]
-eclipseCollections = "12.0.0.M3"
+eclipseCollections = "11.1.0"
 jetty = "12.0.11"
 jmh = "1.37"
-junit = "5.11.0-M2"
+junit = "5.10.3"
 mockito = "5.12.0"
-mwe2 = "2.19.0.M1"
+mwe2 = "2.18.0"
 slf4j = "2.0.13"
 xtext = "2.35.0"
 
@@ -34,10 +34,11 @@ jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
 junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
 junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
+junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version = "1.10.3" }
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.13.0.M1" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.12.0" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
 ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.10.4067" }
@@ -45,7 +46,6 @@ refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", versio
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
-xtext-bom = { group = "org.eclipse.xtext", name = "xtext-dev-bom", version.ref = "xtext" }
 xtext-core = { group = "org.eclipse.xtext", name = "org.eclipse.xtext", version.ref = "xtext" }
 xtext-generator-antlr = { group = "org.eclipse.xtext", name = "xtext-antlr-generator", version = "2.1.1" }
 xtext-generator = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xtext.generator", version.ref = "xtext" }
