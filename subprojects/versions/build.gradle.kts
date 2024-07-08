@@ -19,6 +19,7 @@ mavenArtifact {
 val refineryVersion = "refinery"
 val interpreterVersion = "refineryInterpreter"
 val interpreterGroup = property("tools.refinery.interpreter.group").toString()
+val shadowVersion = "shadow"
 
 catalog.versionCatalog {
 	from(files("../../gradle/libs.versions.toml"))
@@ -26,6 +27,10 @@ catalog.versionCatalog {
 	version(interpreterVersion, property("tools.refinery.interpreter.version").toString())
 	library("bom", group.toString(), "refinery-bom").versionRef(refineryVersion)
 	library("bom-dependencies", group.toString(), "refinery-bom-dependencies").versionRef(refineryVersion)
+
+	// Let downstream users add the shadow plugin to bundle their dependencies.
+	version(shadowVersion, pluginLibs.versions.shadow.get())
+	plugin("shadow", "io.github.goooler.shadow").versionRef(shadowVersion)
 }
 
 publishing.publications.named<MavenPublication>("mavenJava") {
