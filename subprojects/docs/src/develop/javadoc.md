@@ -12,12 +12,10 @@ Here you can find API documentation for Refinery components automatically genera
 # Refinery
 
 * [`tools.refinery:refinery-generator`](pathname://refinery-generator)
-* [`tools.refinery:refinery-generator-cli`](pathname://refinery-generator-cli)
 * [`tools.refinery:refinery-language`](pathname://refinery-language)
 * [`tools.refinery:refinery-language-ide`](pathname://refinery-language-ide)
 * [`tools.refinery:refinery-language-model`](pathname://refinery-language-model)
 * [`tools.refinery:refinery-language-semantics`](pathname://refinery-language-semantics)
-* [`tools.refinery:refinery-language-web`](pathname://refinery-language-web)
 * [`tools.refinery:refinery-logic`](pathname://refinery-logic)
 * [`tools.refinery:refinery-store`](pathname://refinery-store)
 * [`tools.refinery:refinery-store-dse`](pathname://refinery-store-dse)

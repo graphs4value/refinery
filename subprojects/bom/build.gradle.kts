@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import tools.refinery.gradle.JavaLibraryPlugin
+
 plugins {
 	id("tools.refinery.gradle.maven-bom")
 }
@@ -25,7 +27,7 @@ dependencies {
 gradle.projectsEvaluated {
 	dependencies.constraints {
 		for (subproject in rootProject.subprojects) {
-			if (subproject.plugins.hasPlugin(JavaPlugin::class)) {
+			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
 				api(project(subproject.path))
 			}
 		}

@@ -9,10 +9,6 @@ plugins {
 	id("tools.refinery.gradle.xtext-generated")
 }
 
-mavenArtifact {
-	description = "Cloud-based partial modeling environment"
-}
-
 val webapp: Configuration by configurations.creating {
 	isCanBeConsumed = false
 	isCanBeResolved = true

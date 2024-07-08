@@ -12,7 +12,6 @@ plugins {
 	jacoco
 	java
 	id("tools.refinery.gradle.eclipse")
-	id("tools.refinery.gradle.maven-publish")
 }
 
 repositories {
@@ -27,7 +26,6 @@ configurations.testRuntimeClasspath {
 val libs = the<LibrariesForLibs>()
 
 dependencies {
-	implementation(platform(project(":refinery-bom-dependencies")))
 	compileOnly(libs.jetbrainsAnnotations)
 	testCompileOnly(libs.jetbrainsAnnotations)
 	testImplementation(libs.hamcrest)
@@ -49,10 +47,6 @@ java {
 	toolchain {
 		languageVersion.set(JavaLanguageVersion.of(21))
 	}
-}
-
-publishing.publications.named<MavenPublication>("mavenJava") {
-	from(components["java"])
 }
 
 tasks {

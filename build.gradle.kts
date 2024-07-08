@@ -5,6 +5,7 @@
  */
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+import tools.refinery.gradle.MavenPublishPlugin
 
 plugins {
 	alias(pluginLibs.plugins.versions)

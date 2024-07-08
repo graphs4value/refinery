@@ -5,6 +5,7 @@
  */
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+import tools.refinery.gradle.JavaLibraryPlugin
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
@@ -24,7 +25,7 @@ val javadocs: Configuration by configurations.creating {
 dependencies {
 	gradle.projectsEvaluated {
 		for (subproject in rootProject.subprojects) {
-			if (subproject.plugins.hasPlugin(JavaPlugin::class)) {
+			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
 				javadocs(project(subproject.path, "javadocElements"))
 			}
 		}

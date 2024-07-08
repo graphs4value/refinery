@@ -11,6 +11,7 @@ import tools.refinery.gradle.utils.EclipseUtils
 plugins {
 	`java-test-fixtures`
 	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.maven-publish")
 }
 
 publishing.publications {

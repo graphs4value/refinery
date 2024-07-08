@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import tools.refinery.gradle.JavaLibraryPlugin
+
 plugins {
 	`version-catalog`
 	id("tools.refinery.gradle.maven-publish")
@@ -33,7 +35,7 @@ publishing.publications.named<MavenPublication>("mavenJava") {
 gradle.projectsEvaluated {
 	catalog.versionCatalog {
 		for (subproject in rootProject.subprojects) {
-			if (subproject.plugins.hasPlugin(JavaPlugin::class)) {
+			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
 				val alias = subproject.name.removePrefix("refinery-")
 				val group = subproject.group.toString()
 				val versionRef = if (interpreterGroup == group) interpreterVersion else refineryVersion

@@ -23,6 +23,7 @@ val libs = the<LibrariesForLibs>()
 dependencies {
 	implementation(libs.slf4j.simple)
 	implementation(libs.slf4j.log4j)
+	implementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 }
 
 // See https://github.com/johnrengelman/shadow/issues/586
