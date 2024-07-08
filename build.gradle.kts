@@ -7,7 +7,7 @@
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
 
 plugins {
-	alias(libs.plugins.versions)
+	alias(pluginLibs.plugins.versions)
 	id("tools.refinery.gradle.eclipse")
 	id("tools.refinery.gradle.frontend-worktree")
 	id("tools.refinery.gradle.sonarqube")
@@ -76,7 +76,7 @@ val mavenRepositoryTar by tasks.registering(Tar::class) {
 gradle.projectsEvaluated {
 	mavenRepositoryTar.configure {
 		for (subproject in rootProject.subprojects) {
-			if (subproject.plugins.hasPlugin(JavaPlugin::class)) {
+			if (subproject.plugins.hasPlugin(MavenPublishPlugin::class)) {
 				dependsOn(subproject.tasks.named("publishMavenJavaPublicationToFileRepository"))
 			}
 		}

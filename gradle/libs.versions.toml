@@ -4,27 +4,35 @@
 
 [versions]
 eclipseCollections = "11.1.0"
+ecore = "2.36.0"
+ecoreCodegen = "2.38.0"
+ecoreXmi = "2.37.0"
+gson = "2.11.0"
+hamcrest = "2.2"
+jcommander = "1.83"
+jetbrainsAnnotations = "24.1.0"
 jetty = "12.0.11"
 jmh = "1.37"
 junit = "5.10.3"
 mockito = "5.12.0"
+mwe = "1.12.0"
 mwe2 = "2.18.0"
+ortools = "9.10.4067"
+refineryZ3 = "4.12.6"
 slf4j = "2.0.13"
 xtext = "2.35.0"
+xtextAntlrGenerator = "2.1.1"
 
 [libraries]
 eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
-ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.36.0" }
-ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.37.0" }
-ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.38.0" }
-gradlePlugin-frontend = { group = "org.siouan", name = "frontend-jdk21", version = "8.1.0" }
-gradlePlugin-shadow = { group = "io.github.goooler.shadow", name = "shadow-gradle-plugin", version = "8.1.8" }
-gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "5.1.0.4882" }
-gson = { group = "com.google.code.gson", name = "gson", version = "2.11.0" }
-hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
-jcommander = { group = "org.jcommander", name = "jcommander", version = "1.83" }
-jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.1.0" }
+ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version.ref = "ecore" }
+ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecoreCodegen" }
+ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version.ref = "ecoreXmi" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+hamcrest = { group = "org.hamcrest", name = "hamcrest", version.ref = "hamcrest" }
+jcommander = { group = "org.jcommander", name = "jcommander", version.ref = "jcommander" }
+jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotations" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty.ee10", name = "jetty-ee10-servlet", version.ref = "jetty" }
 jetty-websocket-api = { group = "org.eclipse.jetty.websocket", name = "jetty-websocket-jetty-api", version.ref = "jetty" }
@@ -32,28 +40,26 @@ jetty-websocket-client = { group = "org.eclipse.jetty.websocket", name = "jetty-
 jetty-websocket-server = { group = "org.eclipse.jetty.ee10.websocket", name = "jetty-ee10-websocket-jetty-server", version.ref = "jetty" }
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
-junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
-junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
-junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version = "1.10.3" }
-junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
+junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine" }
+junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.12.0" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version.ref = "mwe" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
-ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.10.4067" }
-refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version = "4.12.6" }
+ortools = { group = "com.google.ortools", name = "ortools-java", version.ref = "ortools" }
+refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version.ref = "refineryZ3" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
 xtext-core = { group = "org.eclipse.xtext", name = "org.eclipse.xtext", version.ref = "xtext" }
-xtext-generator-antlr = { group = "org.eclipse.xtext", name = "xtext-antlr-generator", version = "2.1.1" }
+xtext-generator-antlr = { group = "org.eclipse.xtext", name = "xtext-antlr-generator", version.ref = "xtextAntlrGenerator" }
 xtext-generator = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xtext.generator", version.ref = "xtext" }
 xtext-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.ide", version.ref = "xtext" }
 xtext-testing = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.testing", version.ref = "xtext" }
 xtext-web = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.web", version.ref = "xtext" }
 xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", version.ref = "xtext" }
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
-
-[plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }

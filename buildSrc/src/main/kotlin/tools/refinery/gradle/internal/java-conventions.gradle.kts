@@ -6,18 +6,14 @@
 package tools.refinery.gradle.internal
 
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.configurationcache.extensions.capitalized
 import tools.refinery.gradle.utils.EclipseUtils
 
 plugins {
 	jacoco
 	java
-	`maven-publish`
-	signing
 	id("tools.refinery.gradle.eclipse")
+	id("tools.refinery.gradle.maven-publish")
 }
-
-val mavenRepositoryDir = rootProject.layout.buildDirectory.map { it.dir("repo") }
 
 repositories {
 	mavenCentral()
@@ -31,10 +27,12 @@ configurations.testRuntimeClasspath {
 val libs = the<LibrariesForLibs>()
 
 dependencies {
+	implementation(platform(project(":refinery-bom-dependencies")))
 	compileOnly(libs.jetbrainsAnnotations)
 	testCompileOnly(libs.jetbrainsAnnotations)
 	testImplementation(libs.hamcrest)
 	testImplementation(libs.junit.api)
+	testImplementation(platform(libs.junit.bom))
 	testRuntimeOnly(libs.junit.engine)
 	testRuntimeOnly(libs.junit.launcher)
 	testImplementation(libs.junit.params)
@@ -53,54 +51,8 @@ java {
 	}
 }
 
-open class MavenArtifactExtension(project: Project) {
-	var name: String = project.name.split("-").drop(1).joinToString(" ", transform = String::capitalized)
-	var description: String? = null
-}
-
-val artifactExtension = project.extensions.create<MavenArtifactExtension>("mavenArtifact", project)
-
-publishing {
-	publications {
-		create<MavenPublication>("mavenJava") {
-			from(components["java"])
-			pom {
-				name = provider { "Refinery ${artifactExtension.name}" }
-				description = provider {
-					val prefix = artifactExtension.description ?: artifactExtension.name.lowercase().capitalized()
-					"$prefix in Refinery, an efficient graph solver for generating well-formed models"
-				}
-				url = "https://refinery.tools/"
-				licenses {
-					license {
-						name = "Eclipse Public License - v 2.0"
-						url = "https://www.eclipse.org/legal/epl-2.0/"
-					}
-				}
-				developers {
-					developer {
-						name = "The Refinery Authors"
-						url = "https://refinery.tools/"
-					}
-				}
-				scm {
-					connection = "scm:git:https://github.com/graphs4value/refinery.git"
-					developerConnection = "scm:git:ssh://github.com:graphs4value/refinery.git"
-					url = "https://github.com/graphs4value/refinery"
-				}
-				issueManagement {
-					url = "https://github.com/graphs4value/refinery/issues"
-				}
-			}
-		}
-	}
-
-	repositories {
-		maven {
-			name = "file"
-			setUrl(mavenRepositoryDir.map { uri(it) })
-		}
-	}
+publishing.publications.named<MavenPublication>("mavenJava") {
+	from(components["java"])
 }
 
 tasks {
@@ -148,11 +100,6 @@ tasks {
 	eclipseClasspath {
 		dependsOn(generateEclipseSourceFolders)
 	}
-
-	named<PublishToMavenRepository>("publishMavenJavaPublicationToFileRepository") {
-		mustRunAfter(rootProject.tasks.named("cleanMavenRepository"))
-		outputs.dir(mavenRepositoryDir)
-	}
 }
 
 fun collectDependentProjects(configuration: Configuration, dependentProjects: MutableCollection<Project>) {
@@ -190,17 +137,6 @@ gradle.projectsEvaluated {
 			linksOffline = (linksOffline ?: listOf()) + links
 		}
 	}
-}
-
-signing {
-	// The underlying property cannot be set publicly.
-	@Suppress("UsePropertyAccessSyntax")
-	setRequired(project.hasProperty("forceSign"))
-	val signingKeyId = System.getenv("PGP_KEY_ID")
-	val signingKey = System.getenv("PGP_KEY")
-	val signingPassword = System.getenv("PGP_PASSWORD")
-	useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-	sign(publishing.publications["mavenJava"])
 }
 
 eclipse {

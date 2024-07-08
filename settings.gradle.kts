@@ -7,6 +7,8 @@
 rootProject.name = "refinery"
 
 include(
+		"bom",
+		"bom-dependencies",
 		"docs",
 		"frontend",
 		"generator",
@@ -29,10 +31,19 @@ include(
 		"store-reasoning",
 		"store-reasoning-scope",
 		"store-reasoning-smt",
+		"versions",
 )
 
 for (project in rootProject.children) {
 	val projectName = project.name
 	project.name = "${rootProject.name}-$projectName"
 	project.projectDir = file("subprojects/$projectName")
+}
+
+dependencyResolutionManagement {
+	versionCatalogs {
+		create("pluginLibs") {
+			from(files("gradle/pluginLibs.versions.toml"))
+		}
+	}
 }
