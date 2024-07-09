@@ -11,6 +11,7 @@ import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.dse.propagation.BoundPropagator;
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.propagation.Propagator;
 import tools.refinery.store.model.Model;
@@ -48,7 +49,7 @@ public class CleanupPropagator implements Propagator {
 		return new BoundCleanupPropagator(model);
 	}
 
-	private static class BoundCleanupPropagator implements BoundPropagator {
+	private class BoundCleanupPropagator implements BoundPropagator {
 		private final Model model;
 		private final ModelQueryAdapter queryEngine;
 		private final ResultSet<Boolean> resultSet;
@@ -70,7 +71,11 @@ public class CleanupPropagator implements Propagator {
 			var cursor = resultSet.getAll();
 			while (cursor.move()) {
 				propagated = true;
-				reasoningAdapter.cleanup(cursor.getKey().get(0));
+				var nodeToDelete = cursor.getKey().get(0);
+				if (!reasoningAdapter.cleanup(nodeToDelete)) {
+					return new PropagationRejectedResult(CleanupPropagator.this,
+                            "Failed to remove node: " + nodeToDelete, true);
+				}
 			}
 			return propagated ? PropagationResult.PROPAGATED : PropagationResult.UNCHANGED;
 		}

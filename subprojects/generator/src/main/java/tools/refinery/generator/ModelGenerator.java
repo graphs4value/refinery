@@ -10,26 +10,38 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.statespace.SolutionStore;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 public class ModelGenerator extends ModelFacade {
 	private final Version initialVersion;
 	private final Provider<SolutionSerializer> solutionSerializerProvider;
+	private final CancellableCancellationToken cancellationToken;
+	private final boolean keepNonExistingObjects;
+	private final PartialInterpretation<TruthValue, Boolean> existsInterpretation;
 	private long randomSeed = 1;
 	private int maxNumberOfSolutions = 1;
 	private SolutionStore solutionStore;
 
 	ModelGenerator(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-				   Provider<SolutionSerializer> solutionSerializerProvider) {
+				   Provider<SolutionSerializer> solutionSerializerProvider,
+				   CancellableCancellationToken cancellationToken, boolean keepNonExistingObjects) {
 		super(problemTrace, store, modelSeed, Concreteness.CANDIDATE);
 		this.solutionSerializerProvider = solutionSerializerProvider;
+		this.cancellationToken = cancellationToken;
+		this.keepNonExistingObjects = keepNonExistingObjects;
+		existsInterpretation = super.getPartialInterpretation(ReasoningAdapter.EXISTS_SYMBOL);
 		initialVersion = getModel().commit();
 	}
 
@@ -71,33 +83,52 @@ public class ModelGenerator extends ModelFacade {
 		return solutionStore != null;
 	}
 
-	// This method only makes sense if it returns {@code true} on success.
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean tryGenerate() {
+	public GeneratorResult tryGenerate() {
+		if (cancellationToken.isCancelled()) {
+			throw new IllegalStateException("Model generation was previously cancelled");
+		}
 		solutionStore = null;
 		randomSeed++;
 		var bestFirst = new BestFirstStoreManager(getModelStore(), maxNumberOfSolutions);
 		bestFirst.startExploration(initialVersion, randomSeed);
 		var solutions = bestFirst.getSolutionStore().getSolutions();
 		if (solutions.isEmpty()) {
-			return false;
+			return GeneratorResult.UNSATISFIABLE;
 		}
 		getModel().restore(solutions.getFirst().version());
 		solutionStore = bestFirst.getSolutionStore();
-		return true;
+		return GeneratorResult.SUCCESS;
 	}
 
 	public void generate() {
-		if (!tryGenerate()) {
-			throw new UnsatisfiableProblemException();
+		tryGenerate().orThrow();
+	}
+
+	public GeneratorResult tryGenerateWithTimeout(long l, TimeUnit timeUnit) {
+		try (var executorService = Executors.newSingleThreadScheduledExecutor()) {
+			var timeoutFuture = executorService.schedule(cancellationToken::cancel, l, timeUnit);
+			try {
+				return tryGenerate();
+			} catch (GeneratorTimeoutException e) {
+				return GeneratorResult.TIMEOUT;
+			} finally {
+				timeoutFuture.cancel(true);
+				cancellationToken.reset();
+			}
 		}
+	}
+
+	public void generateWithTimeout(long l, TimeUnit timeUnit) {
+		tryGenerateWithTimeout(l, timeUnit).orThrow();
 	}
 
 	@Override
 	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol) {
 		checkSuccessfulGeneration();
-		return super.getPartialInterpretation(partialSymbol);
+		var partialInterpretation = super.getPartialInterpretation(partialSymbol);
+		return keepNonExistingObjects ? partialInterpretation :
+				new FilteredInterpretation<>(partialInterpretation, existsInterpretation);
 	}
 
 	public Problem serializeSolution() {

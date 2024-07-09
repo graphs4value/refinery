@@ -5,27 +5,18 @@
  */
 package tools.refinery.generator;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.ModelInitializer;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.util.CancellationToken;
 
 import java.util.Set;
 
-public final class ModelSemanticsFactory {
-	@Inject
-	private Provider<ModelInitializer> initializerProvider;
-
-	private CancellationToken cancellationToken = CancellationToken.NONE;
-
-	public ModelSemanticsFactory cancellationToken(CancellationToken cancellationToken) {
-		this.cancellationToken = cancellationToken;
+public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanticsFactory> {
+	@Override
+	protected ModelSemanticsFactory getSelf() {
 		return this;
 	}
 
@@ -36,16 +27,17 @@ public final class ModelSemanticsFactory {
 	}
 
 	public ModelSemantics tryCreateSemantics(Problem problem) {
-		var initializer = initializerProvider.get();
+		var initializer = createModelInitializer();
 		initializer.readProblem(problem);
+		checkCancelled();
 		var storeBuilder = ModelStore.builder()
-				.cancellationToken(cancellationToken)
+				.cancellationToken(getCancellationToken())
 				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder()
 						.throwOnFatalRejection(false))
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(Set.of(Concreteness.PARTIAL)));
-		initializer.configureStoreBuilder(storeBuilder);
+		initializer.configureStoreBuilder(storeBuilder, isKeepNonExistingObjects());
 		var store = storeBuilder.build();
 		return new ModelSemantics(initializer.getProblemTrace(), store, initializer.getModelSeed());
 	}

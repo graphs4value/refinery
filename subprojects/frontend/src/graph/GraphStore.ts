@@ -233,4 +233,9 @@ export default class GraphStore {
   get name(): string {
     return this.nameOverride ?? this.editorStore.simpleNameOrFallback;
   }
+
+  get showNonExistent(): boolean {
+    const existsVisibility = this.visibility.get('builtin::exists') ?? 'none';
+    return existsVisibility !== 'none' || this.scopes;
+  }
 }

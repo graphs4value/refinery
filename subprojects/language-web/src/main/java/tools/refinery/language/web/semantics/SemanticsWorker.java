@@ -72,7 +72,10 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		cancellationToken.checkCancelled();
 		ModelSemantics semantics;
 		try {
-			semantics = semanticsFactory.cancellationToken(cancellationToken).tryCreateSemantics(problem);
+			semantics = semanticsFactory
+					.cancellationToken(cancellationToken)
+					.keepNonExistingObjects(true)
+					.tryCreateSemantics(problem);
 		} catch (TranslationException e) {
 			return new SemanticsResult(e.getMessage());
 		} catch (TracedException e) {

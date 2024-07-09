@@ -41,6 +41,16 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 	public static final PartialFunction<CardinalityInterval, Integer> COUNT_SYMBOL = new PartialFunction<>("COUNT", 1,
 			CardinalityDomain.INSTANCE);
 
+	private final boolean keepNonExistingObjects;
+
+	public MultiObjectTranslator(boolean keepNonExistingObjects) {
+		this.keepNonExistingObjects = keepNonExistingObjects;
+	}
+
+	public MultiObjectTranslator() {
+		this(true);
+	}
+
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
 		storeBuilder.symbol(COUNT_STORAGE);
@@ -90,7 +100,9 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		reasoningBuilder.initializer(new MultiObjectInitializer(COUNT_STORAGE));
 		reasoningBuilder.storageRefiner(COUNT_STORAGE, MultiObjectStorageRefiner::new);
 
-		storeBuilder.tryGetAdapter(PropagationBuilder.class)
-				.ifPresent(propagationBuilder -> propagationBuilder.propagator(new CleanupPropagator()));
+		if (!keepNonExistingObjects) {
+			storeBuilder.tryGetAdapter(PropagationBuilder.class)
+					.ifPresent(propagationBuilder -> propagationBuilder.propagator(new CleanupPropagator()));
+		}
 	}
 }

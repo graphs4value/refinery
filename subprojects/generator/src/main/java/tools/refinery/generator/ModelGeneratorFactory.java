@@ -8,7 +8,6 @@ package tools.refinery.generator;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.ModelInitializer;
 import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
@@ -20,21 +19,15 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.statecoding.neighborhood.NeighborhoodCalculator;
-import tools.refinery.store.util.CancellationToken;
 
 import java.util.Collection;
 import java.util.Set;
 
 // This class is used as a fluent builder, so it's not necessary to use the return value of all of its methods.
 @SuppressWarnings("UnusedReturnValue")
-public final class ModelGeneratorFactory {
-	@Inject
-	private Provider<ModelInitializer> initializerProvider;
-
+public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGeneratorFactory> {
 	@Inject
 	private Provider<SolutionSerializer> solutionSerializerProvider;
-
-	private CancellationToken cancellationToken = CancellationToken.NONE;
 
 	private boolean debugPartialInterpretations;
 
@@ -42,8 +35,8 @@ public final class ModelGeneratorFactory {
 
 	private int stateCoderDepth = NeighborhoodCalculator.DEFAULT_DEPTH;
 
-	public ModelGeneratorFactory cancellationToken(CancellationToken cancellationToken) {
-		this.cancellationToken = cancellationToken;
+	@Override
+	protected ModelGeneratorFactory getSelf() {
 		return this;
 	}
 
@@ -64,22 +57,23 @@ public final class ModelGeneratorFactory {
 	}
 
 	public ModelGenerator createGenerator(Problem problem) {
-		var initializer = initializerProvider.get();
+		var initializer = createModelInitializer();
 		initializer.readProblem(problem);
-		cancellationToken.checkCancelled();
+		checkCancelled();
+		var cancellationToken = new CancellableCancellationToken(getCancellationToken());
 		var storeBuilder = ModelStore.builder()
 				.cancellationToken(cancellationToken)
 				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder())
 				.with(StateCoderAdapter.builder()
-						.stateCodeCalculatorFactory(getStateCoderCalculatorFactory()))
+						.stateCodeCalculatorFactory(getStateCodeCalculatorFactory()))
 				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder);
+		initializer.configureStoreBuilder(storeBuilder, isKeepNonExistingObjects());
 		var store = storeBuilder.build();
 		var generator = new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
-				solutionSerializerProvider);
+				solutionSerializerProvider, cancellationToken, isKeepNonExistingObjects());
 		generator.getPropagationResult().throwIfRejected();
 		return generator;
 	}
@@ -90,7 +84,7 @@ public final class ModelGeneratorFactory {
 				Set.of(Concreteness.CANDIDATE);
 	}
 
-	private StateCodeCalculatorFactory getStateCoderCalculatorFactory() {
+	private StateCodeCalculatorFactory getStateCodeCalculatorFactory() {
 		return partialInterpretationBasedNeighborhoods ?
 				PartialNeighborhoodCalculator.factory(Concreteness.PARTIAL, stateCoderDepth) :
 				NeighborhoodCalculator.factory(stateCoderDepth);

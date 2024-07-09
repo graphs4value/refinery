@@ -180,9 +180,13 @@ public class ModelInitializer {
 	}
 
 	public void configureStoreBuilder(ModelStoreBuilder storeBuilder) {
+		configureStoreBuilder(storeBuilder, false);
+	}
+
+	public void configureStoreBuilder(ModelStoreBuilder storeBuilder, boolean keepNonExistingObjects) {
 		checkProblem();
 		try {
-			storeBuilder.with(new MultiObjectTranslator());
+			storeBuilder.with(new MultiObjectTranslator(keepNonExistingObjects));
 			storeBuilder.with(new MetamodelTranslator(metamodel));
 			if (scopePropagator != null) {
 				if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {

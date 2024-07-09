@@ -143,6 +143,21 @@ export function createGraphTheme({
     'text.label-ERROR': {
       fill: theme.palette.error.main,
     },
+    '.node-exists-FALSE': {
+      'text:not(.label-ERROR)': {
+        fill: theme.palette.text.secondary,
+      },
+      '.node-outline': {
+        stroke: theme.palette.text.secondary,
+        strokeDasharray: '2 4',
+      },
+      '.node-header': {
+        fill: theme.palette.background.default,
+      },
+      '.icon-TRUE': {
+        fill: theme.palette.text.secondary,
+      },
+    },
   };
 }
 
