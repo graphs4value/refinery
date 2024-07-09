@@ -44,18 +44,6 @@ tasks {
 		}
 	}
 
-	shadowJar {
-		dependsOn(webapp)
-		from(project.sourceSets.main.map { it.output })
-		exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "schema/*",
-				".options", ".api_description", "*.profile", "about.*", "about_*.html", "about_files/*",
-				"plugin.xml", "systembundle.properties", "profile.list", "META-INF/resources/xtext/**")
-		append("plugin.properties")
-		from(webapp) {
-			into("webapp")
-		}
-	}
-
 	register<JavaExec>("serve") {
 		dependsOn(webapp)
 		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }

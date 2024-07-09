@@ -9,7 +9,6 @@ import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
 	application
-	id("io.github.goooler.shadow")
 	id("tools.refinery.gradle.java-conventions")
 }
 
@@ -26,16 +25,6 @@ dependencies {
 	implementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 }
 
-// See https://github.com/johnrengelman/shadow/issues/586
-// https://github.com/johnrengelman/shadow/issues/651
-components.named<AdhocComponentWithVariants>("java") {
-	withVariantsFromConfiguration(configurations.shadowRuntimeElements.get()) {
-		skip()
-	}
-}
-
-for (taskName in listOf("distZip", "shadowDistTar", "shadowDistZip")) {
-	tasks.named(taskName) {
-		enabled = false
-	}
+tasks.distZip {
+	enabled = false
 }
