@@ -7,7 +7,7 @@ package tools.refinery.gradle
 
 plugins {
 	`java-library`
-	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.java-conventions")
 	id("tools.refinery.gradle.maven-publish")
 }
 

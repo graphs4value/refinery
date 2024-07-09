@@ -15,5 +15,5 @@ mavenArtifact {
 
 dependencies {
 	api(project(":refinery-store-query"))
-	implementation(libs.slf4j.api)
+	implementation(libs.slf4j)
 }

@@ -10,7 +10,7 @@ import org.gradle.accessors.dm.LibrariesForLibs
 plugins {
 	application
 	id("io.github.goooler.shadow")
-	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.java-conventions")
 }
 
 // Use log4j-over-slf4j instead of log4j 1.x when running the application.
@@ -21,7 +21,7 @@ configurations.runtimeClasspath {
 val libs = the<LibrariesForLibs>()
 
 dependencies {
-	implementation(libs.slf4j.simple)
+	runtimeOnly(libs.slf4j.simple)
 	implementation(libs.slf4j.log4j)
 	implementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 }

@@ -81,6 +81,8 @@ gradle.projectsEvaluated {
 				dependsOn(subproject.tasks.named("publishMavenJavaPublicationToFileRepository"))
 			}
 		}
+
+		dependsOn(project("refinery-gradle-plugins").tasks.named("publishAllPublicationsToFileRepository"))
 	}
 }
 

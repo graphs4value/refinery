@@ -16,5 +16,5 @@ dependencies {
 	implementation(libs.slf4j.log4j)
 	// Code in this subproject inherits from Eclipse Collection implementation classes, so this can't be `runtimeOnly`.
 	implementation(libs.eclipseCollections)
-	implementation(libs.eclipseCollections.api)
+	implementation(libs.eclipseCollections.impl)
 }

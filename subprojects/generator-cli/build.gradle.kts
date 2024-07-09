@@ -11,7 +11,7 @@ plugins {
 dependencies {
 	implementation(project(":refinery-generator"))
 	implementation(libs.jcommander)
-	implementation(libs.slf4j.api)
+	implementation(libs.slf4j)
 }
 
 application {

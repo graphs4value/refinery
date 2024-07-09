@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
 	implementation(pluginLibs.frontend)
+	implementation(pluginLibs.pluginPublish)
 	implementation(pluginLibs.shadow)
 	implementation(pluginLibs.sonarqube)
     // https://github.com/gradle/gradle/issues/15383

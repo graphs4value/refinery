@@ -9,7 +9,7 @@ import org.gradle.configurationcache.extensions.capitalized
 
 plugins {
 	`maven-publish`
-	signing
+	id("tools.refinery.gradle.signing")
 }
 
 val mavenRepositoryDir = rootProject.layout.buildDirectory.map { it.dir("repo") }
@@ -69,12 +69,5 @@ tasks.named<PublishToMavenRepository>("publishMavenJavaPublicationToFileReposito
 }
 
 signing {
-	// The underlying property cannot be set publicly.
-	@Suppress("UsePropertyAccessSyntax")
-	setRequired(project.hasProperty("forceSign"))
-	val signingKeyId = System.getenv("PGP_KEY_ID")
-	val signingKey = System.getenv("PGP_KEY")
-	val signingPassword = System.getenv("PGP_PASSWORD")
-	useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
 	sign(publishing.publications["mavenJava"])
 }

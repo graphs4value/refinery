@@ -16,7 +16,7 @@ mavenArtifact {
 dependencies {
 	api(project(":refinery-store-query"))
 	implementation(project(":refinery-store-dse-visualization"))
-	implementation(libs.eclipseCollections.api)
-	runtimeOnly(libs.eclipseCollections)
+	implementation(libs.eclipseCollections)
+	runtimeOnly(libs.eclipseCollections.impl)
 	testImplementation(project(":refinery-store-query-interpreter"))
 }

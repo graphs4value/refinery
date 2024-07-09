@@ -24,7 +24,7 @@ dependencies {
 	implementation(libs.jetty.servlet)
 	implementation(libs.jetty.websocket.api)
 	implementation(libs.jetty.websocket.server)
-	implementation(libs.slf4j.api)
+	implementation(libs.slf4j)
 	implementation(libs.xtext.web)
 	xtextGenerated(project(":refinery-language", "generatedWebSources"))
 	webapp(project(":refinery-frontend", "productionAssets"))

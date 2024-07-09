@@ -14,8 +14,8 @@ mavenArtifact {
 
 dependencies {
 	api(project(":refinery-store-reasoning"))
-	implementation(libs.eclipseCollections.api)
+	implementation(libs.eclipseCollections)
 	implementation(libs.ortools)
-	runtimeOnly(libs.eclipseCollections)
+	runtimeOnly(libs.eclipseCollections.impl)
 	testImplementation(project(":refinery-store-query-interpreter"))
 }

@@ -13,6 +13,7 @@ include(
 		"frontend",
 		"generator",
 		"generator-cli",
+		"gradle-plugins",
 		"interpreter",
 		"interpreter-localsearch",
 		"interpreter-rete",

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.gradle.internal
+package tools.refinery.gradle
 
 import org.gradle.accessors.dm.LibrariesForLibs
 import tools.refinery.gradle.utils.EclipseUtils
@@ -30,14 +30,14 @@ dependencies {
 	testCompileOnly(libs.jetbrainsAnnotations)
 	testImplementation(libs.hamcrest)
 	testImplementation(libs.junit.api)
-	testImplementation(platform(libs.junit.bom))
+	testImplementation(enforcedPlatform(libs.junit.bom))
 	testRuntimeOnly(libs.junit.engine)
 	testRuntimeOnly(libs.junit.launcher)
 	testImplementation(libs.junit.params)
 	testImplementation(libs.mockito.core)
 	testImplementation(libs.mockito.junit)
 	testImplementation(libs.slf4j.simple)
-	testImplementation(libs.slf4j.log4j)
+	testRuntimeOnly(libs.slf4j.log4j)
 }
 
 java {

@@ -8,7 +8,7 @@ package tools.refinery.gradle
 import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
-	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.java-conventions")
 }
 
 val mwe2: Configuration by configurations.creating {

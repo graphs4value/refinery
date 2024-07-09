@@ -8,7 +8,7 @@ package tools.refinery.gradle
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
-	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.java-conventions")
 	id("tools.refinery.gradle.sonarqube")
 }
 
