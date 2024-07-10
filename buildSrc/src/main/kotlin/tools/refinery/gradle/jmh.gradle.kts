@@ -35,7 +35,10 @@ configurations["jmhRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get(), c
 val libs = the<LibrariesForLibs>()
 
 dependencies {
+	jmhImplementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 	jmhImplementation(libs.jmh.core)
+	jmhImplementation(libs.slf4j.log4j)
+	jmhImplementation(libs.slf4j.simple)
 	jmhAnnotationProcessor(libs.jmh.annprocess)
 }
 

@@ -18,26 +18,29 @@ repositories {
 	mavenCentral()
 }
 
-// Use log4j-over-slf4j instead of log4j 1.x in the tests.
-configurations.testRuntimeClasspath {
-	exclude(group = "log4j", module = "log4j")
+configurations.withType(Configuration::class) {
+	if (name.endsWith("Classpath")) {
+		exclude(group = "log4j", module = "log4j")
+		exclude(group = "ch.qos.reload4j", module = "reload4j")
+	}
 }
 
 val libs = the<LibrariesForLibs>()
 
 dependencies {
 	compileOnly(libs.jetbrainsAnnotations)
+	compileOnly(libs.slf4j.log4j)
 	testCompileOnly(libs.jetbrainsAnnotations)
 	testImplementation(libs.hamcrest)
 	testImplementation(libs.junit.api)
-	testImplementation(enforcedPlatform(libs.junit.bom))
+	testImplementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 	testRuntimeOnly(libs.junit.engine)
 	testRuntimeOnly(libs.junit.launcher)
+	testRuntimeOnly(libs.slf4j.simple)
 	testImplementation(libs.junit.params)
 	testImplementation(libs.mockito.core)
 	testImplementation(libs.mockito.junit)
-	testImplementation(libs.slf4j.simple)
-	testRuntimeOnly(libs.slf4j.log4j)
+	testImplementation(libs.slf4j.log4j)
 }
 
 java {

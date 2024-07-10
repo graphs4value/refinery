@@ -17,7 +17,7 @@ mavenArtifact {
 }
 
 val refineryVersion = "refinery"
-val interpreterVersion = "refineryInterpreter"
+val interpreterVersion = "refinery-interpreter"
 val interpreterGroup = property("tools.refinery.interpreter.group").toString()
 val shadowVersion = "shadow"
 

@@ -12,7 +12,6 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.provider.Provider;
 
 import java.util.List;
-import java.util.Map;
 
 public final class RefineryPluginUtils {
 	public static final String VERSION_PROPERTY = "tools.refinery.version";
@@ -24,11 +23,6 @@ public final class RefineryPluginUtils {
 
 	private RefineryPluginUtils() {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly.");
-	}
-
-	public static void excludeLog4J(Project project, String configurationName) {
-		var testRuntimeClasspath = project.getConfigurations().getByName(configurationName);
-		testRuntimeClasspath.exclude(Map.of("group", "log4j", "module", "log4j"));
 	}
 
 	public static void withShadowPlugin(Project project, Action<? super Project> action) {

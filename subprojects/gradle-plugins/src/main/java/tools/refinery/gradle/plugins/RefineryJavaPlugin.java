@@ -7,6 +7,7 @@ package tools.refinery.gradle.plugins;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.component.ConfigurationVariantDetails;
 import org.gradle.api.internal.tasks.JvmConstants;
@@ -24,6 +25,7 @@ import tools.refinery.gradle.plugins.internal.Versions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 public class RefineryJavaPlugin implements Plugin<Project> {
 	private static final String JUNIT_API = "org.junit.jupiter:junit-jupiter-api";
@@ -97,15 +99,17 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 					dependencies.enforcedPlatform(artifact) : dependencies.platform(artifact);
 		}));
 
+		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
+				SLF4J_LOG4J, extension.getUseSlf4JLog4J());
 		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
 				SLF4J_LOG4J, extension.getUseSlf4JLog4J());
 		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
 				SLF4J_LOG4J, extension.getUseSlf4JLog4J().map(value ->
 						Boolean.TRUE.equals(value) && target.getPlugins().hasPlugin(ApplicationPlugin.class)));
 
-		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
 				SLF4J_SIMPLE, extension.getUseSlf4JSimple());
-		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
 				SLF4J_SIMPLE, extension.getUseSlf4JSimple().map(value ->
 						Boolean.TRUE.equals(value) && target.getPlugins().hasPlugin(ApplicationPlugin.class)));
 
@@ -197,10 +201,12 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 	}
 
 	private static void excludeLog4J(Project project) {
-		RefineryPluginUtils.excludeLog4J(project, JavaPlugin.TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-		if (project.getPlugins().hasPlugin(ApplicationPlugin.class)) {
-			RefineryPluginUtils.excludeLog4J(project, JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-		}
+		project.getConfigurations().withType(Configuration.class, configuration -> {
+			if (configuration.getName().endsWith("Classpath")) {
+				configuration.exclude(Map.of("group", "log4j", "module", "log4j"));
+				configuration.exclude(Map.of("group", "ch.qos.reload4j", "module", "reload4j"));
+			}
+		});
 	}
 
 	private static void configureJunitPlatform(Project project) {
