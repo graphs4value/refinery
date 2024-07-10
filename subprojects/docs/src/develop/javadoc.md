@@ -11,20 +11,21 @@ Here you can find API documentation for Refinery components automatically genera
 
 # Refinery
 
-* [`tools.refinery:refinery-generator`](pathname://refinery-generator)
-* [`tools.refinery:refinery-language`](pathname://refinery-language)
-* [`tools.refinery:refinery-language-ide`](pathname://refinery-language-ide)
-* [`tools.refinery:refinery-language-model`](pathname://refinery-language-model)
-* [`tools.refinery:refinery-language-semantics`](pathname://refinery-language-semantics)
-* [`tools.refinery:refinery-logic`](pathname://refinery-logic)
-* [`tools.refinery:refinery-store`](pathname://refinery-store)
-* [`tools.refinery:refinery-store-dse`](pathname://refinery-store-dse)
-* [`tools.refinery:refinery-store-dse-visualization`](pathname://refinery-store-dse-visualization)
-* [`tools.refinery:refinery-store-query`](pathname://refinery-store-query)
-* [`tools.refinery:refinery-store-query-interpreter`](pathname://refinery-store-query-interpreter)
-* [`tools.refinery:refinery-store-reasoning`](pathname://refinery-store-reasoning)
-* [`tools.refinery:refinery-store-reasoning-scope`](pathname://refinery-store-reasoning-scope)
-* [`tools.refinery:refinery-store-reasoning-smt`](pathname://refinery-store-reasoning-smt)
+* [`tools.refinery:refinery-generator`](pathname://refinery-generator/)
+* [`tools.refinery:refinery-gradle-plugins`](pathname://refinery-gradle-plugins/)
+* [`tools.refinery:refinery-language`](pathname://refinery-language/)
+* [`tools.refinery:refinery-language-ide`](pathname://refinery-language-ide/)
+* [`tools.refinery:refinery-language-model`](pathname://refinery-language-model/)
+* [`tools.refinery:refinery-language-semantics`](pathname://refinery-language-semantics/)
+* [`tools.refinery:refinery-logic`](pathname://refinery-logic/)
+* [`tools.refinery:refinery-store`](pathname://refinery-store/)
+* [`tools.refinery:refinery-store-dse`](pathname://refinery-store-dse/)
+* [`tools.refinery:refinery-store-dse-visualization`](pathname://refinery-store-dse-visualization/)
+* [`tools.refinery:refinery-store-query`](pathname://refinery-store-query/)
+* [`tools.refinery:refinery-store-query-interpreter`](pathname://refinery-store-query-interpreter/)
+* [`tools.refinery:refinery-store-reasoning`](pathname://refinery-store-reasoning/)
+* [`tools.refinery:refinery-store-reasoning-scope`](pathname://refinery-store-reasoning-scope/)
+* [`tools.refinery:refinery-store-reasoning-smt`](pathname://refinery-store-reasoning-smt/)
 
 # Interpreter
 
@@ -34,7 +35,7 @@ The _Refinery Interpreter_ is modified version of [VIATRA&trade;](https://eclips
 
 :::
 
-* [`tools.refinery.interpreter:refinery-interpreter`](pathname://refinery-interpreter)
-* [`tools.refinery.interpreter:refinery-interpreter-localsearch`](pathname://refinery-interpreter-localsearch)
-* [`tools.refinery.interpreter:refinery-interpreter-rete`](pathname://refinery-interpreter-rete)
-* [`tools.refinery.interpreter:refinery-interpreter-rete-recipes`](pathname://refinery-interpreter-rete-recipes)
+* [`tools.refinery.interpreter:refinery-interpreter`](pathname://refinery-interpreter/)
+* [`tools.refinery.interpreter:refinery-interpreter-localsearch`](pathname://refinery-interpreter-localsearch/)
+* [`tools.refinery.interpreter:refinery-interpreter-rete`](pathname://refinery-interpreter-rete/)
+* [`tools.refinery.interpreter:refinery-interpreter-rete-recipes`](pathname://refinery-interpreter-rete-recipes/)

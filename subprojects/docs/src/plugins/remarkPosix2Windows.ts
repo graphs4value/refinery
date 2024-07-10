@@ -2,11 +2,11 @@
  * Copyright (c) Facebook, Inc. and its affiliates.
  * Copyright (c) 2024 The Refinery Authors
  *
- * SPDX-License-Identifier: EPL-2.0
+ * SPDX-License-Identifier: MIT AND EPL-2.0
  *
  * This file is based on
  * https://github.com/facebook/docusaurus/blob/e4ecffe41878728acff55a8370bd7440706c02f7/packages/docusaurus-remark-plugin-npm2yarn/src/index.ts
- * but was changed to conver shell commands to POSIX to Windows syntax.
+ * but was changed to convert shell commands to POSIX to Windows syntax.
  */
 
 import type { Code, Literal } from 'mdast';

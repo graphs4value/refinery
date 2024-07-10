@@ -30,6 +30,8 @@ dependencies {
 			}
 		}
 	}
+
+	javadocs(project(":refinery-gradle-plugins", "javadocElements"))
 }
 
 val srcDir = "src"
