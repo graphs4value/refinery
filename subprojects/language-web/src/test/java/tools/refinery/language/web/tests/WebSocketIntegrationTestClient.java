@@ -18,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class WebSocketIntegrationTestClient {
-	private static final long TIMEOUT_MILLIS = Duration.ofSeconds(30).toMillis();
+	private static final long TIMEOUT_MILLIS = Duration.ofSeconds(10).toMillis();
 
 	private boolean finished = false;
 

@@ -17,6 +17,13 @@ public class AwaitTerminationExecutorServiceProvider extends ExecutorServiceProv
 	private final List<RestartableCachedThreadPool> servicesToShutDown = new ArrayList<>();
 
 	@Override
+	public ExecutorService get(String key) {
+		synchronized (servicesToShutDown) {
+			return super.get(key);
+		}
+	}
+
+	@Override
 	protected ExecutorService createInstance(String key) {
 		var instance = new RestartableCachedThreadPool(() -> super.createInstance(key));
 		synchronized (servicesToShutDown) {
@@ -35,8 +42,8 @@ public class AwaitTerminationExecutorServiceProvider extends ExecutorServiceProv
 
 	@Override
 	public void dispose() {
-		super.dispose();
 		synchronized (servicesToShutDown) {
+			super.dispose();
 			for (var executorService : servicesToShutDown) {
 				executorService.waitForTermination();
 			}
