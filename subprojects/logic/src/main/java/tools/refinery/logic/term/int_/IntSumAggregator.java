@@ -5,8 +5,11 @@
  */
 package tools.refinery.logic.term.int_;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.term.StatelessAggregator;
 
+// Singleton implementation, since there is only one way to sum integers.
+@SuppressWarnings("squid:S6548")
 public final class IntSumAggregator implements StatelessAggregator<Integer, Integer> {
 	public static final IntSumAggregator INSTANCE = new IntSumAggregator();
 
@@ -23,6 +26,7 @@ public final class IntSumAggregator implements StatelessAggregator<Integer, Inte
 		return Integer.class;
 	}
 
+	@NotNull
 	@Override
 	public Integer getEmptyResult() {
 		return 0;

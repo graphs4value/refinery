@@ -85,6 +85,15 @@ code {
   font-variation-settings: 'wdth' 87.5;
 }
 
+.DocSearch-Button-Placeholder {
+  font-family: var(--ifm-font-family-base) !important;
+}
+
+.button {
+  /* No decoration even in `::: info` boxes. */
+  text-decoration: none;
+}
+
 .button--play::before {
   content: '▶';
   display: inline-block;

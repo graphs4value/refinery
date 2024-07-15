@@ -78,8 +78,7 @@ public class AggregationLiteral<R, T> extends AbstractCallLiteral {
 		return switch (reduction) {
 			case ALWAYS_FALSE -> {
 				var emptyValue = aggregator.getEmptyResult();
-				yield emptyValue == null ? BooleanLiteral.FALSE :
-						resultVariable.assign(new ConstantTerm<>(resultVariable.getType(), emptyValue));
+				yield resultVariable.assign(new ConstantTerm<>(resultVariable.getType(), emptyValue));
 			}
 			case ALWAYS_TRUE -> throw new InvalidQueryException("Trying to aggregate over an infinite set");
 			case NOT_REDUCIBLE -> this;

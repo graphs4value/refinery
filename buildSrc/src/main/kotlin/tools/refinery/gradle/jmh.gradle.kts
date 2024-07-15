@@ -10,7 +10,7 @@ import tools.refinery.gradle.utils.EclipseUtils
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
-	id("tools.refinery.gradle.internal.java-conventions")
+	id("tools.refinery.gradle.java-conventions")
 	id("tools.refinery.gradle.sonarqube")
 }
 
@@ -35,7 +35,10 @@ configurations["jmhRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get(), c
 val libs = the<LibrariesForLibs>()
 
 dependencies {
+	jmhImplementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 	jmhImplementation(libs.jmh.core)
+	jmhImplementation(libs.slf4j.log4j)
+	jmhImplementation(libs.slf4j.simple)
 	jmhAnnotationProcessor(libs.jmh.annprocess)
 }
 

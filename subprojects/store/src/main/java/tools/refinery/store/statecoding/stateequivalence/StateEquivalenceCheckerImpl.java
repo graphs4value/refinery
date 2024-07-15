@@ -11,13 +11,13 @@ import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
-import org.eclipse.collections.api.set.primitive.IntSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import tools.refinery.store.model.AnyInterpretation;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.statecoding.Morphism;
 import tools.refinery.store.statecoding.ObjectCode;
 import tools.refinery.store.statecoding.StateEquivalenceChecker;
+import tools.refinery.store.statecoding.neighborhood.IndividualsSet;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 	public static final int LIMIT = 1000;
 
 	@Override
-	public EquivalenceResult constructMorphism(IntSet individuals,
+	public EquivalenceResult constructMorphism(IndividualsSet individuals,
 											   List<? extends AnyInterpretation> interpretations1,
 											   ObjectCode code1,
 											   List<? extends AnyInterpretation> interpretations2,
@@ -67,10 +67,10 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 		}
 	}
 
-	private MutableLongObjectMap<MutableIntSet> indexByHash(ObjectCode code, IntSet individuals) {
+	private MutableLongObjectMap<MutableIntSet> indexByHash(ObjectCode code, IndividualsSet individuals) {
 		MutableLongObjectMap<MutableIntSet> result = LongObjectMaps.mutable.empty();
 		for (int o = 0; o < code.getSize(); o++) {
-			if (!individuals.contains(o)) {
+			if (!individuals.isIndividual(o)) {
 				long hash = code.get(o);
 				if (hash != 0) {
 					var equivalenceClass = result.get(hash);
@@ -86,8 +86,9 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 	}
 
 	private EquivalenceResult constructPermutationNavigation(
-			IntSet individuals, MutableLongObjectMap<MutableIntSet> map1, MutableLongObjectMap<MutableIntSet> map2,
-			MutableIntIntMap object2OptionIndex, List<List<IntIntMap>> listOfOptions) {
+			IndividualsSet individuals, MutableLongObjectMap<MutableIntSet> map1,
+            MutableLongObjectMap<MutableIntSet> map2, MutableIntIntMap object2OptionIndex,
+			List<List<IntIntMap>> listOfOptions) {
 		if (map1.size() != map2.size()) {
 			return EquivalenceResult.DIFFERENT;
 		}
@@ -116,7 +117,7 @@ public class StateEquivalenceCheckerImpl implements StateEquivalenceChecker {
 			listOfOptions.add(pairing.permutations());
 		}
 
-		individuals.forEach(o -> listOfOptions.add(o, List.of(IntIntMaps.immutable.of(o, o))));
+		individuals.stream().forEach(o -> listOfOptions.add(o, List.of(IntIntMaps.immutable.of(o, o))));
 
 		if (allComplete) {
 			return EquivalenceResult.ISOMORPHIC;

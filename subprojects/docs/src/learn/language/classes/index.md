@@ -129,7 +129,7 @@ import ReferencesOppositeSelf from './ReferencesOppositeSelf.svg';
 
 ### Multiplicity
 
-_Multiplicity constrains_ can be provided after the reference type in square braces.
+_Multiplicity constraints_ can be provided after the reference type in square braces.
 They specify how many _outgoing_ references should exist for any given instance of the class.
 
 :::info
@@ -150,7 +150,7 @@ If the multiplicity constraint is omitted, the bound `[0..1]` is assumed.
 
 In the following model, the node `v1` satisfies all multiplicity constraints of `outgoingTransition`.
 The node `v2` violates the lower bound constraint, while `v3` violates the upper bound constraint.
-All `Transition` instances satisfy the multiplicity constrains associated with `source`.
+All `Transition` instances satisfy the multiplicity constraints associated with `source`.
 
 ```refinery
 class Vertex {
@@ -209,4 +209,5 @@ import ContainmentInstance from './ContainmentInstance.svg';
 
 <ContainmentInstance />
 
-Containment edges form trees, while non-containment references, such as `target`, may point across the containment hierarchy.
+Containment edges form must form a forest.
+In contrast, non-containment references, such as `target`, may cross the containment hierarchy.

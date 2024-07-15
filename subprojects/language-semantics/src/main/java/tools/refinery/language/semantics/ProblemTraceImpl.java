@@ -13,19 +13,14 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
-import tools.refinery.language.model.problem.Node;
-import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.model.problem.ProblemPackage;
-import tools.refinery.language.model.problem.Relation;
+import tools.refinery.language.model.problem.*;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 class ProblemTraceImpl implements ProblemTrace {
 	@Inject
@@ -46,6 +41,9 @@ class ProblemTraceImpl implements ProblemTrace {
 			Collections.unmodifiableMap(mutableRelationTrace);
 	private final Map<AnyPartialSymbol, Relation> mutableInverseTrace = new HashMap<>();
 	private final Map<AnyPartialSymbol, Relation> inverseTrace = Collections.unmodifiableMap(mutableInverseTrace);
+	private final Map<Rule, RuleDefinition> mutableInverseRuleDefinitionTrace = new LinkedHashMap<>();
+	private final Map<Rule, RuleDefinition> inverseRuleDefinitionTrace = Collections.unmodifiableMap(
+			mutableInverseRuleDefinitionTrace);
 
 	@Override
 	public Problem getProblem() {
@@ -70,8 +68,10 @@ class ProblemTraceImpl implements ProblemTrace {
 		return nodeTrace;
 	}
 
-	void collectNode(Node node) {
-		mutableNodeTrace.getIfAbsentPut(node, mutableNodeTrace.size());
+	int collectNode(Node node) {
+		var nextId = mutableNodeTrace.size();
+		mutableNodeTrace.getIfAbsentPut(node, nextId);
+		return nextId;
 	}
 
 	@Override
@@ -125,6 +125,34 @@ class ProblemTraceImpl implements ProblemTrace {
 			throw new IllegalArgumentException("No relation for partial symbol: " + partialSymbol);
 		}
 		return relation;
+	}
+
+	void putRuleDefinition(RuleDefinition ruleDefinition, Rule rule) {
+		var oldRuleDefinition = mutableInverseRuleDefinitionTrace.put(rule, ruleDefinition);
+		if (oldRuleDefinition != null) {
+			throw new TracedException(oldRuleDefinition, "Rule %s was already mapped to rule definition"
+					.formatted(rule.getName()));
+		}
+	}
+
+	void putPropagationRuleDefinition(RuleDefinition ruleDefinition, Collection<Rule> rules) {
+		for (var rule : rules) {
+			putRuleDefinition(ruleDefinition, rule);
+		}
+	}
+
+	@Override
+	public Map<Rule, RuleDefinition> getInverseRuleDefinitionTrace() {
+		return inverseRuleDefinitionTrace;
+	}
+
+	@Override
+	public RuleDefinition getRuleDefinition(Rule rule) {
+		var ruleDefinition = mutableInverseRuleDefinitionTrace.get(rule);
+		if (ruleDefinition == null) {
+			throw new IllegalArgumentException("No definition for rule: " + rule.getName());
+		}
+		return ruleDefinition;
 	}
 
 	@Override

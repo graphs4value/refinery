@@ -162,7 +162,7 @@ export const RelationMetadata = z.object({
 
 export type RelationMetadata = z.infer<typeof RelationMetadata>;
 
-export const SemanticsSuccessResult = z.object({
+export const SemanticsModelResult = z.object({
   nodes: NodeMetadata.array(),
   relations: RelationMetadata.array(),
   partialInterpretation: z.record(
@@ -171,13 +171,13 @@ export const SemanticsSuccessResult = z.object({
   ),
 });
 
-export type SemanticsSuccessResult = z.infer<typeof SemanticsSuccessResult>;
+export type SemanticsModelResult = z.infer<typeof SemanticsModelResult>;
 
-export const SemanticsResult = z.union([
-  z.object({ error: z.string() }),
-  z.object({ issues: Issue.array() }),
-  SemanticsSuccessResult,
-]);
+export const SemanticsResult = z.object({
+  model: SemanticsModelResult.optional(),
+  error: z.string().min(1).optional(),
+  issues: Issue.array().optional(),
+});
 
 export type SemanticsResult = z.infer<typeof SemanticsResult>;
 
@@ -190,7 +190,7 @@ export const ModelGenerationResult = z.union([
     uuid: z.string().min(1),
     error: z.string(),
   }),
-  SemanticsSuccessResult.extend({
+  SemanticsModelResult.extend({
     uuid: z.string().min(1),
   }),
 ]);

@@ -30,16 +30,16 @@
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"
   },
-  "packageManager": "yarn@4.3.0",
+  "packageManager": "yarn@4.3.1",
   "dependencies": {
     "react": "^18.3.1"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.10",
-    "@types/node": "^20.14.2",
+    "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
-    "@typescript-eslint/eslint-plugin": "^7.13.0",
-    "@typescript-eslint/parser": "^7.13.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
     "corepack": "^0.28.2",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -47,16 +47,21 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-mobx": "^0.0.10",
-    "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-react": "^7.34.2",
+    "eslint-plugin-prettier": "patch:eslint-plugin-prettier@npm%3A5.1.3#~/.yarn/patches/eslint-plugin-prettier-npm-5.1.3-496c3b84df.patch",
+    "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
     "prettier": "^3.3.2",
-    "typescript": "5.4.5"
+    "typescript": "5.5.3"
   },
   "resolutions": {
     "d3-zoom@npm:^3.0.0": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch",
     "d3-zoom@npm:3": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch"
+  },
+  "dependenciesMeta": {
+    "eslint-plugin-prettier@5.1.3": {
+      "unplugged": true
+    }
   }
 }

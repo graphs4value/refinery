@@ -26,7 +26,7 @@ import tools.refinery.store.representation.Symbol;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
-import static tools.refinery.store.reasoning.actions.PartialActionLiterals.merge;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
@@ -135,7 +135,8 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		return CrossReferenceUtils.createMayHelper(linkType, type, multiplicity, inverse);
 	}
 
-	private RelationalQuery createCandidateMayHelper(PartialRelation type, Multiplicity multiplicity, boolean inverse) {
+	private RelationalQuery createCandidateMayHelper(PartialRelation type, Multiplicity multiplicity,
+													 boolean inverse) {
 		return CrossReferenceUtils.createCandidateMayHelper(linkType, type, multiplicity, inverse);
 	}
 
@@ -145,6 +146,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		var targetType = info.targetType();
 		var mayNewSource = createMayHelper(sourceType, info.sourceMultiplicity(), false);
 		var mayNewTarget = createMayHelper(targetType, info.targetMultiplicity(), true);
+		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
 		propagationBuilder.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
 			builder.clause(
@@ -168,9 +170,8 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 				);
 			}
 			builder.action(
-					merge(linkType, TruthValue.FALSE, p1, p2)
+					remove(linkType, p1, p2)
 			);
 		}));
 	}
-
 }

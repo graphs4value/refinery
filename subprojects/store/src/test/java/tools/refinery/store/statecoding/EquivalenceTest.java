@@ -10,7 +10,7 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.statecoding.neighbourhood.ObjectCodeImpl;
+import tools.refinery.store.statecoding.neighborhood.ObjectCodeImpl;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

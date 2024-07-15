@@ -5,6 +5,8 @@
  */
 package tools.refinery.logic.term;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedMap;
@@ -12,14 +14,14 @@ import java.util.TreeMap;
 
 public class ExtremeValueAggregator<T> implements StatefulAggregator<T, T> {
 	private final Class<T> type;
-	private final T emptyResult;
+	private final @NotNull T emptyResult;
 	private final Comparator<T> comparator;
 
-	public ExtremeValueAggregator(Class<T> type, T emptyResult) {
+	public ExtremeValueAggregator(Class<T> type, @NotNull T emptyResult) {
 		this(type, emptyResult, null);
 	}
 
-	public ExtremeValueAggregator(Class<T> type, T emptyResult, Comparator<T> comparator) {
+	public ExtremeValueAggregator(Class<T> type, @NotNull T emptyResult, Comparator<T> comparator) {
 		this.type = type;
 		this.emptyResult = emptyResult;
 		this.comparator = comparator;
@@ -40,6 +42,7 @@ public class ExtremeValueAggregator<T> implements StatefulAggregator<T, T> {
 		return new Aggregate();
 	}
 
+	@NotNull
 	@Override
 	public T getEmptyResult() {
 		return emptyResult;
@@ -85,6 +88,7 @@ public class ExtremeValueAggregator<T> implements StatefulAggregator<T, T> {
 			});
 		}
 
+		@NotNull
 		@Override
 		public T getResult() {
 			return isEmpty() ? emptyResult : values.firstKey();

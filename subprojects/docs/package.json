@@ -30,6 +30,7 @@
   },
   "homepage": "https://refinery.tools",
   "dependencies": {
+    "@algolia/client-search": "^4.24.0",
     "@docusaurus/core": "^3.4.0",
     "@docusaurus/plugin-content-docs": "^3.4.0",
     "@docusaurus/plugin-content-pages": "^3.4.0",
@@ -42,7 +43,7 @@
     "@fontsource/open-sans": "^5.0.28",
     "@material-icons/svg": "^1.0.33",
     "@mdx-js/react": "^3.0.1",
-    "@swc/core": "^1.6.1",
+    "@swc/core": "^1.6.13",
     "clsx": "^2.1.1",
     "mdast-util-mdx": "^3.0.0",
     "prism-react-renderer": "^2.3.1",
@@ -50,12 +51,14 @@
     "react-dom": "^18.3.1",
     "remark-smartypants": "^3.0.1",
     "responsive-loader": "^3.1.2",
+    "search-insights": "^2.14.0",
     "sharp": "^0.33.4",
     "swc-loader": "^0.2.6",
     "terser-webpack-plugin": "^5.3.10",
-    "unified": "^11.0.4",
+    "typescript": "5.5.3",
+    "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
-    "webpack": "^5.92.0"
+    "webpack": "^5.92.1"
   },
   "devDependencies": {
     "@docusaurus/mdx-loader": "^3.4.0",
@@ -63,7 +66,7 @@
     "@docusaurus/types": "^3.4.0",
     "@types/babel__core": "^7.20.5",
     "@types/mdast": "^4.0.4",
-    "@types/node": "^20.14.2",
+    "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/unist": "^3.0.2"

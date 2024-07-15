@@ -15,7 +15,7 @@ public enum Modality {
 	MAY;
 
 	public Modality negate() {
-		return switch(this) {
+		return switch (this) {
 			case MUST -> MAY;
 			case MAY -> MUST;
 		};
@@ -26,6 +26,13 @@ public enum Modality {
 			return this;
 		}
 		return this.negate();
+	}
+
+	public ModalitySpecification toSpecification() {
+		return switch (this) {
+			case MUST -> ModalitySpecification.MUST;
+			case MAY -> ModalitySpecification.MAY;
+		};
 	}
 
 	@Override

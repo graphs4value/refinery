@@ -11,8 +11,11 @@ import tools.refinery.logic.dnf.QueryBuilder;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Criterion;
 import tools.refinery.store.dse.transition.objectives.Objective;
@@ -22,10 +25,8 @@ import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
-import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
-import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
-import tools.refinery.store.reasoning.interpretation.QueryBasedRelationInterpretationFactory;
-import tools.refinery.store.reasoning.interpretation.QueryBasedRelationRewriter;
+import tools.refinery.store.reasoning.actions.PartialActionLiterals;
+import tools.refinery.store.reasoning.interpretation.*;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -150,7 +151,8 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	}
 
 	public PartialRelationTranslator mayNever() {
-		var never = createQuery(partialRelation.name() + "#never", (builder, parameters) -> {});
+		var never = createQuery(partialRelation.name() + "#never", (builder, parameters) -> {
+		});
 		may(never);
 		return this;
 	}
@@ -208,7 +210,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		createFallbackRewriter();
 		createFallbackInterpretation();
 		createFallbackRefiner();
-		createFallbackExclude();
+		createFallbackExclude(storeBuilder);
 		createFallbackObjective();
 		super.doConfigure(storeBuilder);
 	}
@@ -224,7 +226,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		var queryBuilder = Query.builder(name);
 		var parameters = new NodeVariable[arity];
 		for (int i = 0; i < arity; i++) {
-			parameters[i] = queryBuilder.parameter("p" + 1);
+			parameters[i] = queryBuilder.parameter("p" + i);
 		}
 		callback.accept(queryBuilder, parameters);
 		return queryBuilder.build();
@@ -331,7 +333,11 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 
 	private void createFallbackRewriter() {
 		if (rewriter == null) {
-			rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
+			if (query == null) {
+				rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
+			} else {
+				rewriter = new QueryBasedComputedRewriter(may, must, candidateMayMerged, candidateMustMerged, query);
+			}
 		}
 	}
 
@@ -351,7 +357,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		}
 	}
 
-	private void createFallbackExclude() {
+	private void createFallbackExclude(ModelStoreBuilder storeBuilder) {
 		if (excludeWasSet) {
 			return;
 		}
@@ -365,6 +371,36 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 			builder.clause(literals);
 		});
 		exclude = Criteria.whenHasMatch(excludeQuery);
+		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(this::configureFallbackExcludePropagator);
+	}
+
+	private void configureFallbackExcludePropagator(PropagationBuilder propagationBuilder) {
+		var propagationRule = Rule.of(partialRelation.name() + "#excluded", this::configureFallbackExcludeRule);
+		propagationBuilder.rule(propagationRule);
+	}
+
+	private void configureFallbackExcludeRule(RuleBuilder builder, NodeVariable p1) {
+		int arity = partialRelation.arity();
+		for (int i = 0; i < arity; i++) {
+			var parameters = new NodeVariable[arity];
+			for (int j = 0; j < arity; j++) {
+				parameters[j] = i == j ? p1 : Variable.of("v" + j);
+			}
+			var literals = new ArrayList<Literal>(arity + 3);
+			literals.add(PartialLiterals.must(partialRelation.call(parameters)));
+			literals.add(not(PartialLiterals.may(partialRelation.call(parameters))));
+			for (int j = 0; j < arity; j++) {
+				var parameter = parameters[j];
+				if (i == j) {
+					literals.add(PartialLiterals.may(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+					literals.add(not(PartialLiterals.must(ReasoningAdapter.EXISTS_SYMBOL.call(parameter))));
+				} else {
+					literals.add(PartialLiterals.must(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+				}
+			}
+			builder.clause(literals);
+		}
+		builder.action(PartialActionLiterals.remove(ReasoningAdapter.EXISTS_SYMBOL, p1));
 	}
 
 	private void createFallbackObjective() {

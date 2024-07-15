@@ -1,0 +1,40 @@
+diff --git a/eslint-plugin-prettier.js b/eslint-plugin-prettier.js
+index 74cd8c0497dadb3a79226bd059845a0fb662a697..cc7b6f7bcb2587d541e042c9e25fd76cf43936f8 100644
+--- a/eslint-plugin-prettier.js
++++ b/eslint-plugin-prettier.js
+@@ -164,7 +164,7 @@ const eslintPluginPrettier = {
+             if (!prettierFormat) {
+               // Prettier is expensive to load, so only load it if needed.
+               prettierFormat = require('synckit').createSyncFn(
+-                require.resolve('./worker'),
++                require.resolve('./worker.js'),
+               );
+             }
+ 
+diff --git a/worker.js b/worker.js
+index 8a8a802ca719a55f4d2ae526eb54e712edfd7455..06269d1c27ca49fd9c7da320318872aa7f40f4f5 100644
+--- a/worker.js
++++ b/worker.js
+@@ -7,11 +7,10 @@
+  */
+ 
+ const { runAsWorker } = require('synckit');
+-
++const prettier = require('prettier/index.cjs')
+ /**
+  * @type {typeof import('prettier')}
+  */
+-let prettier;
+ 
+ runAsWorker(
+   /**
+@@ -32,9 +31,6 @@ runAsWorker(
+     },
+     eslintFileInfoOptions,
+   ) => {
+-    if (!prettier) {
+-      prettier = await import('prettier');
+-    }
+ 
+     const prettierRcOptions = usePrettierrc
+       ? await prettier.resolveConfig(onDiskFilepath, {

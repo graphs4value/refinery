@@ -92,7 +92,7 @@ function PaneButtons({
   return (
     <PaneButtonGroup
       size={hideLabel ? 'small' : 'medium'}
-      hideLabel={hideLabel ?? PaneButtons.defaultProps.hideLabel}
+      hideLabel={hideLabel ?? false}
     >
       <ToggleButton
         value="code"
@@ -139,9 +139,5 @@ function PaneButtons({
     </PaneButtonGroup>
   );
 }
-
-PaneButtons.defaultProps = {
-  hideLabel: false,
-};
 
 export default observer(PaneButtons);

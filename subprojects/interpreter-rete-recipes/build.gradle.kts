@@ -12,13 +12,17 @@ plugins {
 	id("tools.refinery.gradle.sonarqube")
 }
 
+mavenArtifact {
+	name = "Query Interpreter RETE Recipes"
+	description = "RETE recipes for the query interpreter"
+}
+
 dependencies {
 	api(project(":refinery-interpreter"))
 	api(libs.ecore)
 	mwe2(libs.ecore.codegen)
 	mwe2(libs.mwe.utils)
 	mwe2(libs.mwe2.lib)
-	mwe2(libs.slf4j.simple)
 	mwe2(libs.xtext.core)
 	mwe2(libs.xtext.xbase)
 }
@@ -59,4 +63,3 @@ tasks {
 sonarqube.properties {
 	SonarPropertiesUtils.addToList(properties, "sonar.exclusions", "src/main/emf-gen/**")
 }
-

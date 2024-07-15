@@ -11,6 +11,7 @@ import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.logic.dnf.AnyQuery;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.query.resultset.ResultSet;
+import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Collection;
@@ -19,11 +20,13 @@ abstract class TypeScopePropagator {
 	private final BoundScopePropagator adapter;
 	private final ResultSet<Boolean> allNodes;
 	private final ResultSet<Boolean> multiNodes;
+	private final PartialRelation type;
 	protected final MPConstraint constraint;
 
 	protected TypeScopePropagator(BoundScopePropagator adapter, RelationalQuery allQuery,
-								  RelationalQuery multiQuery) {
+								  RelationalQuery multiQuery, PartialRelation type) {
 		this.adapter = adapter;
+		this.type = type;
 		var queryEngine = adapter.getQueryEngine();
 		allNodes = queryEngine.getResultSet(allQuery);
 		multiNodes = queryEngine.getResultSet(multiQuery);
@@ -43,6 +46,12 @@ abstract class TypeScopePropagator {
 	public boolean updateBounds() {
 		doUpdateBounds();
 		return constraint.lb() <= constraint.ub();
+	}
+
+	public abstract String getName();
+
+	public PartialRelation getType() {
+		return type;
 	}
 
 	protected int getSingleCount() {

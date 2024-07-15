@@ -29,7 +29,3 @@ export default function RootStoreProvider({
     <StoreContext.Provider value={rootStore}>{children}</StoreContext.Provider>
   );
 }
-
-RootStoreProvider.defaultProps = {
-  children: undefined,
-};

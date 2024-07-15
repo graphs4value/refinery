@@ -8,10 +8,14 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 }
 
+mavenArtifact {
+	description = "Multiplicity reasoner for the model store"
+}
+
 dependencies {
 	api(project(":refinery-store-reasoning"))
-	implementation(libs.eclipseCollections.api)
+	implementation(libs.eclipseCollections)
 	implementation(libs.ortools)
-	runtimeOnly(libs.eclipseCollections)
+	runtimeOnly(libs.eclipseCollections.impl)
 	testImplementation(project(":refinery-store-query-interpreter"))
 }

@@ -11,6 +11,13 @@ public enum Concreteness {
 	PARTIAL,
 	CANDIDATE;
 
+	public ConcretenessSpecification toSpecification() {
+		return switch (this) {
+			case PARTIAL -> ConcretenessSpecification.PARTIAL;
+			case CANDIDATE -> ConcretenessSpecification.CANDIDATE;
+		};
+	}
+
 	@Override
 	public String toString() {
 		return name().toLowerCase(Locale.ROOT);

@@ -205,6 +205,10 @@ export default {
       appId: 'KYHOYEO80F',
       apiKey: '152acfb8d1ad9e10f29f083a6b017a69',
       indexName: 'refinery',
+      // We don't have any context specified, so we need to disable this to return results.
+      contextualSearch: false,
+      // Javadoc doesn't use the Docusaurus router and has to be navigated to with `location.href` instead.
+      externalUrlRegex: '/develop/javadoc/.+',
     },
   } satisfies UserThemeConfig & AlgoliaConfig,
   webpack: {

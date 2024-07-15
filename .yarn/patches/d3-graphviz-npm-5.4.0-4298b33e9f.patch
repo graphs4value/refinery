@@ -93,3 +93,37 @@ index c4638cb0e4042844c59c52dfe4749e13999fef6e..28dcfb71ad787c78645c460a29e9c522
          'dataExtractEnd',
          'dataProcessPass1End',
          'dataProcessPass2End',
+diff --git a/src/workerCode.js b/src/workerCode.js
+index be538bb85921dca4da6521740a9d8159d1b39d98..6577ca466601a9f7a6ece8a2cb7f99845ff2cc27 100644
+--- a/src/workerCode.js
++++ b/src/workerCode.js
+@@ -9,16 +9,16 @@ export function workerCodeBody(port) {
+     self.document = {}; // Workaround for "ReferenceError: document is not defined" in hpccWasm
+ 
+     port.addEventListener('message', function(event) {
+-        let hpccWasm = self["@hpcc-js/wasm"];
+-        if (hpccWasm == undefined && event.data.vizURL) {
++        let Graphviz = self.Graphviz;
++        if (Graphviz == undefined && event.data.vizURL) {
+             importScripts(event.data.vizURL);
+-            hpccWasm = self["@hpcc-js/wasm"];
++            Graphviz = self.Graphviz;
+             // This is an alternative workaround where wasmFolder() is not needed
+ //                                    document = {currentScript: {src: event.data.vizURL}};
+         }
+ 
+         if (event.data.type == "version") {
+-            hpccWasm.Graphviz.load().then(graphviz => {
++            Graphviz.load().then(graphviz => {
+                 port.postMessage({
+                     type: "version",
+                     version: graphviz.version(),
+@@ -27,7 +27,7 @@ export function workerCodeBody(port) {
+             return;
+         }
+ 
+-        hpccWasm.Graphviz.load().then(graphviz => {
++        Graphviz.load().then(graphviz => {
+             const svg = graphviz.layout(event.data.dot, "svg", event.data.engine, event.data.options);
+             if (svg) {
+                 port.postMessage({

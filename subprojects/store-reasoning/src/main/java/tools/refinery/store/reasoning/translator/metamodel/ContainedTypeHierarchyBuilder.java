@@ -20,6 +20,17 @@ public class ContainedTypeHierarchyBuilder extends TypeHierarchyBuilder {
 		return !typeInfoMap.containsKey(type);
 	}
 
+	void setContainerTypes(Collection<PartialRelation> containerTypes) {
+		for (var containerType : containerTypes) {
+			var currentInfo = typeInfoMap.get(containerType);
+			if (currentInfo == null) {
+				throw new TranslationException(containerType, "Invalid container type: " + containerType);
+			}
+			var newInfo = currentInfo.addSupertype(ContainmentHierarchyTranslator.CONTAINER_SYMBOL);
+			typeInfoMap.put(containerType, newInfo);
+		}
+	}
+
 	void setContainedTypes(Collection<PartialRelation> containedTypes) {
 		for (var containedType : containedTypes) {
 			var currentInfo = typeInfoMap.get(containedType);

@@ -102,7 +102,7 @@ export default class UpdateStateTracker {
   onTransaction(transaction: Transaction): boolean {
     const setDirtyChangesEffect = transaction.effects.find((effect) =>
       effect.is(setDirtyChanges),
-    ) as StateEffect<ChangeSet> | undefined;
+    );
     if (setDirtyChangesEffect) {
       const { value } = setDirtyChangesEffect;
       if (this.pendingChanges !== undefined) {

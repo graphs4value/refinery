@@ -5,24 +5,15 @@
  */
 package tools.refinery.store.dse.propagation;
 
-public enum PropagationResult {
-	UNCHANGED,
-	PROPAGATED,
-	REJECTED;
+public sealed interface PropagationResult permits PropagationSuccessResult, PropagationRejectedResult {
+	PropagationResult UNCHANGED = PropagationSuccessResult.UNCHANGED;
+	PropagationResult PROPAGATED = PropagationSuccessResult.PROPAGATED;
 
-	public PropagationResult andThen(PropagationResult next) {
-		return switch (this) {
-			case UNCHANGED -> next;
-			case PROPAGATED -> next == REJECTED ? REJECTED : PROPAGATED;
-			case REJECTED -> REJECTED;
-		};
-	}
+	PropagationResult andThen(PropagationResult next);
 
-	public boolean isRejected() {
-		return this == REJECTED;
-	}
+	boolean isRejected();
 
-	public boolean isChanged() {
-		return this == PROPAGATED;
-	}
+	void throwIfRejected();
+
+	boolean isChanged();
 }

@@ -9,11 +9,8 @@ import com.google.inject.Inject;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.generator.ModelGenerator;
-import tools.refinery.generator.ModelGeneratorFactory;
+import tools.refinery.generator.*;
 import tools.refinery.language.web.semantics.metadata.MetadataCreator;
-import tools.refinery.generator.ProblemLoader;
-import tools.refinery.generator.ValidationErrorsException;
 import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
@@ -149,7 +146,7 @@ public class ModelGenerationWorker implements Runnable {
 		}
 		notifyResult(new ModelGenerationStatusResult(uuid, "Generating model"));
 		generator.setRandomSeed(randomSeed);
-		if (!generator.tryGenerate()) {
+		if (generator.tryGenerate() != GeneratorResult.SUCCESS) {
 			return new ModelGenerationErrorResult(uuid, "Problem is unsatisfiable");
 		}
 		notifyResult(new ModelGenerationStatusResult(uuid, "Saving generated model"));

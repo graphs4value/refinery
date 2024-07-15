@@ -5,12 +5,14 @@
  */
 package tools.refinery.store.reasoning.translator.opposite;
 
+import tools.refinery.logic.Constraint;
 import tools.refinery.logic.literal.AbstractCallLiteral;
 import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
+import tools.refinery.store.reasoning.literal.ComputedConstraint;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -53,9 +55,20 @@ public class OppositeRelationTranslator implements ModelStoreConfiguration, Part
 	@Override
 	public List<Literal> rewriteLiteral(Set<Variable> positiveVariables, AbstractCallLiteral literal,
 										Modality modality, Concreteness concreteness) {
+		var modalOpposite = ModalConstraint.of(modality, concreteness, opposite);
+		return rewriteWithOpposite(literal, modalOpposite);
+	}
+
+	@Override
+	public List<Literal> rewriteComputed(Set<Variable> positiveVariables, AbstractCallLiteral literal,
+										 Modality modality, Concreteness concreteness) {
+		var modalOpposite = ModalConstraint.of(modality, concreteness, new ComputedConstraint(opposite));
+		return rewriteWithOpposite(literal, modalOpposite);
+	}
+
+	private static List<Literal> rewriteWithOpposite(AbstractCallLiteral literal, Constraint modalOpposite) {
 		var arguments = literal.getArguments();
 		var newArguments = List.of(arguments.get(1), arguments.get(0));
-		var modalOpposite = new ModalConstraint(modality, concreteness, opposite);
 		var oppositeLiteral = literal.withArguments(modalOpposite, newArguments);
 		return List.of(oppositeLiteral);
 	}

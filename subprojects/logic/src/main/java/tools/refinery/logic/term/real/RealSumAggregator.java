@@ -5,12 +5,15 @@
  */
 package tools.refinery.logic.term.real;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.term.StatefulAggregate;
 import tools.refinery.logic.term.StatefulAggregator;
 
 import java.util.Map;
 import java.util.TreeMap;
 
+// Singleton implementation, since there is only one way to sum reals.
+@SuppressWarnings("squid:S6548")
 public final class RealSumAggregator implements StatefulAggregator<Double, Double> {
 	public static final RealSumAggregator INSTANCE = new RealSumAggregator();
 
@@ -32,6 +35,7 @@ public final class RealSumAggregator implements StatefulAggregator<Double, Doubl
 		return new Aggregate();
 	}
 
+	@NotNull
 	@Override
 	public Double getEmptyResult() {
 		return 0d;
@@ -63,6 +67,7 @@ public final class RealSumAggregator implements StatefulAggregator<Double, Doubl
 			});
 		}
 
+		@NotNull
 		@Override
 		public Double getResult() {
 			return values.entrySet()

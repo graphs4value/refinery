@@ -99,12 +99,3 @@ export default function AnimatedButton({
     </AnimatedButtonBase>
   );
 }
-
-AnimatedButton.defaultProps = {
-  'aria-label': undefined,
-  onClick: undefined,
-  disabled: false,
-  startIcon: undefined,
-  sx: undefined,
-  children: undefined,
-};

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -20,6 +20,7 @@ import tools.refinery.logic.term.uppercardinality.UnboundedUpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.store.dse.propagation.BoundPropagator;
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
@@ -29,6 +30,7 @@ import tools.refinery.store.tuple.Tuple;
 class BoundScopePropagator implements BoundPropagator {
 	private final Model model;
 	private final ModelQueryAdapter queryEngine;
+	private final ScopePropagator scopePropagator;
 	private final Interpretation<CardinalityInterval> countInterpretation;
 	private final MPSolver solver;
 	private final MPObjective objective;
@@ -37,16 +39,17 @@ class BoundScopePropagator implements BoundPropagator {
 	private final TypeScopePropagator[] propagators;
 	private boolean changed = true;
 
-	public BoundScopePropagator(Model model, ScopePropagator storeAdapter) {
+	public BoundScopePropagator(Model model, ScopePropagator scopePropagator) {
 		this.model = model;
 		queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		countInterpretation = model.getInterpretation(storeAdapter.getCountSymbol());
+		this.scopePropagator = scopePropagator;
+		countInterpretation = model.getInterpretation(scopePropagator.getCountSymbol());
 		solver = MPSolver.createSolver("GLOP");
 		solver.suppressOutput();
 		objective = solver.objective();
 		initializeVariables();
 		countInterpretation.addListener(this::countChanged, true);
-		var propagatorFactories = storeAdapter.getTypeScopePropagatorFactories();
+		var propagatorFactories = scopePropagator.getTypeScopePropagatorFactories();
 		propagators = new TypeScopePropagator[propagatorFactories.size()];
 		for (int i = 0; i < propagators.length; i++) {
 			model.checkCancelled();
@@ -157,7 +160,7 @@ class BoundScopePropagator implements BoundPropagator {
 			model.checkCancelled();
 			if (!propagator.updateBounds()) {
 				// Avoid logging GLOP error to console by checking for inconsistent constraints in advance.
-				return PropagationResult.REJECTED;
+				return createRejectedResult("Unsatisfiable %s.".formatted(propagator.getName()));
 			}
 		}
 		var result = PropagationResult.UNCHANGED;
@@ -184,7 +187,7 @@ class BoundScopePropagator implements BoundPropagator {
 		var emptinessCheckingResult = solver.solve();
 		return switch (emptinessCheckingResult) {
 			case OPTIMAL, UNBOUNDED -> PropagationResult.UNCHANGED;
-			case INFEASIBLE -> PropagationResult.REJECTED;
+			case INFEASIBLE -> createRejectedResult();
 			default -> throw new IllegalStateException("Failed to check for consistency: " + emptinessCheckingResult);
 		};
 	}
@@ -200,7 +203,7 @@ class BoundScopePropagator implements BoundPropagator {
 			case OPTIMAL -> lowerBound = RoundingUtil.roundUp(objective.value());
 			case UNBOUNDED -> lowerBound = 0;
 			case INFEASIBLE -> {
-				return PropagationResult.REJECTED;
+				return createRejectedResult();
 			}
 			default -> throw new IllegalStateException("Failed to solve for minimum of %s: %s"
 					.formatted(variable, minimizationResult));
@@ -232,10 +235,18 @@ class BoundScopePropagator implements BoundPropagator {
 		}
 	}
 
+	private PropagationResult createRejectedResult() {
+		return createRejectedResult("Scope bounds are unsatisfiable.");
+	}
+
+	private PropagationResult createRejectedResult(String message) {
+		return new PropagationRejectedResult(scopePropagator, message);
+	}
+
 	private static double getUpperBound(CardinalityInterval interval) {
 		var upperBound = interval.upperBound();
-		if (upperBound instanceof FiniteUpperCardinality finiteUpperCardinality) {
-			return finiteUpperCardinality.finiteUpperBound();
+		if (upperBound instanceof FiniteUpperCardinality(var finiteUpperBound)) {
+			return finiteUpperBound;
 		} else if (upperBound instanceof UnboundedUpperCardinality) {
 			return Double.POSITIVE_INFINITY;
 		} else {

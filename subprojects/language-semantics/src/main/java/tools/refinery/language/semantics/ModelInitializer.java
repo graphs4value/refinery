@@ -6,37 +6,25 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
-import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
+import tools.refinery.language.semantics.internal.query.QueryCompiler;
+import tools.refinery.language.semantics.internal.query.RuleCompiler;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ActionTargetCollector;
-import tools.refinery.logic.Constraint;
-import tools.refinery.logic.dnf.*;
-import tools.refinery.logic.literal.*;
-import tools.refinery.logic.term.NodeVariable;
-import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.dnf.InvalidClauseException;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
-import tools.refinery.store.dse.transition.Rule;
-import tools.refinery.store.dse.transition.RuleBuilder;
-import tools.refinery.store.dse.transition.actions.ActionLiteral;
-import tools.refinery.store.dse.transition.actions.ActionLiterals;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.actions.PartialActionLiterals;
-import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.ModalConstraint;
-import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -52,7 +40,9 @@ import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultipl
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.predicate.PredicateTranslator;
+import tools.refinery.store.statecoding.StateCoderBuilder;
 import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.tuple.Tuple1;
 
 import java.util.*;
 
@@ -72,11 +62,19 @@ public class ModelInitializer {
 	@Inject
 	private ActionTargetCollector actionTargetCollector;
 
+	@Inject
+	private QueryCompiler queryCompiler;
+
+	@Inject
+	private RuleCompiler ruleCompiler;
+
 	private Problem problem;
 
 	private final Set<Problem> importedProblems = new HashSet<>();
 
 	private BuiltinSymbols builtinSymbols;
+
+	private final List<Tuple1> individuals = new ArrayList<>();
 
 	private PartialRelation nodeRelation;
 
@@ -110,6 +108,8 @@ public class ModelInitializer {
 		loadImportedProblems();
 		importedProblems.add(problem);
 		problemTrace.setProblem(problem);
+		queryCompiler.setProblemTrace(problemTrace);
+		ruleCompiler.setQueryCompiler(queryCompiler);
 		try {
 			builtinSymbols = importAdapterProvider.getBuiltinSymbols(problem);
 			var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
@@ -120,6 +120,8 @@ public class ModelInitializer {
 			putRelationInfo(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL,
 					(TruthValue) null,
 					null));
+			putRelationInfo(builtinSymbols.container(),
+					new RelationInfo(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, null, TruthValue.UNKNOWN));
 			putRelationInfo(builtinSymbols.contained(),
 					new RelationInfo(ContainmentHierarchyTranslator.CONTAINED_SYMBOL, null, TruthValue.UNKNOWN));
 			putRelationInfo(builtinSymbols.contains(), new RelationInfo(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,
@@ -178,9 +180,13 @@ public class ModelInitializer {
 	}
 
 	public void configureStoreBuilder(ModelStoreBuilder storeBuilder) {
+		configureStoreBuilder(storeBuilder, false);
+	}
+
+	public void configureStoreBuilder(ModelStoreBuilder storeBuilder, boolean keepNonExistingObjects) {
 		checkProblem();
 		try {
-			storeBuilder.with(new MultiObjectTranslator());
+			storeBuilder.with(new MultiObjectTranslator(keepNonExistingObjects));
 			storeBuilder.with(new MetamodelTranslator(metamodel));
 			if (scopePropagator != null) {
 				if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {
@@ -190,6 +196,8 @@ public class ModelInitializer {
 			}
 			collectPredicates(storeBuilder);
 			collectRules(storeBuilder);
+			storeBuilder.tryGetAdapter(StateCoderBuilder.class)
+					.ifPresent(stateCoderBuilder -> stateCoderBuilder.individuals(individuals));
 		} catch (TranslationException e) {
 			throw problemTrace.wrapException(e);
 		}
@@ -224,29 +232,33 @@ public class ModelInitializer {
 			}
 		}
 		for (var node : problem.getNodes()) {
-			collectNode(node);
+			collectNode(node, false);
 		}
 	}
 
 	private void collectNodes(Statement statement) {
 		if (statement instanceof NodeDeclaration nodeDeclaration) {
+			boolean individual = nodeDeclaration.getKind() == NodeKind.ATOM;
 			for (var node : nodeDeclaration.getNodes()) {
-				collectNode(node);
+				collectNode(node, individual);
 			}
 		} else if (statement instanceof ClassDeclaration classDeclaration) {
 			var newNode = classDeclaration.getNewNode();
 			if (newNode != null) {
-				collectNode(newNode);
+				collectNode(newNode, false);
 			}
 		} else if (statement instanceof EnumDeclaration enumDeclaration) {
 			for (var literal : enumDeclaration.getLiterals()) {
-				collectNode(literal);
+				collectNode(literal, true);
 			}
 		}
 	}
 
-	private void collectNode(Node node) {
-		problemTrace.collectNode(node);
+	private void collectNode(Node node, boolean individual) {
+		int nodeId = problemTrace.collectNode(node);
+		if (individual) {
+			individuals.add(Tuple.of(nodeId));
+		}
 	}
 
 	private void collectPartialSymbols() {
@@ -476,7 +488,7 @@ public class ModelInitializer {
 
 	private void collectAssertion(Assertion assertion) {
 		var tuple = getTuple(assertion);
-		var value = getTruthValue(assertion.getValue());
+		var value = SemanticsUtils.getTruthValue(assertion.getValue());
 		var relation = assertion.getRelation();
 		var info = getRelationInfo(relation);
 		var partialRelation = info.partialRelation();
@@ -556,18 +568,6 @@ public class ModelInitializer {
 		return Tuple.of(nodes);
 	}
 
-	private static TruthValue getTruthValue(Expr expr) {
-		if (!(expr instanceof LogicConstant logicAssertionValue)) {
-			return TruthValue.ERROR;
-		}
-		return switch (logicAssertionValue.getLogicValue()) {
-			case TRUE -> TruthValue.TRUE;
-			case FALSE -> TruthValue.FALSE;
-			case UNKNOWN -> TruthValue.UNKNOWN;
-			case ERROR -> TruthValue.ERROR;
-		};
-	}
-
 	private void collectPredicates(ModelStoreBuilder storeBuilder) {
 		for (var importedProblem : importedProblems) {
 			for (var statement : importedProblem.getStatements()) {
@@ -597,17 +597,23 @@ public class ModelInitializer {
 
 	private void collectPredicateDefinition(PredicateDefinition predicateDefinition, ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
-		var query = toQuery(partialRelation.name(), predicateDefinition);
-		boolean mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
+		var query = queryCompiler.toQuery(partialRelation.name(), predicateDefinition);
+		boolean mutable;
 		TruthValue defaultValue;
-		if (predicateDefinition.isError()) {
-			defaultValue = TruthValue.FALSE;
+		if (predicateDefinition.isShadow()) {
+			mutable = false;
+			defaultValue = TruthValue.UNKNOWN;
 		} else {
-			var seed = modelSeed.getSeed(partialRelation);
-			defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
-			var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
-			// The symbol should be mutable if there is at least one non-default entry in the seed.
-			mutable = mutable || cursor.move();
+			mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
+			if (predicateDefinition.isError()) {
+				defaultValue = TruthValue.FALSE;
+			} else {
+				var seed = modelSeed.getSeed(partialRelation);
+				defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+				var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
+				// The symbol should be mutable if there is at least one non-default entry in the seed.
+				mutable = mutable || cursor.move();
+			}
 		}
 		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
 		storeBuilder.with(translator);
@@ -620,254 +626,6 @@ public class ModelInitializer {
 			}
 		}
 		return false;
-	}
-
-	private RelationalQuery toQuery(String name, PredicateDefinition predicateDefinition) {
-		var problemParameters = predicateDefinition.getParameters();
-		int arity = problemParameters.size();
-		var parameters = new NodeVariable[arity];
-		var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
-		var commonLiterals = new ArrayList<Literal>();
-		for (int i = 0; i < arity; i++) {
-			var problemParameter = problemParameters.get(i);
-			var parameter = Variable.of(problemParameter.getName());
-			parameters[i] = parameter;
-			parameterMap.put(problemParameter, parameter);
-			var parameterType = problemParameter.getParameterType();
-			if (parameterType != null) {
-				var partialType = getPartialRelation(parameterType);
-				commonLiterals.add(partialType.call(parameter));
-			}
-		}
-		var builder = Query.builder(name).parameters(parameters);
-		for (var body : predicateDefinition.getBodies()) {
-			buildConjunction(body, parameterMap, commonLiterals, builder);
-		}
-		return builder.build();
-	}
-
-	private void buildConjunction(
-			Conjunction body, HashMap<tools.refinery.language.model.problem.Variable, ? extends Variable> parameterMap,
-			List<Literal> commonLiterals, AbstractQueryBuilder<?> builder) {
-		try {
-			var localScope = extendScope(parameterMap, body.getImplicitVariables());
-			var problemLiterals = body.getLiterals();
-			var literals = new ArrayList<>(commonLiterals);
-			for (var problemLiteral : problemLiterals) {
-				toLiteralsTraced(problemLiteral, localScope, literals);
-			}
-			builder.clause(literals);
-		} catch (RuntimeException e) {
-			throw TracedException.addTrace(body, e);
-		}
-	}
-
-	private Map<tools.refinery.language.model.problem.Variable, ? extends Variable> extendScope(
-			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> existing,
-			Collection<? extends tools.refinery.language.model.problem.Variable> newVariables) {
-		if (newVariables.isEmpty()) {
-			return existing;
-		}
-		int localScopeSize = existing.size() + newVariables.size();
-		var localScope = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(localScopeSize);
-		localScope.putAll(existing);
-		for (var newVariable : newVariables) {
-			localScope.put(newVariable, Variable.of(newVariable.getName()));
-		}
-		return localScope;
-	}
-
-	private void toLiteralsTraced(
-			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
-			List<Literal> literals) {
-		try {
-			toLiterals(expr, localScope, literals);
-		} catch (RuntimeException e) {
-			throw TracedException.addTrace(expr, e);
-		}
-	}
-
-	private void toLiterals(
-			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
-			List<Literal> literals) {
-		var extractedOuter = extractModalExpr(expr);
-		var outerModality = extractedOuter.modality();
-		switch (extractedOuter.body()) {
-		case LogicConstant logicConstant -> {
-			switch (logicConstant.getLogicValue()) {
-			case TRUE -> literals.add(BooleanLiteral.TRUE);
-			case FALSE -> literals.add(BooleanLiteral.FALSE);
-			default -> throw new TracedException(logicConstant, "Unsupported literal");
-			}
-		}
-		case Atom atom -> {
-			var target = getPartialRelation(atom.getRelation());
-			var constraint = atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
-			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
-			literals.add(extractedOuter.modality.wrapConstraint(constraint).call(CallPolarity.POSITIVE, argumentList));
-		}
-		case NegationExpr negationExpr -> {
-			var body = negationExpr.getBody();
-			var extractedInner = extractModalExpr(body);
-			if (!(extractedInner.body() instanceof Atom atom)) {
-				throw new TracedException(extractedInner.body(), "Cannot negate literal");
-			}
-			var target = getPartialRelation(atom.getRelation());
-			Constraint constraint = atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
-			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-			List<Variable> argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
-			var innerModality = extractedInner.modality().merge(outerModality.negate());
-			literals.add(createNegationLiteral(innerModality, constraint, argumentList, localScope));
-		}
-		case ComparisonExpr comparisonExpr -> {
-			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
-					localScope, literals);
-			boolean positive = switch (comparisonExpr.getOp()) {
-				case NODE_EQ -> true;
-				case NODE_NOT_EQ -> false;
-				default -> throw new TracedException(
-						comparisonExpr, "Unsupported operator");
-			};
-			literals.add(createEquivalenceLiteral(outerModality, positive, argumentList.get(0), argumentList.get(1),
-					localScope));
-		}
-		default -> throw new TracedException(extractedOuter.body(), "Unsupported literal");
-		}
-	}
-
-	private Constraint getTransitiveWrapper(Constraint target) {
-		return Query.of(target.name() + "#transitive", (builder, p1, p2) -> builder.clause(
-				target.callTransitive(p1, p2)
-		)).getDnf();
-	}
-
-	private static Literal createNegationLiteral(
-			ConcreteModality innerModality, Constraint constraint, List<Variable> argumentList,
-			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
-		if (innerModality.isSet()) {
-			boolean needsQuantification = false;
-			var filteredArguments = new LinkedHashSet<Variable>();
-			for (var argument : argumentList) {
-				if (localScope.containsValue(argument)) {
-					filteredArguments.add(argument);
-				} else {
-					needsQuantification = true;
-				}
-			}
-			// If there are any quantified arguments, set a helper pattern to be lifted so that the appropriate
-			// {@code EXISTS} call are added by the {@code DnfLifter}.
-			if (needsQuantification) {
-				var filteredArgumentList = List.copyOf(filteredArguments);
-				var quantifiedConstraint = Dnf.builder(constraint.name() + "#quantified")
-						.parameters(filteredArgumentList)
-						.clause(
-								constraint.call(CallPolarity.POSITIVE, argumentList)
-						)
-						.build();
-				return innerModality.wrapConstraint(quantifiedConstraint)
-						.call(CallPolarity.NEGATIVE, filteredArgumentList);
-			}
-		}
-		return innerModality.wrapConstraint(constraint).call(CallPolarity.NEGATIVE, argumentList);
-	}
-
-	private Literal createEquivalenceLiteral(
-			ConcreteModality outerModality, boolean positive, Variable left, Variable right,
-			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
-		if (!outerModality.isSet()) {
-			return new EquivalenceLiteral(positive, left, right);
-		}
-		if (positive) {
-			return outerModality.wrapConstraint(ReasoningAdapter.EQUALS_SYMBOL).call(left, right);
-		}
-		// Interpret {@code x != y} as {@code !equals(x, y)} at all times, even in modal operators.
-		return createNegationLiteral(outerModality.negate(), ReasoningAdapter.EQUALS_SYMBOL, List.of(left, right),
-				localScope);
-	}
-
-	private record ConcreteModality(@Nullable Concreteness concreteness, @Nullable Modality modality) {
-		public static final ConcreteModality NULL = new ConcreteModality((Concreteness) null, null);
-
-		public ConcreteModality(tools.refinery.language.model.problem.Concreteness concreteness,
-								tools.refinery.language.model.problem.Modality modality) {
-			this(
-					switch (concreteness) {
-						case PARTIAL -> Concreteness.PARTIAL;
-						case CANDIDATE -> Concreteness.CANDIDATE;
-					},
-					switch (modality) {
-						case MUST -> Modality.MUST;
-						case MAY -> Modality.MAY;
-						case NONE -> throw new IllegalArgumentException("Invalid modality");
-					}
-			);
-		}
-
-		public ConcreteModality negate() {
-			var negatedModality = modality == null ? null : modality.negate();
-			return new ConcreteModality(concreteness, negatedModality);
-		}
-
-		public ConcreteModality merge(ConcreteModality outer) {
-			var mergedConcreteness = concreteness == null ? outer.concreteness() : concreteness;
-			var mergedModality = modality == null ? outer.modality() : modality;
-			return new ConcreteModality(mergedConcreteness, mergedModality);
-		}
-
-		public Constraint wrapConstraint(Constraint inner) {
-			if (isSet()) {
-				return new ModalConstraint(modality, concreteness, inner);
-			}
-			return inner;
-		}
-
-		public boolean isSet() {
-			return concreteness != null || modality != null;
-		}
-	}
-
-	private record ExtractedModalExpr(ConcreteModality modality, Expr body) {
-	}
-
-	private ExtractedModalExpr extractModalExpr(Expr expr) {
-		if (expr instanceof ModalExpr modalExpr) {
-			return new ExtractedModalExpr(new ConcreteModality(modalExpr.getConcreteness(), modalExpr.getModality()),
-					modalExpr.getBody());
-		}
-		return new ExtractedModalExpr(ConcreteModality.NULL, expr);
-	}
-
-	private List<Variable> toArgumentList(
-			List<Expr> expressions, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
-			List<Literal> literals) {
-		var argumentList = new ArrayList<Variable>(expressions.size());
-		for (var expr : expressions) {
-			if (!(expr instanceof VariableOrNodeExpr variableOrNodeExpr)) {
-				throw new TracedException(expr, "Unsupported argument");
-			}
-			var variableOrNode = variableOrNodeExpr.getVariableOrNode();
-			switch (variableOrNode) {
-			case Node node -> {
-				int nodeId = getNodeId(node);
-				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
-				literals.add(new ConstantLiteral(tempVariable, nodeId));
-				argumentList.add(tempVariable);
-			}
-			case tools.refinery.language.model.problem.Variable problemVariable -> {
-				if (variableOrNodeExpr.getSingletonVariable() == problemVariable) {
-					argumentList.add(Variable.of(problemVariable.getName()));
-				} else {
-					var variable = localScope.get(problemVariable);
-					if (variable == null) {
-						throw new TracedException(variableOrNode, "Unknown variable: " + problemVariable.getName());
-					}
-					argumentList.add(variable);
-				}
-			}
-			default -> throw new TracedException(variableOrNode, "Unknown argument");
-			}
-		}
-		return argumentList;
 	}
 
 	private void collectScopes() {
@@ -956,141 +714,35 @@ public class ModelInitializer {
 			var name = semanticsUtils.getNameWithoutRootPrefix(ruleDefinition)
 					.orElseGet(() -> "::rule" + ruleCount);
 			ruleCount++;
-			var rule = toRule(name, ruleDefinition);
 			switch (ruleDefinition.getKind()) {
-			case DECISION -> storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
-					.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
-			case PROPAGATION -> storeBuilder.tryGetAdapter(PropagationBuilder.class)
-					.ifPresent(propagationBuilder -> propagationBuilder.rule(rule));
+			case DECISION -> {
+				var rule = ruleCompiler.toDecisionRule(name, ruleDefinition);
+				problemTrace.putRuleDefinition(ruleDefinition, rule);
+				storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
+						.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
+			}
+			case PROPAGATION -> {
+				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition);
+				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
+				storeBuilder.tryGetAdapter(PropagationBuilder.class)
+						.ifPresent(propagationBuilder -> propagationBuilder.rules(rules));
+			}
 			case REFINEMENT -> {
 				// Rules not marked for decision or propagation are not invoked automatically.
+				var rule = ruleCompiler.toRule(name, ruleDefinition);
+				problemTrace.putRuleDefinition(ruleDefinition, rule);
 			}
 			}
 		} catch (InvalidClauseException e) {
 			int clauseIndex = e.getClauseIndex();
 			var bodies = ruleDefinition.getPreconditions();
 			if (clauseIndex < bodies.size()) {
-				throw new TracedException(bodies.get(clauseIndex), e);
+				throw TracedException.addTrace(bodies.get(clauseIndex), e);
 			} else {
-				throw new TracedException(ruleDefinition, e);
+				throw TracedException.addTrace(ruleDefinition, e);
 			}
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(ruleDefinition, e);
 		}
-	}
-
-	private Rule toRule(String name, RuleDefinition ruleDefinition) {
-		var problemParameters = ruleDefinition.getParameters();
-		int arity = problemParameters.size();
-		var parameters = new NodeVariable[arity];
-		var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, NodeVariable>newHashMap(arity);
-		var commonLiterals = new ArrayList<Literal>();
-		var parametersToFocus = new ArrayList<tools.refinery.language.model.problem.Variable>();
-		for (int i = 0; i < arity; i++) {
-			var problemParameter = problemParameters.get(i);
-			var parameter = Variable.of(problemParameter.getName());
-			parameters[i] = parameter;
-			parameterMap.put(problemParameter, parameter);
-			var parameterType = problemParameter.getParameterType();
-			if (parameterType != null) {
-				var partialType = getPartialRelation(parameterType);
-				var modality = new ConcreteModality(problemParameter.getConcreteness(),
-						problemParameter.getModality());
-				commonLiterals.add(modality.wrapConstraint(partialType).call(parameter));
-			}
-			if (ruleDefinition.getKind() == RuleKind.DECISION &&
-					problemParameter.getBinding() == ParameterBinding.SINGLE) {
-				commonLiterals.add(MultiObjectTranslator.MULTI_VIEW.call(CallPolarity.NEGATIVE, parameter));
-			}
-			if (problemParameter.getBinding() == ParameterBinding.FOCUS) {
-				parametersToFocus.add(problemParameter);
-			}
-		}
-		toMonomorphicMatchingLiterals(parametersToFocus, parameterMap, commonLiterals);
-		var builder = Rule.builder(name).parameters(parameters);
-		var preconditions = ruleDefinition.getPreconditions();
-		if (preconditions.isEmpty()) {
-			builder.clause(commonLiterals);
-		} else {
-			for (var precondition : preconditions) {
-				buildConjunction(precondition, parameterMap, commonLiterals, builder);
-			}
-		}
-		for (var consequent : ruleDefinition.getConsequents()) {
-			buildConsequent(consequent, parameterMap, parametersToFocus, builder);
-		}
-		return builder.build();
-	}
-
-	private static void toMonomorphicMatchingLiterals(
-			ArrayList<tools.refinery.language.model.problem.Variable> parametersToFocus,
-			HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> parameterMap,
-			ArrayList<Literal> commonLiterals) {
-		int focusCount = parametersToFocus.size();
-		for (int i = 0; i < focusCount; i++) {
-			var leftFocus = parameterMap.get(parametersToFocus.get(i));
-			for (int j = i + 1; j < focusCount; j++) {
-				var rightFocus = parameterMap.get(parametersToFocus.get(j));
-				commonLiterals.add(Literals.not(PartialLiterals.must(
-						ReasoningAdapter.EQUALS_SYMBOL.call(leftFocus, rightFocus))));
-			}
-		}
-	}
-
-	private void buildConsequent(
-			Consequent body, HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> parameterMap,
-			Collection<tools.refinery.language.model.problem.Variable> parametersToFocus, RuleBuilder builder) {
-		try {
-			var actionLiterals = new ArrayList<ActionLiteral>();
-			HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> localScope;
-			if (parametersToFocus.isEmpty()) {
-				localScope = parameterMap;
-			} else {
-				localScope = new LinkedHashMap<>(parameterMap);
-				for (var parameterToFocus : parametersToFocus) {
-					var originalParameter = parameterMap.get(parameterToFocus);
-					var focusedParameter = Variable.of(originalParameter.getName() + "#focused");
-					localScope.put(parameterToFocus, focusedParameter);
-					actionLiterals.add(PartialActionLiterals.focus(originalParameter, focusedParameter));
-				}
-			}
-			for (var action : body.getActions()) {
-				toActionLiterals(action, localScope, actionLiterals);
-			}
-			builder.action(actionLiterals);
-		} catch (RuntimeException e) {
-			throw TracedException.addTrace(body, e);
-		}
-	}
-
-	private void toActionLiterals(
-			Action action, HashMap<tools.refinery.language.model.problem.Variable, NodeVariable> localScope,
-			List<ActionLiteral> actionLiterals) {
-		if (!(action instanceof AssertionAction assertionAction)) {
-			throw new TracedException(action, "Unknown action");
-		}
-		var partialRelation = getPartialRelation(assertionAction.getRelation());
-		var truthValue = getTruthValue(assertionAction.getValue());
-		var problemArguments = assertionAction.getArguments();
-		var arguments = new NodeVariable[problemArguments.size()];
-		for (int i = 0; i < arguments.length; i++) {
-			var problemArgument = problemArguments.get(i);
-			if (!(problemArgument instanceof NodeAssertionArgument nodeAssertionArgument)) {
-				throw new TracedException(problemArgument, "Invalid argument");
-			}
-			var variableOrNode = nodeAssertionArgument.getNode();
-			switch (variableOrNode) {
-			case tools.refinery.language.model.problem.Variable problemVariable ->
-					arguments[i] = localScope.get(problemVariable);
-			case Node node -> {
-				int nodeId = getNodeId(node);
-				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
-				actionLiterals.add(ActionLiterals.constant(tempVariable, nodeId));
-				arguments[i] = tempVariable;
-			}
-			default -> throw new TracedException(problemArgument, "Invalid argument");
-			}
-		}
-		actionLiterals.add(PartialActionLiterals.merge(partialRelation, truthValue, arguments));
 	}
 }

@@ -8,6 +8,10 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 }
 
+mavenArtifact {
+	description = "Partial model reasoner for the model store"
+}
+
 dependencies {
 	api(project(":refinery-store-dse"))
 	testImplementation(testFixtures(project(":refinery-logic")))

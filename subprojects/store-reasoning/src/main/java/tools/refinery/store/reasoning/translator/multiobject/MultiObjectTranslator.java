@@ -15,7 +15,6 @@ import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
-import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criteria;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
@@ -23,7 +22,6 @@ import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
-import tools.refinery.store.reasoning.actions.PartialActionLiterals;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
@@ -42,6 +40,16 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 	public static final AnySymbolView MULTI_VIEW = new MultiView(COUNT_STORAGE);
 	public static final PartialFunction<CardinalityInterval, Integer> COUNT_SYMBOL = new PartialFunction<>("COUNT", 1,
 			CardinalityDomain.INSTANCE);
+
+	private final boolean keepNonExistingObjects;
+
+	public MultiObjectTranslator(boolean keepNonExistingObjects) {
+		this.keepNonExistingObjects = keepNonExistingObjects;
+	}
+
+	public MultiObjectTranslator() {
+		this(true);
+	}
 
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
@@ -92,16 +100,9 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		reasoningBuilder.initializer(new MultiObjectInitializer(COUNT_STORAGE));
 		reasoningBuilder.storageRefiner(COUNT_STORAGE, MultiObjectStorageRefiner::new);
 
-		storeBuilder.tryGetAdapter(PropagationBuilder.class)
-				.ifPresent(propagationBuilder -> propagationBuilder.rule(
-						Rule.of("exists#cleanup", (builder, node) -> builder
-								.clause(UpperCardinality.class, upper -> List.of(
-										UPPER_CARDINALITY_VIEW.call(node, upper),
-										check(UpperCardinalityTerms.less(upper,
-												UpperCardinalityTerms.constant(UpperCardinalities.ONE)))
-								))
-								.action(
-										PartialActionLiterals.cleanup(node)
-								))));
+		if (!keepNonExistingObjects) {
+			storeBuilder.tryGetAdapter(PropagationBuilder.class)
+					.ifPresent(propagationBuilder -> propagationBuilder.propagator(new CleanupPropagator()));
+		}
 	}
 }

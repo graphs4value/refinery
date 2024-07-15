@@ -18,7 +18,10 @@ import org.eclipse.xtext.resource.IResourceDescriptionsProvider;
 import org.eclipse.xtext.scoping.IScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.model.problem.Expr;
+import tools.refinery.language.model.problem.LogicConstant;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 import java.util.Optional;
 
@@ -105,5 +108,17 @@ public class SemanticsUtils {
 					.formatted(type.getName(), qualifiedNameString));
 		}
 		return element;
+	}
+
+	public static TruthValue getTruthValue(Expr expr) {
+		if (!(expr instanceof LogicConstant logicAssertionValue)) {
+			return TruthValue.ERROR;
+		}
+		return switch (logicAssertionValue.getLogicValue()) {
+			case TRUE -> TruthValue.TRUE;
+			case FALSE -> TruthValue.FALSE;
+			case UNKNOWN -> TruthValue.UNKNOWN;
+			case ERROR -> TruthValue.ERROR;
+		};
 	}
 }

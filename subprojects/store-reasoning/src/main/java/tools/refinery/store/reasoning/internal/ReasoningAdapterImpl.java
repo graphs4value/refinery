@@ -204,6 +204,8 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		if (nodeToDelete == currentModelSize - 1) {
 			nodeCountInterpretation.put(Tuple.of(), nodeToDelete);
 		}
+		// We mustn't reuse the ID of {@code nodeToDelete} in any circumstance, because clients may depend on stable
+		// node IDs for nodes in the initial partial model.
 		return true;
 	}
 

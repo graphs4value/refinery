@@ -36,7 +36,7 @@ import {
 } from '../utils/fileIO';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
-import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
+import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
 import GeneratedModelStore from './GeneratedModelStore';
@@ -365,12 +365,11 @@ export default class EditorStore {
     }
   }
 
-  setSemanticsError(semanticsError: string) {
+  setSemanticsError(semanticsError: string | undefined) {
     this.semanticsError = semanticsError;
   }
 
-  setSemantics(semantics: SemanticsSuccessResult) {
-    this.semanticsError = undefined;
+  setSemantics(semantics: SemanticsModelResult) {
     this.graph.setSemantics(semantics);
   }
 
@@ -447,7 +446,7 @@ export default class EditorStore {
 
   setGeneratedModelSemantics(
     uuid: string,
-    semantics: SemanticsSuccessResult,
+    semantics: SemanticsModelResult,
   ): void {
     this.generatedModels.get(uuid)?.setSemantics(semantics);
   }

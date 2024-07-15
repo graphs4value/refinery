@@ -20,7 +20,7 @@ public class TypeHierarchy {
 	TypeHierarchy(Map<PartialRelation, TypeInfo> typeInfoMap) {
 		int size = typeInfoMap.size();
 		allTypes = Collections.unmodifiableSet(new LinkedHashSet<>(typeInfoMap.keySet()));
-		extendedTypeInfoMap = new LinkedHashMap<>(size);
+		extendedTypeInfoMap = LinkedHashMap.newLinkedHashMap(size);
 		var concreteTypes = new LinkedHashSet<PartialRelation>();
 		int index = 0;
 		for (var entry : typeInfoMap.entrySet()) {
@@ -118,7 +118,7 @@ public class TypeHierarchy {
 		for (var extendedTypeInfo : extendedTypeInfoMap.values()) {
 			var allSubtypes = extendedTypeInfo.getAllSubtypes();
 			var directSubtypes = new LinkedHashSet<>(allSubtypes);
-			var indirectSubtypes = new LinkedHashSet<PartialRelation>(allSubtypes.size());
+			var indirectSubtypes = LinkedHashSet.<PartialRelation>newLinkedHashSet(allSubtypes.size());
 			for (var subtype : allSubtypes) {
 				indirectSubtypes.addAll(extendedTypeInfoMap.get(subtype).getAllSubtypes());
 			}
@@ -203,7 +203,7 @@ public class TypeHierarchy {
 
 	private Map<PartialRelation, TypeAnalysisResult> computeAnalysisResults() {
 		var allExtendedTypeInfoList = sortTypes();
-		var preservedResults = new LinkedHashMap<PartialRelation, TypeAnalysisResult>(
+		var preservedResults = LinkedHashMap.<PartialRelation, TypeAnalysisResult>newLinkedHashMap(
 				allExtendedTypeInfoList.size());
 		for (var extendedTypeInfo : allExtendedTypeInfoList) {
 			var type = extendedTypeInfo.getType();

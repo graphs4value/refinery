@@ -49,7 +49,7 @@ export default function UseCases() {
               <b>Scenario generation</b> for testing autonomous vechicles
             </>
           }
-          href="https://doi.org/10.1007/s10270-021-00884-z"
+          href="https://doi.org/10.1007/s10270-021-00918-6"
         />
         <UseCase
           icon={<Uc2 />}

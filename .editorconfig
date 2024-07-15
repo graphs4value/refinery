@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+# SPDX-FileCopyrightText: 2021-2024 The Refinery Authors
 #
 # SPDX-License-Identifier: EPL-2.0
 
@@ -24,7 +24,7 @@ ij_any_indent_case_from_switch = false
 indent_style = space
 indent_size = 2
 
-[libs.versions.toml]
+[*.versions.toml]
 max_line_length = 999
 
 [*.{ecore,genmodel}]

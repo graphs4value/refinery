@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: EPL-2.0
+
+FROM base AS web-base
+# Layer with platform-dependent dependencies, slow changing.
+ADD --link extracted/web_lib /app/lib
+
+FROM web-base AS web-amd64
+# Layer with platform-dependent startup script containing references to all
+# dependency versions.
+ADD --link extracted/web_amd64_bin /app/bin
+
+FROM web-base AS web-arm64
+# Layer with platform-dependent startup script containing references to all
+# dependency versions.
+ADD --link extracted/web_arm64_bin /app/bin
+
+FROM web-$TARGETARCH
+# Layer with platform-independent application jars.
+ADD --link extracted/web_app_lib /app/lib
+# Common settings added on top.
+ENV REFINERY_LISTEN_HOST=0.0.0.0 REFINERY_LISTEN_PORT=8888
+EXPOSE 8888
+USER 1000
+WORKDIR /app
+ENTRYPOINT ["/app/bin/refinery-language-web"]

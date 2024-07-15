@@ -20,6 +20,7 @@ public class PropagationBuilderImpl extends AbstractModelAdapterBuilder<Propagat
 		implements PropagationBuilder {
 	private final Set<Rule> propagationRules = new LinkedHashSet<>();
 	private final Deque<Propagator> propagators = new ArrayDeque<>();
+	private boolean throwOnFatalRejection = true;
 
 	@Override
 	public PropagationBuilder rule(Rule propagationRule) {
@@ -36,6 +37,12 @@ public class PropagationBuilderImpl extends AbstractModelAdapterBuilder<Propagat
 	}
 
 	@Override
+	public PropagationBuilder throwOnFatalRejection(boolean throwOnFatalRejection) {
+		this.throwOnFatalRejection = throwOnFatalRejection;
+		return this;
+	}
+
+	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		super.doConfigure(storeBuilder);
 		if (!propagationRules.isEmpty()) {
@@ -48,6 +55,6 @@ public class PropagationBuilderImpl extends AbstractModelAdapterBuilder<Propagat
 
 	@Override
 	protected PropagationStoreAdapter doBuild(ModelStore store) {
-		return new PropagationStoreAdapterImpl(store, List.copyOf(propagators));
+		return new PropagationStoreAdapterImpl(store, List.copyOf(propagators), throwOnFatalRejection);
 	}
 }

@@ -35,7 +35,7 @@ public final class PartialLiterals {
 			throw new InvalidQueryException("Literal %s already has modality".formatted(literal));
 		}
 		var polarity = literal.getPolarity();
-		var modalTarget = new ModalConstraint(modality.commute(polarity), concreteness, target);
+		var modalTarget = ModalConstraint.of(modality.commute(polarity), concreteness, target);
 		return new CallLiteral(polarity, modalTarget, literal.getArguments());
 	}
 }

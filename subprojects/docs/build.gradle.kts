@@ -5,6 +5,7 @@
  */
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+import tools.refinery.gradle.JavaLibraryPlugin
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
@@ -22,26 +23,15 @@ val javadocs: Configuration by configurations.creating {
 }
 
 dependencies {
-	javadocs(project(":refinery-generator", "javadocElements"))
-	javadocs(project(":refinery-generator-cli", "javadocElements"))
-	javadocs(project(":refinery-interpreter", "javadocElements"))
-	javadocs(project(":refinery-interpreter-localsearch", "javadocElements"))
-	javadocs(project(":refinery-interpreter-rete", "javadocElements"))
-	javadocs(project(":refinery-interpreter-rete-recipes", "javadocElements"))
-	javadocs(project(":refinery-language", "javadocElements"))
-	javadocs(project(":refinery-language-ide", "javadocElements"))
-	javadocs(project(":refinery-language-model", "javadocElements"))
-	javadocs(project(":refinery-language-semantics", "javadocElements"))
-	javadocs(project(":refinery-language-web", "javadocElements"))
-	javadocs(project(":refinery-logic", "javadocElements"))
-	javadocs(project(":refinery-store", "javadocElements"))
-	javadocs(project(":refinery-store-dse", "javadocElements"))
-	javadocs(project(":refinery-store-dse-visualization", "javadocElements"))
-	javadocs(project(":refinery-store-query", "javadocElements"))
-	javadocs(project(":refinery-store-query-interpreter", "javadocElements"))
-	javadocs(project(":refinery-store-reasoning", "javadocElements"))
-	javadocs(project(":refinery-store-reasoning-scope", "javadocElements"))
-	javadocs(project(":refinery-store-reasoning-smt", "javadocElements"))
+	gradle.projectsEvaluated {
+		for (subproject in rootProject.subprojects) {
+			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
+				javadocs(project(subproject.path, "javadocElements"))
+			}
+		}
+	}
+
+	javadocs(project(":refinery-gradle-plugins", "javadocElements"))
 }
 
 val srcDir = "src"
@@ -63,8 +53,7 @@ val configFiles: FileCollection = files(
 )
 
 val lintConfigFiles: FileCollection = configFiles + files(
-	rootProject.file(".eslintrc.cjs"),
-	rootProject.file("prettier.config.cjs")
+	rootProject.file(".eslintrc.cjs"), rootProject.file("prettier.config.cjs")
 )
 
 tasks {
@@ -132,6 +121,17 @@ tasks {
 	clean {
 		delete(".docusaurus")
 		delete(".yarn")
+	}
+
+	val siteZip by registering(Zip::class) {
+		dependsOn(assembleFrontend)
+		from(docusaurusOutputDir)
+		archiveFileName = "refinery-docs.zip"
+		destinationDirectory = layout.buildDirectory
+	}
+
+	assemble {
+		dependsOn(siteZip)
 	}
 }
 

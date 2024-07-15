@@ -8,6 +8,10 @@ plugins {
 	id("tools.refinery.gradle.java-library")
 }
 
+mavenArtifact {
+	description = "Interpreted query backend for the model store"
+}
+
 dependencies {
 	api(project(":refinery-interpreter"))
 	api(project(":refinery-interpreter-localsearch"))

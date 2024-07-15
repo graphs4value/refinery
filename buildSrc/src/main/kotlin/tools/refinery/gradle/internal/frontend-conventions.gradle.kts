@@ -6,7 +6,7 @@
 package tools.refinery.gradle.internal
 
 plugins {
-	id("org.siouan.frontend-jdk17")
+	id("org.siouan.frontend-jdk21")
 }
 
 frontend {

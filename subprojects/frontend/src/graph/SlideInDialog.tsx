@@ -77,7 +77,7 @@ export default function SlideInDialog({
 
   return (
     <SlideInDialogRoot
-      dialog={dialog ?? SlideInDialog.defaultProps.dialog}
+      dialog={dialog ?? false}
       aria-labelledby={dialog ? titleId : undefined}
     >
       {dialog && (
@@ -102,8 +102,3 @@ export default function SlideInDialog({
     </SlideInDialogRoot>
   );
 }
-
-SlideInDialog.defaultProps = {
-  dialog: false,
-  children: undefined,
-};

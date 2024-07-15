@@ -14,6 +14,10 @@ plugins {
 	id("tools.refinery.gradle.xtext-generated")
 }
 
+mavenArtifact {
+	description = "Partial modeling language"
+}
+
 val generatedIdeSources: Configuration by configurations.creating {
 	isCanBeConsumed = true
 	isCanBeResolved = false
@@ -25,7 +29,6 @@ val generatedWebSources: Configuration by configurations.creating {
 }
 
 dependencies {
-	api(platform(libs.xtext.bom))
 	api(libs.ecore)
 	api(libs.xtext.core)
 	api(libs.xtext.xbase)

@@ -5,10 +5,7 @@
  */
 package tools.refinery.store.dse.propagation.impl;
 
-import tools.refinery.store.dse.propagation.BoundPropagator;
-import tools.refinery.store.dse.propagation.PropagationAdapter;
-import tools.refinery.store.dse.propagation.PropagationResult;
-import tools.refinery.store.dse.propagation.PropagationStoreAdapter;
+import tools.refinery.store.dse.propagation.*;
 import tools.refinery.store.model.Model;
 
 class PropagationAdapterImpl implements PropagationAdapter {
@@ -35,6 +32,11 @@ class PropagationAdapterImpl implements PropagationAdapter {
 			lastResult = propagateOne();
 			result = result.andThen(lastResult);
 		} while (lastResult.isChanged());
+		if (lastResult instanceof PropagationRejectedResult rejectedResult &&
+				rejectedResult.fatal() &&
+				storeAdapter.isThrowOnFatalRejection()) {
+			rejectedResult.throwIfRejected();
+		}
 		return result;
 	}
 

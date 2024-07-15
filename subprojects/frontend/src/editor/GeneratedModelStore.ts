@@ -7,7 +7,7 @@
 import { makeAutoObservable } from 'mobx';
 
 import GraphStore from '../graph/GraphStore';
-import type { SemanticsSuccessResult } from '../xtext/xtextServiceResults';
+import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
 
 import type EditorStore from './EditorStore';
 
@@ -48,7 +48,7 @@ export default class GeneratedModelStore {
     }
   }
 
-  setSemantics(semantics: SemanticsSuccessResult): void {
+  setSemantics(semantics: SemanticsModelResult): void {
     if (this.running) {
       const name = `${this.editorStore.simpleNameOrFallback}_solution_${this.randomSeed}`;
       this.graph = new GraphStore(this.editorStore, name);

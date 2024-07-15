@@ -128,11 +128,16 @@ function createNodes(
   const {
     semantics: { nodes },
     scopes,
+    showNonExistent,
   } = graph;
 
   nodes.forEach((node, i) => {
     const data = nodeData[i];
-    if (data === undefined || data.isolated || data.exists === 'FALSE') {
+    if (
+      data === undefined ||
+      data.isolated ||
+      (!showNonExistent && data.exists === 'FALSE')
+    ) {
       return;
     }
     const classList = [
@@ -255,6 +260,7 @@ function createRelationEdges(
 ): void {
   const {
     semantics: { nodes, partialInterpretation },
+    showNonExistent,
   } = graph;
   const { detail } = relation;
 
@@ -297,9 +303,9 @@ function createRelationEdges(
     const toData = nodeData[to];
     if (
       fromData === undefined ||
-      fromData.exists === 'FALSE' ||
       toData === undefined ||
-      toData.exists === 'FALSE'
+      (!showNonExistent &&
+        (fromData.exists === 'FALSE' || toData.exists === 'FALSE'))
     ) {
       return;
     }

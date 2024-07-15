@@ -7,10 +7,13 @@
 rootProject.name = "refinery"
 
 include(
+		"bom",
+		"bom-dependencies",
 		"docs",
 		"frontend",
 		"generator",
 		"generator-cli",
+		"gradle-plugins",
 		"interpreter",
 		"interpreter-localsearch",
 		"interpreter-rete",
@@ -29,6 +32,7 @@ include(
 		"store-reasoning",
 		"store-reasoning-scope",
 		"store-reasoning-smt",
+		"versions",
 )
 
 for (project in rootProject.children) {
@@ -37,4 +41,10 @@ for (project in rootProject.children) {
 	project.projectDir = file("subprojects/$projectName")
 }
 
-includeBuild("z3")
+dependencyResolutionManagement {
+	versionCatalogs {
+		create("pluginLibs") {
+			from(files("gradle/pluginLibs.versions.toml"))
+		}
+	}
+}

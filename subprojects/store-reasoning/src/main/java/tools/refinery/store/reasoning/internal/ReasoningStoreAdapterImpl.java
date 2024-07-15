@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.store.reasoning.internal;
 
 import tools.refinery.store.dse.propagation.PropagationAdapter;
+import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -17,6 +18,7 @@ import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
+import tools.refinery.store.reasoning.seed.PropagatedModel;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
@@ -98,19 +100,18 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 		return factory.create(typedSymbol, model);
 	}
 
-	public Model createInitialModel(ModelSeed modelSeed) {
+	@Override
+	public PropagatedModel tryCreateInitialModel(ModelSeed modelSeed) {
 		var model = store.createEmptyModel();
 		model.getInterpretation(ReasoningAdapterImpl.NODE_COUNT_SYMBOL).put(Tuple.of(), modelSeed.getNodeCount());
 		for (var initializer : initializers) {
 			initializer.initialize(model, modelSeed);
 		}
-		model.tryGetAdapter(PropagationAdapter.class).ifPresent(propagationAdapter -> {
-			if (propagationAdapter.propagate().isRejected()) {
-				throw new IllegalArgumentException("Inconsistent initial mode: propagation failed");
-			}
-		});
+		var propagationResult = model.tryGetAdapter(PropagationAdapter.class)
+				.map(PropagationAdapter::propagate)
+				.orElse(PropagationResult.UNCHANGED);
 		model.getAdapter(ModelQueryAdapter.class).flushChanges();
-		return model;
+		return new PropagatedModel(model, propagationResult);
 	}
 
 	@Override

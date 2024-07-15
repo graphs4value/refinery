@@ -56,6 +56,8 @@ class PredicateScopeTest {
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
 						.reducedValue(CardinalityIntervals.ONE)
 						.put(newIndex, CardinalityIntervals.SET))
+				.seed(ContainmentHierarchyTranslator.CONTAINER_SYMBOL,
+						builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
 						builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(index, builder -> builder
@@ -81,6 +83,8 @@ class PredicateScopeTest {
 		var store = createStore();
 		var modelSeed = ModelSeed.builder(8)
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
+				.seed(ContainmentHierarchyTranslator.CONTAINER_SYMBOL,
+						builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINED_SYMBOL,
 						builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(ContainmentHierarchyTranslator.CONTAINS_SYMBOL,

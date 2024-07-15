@@ -23,6 +23,15 @@ tasks {
 	}
 }
 
+publishing.publications.named<MavenPublication>("mavenJava") {
+	pom.developers {
+		developer {
+			name = "The VIATRA™ Authors"
+			url = "https://eclipse.dev/viatra/"
+		}
+	}
+}
+
 sonarqube.properties {
 	// Code copied from the VIATRA project is maintained by the VIATRA contributors.
 	// Our own modifications are verified by tests in our own subprojects.

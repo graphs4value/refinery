@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -11,14 +11,9 @@ plugins {
 dependencies {
 	implementation(project(":refinery-generator"))
 	implementation(libs.jcommander)
-	implementation(libs.slf4j.api)
+	implementation(libs.slf4j)
 }
 
 application {
 	mainClass.set("tools.refinery.generator.cli.RefineryCli")
-}
-
-tasks.shadowJar {
-	// Silence Xtext warning.
-	append("plugin.properties")
 }

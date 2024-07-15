@@ -3,28 +3,100 @@
 # SPDX-License-Identifier: EPL-2.0
 
 [versions]
-eclipseCollections = "12.0.0.M3"
-jetty = "12.0.10"
+antlr = "3.2" # To retain Xtext compatibility, this mustn't be increased
+apiguardian = "1.1.2"
+asm = "9.7"
+classgraph = "4.8.174"
+eclipse-commands = "3.12.100"
+eclipse-contenttype = "3.9.400"
+eclipse-debug = "3.21.400"
+eclipse-filesystem = "1.10.400"
+eclipse-jobs = "3.15.300"
+eclipse-osgi = "3.20.0"
+eclipse-resources = "3.20.200"
+eclipse-runtime = "3.31.100"
+eclipse-text = "3.14.100"
+eclipse-variables = "3.6.400"
+eclipseCollections = "11.1.0"
+ecore = "2.36.0"
+ecore-change = "2.16.0"
+ecore-codegen = "2.38.0"
+ecore-xmi = "2.37.0"
+emf-codegen = "2.23.0"
+emf-common = "2.30.0"
+equinox-common = "3.19.100"
+equinox-preferences = "3.11.100"
+equinox-registry = "3.12.100"
+errorprone = "2.28.0"
+findbugs = "3.0.2"
+guava = "33.2.1-jre"
+guice = "7.0.0"
+gson = "2.11.0"
+hamcrest = "2.2"
+jakartaInject = "2.0.1"
+jcommander = "1.83"
+jdt-core = "3.38.0"
+jdt-debug = "3.21.400"
+jdt-launching = "3.22.0"
+jetbrainsAnnotations = "24.1.0"
+jetty = "12.0.11"
 jmh = "1.37"
-junit = "5.11.0-M2"
+jna = "5.14.0"
+junit = "5.10.3"
+lsp4j = "0.23.1"
 mockito = "5.12.0"
+mwe = "1.12.0"
 mwe2 = "2.18.0"
+opentest4j = "1.3.0"
+ortools = "9.10.4067"
+protobuf = "4.27.2"
+refinery-z3 = "4.12.6"
 slf4j = "2.0.13"
 xtext = "2.35.0"
+xtext-generator-antlr = "2.1.1"
 
 [libraries]
-eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
-eclipseCollections-api = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
-ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version = "2.36.0" }
-ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version = "2.37.0" }
-ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version = "2.38.0" }
-gradlePlugin-frontend = { group = "org.siouan", name = "frontend-jdk17", version = "8.1.0" }
-gradlePlugin-shadow = { group = "io.github.goooler.shadow", name = "shadow-gradle-plugin", version = "8.1.7" }
-gradlePlugin-sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "5.0.0.4638" }
-gson = { group = "com.google.code.gson", name = "gson", version = "2.11.0" }
-hamcrest = { group = "org.hamcrest", name = "hamcrest", version = "2.2" }
-jcommander = { group = "org.jcommander", name = "jcommander", version = "1.83" }
-jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version = "24.1.0" }
+antlr = { group = "org.antlr", name = "antlr-runtime", version.ref = "antlr" }
+apiguardian = { group = "org.apiguardian", name = "apiguardian-api", version.ref = "apiguardian" }
+asm = { group = "org.ow2.asm", name = "asm", version.ref = "asm" }
+asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
+asm-tree = { group = "org.ow2.asm", name = "asm-tree", version.ref = "asm" }
+classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref = "classgraph" }
+eclipse-commands = { group = "org.eclipse.platform", name = "org.eclipse.core.commands", version.ref = "eclipse-commands" }
+eclipse-contenttype = { group = "org.eclipse.platform", name = "org.eclipse.core.contenttype", version.ref = "eclipse-contenttype" }
+eclipse-debug = { group = "org.eclipse.platform", name = "org.eclipse.debug.core", version.ref = "eclipse-debug" }
+eclipse-expressions = { group = "org.eclipse.platform", name = "org.eclipse.core.expressions", version.ref = "eclipse-contenttype" }
+eclipse-filesystem = { group = "org.eclipse.platform", name = "org.eclipse.core.filesystem", version.ref = "eclipse-filesystem" }
+eclipse-jobs = { group = "org.eclipse.platform", name = "org.eclipse.core.jobs", version.ref = "eclipse-jobs" }
+eclipse-osgi = { group = "org.eclipse.platform", name = "org.eclipse.osgi", version.ref = "eclipse-osgi" }
+eclipse-resources = { group = "org.eclipse.platform", name = "org.eclipse.core.resources", version.ref = "eclipse-resources" }
+eclipse-runtime = { group = "org.eclipse.platform", name = "org.eclipse.core.runtime", version.ref = "eclipse-runtime" }
+eclipse-text = { group = "org.eclipse.platform", name = "org.eclipse.text", version.ref = "eclipse-text" }
+eclipse-variables = { group = "org.eclipse.platform", name = "org.eclipse.core.variables", version.ref = "eclipse-variables" }
+eclipseCollections = { group = "org.eclipse.collections", name = "eclipse-collections-api", version.ref = "eclipseCollections" }
+eclipseCollections-impl = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
+ecore = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore", version.ref = "ecore" }
+ecore-change = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.change", version.ref = "ecore-change" }
+ecore-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen.ecore", version.ref = "ecore-codegen" }
+ecore-xmi = { group = "org.eclipse.emf", name = "org.eclipse.emf.ecore.xmi", version.ref = "ecore-xmi" }
+emf-codegen = { group = "org.eclipse.emf", name = "org.eclipse.emf.codegen", version.ref = "emf-codegen" }
+emf-common = { group = "org.eclipse.emf", name = "org.eclipse.emf.common", version.ref = "emf-common" }
+equinox-common = { group = "org.eclipse.platform", name = "org.eclipse.equinox.common", version.ref = "equinox-common" }
+equinox-preferences = { group = "org.eclipse.platform", name = "org.eclipse.equinox.preferences", version.ref = "equinox-preferences" }
+equinox-registry = { group = "org.eclipse.platform", name = "org.eclipse.equinox.registry", version.ref = "equinox-registry" }
+errorprone-annotations = { group = "com.google.errorprone", name = "error_prone_annotations", version.ref = "errorprone" }
+findbugs-jsr305 = { group = "com.google.code.findbugs", name = "jsr305", version.ref = "findbugs" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+guice  = { group = "com.google.inject", name = "guice", version.ref = "guice" }
+hamcrest = { group = "org.hamcrest", name = "hamcrest", version.ref = "hamcrest" }
+jcommander = { group = "org.jcommander", name = "jcommander", version.ref = "jcommander" }
+jdt-core = { group = "org.eclipse.jdt", name = "org.eclipse.jdt.core", version.ref = "jdt-core" }
+jdt-debug = { group = "org.eclipse.jdt", name = "org.eclipse.jdt.debug", version.ref = "jdt-debug" }
+jdt-ecj = { group = "org.eclipse.jdt", name = "ecj", version.ref = "jdt-core" }
+jdt-launching = { group = "org.eclipse.jdt", name = "org.eclipse.jdt.launching", version.ref = "jdt-launching" }
+jakartaInject = { group = "jakarta.inject", name = "jakarta.inject-api", version.ref = "jakartaInject" }
+jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotations" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty.ee10", name = "jetty-ee10-servlet", version.ref = "jetty" }
 jetty-websocket-api = { group = "org.eclipse.jetty.websocket", name = "jetty-websocket-jetty-api", version.ref = "jetty" }
@@ -32,28 +104,35 @@ jetty-websocket-client = { group = "org.eclipse.jetty.websocket", name = "jetty-
 jetty-websocket-server = { group = "org.eclipse.jetty.ee10.websocket", name = "jetty-ee10-websocket-jetty-server", version.ref = "jetty" }
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
-junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
-junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
-junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
+junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine" }
+junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params" }
+lsp4j = { group = "org.eclipse.lsp4j", name = "org.eclipse.lsp4j", version.ref = "lsp4j" }
+lsp4j-jsonrpc = { group = "org.eclipse.lsp4j", name = "org.eclipse.lsp4j.jsonrpc", version.ref = "lsp4j" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-junit = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
-mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version = "1.12.0" }
+mwe-core = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.core", version.ref = "mwe" }
+mwe-utils = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe.utils", version.ref = "mwe" }
+mwe2-language = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.language", version.ref = "mwe2" }
 mwe2-launch = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.launch", version.ref = "mwe2" }
 mwe2-lib = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.lib", version.ref = "mwe2" }
-ortools = { group = "com.google.ortools", name = "ortools-java", version = "9.10.4067" }
-refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version = "4.12.6" }
-slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+mwe2-runtime = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.runtime", version.ref = "mwe2" }
+opentest4j = { group = "org.opentestj4", name = "opentest4j", version.ref = "opentest4j" }
+ortools = { group = "com.google.ortools", name = "ortools-java", version.ref = "ortools" }
+protobuf = { group = "com.google.protobuf", name = "protobuf-java", version.ref = "protobuf" }
+refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version.ref = "refinery-z3" }
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-log4j = { group = "org.slf4j", name = "log4j-over-slf4j", version.ref = "slf4j" }
-xtext-bom = { group = "org.eclipse.xtext", name = "xtext-dev-bom", version.ref = "xtext" }
 xtext-core = { group = "org.eclipse.xtext", name = "org.eclipse.xtext", version.ref = "xtext" }
-xtext-generator-antlr = { group = "org.eclipse.xtext", name = "xtext-antlr-generator", version = "2.1.1" }
 xtext-generator = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xtext.generator", version.ref = "xtext" }
+xtext-generator-antlr = { group = "org.eclipse.xtext", name = "xtext-antlr-generator", version.ref = "xtext-generator-antlr" }
 xtext-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.ide", version.ref = "xtext" }
 xtext-testing = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.testing", version.ref = "xtext" }
 xtext-web = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.web", version.ref = "xtext" }
 xtext-xbase = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase", version.ref = "xtext" }
 xtext-xbase-ide = { group = "org.eclipse.xtext", name = "org.eclipse.xtext.xbase.ide", version.ref = "xtext" }
-
-[plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }

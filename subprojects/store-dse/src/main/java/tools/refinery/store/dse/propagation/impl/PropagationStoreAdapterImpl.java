@@ -13,13 +13,17 @@ import tools.refinery.store.model.ModelStore;
 
 import java.util.List;
 
+// This should not be a record, because we don't want auto-generated {@code equals} and {@code hashCode} methods.
+@SuppressWarnings("ClassCanBeRecord")
 class PropagationStoreAdapterImpl implements PropagationStoreAdapter {
 	private final ModelStore store;
 	private final List<Propagator> propagators;
+	private final boolean throwOnFatalRejection;
 
-	PropagationStoreAdapterImpl(ModelStore store, List<Propagator> propagators) {
+	PropagationStoreAdapterImpl(ModelStore store, List<Propagator> propagators, boolean throwOnFatalRejection) {
 		this.store = store;
 		this.propagators = propagators;
+		this.throwOnFatalRejection = throwOnFatalRejection;
 	}
 
 	@Override
@@ -34,5 +38,9 @@ class PropagationStoreAdapterImpl implements PropagationStoreAdapter {
 
 	List<Propagator> getPropagators() {
 		return propagators;
+	}
+
+	boolean isThrowOnFatalRejection() {
+		return throwOnFatalRejection;
 	}
 }

@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: EPL-2.0
+
+[versions]
+frontend = "8.1.0"
+pluginPublish = "1.2.1"
+shadow = "8.1.8"
+sonarqube = "5.1.0.4882"
+versions = "0.51.0"
+
+[libraries]
+frontend = { group = "org.siouan", name = "frontend-jdk21", version.ref = "frontend" }
+pluginPublish = { group = "com.gradle.publish", name = "plugin-publish-plugin", version.ref = "pluginPublish" }
+shadow = { group = "io.github.goooler.shadow", name = "shadow-gradle-plugin", version.ref = "shadow" }
+sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version.ref = "sonarqube" }
+
+[plugins]
+versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }

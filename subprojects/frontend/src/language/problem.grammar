@@ -52,10 +52,8 @@ statement {
     kw<"extern"> ckw<"aggregator"> AggregatorName "."
   } |
   PredicateDefinition {
-    (
-      (kw<"error"> | ckw<"contained"> | kw<"containment">)? kw<"pred"> |
-      kw<"error">
-    )
+    ckw<"shadow">?
+    (kw<"error">? kw<"pred"> | kw<"error">)
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
@@ -97,9 +95,8 @@ FeatureDeclaration {
 }
 
 Parameter {
-  kw<"candidate">? (kw<"may"> | kw<"must">)?
   RelationName?
-  (AndBinding | StarBinding)?
+  (FocusBinding | MultiBinding)?
   VariableName
 }
 
@@ -133,7 +130,7 @@ UnaryExpr {
   !prefix
   (
     "+" | "-" | "!" | kw<"count"> |
-    kw<"candidate"> | kw<"may"> | kw<"must">
+    kw<"candidate"> kw<"partial"> | kw<"may"> | kw<"must">
   )
   Expr
 }
@@ -259,9 +256,9 @@ sep1<separator, content> { content (separator content)* }
 
   StarArgument { "*" }
 
-  StarBinding { "*" }
+  FocusBinding { "+" }
 
-  AndBinding { "&" }
+  MultiBinding { "?" }
 
-  "{" "}" "(" ")" "[" "]" "." ".." "," ":" "->" "<->" "+" "-" "**" "=" "+="
+  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
 }
