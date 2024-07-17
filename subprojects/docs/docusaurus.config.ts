@@ -100,7 +100,7 @@ export default {
       respectPrefersColorScheme: true,
     },
     prism: {
-      additionalLanguages: ['bash', 'groovy', 'java', 'kotlin'],
+      additionalLanguages: ['bash', 'groovy', 'ini', 'java', 'kotlin'],
       theme: themes.oneLight,
       darkTheme: themes.oneDark,
     },

@@ -183,9 +183,10 @@ package org.example;
 
 import tools.refinery.generator.standalone.StandaloneRefinery;
 
+import java.io.IOException;
+
 public class ExampleMain {
-    public static void main(String args[]) {
-        // highlight-next-line
+    public static void main(String[] args) throws IOException {
         var problem = StandaloneRefinery.getProblemLoader().loadString("""
             class Filesystem {
                 contains Directory[1] root
@@ -199,9 +200,15 @@ public class ExampleMain {
 
             scope Filesystem = 1, File = 20.
             """);
-        // highlight-next-line
-        var generator = StandloneRefinery.getGeneratorFactory().createGenerator(problem);
+        var generator = StandaloneRefinery.getGeneratorFactory().createGenerator(problem);
         generator.generate();
+        var trace = generator.getProblemTrace();
+        var childrenRelation = trace.getPartialRelation("Directory::children");
+        var childrenInterpretation = generator.getPartialInterpretation(childrenRelation);
+        var cursor = childrenInterpretation.getAll();
+        while (cursor.move()) {
+            System.out.printf("%s: %s%n", cursor.getKey(), cursor.getValue());
+        }
     }
 }
 ```
@@ -213,7 +220,7 @@ The recommended version of the shadow plugin is set in our [version catalog](#de
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="build.gradle.kts"
     plugins {
-        application()
+        application
         alias(refinery.plugins.shadow)
     }
 
@@ -300,6 +307,8 @@ import tools.refinery.generator.ModelGeneratorFactory;
 import tools.refinery.generator.ProblemLoader;
 import tools.refinery.language.tests.ProblemInjectorProvider;
 
+import java.io.IOException;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -311,15 +320,13 @@ class ExampleTest {
     // highlight-start
     @Inject
     private ProblemLoader problemLoader;
-    // highlight-end
 
-    // highlight-start
     @Inject
     private ModelGeneratorFactory generatorFactory;
     // highlight-end
 
     @Test
-    void testModelGeneration() {
+    void testModelGeneration() throws IOException {
         var problem = problemLoader.loadString("""
             class Filesystem {
                 contains Directory[1] root
