@@ -119,6 +119,7 @@ export default {
         {
           label: 'Develop',
           to: '/develop/java',
+          activeBasePath: '/develop',
         },
         {
           label: 'GitHub',
