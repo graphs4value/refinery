@@ -31,14 +31,14 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs groupId="version">
-  <TabItem value="release" label="Release">
+  <TabItem value="release" label="Release" default>
     <Admonition type="warning">
-      Currently, there are no releases of Refinery available on [Maven Central](https://central.sonatype.com/) and the [Gradle Plugins Portal](https://plugins.gradle.org/). Check back later to see whether a stable version has been released.
+      Our latest release is currently waiting for approval on the [Gradle Plugins Portal](https://plugins.gradle.org/). Check back later to see whether the release has been approved.
 
       In the meantime, we recommend relying on our **snapshot** artifacts instead.
     </Admonition>
   </TabItem>
-  <TabItem value="snapshot" label="Snapshot" default>
+  <TabItem value="snapshot" label="Snapshot">
     We always publish a [SNAPSHOT](https://maven.apache.org/guides/getting-started/index.html#what-is-a-snapshot-version) version of Refinery based on the latest commit in our [Git repository](https://github.com/graphs4value/refinery). This is the development version of our code and may change without warning at any time.
 
     To find out the configuration required to use our snapshot artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
@@ -388,14 +388,28 @@ Although we don't provide a Maven plugin for simplified configuration, you can s
 To find out how to add the BOM to your build, select below whether you want to use a **released** version or a **snapshot** version of refinery or whether you want to build Refinery **locally** yourself.
 
 <Tabs groupId="version">
-  <TabItem value="release" label="Release">
-    <Admonition type="warning">
-      Currently, there are no releases of Refinery available on [Maven Central](https://central.sonatype.com/). Check back later to see whether a stable version has been released.
+  <TabItem value="release" label="Release" default>
+    You should add the following configuration to your `pom.xml` file. If you use multi-module projects, we recommend that you add this to your parent POM.
 
-      In the meantime, we recommend relying on our **snapshot** artifacts instead.
-    </Admonition>
+    ```xml title="pom.xml"
+    <project>
+        ...
+        <dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>tools.refinery</groupId>
+                    <artifactId>refinery-bom</artifactId>
+                    <version>@@@tools.refinery.release@@@</version>
+                    <type>pom</type>
+                    <scope>import</scope>
+                </dependency>
+            </dependencies>
+        </dependencyManagement>
+        ...
+    </project>
+    ```
   </TabItem>
-  <TabItem value="snapshot" label="Snapshot" default>
+  <TabItem value="snapshot" label="Snapshot">
     We always publish a [SNAPSHOT](https://maven.apache.org/guides/getting-started/index.html#what-is-a-snapshot-version) version of Refinery based on the latest commit in our [Git repository](https://github.com/graphs4value/refinery). This is the development version of our code and may change without warning at any time.
 
     You should add the following configuration to your `pom.xml` file. If you use multi-module projects, we recommend that you add this to your parent POM.

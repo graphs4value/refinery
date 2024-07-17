@@ -23,22 +23,23 @@ Installing Refinery as a Docker container can support more advanced use cases, s
 To generate larger models with a longer timeout, you can use our [Docker container](https://github.com/graphs4value/refinery/pkgs/container/refinery) on either `amd64` or `arm64` machines:
 
 ```shell
-docker run --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery
+docker run --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery:@@@tools.refinery.release@@@
 ```
 
 Once Docker pulls and starts the container, you can navigate to http://localhost:8888 to open the model generation interface and start editing.
 
 Alternatively, you can follow the [instructions to set up a local development environment](/develop/contributing) and compile and run Refinery from source.
 
-## Updating
+## Pre-release versions
 
-To take advantage of the latest updates, you can simply re-pull our Docker container from the GitHub Container Registry:
+You can take advantage of the most recent code submitted to our repository by using the `latest` tag instead.
+
 
 ```shell
-docker pull ghcr.io/graphs4value/refinery
+docker run --pull always --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery:latest
 ```
 
-Restart the container to make sure that you're running the last pulled version.
+Note that pre-release versions may be unstable.
 
 ## Environmental variables
 
