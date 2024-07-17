@@ -32,11 +32,59 @@ import TabItem from '@theme/TabItem';
 
 <Tabs groupId="version">
   <TabItem value="release" label="Release" default>
-    <Admonition type="warning">
-      Our latest release is currently waiting for approval on the [Gradle Plugins Portal](https://plugins.gradle.org/). Check back later to see whether the release has been approved.
-
-      In the meantime, we recommend relying on our **snapshot** artifacts instead.
+    <Admonition type="info">
+      Our latest release is currently waiting for approval on the [Gradle Plugins Portal](https://plugins.gradle.org/).
+      A simpler way to apply our plugin will be available soon once the plugin is approved.
     </Admonition>
+
+    To find out the configuration required to use our artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
+
+    <Tabs groupId="gradleLanguage">
+      <TabItem value="kotlin" label="Kotlin">
+        ```kotlin title="settings.gradle.kts"
+        pluginManagement {
+            repositories {
+                mavenCentral()
+                gradlePluginPortal()
+            }
+
+            resolutionStrategy {
+                eachPlugin {
+                    if (requested.id.namespace == "tools.refinery") {
+                        useModule("tools.refinery:refinery-gradle-plugins:${requested.version}")
+                    }
+                }
+            }
+        }
+
+        plugins {
+            id("tools.refinery.settings") version "@@@tools.refinery.release@@@"
+        }
+        ```
+      </TabItem>
+      <TabItem value="groovy" label="Groovy">
+        ```groovy title="settings.gradle"
+        pluginManagement {
+            repositories {
+                mavenCentral()
+                gradlePluginPortal()
+            }
+
+            resolutionStrategy {
+                eachPlugin {
+                    if (requested.id.namespace == 'tools.refinery') {
+                        useModule("tools.refinery:refinery-gradle-plugins:${requested.version}")
+                    }
+                }
+            }
+        }
+
+        plugins {
+            id 'tools.refinery.settings' version '@@@version@@@'
+        }
+        ```
+      </TabItem>
+    </Tabs>
   </TabItem>
   <TabItem value="snapshot" label="Snapshot">
     We always publish a [SNAPSHOT](https://maven.apache.org/guides/getting-started/index.html#what-is-a-snapshot-version) version of Refinery based on the latest commit in our [Git repository](https://github.com/graphs4value/refinery). This is the development version of our code and may change without warning at any time.
