@@ -107,4 +107,18 @@ class AssertionValidationTest {
 		assertThat(issues, not(hasItem(hasProperty("issueCode",
 				is(ProblemValidator.UNSUPPORTED_ASSERTION_ISSUE)))));
 	}
+
+	@Test
+	void errorPredicateAssertionTest() {
+		var problem = parseHelper.parse("""
+				class Foo.
+
+				error bar(x) <-> Foo(x).
+
+				bar(f1).
+				""");
+		var issues = problem.validate();
+		assertThat(issues, hasItem(hasProperty("issueCode",
+				is(ProblemValidator.UNSUPPORTED_ASSERTION_ISSUE))));
+	}
 }

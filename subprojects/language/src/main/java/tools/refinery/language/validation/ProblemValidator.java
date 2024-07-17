@@ -504,6 +504,11 @@ public class ProblemValidator extends AbstractProblemValidator {
 			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
 					SHADOW_RELATION_ISSUE);
 		}
+		if (ProblemUtil.isError(relation)) {
+			var message = "Assertions for error predicates are not supported.";
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+		}
 		int argumentCount = assertion.getArguments().size();
 		checkArity(assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, argumentCount);
 	}
