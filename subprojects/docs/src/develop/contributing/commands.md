@@ -36,20 +36,7 @@ This will also be run by GitHub Actions for each commit or pull requests.
 Publishes the Refinery Java artifacts to the [Maven local repository](https://www.baeldung.com/maven-local-repository).
 
 Build tools, such as Gradle, will be able to consume such artifacts, which enables you to use the latest version of Refinery -- possibly including your own modification -- in other Java projects.
-
-For example, in Gradle, you may set
-
-```kotlin title="build.gradle.kts"
-repositories {
-  mavenLocal()
-}
-
-dependencies {
-  implementation("tools.refinery:refinery-generator:0.0.0-SNAPSHOT")
-}
-```
-
-to add a dependency on Refinery to your Java project.
+For more information, see our [programming guide](../../java).
 
 ### `serve`
 

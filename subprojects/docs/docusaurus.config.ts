@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: MIT AND EPL-2.0
  */
 
+import path from 'node:path';
+
 import type { MDXOptions } from '@docusaurus/mdx-loader';
+import type { Options as RedirectOptions } from '@docusaurus/plugin-client-redirects';
 import type { Options as DocsOptions } from '@docusaurus/plugin-content-docs';
 import type { Options as PagesOptions } from '@docusaurus/plugin-content-pages';
 import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
@@ -17,9 +20,17 @@ import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
 
 import remarkPosix2Windows from './src/plugins/remarkPosix2Windows';
+import remarkReplaceVariables from './src/plugins/remarkReplaceVariables';
 
 const markdownOptions: Partial<MDXOptions> = {
-  remarkPlugins: [[smartypants, { dashes: 'oldschool' }], remarkPosix2Windows],
+  remarkPlugins: [
+    [
+      remarkReplaceVariables,
+      { propertiesPath: path.join(__dirname, '../../gradle.properties') },
+    ],
+    [smartypants, { dashes: 'oldschool' }],
+    remarkPosix2Windows,
+  ],
 };
 
 const docsOptions = {
@@ -60,6 +71,17 @@ export default {
       '@docusaurus/plugin-content-pages',
       markdownOptions satisfies PagesOptions,
     ],
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            to: '/develop/java/',
+            from: '/develop/',
+          },
+        ],
+      } satisfies RedirectOptions,
+    ],
     '@docusaurus/plugin-sitemap',
     './src/plugins/loadersPlugin.ts',
     './src/plugins/swcMinifyPlugin.ts',
@@ -78,7 +100,7 @@ export default {
       respectPrefersColorScheme: true,
     },
     prism: {
-      additionalLanguages: ['bash', 'java'],
+      additionalLanguages: ['bash', 'groovy', 'java', 'kotlin'],
       theme: themes.oneLight,
       darkTheme: themes.oneDark,
     },
@@ -96,7 +118,7 @@ export default {
         },
         {
           label: 'Develop',
-          to: '/develop',
+          to: '/develop/java',
         },
         {
           label: 'GitHub',
@@ -139,7 +161,7 @@ export default {
           items: [
             {
               label: 'Programming guide',
-              to: '/develop',
+              to: '/develop/java',
             },
             {
               label: 'Contributing',

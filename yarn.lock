@@ -2045,6 +2045,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@docusaurus/plugin-client-redirects@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "@docusaurus/plugin-client-redirects@npm:3.4.0"
+  dependencies:
+    "@docusaurus/core": "npm:3.4.0"
+    "@docusaurus/logger": "npm:3.4.0"
+    "@docusaurus/utils": "npm:3.4.0"
+    "@docusaurus/utils-common": "npm:3.4.0"
+    "@docusaurus/utils-validation": "npm:3.4.0"
+    eta: "npm:^2.2.0"
+    fs-extra: "npm:^11.1.1"
+    lodash: "npm:^4.17.21"
+    tslib: "npm:^2.6.0"
+  peerDependencies:
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: 10c0/18a7ab5fd9ddc375af04fe5c6b6680e20d34539dda6a74e1959f3a2887ef3fdb6520156a3418771a526d27e65d904ab1f492e7d655248b7a95384b4e4d775288
+  languageName: node
+  linkType: hard
+
 "@docusaurus/plugin-content-blog@npm:3.4.0":
   version: 3.4.0
   resolution: "@docusaurus/plugin-content-blog@npm:3.4.0"
@@ -3452,6 +3472,7 @@ __metadata:
     "@docusaurus/core": "npm:^3.4.0"
     "@docusaurus/mdx-loader": "npm:^3.4.0"
     "@docusaurus/module-type-aliases": "npm:^3.4.0"
+    "@docusaurus/plugin-client-redirects": "npm:^3.4.0"
     "@docusaurus/plugin-content-docs": "npm:^3.4.0"
     "@docusaurus/plugin-content-pages": "npm:^3.4.0"
     "@docusaurus/plugin-sitemap": "npm:^3.4.0"
@@ -3472,6 +3493,7 @@ __metadata:
     "@types/react-dom": "npm:^18.3.0"
     "@types/unist": "npm:^3.0.2"
     clsx: "npm:^2.1.1"
+    java-properties: "npm:^1.0.2"
     mdast-util-mdx: "npm:^3.0.0"
     prism-react-renderer: "npm:^2.3.1"
     react: "npm:^18.3.1"
@@ -11037,6 +11059,13 @@ __metadata:
   bin:
     jake: bin/cli.js
   checksum: 10c0/89326d01a8bc110d02d973729a66394c79a34b34461116f5c530a2a2dbc30265683fe6737928f75df9178e9d369ff1442f5753fb983d525e740eefdadc56a103
+  languageName: node
+  linkType: hard
+
+"java-properties@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "java-properties@npm:1.0.2"
+  checksum: 10c0/be0f58c83b5a852f313de2ea57f7b8b7d46dc062b2ffe487d58838e7034d4660f4d22f2a96aae4daa622af6d734726c0d08b01396e59666ededbcfdc25a694d6
   languageName: node
   linkType: hard
 

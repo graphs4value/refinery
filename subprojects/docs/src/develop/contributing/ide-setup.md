@@ -12,7 +12,7 @@ title: IDE setup
 We prefer [IntelliJ IDEA](https://www.jetbrains.com/idea/) as a Java development environment.
 No special preparations should be necessary for importing the project as a Gradle project into IDEA:
 
-1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery about obtaining the required JDK version. You'll also need a version of IntelliJ IDEA that supports **Java 21** (version **2023.3** or later).
+1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery on obtaining the required JDK version. You'll also need a version of IntelliJ IDEA that supports **Java 21** (version **2023.3** or later).
 
 2. Clone the project git repository and open it in IntelliJ IDEA. Make sure to _open_ the project instead of creating a _new_ one in the same directory.
 
@@ -20,7 +20,7 @@ No special preparations should be necessary for importing the project as a Gradl
     * In _Project Structure > Project settings > Project > SDK_, a Java 21 compatible JDK should be selected.
     * In _Project Structure > Project settings > Project > Language level_, either _SDK default_ or _21_ should be selected.
     * Make sure that each module in _Project Structure > Project settings > Module_ uses the _Project default_ language level in _Sources > Language level_ and the _Project SDK_ in _Dependencies > Module SDK._
-    * In _Settings > Gradle settings > Gralde Projects > Gradle_, the _Distribution_ should be set to _Wrapper_ and the _Gradle JVM_ should be set to _Project SDK._
+    * In _Settings > Gradle settings > Gradle Projects > Gradle_, the _Distribution_ should be set to _Wrapper_ and the _Gradle JVM_ should be set to _Project SDK._
 
 4. We recommend installing the latest _SonarLint_ plugin in _Settings > Plugins_ to get real-time code quality analysis in your IDE.
 
@@ -35,7 +35,7 @@ You'll also need [VS Code](#vs-code) to edit the TypeScript code in Refinery.
 
 ## Eclipse
 
-1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery about obtaining the required JDK version.
+1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery on obtaining the required JDK version.
 
 2. Download and extract the [Eclipse IDE for Java and DSL Developers 2023-12](https://www.eclipse.org/downloads/packages/release/2023-12/r/eclipse-ide-java-and-dsl-developers) package.
 
@@ -63,7 +63,7 @@ You'll also need [VS Code](#vs-code) to edit the TypeScript code in Refinery.
     ```
     in the cloned repository.
     * This should complete without any compilation errors.
-    * To troubleshoot any error, see the [instructions about compiling Refinery](/develop/contributing#compiling).
+    * To troubleshoot any error, see the [instructions for compiling Refinery](/develop/contributing#compiling).
 
 8. Select _File > Import... > Gradle > Existing Gradle Project_ and import the cloned repository in Eclipse.
     * Make sure to select the root of the repository (containing this file) as the _Project root directory_ and that the _Gradle distribution_ is _Gradle wrapper_.
@@ -73,7 +73,7 @@ You'll also need [VS Code](#vs-code) to edit the TypeScript code in Refinery.
 
 We recommend [VSCodium](https://github.com/VSCodium/vscodium) or [Visual Studio Code](https://code.visualstudio.com/) to work with the parts of Refinery that are written is TypeScript.
 
-1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery about obtaining the required JDK version. You'll also need a version of IntelliJ IDEA that supports **Java 21** (version **2023.3** or later).
+1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery on obtaining the required JDK version.
 
 2. Install the following VS Code extensions:
     * _EditorConfig for VS Code_ [[Open VSX](https://open-vsx.org/extension/EditorConfig/EditorConfig)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)]

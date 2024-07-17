@@ -5,7 +5,6 @@
  */
 package tools.refinery.generator;
 
-
 import com.google.inject.Inject;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
