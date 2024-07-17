@@ -15,7 +15,7 @@ import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
 import type { UserThemeConfig } from '@docusaurus/theme-common';
 import type { UserThemeConfig as AlgoliaConfig } from '@docusaurus/theme-search-algolia';
 import type { Config } from '@docusaurus/types';
-import { Config as SwcConfig } from '@swc/core';
+import type { Config as SwcConfig } from '@swc/core';
 import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
 

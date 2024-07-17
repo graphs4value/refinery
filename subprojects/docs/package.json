@@ -51,16 +51,16 @@
     "prism-react-renderer": "^2.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remark-smartypants": "^3.0.1",
+    "remark-smartypants": "^3.0.2",
     "responsive-loader": "^3.1.2",
-    "search-insights": "^2.14.0",
+    "search-insights": "^2.15.0",
     "sharp": "^0.33.4",
     "swc-loader": "^0.2.6",
     "terser-webpack-plugin": "^5.3.10",
     "typescript": "5.5.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
-    "webpack": "^5.92.1"
+    "webpack": "^5.93.0"
   },
   "devDependencies": {
     "@docusaurus/mdx-loader": "^3.4.0",
@@ -68,7 +68,7 @@
     "@docusaurus/types": "^3.4.0",
     "@types/babel__core": "^7.20.5",
     "@types/mdast": "^4.0.4",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/unist": "^3.0.2"
