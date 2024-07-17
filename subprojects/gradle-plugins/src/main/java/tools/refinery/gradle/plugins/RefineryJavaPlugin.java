@@ -184,7 +184,7 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 		if (Boolean.TRUE.equals(extension.getUseSlf4JLog4J().get())) {
 			excludeLog4J(project);
 		}
-		if (!extension.getTestDependencies().get().isAddJUnit5()) {
+		if (extension.getTestDependencies().get().isAddJUnit5()) {
 			configureJunitPlatform(project);
 		}
 	}
