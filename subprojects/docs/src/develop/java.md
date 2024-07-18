@@ -22,7 +22,7 @@ Below, you can find instructions on using [Gradle](#gradle) or [Apache Maven](#m
 ## Working with Gradle {#gradle}
 
 We recommend [Gradle](https://gradle.org/) as a build system for creating Java programs that use Refinery as a library.
-We created a [Gradle plugin](pathname://javadoc/refinery-gradle-plugins/) to simplify project configuration.
+We created a [Gradle plugin](pathname://../javadoc/refinery-gradle-plugins/) to simplify project configuration.
 
 To find out how to add the plugin to your build, select below whether you want to use a **released** version or a **snapshot** version of refinery or whether you want to build Refinery **locally** yourself.
 
@@ -43,11 +43,6 @@ import TabItem from '@theme/TabItem';
       <TabItem value="kotlin" label="Kotlin">
         ```kotlin title="settings.gradle.kts"
         pluginManagement {
-            repositories {
-                mavenCentral()
-                gradlePluginPortal()
-            }
-
             resolutionStrategy {
                 eachPlugin {
                     if (requested.id.namespace == "tools.refinery") {
@@ -65,11 +60,6 @@ import TabItem from '@theme/TabItem';
       <TabItem value="groovy" label="Groovy">
         ```groovy title="settings.gradle"
         pluginManagement {
-            repositories {
-                mavenCentral()
-                gradlePluginPortal()
-            }
-
             resolutionStrategy {
                 eachPlugin {
                     if (requested.id.namespace == 'tools.refinery') {
@@ -80,7 +70,7 @@ import TabItem from '@theme/TabItem';
         }
 
         plugins {
-            id 'tools.refinery.settings' version '@@@version@@@'
+            id 'tools.refinery.settings' version '@@@tools.refinery.release@@@'
         }
         ```
       </TabItem>
@@ -179,7 +169,7 @@ See the [multi-module projects](#multi-module-projects) section of this tutorial
 ### Declaring dependencies
 
 The Refinery Gradle plugins adds a [version catalog](https://docs.gradle.org/current/userguide/platforms.html#sec:sharing-catalogs) named `refinery` that you can use to quickly access dependencies.
-For example, to add a dependency to the [`tools.refinery:refinery-generator`](pathname://javadoc/refinery-generator/) library, you add the following to your `build.gradle.kts` or `build.gradle` file:
+For example, to add a dependency to the [`tools.refinery:refinery-generator`](pathname://../javadoc/refinery-generator/) library, you add the following to your `build.gradle.kts` or `build.gradle` file:
 
 <Tabs groupId="gradleLanguage">
   <TabItem value="kotlin" label="Kotlin">
@@ -224,7 +214,7 @@ For example, you may add [GSON](https://google.github.io/gson/) for JSON parsing
 
 You can use the built-in [`application`](https://docs.gradle.org/current/userguide/application_plugin.html) to build stand-alone Java applications.
 
-When developing you main application code in the `src/main/java` directory of you project, you can use the [`StandaloneRefinery`](pathname://javadoc/refinery-generator/tools/refinery/generator/standalone/StandaloneRefinery.html) class from [`tools.refinery:refinery-generator`](pathname://javadoc/refinery-generator/) to access Refinery generator components. See the tutorial on Xtext's [dependency injection](https://eclipse.dev/Xtext/documentation/302_configuration.html#dependency-injection) for more advanced use-cases.
+When developing you main application code in the `src/main/java` directory of you project, you can use the [`StandaloneRefinery`](pathname://../javadoc/refinery-generator/tools/refinery/generator/standalone/StandaloneRefinery.html) class from [`tools.refinery:refinery-generator`](pathname://../javadoc/refinery-generator/) to access Refinery generator components. See the tutorial on Xtext's [dependency injection](https://eclipse.dev/Xtext/documentation/302_configuration.html#dependency-injection) for more advanced use-cases.
 
 ```java
 package org.example;
@@ -316,7 +306,7 @@ Our Gradle plugin automatically sets up [JUnit 5](https://junit.org/junit5/) for
 You should put your test files into the `src/test/java` directory in your projects.
 You may run test with the commands `./gradlew test` or `./gradlew build`.
 
-To ensure that your tests are properly isolated, in contrast with you main application code, you should *not* rely on the [`StandaloneRefinery`](pathname://javadoc/refinery-generator/tools/refinery/generator/standalone/StandaloneRefinery.html) class from [`tools.refinery:refinery-generator`](pathname://javadoc/refinery-generator/) to access Refinery generator components.
+To ensure that your tests are properly isolated, in contrast with you main application code, you should *not* rely on the [`StandaloneRefinery`](pathname://../javadoc/refinery-generator/tools/refinery/generator/standalone/StandaloneRefinery.html) class from [`tools.refinery:refinery-generator`](pathname://../javadoc/refinery-generator/) to access Refinery generator components.
 Instead, you should use Xtext's [dependency injection](https://eclipse.dev/Xtext/documentation/302_configuration.html#dependency-injection) and [unit testing](https://eclipse.dev/Xtext/documentation/103_domainmodelnextsteps.html#tutorial-unit-tests) support to instantiate the components. You'll need to add a dependency to Refinery's Xtext testing support library to your project.
 
 <Tabs groupId="gradleLanguage">
