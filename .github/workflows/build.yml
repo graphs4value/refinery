@@ -125,7 +125,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@a46482ca367aef4454a87620aa37c2be4b2f8106
+        uses: fsfe/reuse-action@3ae3c6bdf1257ab19397fab11fd3312144692083
         with:
           args: --include-meson-subprojects lint
   publish-site:

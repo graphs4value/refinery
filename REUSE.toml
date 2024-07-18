@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+SPDX-PackageName = "Refinery"
+SPDX-PackageSupplier = "Dániel Varró <daniel.varro@liu.se>"
+SPDX-PackageDownloadLocation = "https://github.com/graphs4value/refinery"
+
+[[annotations]]
+path = ".yarn/releases/**.cjs"
+SPDX-FileCopyrightText = [
+  "(c) 2016-present, Yarn Contributors. All rights reserved.",
+  "(c) 2014-present, Jon Schlinkert.",
+  "(c) 2014-2016, Jon Schlinkert.",
+  "(c) 2014-2017, Jon Schlinkert.",
+  "© 2015-2018, Jon Schlinkert.",
+  "(c) 2015-present, Jon Schlinkert.",
+  "(c) 2015, Rebecca Turner",
+  "Joyent, Inc. and other Node contributors.",
+  "Node.js contributors. All rights reserved.",
+  "(c) 2014 Blake Embrey (hello@blakeembrey.com)",
+  "(c) Facebook, Inc. and its affiliates.",
+]
+SPDX-License-Identifier = "BSD-2-Clause AND MIT"
+
+[[annotations]]
+path = ".yarn/sdks/**"
+SPDX-FileCopyrightText = "(c) 2016-present, Yarn Contributors. All rights reserved."
+SPDX-License-Identifier = "BSD-2-Clause"
