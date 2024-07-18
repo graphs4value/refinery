@@ -28,23 +28,14 @@ docker run --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery:@@@tools.refinery
 
 Once Docker pulls and starts the container, you can navigate to http://localhost:8888 to open the model generation interface and start editing.
 
+A [command-line interface (CLI)](cli) version of Refinery is also available as a Docker container.
+
 Alternatively, you can follow the [instructions to set up a local development environment](/develop/contributing) and compile and run Refinery from source.
-
-## Pre-release versions
-
-You can take advantage of the most recent code submitted to our repository by using the `latest` tag instead.
-
-
-```shell
-docker run --pull always --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery:latest
-```
-
-Note that pre-release versions may be unstable.
 
 ## Environmental variables
 
 The Docker container supports the following environmental variables to customize its behavior.
-Customizing these variable should only be needed if you want to _increase resource limits_ or _expose you Refinery instance over the network_ for others.
+Customizing these variables should only be needed if you want to _increase resource limits_ or _expose your Refinery instance over the network_ for others.
 
 Notes for **local-only instances** are highlighted with the :arrow_right: arrow emoji.
 
@@ -128,20 +119,19 @@ Timeout for model generation in seconds.
 
 ### Threading
 
-:warning: Excessively large values may overload the server. Make sure that _all_ Refinery threads can run at the same time to avoid thread starvation.
+:arrow_right: If you only run a single model generation task at a time, you don't need to adjust these settings.
+
+:warning: Excessively large thread counts may overload the server. Make sure that _all_ Refinery threads can run at the same time to avoid thread starvation.
 
 #### `REFINERY_XTEXT_THREAD_COUNT`
 
 Number of threads used for non-blocking text editing operations. A value of `0` allows an _unlimited_ number of threads by running each semantics calculation in a new thread.
-
-:warning: Excessively large values may overload the server. Make sure that _all_ Refinery threads can run at the same time to avoid thread starvation.
 
 **Default value:** `1`
 
 #### `REFINERY_XTEXT_LOCKING_THREAD_COUNT`
 
 Number of threads used for text editing operations that lock the document. A value of `0` allows an _unlimited_ number of threads by running each semantics calculation in a new thread.
-
 
 **Default value:** equal to `REFINERY_XTEXT_THREAD_COUNT`
 
@@ -151,15 +141,13 @@ Number of threads used for model semantics calculation. A value of `0` allows an
 
 Must be at least as large as `REFINERY_XTEXT_THREAD_COUNT`.
 
-:warning: Excessively large values may overload the server. Make sure that _all_ Refinery threads can run at the same time to avoid thread starvation.
-
 **Default value:** equal to `REFINERY_XTEXT_THREAD_COUNT`
 
 #### `REFINERY_MODEL_GENERATION_THREAD_COUNT`
 
 Number of threads used for model semantics calculation. A value of `0` allows an _unlimited_ number of threads by running each semantics calculation in a new thread.
 
-:warning: Excessively large values may overload the server. Make sure that _all_ Refinery threads can run at the same time to avoid thread starvation. Each model generation task may also demand a large amount of memory in addition to CPU time.
+:warning: Each model generation task may also demand a large amount of memory in addition to CPU time.
 
 **Default value:** equal to `REFINERY_XTEXT_THREAD_COUNT`
 
@@ -171,6 +159,21 @@ Modules (`.refinery` files) in this directory or colon-separated list of directo
 
 :arrow_right: Use this in conjunction with the [mount volume (-v)](https://docs.docker.com/reference/cli/docker/container/run/#volume) option of `docker run` to work with multi-file projects in Refinery.
 
-:warning: Make sure you only expose files that you want to make public. It's best to expose a directory that contains nothing other that `.refinery` files to minimize potential information leaks.
+:warning: Only expose files that you want to make public. It's best to expose a directory that contains nothing other than `.refinery` files to minimize potential information leaks.
 
 **Default value:** _empty_ (no directories are exposed)
+
+## Pre-release versions
+
+You can take advantage of the most recent code submitted to our repository by using the `latest` tag instead.
+
+
+```shell
+docker run --pull always --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery:latest
+```
+
+:::warning
+
+Pre-release versions may be unstable.
+
+:::
