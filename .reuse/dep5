@@ -23,7 +23,6 @@ Copyright: (c) 2016-present, Yarn Contributors. All rights reserved.
            (c) Facebook, Inc. and its affiliates.
 License: BSD-2-Clause AND MIT
 
-Files: .yarn/sdks/eslint/*
-       .yarn/sdks/typescript/*
+Files: .yarn/sdks/*
 Copyright: (c) 2016-present, Yarn Contributors. All rights reserved.
 License: BSD-2-Clause

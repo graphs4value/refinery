@@ -1,13 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors
  *
  * SPDX-License-Identifier: CC0-1.0
- */
-{
+ */{
   "recommendations": [
-    "EditorConfig.EditorConfig",
     "arcanis.vscode-zipfs",
     "dbaeumer.vscode-eslint",
+    "EditorConfig.EditorConfig",
+    "esbenp.prettier-vscode",
     "statelyai.stately-vscode"
   ]
 }

@@ -77,9 +77,11 @@ We recommend [VSCodium](https://github.com/VSCodium/vscodium) or [Visual Studio 
 
 2. Install the following VS Code extensions:
     * _EditorConfig for VS Code_ [[Open VSX](https://open-vsx.org/extension/EditorConfig/EditorConfig)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)]
-    * _ZipFS - a zip file system_ [[Open VSX](https://open-vsx.org/extension/arcanis/vscode-zipfs)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=arcanis.vscode-zipfs)]
     * _ESLint_ [[Open VSX](https://open-vsx.org/extension/dbaeumer/vscode-eslint)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)]
+    * _MDX_ [[Open VSX](https://open-vsx.org/extension/unifiedjs/vscode-mdx)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)]
+    * _Prettier - Code formatter_ [[Open VSX](https://open-vsx.org/extension/esbenp/prettier-vscode)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)]
     * _XState VSCode_ [[Open VSX](https://open-vsx.org/extension/statelyai/stately-vscode)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode)]
+    * _ZipFS - a zip file system_ [[Open VSX](https://open-vsx.org/extension/arcanis/vscode-zipfs)] [[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=arcanis.vscode-zipfs)]
 
 3. Clone the project Git repository but _do not_ import it into VS Code yet.
 
