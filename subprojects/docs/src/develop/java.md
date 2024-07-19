@@ -26,32 +26,16 @@ We created a [Gradle plugin](pathname://../javadoc/refinery-gradle-plugins/) to 
 
 To find out how to add the plugin to your build, select below whether you want to use a **released** version or a **snapshot** version of refinery or whether you want to build Refinery **locally** yourself.
 
-import Admonition from '@theme/Admonition';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs groupId="version">
   <TabItem value="release" label="Release" default>
-    <Admonition type="info">
-      Our latest release is currently waiting for approval on the [Gradle Plugins Portal](https://plugins.gradle.org/).
-      A simpler way to apply our plugin will be available soon once the plugin is approved.
-    </Admonition>
-
     To find out the configuration required to use our artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
 
     <Tabs groupId="gradleLanguage">
       <TabItem value="kotlin" label="Kotlin">
         ```kotlin title="settings.gradle.kts"
-        pluginManagement {
-            resolutionStrategy {
-                eachPlugin {
-                    if (requested.id.namespace == "tools.refinery") {
-                        useModule("tools.refinery:refinery-gradle-plugins:${requested.version}")
-                    }
-                }
-            }
-        }
-
         plugins {
             id("tools.refinery.settings") version "@@@tools.refinery.release@@@"
         }
