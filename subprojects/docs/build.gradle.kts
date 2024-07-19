@@ -40,8 +40,6 @@ val docusaurusOutputDir = layout.buildDirectory.dir("docusaurus")
 
 val javadocsDir = layout.buildDirectory.dir("javadocs")
 
-val javadocsDocsDir = javadocsDir.map { root -> root.dir("develop/javadoc") }
-
 val configFiles: FileCollection = files(
 	rootProject.file("yarn.lock"),
 	rootProject.file("package.json"),
@@ -56,19 +54,41 @@ val lintConfigFiles: FileCollection = configFiles + files(
 	rootProject.file(".eslintrc.cjs"), rootProject.file("prettier.config.cjs")
 )
 
-tasks {
-	val extractJavadocs by registering {
-		dependsOn(javadocs)
-		outputs.dir(javadocsDir)
-		doFirst {
-			delete(javadocsDir)
+abstract class ExtractJavadocTask : DefaultTask() {
+	@get:OutputDirectory
+	abstract val targetDir: DirectoryProperty
+
+	@get:Input
+	abstract val resolvedJavadocArtifacts: MapProperty<String, File>
+
+	@get:Inject
+	abstract val fs: FileSystemOperations
+
+	@get:Inject
+	abstract val archive: ArchiveOperations
+
+	@TaskAction
+	fun action() {
+		fs.delete {
+			delete(targetDir)
 		}
-		doLast {
-			javadocs.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
-				copy {
-					from(zipTree(artifact.file))
-					into(javadocsDocsDir.map { root -> root.dir(artifact.moduleVersion.id.name) })
-				}
+		val javadocsDocsDir = targetDir.get().dir("develop/javadoc")
+		resolvedJavadocArtifacts.get().forEach { artifact ->
+			fs.copy {
+				from(archive.zipTree(artifact.value))
+				into(javadocsDocsDir.dir(artifact.key))
+			}
+		}
+	}
+}
+
+tasks {
+	val extractJavadocs by registering(ExtractJavadocTask::class) {
+		dependsOn(javadocs)
+		targetDir = javadocsDir
+		resolvedJavadocArtifacts = provider {
+			javadocs.resolvedConfiguration.resolvedArtifacts.associate { artifact ->
+				artifact.moduleVersion.id.name to artifact.file
 			}
 		}
 	}

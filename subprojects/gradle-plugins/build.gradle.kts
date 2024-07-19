@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import org.gradle.configurationcache.extensions.capitalized
-
 plugins {
 	`java-gradle-plugin`
 	`maven-publish`
@@ -160,7 +158,8 @@ publishing {
 
 afterEvaluate {
 	for (publication in listOf("pluginMaven", "settingsPluginMarkerMaven", "javaConventionsPluginMarkerMaven")) {
-		tasks.named("publish${publication.capitalized()}PublicationToFileRepository") {
+		val capitalizedName = publication.replaceFirstChar { it.uppercase() }
+		tasks.named("publish${capitalizedName}PublicationToFileRepository") {
 			mustRunAfter(rootProject.tasks.named("cleanMavenRepository"))
 			outputs.dir(mavenRepositoryDir)
 		}

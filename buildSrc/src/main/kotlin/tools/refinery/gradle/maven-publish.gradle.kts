@@ -5,8 +5,6 @@
  */
 package tools.refinery.gradle
 
-import org.gradle.configurationcache.extensions.capitalized
-
 plugins {
 	`maven-publish`
 	id("tools.refinery.gradle.signing")
@@ -15,7 +13,9 @@ plugins {
 val mavenRepositoryDir = rootProject.layout.buildDirectory.map { it.dir("repo") }
 
 open class MavenArtifactExtension(project: Project) {
-	var name: String = project.name.split("-").drop(1).joinToString(" ", transform = String::capitalized)
+	var name: String = project.name.split("-").drop(1).joinToString(" ") { segment ->
+		segment.replaceFirstChar { it.uppercase() }
+	}
 	var description: String? = null
 }
 
@@ -27,7 +27,8 @@ publishing {
 			pom {
 				name = provider { "Refinery ${artifactExtension.name}" }
 				description = provider {
-					val prefix = artifactExtension.description ?: artifactExtension.name.lowercase().capitalized()
+					val prefix = artifactExtension.description ?: artifactExtension.name.lowercase()
+						.replaceFirstChar { it.uppercase() }
 					"$prefix in Refinery, an efficient graph solver for generating well-formed models"
 				}
 				url = "https://refinery.tools/"
