@@ -43,16 +43,6 @@ import TabItem from '@theme/TabItem';
       </TabItem>
       <TabItem value="groovy" label="Groovy">
         ```groovy title="settings.gradle"
-        pluginManagement {
-            resolutionStrategy {
-                eachPlugin {
-                    if (requested.id.namespace == 'tools.refinery') {
-                        useModule("tools.refinery:refinery-gradle-plugins:${requested.version}")
-                    }
-                }
-            }
-        }
-
         plugins {
             id 'tools.refinery.settings' version '@@@tools.refinery.release@@@'
         }
