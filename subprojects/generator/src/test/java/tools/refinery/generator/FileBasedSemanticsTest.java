@@ -24,9 +24,6 @@ class FileBasedSemanticsTest {
 
 	@TestFactory
 	Stream<DynamicNode> fileBasedTests() {
-		return loader.fromClasspath(getClass(),
-				"abstractTypeHierarchy.problem",
-				"typeHierarchy.problem"
-		);
+		return loader.allFromClasspath(getClass());
 	}
 }
