@@ -6,14 +6,11 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import tools.refinery.language.ProblemStandaloneSetup;
-import tools.refinery.language.model.tests.utils.ProblemParseHelper;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
+import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
@@ -33,8 +30,7 @@ import java.util.LinkedHashMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 @Disabled("For debugging purposes only")
 class ModelGenerationTest {
 	@Inject

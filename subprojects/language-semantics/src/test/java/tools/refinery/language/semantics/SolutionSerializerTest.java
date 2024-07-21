@@ -7,14 +7,11 @@ package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.language.model.tests.utils.ProblemParseHelper;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
+import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
@@ -34,8 +31,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class SolutionSerializerTest {
 	@Inject
 	private ProblemParseHelper parseHelper;

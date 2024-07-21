@@ -9,17 +9,14 @@ import com.google.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.model.tests.utils.WrappedProblem;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
+import tools.refinery.language.tests.utils.WrappedProblem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,8 +26,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class ProblemSerializerTest {
 	@Inject
 	private ResourceSet resourceSet;

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.model.tests.utils;
+package tools.refinery.language.tests.utils;
 
 import com.google.inject.Inject;
 import org.eclipse.emf.ecore.util.EcoreUtil;

@@ -16,6 +16,6 @@ mavenArtifact {
 dependencies {
 	api(project(":refinery-language-semantics"))
 	implementation(project(":refinery-store-query-interpreter"))
+	testFixturesApi(testFixtures(project(":refinery-language")))
 	testFixturesImplementation(libs.junit.api)
-	testImplementation(testFixtures(project(":refinery-language")))
 }

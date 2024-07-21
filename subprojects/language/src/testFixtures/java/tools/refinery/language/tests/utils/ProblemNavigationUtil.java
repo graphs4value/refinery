@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.model.tests.utils;
+package tools.refinery.language.tests.utils;
 
 import java.util.List;
 import java.util.stream.Stream;

@@ -33,6 +33,7 @@ dependencies {
 	api(libs.xtext.core)
 	api(libs.xtext.xbase)
 	api(project(":refinery-language-model"))
+	testFixturesApi(libs.junit.api)
 	testFixturesApi(libs.xtext.testing)
 	mwe2(libs.xtext.generator)
 	mwe2(libs.xtext.generator.antlr)
