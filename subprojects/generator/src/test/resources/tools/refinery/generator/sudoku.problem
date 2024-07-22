@@ -1,0 +1,384 @@
+% Copyright (c) 2020 Frank McSherry
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: MIT AND EPL-2.0
+%
+% The sudoku example in this file was adapted from Frank McSherry's
+% differential-dataflow tutorial, which is available at
+% https://www.youtube.com/watch?v=DR5V5bNpclg and
+% https://github.com/frankmcsherry/WIP/tree/master/sudoku
+
+class Row {
+    Field[9] field opposite row
+}
+
+class Column {
+    Field[9] field opposite column
+}
+
+class Block {
+    Field[9] field opposite block
+}
+
+class Field {
+    Row[1] row opposite field
+    Column[1] column opposite field
+    Block[1] block opposite field
+    Number[1] number
+}
+
+class Number.
+
+error multipleInRow(r, n) <->
+    row(f1, r),
+    row(f2, r),
+    f1 != f2,
+    number(f1, n),
+    number(f2, n).
+
+propagation rule singleInRow(f, n) <->
+    may number(f, n),
+    row(f, r),
+    !multipleInRow::computed(r, n)
+==>
+    number(f, n).
+
+propagation rule noMoreInRow(f, n) <->
+    row(f, r),
+    number(f2, n),
+    row(f2, r),
+    f != f2
+==>
+    !number(f, n).
+
+error multipleInColumn(c, n) <->
+    column(f1, c),
+    column(f2, c),
+    f1 != f2,
+    number(f1, n),
+    number(f2, n).
+
+propagation rule singleInColumn(f, n) <->
+    may number(f, n),
+    column(n, c),
+    !multipleInColumn::computed(c, n)
+==>
+    number(f, n).
+
+propagation rule noMoreInColumn(f, n) <->
+    column(f, c),
+    number(f2, n),
+    column(f2, c),
+    f != f2
+==>
+    !number(f, n).
+
+error multipleInBlock(b, n) <->
+    block(f1, b),
+    block(f2, b),
+    f1 != f2,
+    number(f1, n),
+    number(f2, n).
+
+propagation rule singleInBlock(f, n) <->
+    may number(f, n),
+    block(f, b),
+    !multipleInBlock::computed(b, n)
+==>
+    number(f, n).
+
+propagation rule noMoreInBlock(f, n) <->
+    block(f, b),
+    number(f2, n),
+    block(f2, b),
+    f != f2
+==>
+    !number(f, n).
+
+Number(n1).
+Number(n2).
+Number(n3).
+Number(n4).
+Number(n5).
+Number(n6).
+Number(n7).
+Number(n8).
+Number(n9).
+
+row(f1_1, r1). column(f1_1, c1). block(f1_1, b1_1).
+row(f1_2, r1). column(f1_2, c2). block(f1_2, b1_1).
+row(f1_3, r1). column(f1_3, c3). block(f1_3, b1_1).
+row(f1_4, r1). column(f1_4, c4). block(f1_4, b1_2).
+row(f1_5, r1). column(f1_5, c5). block(f1_5, b1_2).
+row(f1_6, r1). column(f1_6, c6). block(f1_6, b1_2).
+row(f1_7, r1). column(f1_7, c7). block(f1_7, b1_3).
+row(f1_8, r1). column(f1_8, c8). block(f1_8, b1_3).
+row(f1_9, r1). column(f1_9, c9). block(f1_9, b1_3).
+row(f2_1, r2). column(f2_1, c1). block(f2_1, b1_1).
+row(f2_2, r2). column(f2_2, c2). block(f2_2, b1_1).
+row(f2_3, r2). column(f2_3, c3). block(f2_3, b1_1).
+row(f2_4, r2). column(f2_4, c4). block(f2_4, b1_2).
+row(f2_5, r2). column(f2_5, c5). block(f2_5, b1_2).
+row(f2_6, r2). column(f2_6, c6). block(f2_6, b1_2).
+row(f2_7, r2). column(f2_7, c7). block(f2_7, b1_3).
+row(f2_8, r2). column(f2_8, c8). block(f2_8, b1_3).
+row(f2_9, r2). column(f2_9, c9). block(f2_9, b1_3).
+row(f3_1, r3). column(f3_1, c1). block(f3_1, b1_1).
+row(f3_2, r3). column(f3_2, c2). block(f3_2, b1_1).
+row(f3_3, r3). column(f3_3, c3). block(f3_3, b1_1).
+row(f3_4, r3). column(f3_4, c4). block(f3_4, b1_2).
+row(f3_5, r3). column(f3_5, c5). block(f3_5, b1_2).
+row(f3_6, r3). column(f3_6, c6). block(f3_6, b1_2).
+row(f3_7, r3). column(f3_7, c7). block(f3_7, b1_3).
+row(f3_8, r3). column(f3_8, c8). block(f3_8, b1_3).
+row(f3_9, r3). column(f3_9, c9). block(f3_9, b1_3).
+row(f4_1, r4). column(f4_1, c1). block(f4_1, b2_1).
+row(f4_2, r4). column(f4_2, c2). block(f4_2, b2_1).
+row(f4_3, r4). column(f4_3, c3). block(f4_3, b2_1).
+row(f4_4, r4). column(f4_4, c4). block(f4_4, b2_2).
+row(f4_5, r4). column(f4_5, c5). block(f4_5, b2_2).
+row(f4_6, r4). column(f4_6, c6). block(f4_6, b2_2).
+row(f4_7, r4). column(f4_7, c7). block(f4_7, b2_3).
+row(f4_8, r4). column(f4_8, c8). block(f4_8, b2_3).
+row(f4_9, r4). column(f4_9, c9). block(f4_9, b2_3).
+row(f5_1, r5). column(f5_1, c1). block(f5_1, b2_1).
+row(f5_2, r5). column(f5_2, c2). block(f5_2, b2_1).
+row(f5_3, r5). column(f5_3, c3). block(f5_3, b2_1).
+row(f5_4, r5). column(f5_4, c4). block(f5_4, b2_2).
+row(f5_5, r5). column(f5_5, c5). block(f5_5, b2_2).
+row(f5_6, r5). column(f5_6, c6). block(f5_6, b2_2).
+row(f5_7, r5). column(f5_7, c7). block(f5_7, b2_3).
+row(f5_8, r5). column(f5_8, c8). block(f5_8, b2_3).
+row(f5_9, r5). column(f5_9, c9). block(f5_9, b2_3).
+row(f6_1, r6). column(f6_1, c1). block(f6_1, b2_1).
+row(f6_2, r6). column(f6_2, c2). block(f6_2, b2_1).
+row(f6_3, r6). column(f6_3, c3). block(f6_3, b2_1).
+row(f6_4, r6). column(f6_4, c4). block(f6_4, b2_2).
+row(f6_5, r6). column(f6_5, c5). block(f6_5, b2_2).
+row(f6_6, r6). column(f6_6, c6). block(f6_6, b2_2).
+row(f6_7, r6). column(f6_7, c7). block(f6_7, b2_3).
+row(f6_8, r6). column(f6_8, c8). block(f6_8, b2_3).
+row(f6_9, r6). column(f6_9, c9). block(f6_9, b2_3).
+row(f7_1, r7). column(f7_1, c1). block(f7_1, b3_1).
+row(f7_2, r7). column(f7_2, c2). block(f7_2, b3_1).
+row(f7_3, r7). column(f7_3, c3). block(f7_3, b3_1).
+row(f7_4, r7). column(f7_4, c4). block(f7_4, b3_2).
+row(f7_5, r7). column(f7_5, c5). block(f7_5, b3_2).
+row(f7_6, r7). column(f7_6, c6). block(f7_6, b3_2).
+row(f7_7, r7). column(f7_7, c7). block(f7_7, b3_3).
+row(f7_8, r7). column(f7_8, c8). block(f7_8, b3_3).
+row(f7_9, r7). column(f7_9, c9). block(f7_9, b3_3).
+row(f8_1, r8). column(f8_1, c1). block(f8_1, b3_1).
+row(f8_2, r8). column(f8_2, c2). block(f8_2, b3_1).
+row(f8_3, r8). column(f8_3, c3). block(f8_3, b3_1).
+row(f8_4, r8). column(f8_4, c4). block(f8_4, b3_2).
+row(f8_5, r8). column(f8_5, c5). block(f8_5, b3_2).
+row(f8_6, r8). column(f8_6, c6). block(f8_6, b3_2).
+row(f8_7, r8). column(f8_7, c7). block(f8_7, b3_3).
+row(f8_8, r8). column(f8_8, c8). block(f8_8, b3_3).
+row(f8_9, r8). column(f8_9, c9). block(f8_9, b3_3).
+row(f9_1, r9). column(f9_1, c1). block(f9_1, b3_1).
+row(f9_2, r9). column(f9_2, c2). block(f9_2, b3_1).
+row(f9_3, r9). column(f9_3, c3). block(f9_3, b3_1).
+row(f9_4, r9). column(f9_4, c4). block(f9_4, b3_2).
+row(f9_5, r9). column(f9_5, c5). block(f9_5, b3_2).
+row(f9_6, r9). column(f9_6, c6). block(f9_6, b3_2).
+row(f9_7, r9). column(f9_7, c7). block(f9_7, b3_3).
+row(f9_8, r9). column(f9_8, c8). block(f9_8, b3_3).
+row(f9_9, r9). column(f9_9, c9). block(f9_9, b3_3).
+
+scope Field += 0, Number += 0.
+
+% TEST: initial grid is not filled
+
+pred filled() <-> number(_, _).
+
+% EXPECT EXACTLY:
+
+?filled().
+
+% TEST: sudoku with single solution
+
+% Adapted from Frank McSherry's differential-dataflow tutorial,
+% which is available at https://www.youtube.com/watch?v=DR5V5bNpclg and
+% https://github.com/frankmcsherry/WIP/tree/master/sudoku
+%
+% 53.|.7.|...
+% 6..|195|...
+% .98|...|.6.
+% ---+---+---
+% 8..|.6.|..3
+% 4..|8.3|..1
+% 7..|.2.|..6
+% ---+---+---
+% .6.|...|28.
+% ...|419|..5
+% ...|.8.|.79
+
+number(f1_1, n5).
+number(f1_2, n3).
+number(f1_5, n7).
+number(f2_1, n6).
+number(f2_4, n1).
+number(f2_5, n9).
+number(f2_6, n5).
+number(f3_2, n9).
+number(f3_3, n8).
+number(f3_8, n6).
+number(f4_1, n8).
+number(f4_5, n6).
+number(f4_9, n3).
+number(f5_1, n4).
+number(f5_4, n8).
+number(f5_6, n3).
+number(f5_9, n1).
+number(f6_1, n7).
+number(f6_5, n2).
+number(f6_9, n6).
+number(f7_2, n6).
+number(f7_7, n2).
+number(f7_8, n8).
+number(f8_4, n4).
+number(f8_5, n1).
+number(f8_6, n9).
+number(f8_9, n5).
+number(f9_5, n8).
+number(f9_8, n7).
+number(f9_9, n9).
+
+% EXPECT:
+
+% 534|678|912
+% 672|195|348
+% 198|342|567
+% ---+---+---
+% 859|761|423
+% 426|853|791
+% 713|924|856
+% ---+---+---
+% 961|537|284
+% 287|419|635
+% 345|286|179
+
+number(f1_1, n5).
+number(f1_2, n3).
+number(f1_3, n4).
+number(f1_4, n6).
+number(f1_5, n7).
+number(f1_6, n8).
+number(f1_7, n9).
+number(f1_8, n1).
+number(f1_9, n2).
+number(f2_1, n6).
+number(f2_2, n7).
+number(f2_3, n2).
+number(f2_4, n1).
+number(f2_5, n9).
+number(f2_6, n5).
+number(f2_7, n3).
+number(f2_8, n4).
+number(f2_9, n8).
+number(f3_1, n1).
+number(f3_2, n9).
+number(f3_3, n8).
+number(f3_4, n3).
+number(f3_5, n4).
+number(f3_6, n2).
+number(f3_7, n5).
+number(f3_8, n6).
+number(f3_9, n7).
+number(f4_1, n8).
+number(f4_2, n5).
+number(f4_3, n9).
+number(f4_4, n7).
+number(f4_5, n6).
+number(f4_6, n1).
+number(f4_7, n4).
+number(f4_8, n2).
+number(f4_9, n3).
+number(f5_1, n4).
+number(f5_2, n2).
+number(f5_3, n6).
+number(f5_4, n8).
+number(f5_5, n5).
+number(f5_6, n3).
+number(f5_7, n7).
+number(f5_8, n9).
+number(f5_9, n1).
+number(f6_1, n7).
+number(f6_2, n1).
+number(f6_3, n3).
+number(f6_4, n9).
+number(f6_5, n2).
+number(f6_6, n4).
+number(f6_7, n8).
+number(f6_8, n5).
+number(f6_9, n6).
+number(f7_1, n9).
+number(f7_2, n6).
+number(f7_3, n1).
+number(f7_4, n5).
+number(f7_5, n3).
+number(f7_6, n7).
+number(f7_7, n2).
+number(f7_8, n8).
+number(f7_9, n4).
+number(f8_1, n2).
+number(f8_2, n8).
+number(f8_3, n7).
+number(f8_4, n4).
+number(f8_5, n1).
+number(f8_6, n9).
+number(f8_7, n6).
+number(f8_8, n3).
+number(f8_9, n5).
+number(f9_1, n3).
+number(f9_2, n4).
+number(f9_3, n5).
+number(f9_4, n2).
+number(f9_5, n8).
+number(f9_6, n6).
+number(f9_7, n1).
+number(f9_8, n7).
+number(f9_9, n9).
+
+% TEST: sudoku with multiple solutions
+
+pred notFilled(Field f) <-> !number(f, _).
+
+pred allFilled() <-> !notFilled(_).
+
+number(f1_1, n5).
+number(f1_2, n3).
+number(f1_5, n7).
+number(f2_1, n6).
+number(f2_4, n1).
+number(f2_5, n9).
+number(f2_6, n5).
+number(f3_2, n9).
+number(f3_3, n8).
+number(f3_8, n6).
+number(f4_1, n8).
+number(f4_5, n6).
+number(f4_9, n3).
+number(f5_1, n4).
+number(f5_4, n8).
+number(f5_6, n3).
+number(f5_9, n1).
+number(f6_1, n7).
+number(f6_5, n2).
+number(f6_9, n6).
+number(f7_2, n6).
+% number(f7_7, n2).
+number(f7_8, n8).
+number(f8_4, n4).
+number(f8_5, n1).
+number(f8_6, n9).
+number(f8_9, n5).
+number(f9_5, n8).
+number(f9_8, n7).
+number(f9_9, n9).
+
+% EXPECT EXACTLY:
+
+?allFilled().
