@@ -6,6 +6,6 @@ position: 1
 label: Tutorials
 link:
   type: generated-index
-  slug: /tutorials
+  slug: /learn/tutorials
   title: Tutorial overview
   description: Try Refinery in practical partial modeling challenges!

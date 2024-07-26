@@ -49,7 +49,7 @@ This task is ideal for running the Refinery backend if you don't intend to work 
 The Refinery frontend TypeScript projects is automatically built before the server starts.
 The server will use the latest build output of the frontend as static assets.
 
-The behavior of this task is influenced by the same [environmental variables](/learn/docker#environmental-variables) as the Refinery [Docker container](/learn/docker).
+The behavior of this task is influenced by the same [environmental variables](../../../learn/docker#environmental-variables) as the Refinery [Docker container](../../../learn/docker).
 However, the default value of `REFINERY_LISTEN_PORT` is `1312`.
 
 ### `serveBackend`
@@ -64,7 +64,7 @@ This task is ideal for running the Refinery backend if you're working on the fro
 No static assets will be build.
 You'll need to use [`yarnw frontend dev`](#frontend-dev)
 
-Like [`./gradlew serve`](#serve), the behavior of this task is influenced by the same [environmental variables](/learn/docker#environmental-variables) as the Refinery [Docker container](/learn/docker).
+Like [`./gradlew serve`](#serve), the behavior of this task is influenced by the same [environmental variables](../../../learn/docker#environmental-variables) as the Refinery [Docker container](../../../learn/docker).
 However, the default value of `REFINERY_LISTEN_PORT` is `1312`.
 
 ## Yarn commands

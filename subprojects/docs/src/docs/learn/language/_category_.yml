@@ -6,5 +6,5 @@ position: 2
 label: Language reference
 link:
   type: generated-index
-  slug: /language
+  slug: /learn/language
   description: Learn more about the Refinery partial modeling language!

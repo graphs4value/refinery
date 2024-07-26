@@ -13,7 +13,7 @@ See the [contributor's guide](../contributing) for information on building and m
 :::note
 
 Refinery can run as a cloud-based [_Graph Solver as a Service_](https://refinery.services/) without local installation.
-You can also run a compiled version as a [Docker container](/learn/docker).
+You can also run a compiled version as a [Docker container](../../learn/docker).
 
 :::
 

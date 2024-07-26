@@ -35,7 +35,6 @@ const markdownOptions: Partial<MDXOptions> = {
 
 const docsOptions = {
   ...markdownOptions,
-  sidebarPath: undefined,
   editUrl:
     'https://github.com/graphs4value/refinery/edit/main/subprojects/docs',
 } satisfies DocsOptions;
@@ -52,18 +51,9 @@ export default {
     [
       '@docusaurus/plugin-content-docs',
       {
-        id: 'learn',
-        path: 'src/learn',
-        routeBasePath: '/learn',
-        ...docsOptions,
-      } satisfies DocsOptions,
-    ],
-    [
-      '@docusaurus/plugin-content-docs',
-      {
-        id: 'develop',
-        path: 'src/develop',
-        routeBasePath: '/develop',
+        path: 'src/docs',
+        routeBasePath: '/',
+        sidebarPath: './sidebars.ts',
         ...docsOptions,
       } satisfies DocsOptions,
     ],

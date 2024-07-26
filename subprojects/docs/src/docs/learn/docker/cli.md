@@ -66,7 +66,7 @@ Models generated with different values of `-random-seed` are highly likely (but 
 
 ### `-scope`, `-s` {#generate-scope}
 
-Add [scope constraints](/learn/language/logic#type-scopes) to the input problem.
+Add [scope constraints](../../language/logic#type-scopes) to the input problem.
 
 This option is especially useful if you want to generate models of multiple sizes from the same partial model.
 
@@ -83,7 +83,7 @@ scope File = 20..25.
 ```
 
 to `input.problem`.
-The syntax of the argument is equivalent to the [`scope`](/learn/language/logic#type-scopes) declaration, but you be careful with the handling of spaces in your shell.
+The syntax of the argument is equivalent to the [`scope`](../../language/logic#type-scopes) declaration, but you be careful with the handling of spaces in your shell.
 Any number of `-s` arguments are supported. For example, the following argument lists are equivalent:
 
 ```shell
@@ -102,9 +102,9 @@ The `*` opeator also has to be quoted to avoid shell expansion:
 
 ### `-scope-override`, `-S` {#generate-scope-override}
 
-Override [scope constraints](/learn/language/logic#type-scopes) to the input problem.
+Override [scope constraints](../../language/logic#type-scopes) to the input problem.
 
-This argument is similar to [`-scope`](#generate-scope), but has higher precedence than the [`scope`](/learn/language/logic#type-scopes) declarations already present in the input file.
+This argument is similar to [`-scope`](#generate-scope), but has higher precedence than the [`scope`](../../language/logic#type-scopes) declarations already present in the input file.
 However, you can't override `scope` declarations in modules imported in the input file using the `import` statement.
 
 For example, if we have
