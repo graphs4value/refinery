@@ -35,12 +35,12 @@
     "react": "^18.3.1"
   },
   "devDependencies": {
-    "@types/eslint": "^8.56.10",
-    "@types/node": "^20.14.11",
+    "@types/eslint": "^8.56.11",
+    "@types/node": "^20.14.12",
     "@types/react": "^18.3.3",
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
-    "@typescript-eslint/parser": "^7.16.1",
-    "corepack": "^0.29.2",
+    "@typescript-eslint/eslint-plugin": "^7.17.0",
+    "@typescript-eslint/parser": "^7.17.0",
+    "corepack": "^0.29.3",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
@@ -48,12 +48,12 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
-    "eslint-plugin-mobx": "^0.0.10",
+    "eslint-plugin-mobx": "^0.0.11",
     "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-react": "^7.34.4",
+    "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "prettier": "^3.3.3",
-    "typescript": "5.5.3"
+    "typescript": "5.5.4"
   },
   "resolutions": {
     "d3-zoom@npm:^3.0.0": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch",

@@ -6,7 +6,7 @@
 
 import createCache from '@emotion/cache';
 import { serializeStyles } from '@emotion/serialize';
-import type { StyleSheet } from '@emotion/utils';
+import type { StyleSheet } from '@emotion/sheet';
 import italicFontURL from '@fontsource/open-sans/files/open-sans-latin-400-italic.woff2?url';
 import normalFontURL from '@fontsource/open-sans/files/open-sans-latin-400-normal.woff2?url';
 import boldFontURL from '@fontsource/open-sans/files/open-sans-latin-700-normal.woff2?url';
