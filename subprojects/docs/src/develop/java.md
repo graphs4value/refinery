@@ -226,7 +226,7 @@ public class ExampleMain {
 ```
 
 If you want to produce a "fat JAR" that embeds all dependencies (e.g., for invoking from the command line or from Python with a single command), you should also add the [shadow](https://github.com/Goooler/shadow) plugin.
-The recommended version of the shadow plugin is set in our [version catalog](#declaring-dependencies) and can be added to your build script as follows:
+The recommended version of the shadow plugin is set in our [version catalog](#declaring-dependencies). You can add it to your build script as follows:
 
 <Tabs groupId="gradleLanguage">
   <TabItem value="kotlin" label="Kotlin">
@@ -255,9 +255,9 @@ The recommended version of the shadow plugin is set in our [version catalog](#de
   </TabItem>
 </Tabs>
 
-After building your project with `./gradlew buil`, you may find the produced "fat JAR" in the `build/libs` directory.
+After building your project with `./gradlew build`, you may find the produced "fat JAR" in the `build/libs` directory.
 Its file name will be suffixed with `-all.jar`.
-In you have Java 21 installed, you will be able to run the application with the command
+In you have Java 21 installed, you'll be able to run the application with the command
 
 <Tabs groupId="posix2windows">
   <TabItem value="posix" label="Linux or macOS">
@@ -276,11 +276,12 @@ Be sure to replace `example-0.0.0-SNAPSHOT` with the name and version of your pr
 
 ### Writing tests
 
-Our Gradle plugin automatically sets up [JUnit 5](https://junit.org/junit5/) for writing tests and [parameterized tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests) and [Hamcrest](https://hamcrest.org/JavaHamcrest/) for writing assertions.
+Our Gradle plugin automatically sets up [JUnit 5](https://junit.org/junit5/) for writing tests and [parameterized tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests).
+It also sets up [Hamcrest](https://hamcrest.org/JavaHamcrest/) for writing assertions.
 You should put your test files into the `src/test/java` directory in your projects.
 You may run test with the commands `./gradlew test` or `./gradlew build`.
 
-To ensure that your tests are properly isolated, in contrast with you main application code, you should *not* rely on the [`StandaloneRefinery`](pathname://../javadoc/refinery-generator/tools/refinery/generator/standalone/StandaloneRefinery.html) class from [`tools.refinery:refinery-generator`](pathname://../javadoc/refinery-generator/) to access Refinery generator components.
+To ensure that your tests are properly isolated, you should *not* rely on the [`StandaloneRefinery`](pathname://../javadoc/refinery-generator/tools/refinery/generator/standalone/StandaloneRefinery.html) class from [`tools.refinery:refinery-generator`](pathname://../javadoc/refinery-generator/) when accessing Refinery generator components.
 Instead, you should use Xtext's [dependency injection](https://eclipse.dev/Xtext/documentation/302_configuration.html#dependency-injection) and [unit testing](https://eclipse.dev/Xtext/documentation/103_domainmodelnextsteps.html#tutorial-unit-tests) support to instantiate the components. You'll need to add a dependency to Refinery's Xtext testing support library to your project.
 
 <Tabs groupId="gradleLanguage">

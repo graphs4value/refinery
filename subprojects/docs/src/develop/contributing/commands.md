@@ -28,7 +28,6 @@ This will also be run by GitHub Actions for each commit or pull requests.
 
 ### `publishToMavenLocal`
 
-
 ```bash posix2windows
 ./gradlew publishToMavenLocal
 ```
@@ -65,13 +64,13 @@ This task is ideal for running the Refinery backend if you're working on the fro
 No static assets will be build.
 You'll need to use [`yarnw frontend dev`](#frontend-dev)
 
-Like [`gradlew serve`](#serve), the behavior of this task is influenced by the same [environmental variables](/learn/docker#environmental-variables) as the Refinery [Docker container](/learn/docker).
+Like [`./gradlew serve`](#serve), the behavior of this task is influenced by the same [environmental variables](/learn/docker#environmental-variables) as the Refinery [Docker container](/learn/docker).
 However, the default value of `REFINERY_LISTEN_PORT` is `1312`.
 
 ## Yarn commands
 
 We provide a `yarnw` wrapper script to invoke the Yarn distribution installed by frontend-gradle-plugin directly.
-The following commands can only be run once [`gradlew build`](#build) has installed the necessary Node.js and Yarn packages.
+The following commands can only be run once [`./gradlew build`](#build) has installed the necessary Node.js and Yarn packages.
 
 ### `docs dev`
 
@@ -107,7 +106,7 @@ which can be safely ignored.
 Builds and serves the refinery frontend on port 1313.
 Saved changes to most source files are immediately reflected in the browser without reload.
 
-Before running this command, you need to start [`gradlew serveBackend`](#servebackend) to provide a backend for the frontend to connect to.
+Before running this command, you need to start [`./gradlew serveBackend`](#servebackend) to provide a backend for the frontend to connect to.
 The development server of the frontend will proxy all WebSocket connections to the backend.
 
 The following environmental variables influence the behavior of this command:
@@ -128,7 +127,7 @@ TCP port to listen at for incoming HTTP connections.
 
 Hostname of the Refinery backend.
 
-This should match the `REFINERY_LISTEN_HOST` passed to [`gradlew serveBackend`](#servebackend).
+This should match the `REFINERY_LISTEN_HOST` passed to [`./gradlew serveBackend`](#servebackend).
 
 **Default value:** `127.0.0.1` (connect to `localhost` over IPv4 only)
 
@@ -136,7 +135,7 @@ This should match the `REFINERY_LISTEN_HOST` passed to [`gradlew serveBackend`](
 
 TCP port of the Refinery backend.
 
-This should match the `REFINERY_LISTEN_PORT` passed to [`gradlew serveBackend`](#servebackend).
+This should match the `REFINERY_LISTEN_PORT` passed to [`./gradlew serveBackend`](#servebackend).
 
 **Default value:** `1312`
 
