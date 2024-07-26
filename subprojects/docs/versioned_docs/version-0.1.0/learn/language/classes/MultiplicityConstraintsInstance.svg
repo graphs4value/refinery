@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="802pt" height="157pt" viewBox="-6 -6 814.3800048828125 169.1999969482422" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="refinery-MZ1i4PkeOsY_2x7-6CJ29"><style>.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node .node-outline{stroke:#19202b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node .node-header{fill:rgb(53, 161, 173);}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node .node-bg{fill:#fff;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-INDIVIDUAL .node-outline{stroke-width:2;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-shadow.node-bg{fill:#19202b;opacity:0.24;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-g .node-header{fill:#e5c07b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-h .node-header{fill:#e06c75;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-i .node-header{fill:#98c379;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-j .node-header{fill:#c678dd;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-k .node-header{fill:#80a7f4;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-l .node-header{fill:#e3d1b2;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-m .node-header{fill:#e78b8f;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-n .node-header{fill:#abcc94;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-o .node-header{fill:#dbb2e8;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-p .node-header{fill:#92c0e9;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge .edge-line{stroke:#19202b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge .edge-arrow{fill:#19202b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-UNKNOWN text{fill:#696c77;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-UNKNOWN .edge-line{stroke:#696c77;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-UNKNOWN .edge-arrow{fill:none;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-ERROR text{fill:#ca1243;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-ERROR .edge-line{stroke:#ca1243;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-ERROR .edge-arrow{fill:#ca1243;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .icon-TRUE{fill:#19202b;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .icon-UNKNOWN{fill:#696c77;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 .icon-ERROR{fill:#ca1243;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 text.label-UNKNOWN{fill:#696c77;}.refinery-MZ1i4PkeOsY_2x7-6CJ29 text.label-ERROR{fill:#ca1243;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node .node-outline{stroke:#ebebff;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node .node-header{fill:rgb(60, 127, 135);}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node .node-bg{fill:#282c34;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-INDIVIDUAL .node-outline{stroke-width:2;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-shadow.node-bg{fill:#ebebff;opacity:0.32;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-g .node-header{fill:#ae8003;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-h .node-header{fill:#a23b47;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-i .node-header{fill:#428141;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-j .node-header{fill:#854797;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-k .node-header{fill:#3982bb;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-l .node-header{fill:#827662;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-m .node-header{fill:#904f53;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-n .node-header{fill:#647e63;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-o .node-header{fill:#805f89;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .node-typeHash-p .node-header{fill:#4f7799;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge .edge-line{stroke:#ebebff;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge .edge-arrow{fill:#ebebff;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-UNKNOWN text{fill:#abb2bf;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-UNKNOWN .edge-line{stroke:#abb2bf;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-UNKNOWN .edge-arrow{fill:none;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-ERROR text{fill:#e06c75;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-ERROR .edge-line{stroke:#e06c75;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .edge-ERROR .edge-arrow{fill:#e06c75;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .icon-TRUE{fill:#ebebff;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .icon-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 .icon-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 text.label-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-MZ1i4PkeOsY_2x7-6CJ29 text.label-ERROR{fill:#e06c75;}</style><defs><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE" class="icon-TRUE"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-UNKNOWN" class="icon-UNKNOWN"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-ERROR" class="icon-ERROR"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12L17 15.59z"/></svg></defs>
+<g class="graph" transform="translate(4, 153.1999969482422)">
+<!-- n0 -->
+
+<!-- n0&#45;&gt;n0 -->
+
+<!-- n0&#45;&gt;n1 -->
+
+<!-- n0&#45;&gt;n1 -->
+
+<!-- n3 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-h">
+
+<rect stroke="none" x="84.25" y="-141.4" width="64.03" height="48.80000000000001" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="80" y="-145" width="72" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-0)" class="node-header"/>
+<text text-anchor="start" x="109.83" y="-125.6" font-size="12.00">v1</text>
+<use x="90.2516" y="-111.8" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="106.25" y="-102.2" font-size="12.00" class="label label-TRUE">Vertex</text>
+</g>
+<polyline points="84.25,-118 148.28,-118" class="node-outline"/>
+<rect fill="none" x="84.25" y="-141.4" width="64.03" height="48.80000000000001" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-0"><rect stroke="none" x="84.25" y="-141.4" width="64.03" height="48.80000000000001" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n1&#45;&gt;n3 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M127.79,-92.67C135,-81.99 144.45,-69.17 153.6,-57.6" class="edge-line"/>
+<polygon points="156.32,-59.81 159.88,-49.83 150.87,-55.41 156.32,-59.81" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="190.06" y="-60.95" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n5 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M172.8,-48.65C165.6,-59.32 156.15,-72.13 147,-83.71" class="edge-line"/>
+<polygon points="144.27,-81.51 140.72,-91.49 149.72,-85.91 144.27,-81.51" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="140.38" y="-74.06" font-size="10.50">source</text>
+</g>
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="40.16" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="36" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-1)" class="node-header"/>
+<text text-anchor="start" x="76.72" y="-33" font-size="12.00">t1</text>
+<use x="46.1559" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="62.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="40.16,-25.4 124.38,-25.4" class="node-outline"/>
+<rect fill="none" x="40.16" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-1"><rect stroke="none" x="40.16" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g><g class="edge edge-TRUE">
+
+<path fill="none" d="M96.97,-48.65C101.54,-58.79 106.27,-70.87 110.06,-81.98" class="edge-line"/>
+<polygon points="106.64,-82.78 113.04,-91.23 113.3,-80.64 106.64,-82.78" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="89.38" y="-60.85" font-size="10.50">source</text>
+</g><g class="edge edge-TRUE">
+
+<path fill="none" d="M101.52,-92.67C96.95,-82.52 92.23,-70.44 88.44,-59.33" class="edge-line"/>
+<polygon points="91.87,-58.54 85.47,-50.09 85.2,-60.68 91.87,-58.54" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="46.32" y="-74.16" font-size="10.50">outgoingTransition</text>
+</g><g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="142.16" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="138" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-2)" class="node-header"/>
+<text text-anchor="start" x="178.72" y="-33" font-size="12.00">t2</text>
+<use x="148.156" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="164.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="142.16,-25.4 226.38,-25.4" class="node-outline"/>
+<rect fill="none" x="142.16" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-2"><rect stroke="none" x="142.16" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g><!-- n5 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-h">
+
+<rect stroke="none" x="200.77" y="-149.2" width="236.99999999999997" height="64.39999999999999" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="196" y="-153" width="244" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-3)" class="node-header"/>
+<text text-anchor="start" x="312.83" y="-133.4" font-size="12.00">v2</text>
+<use x="206.766" y="-119.8" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="222.77" y="-110" font-size="12.00" class="label label-TRUE">Vertex</text>
+</g>
+<use x="206.766" y="-103.8" width="12" height="12" id="" class="icon icon-ERROR" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-ERROR"/>
+<g><text text-anchor="start" x="222.4" y="-94" font-size="12.00" class="label label-ERROR">outgoingTransition::invalidMultiplicity</text>
+</g>
+<polyline points="200.77,-125.8 437.77,-125.8" class="node-outline"/>
+<rect fill="none" x="200.77" y="-149.2" width="236.99999999999997" height="64.39999999999999" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-3"><rect stroke="none" x="200.77" y="-149.2" width="236.99999999999997" height="64.39999999999999" rx="12" ry="12" class="node-bg"/></clipPath></g><g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="277.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="273" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-4)" class="node-header"/>
+<text text-anchor="start" x="313.72" y="-33" font-size="12.00">t3</text>
+<use x="283.156" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="299.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="277.16,-25.4 361.38,-25.4" class="node-outline"/>
+<rect fill="none" x="277.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-4"><rect stroke="none" x="277.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n4&#45;&gt;n5 -->
+
+<!-- n5&#45;&gt;n4 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M325.25,-48.62C325.82,-56.19 326.07,-64.85 326.01,-73.38" class="edge-line"/>
+<polygon points="322.51,-73.22 325.75,-83.31 329.51,-73.4 322.51,-73.22" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="309.51" y="-57.13" font-size="10.50">source</text>
+</g>
+<!-- n6&#45;&gt;n5 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M312.82,-84.82C312.47,-76.84 312.42,-68.21 312.68,-60.07" class="edge-line"/>
+<polygon points="316.18,-60.3 313.21,-50.13 309.19,-59.94 316.18,-60.3" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="358.85" y="-70.18" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n7 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="404.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="400" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-5)" class="node-header"/>
+<text text-anchor="start" x="440.72" y="-33" font-size="12.00">t4</text>
+<use x="410.156" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="426.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="404.16,-25.4 488.38,-25.4" class="node-outline"/>
+<rect fill="none" x="404.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-5"><rect stroke="none" x="404.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-h">
+
+<rect stroke="none" x="493.77" y="-149.2" width="237" height="64.39999999999999" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="489" y="-153" width="245" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-6)" class="node-header"/>
+<text text-anchor="start" x="605.83" y="-133.4" font-size="12.00">v3</text>
+<use x="499.766" y="-119.8" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="515.77" y="-110" font-size="12.00" class="label label-TRUE">Vertex</text>
+</g>
+<polyline points="493.77,-125.8 730.77,-125.8" class="node-outline"/><use x="499.766" y="-103.8" width="12" height="12" id="" class="icon icon-ERROR" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-ERROR"/>
+
+<rect fill="none" x="493.77" y="-149.2" width="237" height="64.39999999999999" rx="12" ry="12" class="node-outline"/><g><text text-anchor="start" x="515.4" y="-94" font-size="12.00" class="label label-ERROR">outgoingTransition::invalidMultiplicity</text>
+</g>
+
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-6"><rect stroke="none" x="493.77" y="-149.2" width="237" height="64.39999999999999" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n7&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M488.13,-45.15C507.42,-55.16 530.62,-67.65 551.73,-79.34" class="edge-line"/>
+<polygon points="549.83,-82.28 560.27,-84.08 553.23,-76.16 549.83,-82.28" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="508.37" y="-55.19" font-size="10.50">source</text>
+</g>
+<!-- n8&#45;&gt;n7 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M548.69,-84.82C530.15,-74.94 510.25,-64.06 492.94,-54.34" class="edge-line"/>
+<polygon points="494.83,-51.38 484.4,-49.51 491.38,-57.48 494.83,-51.38" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="469.61" y="-70.25" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n9 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="506.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="502" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-7)" class="node-header"/>
+<text text-anchor="start" x="542.72" y="-33" font-size="12.00">t5</text>
+<use x="512.156" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="528.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="506.16,-25.4 590.38,-25.4" class="node-outline"/>
+<rect fill="none" x="506.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-7"><rect stroke="none" x="506.16" y="-48.8" width="84.21999999999997" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8&#45;&gt;n9 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M583.79,-84.82C577.32,-76.19 570.67,-66.81 564.85,-58.09" class="edge-line"/>
+<polygon points="567.9,-56.37 559.52,-49.89 562.03,-60.18 567.9,-56.37" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="617.13" y="-69.99" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n10 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="608.16" y="-48.8" width="84.22000000000003" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="604" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-8)" class="node-header"/>
+<text text-anchor="start" x="644.72" y="-33" font-size="12.00">t6</text>
+<use x="614.156" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="630.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="608.16,-25.4 692.38,-25.4" class="node-outline"/>
+<rect fill="none" x="608.16" y="-48.8" width="84.22000000000003" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-8"><rect stroke="none" x="608.16" y="-48.8" width="84.22000000000003" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8&#45;&gt;n10 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M618.89,-84.82C622.03,-76.47 625.8,-67.41 629.66,-58.94" class="edge-line"/>
+<polygon points="632.78,-60.52 633.9,-49.99 626.45,-57.53 632.78,-60.52" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="579.94" y="-57.16" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n11 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="710.16" y="-48.8" width="84.22000000000003" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="706" y="-52" width="92" height="27" clip-path="url(#refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-9)" class="node-header"/>
+<text text-anchor="start" x="746.72" y="-33" font-size="12.00">t7</text>
+<use x="716.156" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-MZ1i4PkeOsY_2x7-6CJ29-icon-TRUE"/>
+<g><text text-anchor="start" x="732.16" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="710.16,-25.4 794.38,-25.4" class="node-outline"/>
+<rect fill="none" x="710.16" y="-48.8" width="84.22000000000003" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-MZ1i4PkeOsY_2x7-6CJ29-clip-9"><rect stroke="none" x="710.16" y="-48.8" width="84.22000000000003" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8&#45;&gt;n11 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M654,-84.82C668.76,-74.99 685.52,-64.17 700.97,-54.48" class="edge-line"/>
+<polygon points="702.47,-57.67 709.12,-49.42 698.78,-51.73 702.47,-57.67" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="728.4" y="-57.01" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n9&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M570.65,-48.62C577.04,-56.79 583.96,-66.23 590.31,-75.41" class="edge-line"/>
+<polygon points="587.33,-77.25 595.84,-83.57 593.13,-73.33 587.33,-77.25" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="567.43" y="-69.5" font-size="10.50">source</text>
+</g>
+<!-- n10&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M646.51,-48.62C643.79,-56.54 640.22,-65.64 636.38,-74.54" class="edge-line"/>
+<polygon points="633.29,-72.88 632.41,-83.44 639.68,-75.73 633.29,-72.88" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="656.03" y="-57.56" font-size="10.50">source</text>
+</g>
+<!-- n11&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M722.36,-48.62C708.84,-57.83 692.35,-68.64 676.28,-78.88" class="edge-line"/>
+<polygon points="674.75,-75.7 668.17,-84.01 678.5,-81.62 674.75,-75.7" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="711.22" y="-70.14" font-size="10.50">source</text>
+</g>
+</g>
+</svg>

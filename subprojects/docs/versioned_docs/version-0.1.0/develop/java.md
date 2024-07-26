@@ -24,91 +24,25 @@ Below, you can find instructions on using [Gradle](#gradle) or [Apache Maven](#m
 We recommend [Gradle](https://gradle.org/) as a build system for creating Java programs that use Refinery as a library.
 We created a [Gradle plugin](pathname://../javadoc/refinery-gradle-plugins/) to simplify project configuration.
 
-This tutorial explains how to use a **snapshot** or **local** pre-release version of Refinery with Gradle.
-Released versions, such as the [**latest version**](/develop/java#gradle), are available from [Maven Central](https://central.sonatype.com/namespace/tools.refinery).
+To find out the configuration for using our artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
 
-import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs';
 
-<Tabs groupId="version">
-  <TabItem value="snapshot" label="Snapshot" default>
-    We always publish a [SNAPSHOT](https://maven.apache.org/guides/getting-started/index.html#what-is-a-snapshot-version) version of Refinery based on the latest commit in our [Git repository](https://github.com/graphs4value/refinery). This is the development version of our code and may change without warning at any time.
-
-    To find out the configuration for using our snapshot artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
-
-    <Tabs groupId="gradleLanguage">
-      <TabItem value="kotlin" label="Kotlin">
-        ```kotlin title="settings.gradle.kts"
-        pluginManagement {
-            repositories {
-                maven {
-                    name = "refinery-snapshots"
-                    url = uri("https://refinery.tools/maven/snapshots/")
-                }
-                gradlePluginPortal()
-            }
-        }
-
-        plugins {
-            id("tools.refinery.settings") version "@@@version@@@"
-        }
-        ```
-      </TabItem>
-      <TabItem value="groovy" label="Groovy">
-        ```groovy title="settings.gradle"
-        pluginManagement {
-            repositories {
-                maven {
-                    name 'refinery-snapshots'
-                    url 'https://refinery.tools/maven/snapshots/'
-                }
-                gradlePluginPortal()
-            }
-        }
-
-        plugins {
-            id 'tools.refinery.settings' version '@@@version@@@'
-        }
-        ```
-      </TabItem>
-    </Tabs>
+<Tabs groupId="gradleLanguage">
+  <TabItem value="kotlin" label="Kotlin">
+    ```kotlin title="settings.gradle.kts"
+    plugins {
+        id("tools.refinery.settings") version "0.1.0"
+    }
+    ```
   </TabItem>
-  <TabItem value="mavenLocal" label="Local">
-    Running Refinery from a local build is an _advanced technique_ that you should only use if you want to [contribute to Refinery](../contributing) and have modified it yourself.
-    First you'll have to run the [`./gradlew publishToMavenLocal`](../contributing/commands#publishtomavenlocal) command in your local clone of the Refinery repository to install Refinery into your [local Maven repository](https://www.baeldung.com/maven-local-repository).
-
-    Next, to find out the configuration for using local artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
-
-    <Tabs groupId="gradleLanguage">
-      <TabItem value="kotlin" label="Kotlin">
-        ```kotlin title="settings.gradle.kts"
-        pluginManagement {
-            repositories {
-                mavenLocal()
-                gradlePluginPortal()
-            }
-        }
-
-        plugins {
-            id("tools.refinery.settings") version "@@@version@@@"
-        }
-        ```
-      </TabItem>
-      <TabItem value="groovy" label="Groovy">
-        ```groovy title="settings.gradle"
-        pluginManagement {
-            repositories {
-                mavenLocal()
-                gradlePluginPortal()
-            }
-        }
-
-        plugins {
-            id 'tools.refinery.settings' version '@@@version@@@'
-        }
-        ```
-      </TabItem>
-    </Tabs>
+  <TabItem value="groovy" label="Groovy">
+    ```groovy title="settings.gradle"
+    plugins {
+        id 'tools.refinery.settings' version '0.1.0'
+    }
+    ```
   </TabItem>
 </Tabs>
 
@@ -379,71 +313,25 @@ Do *not* attempt to set a `version` for this plugin, because versioning is alrea
 You may also develop applications based on Refiney using [Apache Maven](https://maven.apache.org/) as the build system.
 Although we don't provide a Maven plugin for simplified configuration, you can still use our [platform](https://docs.gradle.org/current/userguide/platforms.html#sub:using-platform-to-control-transitive-deps) (Maven BOM) to lock the versions of Refinery and its dependencies to tested versions.
 
-This tutorial explains how to use a **snapshot** or **local** pre-release version of Refinery with Maven.
-Released versions, such as the [**latest version**](/develop/java#maven), are available from [Maven Central](https://central.sonatype.com/namespace/tools.refinery).
+You should add the following configuration to your `pom.xml` file. If you use multi-module projects, we recommend that you add this to your parent POM.
 
-<Tabs groupId="version">
-  <TabItem value="snapshot" label="Snapshot" default>
-    We always publish a [SNAPSHOT](https://maven.apache.org/guides/getting-started/index.html#what-is-a-snapshot-version) version of Refinery based on the latest commit in our [Git repository](https://github.com/graphs4value/refinery). This is the development version of our code and may change without warning at any time.
-
-    You should add the following configuration to your `pom.xml` file. If you use multi-module projects, we recommend that you add this to your parent POM.
-
-    ```xml title="pom.xml"
-    <project>
-        ...
-        <repositories>
-            <repository>
-              <id>refinery-snapshots</id>
-              <name>Refinery Snapshots</name>
-              <url>https://refinery.tools/maven/snapshots/</url>
-              <releases>
-                  <enabled>false</enabled>
-              </releases>
-              <snapshots>
-                  <enabled>true</enabled>
-              </snapshots>
-            </repository>
-        </repositories>
-        <dependencyManagement>
-            <dependencies>
-                <dependency>
-                    <groupId>tools.refinery</groupId>
-                    <artifactId>refinery-bom</artifactId>
-                    <version>@@@version@@@</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
-            </dependencies>
-        </dependencyManagement>
-        ...
-    </project>
-    ```
-  </TabItem>
-  <TabItem value="mavenLocal" label="Local">
-    Running Refinery from a local build is an _advanced technique_ that you should only use if you want to [contribute to Refinery](../contributing) and have modified it yourself.
-    First you'll have to run the [`./gradlew publishToMavenLocal`](../contributing/commands#publishtomavenlocal) command in your local clone of the Refinery repository to install Refinery into your [local Maven repository](https://www.baeldung.com/maven-local-repository).
-
-    Next, you should add the following configuration to your `pom.xml` file. If you use multi-module projects, we recommend that you add this to your parent POM.
-
-    ```xml title="pom.xml"
-    <project>
-        ...
-        <dependencyManagement>
-            <dependencies>
-                <dependency>
-                    <groupId>tools.refinery</groupId>
-                    <artifactId>refinery-bom</artifactId>
-                    <version>@@@version@@@</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
-            </dependencies>
-        </dependencyManagement>
-        ...
-    </project>
-    ```
-  </TabItem>
-</Tabs>
+```xml title="pom.xml"
+<project>
+    ...
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tools.refinery</groupId>
+                <artifactId>refinery-bom</artifactId>
+                <version>0.1.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    ...
+</project>
+```
 
 You'll be able to add dependencies to Refinery components without an explicit reference to the dependency version, since version numbers are managed by the BOM:
 

@@ -10,7 +10,7 @@ sidebar_label: CLI
 You can run Refinery as a command-line applications via our [Docker container](https://github.com/graphs4value/refinery/pkgs/container/refinery-cli) on either `amd64` or `arm64` machines:
 
 ```shell
-docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:0.1.0
 ```
 
 This will let you read input files and generate models in the current directory (`${PWD}`) of your terminal session.
@@ -19,13 +19,13 @@ Module imports (e.g., `import some::module.` to import `some/module.refinery`) r
 For example, to generate a model based on the file named `input.problem` in the current directory and write the results into the file named `output.refinery`, you may run the [`generate` subcommand](#generate) with
 
 ```shell
-docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest generate -o output.refinery input.problem
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:0.1.0 generate -o output.refinery input.problem
 ```
 
 If you want Refinery CLI to print its documentation, run
 
 ```shell
-docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest -help
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:0.1.0 -help
 ```
 
 ## The `generate` subcommand {#generate}
@@ -33,7 +33,7 @@ docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest -he
 The `generate` subcommand generates a consistent concrete model from a partial model.
 
 ```shell
-docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest generate [options] input path
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:0.1.0 generate [options] input path
 ```
 
 The `input path` should be a path to a `.problem` file relative to the current directory.
@@ -73,7 +73,7 @@ This option is especially useful if you want to generate models of multiple size
 For example, the command
 
 ```shell
-docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest generate -s File=20..25 input.problem
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:0.1.0 generate -s File=20..25 input.problem
 ```
 
 is equivalent to appending

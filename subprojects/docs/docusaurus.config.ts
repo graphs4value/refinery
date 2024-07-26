@@ -16,28 +16,24 @@ import type { UserThemeConfig } from '@docusaurus/theme-common';
 import type { UserThemeConfig as AlgoliaConfig } from '@docusaurus/theme-search-algolia';
 import type { Config } from '@docusaurus/types';
 import type { Config as SwcConfig } from '@swc/core';
+import { PropertiesFile } from 'java-properties';
 import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
 
 import remarkPosix2Windows from './src/plugins/remarkPosix2Windows';
 import remarkReplaceVariables from './src/plugins/remarkReplaceVariables';
 
+const properties = new PropertiesFile(
+  path.join(__dirname, '../../gradle.properties'),
+);
+
 const markdownOptions: Partial<MDXOptions> = {
   remarkPlugins: [
-    [
-      remarkReplaceVariables,
-      { propertiesPath: path.join(__dirname, '../../gradle.properties') },
-    ],
+    [remarkReplaceVariables, { properties }],
     [smartypants, { dashes: 'oldschool' }],
     remarkPosix2Windows,
   ],
 };
-
-const docsOptions = {
-  ...markdownOptions,
-  editUrl:
-    'https://github.com/graphs4value/refinery/edit/main/subprojects/docs',
-} satisfies DocsOptions;
 
 export default {
   title: 'Refinery',
@@ -54,7 +50,15 @@ export default {
         path: 'src/docs',
         routeBasePath: '/',
         sidebarPath: './sidebars.ts',
-        ...docsOptions,
+        editUrl:
+          'https://github.com/graphs4value/refinery/edit/main/subprojects/docs',
+        versions: {
+          current: {
+            path: 'snapshot',
+            label: `${String(properties.get('version'))} 🚧`,
+          },
+        },
+        ...markdownOptions,
       } satisfies DocsOptions,
     ],
     [
@@ -103,13 +107,14 @@ export default {
       hideOnScroll: true,
       items: [
         {
+          type: 'doc',
           label: 'Learn',
-          to: '/learn',
+          docId: 'learn/index',
         },
         {
+          type: 'doc',
           label: 'Develop',
-          to: '/develop/java',
-          activeBasePath: '/develop',
+          docId: 'develop/java',
         },
         {
           label: 'GitHub',
@@ -121,6 +126,10 @@ export default {
           position: 'right',
           href: 'https://refinery.services/',
           className: 'navbar__link--try-now',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
         },
       ],
     },
@@ -218,10 +227,8 @@ export default {
       appId: 'KYHOYEO80F',
       apiKey: '152acfb8d1ad9e10f29f083a6b017a69',
       indexName: 'refinery',
-      // We don't have any context specified, so we need to disable this to return results.
-      contextualSearch: false,
       // Javadoc doesn't use the Docusaurus router and has to be navigated to with `location.href` instead.
-      externalUrlRegex: '/develop/javadoc/.+',
+      externalUrlRegex: '/([^/]+/)?develop/javadoc/.+',
     },
   } satisfies UserThemeConfig & AlgoliaConfig,
   webpack: {
