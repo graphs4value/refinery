@@ -286,29 +286,26 @@ Instead, you should use Xtext's [dependency injection](https://eclipse.dev/Xtext
   </TabItem>
 </Tabs>
 
-Afterwards, you can use the `@ExtendWith`, `@InjectWith`, and `@Inject` annotations to set up your unit test.
+The test fixtures for `refinery-language` include the `@InjectWithRefinery` [composed annotation](https://junit.org/junit5/docs/current/user-guide/#writing-tests-meta-annotations) to simplify Xtext injector configuration.
+You can use this annotation in conjunction with `@Inject` annotations to set up your unit test.
 
 ```java
 package org.example;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import tools.refinery.generator.GeneratorResult;
 import tools.refinery.generator.ModelGeneratorFactory;
 import tools.refinery.generator.ProblemLoader;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
 
 import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 // highlight-start
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 // highlight-end
 class ExampleTest {
     // highlight-start
