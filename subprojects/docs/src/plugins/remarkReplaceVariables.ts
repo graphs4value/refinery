@@ -4,29 +4,27 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { PropertiesFile } from 'java-properties';
+import type { PropertiesFile } from 'java-properties';
 import type { Transformer } from 'unified';
 import { visit } from 'unist-util-visit';
 
 const TEMPLATE_REGEXP = /@@@([a-zA-Z\d._-]*)@@@/g;
 
 export default function remarkReplaceVariables({
-  propertiesPath,
+  properties,
 }: {
-  propertiesPath?: string;
+  properties: PropertiesFile;
 }): Transformer {
-  if (propertiesPath === undefined) {
+  if (properties === undefined) {
     throw new Error('propertiesPath is required');
   }
-
-  const variables = new PropertiesFile(propertiesPath);
 
   function substitution(substring: string, name: string): string {
     if (name === '') {
       // Escape sequence.
       return '@@@';
     }
-    const value = variables.get(name);
+    const value = properties.get(name);
     if (value !== undefined) {
       return String(value);
     }

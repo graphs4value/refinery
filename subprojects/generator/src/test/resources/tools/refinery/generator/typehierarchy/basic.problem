@@ -1,0 +1,24 @@
+% SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class A.
+
+class B extends A.
+
+% TEST: positive subclass
+B(b).
+% EXPECT:
+A(b).
+
+% TEST: negative superclass
+!A(b).
+% EXPECT:
+!B(b).
+
+% TEST WITH ERRORS: inconsistent type
+!A(b).
+B(b).
+% EXPECT:
+A(b): error.
+B(b): error.

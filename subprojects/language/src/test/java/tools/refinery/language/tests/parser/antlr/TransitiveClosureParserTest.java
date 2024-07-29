@@ -6,22 +6,18 @@
 package tools.refinery.language.tests.parser.antlr;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import tools.refinery.language.model.problem.ArithmeticBinaryExpr;
 import tools.refinery.language.model.problem.Atom;
 import tools.refinery.language.model.problem.BinaryOp;
 import tools.refinery.language.model.problem.ComparisonExpr;
-import tools.refinery.language.model.tests.utils.ProblemParseHelper;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
+import tools.refinery.language.tests.utils.ProblemParseHelper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class TransitiveClosureParserTest {
 	@Inject
 	private ProblemParseHelper parseHelper;

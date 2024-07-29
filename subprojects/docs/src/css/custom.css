@@ -80,6 +80,12 @@ code {
   --ifm-navbar-shadow: var(--ifm-global-shadow-lw) !important;
 }
 
+@media (max-width: 996px) {
+  .navbar__inner .navbar__logo {
+    display: none;
+  }
+}
+
 .button, .navbar__link, .footer__link-item {
   text-transform: uppercase;
   font-variation-settings: 'wdth' 87.5;
@@ -112,7 +118,7 @@ code {
 }
 
 .navbar__inner .navbar__link--try-now {
-  margin: 0 0.75rem 0 0.5rem;
+  margin: 0 0.5rem;
   padding: 0.25rem 1.25rem;
   border-radius: 50em;
 }
