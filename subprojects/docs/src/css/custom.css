@@ -80,12 +80,6 @@ code {
   --ifm-navbar-shadow: var(--ifm-global-shadow-lw) !important;
 }
 
-@media (max-width: 996px) {
-  .navbar__inner .navbar__logo {
-    display: none;
-  }
-}
-
 .button, .navbar__link, .footer__link-item {
   text-transform: uppercase;
   font-variation-settings: 'wdth' 87.5;

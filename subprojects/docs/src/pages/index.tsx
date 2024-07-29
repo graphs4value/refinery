@@ -5,7 +5,6 @@
  */
 
 import Link from '@docusaurus/Link';
-import { useColorMode } from '@docusaurus/theme-common';
 import Layout from '@theme/Layout';
 import clsx from 'clsx';
 
@@ -15,20 +14,11 @@ import Features from '@site/src/components/Features';
 import UseCases from '@site/src/components/UseCases';
 import Video from '@site/src/components/Video';
 
-function Logo() {
-  const { colorMode } = useColorMode();
-  const logoPath = colorMode === 'dark' ? '/logo-dark.svg' : '/logo.svg';
-  return <img src={logoPath} alt="" className={styles['logo']} />;
-}
-
 function Hero() {
   return (
     <header className={clsx('hero', 'hero--dark', styles['hero'])}>
       <div className="container">
-        <h1 className={clsx('hero__title', styles['title'])}>
-          <Logo />
-          <span className={styles['title__text']}>Refinery</span>
-        </h1>
+        <h1 className="hero__title">Refinery</h1>
         <p className="hero__subtitle">
           An efficient graph solver for generating well-formed models
         </p>
