@@ -44,7 +44,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		var type = info.type();
 		var defaultValue = info.defaultValue();
 		if (defaultValue.must()) {
-			throw new TranslationException(linkType, "Unsupported default value %s for directed cross references %s"
+			throw new TranslationException(linkType, "Unsupported default value %s for undirected cross reference %s"
 					.formatted(defaultValue, linkType));
 		}
 		var translator = PartialRelationTranslator.of(linkType);
@@ -54,8 +54,8 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		} else {
 			configureWithDefaultFalse(storeBuilder);
 		}
+		translator.initializer(new UndirectedCrossReferenceInitializer(linkType, symbol));
 		translator.refiner(UndirectedCrossReferenceRefiner.of(symbol, type));
-		translator.initializer(new UndirectedCrossReferenceInitializer(linkType, type, symbol));
 		if (info.partial()) {
 			translator.roundingMode(RoundingMode.NONE);
 		} else {

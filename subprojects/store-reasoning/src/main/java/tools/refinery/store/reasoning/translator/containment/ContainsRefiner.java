@@ -30,13 +30,18 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, B
 	}
 
 	private final Interpretation<InferredContainment> interpretation;
-	private final PartialInterpretationRefiner<TruthValue, Boolean> containerRefiner;
-	private final PartialInterpretationRefiner<TruthValue, Boolean> containedRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean> containerRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean> containedRefiner;
 
 	private ContainsRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 							Symbol<InferredContainment> containsStorage) {
 		super(adapter, partialSymbol);
 		interpretation = adapter.getModel().getInterpretation(containsStorage);
+	}
+
+	@Override
+	public void afterCreate() {
+		var adapter = getAdapter();
 		containerRefiner = adapter.getRefiner(ContainmentHierarchyTranslator.CONTAINER_SYMBOL);
 		containedRefiner = adapter.getRefiner(ContainmentHierarchyTranslator.CONTAINED_SYMBOL);
 	}
