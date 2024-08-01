@@ -39,6 +39,7 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
+import tools.refinery.store.reasoning.translator.predicate.BasePredicateTranslator;
 import tools.refinery.store.reasoning.translator.predicate.PredicateTranslator;
 import tools.refinery.store.statecoding.StateCoderBuilder;
 import tools.refinery.store.tuple.Tuple;
@@ -291,7 +292,7 @@ public class ModelInitializer {
 
 	private void collectPredicateDefinitionSymbol(PredicateDefinition predicateDefinition) {
 		int arity = predicateDefinition.getParameters().size();
-		if (predicateDefinition.isError()) {
+		if (predicateDefinition.getKind() == PredicateKind.ERROR) {
 			collectPartialRelation(predicateDefinition, arity, TruthValue.FALSE, TruthValue.FALSE);
 		} else {
 			collectPartialRelation(predicateDefinition, arity, null, TruthValue.UNKNOWN);
@@ -596,16 +597,26 @@ public class ModelInitializer {
 	}
 
 	private void collectPredicateDefinition(PredicateDefinition predicateDefinition, ModelStoreBuilder storeBuilder) {
+		if (ProblemUtil.isBasePredicate(predicateDefinition)) {
+			collectBasePredicateDefinition(predicateDefinition, storeBuilder);
+		} else {
+			collectComputedPredicateDefinition(predicateDefinition, storeBuilder);
+		}
+	}
+
+	private void collectComputedPredicateDefinition(PredicateDefinition predicateDefinition,
+													ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var query = queryCompiler.toQuery(partialRelation.name(), predicateDefinition);
+		List<PartialRelation> parameterTypes = null;
 		boolean mutable;
 		TruthValue defaultValue;
-		if (predicateDefinition.isShadow()) {
+		if (predicateDefinition.getKind() == PredicateKind.SHADOW) {
 			mutable = false;
 			defaultValue = TruthValue.UNKNOWN;
 		} else {
 			mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
-			if (predicateDefinition.isError()) {
+			if (predicateDefinition.getKind() == PredicateKind.ERROR) {
 				defaultValue = TruthValue.FALSE;
 			} else {
 				var seed = modelSeed.getSeed(partialRelation);
@@ -614,8 +625,9 @@ public class ModelInitializer {
 				// The symbol should be mutable if there is at least one non-default entry in the seed.
 				mutable = mutable || cursor.move();
 			}
+			parameterTypes = getParameterTypes(predicateDefinition, null);
 		}
-		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
+		var translator = new PredicateTranslator(partialRelation, query, parameterTypes, mutable, defaultValue);
 		storeBuilder.with(translator);
 	}
 
@@ -626,6 +638,28 @@ public class ModelInitializer {
 			}
 		}
 		return false;
+	}
+
+	private List<PartialRelation> getParameterTypes(ParametricDefinition parametricDefinition,
+													PartialRelation defaultType) {
+		var parameters = parametricDefinition.getParameters();
+		var parameterTypes = new ArrayList<PartialRelation>(parameters.size());
+		for (var parameter : parameters) {
+			var relation = parameter.getParameterType();
+			parameterTypes.add(relation == null ? defaultType : getPartialRelation(relation));
+		}
+		return Collections.unmodifiableList(parameterTypes);
+	}
+
+	private void collectBasePredicateDefinition(PredicateDefinition predicateDefinition,
+												ModelStoreBuilder storeBuilder) {
+		var partialRelation = getPartialRelation(predicateDefinition);
+		var parameterTypes = getParameterTypes(predicateDefinition, nodeRelation);
+		var seed = modelSeed.getSeed(partialRelation);
+		var defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+		boolean partial = predicateDefinition.getKind() == PredicateKind.PARTIAL;
+		var translator = new BasePredicateTranslator(partialRelation, parameterTypes, defaultValue, partial);
+		storeBuilder.with(translator);
 	}
 
 	private void collectScopes() {

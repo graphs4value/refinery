@@ -25,6 +25,7 @@ export function getDefaultVisibility(
     case 'class':
     case 'reference':
     case 'opposite':
+    case 'base':
       return 'all';
     case 'predicate':
       return detail.error ? 'must' : 'none';

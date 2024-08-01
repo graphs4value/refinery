@@ -21,9 +21,9 @@ class DirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Bo
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
 	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
 
-	public DirectedCrossReferenceRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-										 Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
-										 PartialRelation targetType) {
+	protected DirectedCrossReferenceRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
+											Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
+											PartialRelation targetType) {
 		super(adapter, partialSymbol, concreteSymbol);
 		this.sourceType = sourceType;
 		this.targetType = targetType;

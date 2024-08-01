@@ -21,6 +21,9 @@ import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
 
+import java.util.List;
+import java.util.Objects;
+
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
@@ -30,9 +33,11 @@ public class PredicateTranslator implements ModelStoreConfiguration {
 	private final RelationalQuery query;
 	private final boolean mutable;
 	private final TruthValue defaultValue;
+	private final List<PartialRelation> parameterTypes;
 
-	public PredicateTranslator(PartialRelation relation, RelationalQuery query, boolean mutable,
-							   TruthValue defaultValue) {
+	public PredicateTranslator(PartialRelation relation, RelationalQuery query, List<PartialRelation> parameterTypes,
+							   boolean mutable, TruthValue defaultValue) {
+		this.parameterTypes = parameterTypes;
 		if (relation.arity() != query.arity()) {
 			throw new TranslationException(relation, "Expected arity %d query for partial relation %s, got %d instead"
 					.formatted(relation.arity(), relation, query.arity()));
@@ -78,6 +83,10 @@ public class PredicateTranslator implements ModelStoreConfiguration {
 					.clause(mayLiterals)
 					.build();
 			translator.may(may);
+
+			if (parameterTypes != null && parameterTypes.stream().anyMatch(Objects::nonNull)) {
+				translator.refiner(PredicateRefiner.of(symbol, parameterTypes));
+			}
 		} else if (defaultValue.may()) {
 			// If all values are permitted, we don't need to check for any forbidden values in the model.
 			// If the result of this predicate of {@code ERROR}, some other partial relation (that we check for)

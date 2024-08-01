@@ -75,7 +75,7 @@ public class TypedModule {
 	private void checkTypes(PredicateDefinition predicateDefinition) {
 		for (var conjunction : predicateDefinition.getBodies()) {
 			for (var literal : conjunction.getLiterals()) {
-				coerceIntoLiteral(literal, predicateDefinition.isShadow());
+				coerceIntoLiteral(literal, predicateDefinition.getKind() == PredicateKind.SHADOW);
 			}
 		}
 	}

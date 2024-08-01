@@ -21,8 +21,9 @@ class UndirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, 
 	private final PartialRelation sourceType;
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
 
-	public UndirectedCrossReferenceRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-										   Symbol<TruthValue> concreteSymbol, PartialRelation sourceType) {
+	protected UndirectedCrossReferenceRefiner(ReasoningAdapter adapter,
+                                              PartialSymbol<TruthValue, Boolean> partialSymbol,
+											  Symbol<TruthValue> concreteSymbol, PartialRelation sourceType) {
 		super(adapter, partialSymbol, concreteSymbol);
 		this.sourceType = sourceType;
 	}

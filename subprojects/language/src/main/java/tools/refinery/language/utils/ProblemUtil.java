@@ -50,17 +50,19 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isError(EObject eObject) {
-		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
+		return eObject instanceof PredicateDefinition predicateDefinition &&
+				predicateDefinition.getKind() == PredicateKind.ERROR;
 	}
 
 	public static boolean isShadow(EObject eObject) {
-		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isShadow();
+		return eObject instanceof PredicateDefinition predicateDefinition &&
+				predicateDefinition.getKind() == PredicateKind.SHADOW;
 	}
 
 	public static boolean mayReferToShadow(EObject context) {
 		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
 		return switch (definitionContext) {
-			case PredicateDefinition predicateDefinition -> predicateDefinition.isShadow();
+			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
 			case RuleDefinition ignored -> true;
 			case null, default -> false;
 		};
@@ -112,8 +114,16 @@ public final class ProblemUtil {
 		return true;
 	}
 
+	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
+		return switch (predicateDefinition.getKind()) {
+			case DEFAULT -> predicateDefinition.getBodies().isEmpty();
+			case PARTIAL -> true;
+			default -> false;
+		};
+	}
+
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return !predicateDefinition.isShadow() && !predicateDefinition.getBodies().isEmpty();
+		return predicateDefinition.getKind() != PredicateKind.SHADOW && !predicateDefinition.getBodies().isEmpty();
 	}
 
 	public static boolean isTypeLike(Relation relation) {

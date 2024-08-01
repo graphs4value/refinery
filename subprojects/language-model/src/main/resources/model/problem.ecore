@@ -34,8 +34,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="PredicateDefinition" eSuperTypes="#//ParametricDefinition #//Relation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="bodies" upperBound="-1"
         eType="#//Conjunction" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="error" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="shadow" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//PredicateKind"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="computedValue" eType="#//PredicateDefinition"
         transient="true" containment="true"/>
   </eClassifiers>
@@ -280,5 +279,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="Assertion" eSuperTypes="#//Statement #//AbstractAssertion">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="default" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
         defaultValueLiteral="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="PredicateKind">
+    <eLiterals name="DEFAULT"/>
+    <eLiterals name="ERROR" value="1"/>
+    <eLiterals name="SHADOW" value="2"/>
+    <eLiterals name="PARTIAL" value="3"/>
   </eClassifiers>
 </ecore:EPackage>

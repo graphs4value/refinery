@@ -380,15 +380,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkPredicateDefinition(PredicateDefinition predicateDefinition) {
-		if (predicateDefinition.isError() && predicateDefinition.isShadow()) {
-			var message = "Shadow predicates cannot be marked as error predicates.";
-			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__ERROR, 0,
-					SHADOW_RELATION_ISSUE);
-		}
-	}
-
-	@Check
 	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var type = parameter.getParameterType();
