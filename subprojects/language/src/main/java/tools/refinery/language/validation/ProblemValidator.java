@@ -47,6 +47,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_REFERENCE_TYPE_ISSUE = ISSUE_PREFIX + "INVALID_REFERENCE_TYPE";
 	public static final String INVALID_ARITY_ISSUE = ISSUE_PREFIX + "INVALID_ARITY";
 	public static final String INVALID_MODALITY_ISSUE = ISSUE_PREFIX + "INVALID_MODALITY";
+	public static final String INVALID_PREDICATE_ISSUE = ISSUE_PREFIX + "INVALID_PREDICATE";
 	public static final String INVALID_RULE_ISSUE = ISSUE_PREFIX + "INVALID_RULE";
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
 	public static final String SHADOW_RELATION_ISSUE = ISSUE_PREFIX + "SHADOW_RELATION";
@@ -376,6 +377,32 @@ public class ProblemValidator extends AbstractProblemValidator {
 					.formatted(referenceType.getName(), referenceDeclaration.getName());
 			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE,
 					0, INVALID_REFERENCE_TYPE_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkPredicateDefinition(PredicateDefinition predicateDefinition) {
+		if (ProblemUtil.isDerivedStatePredicate(predicateDefinition)) {
+			return;
+		}
+		String message = null;
+		if (ProblemUtil.isBasePredicate(predicateDefinition)) {
+			if (!predicateDefinition.getBodies().isEmpty()) {
+				var predicateType = predicateDefinition.getKind() == PredicateKind.PARTIAL ? "Partial base predicate" :
+						"Base predicate";
+				message = "%s '%s' must not have any clauses.".formatted(predicateType, predicateDefinition.getName());
+			}
+		} else if (predicateDefinition.getBodies().isEmpty()) {
+			var predicateType = switch (predicateDefinition.getKind()) {
+				case ERROR -> "Error predicate";
+				case SHADOW -> "Shadow predicate";
+				default -> "Predicate";
+			};
+			message = "%s '%s' must have at least one clause.".formatted(predicateType, predicateDefinition.getName());
+		}
+		if (message != null) {
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
+					INVALID_PREDICATE_ISSUE);
 		}
 	}
 

@@ -114,6 +114,15 @@ public final class ProblemUtil {
 		return true;
 	}
 
+	public static boolean isDerivedStatePredicate(PredicateDefinition predicateDefinition) {
+		if (predicateDefinition == null || isBuiltIn(predicateDefinition)) {
+			return true;
+		}
+		var containingFeature = predicateDefinition.eContainingFeature();
+		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
+				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
+	}
+
 	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
 		return switch (predicateDefinition.getKind()) {
 			case DEFAULT -> predicateDefinition.getBodies().isEmpty();
@@ -123,7 +132,7 @@ public final class ProblemUtil {
 	}
 
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return predicateDefinition.getKind() != PredicateKind.SHADOW && !predicateDefinition.getBodies().isEmpty();
+		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition);
 	}
 
 	public static boolean isTypeLike(Relation relation) {
@@ -140,7 +149,7 @@ public final class ProblemUtil {
 	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
 		return referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 	}
-
+;
 	public static boolean isContainerReference(ReferenceDeclaration referenceDeclaration) {
 		var kind = referenceDeclaration.getKind();
 		if (kind == null) {
