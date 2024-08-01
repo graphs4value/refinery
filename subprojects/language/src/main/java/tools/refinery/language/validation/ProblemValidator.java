@@ -382,7 +382,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkPredicateDefinition(PredicateDefinition predicateDefinition) {
-		if (ProblemUtil.isDerivedStatePredicate(predicateDefinition)) {
+		if (ProblemUtil.isBuiltIn(predicateDefinition) || ProblemUtil.isDerivedStatePredicate(predicateDefinition)) {
 			return;
 		}
 		String message = null;

@@ -29,6 +29,7 @@ import java.util.List;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
@@ -127,7 +128,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		var name = predicate.name();
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
-		propagationBuilder.rule(Rule.of(name + "#invalidLink", builder -> {
+		propagationBuilder.rule(Rule.of(name + "#invalid", builder -> {
 			var parameters = createParameters(builder);
 			int arity = parameters.length;
 			for (int i = 0; i < arity; i++) {
@@ -136,6 +137,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 						not(may(parameterTypes.get(i).call(parameters[i])))
 				);
 			}
+			builder.action(remove(predicate, parameters));
 		}));
 	}
 }

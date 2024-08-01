@@ -115,9 +115,6 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isDerivedStatePredicate(PredicateDefinition predicateDefinition) {
-		if (predicateDefinition == null || isBuiltIn(predicateDefinition)) {
-			return true;
-		}
 		var containingFeature = predicateDefinition.eContainingFeature();
 		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
 				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
@@ -149,7 +146,7 @@ public final class ProblemUtil {
 	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
 		return referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 	}
-;
+
 	public static boolean isContainerReference(ReferenceDeclaration referenceDeclaration) {
 		var kind = referenceDeclaration.getKind();
 		if (kind == null) {
