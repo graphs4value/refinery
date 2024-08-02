@@ -1,0 +1,57 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+% TEST: upper bound propagation
+
+class Person {
+    Person[0..2] friend opposite friend
+}
+
+friend(a, b).
+friend(a, c).
+friend(b, c).
+!exists(Person::new).
+
+% EXPECT:
+friend(b, a).
+friend(c, a).
+friend(c, b).
+!friend(a, a).
+!friend(b, b).
+!friend(c, c).
+
+% TEST: lower bound propagation
+
+class Person {
+    Person[2..*] friend opposite friend
+}
+
+Person(a).
+!friend(a, a).
+!friend(b, b).
+!friend(c, c).
+!exists(Person::new).
+
+% EXPECT:
+friend(a, b).
+friend(a, c).
+friend(b, c).
+
+% TEST: upper and lower bound propagation
+
+class Person {
+    Person[2] friend opposite friend
+}
+
+friend(a, b).
+friend(a, c).
+!friend(b, b).
+!friend(c, c).
+!exists(Person::new).
+
+% EXPECT:
+friend(b, c).
+!friend(a, a).
+!friend(b, b).
+!friend(c, c).

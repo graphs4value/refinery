@@ -41,9 +41,11 @@ class UndirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, 
 		var mergedValue = currentValue.meet(value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			var oldValue = put(key, mergedValue);
-			var inverseOldValue = put(Tuple.of(target, source), mergedValue);
-			if (!Objects.equals(oldValue, inverseOldValue)) {
-				return false;
+			if (source != target) {
+				var inverseOldValue = put(Tuple.of(target, source), mergedValue);
+				if (!Objects.equals(oldValue, inverseOldValue)) {
+					return false;
+				}
 			}
 		}
 		if (value.must()) {
