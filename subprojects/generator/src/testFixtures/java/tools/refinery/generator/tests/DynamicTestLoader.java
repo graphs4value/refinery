@@ -34,8 +34,12 @@ public class DynamicTestLoader {
 	@Inject
 	private Provider<SemanticsTestLoader> testLoaderProvider;
 
-	@Inject
 	private Provider<ModelSemanticsFactory> semanticsFactoryProvider;
+
+	@Inject
+	public void setSemanticsFactoryProvider(Provider<ModelSemanticsFactory> semanticsFactoryProvider) {
+		this.semanticsFactoryProvider = semanticsFactoryProvider;
+	}
 
 	public Stream<DynamicNode> allFromClasspath(Class<?> contextClass) {
 		var paths = getExtraPaths(contextClass);

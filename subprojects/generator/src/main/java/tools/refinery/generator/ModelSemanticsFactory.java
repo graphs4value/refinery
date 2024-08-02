@@ -15,6 +15,8 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import java.util.Collection;
 import java.util.Set;
 
+// This class is used as a fluent builder, so it's not necessary to use the return value of all of its methods.
+@SuppressWarnings("UnusedReturnValue")
 public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanticsFactory> {
 	private boolean withCandidateInterpretations;
 
