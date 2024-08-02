@@ -234,6 +234,65 @@ class SolutionSerializerTest {
 				!exists(a).
 				!exists(Foo::new).
 				Foo(foo1).
+				"""), Arguments.of("""
+				class Foo {
+					partial Bar[] bar
+				}
+
+				class Bar.
+				""", """
+				bar(a, b).
+				scope Foo = 2, Bar = 2.
+				""", """
+				declare a, b, foo1, bar1.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Foo(a).
+				Bar(b).
+				default !bar(*, *).
+				?bar(foo1, bar1).
+				?bar(foo1, b).
+				?bar(a, bar1).
+				bar(a, b).
+				"""), Arguments.of("""
+				class Foo.
+				class Bar.
+				pred bar(Foo x, Bar y).
+				""", """
+				bar(a, b).
+				scope Foo = 2, Bar = 2.
+				""", """
+				declare a, b, foo1, bar1.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Foo(a).
+				Bar(b).
+				default !bar(*, *).
+				bar(a, b).
+				"""), Arguments.of("""
+				class Foo.
+				class Bar.
+				partial pred bar(Foo x, Bar y).
+				""", """
+				bar(a, b).
+				scope Foo = 2, Bar = 2.
+				""", """
+				declare a, b, foo1, bar1.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Foo(a).
+				Bar(b).
+				default !bar(*, *).
+				?bar(foo1, bar1).
+				?bar(foo1, b).
+				?bar(a, bar1).
+				bar(a, b).
 				"""));
 	}
 }

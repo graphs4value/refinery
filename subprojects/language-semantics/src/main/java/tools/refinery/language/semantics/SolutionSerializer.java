@@ -24,6 +24,7 @@ import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
@@ -31,13 +32,15 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.typehierarchy.InferredType;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -107,6 +110,7 @@ public class SolutionSerializer {
 		addExistsAssertions();
 		addClassAssertions();
 		addReferenceAssertions();
+		addBasePredicateAssertions();
 		if (nodeDeclaration.getNodes().isEmpty()) {
 			problem.getStatements().remove(nodeDeclaration);
 		}
@@ -249,8 +253,8 @@ public class SolutionSerializer {
 	}
 
 	private void addClassAssertions() {
-		var types =
-				trace.getMetamodel().typeHierarchy().getPreservedTypes().keySet().stream().collect(Collectors.toMap(Function.identity(), this::findPartialRelation));
+		var types = trace.getMetamodel().typeHierarchy().getPreservedTypes().keySet().stream()
+				.collect(Collectors.toMap(Function.identity(), this::findPartialRelation));
 		var cursor = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL).getAll();
 		while (cursor.move()) {
 			var key = cursor.getKey();
@@ -303,6 +307,17 @@ public class SolutionSerializer {
 		for (var partialRelation : metamodel.undirectedCrossReferences().keySet()) {
 			addDefaultAssertion(partialRelation);
 			addAssertions(partialRelation);
+		}
+	}
+
+	private void addBasePredicateAssertions() {
+		for (var entry : trace.getRelationTrace().entrySet()) {
+			if (entry.getKey() instanceof PredicateDefinition predicateDefinition &&
+					ProblemUtil.isBasePredicate(predicateDefinition)) {
+				var partialRelation = entry.getValue();
+				addDefaultAssertion(partialRelation);
+				addAssertions(partialRelation);
+			}
 		}
 	}
 

@@ -121,6 +121,10 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
+		if (isBuiltIn(predicateDefinition) || predicateDefinition == null) {
+			// Built-in predicates have no clauses, but are not base.
+			return false;
+		}
 		return switch (predicateDefinition.getKind()) {
 			case DEFAULT -> predicateDefinition.getBodies().isEmpty();
 			case PARTIAL -> true;
