@@ -24,17 +24,18 @@ class FileBasedSemanticsTest {
 
 	@TestFactory
 	Stream<DynamicNode> testWithNonExistingObjects() {
-		return getFileBasedTests(true);
+		return getFileBasedTests(true, true);
 	}
 
 	@TestFactory
 	Stream<DynamicNode> testWithoutNonExistingObjects() {
-		return getFileBasedTests(false);
+		return getFileBasedTests(false, false);
 	}
 
-	private Stream<DynamicNode> getFileBasedTests(boolean keepNonExistingObjects) {
+	private Stream<DynamicNode> getFileBasedTests(boolean keepNonExistingObjects, boolean keepShadowPredicates) {
 		loader.setSemanticsFactoryProvider(() -> semanticsFactoryProvider.get()
-				.keepNonExistingObjects(keepNonExistingObjects));
+				.keepNonExistingObjects(keepNonExistingObjects)
+				.keepShadowPredicates(keepShadowPredicates));
 		return loader.allFromClasspath(getClass());
 	}
 }

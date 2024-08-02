@@ -47,7 +47,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 						.throwOnFatalRejection(false))
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder, isKeepNonExistingObjects());
+		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
 		return new ModelSemantics(initializer.getProblemTrace(), store, initializer.getModelSeed());
 	}
