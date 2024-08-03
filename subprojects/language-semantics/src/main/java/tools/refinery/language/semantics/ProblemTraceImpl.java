@@ -113,6 +113,19 @@ class ProblemTraceImpl implements ProblemTrace {
 		}
 	}
 
+	void removeShadowRelations() {
+		var iterator = mutableRelationTrace.entrySet().iterator();
+		while (iterator.hasNext()) {
+			var entry = iterator.next();
+			var relation = entry.getKey();
+			if (relation instanceof PredicateDefinition predicateDefinition &&
+					predicateDefinition.getKind() == PredicateKind.SHADOW) {
+				iterator.remove();
+				mutableInverseTrace.remove(entry.getValue());
+			}
+		}
+	}
+
 	@Override
 	public Map<AnyPartialSymbol, Relation> getInverseRelationTrace() {
 		return inverseTrace;

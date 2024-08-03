@@ -1,0 +1,85 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+% TEST WITH ERRORS: directed cross reference type constraint
+
+class A {
+    B[] foo
+}
+
+class B.
+
+foo(a1, b1).
+!foo(a2, b2).
+?foo(a3, b3).
+foo(a4, b4): error.
+
+% EXPECT EXACTLY:
+foo(a1, b1).
+!foo(a2, b2).
+?foo(a3, b3).
+foo(a4, b4): error.
+A(a1).
+B(b1).
+?A(a2).
+?B(b2).
+?A(a3).
+?B(b3).
+A(a4).
+B(b4).
+
+% TEST: directed cross reference with predicate type
+
+class A {
+    bar[] foo
+}
+
+pred bar(A a) <-> !foo(a, _).
+
+foo(a1, b1).
+
+% EXPECT:
+A(a1).
+bar(b1).
+
+% TEST WITH ERRORS: directed cross reference with predicate type and assertion
+
+class A {
+    bar[] foo
+}
+
+pred bar(A a) <-> !foo(a, _).
+
+!bar(b1).
+foo(a1, b1).
+
+% EXPECT EXACTLY:
+foo(a1, b1): error.
+A(a1).
+bar(b1): error.
+
+% TEST WITH ERRORS: undirected cross reference type constraint
+
+class A {
+    A[] bar opposite bar
+}
+
+bar(a1, b1).
+!bar(a2, b2).
+?bar(a3, b3).
+bar(a4, b4): error.
+
+% EXPECT EXACTLY:
+bar(a1, b1).
+!bar(a2, b2).
+?bar(a3, b3).
+bar(a4, b4): error.
+A(a1).
+A(b1).
+?A(a2).
+?A(b2).
+?A(a3).
+?A(b3).
+A(a4).
+A(b4).

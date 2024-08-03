@@ -35,6 +35,10 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 
 	private int stateCoderDepth = NeighborhoodCalculator.DEFAULT_DEPTH;
 
+	public ModelGeneratorFactory() {
+		keepShadowPredicates(false);
+	}
+
 	@Override
 	protected ModelGeneratorFactory getSelf() {
 		return this;
@@ -70,7 +74,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder, isKeepNonExistingObjects());
+		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
 		var generator = new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				solutionSerializerProvider, cancellationToken, isKeepNonExistingObjects());

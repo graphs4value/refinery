@@ -156,7 +156,10 @@ public class MetadataCreator {
 	}
 
 	private RelationDetail getPredicateDetail(PredicateDefinition predicate) {
-		return PredicateDetail.ofError(predicate.isError());
+		if (ProblemUtil.isBasePredicate(predicate)) {
+			return BasePredicateDetail.INSTANCE;
+		}
+		return PredicateDetail.ofError(predicate.getKind() == PredicateKind.ERROR);
 	}
 
 	private QualifiedName getQualifiedName(EObject eObject) {

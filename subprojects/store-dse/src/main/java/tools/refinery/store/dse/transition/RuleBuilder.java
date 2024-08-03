@@ -65,6 +65,9 @@ public class RuleBuilder extends AbstractQueryBuilder<RuleBuilder> {
 	}
 
 	public Rule build() {
+		if (action == null) {
+			throw new IllegalStateException("Rule '%s' has no action".formatted(name));
+		}
 		var precondition = dnfBuilder.build().asRelation();
 		return new Rule(name, precondition, Action.ofPrecondition(precondition, action));
 	}

@@ -20,6 +20,14 @@ public class SeedInitializer<T extends AbstractValue<T, ?>> implements PartialMo
 		this.partialSymbol = partialSymbol;
 	}
 
+	protected Symbol<T> getSymbol() {
+		return symbol;
+	}
+
+	protected PartialSymbol<T, ?> getPartialSymbol() {
+		return partialSymbol;
+	}
+
 	@Override
 	public void initialize(Model model, ModelSeed modelSeed) {
 		var interpretation = model.getInterpretation(symbol);

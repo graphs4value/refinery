@@ -54,6 +54,10 @@ public class ModelSeed {
 		return getSeed(partialSymbol).getCursor(defaultValue, nodeCount);
 	}
 
+	public <A extends AbstractValue<A, ?>> Cursor<Tuple, A> getCursor(PartialSymbol<A, ?> partialSymbol) {
+		return getCursor(partialSymbol, partialSymbol.defaultValue());
+	}
+
 	public static Builder builder(int nodeCount) {
 		return new Builder(nodeCount);
 	}

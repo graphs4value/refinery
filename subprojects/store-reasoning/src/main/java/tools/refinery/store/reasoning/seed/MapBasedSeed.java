@@ -64,6 +64,10 @@ record MapBasedSeed<T>(int arity, Class<T> valueType, T majorityValue, Map<Tuple
 		public boolean move() {
 			return switch (state) {
 				case INITIAL -> {
+					if (nodeCount == 0) {
+						state = State.TERMINATED;
+						yield false;
+					}
 					state = State.STARTED;
 					yield checkValue() || moveToNext();
 				}

@@ -156,6 +156,7 @@ export const RelationMetadata = z.object({
       opposite: z.string(),
     }),
     z.object({ type: z.literal('predicate'), error: z.boolean() }),
+    z.object({ type: z.literal('base') }),
     z.object({ type: z.literal('builtin') }),
   ]),
 });

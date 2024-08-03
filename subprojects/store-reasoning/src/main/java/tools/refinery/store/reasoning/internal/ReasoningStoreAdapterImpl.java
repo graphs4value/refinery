@@ -10,6 +10,7 @@ import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -107,6 +108,8 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 		for (var initializer : initializers) {
 			initializer.initialize(model, modelSeed);
 		}
+		var reasoningAdapter = ((ReasoningAdapterImpl) model.getAdapter(ReasoningAdapter.class));
+		reasoningAdapter.afterInitialize(modelSeed);
 		var propagationResult = model.tryGetAdapter(PropagationAdapter.class)
 				.map(PropagationAdapter::propagate)
 				.orElse(PropagationResult.UNCHANGED);

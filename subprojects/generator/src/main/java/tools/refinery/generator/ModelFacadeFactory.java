@@ -10,6 +10,8 @@ import com.google.inject.Provider;
 import tools.refinery.language.semantics.ModelInitializer;
 import tools.refinery.store.util.CancellationToken;
 
+// This class is used as a fluent builder, so it's not necessary to use the return value of all of its methods.
+@SuppressWarnings("UnusedReturnValue")
 public abstract sealed class ModelFacadeFactory<T extends ModelFacadeFactory<T>> permits ModelSemanticsFactory,
 		ModelGeneratorFactory {
 	@Inject
@@ -17,7 +19,9 @@ public abstract sealed class ModelFacadeFactory<T extends ModelFacadeFactory<T>>
 
 	private CancellationToken cancellationToken = CancellationToken.NONE;
 
-	private boolean keepNonExistingObjects = false;
+	private boolean keepNonExistingObjects;
+
+	private boolean keepShadowPredicates = true;
 
 	protected abstract T getSelf();
 
@@ -26,13 +30,21 @@ public abstract sealed class ModelFacadeFactory<T extends ModelFacadeFactory<T>>
 		return getSelf();
 	}
 
-	public T keepNonExistingObjects(boolean removeNonExistentObjects) {
-		this.keepNonExistingObjects = removeNonExistentObjects;
+	public T keepNonExistingObjects(boolean keepNonExistentObjects) {
+		this.keepNonExistingObjects = keepNonExistentObjects;
+		return getSelf();
+	}
+
+	public T keepShadowPredicates(boolean keepShadowPredicates) {
+		this.keepShadowPredicates = keepShadowPredicates;
 		return getSelf();
 	}
 
 	protected ModelInitializer createModelInitializer() {
-		return initializerProvider.get();
+		var initializer = initializerProvider.get();
+		initializer.setKeepNonExistingObjects(keepNonExistingObjects);
+		initializer.setKeepShadowPredicates(keepShadowPredicates);
+		return initializer;
 	}
 
 	protected CancellationToken getCancellationToken() {

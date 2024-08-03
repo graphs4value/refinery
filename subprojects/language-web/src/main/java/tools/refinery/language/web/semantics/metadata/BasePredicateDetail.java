@@ -5,6 +5,6 @@
  */
 package tools.refinery.language.web.semantics.metadata;
 
-public sealed interface RelationDetail permits ClassDetail, ReferenceDetail, PredicateDetail, OppositeReferenceDetail,
-		BuiltInDetail, BasePredicateDetail {
+public record BasePredicateDetail() implements RelationDetail {
+	public static final BasePredicateDetail INSTANCE = new BasePredicateDetail();
 }
