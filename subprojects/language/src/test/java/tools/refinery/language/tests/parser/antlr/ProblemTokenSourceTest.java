@@ -12,18 +12,15 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.Token;
 import org.eclipse.xtext.parser.antlr.Lexer;
 import org.eclipse.xtext.parser.antlr.LexerBindings;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.refinery.language.tests.InjectWithRefinery;
 import tools.refinery.language.parser.antlr.IdentifierTokenProvider;
 import tools.refinery.language.parser.antlr.ProblemTokenSource;
 import tools.refinery.language.parser.antlr.internal.InternalProblemParser;
-import tools.refinery.language.tests.ProblemInjectorProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class ProblemTokenSourceTest {
 	@Inject
 	@Named(LexerBindings.RUNTIME)

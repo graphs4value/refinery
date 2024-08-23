@@ -76,6 +76,7 @@ class MultiThreadFuzzTest {
 	@MethodSource
 	@Timeout(value = 10)
 	@Tag("fuzz")
+	@Tag("slow")
 	void parametrizedFastFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean defaultNull,
 							   int commitFrequency, int seed, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("MultiThreadS" + steps + "K" + noKeys + "V" + noValues + defaultNull + "CF" + commitFrequency +

@@ -5,29 +5,35 @@
  * SPDX-License-Identifier: MIT AND EPL-2.0
  */
 
+import path from 'node:path';
+
 import type { MDXOptions } from '@docusaurus/mdx-loader';
+import type { Options as RedirectOptions } from '@docusaurus/plugin-client-redirects';
 import type { Options as DocsOptions } from '@docusaurus/plugin-content-docs';
 import type { Options as PagesOptions } from '@docusaurus/plugin-content-pages';
 import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
 import type { UserThemeConfig } from '@docusaurus/theme-common';
 import type { UserThemeConfig as AlgoliaConfig } from '@docusaurus/theme-search-algolia';
 import type { Config } from '@docusaurus/types';
-import { Config as SwcConfig } from '@swc/core';
+import type { Config as SwcConfig } from '@swc/core';
+import { PropertiesFile } from 'java-properties';
 import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
 
 import remarkPosix2Windows from './src/plugins/remarkPosix2Windows';
+import remarkReplaceVariables from './src/plugins/remarkReplaceVariables';
+
+const properties = new PropertiesFile(
+  path.join(__dirname, '../../gradle.properties'),
+);
 
 const markdownOptions: Partial<MDXOptions> = {
-  remarkPlugins: [[smartypants, { dashes: 'oldschool' }], remarkPosix2Windows],
+  remarkPlugins: [
+    [remarkReplaceVariables, { properties }],
+    [smartypants, { dashes: 'oldschool' }],
+    remarkPosix2Windows,
+  ],
 };
-
-const docsOptions = {
-  ...markdownOptions,
-  sidebarPath: undefined,
-  editUrl:
-    'https://github.com/graphs4value/refinery/edit/main/subprojects/docs',
-} satisfies DocsOptions;
 
 export default {
   title: 'Refinery',
@@ -41,24 +47,34 @@ export default {
     [
       '@docusaurus/plugin-content-docs',
       {
-        id: 'learn',
-        path: 'src/learn',
-        routeBasePath: '/learn',
-        ...docsOptions,
-      } satisfies DocsOptions,
-    ],
-    [
-      '@docusaurus/plugin-content-docs',
-      {
-        id: 'develop',
-        path: 'src/develop',
-        routeBasePath: '/develop',
-        ...docsOptions,
+        path: 'src/docs',
+        routeBasePath: '/',
+        sidebarPath: './sidebars.ts',
+        editUrl:
+          'https://github.com/graphs4value/refinery/edit/main/subprojects/docs',
+        versions: {
+          current: {
+            path: 'snapshot',
+            label: `${String(properties.get('version'))} 🚧`,
+          },
+        },
+        ...markdownOptions,
       } satisfies DocsOptions,
     ],
     [
       '@docusaurus/plugin-content-pages',
       markdownOptions satisfies PagesOptions,
+    ],
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            to: '/develop/java/',
+            from: '/develop/',
+          },
+        ],
+      } satisfies RedirectOptions,
     ],
     '@docusaurus/plugin-sitemap',
     './src/plugins/loadersPlugin.ts',
@@ -78,7 +94,7 @@ export default {
       respectPrefersColorScheme: true,
     },
     prism: {
-      additionalLanguages: ['bash', 'java'],
+      additionalLanguages: ['bash', 'groovy', 'ini', 'java', 'kotlin'],
       theme: themes.oneLight,
       darkTheme: themes.oneDark,
     },
@@ -91,12 +107,14 @@ export default {
       hideOnScroll: true,
       items: [
         {
+          type: 'doc',
           label: 'Learn',
-          to: '/learn',
+          docId: 'learn/index',
         },
         {
+          type: 'doc',
           label: 'Develop',
-          to: '/develop',
+          docId: 'develop/java',
         },
         {
           label: 'GitHub',
@@ -108,6 +126,10 @@ export default {
           position: 'right',
           href: 'https://refinery.services/',
           className: 'navbar__link--try-now',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
         },
       ],
     },
@@ -139,7 +161,7 @@ export default {
           items: [
             {
               label: 'Programming guide',
-              to: '/develop',
+              to: '/develop/java',
             },
             {
               label: 'Contributing',
@@ -205,10 +227,8 @@ export default {
       appId: 'KYHOYEO80F',
       apiKey: '152acfb8d1ad9e10f29f083a6b017a69',
       indexName: 'refinery',
-      // We don't have any context specified, so we need to disable this to return results.
-      contextualSearch: false,
       // Javadoc doesn't use the Docusaurus router and has to be navigated to with `location.href` instead.
-      externalUrlRegex: '/develop/javadoc/.+',
+      externalUrlRegex: '/([^/]+/)?develop/javadoc/.+',
     },
   } satisfies UserThemeConfig & AlgoliaConfig,
   webpack: {

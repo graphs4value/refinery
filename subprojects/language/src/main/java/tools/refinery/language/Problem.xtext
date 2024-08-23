@@ -57,9 +57,14 @@ ReferenceDeclaration:
 ReferenceMultiplicity returns Multiplicity:
 	"[" Multiplicity "]";
 
+enum ErrorPredicateKind returns PredicateKind:
+	ERROR="error";
+
+enum PredicateKind:
+	ERROR="error" | PARTIAL="partial" | SHADOW="shadow";
+
 PredicateDefinition:
-	shadow?="shadow"?
-	("pred" | error?="error" "pred"?)
+	(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
@@ -294,7 +299,7 @@ Identifier:
 
 NonContainmentIdentifier:
 	ID | "atom" | "multi" | "contained" | "problem" | "module" |
-	"datatype" | "aggregator" | "decision" | "propagation" | "computed";
+	"datatype" | "aggregator" | "decision" | "propagation" | "shadow";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

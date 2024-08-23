@@ -52,8 +52,7 @@ statement {
     kw<"extern"> ckw<"aggregator"> AggregatorName "."
   } |
   PredicateDefinition {
-    ckw<"shadow">?
-    (kw<"error">? kw<"pred"> | kw<"error">)
+    ((kw<"error"> | kw<"partial"> | ckw<"shadow">)* kw<"pred"> | kw<"error">)
     RelationName ParameterList<Parameter>?
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |

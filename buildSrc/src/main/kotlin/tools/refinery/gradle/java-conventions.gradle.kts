@@ -120,10 +120,10 @@ fun collectDependentProjectsTransitively(dependentProject: Project, dependentPro
 
 gradle.projectsEvaluated {
 	tasks.javadoc {
-		val dependentProjects = HashSet<Project>()
+		val dependentProjects = LinkedHashSet<Project>()
 		collectDependentProjectsTransitively(project, dependentProjects)
 		val links = ArrayList<JavadocOfflineLink>()
-		for (dependentProject in dependentProjects) {
+		for (dependentProject in dependentProjects.sortedBy { it.name }) {
 			dependsOn(dependentProject.tasks.javadoc)
 			val javadocDir = dependentProject.layout.buildDirectory.map { it.dir("docs/javadoc") }
 			inputs.dir(javadocDir)

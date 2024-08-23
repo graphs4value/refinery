@@ -6,23 +6,19 @@
 package tools.refinery.language.tests.parser.antlr;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.refinery.language.tests.InjectWithRefinery;
 import tools.refinery.language.parser.antlr.IdentifierTokenProvider;
 import tools.refinery.language.parser.antlr.internal.InternalProblemParser;
-import tools.refinery.language.tests.ProblemInjectorProvider;
 
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class IdentifierTokenProviderTest {
 	@Inject
 	private IdentifierTokenProvider identifierTokenProvider;

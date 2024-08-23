@@ -26,12 +26,20 @@ public class ConcreteSymbolRefiner<A extends AbstractValue<A, C>, C>
 
 	@Override
 	public boolean merge(Tuple key, A value) {
-		var currentValue = interpretation.get(key);
+		var currentValue = get(key);
 		var mergedValue = currentValue.meet(value);
 		if (!Objects.equals(currentValue, mergedValue)) {
-			interpretation.put(key, mergedValue);
+			put(key, mergedValue);
 		}
 		return true;
+	}
+
+	protected A get(Tuple key) {
+		return interpretation.get(key);
+	}
+
+	protected A put(Tuple key, A value) {
+		return interpretation.put(key, value);
 	}
 
 	public static <A1 extends AbstractValue<A1, C1>, C1> Factory<A1, C1> of(Symbol<A1> concreteSymbol) {

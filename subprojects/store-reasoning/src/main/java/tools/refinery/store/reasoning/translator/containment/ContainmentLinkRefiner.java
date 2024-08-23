@@ -21,14 +21,19 @@ import java.util.Set;
 class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner<TruthValue, Boolean> {
 	private final Factory factory;
 	private final Interpretation<InferredContainment> interpretation;
-	private final PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
-	private final PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
 
 	private ContainmentLinkRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 								   Factory factory) {
 		super(adapter, partialSymbol);
 		this.factory = factory;
 		interpretation = adapter.getModel().getInterpretation(factory.symbol);
+	}
+
+	@Override
+	public void afterCreate() {
+		var adapter = getAdapter();
 		sourceRefiner = adapter.getRefiner(factory.sourceType);
 		targetRefiner = adapter.getRefiner(factory.targetType);
 	}

@@ -22,25 +22,38 @@ val javadocs: Configuration by configurations.creating {
 	isCanBeResolved = true
 }
 
+val releasedJavadocs: Configuration by configurations.creating {
+	isCanBeConsumed = false
+	isCanBeResolved = true
+}
+
+val interpreterGroup = property("tools.refinery.interpreter.group").toString()
+val releasedVersion = property("tools.refinery.release").toString()
+val releasedInterpreterVersion = property("tools.refinery.interpreter.release").toString()
+
+repositories {
+	mavenCentral()
+}
+
 dependencies {
 	gradle.projectsEvaluated {
 		for (subproject in rootProject.subprojects) {
 			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
 				javadocs(project(subproject.path, "javadocElements"))
+				val releasedProjectVersion = if (subproject.group.toString() == interpreterGroup)
+					releasedInterpreterVersion else releasedVersion
+				releasedJavadocs("${subproject.group}:${subproject.name}:$releasedProjectVersion:javadoc@jar")
 			}
 		}
 	}
 
 	javadocs(project(":refinery-gradle-plugins", "javadocElements"))
+	releasedJavadocs("tools.refinery:refinery-gradle-plugins:$releasedVersion:javadoc@jar")
 }
 
 val srcDir = "src"
-
 val docusaurusOutputDir = layout.buildDirectory.dir("docusaurus")
-
 val javadocsDir = layout.buildDirectory.dir("javadocs")
-
-val javadocsDocsDir = javadocsDir.map { root -> root.dir("develop/javadoc") }
 
 val configFiles: FileCollection = files(
 	rootProject.file("yarn.lock"),
@@ -56,25 +69,57 @@ val lintConfigFiles: FileCollection = configFiles + files(
 	rootProject.file(".eslintrc.cjs"), rootProject.file("prettier.config.cjs")
 )
 
-tasks {
-	val extractJavadocs by registering {
-		dependsOn(javadocs)
-		outputs.dir(javadocsDir)
-		doFirst {
-			delete(javadocsDir)
+abstract class ExtractJavadocTask : DefaultTask() {
+	@get:OutputDirectory
+	abstract val targetDir: DirectoryProperty
+
+	@get:Input
+	abstract val resolvedJavadocArtifacts: MapProperty<String, File>
+
+	@get:Inject
+	abstract val fs: FileSystemOperations
+
+	@get:Inject
+	abstract val archive: ArchiveOperations
+
+	@TaskAction
+	fun action() {
+		fs.delete {
+			delete(targetDir)
 		}
-		doLast {
-			javadocs.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
-				copy {
-					from(zipTree(artifact.file))
-					into(javadocsDocsDir.map { root -> root.dir(artifact.moduleVersion.id.name) })
-				}
+		val javadocsDocsDir = targetDir.get()
+		resolvedJavadocArtifacts.get().forEach { artifact ->
+			fs.copy {
+				from(archive.zipTree(artifact.value))
+				into(javadocsDocsDir.dir(artifact.key))
 			}
 		}
 	}
+}
+
+fun resolveJavadocs(configuration: Configuration): Provider<Map<String, File>> {
+	return provider {
+		configuration.resolvedConfiguration.resolvedArtifacts.associate { artifact ->
+			artifact.moduleVersion.id.name to artifact.file
+		}
+	}
+}
+
+tasks {
+	val extractJavadocs by registering(ExtractJavadocTask::class) {
+		dependsOn(javadocs)
+		targetDir = javadocsDir.map { it.dir("snapshot/develop/javadoc" ) }
+		resolvedJavadocArtifacts = resolveJavadocs(javadocs)
+	}
+
+	val extractReleasedJavadocs by registering(ExtractJavadocTask::class) {
+		dependsOn(releasedJavadocs)
+		targetDir = javadocsDir.map { it.dir("develop/javadoc" ) }
+		resolvedJavadocArtifacts = resolveJavadocs(releasedJavadocs)
+	}
 
 	assembleFrontend {
-		dependsOn(extractJavadocs)
+		dependsOn(extractJavadocs, extractReleasedJavadocs)
 		inputs.dir(srcDir)
 		inputs.dir("static")
 		inputs.dir(javadocsDir)

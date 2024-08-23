@@ -18,6 +18,7 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
@@ -105,6 +106,9 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 			var factory = entry.getValue();
 			var refiner = createRefiner(factory, partialSymbol);
 			refiners.put(partialSymbol, refiner);
+		}
+		for (var refiner : refiners.values()) {
+			refiner.afterCreate();
 		}
 	}
 
@@ -213,5 +217,11 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 	public int getNodeCount() {
 		Integer nodeCount = nodeCountInterpretation.get(Tuple.of());
 		return nodeCount == null ? 0 : nodeCount;
+	}
+
+	void afterInitialize(ModelSeed modelSeed) {
+		for (var refiner : refiners.values()) {
+			refiner.afterInitialize(modelSeed);
+		}
 	}
 }

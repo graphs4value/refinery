@@ -1,0 +1,47 @@
+% SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+abstract class A.
+
+class B extends A.
+
+class C extends A.
+
+class D extends A.
+
+% TEST: negative subclasses
+!B(a).
+!C(a).
+!D(a).
+% EXPECT:
+!A(a).
+
+% TEST: infer subclass by exclusion
+A(a).
+!B(a).
+!C(a).
+% EXPECT:
+D(a).
+
+% TEST: candidate rounding
+A(a).
+% EXPECT EXACTLY:
+?B(a).
+?C(a).
+?D(a).
+% EXPECT CANDIDATE:
+B(a).
+!C(a).
+!D(a).
+
+% TEST: candidate rounding with exclusion
+A(a).
+!B(a).
+% EXPECT EXACTLY:
+?C(a).
+?D(a).
+% EXPECT CANDIDATE:
+!B(a).
+C(a).
+!D(a).

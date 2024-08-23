@@ -39,7 +39,9 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
+import tools.refinery.store.reasoning.translator.predicate.BasePredicateTranslator;
 import tools.refinery.store.reasoning.translator.predicate.PredicateTranslator;
+import tools.refinery.store.reasoning.translator.predicate.ShadowPredicateTranslator;
 import tools.refinery.store.statecoding.StateCoderBuilder;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
@@ -67,6 +69,10 @@ public class ModelInitializer {
 
 	@Inject
 	private RuleCompiler ruleCompiler;
+
+	private boolean keepNonExistingObjects;
+
+	private boolean keepShadowPredicates = true;
 
 	private Problem problem;
 
@@ -180,10 +186,6 @@ public class ModelInitializer {
 	}
 
 	public void configureStoreBuilder(ModelStoreBuilder storeBuilder) {
-		configureStoreBuilder(storeBuilder, false);
-	}
-
-	public void configureStoreBuilder(ModelStoreBuilder storeBuilder, boolean keepNonExistingObjects) {
 		checkProblem();
 		try {
 			storeBuilder.with(new MultiObjectTranslator(keepNonExistingObjects));
@@ -198,6 +200,9 @@ public class ModelInitializer {
 			collectRules(storeBuilder);
 			storeBuilder.tryGetAdapter(StateCoderBuilder.class)
 					.ifPresent(stateCoderBuilder -> stateCoderBuilder.individuals(individuals));
+			if (!keepShadowPredicates) {
+				problemTrace.removeShadowRelations();
+			}
 		} catch (TranslationException e) {
 			throw problemTrace.wrapException(e);
 		}
@@ -291,7 +296,7 @@ public class ModelInitializer {
 
 	private void collectPredicateDefinitionSymbol(PredicateDefinition predicateDefinition) {
 		int arity = predicateDefinition.getParameters().size();
-		if (predicateDefinition.isError()) {
+		if (predicateDefinition.getKind() == PredicateKind.ERROR) {
 			collectPartialRelation(predicateDefinition, arity, TruthValue.FALSE, TruthValue.FALSE);
 		} else {
 			collectPartialRelation(predicateDefinition, arity, null, TruthValue.UNKNOWN);
@@ -596,26 +601,32 @@ public class ModelInitializer {
 	}
 
 	private void collectPredicateDefinition(PredicateDefinition predicateDefinition, ModelStoreBuilder storeBuilder) {
+		if (ProblemUtil.isBasePredicate(predicateDefinition)) {
+			collectBasePredicateDefinition(predicateDefinition, storeBuilder);
+		} else if (predicateDefinition.getKind() == PredicateKind.SHADOW) {
+			collectShadowPredicateDefinition(predicateDefinition, storeBuilder);
+		} else {
+			collectComputedPredicateDefinition(predicateDefinition, storeBuilder);
+		}
+	}
+
+	private void collectComputedPredicateDefinition(PredicateDefinition predicateDefinition,
+													ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var query = queryCompiler.toQuery(partialRelation.name(), predicateDefinition);
-		boolean mutable;
+		boolean mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
 		TruthValue defaultValue;
-		if (predicateDefinition.isShadow()) {
-			mutable = false;
-			defaultValue = TruthValue.UNKNOWN;
+		if (predicateDefinition.getKind() == PredicateKind.ERROR) {
+			defaultValue = TruthValue.FALSE;
 		} else {
-			mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
-			if (predicateDefinition.isError()) {
-				defaultValue = TruthValue.FALSE;
-			} else {
-				var seed = modelSeed.getSeed(partialRelation);
-				defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
-				var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
-				// The symbol should be mutable if there is at least one non-default entry in the seed.
-				mutable = mutable || cursor.move();
-			}
+			var seed = modelSeed.getSeed(partialRelation);
+			defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+			var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
+			// The symbol should be mutable if there is at least one non-default entry in the seed.
+			mutable = mutable || cursor.move();
 		}
-		var translator = new PredicateTranslator(partialRelation, query, mutable, defaultValue);
+		var parameterTypes = getParameterTypes(predicateDefinition, null);
+		var translator = new PredicateTranslator(partialRelation, query, parameterTypes, mutable, defaultValue);
 		storeBuilder.with(translator);
 	}
 
@@ -626,6 +637,36 @@ public class ModelInitializer {
 			}
 		}
 		return false;
+	}
+
+	private List<PartialRelation> getParameterTypes(ParametricDefinition parametricDefinition,
+													PartialRelation defaultType) {
+		var parameters = parametricDefinition.getParameters();
+		var parameterTypes = new ArrayList<PartialRelation>(parameters.size());
+		for (var parameter : parameters) {
+			var relation = parameter.getParameterType();
+			parameterTypes.add(relation == null ? defaultType : getPartialRelation(relation));
+		}
+		return Collections.unmodifiableList(parameterTypes);
+	}
+
+	private void collectBasePredicateDefinition(PredicateDefinition predicateDefinition,
+												ModelStoreBuilder storeBuilder) {
+		var partialRelation = getPartialRelation(predicateDefinition);
+		var parameterTypes = getParameterTypes(predicateDefinition, nodeRelation);
+		var seed = modelSeed.getSeed(partialRelation);
+		var defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+		boolean partial = predicateDefinition.getKind() == PredicateKind.PARTIAL;
+		var translator = new BasePredicateTranslator(partialRelation, parameterTypes, defaultValue, partial);
+		storeBuilder.with(translator);
+	}
+
+	private void collectShadowPredicateDefinition(PredicateDefinition predicateDefinition,
+												  ModelStoreBuilder storeBuilder) {
+		var partialRelation = getPartialRelation(predicateDefinition);
+		var query = queryCompiler.toQuery(partialRelation.name(), predicateDefinition);
+		var translator = new ShadowPredicateTranslator(partialRelation, query, keepShadowPredicates);
+		storeBuilder.with(translator);
 	}
 
 	private void collectScopes() {
@@ -674,6 +715,18 @@ public class ModelInitializer {
 			scopePropagator = new ScopePropagator();
 		}
 		scopePropagator.scope(type, interval);
+	}
+
+	public void setKeepNonExistingObjects(boolean keepNonExistingObjects) {
+		this.keepNonExistingObjects = keepNonExistingObjects;
+	}
+
+	public boolean isKeepShadowPredicates() {
+		return keepShadowPredicates;
+	}
+
+	public void setKeepShadowPredicates(boolean keepShadowPredicates) {
+		this.keepShadowPredicates = keepShadowPredicates;
 	}
 
 	private record RelationInfo(PartialRelation partialRelation, MutableSeed<TruthValue> assertions,

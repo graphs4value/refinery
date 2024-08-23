@@ -6,22 +6,17 @@
 package tools.refinery.language.tests.validation;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tools.refinery.language.model.tests.utils.ProblemParseHelper;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
+import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.language.validation.ProblemValidator;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.is;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class AssertionValidationTest {
 	@Inject
 	private ProblemParseHelper parseHelper;
@@ -106,5 +101,19 @@ class AssertionValidationTest {
 		var issues = problem.validate();
 		assertThat(issues, not(hasItem(hasProperty("issueCode",
 				is(ProblemValidator.UNSUPPORTED_ASSERTION_ISSUE)))));
+	}
+
+	@Test
+	void errorPredicateAssertionTest() {
+		var problem = parseHelper.parse("""
+				class Foo.
+
+				error bar(x) <-> Foo(x).
+
+				bar(f1).
+				""");
+		var issues = problem.validate();
+		assertThat(issues, hasItem(hasProperty("issueCode",
+				is(ProblemValidator.UNSUPPORTED_ASSERTION_ISSUE))));
 	}
 }

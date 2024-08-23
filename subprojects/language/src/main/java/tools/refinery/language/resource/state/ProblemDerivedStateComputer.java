@@ -102,7 +102,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			if (declaration.getInvalidMultiplicity() == null) {
 				var invalidMultiplicity = adapter.createInvalidMultiplicityPredicateIfAbsent(declaration, key -> {
 					var predicate = ProblemFactory.eINSTANCE.createPredicateDefinition();
-					predicate.setError(true);
+					predicate.setKind(PredicateKind.ERROR);
 					predicate.setName("invalidMultiplicity");
 					var parameter = ProblemFactory.eINSTANCE.createParameter();
 					parameter.setParameterType(containingClassDeclaration);
@@ -125,7 +125,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		if (ProblemUtil.hasComputedValue(predicateDefinition)) {
 			var computedValue = adapter.createComputedValuePredicateIfAbsent(predicateDefinition, key -> {
 				var predicate = ProblemFactory.eINSTANCE.createPredicateDefinition();
-				predicate.setShadow(true);
+				predicate.setKind(PredicateKind.SHADOW);
 				predicate.setName("computed");
 				return predicate;
 			});

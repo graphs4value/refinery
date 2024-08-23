@@ -6,5 +6,5 @@
 package tools.refinery.language.web.semantics.metadata;
 
 public sealed interface RelationDetail permits ClassDetail, ReferenceDetail, PredicateDetail, OppositeReferenceDetail,
-		BuiltInDetail {
+		BuiltInDetail, BasePredicateDetail {
 }

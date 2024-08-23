@@ -6,6 +6,7 @@
 
 plugins {
 	id("tools.refinery.gradle.java-library")
+	id("tools.refinery.gradle.java-test-fixtures")
 }
 
 mavenArtifact {
@@ -15,5 +16,6 @@ mavenArtifact {
 dependencies {
 	api(project(":refinery-language-semantics"))
 	implementation(project(":refinery-store-query-interpreter"))
-	testImplementation(testFixtures(project(":refinery-language")))
+	testFixturesApi(testFixtures(project(":refinery-language")))
+	testFixturesImplementation(libs.junit.api)
 }

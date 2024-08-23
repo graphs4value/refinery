@@ -7,14 +7,11 @@ package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.language.model.tests.utils.ProblemParseHelper;
-import tools.refinery.language.tests.ProblemInjectorProvider;
+import tools.refinery.language.tests.InjectWithRefinery;
+import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
@@ -34,8 +31,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(ProblemInjectorProvider.class)
+@InjectWithRefinery
 class SolutionSerializerTest {
 	@Inject
 	private ProblemParseHelper parseHelper;
@@ -238,6 +234,65 @@ class SolutionSerializerTest {
 				!exists(a).
 				!exists(Foo::new).
 				Foo(foo1).
+				"""), Arguments.of("""
+				class Foo {
+					partial Bar[] bar
+				}
+
+				class Bar.
+				""", """
+				bar(a, b).
+				scope Foo = 2, Bar = 2.
+				""", """
+				declare a, b, foo1, bar1.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Foo(a).
+				Bar(b).
+				default !bar(*, *).
+				?bar(foo1, bar1).
+				?bar(foo1, b).
+				?bar(a, bar1).
+				bar(a, b).
+				"""), Arguments.of("""
+				class Foo.
+				class Bar.
+				pred bar(Foo x, Bar y).
+				""", """
+				bar(a, b).
+				scope Foo = 2, Bar = 2.
+				""", """
+				declare a, b, foo1, bar1.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Foo(a).
+				Bar(b).
+				default !bar(*, *).
+				bar(a, b).
+				"""), Arguments.of("""
+				class Foo.
+				class Bar.
+				partial pred bar(Foo x, Bar y).
+				""", """
+				bar(a, b).
+				scope Foo = 2, Bar = 2.
+				""", """
+				declare a, b, foo1, bar1.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Foo(a).
+				Bar(b).
+				default !bar(*, *).
+				?bar(foo1, bar1).
+				?bar(foo1, b).
+				?bar(a, bar1).
+				bar(a, b).
 				"""));
 	}
 }

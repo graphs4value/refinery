@@ -81,6 +81,12 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/FOCUS"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/MULTI"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//PredicateKind">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/DEFAULT"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/ERROR"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/SHADOW"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/PARTIAL"/>
+    </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/statements"/>
@@ -105,8 +111,7 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//PredicateDefinition">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//PredicateDefinition/bodies"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//PredicateDefinition/error"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//PredicateDefinition/shadow"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//PredicateDefinition/kind"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//PredicateDefinition/computedValue"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Parameter">

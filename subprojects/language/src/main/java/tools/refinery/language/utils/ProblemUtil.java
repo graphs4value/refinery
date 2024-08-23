@@ -50,17 +50,19 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isError(EObject eObject) {
-		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isError();
+		return eObject instanceof PredicateDefinition predicateDefinition &&
+				predicateDefinition.getKind() == PredicateKind.ERROR;
 	}
 
 	public static boolean isShadow(EObject eObject) {
-		return eObject instanceof PredicateDefinition predicateDefinition && predicateDefinition.isShadow();
+		return eObject instanceof PredicateDefinition predicateDefinition &&
+				predicateDefinition.getKind() == PredicateKind.SHADOW;
 	}
 
 	public static boolean mayReferToShadow(EObject context) {
 		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
 		return switch (definitionContext) {
-			case PredicateDefinition predicateDefinition -> predicateDefinition.isShadow();
+			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
 			case RuleDefinition ignored -> true;
 			case null, default -> false;
 		};
@@ -112,8 +114,26 @@ public final class ProblemUtil {
 		return true;
 	}
 
+	public static boolean isDerivedStatePredicate(PredicateDefinition predicateDefinition) {
+		var containingFeature = predicateDefinition.eContainingFeature();
+		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
+				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
+	}
+
+	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
+		if (isBuiltIn(predicateDefinition) || predicateDefinition == null) {
+			// Built-in predicates have no clauses, but are not base.
+			return false;
+		}
+		return switch (predicateDefinition.getKind()) {
+			case DEFAULT -> predicateDefinition.getBodies().isEmpty();
+			case PARTIAL -> true;
+			default -> false;
+		};
+	}
+
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return !predicateDefinition.isShadow() && !predicateDefinition.getBodies().isEmpty();
+		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition);
 	}
 
 	public static boolean isTypeLike(Relation relation) {

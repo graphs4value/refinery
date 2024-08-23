@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="526pt" height="88pt" viewBox="-6 -6 537.6199951171875 100.4000015258789" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="refinery-KGyg4OhNwvGOkw-tAzU-g"><style>.refinery-KGyg4OhNwvGOkw-tAzU-g{}.refinery-KGyg4OhNwvGOkw-tAzU-g .node{}.refinery-KGyg4OhNwvGOkw-tAzU-g .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node .node-outline{stroke:#19202b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node .node-header{fill:rgb(53, 161, 173);}.refinery-KGyg4OhNwvGOkw-tAzU-g .node .node-bg{fill:#fff;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-INDIVIDUAL .node-outline{stroke-width:2;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-shadow.node-bg{fill:#19202b;opacity:0.24;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-g .node-header{fill:#e5c07b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-h .node-header{fill:#e06c75;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-i .node-header{fill:#98c379;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-j .node-header{fill:#c678dd;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-k .node-header{fill:#80a7f4;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-l .node-header{fill:#e3d1b2;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-m .node-header{fill:#e78b8f;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-n .node-header{fill:#abcc94;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-o .node-header{fill:#dbb2e8;}.refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-p .node-header{fill:#92c0e9;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge{}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge .edge-line{stroke:#19202b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge .edge-arrow{fill:#19202b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN{}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN text{fill:#696c77;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN .edge-line{stroke:#696c77;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN .edge-arrow{fill:none;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR{}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR text{fill:#ca1243;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR .edge-line{stroke:#ca1243;}.refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR .edge-arrow{fill:#ca1243;}.refinery-KGyg4OhNwvGOkw-tAzU-g .icon-TRUE{fill:#19202b;}.refinery-KGyg4OhNwvGOkw-tAzU-g .icon-UNKNOWN{fill:#696c77;}.refinery-KGyg4OhNwvGOkw-tAzU-g .icon-ERROR{fill:#ca1243;}.refinery-KGyg4OhNwvGOkw-tAzU-g text.label-UNKNOWN{fill:#696c77;}.refinery-KGyg4OhNwvGOkw-tAzU-g text.label-ERROR{fill:#ca1243;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g{}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node{}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node .node-outline{stroke:#ebebff;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node .node-header{fill:rgb(60, 127, 135);}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node .node-bg{fill:#282c34;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-INDIVIDUAL .node-outline{stroke-width:2;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-shadow.node-bg{fill:#ebebff;opacity:0.32;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-g .node-header{fill:#ae8003;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-h .node-header{fill:#a23b47;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-i .node-header{fill:#428141;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-j .node-header{fill:#854797;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-k .node-header{fill:#3982bb;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-l .node-header{fill:#827662;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-m .node-header{fill:#904f53;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-n .node-header{fill:#647e63;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-o .node-header{fill:#805f89;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .node-typeHash-p .node-header{fill:#4f7799;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge{}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge .edge-line{stroke:#ebebff;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge .edge-arrow{fill:#ebebff;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN{}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN text{fill:#abb2bf;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN .edge-line{stroke:#abb2bf;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-UNKNOWN .edge-arrow{fill:none;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR{}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR text{fill:#e06c75;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR .edge-line{stroke:#e06c75;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .edge-ERROR .edge-arrow{fill:#e06c75;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .icon-TRUE{fill:#ebebff;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .icon-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g .icon-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g text.label-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-KGyg4OhNwvGOkw-tAzU-g text.label-ERROR{fill:#e06c75;}</style><defs><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE" class="icon-TRUE"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-KGyg4OhNwvGOkw-tAzU-g-icon-UNKNOWN" class="icon-UNKNOWN"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-KGyg4OhNwvGOkw-tAzU-g-icon-ERROR" class="icon-ERROR"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12L17 15.59z"/></svg></defs>
+<g class="graph" transform="translate(4, 84.4000015258789)">
+<!-- n0 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-j"><rect stroke="none" x="5.5" y="-66.5" width="100" height="65" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="0" y="-72.4" width="99.3" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="-4" y="-76" width="107" height="27" clip-path="url(#refinery-KGyg4OhNwvGOkw-tAzU-g-clip-0)" class="node-header"/>
+<text text-anchor="start" x="5" y="-56.6" font-size="12.00">FileSystem::new</text>
+<use x="6" y="-27" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/><use x="6" y="-43" width="12" height="12" class="icon icon-UNKNOWN" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-UNKNOWN"/>
+<g><text text-anchor="start" x="21.76" y="-17.2" font-size="12.00" class="label label-TRUE">FileSystem</text>
+</g><g><text text-anchor="start" x="22" y="-33.2" font-size="12.00" class="label label-UNKNOWN">exists</text>
+</g>
+<polyline points="0,-49 99.3,-49" class="node-outline"/>
+
+<rect fill="none" x="0" y="-72.4" width="99.3" height="64.4" rx="12" ry="12" class="node-outline"/>
+
+<clipPath id="refinery-KGyg4OhNwvGOkw-tAzU-g-clip-0"><rect stroke="none" x="0" y="-72.4" width="99.3" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n1 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-i"><rect stroke="none" x="140.5" y="-66.5" width="60" height="65" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="135.15" y="-72.4" width="59" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="131" y="-76" width="67" height="27" clip-path="url(#refinery-KGyg4OhNwvGOkw-tAzU-g-clip-1)" class="node-header"/>
+<text text-anchor="start" x="140.24" y="-56.6" font-size="12.00">File::new</text>
+<use x="141.151" y="-27" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/><use x="141.151" y="-43" width="12" height="12" class="icon icon-UNKNOWN" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-UNKNOWN"/>
+<g><text text-anchor="start" x="157.15" y="-17.2" font-size="12.00" class="label label-TRUE">File</text>
+</g><g><text text-anchor="start" x="156.78" y="-33.2" font-size="12.00" class="label label-UNKNOWN">exists</text>
+</g>
+<polyline points="135.15,-49 194.15,-49" class="node-outline"/>
+
+<rect fill="none" x="135.15" y="-72.4" width="59" height="64.4" rx="12" ry="12" class="node-outline"/>
+
+<clipPath id="refinery-KGyg4OhNwvGOkw-tAzU-g-clip-1"><rect stroke="none" x="135.15" y="-72.4" width="59" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g><g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M99.21,-51.89C109.72,-50.7 117.3,-46.8 117.3,-40.2 117.3,-36.28 114.63,-33.31 110.26,-31.3" class="edge-line"/>
+<polygon points="111.23,-27.94 100.68,-28.89 109.52,-34.73 111.23,-27.94" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="116.8" y="-54.85" font-size="10.50">equals</text>
+</g>
+<!-- n2 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-k"><rect stroke="none" x="235.5" y="-74.5" width="59" height="81" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="230.15" y="-80.4" width="58.99999999999997" height="80.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="226" y="-84" width="66" height="27" clip-path="url(#refinery-KGyg4OhNwvGOkw-tAzU-g-clip-2)" class="node-header"/>
+<text text-anchor="start" x="236.4" y="-64.6" font-size="12.00">Dir::new</text>
+<use x="236.151" y="-35" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/><use x="236.151" y="-51" width="12" height="12" class="icon icon-UNKNOWN" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-UNKNOWN"/>
+<g><text text-anchor="start" x="252.15" y="-25.2" font-size="12.00" class="label label-TRUE">File</text>
+</g><g><text text-anchor="start" x="251.78" y="-41.2" font-size="12.00" class="label label-UNKNOWN">exists</text>
+</g>
+<polyline points="230.15,-57 289.15,-57" class="node-outline"/><use x="236.151" y="-19" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/>
+
+
+<rect fill="none" x="230.15" y="-80.4" width="58.99999999999997" height="80.4" rx="12" ry="12" class="node-outline"/><g><text text-anchor="start" x="252.15" y="-9.2" font-size="12.00" class="label label-TRUE">Dir</text>
+</g>
+
+
+<clipPath id="refinery-KGyg4OhNwvGOkw-tAzU-g-clip-2"><rect stroke="none" x="230.15" y="-80.4" width="58.99999999999997" height="80.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n3 -->
+<!-- n2&#45;&gt;n2 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M288.87,-55.27C298.99,-55.43 307.15,-50.41 307.15,-40.2 307.15,-34.14 304.27,-29.91 299.82,-27.5" class="edge-line"/>
+<polygon points="300.87,-24.15 290.35,-25.45 299.38,-30.99 300.87,-24.15" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="305.48" y="-58.42" font-size="10.50">equals</text>
+</g>
+<!-- n3 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-k">
+
+<rect stroke="none" x="325.13" y="-80.4" width="65.04000000000002" height="80.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="321" y="-84" width="73" height="27" clip-path="url(#refinery-KGyg4OhNwvGOkw-tAzU-g-clip-3)" class="node-header"/>
+<text text-anchor="start" x="330.13" y="-64.6" font-size="12.00">resources</text>
+<use x="331.133" y="-35" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/><use x="331.133" y="-51" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/>
+<g><text text-anchor="start" x="347.13" y="-25.2" font-size="12.00" class="label label-TRUE">File</text>
+</g><g><text text-anchor="start" x="346.76" y="-41.2" font-size="12.00" class="label label-TRUE">exists</text>
+</g>
+<polyline points="325.13,-57 390.17,-57" class="node-outline"/><use x="331.133" y="-19" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/>
+
+
+<rect fill="none" x="325.13" y="-80.4" width="65.04000000000002" height="80.4" rx="12" ry="12" class="node-outline"/><g><text text-anchor="start" x="347.13" y="-9.2" font-size="12.00" class="label label-TRUE">Dir</text>
+</g>
+
+
+<clipPath id="refinery-KGyg4OhNwvGOkw-tAzU-g-clip-3"><rect stroke="none" x="325.13" y="-80.4" width="65.04000000000002" height="80.4" rx="12" ry="12" class="node-bg"/></clipPath></g><g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M193.87,-52.27C203.99,-52.4 212.15,-48.38 212.15,-40.2 212.15,-35.47 209.42,-32.13 205.17,-30.18" class="edge-line"/>
+<polygon points="205.83,-26.75 195.36,-28.4 204.57,-33.63 205.83,-26.75" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="210.48" y="-55.42" font-size="10.50">equals</text>
+</g>
+<!-- n4 -->
+
+<!-- n3&#45;&gt;n3 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M389.72,-55.27C400.01,-55.12 408.17,-50.09 408.17,-40.2 408.17,-34.33 405.29,-30.17 400.8,-27.73" class="edge-line"/>
+<polygon points="401.73,-24.35 391.19,-25.47 400.13,-31.16 401.73,-24.35" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="406.34" y="-58.41" font-size="10.50">equals</text>
+</g>
+<!-- n4 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="426.15" y="-80.4" width="59" height="80.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="422" y="-84" width="67" height="27" clip-path="url(#refinery-KGyg4OhNwvGOkw-tAzU-g-clip-4)" class="node-header"/>
+<text text-anchor="start" x="445.27" y="-64.6" font-size="12.00">img</text>
+<use x="432.151" y="-35" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/><use x="432.151" y="-51" width="12" height="12" class="icon icon-TRUE" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-TRUE"/>
+<g><text text-anchor="start" x="448.15" y="-25.2" font-size="12.00" class="label label-TRUE">File</text>
+</g><g><text text-anchor="start" x="447.78" y="-41.2" font-size="12.00" class="label label-TRUE">exists</text>
+</g>
+<polyline points="426.15,-57 485.15,-57" class="node-outline"/><use x="432.151" y="-19" width="12" height="12" class="icon icon-UNKNOWN" href="#refinery-KGyg4OhNwvGOkw-tAzU-g-icon-UNKNOWN"/>
+
+
+<rect fill="none" x="426.15" y="-80.4" width="59" height="80.4" rx="12" ry="12" class="node-outline"/><g><text text-anchor="start" x="448.15" y="-9.2" font-size="12.00" class="label label-UNKNOWN">Dir</text>
+</g>
+
+
+<clipPath id="refinery-KGyg4OhNwvGOkw-tAzU-g-clip-4"><rect stroke="none" x="426.15" y="-80.4" width="59" height="80.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+
+<!-- n4&#45;&gt;n4 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M484.87,-55.27C494.99,-55.43 503.15,-50.41 503.15,-40.2 503.15,-34.14 500.27,-29.91 495.82,-27.5" class="edge-line"/>
+<polygon points="496.87,-24.15 486.35,-25.45 495.38,-30.99 496.87,-24.15" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="501.48" y="-58.42" font-size="10.50">equals</text>
+</g>
+</g>
+</svg>

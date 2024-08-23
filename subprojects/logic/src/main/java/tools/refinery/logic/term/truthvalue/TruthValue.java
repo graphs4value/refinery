@@ -50,7 +50,6 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		return !isError();
 	}
 
-
 	public boolean isComplete() {
 		return this != UNKNOWN;
 	}
