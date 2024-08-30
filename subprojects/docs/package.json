@@ -42,6 +42,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.0.21",
     "@fontsource-variable/open-sans": "^5.0.29",
     "@fontsource/open-sans": "^5.0.28",
+    "@hpcc-js/wasm-zstd": "^1.1.1",
     "@material-icons/svg": "^1.0.33",
     "@mdx-js/react": "^3.0.1",
     "@swc/core": "^1.7.5",

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="399pt" height="358pt" viewBox="-6 -6 411 370" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="refinery-a18XnMFkI_RXh1dM6QtA1"><style>.refinery-a18XnMFkI_RXh1dM6QtA1 .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node .node-outline{stroke:#19202b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node .node-header{fill:rgb(53, 161, 173);}.refinery-a18XnMFkI_RXh1dM6QtA1 .node .node-bg{fill:#fff;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-INDIVIDUAL .node-outline{stroke-width:2;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-shadow.node-bg{fill:#19202b;opacity:0.24;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-g .node-header{fill:#e5c07b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-h .node-header{fill:#e06c75;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-i .node-header{fill:#98c379;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-j .node-header{fill:#c678dd;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-k .node-header{fill:#80a7f4;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-l .node-header{fill:#e3d1b2;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-m .node-header{fill:#e78b8f;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-n .node-header{fill:#abcc94;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-o .node-header{fill:#dbb2e8;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-p .node-header{fill:#92c0e9;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge .edge-line{stroke:#19202b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge .edge-arrow{fill:#19202b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge-UNKNOWN text{fill:#696c77;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge-UNKNOWN .edge-line{stroke:#696c77;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge-UNKNOWN .edge-arrow{fill:none;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge-ERROR text{fill:#ca1243;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge-ERROR .edge-line{stroke:#ca1243;}.refinery-a18XnMFkI_RXh1dM6QtA1 .edge-ERROR .edge-arrow{fill:#ca1243;}.refinery-a18XnMFkI_RXh1dM6QtA1 .icon-TRUE{fill:#19202b;}.refinery-a18XnMFkI_RXh1dM6QtA1 .icon-UNKNOWN{fill:#696c77;}.refinery-a18XnMFkI_RXh1dM6QtA1 .icon-ERROR{fill:#ca1243;}.refinery-a18XnMFkI_RXh1dM6QtA1 text.label-UNKNOWN{fill:#696c77;}.refinery-a18XnMFkI_RXh1dM6QtA1 text.label-ERROR{fill:#ca1243;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE text:not(.label-ERROR){fill:#696c77;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE .node-outline{stroke:#696c77;stroke-dasharray:2 4;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE .node-header{fill:#fff;}.refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE .icon-TRUE{fill:#696c77;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node .node-outline{stroke:#ebebff;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node .node-header{fill:rgb(60, 127, 135);}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node .node-bg{fill:#282c34;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-INDIVIDUAL .node-outline{stroke-width:2;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-shadow.node-bg{fill:#ebebff;opacity:0.32;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-g .node-header{fill:#ae8003;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-h .node-header{fill:#a23b47;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-i .node-header{fill:#428141;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-j .node-header{fill:#854797;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-k .node-header{fill:#3982bb;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-l .node-header{fill:#827662;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-m .node-header{fill:#904f53;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-n .node-header{fill:#647e63;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-o .node-header{fill:#805f89;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-typeHash-p .node-header{fill:#4f7799;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge .edge-line{stroke:#ebebff;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge .edge-arrow{fill:#ebebff;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge-UNKNOWN text{fill:#abb2bf;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge-UNKNOWN .edge-line{stroke:#abb2bf;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge-UNKNOWN .edge-arrow{fill:none;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge-ERROR text{fill:#e06c75;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge-ERROR .edge-line{stroke:#e06c75;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .edge-ERROR .edge-arrow{fill:#e06c75;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .icon-TRUE{fill:#ebebff;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .icon-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .icon-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 text.label-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 text.label-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE text:not(.label-ERROR){fill:#abb2bf;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE .node-outline{stroke:#abb2bf;stroke-dasharray:2 4;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE .node-header{fill:#282c34;}[data-theme="dark"] .refinery-a18XnMFkI_RXh1dM6QtA1 .node-exists-FALSE .icon-TRUE{fill:#abb2bf;}</style><defs><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon-TRUE"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-a18XnMFkI_RXh1dM6QtA1-icon-UNKNOWN" class="icon-UNKNOWN"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-a18XnMFkI_RXh1dM6QtA1-icon-ERROR" class="icon-ERROR"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12L17 15.59z"/></svg></defs>
+<g class="graph" transform="scale(1 1) rotate(0) translate(4 354)">
+<!-- n4 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-g">
+
+<rect stroke="none" x="31.19" y="-350" width="86.62" height="48.80000000000001" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="27" y="-354" width="94" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-0)" class="node-header"/>
+<text text-anchor="start" x="42.82" y="-334.2" font-size="12.00">filesystem1</text>
+<use x="37.1885" y="-320.40000000000003" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="53.19" y="-310.8" font-size="12.00" class="label label-TRUE">Filesystem</text>
+</g>
+<polyline points="31.19,-326.6 117.81,-326.6" class="node-outline"/>
+<rect fill="none" x="31.19" y="-350" width="86.62" height="48.80000000000001" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-0"><rect stroke="none" x="31.19" y="-350" width="86.62" height="48.80000000000001" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-n">
+
+<rect stroke="none" x="38" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="34" y="-269" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-1)" class="node-header"/>
+<text text-anchor="start" x="63.43" y="-249.4" font-size="12.00">dir2</text>
+<use x="44" y="-235.8" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="59.74" y="-227" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="44" y="-219.8" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="60" y="-210" font-size="12.00" class="label label-TRUE">Dir</text>
+</g>
+<polyline points="38,-241.8 111,-241.8" class="node-outline"/>
+<rect fill="none" x="38" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-1"><rect stroke="none" x="38" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n4&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M74.5,-301.27C74.5,-293.78 74.5,-285.25 74.5,-276.82" class="edge-line"/>
+<polygon stroke-width="2" points="77.56,-276.89 74.5,-268.14 71.44,-276.89 77.56,-276.89" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="52.17" y="-287.69" font-weight="bold" font-size="10.50">root</text>
+</g>
+<!-- n5 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-g">
+
+<rect stroke="none" x="175.19" y="-350" width="86.62" height="48.80000000000001" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="171" y="-354" width="94" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-2)" class="node-header"/>
+<text text-anchor="start" x="186.82" y="-334.2" font-size="12.00">filesystem2</text>
+<use x="181.188" y="-320.40000000000003" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="197.19" y="-310.8" font-size="12.00" class="label label-TRUE">Filesystem</text>
+</g>
+<polyline points="175.19,-326.6 261.81,-326.6" class="node-outline"/>
+<rect fill="none" x="175.19" y="-350" width="86.62" height="48.80000000000001" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-2"><rect stroke="none" x="175.19" y="-350" width="86.62" height="48.80000000000001" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n6 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-n">
+
+<rect stroke="none" x="182" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="178" y="-269" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-3)" class="node-header"/>
+<text text-anchor="start" x="207.43" y="-249.4" font-size="12.00">dir1</text>
+<use x="188" y="-235.8" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="203.74" y="-227" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="188" y="-219.8" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="204" y="-210" font-size="12.00" class="label label-TRUE">Dir</text>
+</g>
+<polyline points="182,-241.8 255,-241.8" class="node-outline"/>
+<rect fill="none" x="182" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-3"><rect stroke="none" x="182" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n5&#45;&gt;n6 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M218.5,-301.27C218.5,-293.78 218.5,-285.25 218.5,-276.82" class="edge-line"/>
+<polygon stroke-width="2" points="221.56,-276.89 218.5,-268.14 215.44,-276.89 221.56,-276.89" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="196.17" y="-287.69" font-weight="bold" font-size="10.50">root</text>
+</g>
+<!-- n7 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-h">
+
+<rect stroke="none" x="182" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="178" y="-168" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-4)" class="node-header"/>
+<text text-anchor="start" x="205.2" y="-149" font-size="12.00">link1</text>
+<use x="188" y="-135.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="203.74" y="-126.6" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="188" y="-119.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="204" y="-109.6" font-size="12.00" class="label label-TRUE">Link</text>
+</g>
+<polyline points="182,-141.4 255,-141.4" class="node-outline"/>
+<rect fill="none" x="182" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-4"><rect stroke="none" x="182" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n6&#45;&gt;n7 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M205.84,-200.87C205.07,-192.98 204.83,-184.38 205.11,-176.04" class="edge-line"/>
+<polygon stroke-width="2" points="208.15,-176.48 205.67,-167.55 202.04,-176.08 208.15,-176.48" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="158.76" y="-186.87" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n9 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-n">
+
+<rect stroke="none" x="273" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="269" y="-168" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-5)" class="node-header"/>
+<text text-anchor="start" x="298.43" y="-149" font-size="12.00">dir3</text>
+<use x="279" y="-135.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="294.74" y="-126.6" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="279" y="-119.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="295" y="-109.6" font-size="12.00" class="label label-TRUE">Dir</text>
+</g>
+<polyline points="273,-141.4 346,-141.4" class="node-outline"/>
+<rect fill="none" x="273" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-5"><rect stroke="none" x="273" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n6&#45;&gt;n9 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M240.96,-200.87C248.74,-191.99 257.7,-182.19 266.53,-172.89" class="edge-line"/>
+<polygon stroke-width="2" points="268.62,-175.14 272.48,-166.71 264.21,-170.9 268.62,-175.14" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="211.19" y="-186.75" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n7&#45;&gt;n6 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M218.5,-164.53C218.5,-172.49 218.5,-181.2 218.5,-189.63" class="edge-line"/>
+<polygon points="215,-189.35 218.5,-199.35 222,-189.35 215,-189.35" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="202.2" y="-173.02" font-size="10.50">parent</text>
+</g>
+<!-- n7&#45;&gt;n6 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M231.14,-164.53C231.92,-172.49 232.17,-181.2 231.88,-189.63" class="edge-line"/>
+<polygon points="228.41,-189.15 231.25,-199.36 235.39,-189.6 228.41,-189.15" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="246.59" y="-173.02" font-size="10.50">target</text>
+</g>
+<!-- n12 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="0" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="-4" y="-168" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-6)" class="node-header"/>
+<text text-anchor="start" x="24.63" y="-149" font-size="12.00">file3</text>
+<use x="6" y="-135.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="21.74" y="-126.6" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="6" y="-119.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="22" y="-109.6" font-size="12.00" class="label label-TRUE">File</text>
+</g>
+<polyline points="0,-141.4 73,-141.4" class="node-outline"/>
+<rect fill="none" x="0" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-6"><rect stroke="none" x="0" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8&#45;&gt;n12 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M56.15,-200.87C52.64,-192.8 49.12,-183.98 45.99,-175.47" class="edge-line"/>
+<polygon stroke-width="2" points="48.93,-174.62 43.13,-167.39 43.16,-176.66 48.93,-174.62" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="2.47" y="-186.85" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n13 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="91" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="87" y="-168" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-7)" class="node-header"/>
+<text text-anchor="start" x="115.63" y="-149" font-size="12.00">file4</text>
+<use x="97" y="-135.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="112.74" y="-126.6" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="97" y="-119.4" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="113" y="-109.6" font-size="12.00" class="label label-TRUE">File</text>
+</g>
+<polyline points="91,-141.4 164,-141.4" class="node-outline"/>
+<rect fill="none" x="91" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-7"><rect stroke="none" x="91" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n8&#45;&gt;n13 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M84.94,-200.87C89.03,-192.53 93.84,-183.39 98.75,-174.61" class="edge-line"/>
+<polygon stroke-width="2" points="101.32,-176.27 103.02,-167.16 96.01,-173.23 101.32,-176.27" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="94.42" y="-174.04" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n9&#45;&gt;n6 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M287.21,-164.53C279.37,-173.49 270.32,-183.39 261.4,-192.78" class="edge-line"/>
+<polygon points="259.08,-190.14 254.67,-199.77 264.12,-194.99 259.08,-190.14" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="286.89" y="-186.12" font-size="10.50">parent</text>
+</g>
+<!-- n10 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="227" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="223" y="-68" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-8)" class="node-header"/>
+<text text-anchor="start" x="251.63" y="-48.6" font-size="12.00">file1</text>
+<use x="233" y="-35" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="248.74" y="-26.2" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="233" y="-19" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="249" y="-9.2" font-size="12.00" class="label label-TRUE">File</text>
+</g>
+<polyline points="227,-41 300,-41" class="node-outline"/>
+<rect fill="none" x="227" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-8"><rect stroke="none" x="227" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n9&#45;&gt;n10 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M288.62,-100.47C284.41,-92.31 280.12,-83.39 276.26,-74.78" class="edge-line"/>
+<polygon stroke-width="2" points="279.14,-73.72 272.85,-66.91 273.52,-76.16 279.14,-73.72" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="233.56" y="-86.65" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n11 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="318" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="314" y="-68" width="81" height="27" clip-path="url(#refinery-a18XnMFkI_RXh1dM6QtA1-clip-9)" class="node-header"/>
+<text text-anchor="start" x="342.63" y="-48.6" font-size="12.00">file2</text>
+<use x="324" y="-35" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="339.74" y="-26.2" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="324" y="-19" width="12" height="12" href="#refinery-a18XnMFkI_RXh1dM6QtA1-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="340" y="-9.2" font-size="12.00" class="label label-TRUE">File</text>
+</g>
+<polyline points="318,-41 391,-41" class="node-outline"/>
+<rect fill="none" x="318" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-a18XnMFkI_RXh1dM6QtA1-clip-9"><rect stroke="none" x="318" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n9&#45;&gt;n11 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M317.41,-100.47C320.78,-92.22 324.79,-83.19 328.94,-74.49" class="edge-line"/>
+<polygon stroke-width="2" points="331.59,-76.05 332.7,-66.85 326.09,-73.35 331.59,-76.05" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="325.3" y="-73.85" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n10&#45;&gt;n9 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M284.28,-64.13C288.53,-72.36 292.87,-81.39 296.77,-90.09" class="edge-line"/>
+<polygon points="293.48,-91.3 300.67,-99.08 299.9,-88.51 293.48,-91.3" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="276.9" y="-72.84" font-size="10.50">parent</text>
+</g>
+<!-- n11&#45;&gt;n9 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M346.67,-64.13C343.28,-72.46 339.22,-81.59 335.02,-90.38" class="edge-line"/>
+<polygon points="332,-88.59 330.73,-99.11 338.28,-91.67 332,-88.59" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="322.41" y="-85.64" font-size="10.50">parent</text>
+</g>
+<!-- n12&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M54.76,-164.53C58.31,-172.67 61.88,-181.6 65.04,-190.21" class="edge-line"/>
+<polygon points="61.67,-191.17 68.3,-199.44 68.27,-188.84 61.67,-191.17" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="45.83" y="-173.03" font-size="10.50">parent</text>
+</g>
+<!-- n13&#45;&gt;n8 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M117.16,-164.53C113.04,-172.95 108.18,-182.19 103.21,-191.07" class="edge-line"/>
+<polygon points="100.28,-189.14 98.35,-199.55 106.36,-192.62 100.28,-189.14" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="91.29" y="-186.25" font-size="10.50">parent</text>
+</g>
+</g>
+</svg>

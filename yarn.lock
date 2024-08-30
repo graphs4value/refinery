@@ -2736,6 +2736,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hpcc-js/wasm-zstd@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@hpcc-js/wasm-zstd@npm:1.1.1"
+  checksum: 10c0/452d96e5076edb22cafc12991417d2da388c427cdbd1e1b8919a415abe5e36da82085e56a16bf42ae83ad89e651a099dff169053a6a9dce66c56212e6973d85c
+  languageName: node
+  linkType: hard
+
 "@hpcc-js/wasm@npm:^2.16.2, @hpcc-js/wasm@npm:^2.18.0":
   version: 2.18.0
   resolution: "@hpcc-js/wasm@npm:2.18.0"
@@ -3425,6 +3432,7 @@ __metadata:
     "@fontsource-variable/jetbrains-mono": "npm:^5.0.21"
     "@fontsource-variable/open-sans": "npm:^5.0.29"
     "@fontsource/open-sans": "npm:^5.0.28"
+    "@hpcc-js/wasm-zstd": "npm:^1.1.1"
     "@material-icons/svg": "npm:^1.0.33"
     "@mdx-js/react": "npm:^3.0.1"
     "@swc/core": "npm:^1.7.5"
