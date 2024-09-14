@@ -39,39 +39,35 @@ jobs:
         with:
           java-version: 21
           distribution: corretto
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
-          key: ${{ matrix.os }}-gradle-${{ hashFiles('**/*.gradle', 'gradle.properties', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: ${{ matrix.os }}-gradle
+          key: ${{ matrix.os }}-gradle-${{ hashFiles('**/*.gradle.kts', 'gradle.properties', 'gradle/libs.versions.toml', 'gradle/pluginLibs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
       - name: Cache Sonar packages
         uses: actions/cache@v4
         if: ${{ steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         with:
           path: |
             ~/.sonar/cache
-          key: ${{ matrix.os }}-sonar
-          restore-keys: ${{ matrix.os }}-sonar
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
+          key: ${{ matrix.os }}-sonar-${{ hashFiles('gradle/pluginLibs.versions.toml') }}
       - name: Cache node distribution
         uses: actions/cache@v4
         with:
           path: |
-            **/.node
+            .node
           key: ${{ matrix.os }}-node-${{ hashFiles('gradle.properties') }}
-          restore-keys: ${{ matrix.os }}-node
       - name: Cache yarn packages
         uses: actions/cache@v4
         with:
           path: |
-            **/.yarn/cache
-          key: ${{ matrix.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ matrix.os }}-yarn
+           .yarn/cache
+          key: ${{ matrix.os }}-yarn-${{ hashFiles('yarn.lock') }}
       - name: Gradle build
         run: |
           ./gradlew build -Pci --info --stacktrace --max-workers 4 --no-daemon
