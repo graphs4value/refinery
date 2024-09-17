@@ -10,7 +10,7 @@ sidebar_label: File system
 
 This tutorial gives a brief overview of the partial modeling and model generation features of the Refinery framework.
 It follows the development and analysis of a simple Refinery problem specification for modeling file systems.
-We adapted the case study from [Chapter 1](https://alloytools.org/tutorials/online/frame-FS-1.html) of the [Alloy tutorial][alloy].
+We adapted the case study from [Chapter&nbsp;1](https://alloytools.org/tutorials/online/frame-FS-1.html) of the [Alloy tutorial][alloy].
 
 [alloy]: https://alloytools.org/tutorials/online/index.html
 
