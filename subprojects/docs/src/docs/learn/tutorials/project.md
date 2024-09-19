@@ -3,7 +3,7 @@ SPDX-FileCopyrightText: 2024 The Refinery Authors
 SPDX-License-Identifier: EPL-2.0
 description: Refinery@FAME2024
 sidebar_position: 1
-sidebar_label: Project
+sidebar_label: Project planning
 ---
 
 # Project tutorial
