@@ -1,13 +1,10 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import type { Zstd } from '@hpcc-js/wasm';
-// We need to use a deep import for proper code splitting with `vite-plugin-pwa`.
-// @ts-expect-error Typescript doesn't find the declarations for the deep import.
-import { Zstd as zstdLoader } from '@hpcc-js/wasm/zstd';
+import { Zstd } from '@hpcc-js/wasm-zstd';
 
 import type {
   CompressResponse,
@@ -56,13 +53,13 @@ async function base64Decode(compressedText: string): Promise<Uint8Array> {
   return new Uint8Array(await result.arrayBuffer());
 }
 
-let zstd: Awaited<ReturnType<typeof Zstd.load>> | undefined;
+let zstd: Zstd | undefined;
 
 globalThis.onmessage = (event) => {
   (async () => {
     if (zstd === undefined) {
       // Since we don't have types for the deep import, we have to cast here.
-      zstd = await (zstdLoader as { load: typeof Zstd.load }).load();
+      zstd = await Zstd.load();
     }
     // Since the render thread will only send us valid messages,
     // we can save a bit of bundle size by using a cast instead of `parse`

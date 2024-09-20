@@ -9,26 +9,20 @@
  * but was changed to convert shell commands to POSIX to Windows syntax.
  */
 
-import type { Code, Literal } from 'mdast';
+import type { Code } from 'mdast';
 import type { MdxjsEsm, MdxJsxFlowElement } from 'mdast-util-mdx';
 import type { Transformer } from 'unified';
-import type { Node, Parent } from 'unist';
-import { visit } from 'unist-util-visit';
+import type { Node } from 'unist';
 
-function isLiteral(node: Node): node is Literal {
-  return node.type === 'mdxjsEsm';
-}
+import {
+  isCode,
+  isImport,
+  isParent,
+  replaceChildrenRecursively,
+} from './remarkPluginUtils';
 
 function isTabImport(node: Node): boolean {
-  return isLiteral(node) && node.value.includes('@theme/Tabs');
-}
-
-function isParent(node: Node): node is Parent {
-  return 'children' in node && Array.isArray(node.children);
-}
-
-function isCode(node: Node): node is Code {
-  return node.type === 'code';
+  return isImport(node, '@theme/Tabs');
 }
 
 function isPosix2Windows(node: Node): node is Code {
@@ -137,27 +131,17 @@ function createImportNode(): MdxjsEsm {
 
 export default function remarkPosix2Windows(): Transformer {
   return (root) => {
-    let transformed = false;
     let alreadyImported = false;
-    visit(root, (node) => {
-      if (isTabImport(node)) {
-        alreadyImported = true;
-      }
-      if (isParent(node)) {
-        let index = 0;
-        while (index < node.children.length) {
-          const child = node.children[index];
-          if (child !== undefined && isPosix2Windows(child)) {
-            const result = transformNode(child);
-            node.children.splice(index, 1, ...result);
-            index += result.length;
-            transformed = true;
-          } else {
-            index += 1;
-          }
+    const transformed = replaceChildrenRecursively(
+      root,
+      (node) => {
+        if (isTabImport(node)) {
+          alreadyImported = true;
         }
-      }
-    });
+        return isPosix2Windows(node);
+      },
+      transformNode,
+    );
     if (transformed && !alreadyImported) {
       if (isParent(root)) {
         root.children.unshift(createImportNode());

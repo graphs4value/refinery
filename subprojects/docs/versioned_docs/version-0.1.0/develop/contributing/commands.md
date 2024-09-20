@@ -75,7 +75,7 @@ The following commands can only be run once [`./gradlew build`](#build) has inst
 ### `docs dev`
 
 ```bash posix2windows
-./yarn docs dev
+./yarnw docs dev
 ```
 
 Builds and serves this documentation in development mode on port 3000.
@@ -84,7 +84,7 @@ Saved changes to most documentation sources are immediately reflected in the bro
 You can set the port with the `-p` option, e.g. to use port 1313, use
 
 ```bash posix2windows
-./yarn docs dev -p 1313
+./yarnw docs dev -p 1313
 ```
 
 :::note
@@ -100,7 +100,7 @@ which can be safely ignored.
 ### `frontend dev`
 
 ```bash posix2windows
-./yarn frontend dev
+./yarnw frontend dev
 ```
 
 Builds and serves the refinery frontend on port 1313.

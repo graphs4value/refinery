@@ -28,11 +28,7 @@ sourceSets.main {
 }
 
 gradlePlugin {
-	// According to https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html
-	// we must use this unstable API to configure the Gradle publishing plugin.
-	@Suppress("UnstableApiUsage")
 	website = "https://refinery.tools/"
-	@Suppress("UnstableApiUsage")
 	vcsUrl = "https://github.com/graphs4value/refinery"
 
 	plugins {

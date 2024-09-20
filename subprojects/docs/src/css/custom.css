@@ -149,3 +149,19 @@ code {
 .markdown svg {
   max-width: 100%;
 }
+
+.footnotes {
+  margin-top: 3rem;
+  padding-top: var(--ifm-hr-margin-vertical);
+  border-top: var(--ifm-hr-height) solid var(--ifm-hr-background-color);
+}
+
+.markdown > .footnotes ol,
+.markdown > .footnotes li:last-of-type :last-of-type {
+  margin-bottom: 0;
+}
+
+.inline-icon {
+  fill: currentColor;
+  vertical-align: text-top;
+}

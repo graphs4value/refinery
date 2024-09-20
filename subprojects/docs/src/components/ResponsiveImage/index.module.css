@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2024 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+.container {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.placeholder, .link, .image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.placeholder {
+  z-index: 0;
+  background-size: cover;
+}
+
+.placeholder--dark {
+  display: none;
+  z-index: 10;
+}
+
+[data-theme='dark'] .placeholder--dark {
+  display: block;
+}
+
+.link, .image {
+  z-index: 100;
+}
