@@ -192,9 +192,12 @@ collaboratesWith(OrgB, OrgC).
 
 ### 10. Scope declaration to control model size
 
-```refinery continue=derived try
-scope node = 15..25,
-  Channel += 3,
+```refinery continue try
+scope node = 15..60,
+  Node = 8..30,
+  OrderingNode = 4..15,
+  EndorsingNode = 4..15,
+  Channel = 3..*,
   FabricNetwork = 1.
 ```
 
@@ -202,7 +205,7 @@ scope node = 15..25,
 
 ### 11. Simple propagation rule
 
-```refinery continue try
+```refinery continue=derived try
 propagation rule collaboratesWithSymmetric(Organization o1, Organization o2) <->
     collaboratesWith(o1, o2)
 ==>
