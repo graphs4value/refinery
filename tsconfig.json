@@ -15,6 +15,7 @@
   "include": [
     ".eslintrc.cjs",
     "prettier.config.cjs",
-    "scripts/*.cjs"
+    "scripts/*.cjs",
+    "scripts/*.mjs"
   ]
 }

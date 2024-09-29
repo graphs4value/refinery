@@ -1,8 +1,0 @@
-Copyright © 2017 Andres Suarez and Teddy Katz
-Copyright © 2024 Daniel Sherman <http://shermify.com>
-
-SPDX-License-Identifier: MIT
-
-This file incorporates patches from
-https://github.com/microsoft/vscode-eslint/issues/1856#issuecomment-2164137963
-by Daniel Sherman.

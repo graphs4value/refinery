@@ -12,5 +12,6 @@
 *.jsx eol=lf
 *.grammar eol=lf
 *.scss eol=lf
+*.mjs eol=lf
 *.ts eol=lf
 *.tsx eol=lf

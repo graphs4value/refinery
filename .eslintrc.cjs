@@ -123,6 +123,7 @@ module.exports = {
       files: [
         '.eslintrc.cjs',
         'scripts/*.cjs',
+        'scripts/*.mjs',
         'subprojects/*/config/*.ts',
         'subprojects/*/config/*.cjs',
         'prettier.config.cjs',
@@ -142,6 +143,8 @@ module.exports = {
         'no-console': 'off',
         // Access to the environment in configuration files.
         'no-process-env': 'off',
+        // There is no need to shim iterators in Node.
+        'no-restricted-syntax': 'off',
       },
     },
     {
