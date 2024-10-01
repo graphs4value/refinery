@@ -14,6 +14,7 @@ import tools.refinery.interpreter.matchers.util.CollectionsFactory;
 import tools.refinery.interpreter.matchers.util.Direction;
 import tools.refinery.interpreter.matchers.util.IMemoryView;
 import tools.refinery.interpreter.rete.itc.alg.counting.CountingAlg;
+import tools.refinery.interpreter.rete.itc.alg.dred.DRedTcRelation;
 import tools.refinery.interpreter.rete.itc.alg.misc.DFSPathFinder;
 import tools.refinery.interpreter.rete.itc.alg.misc.GraphHelper;
 import tools.refinery.interpreter.rete.itc.alg.misc.IGraphPathFinder;
@@ -425,6 +426,30 @@ public class IncSCCAlg<V> implements IGraphObserver<V>, ITcDataSource<V> {
             return GraphHelper.constructPath(source, target, nodesInSubGraph, gds);
         }
     }
+
+	// for JUnit
+	public boolean checkTcRelation(DRedTcRelation<V> tc) {
+
+		for (V s : tc.getTupleStarts()) {
+			for (V t : tc.getTupleEnds(s)) {
+				if (!isReachable(s, t))
+					return false;
+			}
+		}
+
+		for (V root : counting.getTcRelation().getTupleStarts()) {
+			for (V end : counting.getTcRelation().getTupleEnds(root)) {
+				for (V s : sccs.getPartition(root)) {
+					for (V t : sccs.getPartition(end)) {
+						if (!tc.containsTuple(s, t))
+							return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
 
     /**
      * Return the SCCs from which the SCC represented by the root node is reachable. Note that an SCC can be present

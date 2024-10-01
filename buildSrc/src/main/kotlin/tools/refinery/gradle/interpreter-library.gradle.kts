@@ -5,15 +5,23 @@
  */
 package tools.refinery.gradle
 
+import org.gradle.accessors.dm.LibrariesForLibs
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
-	id("tools.refinery.gradle.java-library")
+	id("tools.refinery.gradle.internal.java-basic-library")
 	id("tools.refinery.gradle.sonarqube")
 }
 
 property("tools.refinery.interpreter.group")?.let { group = it }
 property("tools.refinery.interpreter.version")?.let { version = it }
+
+val libs = the<LibrariesForLibs>()
+
+dependencies {
+	testImplementation(libs.junit4)
+	testRuntimeOnly(libs.junit.engine.vintage)
+}
 
 tasks {
 	withType(Jar::class) {

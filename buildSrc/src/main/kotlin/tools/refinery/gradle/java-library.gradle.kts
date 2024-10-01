@@ -6,15 +6,6 @@
 package tools.refinery.gradle
 
 plugins {
-	`java-library`
+	id("tools.refinery.gradle.internal.java-basic-library")
 	id("tools.refinery.gradle.java-conventions")
-	id("tools.refinery.gradle.maven-publish")
-}
-
-dependencies {
-	api(platform(project(":refinery-bom-dependencies")))
-}
-
-publishing.publications.named<MavenPublication>("mavenJava") {
-	from(components["java"])
 }
