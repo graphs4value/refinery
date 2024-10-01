@@ -9,6 +9,8 @@
 package tools.refinery.interpreter.matchers.context.common;
 
 
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Instance tuples are of form (x), where object x is an instance of the given Java class or its subclasses.
@@ -33,21 +35,44 @@ public class JavaTransitiveInstancesKey extends BaseInputKeyWrapper<String> {
      */
     private Class<?> cachedWrapperInstanceClass;
 
-    /**
-     * Preferred constructor.
-     */
-    public JavaTransitiveInstancesKey(Class<?> instanceClass) {
-        this(getName(instanceClass));
-        this.cachedOriginalInstanceClass = instanceClass;
-    }
+	/**
+	 * Use this name to refer to the String in Java code
+	 */
+	private final String nameInJavaCode;
 
-    /**
-     * Call this constructor only in contexts where the class itself is not available for loading, e.g. it has not yet been compiled.
-     */
-    public JavaTransitiveInstancesKey(String className) {
-        super(className);
-    }
+	/**
+	 * Call this constructor only in contexts where the class itself is not available for loading, e.g. it has not yet been compiled.
+	 * @since 2.9
+	 * @param jvmClassName {@link Class#getName()}
+	 * @param javaClassName {@link Class#getCanonicalName()}
+	 */
+	public JavaTransitiveInstancesKey(String jvmClassName, String javaClassName) {
+		super(jvmClassName);
+		this.nameInJavaCode = javaClassName;
+	}
 
+	/**
+	 * Convenience constructor for the case where the JVM Class is available
+	 *  (already precompiled and loaded)
+	 *  in the context where this input key is built.
+	 *  @param instanceClass a non-null class definition
+	 */
+	public JavaTransitiveInstancesKey(Class<?> instanceClass) {
+		this(
+				primitiveTypeToWrapperClass(Objects.requireNonNull(instanceClass)).getName(),
+				primitiveTypeToWrapperClass(Objects.requireNonNull(instanceClass)).getCanonicalName()
+		);
+		this.cachedOriginalInstanceClass = instanceClass;
+	}
+
+	/**
+	 * Call this constructor only as a last resort, if the Java canonical name of the class is unavailable.
+	 * @deprecated Use {@link #JavaTransitiveInstancesKey(Class)} or {@link #JavaTransitiveInstancesKey(String, String)} instead
+	 */
+	@Deprecated(since = "2.9")
+	public JavaTransitiveInstancesKey(String jvmClassName) {
+		this(jvmClassName, jvmClassName.replace('$', '.'));
+	}
 
     /**
      * Returns null if class cannot be loaded.
@@ -62,7 +87,6 @@ public class JavaTransitiveInstancesKey extends BaseInputKeyWrapper<String> {
         }
         return cachedOriginalInstanceClass;
     }
-
 
     /**
      * @return non-null instance class
@@ -113,11 +137,7 @@ public class JavaTransitiveInstancesKey extends BaseInputKeyWrapper<String> {
 
     @Override
     public String getPrettyPrintableName() {
-        getWrapperInstanceClass();
-		if (cachedWrapperInstanceClass == null) {
-			return wrappedKey == null ? "<null>" : wrappedKey;
-		}
-		return cachedWrapperInstanceClass.getName();
+        return this.nameInJavaCode;
 	}
 
     @Override
@@ -140,35 +160,21 @@ public class JavaTransitiveInstancesKey extends BaseInputKeyWrapper<String> {
         return this.getPrettyPrintableName();
     }
 
-    private static Class<?> primitiveTypeToWrapperClass(Class<?> instanceClass) {
-        if (instanceClass != null && instanceClass.isPrimitive()) {
-            if (Void.TYPE.equals(instanceClass))
-                return Void.class;
-            if (Boolean.TYPE.equals(instanceClass))
-                return Boolean.class;
-            if (Character.TYPE.equals(instanceClass))
-                return Character.class;
-            if (Byte.TYPE.equals(instanceClass))
-                return Byte.class;
-            if (Short.TYPE.equals(instanceClass))
-                return Short.class;
-            if (Integer.TYPE.equals(instanceClass))
-                return Integer.class;
-            if (Long.TYPE.equals(instanceClass))
-                return Long.class;
-            if (Float.TYPE.equals(instanceClass))
-                return Float.class;
-            if (Double.TYPE.equals(instanceClass))
-                return Double.class;
-        }
-        return instanceClass;
-    }
+	// @formatting:off
+	private static final Map<Class<?>, Class<?>> PRIMITIVE_TYPE_MAP = Map.of(
+			Void.TYPE, Void.class,
+			Boolean.TYPE, Boolean.class,
+			Character.TYPE, Character.class,
+			Byte.TYPE, Byte.class,
+			Short.TYPE, Short.class,
+			Integer.TYPE, Integer.class,
+			Long.TYPE, Long.class,
+			Float.TYPE, Float.class,
+			Double.TYPE, Double.class
+	);
+	// @formatting:on
 
-	private static String getName(Class<?> instanceClass) {
-		Class<?> wrapperClass = primitiveTypeToWrapperClass(instanceClass);
-		if (wrapperClass == null) {
-			return "<null>";
-		}
-		return wrapperClass.getName();
-	}
+    private static Class<?> primitiveTypeToWrapperClass(Class<?> instanceClass) {
+        return PRIMITIVE_TYPE_MAP.getOrDefault(instanceClass, instanceClass);
+    }
 }
