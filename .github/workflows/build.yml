@@ -18,16 +18,17 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
+          - ubuntu-24.04
+          - ubuntu-22.04
           - ubuntu-20.04
-          - windows-latest
+          - windows-2022
           - macos-13 # Intel
           - macos-14 # ARM
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check for Sonar secret
         id: check-secret
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -79,7 +80,7 @@ jobs:
         run: |
           ./gradlew sonar -Pci --info --stacktrace --max-workers 4 --no-daemon
       - name: Build signed Maven repository
-        if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
         env:
           PGP_KEY: ${{ secrets.PGP_KEY }}
           PGP_KEY_ID: ${{ secrets.PGP_KEY_ID }}
@@ -87,18 +88,18 @@ jobs:
         run: |
           ./gradlew mavenRepositoryTar -Pci -PforceSign --info --stacktrace --max-workers 4 --no-daemon
       - name: Build unsigned Maven repository
-        if: ${{ matrix.os == 'ubuntu-latest' && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
+        if: ${{ matrix.os == 'ubuntu-20.04' && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
         run: |
           ./gradlew mavenRepositoryTar -Pci --info --stacktrace --max-workers 4 --no-daemon
       - name: Upload Maven repository artifact
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: maven-repository-tar
           path: build/refinery-maven-repository.tar
           compression-level: 0
       - name: Upload application artifacts
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: distributions-tar
@@ -106,7 +107,7 @@ jobs:
           compression-level: 0
           retention-days: 5  # No need to preserve for long, since they are uploaded to GHCR
       - name: Upload site artifact
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: site-zip
@@ -116,7 +117,7 @@ jobs:
     name: REUSE Compliance Check
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -128,7 +129,7 @@ jobs:
     name: Publish to GitHub Pages
     if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Download site artifact
         uses: actions/download-artifact@v4
@@ -184,7 +185,7 @@ jobs:
     permissions:
       packages: write
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3
