@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,27 +17,25 @@ final class MatcherUtils {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
-	public static tools.refinery.interpreter.matchers.tuple.Tuple toViatraTuple(Tuple refineryTuple) {
-		if (refineryTuple instanceof Tuple0) {
-			return Tuples.staticArityFlatTupleOf();
-		} else if (refineryTuple instanceof Tuple1) {
-			return Tuples.staticArityFlatTupleOf(refineryTuple);
-		} else if (refineryTuple instanceof Tuple2 tuple2) {
-			return Tuples.staticArityFlatTupleOf(Tuple.of(tuple2.value0()), Tuple.of(tuple2.value1()));
-		} else if (refineryTuple instanceof Tuple3 tuple3) {
-			return Tuples.staticArityFlatTupleOf(Tuple.of(tuple3.value0()), Tuple.of(tuple3.value1()),
-					Tuple.of(tuple3.value2()));
-		} else if (refineryTuple instanceof Tuple4 tuple4) {
-			return Tuples.staticArityFlatTupleOf(Tuple.of(tuple4.value0()), Tuple.of(tuple4.value1()),
-					Tuple.of(tuple4.value2()), Tuple.of(tuple4.value3()));
-		} else {
-			int arity = refineryTuple.getSize();
-			var values = new Object[arity];
-			for (int i = 0; i < arity; i++) {
-				values[i] = Tuple.of(refineryTuple.get(i));
+	public static tools.refinery.interpreter.matchers.tuple.Tuple toInterpreterTuple(Tuple refineryTuple) {
+		return switch (refineryTuple) {
+			case Tuple0 ignored -> Tuples.staticArityFlatTupleOf();
+			case Tuple1 tuple1 -> Tuples.staticArityFlatTupleOf(tuple1);
+			case Tuple2(int value0, int value1) -> Tuples.staticArityFlatTupleOf(Tuple.of(value0), Tuple.of(value1));
+			case Tuple3(int value0, int value1, int value2) ->
+					Tuples.staticArityFlatTupleOf(Tuple.of(value0), Tuple.of(value1), Tuple.of(value2));
+			case Tuple4(int value0, int value1, int value2, int value3) ->
+					Tuples.staticArityFlatTupleOf(Tuple.of(value0), Tuple.of(value1), Tuple.of(value2),
+							Tuple.of(value3));
+			default -> {
+				int arity = refineryTuple.getSize();
+				var values = new Object[arity];
+				for (int i = 0; i < arity; i++) {
+					values[i] = Tuple.of(refineryTuple.get(i));
+				}
+				yield Tuples.flatTupleOf(values);
 			}
-			return Tuples.flatTupleOf(values);
-		}
+		};
 	}
 
 	public static Tuple toRefineryTuple(ITuple viatraTuple) {

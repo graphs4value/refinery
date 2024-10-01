@@ -51,7 +51,7 @@ public class InterpretedFunctionalMatcher<T> extends AbstractInterpretedMatcher<
 
 	@Override
 	public T get(Tuple parameters) {
-		var tuple = MatcherUtils.toViatraTuple(parameters);
+		var tuple = MatcherUtils.toInterpreterTuple(parameters);
 		if (omitOutputIndexer == null) {
 			return MatcherUtils.getSingleValue(backend.getAllMatches(omitOutputMask, tuple).iterator());
 		} else {

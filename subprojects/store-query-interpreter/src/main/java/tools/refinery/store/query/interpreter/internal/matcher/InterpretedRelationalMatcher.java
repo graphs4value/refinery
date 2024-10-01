@@ -46,7 +46,7 @@ public class InterpretedRelationalMatcher extends AbstractInterpretedMatcher<Boo
 
 	@Override
 	public Boolean get(Tuple parameters) {
-		var tuple = MatcherUtils.toViatraTuple(parameters);
+		var tuple = MatcherUtils.toInterpreterTuple(parameters);
 		if (emptyMaskIndexer == null) {
 			return backend.hasMatch(identityMask, tuple);
 		}

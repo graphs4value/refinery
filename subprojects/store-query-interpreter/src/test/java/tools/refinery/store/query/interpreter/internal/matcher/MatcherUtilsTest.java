@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -18,23 +18,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MatcherUtilsTest {
 	@Test
-	void toViatra0Test() {
-		var viatraTuple = MatcherUtils.toViatraTuple(Tuple.of());
+	void toInterpreter0Test() {
+		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of());
 		assertThat(viatraTuple.getSize(), is(0));
 		assertThat(viatraTuple, instanceOf(FlatTuple0.class));
 	}
 
 	@Test
-	void toViatra1Test() {
-		var viatraTuple = MatcherUtils.toViatraTuple(Tuple.of(2));
+	void toInterpreter1Test() {
+		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2));
 		assertThat(viatraTuple.getSize(), is(1));
 		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
 		assertThat(viatraTuple, instanceOf(FlatTuple1.class));
 	}
 
 	@Test
-	void toViatra2Test() {
-		var viatraTuple = MatcherUtils.toViatraTuple(Tuple.of(2, 3));
+	void toInterpreter2Test() {
+		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3));
 		assertThat(viatraTuple.getSize(), is(2));
 		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
 		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
@@ -42,8 +42,8 @@ class MatcherUtilsTest {
 	}
 
 	@Test
-	void toViatra3Test() {
-		var viatraTuple = MatcherUtils.toViatraTuple(Tuple.of(2, 3, 5));
+	void toInterpreter3Test() {
+		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5));
 		assertThat(viatraTuple.getSize(), is(3));
 		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
 		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
@@ -52,8 +52,8 @@ class MatcherUtilsTest {
 	}
 
 	@Test
-	void toViatra4Test() {
-		var viatraTuple = MatcherUtils.toViatraTuple(Tuple.of(2, 3, 5, 8));
+	void toInterpreter4Test() {
+		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5, 8));
 		assertThat(viatraTuple.getSize(), is(4));
 		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
 		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
@@ -63,8 +63,8 @@ class MatcherUtilsTest {
 	}
 
 	@Test
-	void toViatra5Test() {
-		var viatraTuple = MatcherUtils.toViatraTuple(Tuple.of(2, 3, 5, 8, 13));
+	void toInterpreter5Test() {
+		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5, 8, 13));
 		assertThat(viatraTuple.getSize(), is(5));
 		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
 		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
