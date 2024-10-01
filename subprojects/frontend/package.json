@@ -93,7 +93,7 @@
     "@types/pnpapi": "^0.0.5",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react-swc": "^3.7.0",
+    "@vitejs/plugin-react-swc": "^3.7.1",
     "@xstate/cli": "^0.5.17",
     "html-minifier-terser": "^7.2.0",
     "micromatch": "^4.0.8",

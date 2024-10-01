@@ -30,7 +30,7 @@
   },
   "homepage": "https://refinery.tools",
   "dependencies": {
-    "@algolia/client-search": "^5.6.1",
+    "@algolia/client-search": "^5.7.0",
     "@docusaurus/core": "^3.5.2",
     "@docusaurus/plugin-client-redirects": "^3.5.2",
     "@docusaurus/plugin-content-docs": "^3.5.2",

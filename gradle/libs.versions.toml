@@ -8,8 +8,9 @@ apiguardian = "1.1.2"
 asm = "9.7"
 classgraph = "4.8.176"
 eclipse-commands = "3.12.200"
-eclipse-contenttype = "3.9.400"
+eclipse-contenttype = "3.9.500"
 eclipse-debug = "3.21.500"
+eclipse-expressions = "3.9.400"
 eclipse-filesystem = "1.11.0"
 eclipse-jobs = "3.15.400"
 eclipse-osgi = "3.21.0"
@@ -27,7 +28,7 @@ emf-common = "2.31.0"
 equinox-common = "3.19.100"
 equinox-preferences = "3.11.100"
 equinox-registry = "3.12.100"
-errorprone = "2.32.0"
+errorprone = "2.33.0"
 findbugs = "3.0.2"
 gson = "2.11.0"
 guava = "33.3.1-jre"
@@ -44,7 +45,7 @@ jmh = "1.37"
 jna = "5.15.0"
 junit = "5.11.1"
 lsp4j = "0.23.1"
-mockito = "5.14.0"
+mockito = "5.14.1"
 mwe = "1.13.0"
 mwe2 = "2.19.0"
 opentest4j = "1.3.0"
@@ -65,7 +66,7 @@ classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref 
 eclipse-commands = { group = "org.eclipse.platform", name = "org.eclipse.core.commands", version.ref = "eclipse-commands" }
 eclipse-contenttype = { group = "org.eclipse.platform", name = "org.eclipse.core.contenttype", version.ref = "eclipse-contenttype" }
 eclipse-debug = { group = "org.eclipse.platform", name = "org.eclipse.debug.core", version.ref = "eclipse-debug" }
-eclipse-expressions = { group = "org.eclipse.platform", name = "org.eclipse.core.expressions", version.ref = "eclipse-contenttype" }
+eclipse-expressions = { group = "org.eclipse.platform", name = "org.eclipse.core.expressions", version.ref = "eclipse-expressions" }
 eclipse-filesystem = { group = "org.eclipse.platform", name = "org.eclipse.core.filesystem", version.ref = "eclipse-filesystem" }
 eclipse-jobs = { group = "org.eclipse.platform", name = "org.eclipse.core.jobs", version.ref = "eclipse-jobs" }
 eclipse-osgi = { group = "org.eclipse.platform", name = "org.eclipse.osgi", version.ref = "eclipse-osgi" }
