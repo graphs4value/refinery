@@ -63,6 +63,22 @@ public final class LocalSearchHintOptions {
     public static final QueryHintOption<IAdornmentProvider> ADORNMENT_PROVIDER =
             hintOption("ADORNMENT_PROVIDER", new AllValidAdornments());
 
+	/**
+	 * Whether the search-based query backend is to use registered surrogate queries instead of derived features.
+	 *
+	 * <p>If set to false, the query evaluation will access derived features normally, and take their output at face value.
+	 * Normally, this should be fine for the search-based backend (as opposed to caching backends), and come at a lower performance cost.
+	 * Hence the default is false.
+	 *
+	 * <p> Setting this option to true will cause the backend to consult the surrogate query registered for a given feature, if any.
+	 * Consider this if the default implementation of some features are known to be erroneous,
+	 *  and there are surrogates queries that would provide correct results instead.
+	 *
+	 * @since 2.9
+	 */
+	public static final QueryHintOption<Boolean> CONSULT_SURROGATES =
+			hintOption("CONSULT_SURROGATES", false);
+
     // internal helper for conciseness
     private static <T, V extends T> QueryHintOption<T> hintOption(String hintKeyLocalName, V defaultValue) {
         return new QueryHintOption<>(LocalSearchHintOptions.class, hintKeyLocalName, defaultValue);

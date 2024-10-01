@@ -8,19 +8,11 @@
  *******************************************************************************/
 package tools.refinery.interpreter.localsearch.planner;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
-import tools.refinery.interpreter.localsearch.operations.ISearchOperation;
-import tools.refinery.interpreter.localsearch.planner.compiler.IOperationCompiler;
 import tools.refinery.interpreter.localsearch.matcher.integration.LocalSearchHints;
+import tools.refinery.interpreter.localsearch.operations.ISearchOperation;
 import tools.refinery.interpreter.localsearch.plan.SearchPlanForBody;
+import tools.refinery.interpreter.localsearch.planner.compiler.IOperationCompiler;
 import tools.refinery.interpreter.matchers.backend.ResultProviderRequestor;
 import tools.refinery.interpreter.matchers.context.IQueryBackendContext;
 import tools.refinery.interpreter.matchers.context.IQueryRuntimeContext;
@@ -30,10 +22,9 @@ import tools.refinery.interpreter.matchers.psystem.PVariable;
 import tools.refinery.interpreter.matchers.psystem.basicdeferred.ExportedParameter;
 import tools.refinery.interpreter.matchers.psystem.queries.PParameter;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
-import tools.refinery.interpreter.matchers.psystem.rewriters.PBodyNormalizer;
-import tools.refinery.interpreter.matchers.psystem.rewriters.PDisjunctionRewriter;
-import tools.refinery.interpreter.matchers.psystem.rewriters.PDisjunctionRewriterCacher;
-import tools.refinery.interpreter.matchers.psystem.rewriters.PQueryFlattener;
+import tools.refinery.interpreter.matchers.psystem.rewriters.*;
+
+import java.util.*;
 
 /**
  *
@@ -63,6 +54,9 @@ public class LocalSearchPlanner implements ILocalSearchPlanner {
         this.configuration = configuration;
         this.operationCompiler = compiler;
         this.resultRequestor = resultRequestor;
+		PDisjunctionRewriter surrogatesRewriter = (true == configuration.isConsultSurrogates())
+				? new SurrogateQueryRewriter()
+				: new IdentityPDisjunctionRewriter();
         PQueryFlattener flattener = new PQueryFlattener(configuration.getFlattenCallPredicate());
         /*
          * TODO https://bugs.eclipse.org/bugs/show_bug.cgi?id=439358: The normalizer is initialized with the false
@@ -78,9 +72,14 @@ public class LocalSearchPlanner implements ILocalSearchPlanner {
                 return false;
             }
         };
-        preprocessor = new PDisjunctionRewriterCacher(flattener, normalizer);
 
-        plannerStrategy = new LocalSearchRuntimeBasedStrategy();
+		preprocessor = new PDisjunctionRewriterCacher(
+				flattener,
+				surrogatesRewriter, // TODO surrogates will not be flattened themselves
+				normalizer
+		);
+
+		plannerStrategy = new LocalSearchRuntimeBasedStrategy();
 
         context = backendContext;
     }
