@@ -89,7 +89,10 @@ FeatureDeclaration {
   RelationName
   ("[" Multiplicity? "]")?
   RelationName
-  (kw<"opposite"> RelationName)?
+  (
+    kw<"opposite"> RelationName |
+    kw<"subsets"> sep1<",", RelationName>
+  )*
   ";"?
 }
 
