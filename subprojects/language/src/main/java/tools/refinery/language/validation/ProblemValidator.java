@@ -53,6 +53,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String INVALID_PREDICATE_ISSUE = ISSUE_PREFIX + "INVALID_PREDICATE";
 	public static final String INVALID_RULE_ISSUE = ISSUE_PREFIX + "INVALID_RULE";
 	public static final String INVALID_TRANSITIVE_CLOSURE_ISSUE = ISSUE_PREFIX + "INVALID_TRANSITIVE_CLOSURE";
+	public static final String INVALID_SUPERSET_ISSUE = ISSUE_PREFIX + "INVALID_SUPERSET";
 	public static final String SHADOW_RELATION_ISSUE = ISSUE_PREFIX + "SHADOW_RELATION";
 	public static final String UNSUPPORTED_ASSERTION_ISSUE = ISSUE_PREFIX + "UNSUPPORTED_ASSERTION";
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
@@ -357,6 +358,43 @@ public class ProblemValidator extends AbstractProblemValidator {
 							.formatted(opposite.getName(), referenceDeclaration.getName()),
 					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 					INVALID_OPPOSITE_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkReferenceSubSetting(ReferenceDeclaration referenceDeclaration) {
+		var superSets = referenceDeclaration.getSuperSets();
+		int superSetCount = superSets.size();
+		for (int i = 0; i < superSetCount; i++) {
+			var superSet = superSets.get(i);
+			checkSuperset(referenceDeclaration, superSet, i);
+		}
+	}
+
+	private void checkSuperset(ReferenceDeclaration referenceDeclaration, Relation superSet, int i) {
+		if (superSet.eIsProxy()) {
+			return;
+		}
+		if (superSet.equals(referenceDeclaration)) {
+			var message = "Reference declaration '%s' cannot subset itself."
+					.formatted(referenceDeclaration.getName());
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
+			return;
+		}
+		if (superSet instanceof DatatypeDeclaration) {
+			var message = "Reference declaration '%s' cannot subset datatypes."
+					.formatted(referenceDeclaration.getName());
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
+			return;
+		}
+		int arity = signatureProvider.getArity(superSet);
+		if (arity != 2) {
+			var message = "Superset '%s' of reference '%s' must have arity 2, got arity %d instead."
+					.formatted(superSet.getName(), referenceDeclaration.getName(), arity);
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
+					i, INVALID_ARITY_ISSUE);
 		}
 	}
 
