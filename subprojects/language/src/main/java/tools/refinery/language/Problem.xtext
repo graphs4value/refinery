@@ -52,7 +52,10 @@ ReferenceDeclaration:
 	kind=ReferenceKind referenceType=[Relation|QualifiedName])
 	(multiplicity=ReferenceMultiplicity)?
 	name=Identifier
-	("opposite" opposite=[ReferenceDeclaration|QualifiedName])?;
+	(("opposite" opposite=[ReferenceDeclaration|QualifiedName])? &
+	("subsets" superSets+=[ReferenceDeclaration|QualifiedName]
+		("," superSets+=[ReferenceDeclaration|QualifiedName])*
+	)?);
 
 ReferenceMultiplicity returns Multiplicity:
 	"[" Multiplicity "]";
