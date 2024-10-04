@@ -105,6 +105,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ReferenceDeclaration/kind"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//ReferenceDeclaration/referenceType"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//ReferenceDeclaration/invalidMultiplicity"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//ReferenceDeclaration/superSets"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//NamedElement">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//NamedElement/name"/>
