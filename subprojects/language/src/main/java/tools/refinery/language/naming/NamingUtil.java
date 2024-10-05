@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 public final class NamingUtil {
 	public static final QualifiedName ROOT_NAME = QualifiedName.create("");
 
-	private static final Pattern SINGLETON_VARIABLE_REGEX = Pattern.compile("'?_");
-
 	private static final Pattern ID_REGEX = Pattern.compile("[_a-zA-Z]\\w*");
 
 	private NamingUtil() {
@@ -25,7 +23,7 @@ public final class NamingUtil {
 	}
 
 	public static boolean isSingletonVariableName(String name) {
-		return name != null && SINGLETON_VARIABLE_REGEX.matcher(name).lookingAt();
+		return name != null && !name.isEmpty() && name.charAt(0) == '_';
 	}
 
 	// This method name only makes sense if it checks for the positive case.

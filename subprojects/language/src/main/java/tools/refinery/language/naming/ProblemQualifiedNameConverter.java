@@ -13,8 +13,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
-import tools.refinery.language.conversion.QUOTED_IDValueConverter;
-import tools.refinery.language.services.ProblemGrammarAccess;
+import tools.refinery.language.conversion.IdentifierValueConverter;
 
 import java.util.ArrayList;
 
@@ -28,13 +27,8 @@ import java.util.ArrayList;
 public class ProblemQualifiedNameConverter implements IQualifiedNameConverter {
 	public static final String DELIMITER = "::";
 
-	private final QUOTED_IDValueConverter valueConverter;
-
 	@Inject
-	public ProblemQualifiedNameConverter(ProblemGrammarAccess grammarAccess, QUOTED_IDValueConverter valueConverter) {
-		this.valueConverter = valueConverter;
-		valueConverter.setRule(grammarAccess.getQUOTED_IDRule());
-	}
+	private IdentifierValueConverter valueConverter;
 
 	/**
 	 * Converts the given qualified name to a string.
@@ -53,7 +47,7 @@ public class ProblemQualifiedNameConverter implements IQualifiedNameConverter {
 				builder.append(DELIMITER);
 			}
 			var segment = qualifiedName.getSegment(i);
-			if (segment.isEmpty() || NamingUtil.isSimpleId(segment)) {
+			if (segment.isEmpty()) {
 				builder.append(segment);
 			} else {
 				builder.append(valueConverter.toString(segment));
@@ -85,11 +79,8 @@ public class ProblemQualifiedNameConverter implements IQualifiedNameConverter {
 			if (endIndex <= 0) {
 				throw new IllegalArgumentException("Invalid qualified name: " + qualifiedNameAsString);
 			}
-			String segment = qualifiedNameAsString.substring(index, endIndex);
-			if (NamingUtil.isQuoted(segment)) {
-				segment = valueConverter.toValue(segment, null);
-			}
-			segments.add(segment);
+			var segment = qualifiedNameAsString.substring(index, endIndex);
+			segments.add(valueConverter.toValue(segment, null));
 			index = endIndex + delimiterLength;
 		}
 		return QualifiedName.create(segments);

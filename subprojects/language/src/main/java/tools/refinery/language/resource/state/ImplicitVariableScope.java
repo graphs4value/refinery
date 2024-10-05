@@ -95,21 +95,22 @@ public class ImplicitVariableScope {
 		}
 	}
 
-	protected boolean tryCreateVariableForArgument(VariableOrNodeExpr variableOrNodeExpr, String variableName,
+	protected boolean tryCreateVariableForArgument(VariableOrNodeExpr variableOrNodeExpr, String crossRefString,
 												   IQualifiedNameConverter qualifiedNameConverter, IScope scope) {
-		if (!NamingUtil.isValidId(variableName)) {
+		if (!NamingUtil.isValidId(crossRefString)) {
 			return false;
 		}
 		QualifiedName qualifiedName;
 		try {
-			qualifiedName = qualifiedNameConverter.toQualifiedName(variableName);
+			qualifiedName = qualifiedNameConverter.toQualifiedName(crossRefString);
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
-		if (scope.getSingleElement(qualifiedName) != null) {
+		if (qualifiedName.getSegmentCount() != 1 || scope.getSingleElement(qualifiedName) != null) {
 			return false;
 		}
-		if (NamingUtil.isSingletonVariableName(variableName)) {
+		var variableName = qualifiedName.getFirstSegment();
+		if (NamingUtil.isSingletonVariableName(crossRefString)) {
 			createSingletonVariable(variableOrNodeExpr, variableName);
 			return true;
 		}
