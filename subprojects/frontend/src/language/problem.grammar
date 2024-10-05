@@ -190,7 +190,9 @@ ModuleName { QualifiedName }
 
 AggregatorName { QualifiedName }
 
-QualifiedName[implicitCompletion=true] { "::"? identifier (QualifiedNameSeparator "::" identifier)* }
+ID { identifier | QuotedID }
+
+QualifiedName[implicitCompletion=true] { "::"? ID (QualifiedNameSeparator "::" ID)* }
 
 StarMult { Star }
 
@@ -239,10 +241,9 @@ sep1<separator, content> { content (separator content)* }
 
   exponential { int ("e" | "E") ("+" | "-")? int }
 
-  String {
-    "'" (![\\'\n] | "\\" ![\n] | "\\\n")+ "'" |
-    "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""
-  }
+  String { "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\"" }
+
+  QuotedID { "'" (![\\'\n] | "\\" ![\n] | "\\\n")+ "'" }
 
   SymbolicComparisonOp {
     ">" | ">=" | "<" | "<=" | "==" | "!=" |

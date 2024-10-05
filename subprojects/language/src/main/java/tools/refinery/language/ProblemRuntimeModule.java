@@ -12,6 +12,7 @@ package tools.refinery.language;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
+import org.eclipse.xtext.conversion.impl.AbstractIDValueConverter;
 import org.eclipse.xtext.documentation.impl.AbstractMultiLineCommentProvider;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
@@ -28,6 +29,7 @@ import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
+import tools.refinery.language.conversion.IDValueConverter;
 import tools.refinery.language.conversion.ProblemValueConverterService;
 import tools.refinery.language.linking.ProblemLinkingService;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
@@ -79,6 +81,10 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends IValueConverterService> bindIValueConverterService() {
 		return ProblemValueConverterService.class;
+	}
+
+	public Class<? extends AbstractIDValueConverter> bindAbstractIDValueConverter() {
+		return IDValueConverter.class;
 	}
 
 	@Override

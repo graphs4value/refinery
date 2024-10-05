@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { escape } from 'lodash-es';
+
 import type {
   NodeMetadata,
   RelationMetadata,
@@ -17,7 +19,7 @@ const CONTAINMENT_WEIGHT = 5;
 const UNKNOWN_WEIGHT_FACTOR = 0.5;
 
 function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
-  const name = graph.getName(metadata);
+  const name = escape(graph.getName(metadata));
   switch (metadata.kind) {
     case 'INDIVIDUAL':
       return `<b>${name}</b>`;
@@ -27,7 +29,7 @@ function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
 }
 
 function relationName(graph: GraphStore, metadata: RelationMetadata): string {
-  const name = graph.getName(metadata);
+  const name = escape(graph.getName(metadata));
   const { detail } = metadata;
   if (detail.type === 'class' && detail.abstractClass) {
     return `<i>${name}</i>`;
@@ -120,6 +122,23 @@ function computeNodeData(graph: GraphStore): NodeData[] {
   return nodeData;
 }
 
+/**
+ * Escape an identifier so that it can be used as an SVG element `id` and as
+ * an `url(#)` reference to a clip path.
+ *
+ * While colons are allowed in such IDs, quotes and percent signs are not.
+ *
+ * @param name The name to escape.
+ * @returns The escaped name.
+ */
+function encodeName(name: string): string {
+  return encodeURIComponent(name)
+    .replaceAll('%3A', ':')
+    .replaceAll('_', '___')
+    .replaceAll("'", '__')
+    .replaceAll('%', '_');
+}
+
 function createNodes(
   graph: GraphStore,
   nodeData: NodeData[],
@@ -155,7 +174,8 @@ function createNodes(
     const name = nodeName(graph, node);
     const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
     const count = scopes ? ` ${data.count}` : '';
-    lines.push(`n${i} [id="${node.name}", class="${classes}", label=<
+    const encodedNodeName = encodeName(node.name);
+    lines.push(`n${i} [id="${encodedNodeName}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">
           <tr><td cellpadding="4.5" width="32" bgcolor="green">${name}${count}</td></tr>`);
     if (data.unaryPredicates.size > 0) {
@@ -163,13 +183,12 @@ function createNodes(
         '<hr/><tr><td cellpadding="4.5"><table fixedsize="TRUE" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="1.5">',
       );
       data.unaryPredicates.forEach((value, relation) => {
+        const encodedRelationName = `${encodedNodeName},${encodeName(relation.name)}`;
         lines.push(
           `<tr>
               <td><img src="#${value}"/></td>
               <td width="1.5"></td>
-              <td align="left" href="#${value}" id="${node.name},${
-                relation.name
-              },label">${relationName(graph, relation)}</td>
+              <td align="left" href="#${value}" id="${encodedRelationName},label">${relationName(graph, relation)}</td>
             </tr>`,
         );
       });
@@ -282,6 +301,7 @@ function createRelationEdges(
   }
 
   const tuples = partialInterpretation[relation.name] ?? [];
+  const encodedRelation = encodeName(relation.name);
   tuples.forEach(([from, to, value]) => {
     const isUnknown = value === 'UNKNOWN';
     if (
@@ -336,7 +356,9 @@ function createRelationEdges(
       edgeWeight *= UNKNOWN_WEIGHT_FACTOR;
     }
 
-    const id = `${fromNode.name},${toNode.name},${relation.name}`;
+    const encodedFrom = encodeName(fromNode.name);
+    const encodedTo = encodeName(toNode.name);
+    const id = `${encodedFrom},${encodedTo},${encodedRelation}`;
     const label = getEdgeLabel(name, containment, value);
     lines.push(`n${from} -> n${to} [
       id="${id}",

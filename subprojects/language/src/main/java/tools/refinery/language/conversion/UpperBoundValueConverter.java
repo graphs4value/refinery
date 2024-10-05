@@ -15,11 +15,11 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class UpperBoundValueConverter extends AbstractValueConverter<Integer> {
-	public static final String INFINITY = "*";	
-	
+	public static final String INFINITY = "*";
+
 	@Inject
 	private INTValueConverter intValueConverter;
-	
+
 	@Override
 	public Integer toValue(String string, INode node) throws ValueConverterException {
 		if (INFINITY.equals(string)) {

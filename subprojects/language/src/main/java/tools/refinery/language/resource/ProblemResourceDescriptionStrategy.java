@@ -109,15 +109,14 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (!(eObject instanceof NamedElement namedElement)) {
 			return null;
 		}
+		if (eObject instanceof Problem) {
+			throw new IllegalArgumentException("Tried to create child description for root Problem: " + eObject);
+		}
 		var name = namedElement.getName();
 		if (NamingUtil.isNullOrEmpty(name)) {
 			return null;
 		}
-		var qualifiedName = qualifiedNameConverter.toQualifiedName(name);
-		if (eObject instanceof Problem) {
-			return NamingUtil.stripRootPrefix(qualifiedName);
-		}
-		return qualifiedName;
+		return QualifiedName.create(name);
 	}
 
 	protected QualifiedName getProblemQualifiedName(Problem problem) {
@@ -125,8 +124,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			return QualifiedName.EMPTY;
 		}
 		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(problem);
-        return qualifiedName == null ? QualifiedName.EMPTY : qualifiedName;
-    }
+		return qualifiedName == null ? QualifiedName.EMPTY : qualifiedName;
+	}
 
 	public static boolean shouldExport(EObject eObject) {
 		if (eObject instanceof Variable) {

@@ -12,16 +12,18 @@ import org.eclipse.xtext.parser.antlr.ITokenDefProvider;
 import tools.refinery.language.services.ProblemGrammarAccess;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Singleton
 public class IdentifierTokenProvider {
 	private final int[] identifierTokensArray;
+	private final Set<String> identifierKeywords;
 
 	@Inject
 	private IdentifierTokenProvider(Initializer initializer) {
-		this.identifierTokensArray = initializer.getIdentifierTokesArray();
+		identifierTokensArray = initializer.getIdentifierTokesArray();
+		identifierKeywords = initializer.getIdentifierKeywords();
 	}
 
 	public boolean isIdentifierToken(int tokenId) {
@@ -33,6 +35,10 @@ public class IdentifierTokenProvider {
 		return false;
 	}
 
+	public Set<String> getIdentifierKeywords() {
+		return identifierKeywords;
+	}
+
 	private static class Initializer {
 		@Inject
 		private ITokenDefProvider tokenDefProvider;
@@ -41,12 +47,13 @@ public class IdentifierTokenProvider {
 		private ProblemGrammarAccess problemGrammarAccess;
 
 		private HashMap<String, Integer> valueToTokenIdMap;
-
 		private Set<Integer> identifierTokens;
+		private Set<String> identifierKeywords;
 
 		public int[] getIdentifierTokesArray() {
 			createValueToTokenIdMap();
-			identifierTokens = new HashSet<>();
+			identifierTokens = new LinkedHashSet<>();
+			identifierKeywords = new LinkedHashSet<>();
 			collectIdentifierTokensFromRule(problemGrammarAccess.getIdentifierRule());
 			var identifierTokensArray = new int[identifierTokens.size()];
 			int i = 0;
@@ -55,6 +62,10 @@ public class IdentifierTokenProvider {
 				i++;
 			}
 			return identifierTokensArray;
+		}
+
+		public Set<String> getIdentifierKeywords() {
+			return Set.copyOf(identifierKeywords);
 		}
 
 		private void createValueToTokenIdMap() {
@@ -81,7 +92,11 @@ public class IdentifierTokenProvider {
                     }
                 }
                 case RuleCall ruleCall -> collectIdentifierTokensFromRule(ruleCall.getRule());
-                case Keyword keyword -> collectToken("'" + keyword.getValue() + "'");
+                case Keyword keyword -> {
+					var value = keyword.getValue();
+					collectToken("'" + value + "'");
+					identifierKeywords.add(value);
+				}
                 default -> throw new IllegalArgumentException("Unknown Xtext grammar element: " + element);
             }
 		}
