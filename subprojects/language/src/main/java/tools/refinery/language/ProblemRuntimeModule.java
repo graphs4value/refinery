@@ -14,6 +14,7 @@ import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.conversion.impl.AbstractIDValueConverter;
 import org.eclipse.xtext.documentation.impl.AbstractMultiLineCommentProvider;
+import org.eclipse.xtext.findReferences.IReferenceFinder;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -36,10 +37,7 @@ import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.parser.ProblemEcoreElementFactory;
 import tools.refinery.language.parser.antlr.TokenSourceInjectingProblemParser;
-import tools.refinery.language.resource.ProblemLocationInFileProvider;
-import tools.refinery.language.resource.ProblemResource;
-import tools.refinery.language.resource.ProblemResourceDescriptionManager;
-import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
+import tools.refinery.language.resource.*;
 import tools.refinery.language.resource.state.ProblemDerivedStateComputer;
 import tools.refinery.language.scoping.ProblemGlobalScopeProvider;
 import tools.refinery.language.scoping.ProblemLocalScopeProvider;
@@ -120,6 +118,10 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 
 	public Class<? extends IDerivedStateComputer> bindIDerivedStateComputer() {
 		return ProblemDerivedStateComputer.class;
+	}
+
+	public Class<? extends IReferenceFinder> bindIReferenceFinder() {
+		return ProblemReferenceFinder.class;
 	}
 
 	@Override
