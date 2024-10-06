@@ -631,7 +631,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (ProblemUtil.isAtomNode(node) && value != LogicValue.TRUE) {
 			acceptError("Atom nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
 		}
-		if (ProblemUtil.isMultiNode(node) && value != LogicValue.FALSE && ProblemUtil.isInModule(node)) {
+		if (ProblemUtil.isMultiNode(node) && value != LogicValue.FALSE && ProblemUtil.isInModule(assertion)) {
 			acceptError("Multi-objects in modules cannot be required to exist.", assertion, null, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 		}
