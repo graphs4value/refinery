@@ -134,8 +134,8 @@ function computeNodeData(graph: GraphStore): NodeData[] {
 function encodeName(name: string): string {
   return encodeURIComponent(name)
     .replaceAll('%3A', ':')
-    .replaceAll('_', '___')
-    .replaceAll("'", '__')
+    .replaceAll('_', '__')
+    .replaceAll("'", '_27')
     .replaceAll('%', '_');
 }
 
