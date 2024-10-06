@@ -14,7 +14,9 @@ import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.validation.Check;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
@@ -76,6 +78,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 	@Inject
 	private ProblemTypeAnalyzer typeAnalyzer;
 
+	@Inject
+	private LinkingHelper linkingHelper;
+
 	@Check
 	public void checkModuleName(Problem problem) {
 		var nameString = problem.getName();
@@ -136,12 +141,29 @@ public class ProblemValidator extends AbstractProblemValidator {
 			var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
 			if (problem != null && referenceCounter.countReferences(problem, variable) <= 1) {
 				var name = variable.getName();
-				var message = ("Variable '%s' has only a single reference. " +
-						"Add another reference or mark is as a singleton variable: '_%s'").formatted(name, name);
+				var messageBuilder = new StringBuilder();
+				messageBuilder.append("Variable '").append(name).append("' has only a single reference.");
+				if (isUnquotedVariable(expr)) {
+					messageBuilder.append(" Add another reference or mark is as a singleton variable: '_")
+							.append(name).append("'.");
+				}
+				var message = messageBuilder.toString();
 				warning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
 						INSIGNIFICANT_INDEX, SINGLETON_VARIABLE_ISSUE);
 			}
 		}
+	}
+
+	private boolean isUnquotedVariable(VariableOrNodeExpr expr) {
+		var nodes = NodeModelUtils.findNodesForFeature(expr,
+				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE);
+		for (var node : nodes) {
+			var crossRefString = linkingHelper.getCrossRefNodeAsString(node, true);
+			if (NamingUtil.isQuoted(crossRefString)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Check
@@ -609,7 +631,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (ProblemUtil.isAtomNode(node) && value != LogicValue.TRUE) {
 			acceptError("Atom nodes must exist.", assertion, null, 0, UNSUPPORTED_ASSERTION_ISSUE);
 		}
-		if (ProblemUtil.isMultiNode(node) && value != LogicValue.FALSE && ProblemUtil.isInModule(node)) {
+		if (ProblemUtil.isMultiNode(node) && value != LogicValue.FALSE && ProblemUtil.isInModule(assertion)) {
 			acceptError("Multi-objects in modules cannot be required to exist.", assertion, null, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 		}

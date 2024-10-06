@@ -66,13 +66,13 @@ public class NodeNameCollector {
 		List<INode> nodes = NodeModelUtils.findNodesForFeature(eObject,
 				ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE);
 		for (INode node : nodes) {
-			var nodeName = linkingHelper.getCrossRefNodeAsString(node, true);
-			if (!NamingUtil.isValidId(nodeName)) {
+			var crossRefString = linkingHelper.getCrossRefNodeAsString(node, true);
+			if (!NamingUtil.isValidId(crossRefString)) {
 				continue;
 			}
-			var qualifiedName = qualifiedNameConverter.toQualifiedName(nodeName);
-			if (nodeScope.getSingleElement(qualifiedName) == null) {
-				nodeNames.add(nodeName);
+			var qualifiedName = qualifiedNameConverter.toQualifiedName(crossRefString);
+			if (qualifiedName.getSegmentCount() == 1 && nodeScope.getSingleElement(qualifiedName) == null) {
+				nodeNames.add(qualifiedName.getFirstSegment());
 			}
 		}
 	}

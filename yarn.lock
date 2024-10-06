@@ -2694,10 +2694,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource-variable/jetbrains-mono@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "@fontsource-variable/jetbrains-mono@npm:5.1.0"
-  checksum: 10c0/829f45bebd7162c2db34960b0a7c5f18ed44aab4f0963e1647c5a13bd1c5ef5629708e7b4a637312fe92a81cdfb3e813853ba7d0309745055ee0e72db67cbcc3
+"@fontsource-variable/jetbrains-mono@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "@fontsource-variable/jetbrains-mono@npm:5.1.1"
+  checksum: 10c0/9820c3562903b429175a2d536a328efa8d6b400fa66e6674d11d986fe2c6239cea1349878472f5a4b00ab37ca9141060e52cf59fd7b56a79d71a453ace246a73
   languageName: node
   linkType: hard
 
@@ -3310,9 +3310,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-data-grid@npm:^7.18.0":
-  version: 7.18.0
-  resolution: "@mui/x-data-grid@npm:7.18.0"
+"@mui/x-data-grid@npm:^7.19.0":
+  version: 7.19.0
+  resolution: "@mui/x-data-grid@npm:7.19.0"
   dependencies:
     "@babel/runtime": "npm:^7.25.6"
     "@mui/utils": "npm:^5.16.6"
@@ -3332,7 +3332,7 @@ __metadata:
       optional: true
     "@emotion/styled":
       optional: true
-  checksum: 10c0/265a71c99f2bacd7ff15489629306711c2e30815b7dd560cf53b754c7693d82c84aaaf2c214d453e51cb201426a54128c2ea46c916a5d036188a813732177807
+  checksum: 10c0/274640bf18429082c9bc4f03bb7ace897876c4e59cca9ee47eec7ad6c82df20e835e3851a86f0010b46341e946559a8c359c4f4a4e53f60d1c481601481f5b81
   languageName: node
   linkType: hard
 
@@ -3462,7 +3462,7 @@ __metadata:
     "@docusaurus/theme-common": "npm:^3.5.2"
     "@docusaurus/theme-search-algolia": "npm:^3.5.2"
     "@docusaurus/types": "npm:^3.5.2"
-    "@fontsource-variable/jetbrains-mono": "npm:^5.1.0"
+    "@fontsource-variable/jetbrains-mono": "npm:^5.1.1"
     "@fontsource-variable/open-sans": "npm:^5.1.0"
     "@fontsource/open-sans": "npm:^5.1.0"
     "@hpcc-js/wasm-zstd": "npm:^1.2.1"
@@ -3510,7 +3510,7 @@ __metadata:
     "@emotion/serialize": "npm:^1.3.2"
     "@emotion/sheet": "npm:^1.4.0"
     "@emotion/styled": "npm:^11.13.0"
-    "@fontsource-variable/jetbrains-mono": "npm:^5.1.0"
+    "@fontsource-variable/jetbrains-mono": "npm:^5.1.1"
     "@fontsource-variable/open-sans": "npm:^5.1.0"
     "@fontsource/open-sans": "npm:^5.1.0"
     "@hpcc-js/wasm": "npm:^2.22.3"
@@ -3523,7 +3523,7 @@ __metadata:
     "@mui/icons-material": "npm:^6.1.2"
     "@mui/material": "npm:^6.1.2"
     "@mui/system": "npm:^6.1.2"
-    "@mui/x-data-grid": "npm:^7.18.0"
+    "@mui/x-data-grid": "npm:^7.19.0"
     "@types/d3": "npm:^7.4.3"
     "@types/d3-color": "npm:^3.1.3"
     "@types/d3-graphviz": "npm:^2.6.10"
@@ -6327,9 +6327,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001587, caniuse-lite@npm:^1.0.30001599":
-  version: 1.0.30001666
-  resolution: "caniuse-lite@npm:1.0.30001666"
-  checksum: 10c0/2d49e9be676233c24717f12aad3d01b3e5f902b457fe1deefaa8d82e64786788a8f79381ae437c61b50e15c9aea8aeb59871b1d54cb4c28b9190d53d292e2339
+  version: 1.0.30001667
+  resolution: "caniuse-lite@npm:1.0.30001667"
+  checksum: 10c0/6bc8555a47603e1e76eaef9b185d6fdeeca7d9c20a283f7c32c971eb1b52ea3a80e6ec086920f088f06abe619240f1023a2d3a08b5b1f2f11df1475695e9f71c
   languageName: node
   linkType: hard
 

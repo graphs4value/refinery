@@ -6,22 +6,32 @@
 package tools.refinery.language.parser.antlr;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import org.eclipse.xtext.*;
 import org.eclipse.xtext.parser.antlr.ITokenDefProvider;
 import tools.refinery.language.services.ProblemGrammarAccess;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Singleton
 public class IdentifierTokenProvider {
 	private final int[] identifierTokensArray;
+	private final Set<String> identifierKeywords;
+	private final Set<String> containmentKeywords;
 
 	@Inject
-	private IdentifierTokenProvider(Initializer initializer) {
-		this.identifierTokensArray = initializer.getIdentifierTokesArray();
+	private IdentifierTokenProvider(ProblemGrammarAccess grammarAccess, Provider<Initializer> initializerProvider) {
+		var initializer = initializerProvider.get();
+		identifierTokensArray = initializer.getIdentifierTokensArray(grammarAccess.getIdentifierRule());
+		identifierKeywords = Set.copyOf(initializer.identifierKeywords);
+		var nonContainmentInitializer = initializerProvider.get();
+		nonContainmentInitializer.getIdentifierTokensArray(grammarAccess.getNonContainmentIdentifierRule());
+		var mutableContainmentKeywords = new LinkedHashSet<>(identifierKeywords);
+		mutableContainmentKeywords.removeAll(nonContainmentInitializer.identifierKeywords);
+		containmentKeywords = Set.copyOf(mutableContainmentKeywords);
 	}
 
 	public boolean isIdentifierToken(int tokenId) {
@@ -33,21 +43,27 @@ public class IdentifierTokenProvider {
 		return false;
 	}
 
+	public Set<String> getIdentifierKeywords() {
+		return identifierKeywords;
+	}
+
+	public Set<String> getContainmentKeywords() {
+		return containmentKeywords;
+	}
+
 	private static class Initializer {
 		@Inject
 		private ITokenDefProvider tokenDefProvider;
 
-		@Inject
-		private ProblemGrammarAccess problemGrammarAccess;
-
 		private HashMap<String, Integer> valueToTokenIdMap;
-
 		private Set<Integer> identifierTokens;
+		private Set<String> identifierKeywords;
 
-		public int[] getIdentifierTokesArray() {
+		public int[] getIdentifierTokensArray(ParserRule rule) {
 			createValueToTokenIdMap();
-			identifierTokens = new HashSet<>();
-			collectIdentifierTokensFromRule(problemGrammarAccess.getIdentifierRule());
+			identifierTokens = new LinkedHashSet<>();
+			identifierKeywords = new LinkedHashSet<>();
+			collectIdentifierTokensFromRule(rule);
 			var identifierTokensArray = new int[identifierTokens.size()];
 			int i = 0;
 			for (var tokenId : identifierTokens) {
@@ -81,7 +97,11 @@ public class IdentifierTokenProvider {
                     }
                 }
                 case RuleCall ruleCall -> collectIdentifierTokensFromRule(ruleCall.getRule());
-                case Keyword keyword -> collectToken("'" + keyword.getValue() + "'");
+                case Keyword keyword -> {
+					var value = keyword.getValue();
+					collectToken("'" + value + "'");
+					identifierKeywords.add(value);
+				}
                 default -> throw new IllegalArgumentException("Unknown Xtext grammar element: " + element);
             }
 		}

@@ -8,7 +8,6 @@
  *******************************************************************************/
 package tools.refinery.language.serializer;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -17,8 +16,6 @@ import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.IGrammarAccess;
-import org.eclipse.xtext.conversion.IValueConverterService;
-import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -30,8 +27,13 @@ import org.eclipse.xtext.serializer.diagnostic.SerializationDiagnostic;
 import org.eclipse.xtext.serializer.tokens.CrossReferenceSerializer;
 import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding;
 import org.eclipse.xtext.util.EmfFormatter;
+import tools.refinery.language.model.problem.*;
+import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.naming.ProblemQualifiedNameConverter;
+import tools.refinery.language.parser.antlr.IdentifierTokenProvider;
+import tools.refinery.language.utils.ProblemUtil;
 
-import java.util.List;
+import java.util.regex.Pattern;
 
 public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 	public static final String AMBIGUOUS_REFERENCE_DIAGNOSTIC = "tools.refinery.language.serializer" +
@@ -48,10 +50,17 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 	private IScopeProvider scopeProvider;
 
 	@Inject
-	private IValueConverterService valueConverter;
+	private IGrammarAccess grammarAccess;
+
+	private final Pattern containmentKeywordRegex;
 
 	@Inject
-	private IGrammarAccess grammarAccess;
+	public ProblemCrossReferenceSerializer(IdentifierTokenProvider identifierTokenProvider) {
+		var regexString = "^(" +
+				String.join("|", identifierTokenProvider.getContainmentKeywords()) +
+				")($|" + ProblemQualifiedNameConverter.DELIMITER + ")";
+		containmentKeywordRegex = Pattern.compile(regexString);
+	}
 
 	@Override
 	public String serializeCrossRef(EObject semanticObject, CrossReference crossref, EObject target, INode node,
@@ -73,6 +82,12 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 			target = handleProxy(target, semanticObject, ref);
 		}
 
+		var crossReferenceName = getCrossReferenceName(semanticObject, crossref, target, node, scope, errors);
+		return postProcessCrossReferenceName(semanticObject, ref, target, crossReferenceName);
+	}
+
+	private String getCrossReferenceName(EObject semanticObject, CrossReference crossref, EObject target, INode node,
+										 IScope scope, ISerializationDiagnostic.Acceptor errors) {
 		if (target != null && node != null) {
 			String text = linkingHelper.getCrossRefNodeAsString(node, true);
 			QualifiedName qualifiedName = qualifiedNameConverter.toQualifiedName(text);
@@ -83,6 +98,23 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 		}
 
 		return getCrossReferenceNameFromScope(semanticObject, crossref, target, scope, errors);
+	}
+
+	private String postProcessCrossReferenceName(EObject semanticObject, EReference ref, EObject target,
+												 String crossReferenceName) {
+		if (ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE.equals(ref) &&
+				target instanceof Variable variable &&
+				NamingUtil.isSingletonVariableName(crossReferenceName) &&
+				!ProblemUtil.isSingletonVariable(variable)) {
+			return "'%s'".formatted(crossReferenceName);
+		}
+		if (ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE.equals(ref) &&
+				semanticObject instanceof ReferenceDeclaration referenceDeclaration &&
+				referenceDeclaration.getKind() == ReferenceKind.DEFAULT) {
+			return containmentKeywordRegex.matcher(crossReferenceName).replaceFirst(matchResult ->
+					"'%s'%s".formatted(matchResult.group(1), matchResult.group(2)));
+		}
+		return crossReferenceName;
 	}
 
 	private boolean isUniqueInScope(IScope scope, QualifiedName qualifiedName, URI targetUri) {
@@ -97,12 +129,10 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 	@Override
 	protected String getCrossReferenceNameFromScope(EObject semanticObject, CrossReference crossref, EObject target,
 													IScope scope, ISerializationDiagnostic.Acceptor errors) {
-		var ruleName = linkingHelper.getRuleNameFrom(crossref);
 		var targetUri = EcoreUtil2.getPlatformResourceOrNormalizedURI(target);
 		FoundName foundName = FoundName.NONE;
 		int shortestNameLength = Integer.MAX_VALUE;
 		String shortestName = null;
-		List<ISerializationDiagnostic> recordedErrors = null;
 		for (var description : scope.getElements(target)) {
 			var qualifiedName = description.getName();
 			var segmentCount = qualifiedName.getSegmentCount();
@@ -110,35 +140,22 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 				continue;
 			}
 			if (isUniqueInScope(scope, qualifiedName, targetUri)) {
-				var unconverted = qualifiedNameConverter.toString(qualifiedName);
-				try {
-					shortestName = valueConverter.toString(unconverted, ruleName);
-					shortestNameLength = segmentCount;
-					foundName = FoundName.VALID;
-				} catch (ValueConverterException e) {
-					if (recordedErrors == null) {
-						recordedErrors = Lists.newArrayList();
-					}
-					recordedErrors.add(diagnostics.getValueConversionExceptionDiagnostic(semanticObject, crossref,
-							unconverted, e));
-				}
+				shortestName = qualifiedNameConverter.toString(qualifiedName);
+				shortestNameLength = segmentCount;
+				foundName = FoundName.VALID;
 			} else if (foundName == FoundName.NONE) {
 				foundName = FoundName.AMBIGUOUS;
 			}
 		}
-		handleErrors(semanticObject, crossref, target, scope, errors, recordedErrors, foundName);
+		handleErrors(semanticObject, crossref, target, scope, errors, foundName);
 		return shortestName;
 	}
 
 	private void handleErrors(
 			EObject semanticObject, CrossReference crossref, EObject target, IScope scope,
-			ISerializationDiagnostic.Acceptor errors, List<ISerializationDiagnostic> recordedErrors,
-			FoundName foundName) {
+			ISerializationDiagnostic.Acceptor errors, FoundName foundName) {
 		if (errors == null) {
 			return;
-		}
-		if (recordedErrors != null) {
-			recordedErrors.forEach(errors::accept);
 		}
 		if (foundName == FoundName.NONE) {
 			errors.accept(diagnostics.getNoEObjectDescriptionFoundDiagnostic(semanticObject, crossref, target,
@@ -149,8 +166,8 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 			var ref = GrammarUtil.getReference(crossref);
 			var clazz = semanticObject.eClass().getName();
 			if (ref.getEContainingClass() != semanticObject.eClass()) {
-                clazz = ref.getEContainingClass().getName() + "(" + clazz + ")";
-            }
+				clazz = ref.getEContainingClass().getName() + "(" + clazz + ")";
+			}
 			var message = "No unambiguous name could be found in scope %s.%s for %s"
 					.formatted(clazz, ref.getName(), EmfFormatter.objPath(target));
 			var diagnostic = new SerializationDiagnostic(AMBIGUOUS_REFERENCE_DIAGNOSTIC, semanticObject, crossref,

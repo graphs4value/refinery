@@ -298,7 +298,7 @@ Identifier:
 	NonContainmentIdentifier | "contains" | "container";
 
 NonContainmentIdentifier:
-	ID | "atom" | "multi" | "contained" | "problem" | "module" |
+	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "decision" | "propagation" | "shadow";
 
 Real returns ecore::EDouble:
@@ -320,3 +320,10 @@ terminal EXPONENTIAL:
 @Override
 terminal SL_COMMENT:
 	('%' | '//') !('\n' | '\r')* ('\r'? '\n')?;
+
+@Override
+terminal STRING:
+	'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"';
+
+terminal QUOTED_ID:
+	"'" ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|"'") )* "'";

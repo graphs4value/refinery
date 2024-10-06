@@ -39,7 +39,7 @@
     "@docusaurus/theme-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.5.2",
     "@docusaurus/theme-search-algolia": "^3.5.2",
-    "@fontsource-variable/jetbrains-mono": "^5.1.0",
+    "@fontsource-variable/jetbrains-mono": "^5.1.1",
     "@fontsource-variable/open-sans": "^5.1.0",
     "@fontsource/open-sans": "^5.1.0",
     "@hpcc-js/wasm-zstd": "^1.2.1",

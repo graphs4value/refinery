@@ -32,8 +32,10 @@ class IdentifierTokenProviderTest {
 	static Stream<Arguments> isIdentifierTokenTest() {
 		return Stream.of(
 				Arguments.of("RULE_ID", InternalProblemParser.RULE_ID, true),
-				Arguments.of("contained", InternalProblemParser.Contained, true),
+				Arguments.of("RULE_QUOTED_ID", InternalProblemParser.RULE_QUOTED_ID, true),
 				Arguments.of("contains", InternalProblemParser.Contains, true),
+				Arguments.of("container", InternalProblemParser.Container, true),
+				Arguments.of("pred", InternalProblemParser.Pred, false),
 				Arguments.of("(", InternalProblemParser.LeftParenthesis, false)
 		);
 	}

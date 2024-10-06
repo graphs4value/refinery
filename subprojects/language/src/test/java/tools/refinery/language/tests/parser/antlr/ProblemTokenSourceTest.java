@@ -41,7 +41,9 @@ class ProblemTokenSourceTest {
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"a+b",
+			"'a'+'b'",
 			"a+(b)",
+			"'a'+('b')",
 			"a+(b(x, y), x)",
 			"a + (b)",
 			"a+(b::x)",
@@ -61,6 +63,8 @@ class ProblemTokenSourceTest {
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"equals+(a, b)",
+			"equals+('a', 'b')",
+			"equals+('1', 'b')",
 			"equals + (a, b)",
 			"equals+(a::x, b)"
 	})
