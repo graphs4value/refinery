@@ -6,6 +6,8 @@
 package tools.refinery.language.web.semantics.metadata;
 
 import com.google.inject.Inject;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.ide.syntaxcoloring.TypeHashProvider;
 import tools.refinery.language.semantics.NodeNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
@@ -26,6 +28,9 @@ public class NodeMetadataFactory {
 
 	@Inject
 	private TypeHashProvider typeHashProvider;
+
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
 
 	private ProblemTrace problemTrace;
 	private Concreteness concreteness;
@@ -49,7 +54,8 @@ public class NodeMetadataFactory {
 	public NodeMetadata createFreshlyNamedMetadata(int nodeId) {
 		var type = getType(nodeId);
 		var name = getName(type, nodeId);
-		return doCreateMetadata(name, name, type, NodeKind.IMPLICIT);
+		var escapedName = qualifiedNameConverter.toString(QualifiedName.create(name));
+		return doCreateMetadata(escapedName, escapedName, type, NodeKind.IMPLICIT);
 	}
 
 	private PartialRelation getType(int nodeId) {

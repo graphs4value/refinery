@@ -173,7 +173,7 @@ function createNodes(
     const classes = classList.join(' ');
     const name = nodeName(graph, node);
     const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
-    const count = scopes ? ` ${data.count}` : '';
+    const count = scopes ? `&nbsp;${data.count}` : '';
     const encodedNodeName = encodeName(node.name);
     lines.push(`n${i} [id="${encodedNodeName}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">
