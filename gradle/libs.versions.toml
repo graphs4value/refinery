@@ -5,7 +5,7 @@
 [versions]
 antlr = "3.2" # To retain Xtext compatibility, this mustn't be increased
 apiguardian = "1.1.2"
-asm = "9.7"
+asm = "9.7.1"
 classgraph = "4.8.177"
 eclipse-commands = "3.12.200"
 eclipse-contenttype = "3.9.500"
@@ -43,7 +43,7 @@ jetbrainsAnnotations = "25.0.0"
 jetty = "12.0.14"
 jmh = "1.37"
 jna = "5.15.0"
-junit = "5.11.1"
+junit = "5.11.2"
 junit4 = "4.13.2"
 lsp4j = "0.23.1"
 mockito = "5.14.1"
