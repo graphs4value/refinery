@@ -6,6 +6,7 @@
 package tools.refinery.language.parser.antlr;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import org.eclipse.xtext.*;
 import org.eclipse.xtext.parser.antlr.ITokenDefProvider;
@@ -19,11 +20,18 @@ import java.util.Set;
 public class IdentifierTokenProvider {
 	private final int[] identifierTokensArray;
 	private final Set<String> identifierKeywords;
+	private final Set<String> containmentKeywords;
 
 	@Inject
-	private IdentifierTokenProvider(Initializer initializer) {
-		identifierTokensArray = initializer.getIdentifierTokesArray();
-		identifierKeywords = initializer.getIdentifierKeywords();
+	private IdentifierTokenProvider(ProblemGrammarAccess grammarAccess, Provider<Initializer> initializerProvider) {
+		var initializer = initializerProvider.get();
+		identifierTokensArray = initializer.getIdentifierTokensArray(grammarAccess.getIdentifierRule());
+		identifierKeywords = Set.copyOf(initializer.identifierKeywords);
+		var nonContainmentInitializer = initializerProvider.get();
+		nonContainmentInitializer.getIdentifierTokensArray(grammarAccess.getNonContainmentIdentifierRule());
+		var mutableContainmentKeywords = new LinkedHashSet<>(identifierKeywords);
+		mutableContainmentKeywords.removeAll(nonContainmentInitializer.identifierKeywords);
+		containmentKeywords = Set.copyOf(mutableContainmentKeywords);
 	}
 
 	public boolean isIdentifierToken(int tokenId) {
@@ -39,22 +47,23 @@ public class IdentifierTokenProvider {
 		return identifierKeywords;
 	}
 
+	public Set<String> getContainmentKeywords() {
+		return containmentKeywords;
+	}
+
 	private static class Initializer {
 		@Inject
 		private ITokenDefProvider tokenDefProvider;
-
-		@Inject
-		private ProblemGrammarAccess problemGrammarAccess;
 
 		private HashMap<String, Integer> valueToTokenIdMap;
 		private Set<Integer> identifierTokens;
 		private Set<String> identifierKeywords;
 
-		public int[] getIdentifierTokesArray() {
+		public int[] getIdentifierTokensArray(ParserRule rule) {
 			createValueToTokenIdMap();
 			identifierTokens = new LinkedHashSet<>();
 			identifierKeywords = new LinkedHashSet<>();
-			collectIdentifierTokensFromRule(problemGrammarAccess.getIdentifierRule());
+			collectIdentifierTokensFromRule(rule);
 			var identifierTokensArray = new int[identifierTokens.size()];
 			int i = 0;
 			for (var tokenId : identifierTokens) {
@@ -62,10 +71,6 @@ public class IdentifierTokenProvider {
 				i++;
 			}
 			return identifierTokensArray;
-		}
-
-		public Set<String> getIdentifierKeywords() {
-			return Set.copyOf(identifierKeywords);
 		}
 
 		private void createValueToTokenIdMap() {

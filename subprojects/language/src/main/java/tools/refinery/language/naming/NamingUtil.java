@@ -23,7 +23,7 @@ public final class NamingUtil {
 	}
 
 	public static boolean isSingletonVariableName(String name) {
-		return name != null && !name.isEmpty() && name.charAt(0) == '_';
+		return name != null && !name.isEmpty() && name.charAt(0) == '_' && isSimpleId(name);
 	}
 
 	// This method name only makes sense if it checks for the positive case.

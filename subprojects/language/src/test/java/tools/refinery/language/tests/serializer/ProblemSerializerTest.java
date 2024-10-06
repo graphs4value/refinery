@@ -259,6 +259,94 @@ class ProblemSerializerTest {
 				""");
 	}
 
+	@Test
+	void implicitVariableWithUnderscoreTest() {
+		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
+		pred.setName("foo");
+		var conjunction = ProblemFactory.eINSTANCE.createConjunction();
+		var variable = ProblemFactory.eINSTANCE.createImplicitVariable();
+		variable.setName("_q");
+		conjunction.getImplicitVariables().add(variable);
+		var atom = ProblemFactory.eINSTANCE.createAtom();
+		var equals = builtin.pred("equals").get();
+		atom.setRelation(equals);
+		var arg1 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
+		arg1.setVariableOrNode(variable);
+		atom.getArguments().add(arg1);
+		var arg2 = ProblemFactory.eINSTANCE.createVariableOrNodeExpr();
+		arg2.setVariableOrNode(variable);
+		atom.getArguments().add(arg2);
+		conjunction.getLiterals().add(atom);
+		pred.getBodies().add(conjunction);
+		problem.getStatements().add(pred);
+
+		assertSerializedResult("""
+				pred foo() <-> equals('_q', '_q').
+				""");
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void containmentKeywordInReferenceTypeTest(String keyword, String quoted) {
+		var classDeclaration1 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration1.setName(keyword);
+		problem.getStatements().add(classDeclaration1);
+		var classDeclaration2 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration2.setName("foo");
+		var referenceDeclaration = ProblemFactory.eINSTANCE.createReferenceDeclaration();
+		referenceDeclaration.setReferenceType(classDeclaration1);
+		referenceDeclaration.setName("ref");
+		classDeclaration2.getFeatureDeclarations().add(referenceDeclaration);
+		problem.getStatements().add(classDeclaration2);
+
+		assertSerializedResult("""
+				class %s.
+
+				class foo {
+					%s ref
+				}
+				""".formatted(keyword, quoted));
+	}
+
+	static Stream<Arguments> containmentKeywordInReferenceTypeTest() {
+		return Stream.of(
+				Arguments.of("contains", "'contains'"),
+				Arguments.of("container", "'container'"),
+				Arguments.of("atom", "atom"),
+				Arguments.of("module", "module"),
+				Arguments.of("shadow", "shadow"),
+				Arguments.of("propagation", "propagation")
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void containmentKeywordInContainmentReferenceTypeTest(String keyword) {
+		var classDeclaration1 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration1.setName(keyword);
+		problem.getStatements().add(classDeclaration1);
+		var classDeclaration2 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration2.setName("foo");
+		var referenceDeclaration = ProblemFactory.eINSTANCE.createReferenceDeclaration();
+		referenceDeclaration.setReferenceType(classDeclaration1);
+		referenceDeclaration.setName("ref");
+		referenceDeclaration.setKind(ReferenceKind.CONTAINMENT);
+		classDeclaration2.getFeatureDeclarations().add(referenceDeclaration);
+		problem.getStatements().add(classDeclaration2);
+
+		assertSerializedResult("""
+				class %s.
+
+				class foo {
+					contains %s ref
+				}
+				""".formatted(keyword, keyword));
+	}
+
+	static Stream<Arguments> containmentKeywordInContainmentReferenceTypeTest() {
+		return containmentKeywordInReferenceTypeTest().map(arguments -> Arguments.of(arguments.get()[0]));
+	}
+
 	private void createClassAndAssertion(String className, String nodeName) {
 		var classDeclaration = ProblemFactory.eINSTANCE.createClassDeclaration();
 		classDeclaration.setName(className);

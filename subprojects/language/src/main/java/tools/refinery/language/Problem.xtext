@@ -298,7 +298,7 @@ Identifier:
 	NonContainmentIdentifier | "contains" | "container";
 
 NonContainmentIdentifier:
-	ID | QUOTED_ID | "atom" | "multi" | "contained" | "problem" | "module" |
+	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "decision" | "propagation" | "shadow";
 
 Real returns ecore::EDouble:
