@@ -61,7 +61,7 @@ statement {
   //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
   // } |
   RuleDefinition {
-    (ckw<"decision"> | ckw<"propagation">)? kw<"rule">
+    (ckw<"decision"> | ckw<"propagation"> | ckw<"concretization">)? kw<"rule">
     RuleName ParameterList<Parameter>?
     RuleBody { ("<->" sep<OrOp, Conjunction>)? ("==>" sep<OrOp, Consequent>)? "." }
   } |

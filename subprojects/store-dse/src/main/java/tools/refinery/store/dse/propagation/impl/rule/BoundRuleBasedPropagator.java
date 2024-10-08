@@ -15,18 +15,47 @@ import java.util.List;
 
 public class BoundRuleBasedPropagator implements BoundPropagator {
 	private final ModelQueryAdapter queryEngine;
-	private final BoundPropagationRule[] boundRules;
+	private final BoundPropagationRule[] boundPropagationRules;
+	private final BoundPropagationRule[] boundConcretizationRules;
 
-	public BoundRuleBasedPropagator(Model model, List<Rule> propagationRules) {
+	public BoundRuleBasedPropagator(Model model, List<Rule> propagationRules, List<Rule> concretizationRules) {
 		queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		boundRules = new BoundPropagationRule[propagationRules.size()];
+		boundPropagationRules = bindAll(model, propagationRules);
+		boundConcretizationRules = bindAll(model, concretizationRules);
+	}
+
+	private static BoundPropagationRule[] bindAll(Model model, List<Rule> rules) {
+		var boundRules = new BoundPropagationRule[rules.size()];
 		for (int i = 0; i < boundRules.length; i++) {
-			boundRules[i] = new BoundPropagationRule(model, propagationRules.get(i));
+			boundRules[i] = new BoundPropagationRule(model, rules.get(i));
 		}
+		return boundRules;
 	}
 
 	@Override
 	public PropagationResult propagateOne() {
+		return fireAll(boundPropagationRules);
+	}
+
+	@Override
+	public boolean concretizationRequested() {
+		queryEngine.flushChanges();
+		// Use a classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < boundConcretizationRules.length; i++) {
+			if (boundConcretizationRules[i].canFire()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public PropagationResult concretizeOne() {
+		return fireAll(boundConcretizationRules);
+	}
+
+	private PropagationResult fireAll(BoundPropagationRule[] boundRules) {
 		queryEngine.flushChanges();
 		PropagationResult result = PropagationResult.UNCHANGED;
 		// Use a classic for loop to avoid allocating an iterator.

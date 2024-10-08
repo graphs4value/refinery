@@ -22,6 +22,9 @@ import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.dse.transition.actions.ActionLiterals;
 import tools.refinery.store.reasoning.actions.PartialActionLiterals;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
+import tools.refinery.store.reasoning.literal.ModalConstraint;
+import tools.refinery.store.reasoning.literal.ModalitySpecification;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
@@ -79,7 +82,8 @@ public class RuleCompiler {
 		return ruleBuilder.build();
 	}
 
-	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition) {
+	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition,
+											   ConcretenessSpecification concreteness) {
 		var preparedRule = prepareRule(ruleDefinition);
 		if (preparedRule.hasFocus()) {
 			throw new IllegalArgumentException("Propagation rule '%s' must not have any focus parameters."
@@ -96,6 +100,8 @@ public class RuleCompiler {
 		var actions = consequents.getFirst().getActions();
 		int actionCount = actions.size();
 		var rules = new ArrayList<Rule>(actionCount);
+		var postConditionModality = new ConcreteModality(concreteness, ModalitySpecification.MAY);
+		var parametersMustExist = concreteness == ConcretenessSpecification.CANDIDATE;
 		for (int i = 0; i < actionCount; i++) {
 			var actionName = actionCount == 1 ? name : name + "#" + (i + 1);
 			var action = actions.get(i);
@@ -105,13 +111,15 @@ public class RuleCompiler {
 			try {
 				var parameters = getParameterList(assertionAction, preparedRule);
 				var moreCommonLiterals = new ArrayList<Literal>();
-				toLiterals(assertionAction, preparedRule, false, ConcreteModality.PARTIAL_MAY, moreCommonLiterals);
-				var precondition = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler);
+				toLiterals(assertionAction, preparedRule, false, postConditionModality, moreCommonLiterals);
+				var precondition = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler,
+						parametersMustExist);
 				var actionLiterals = new ArrayList<ActionLiteral>();
 				toActionLiterals(action, preparedRule.parameterMap(), actionLiterals);
 				var rule = Rule.builder(actionName)
 						.parameters(parameters)
-						.clause(PartialLiterals.must(precondition.call(CallPolarity.POSITIVE, parameters)))
+						.clause(new ModalConstraint(ModalitySpecification.MUST, concreteness, precondition.getDnf())
+								.call(CallPolarity.POSITIVE, Collections.unmodifiableList(parameters)))
 						.action(actionLiterals)
 						.build();
 				rules.add(rule);

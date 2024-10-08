@@ -28,10 +28,15 @@ record PreparedRule(
 
 	public RelationalQuery buildQuery(String name, List<NodeVariable> parameters, List<Literal> moreCommonLiterals,
 									  QueryCompiler queryCompiler) {
+		return buildQuery(name, parameters, moreCommonLiterals, queryCompiler, false);
+	}
+
+	public RelationalQuery buildQuery(String name, List<NodeVariable> parameters, List<Literal> moreCommonLiterals,
+									  QueryCompiler queryCompiler, boolean parametersMustExist) {
 		var allCommonLiterals = new ArrayList<>(commonLiterals);
 		for (var parameter : parameterMap.values()) {
 			// Make sure to always existentially quantify all omitted parameters.
-			if (!parameters.contains(parameter)) {
+			if (parametersMustExist || !parameters.contains(parameter)) {
 				allCommonLiterals.add(ReasoningAdapter.EXISTS_SYMBOL.call(parameter));
 			}
 		}

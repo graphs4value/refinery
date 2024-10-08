@@ -83,7 +83,7 @@ Conjunction:
 //	Conjunction ({Match.condition=current} "->" value=Expr)?;
 
 enum RuleKind:
-	DECISION="decision" | PROPAGATION="propagation";
+	DECISION="decision" | PROPAGATION="propagation" | CONCRETIZATION="concretization";
 
 RuleDefinition:
 	kind=RuleKind? "rule"
@@ -299,7 +299,8 @@ Identifier:
 
 NonContainmentIdentifier:
 	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
-	"datatype" | "aggregator" | "decision" | "propagation" | "shadow";
+	"datatype" | "aggregator" | "decision" | "propagation" | "concretization" |
+	"shadow";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

@@ -16,9 +16,11 @@ import java.util.List;
 
 public class RuleBasedPropagator implements Propagator {
 	private final List<Rule> propagationRules;
+	private final List<Rule> concretizationRules;
 
-	public RuleBasedPropagator(List<Rule> propagationRules) {
+	public RuleBasedPropagator(List<Rule> propagationRules, List<Rule> concretizationRules) {
 		this.propagationRules = propagationRules;
+		this.concretizationRules = concretizationRules;
 	}
 
 	@Override
@@ -27,10 +29,13 @@ public class RuleBasedPropagator implements Propagator {
 		for (var propagationRule : propagationRules) {
 			queryBuilder.query(propagationRule.getPrecondition());
 		}
+		for (var concretizationRule : concretizationRules) {
+			queryBuilder.query(concretizationRule.getPrecondition());
+		}
 	}
 
 	@Override
 	public BoundPropagator bindToModel(Model model) {
-		return new BoundRuleBasedPropagator(model, propagationRules);
+		return new BoundRuleBasedPropagator(model, propagationRules, concretizationRules);
 	}
 }

@@ -270,6 +270,7 @@
     <eLiterals name="REFINEMENT"/>
     <eLiterals name="PROPAGATION" value="1"/>
     <eLiterals name="DECISION" value="2"/>
+    <eLiterals name="CONCRETIZATION" value="3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ParameterBinding">
     <eLiterals name="SINGLE"/>

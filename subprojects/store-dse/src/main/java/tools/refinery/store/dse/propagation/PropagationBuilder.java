@@ -25,6 +25,17 @@ public interface PropagationBuilder extends ModelAdapterBuilder {
 		return this;
 	}
 
+	PropagationBuilder concretizationRule(Rule concretizationRule);
+
+	default PropagationBuilder concretizationRules(Rule... concretizationRules) {
+		return concretizationRules(List.of(concretizationRules));
+	}
+
+	default PropagationBuilder concretizationRules(Collection<Rule> concretizationRules) {
+		concretizationRules.forEach(this::concretizationRule);
+		return this;
+	}
+
 	PropagationBuilder propagator(Propagator propagator);
 
 	PropagationBuilder throwOnFatalRejection(boolean throwOnFatalRejection);

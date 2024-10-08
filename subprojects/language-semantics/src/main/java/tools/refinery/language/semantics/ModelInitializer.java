@@ -25,6 +25,7 @@ import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -775,10 +776,16 @@ public class ModelInitializer {
 						.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
 			}
 			case PROPAGATION -> {
-				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition);
+				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.PARTIAL);
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
 				storeBuilder.tryGetAdapter(PropagationBuilder.class)
 						.ifPresent(propagationBuilder -> propagationBuilder.rules(rules));
+			}
+			case CONCRETIZATION -> {
+				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
+				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
+				storeBuilder.tryGetAdapter(PropagationBuilder.class)
+						.ifPresent(propagationBuilder -> propagationBuilder.concretizationRules(rules));
 			}
 			case REFINEMENT -> {
 				// Rules not marked for decision or propagation are not invoked automatically.

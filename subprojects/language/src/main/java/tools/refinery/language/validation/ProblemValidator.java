@@ -386,7 +386,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
 				!ProblemUtil.isContainerReference(referenceDeclaration);
-		if (isDefaultReference || referenceDeclaration.getKind() == ReferenceKind.REFERENCE) {
+		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE ||
+				referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
+		if (isDefaultReference || isCrossReference) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
 			if (ProblemUtil.isShadow(referenceType)) {
 				var message = "Shadow relations '%s' is not allowed in reference types."
@@ -444,6 +446,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
 				acceptError("Parameter binding annotations are not supported in propagation rules.", parameter,
 						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			} else if (kind == RuleKind.CONCRETIZATION && binding != ParameterBinding.SINGLE) {
+					acceptError("Parameter binding annotations are not supported in concretization rules.", parameter,
+							ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			} else if (kind != RuleKind.DECISION && binding == ParameterBinding.MULTI) {
 				acceptError("Explicit multi-object bindings are only supported in decision rules.", parameter,
 						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);

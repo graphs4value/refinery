@@ -75,6 +75,7 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/REFINEMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/PROPAGATION"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/DECISION"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/CONCRETIZATION"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ParameterBinding">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/SINGLE"/>
