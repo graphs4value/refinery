@@ -7,15 +7,16 @@ package tools.refinery.store.reasoning.translator.crossreference;
 
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
+import tools.refinery.store.reasoning.refinement.ConcreteRelationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
+import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
-class DirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Boolean> {
+class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	private final PartialRelation sourceType;
 	private final PartialRelation targetType;
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
@@ -23,8 +24,8 @@ class DirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Bo
 
 	protected DirectedCrossReferenceRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 											Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
-											PartialRelation targetType) {
-		super(adapter, partialSymbol, concreteSymbol);
+											PartialRelation targetType, RoundingMode roundingMode) {
+		super(adapter, partialSymbol, concreteSymbol, roundingMode);
 		this.sourceType = sourceType;
 		this.targetType = targetType;
 	}
@@ -67,8 +68,8 @@ class DirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Bo
 	}
 
 	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
-												  PartialRelation targetType) {
+												  PartialRelation targetType, RoundingMode roundingMode) {
 		return (adapter, partialSymbol) -> new DirectedCrossReferenceRefiner(adapter, partialSymbol, concreteSymbol,
-				sourceType, targetType);
+				sourceType, targetType, roundingMode);
 	}
 }

@@ -12,6 +12,7 @@ class PropagationAdapterImpl implements PropagationAdapter {
 	private final Model model;
 	private final PropagationStoreAdapterImpl storeAdapter;
 	private final BoundPropagator[] boundPropagators;
+	private boolean concretizationInProgress;
 
 	public PropagationAdapterImpl(Model model, PropagationStoreAdapterImpl storeAdapter) {
 		this.model = model;
@@ -41,8 +42,18 @@ class PropagationAdapterImpl implements PropagationAdapter {
 	}
 
 	@Override
+	public boolean concretizationInProgress() {
+		return concretizationInProgress;
+	}
+
+	@Override
 	public PropagationResult concretize() {
-		return propagate(PropagationRequest.CONCRETIZE);
+		concretizationInProgress = true;
+		try {
+			return propagate(PropagationRequest.CONCRETIZE);
+		} finally {
+			concretizationInProgress = false;
+		}
 	}
 
 	private PropagationResult propagate(PropagationRequest request) {

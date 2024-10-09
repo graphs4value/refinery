@@ -15,7 +15,7 @@ import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
-public class ExistsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, Boolean> {
+public class ExistsRefiner extends AbstractPartialInterpretationRefiner.ConcretizationAware<TruthValue, Boolean> {
 	private final Interpretation<CardinalityInterval> countInterpretation;
 
 	private ExistsRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
@@ -36,7 +36,12 @@ public class ExistsRefiner extends AbstractPartialInterpretationRefiner<TruthVal
 			return true;
 		}
 		case TRUE -> newCount = currentCount.meet(CardinalityIntervals.SOME);
-		case FALSE -> newCount = currentCount.meet(CardinalityIntervals.NONE);
+		case FALSE -> {
+			if (concretizationInProgress()) {
+				return false;
+			}
+			newCount = currentCount.meet(CardinalityIntervals.NONE);
+		}
 		case ERROR -> {
 			return false;
 		}

@@ -15,6 +15,7 @@ import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.view.ForbiddenView;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -68,10 +69,10 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		} else {
 			configureWithDefaultFalse(storeBuilder);
 		}
-		translator.refiner(PredicateRefiner.of(symbol, parameterTypes));
-		if (partial) {
-			translator.roundingMode(RoundingMode.NONE);
-		} else {
+		var roundingMode = partial ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		translator.refiner(PredicateRefiner.of(symbol, parameterTypes, roundingMode));
+		translator.roundingMode(roundingMode);
+		if (!partial) {
 			translator.decision(Rule.of(predicate.name(), builder -> {
 				var parameters = createParameters(builder);
 				var literals = new ArrayList<Literal>(arity + 2);
@@ -137,6 +138,25 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 						not(may(parameterTypes.get(i).call(parameters[i])))
 				);
 			}
+			builder.action(remove(predicate, parameters));
+		}));
+		propagationBuilder.concretizationRule(Rule.of(name + "#invalidConcretization", builder -> {
+			var parameters = createParameters(builder);
+			int arity = parameters.length;
+			var queryBuilder = Query.builder(name + "#invalidConcretizationPrecondition")
+					.parameters(parameters);
+			for (int i = 0; i < arity; i++) {
+				queryBuilder.clause(
+						candidateMay(predicate.call(parameters)),
+						not(candidateMay(parameterTypes.get(i).call(parameters[i])))
+				);
+			}
+			var literals = new ArrayList<Literal>(arity + 1);
+			literals.add(queryBuilder.build().call(parameters));
+			for (var parameter : parameters) {
+				literals.add(candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+			}
+			builder.clause(literals);
 			builder.action(remove(predicate, parameters));
 		}));
 	}

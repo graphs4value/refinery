@@ -8,24 +8,26 @@ package tools.refinery.store.reasoning.translator.predicate;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
+import tools.refinery.store.reasoning.refinement.ConcreteRelationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
+import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 import java.util.Objects;
 
-class PredicateRefiner extends ConcreteSymbolRefiner<TruthValue, Boolean> {
+class PredicateRefiner extends ConcreteRelationRefiner {
 	private final List<PartialRelation> parameterTypes;
 	private @Nullable PartialInterpretationRefiner<TruthValue, Boolean>[] parameterTypeRefiners;
 
-	protected PredicateRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-							   Symbol<TruthValue> concreteSymbol, List<PartialRelation> parameterTypes) {
-		super(adapter, partialSymbol, concreteSymbol);
+	protected PredicateRefiner(
+			ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
+			Symbol<TruthValue> concreteSymbol, List<PartialRelation> parameterTypes, RoundingMode roundingMode) {
+		super(adapter, partialSymbol, concreteSymbol, roundingMode);
 		this.parameterTypes = parameterTypes;
 	}
 
@@ -48,6 +50,9 @@ class PredicateRefiner extends ConcreteSymbolRefiner<TruthValue, Boolean> {
 	@Override
 	public boolean merge(Tuple key, TruthValue value) {
 		var currentValue = get(key);
+		if (forbiddenByConcretization(currentValue, value)) {
+			return false;
+		}
 		var mergedValue = currentValue.meet(value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			put(key, mergedValue);
@@ -87,8 +92,8 @@ class PredicateRefiner extends ConcreteSymbolRefiner<TruthValue, Boolean> {
 	}
 
 	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol,
-												  List<PartialRelation> parameterTypes) {
+												  List<PartialRelation> parameterTypes, RoundingMode roundingMode) {
 		return (adapter, partialSymbol) -> new PredicateRefiner(adapter, partialSymbol, concreteSymbol,
-				parameterTypes);
+				parameterTypes, roundingMode);
 	}
 }

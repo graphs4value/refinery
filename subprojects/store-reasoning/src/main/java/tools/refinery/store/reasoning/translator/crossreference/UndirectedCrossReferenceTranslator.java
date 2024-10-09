@@ -12,6 +12,7 @@ import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.view.ForbiddenView;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -55,10 +56,10 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 			configureWithDefaultFalse(storeBuilder);
 		}
 		translator.initializer(new UndirectedCrossReferenceInitializer(linkType, symbol));
-		translator.refiner(UndirectedCrossReferenceRefiner.of(symbol, type));
-		if (info.partial()) {
-			translator.roundingMode(RoundingMode.NONE);
-		} else {
+		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		translator.refiner(UndirectedCrossReferenceRefiner.of(symbol, type, roundingMode));
+		translator.roundingMode(roundingMode);
+		if (!info.partial()) {
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 					.clause(
 							may(linkType.call(source, target)),
@@ -125,6 +126,8 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		var name = linkType.name();
 		var type = info.type();
 		var mayNewSource = CrossReferenceUtils.createMayHelper(linkType, type, info.multiplicity(), false);
+		var candidateMayNewSource = CrossReferenceUtils.createCandidateMayHelper(linkType, type, info.multiplicity(),
+				false);
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
 		propagationBuilder.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
@@ -139,6 +142,29 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 						not(mayNewSource.call(p1))
 				);
 			}
+			builder.action(
+					remove(linkType, p1, p2)
+			);
+		}));
+		propagationBuilder.concretizationRule(Rule.of(name + "#invalidLinkConcretization", (builder, p1, p2) -> {
+			var queryBuilder = Query.builder(name + "#invalidLinkConcretizationPrecondition")
+					.parameters(p1, p2)
+					.clause(
+							candidateMay(linkType.call(p1, p2)),
+							not(candidateMay(type.call(p1)))
+					);
+			if (info.isConstrained()) {
+				queryBuilder.clause(
+						candidateMay(linkType.call(p1, p2)),
+						not(candidateMust(linkType.call(p1, p2))),
+						not(candidateMayNewSource.call(p1))
+				);
+			}
+			builder.clause(
+					queryBuilder.build().call(p1, p2),
+					candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(p1)),
+					candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(p2))
+			);
 			builder.action(
 					remove(linkType, p1, p2)
 			);

@@ -38,7 +38,6 @@ public final class InferredType {
 		return mayConcreteTypes.contains(partialRelation);
 	}
 
-
 	public Set<PartialRelation> mustTypes() {
 		return mustTypes;
 	}

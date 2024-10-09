@@ -7,24 +7,25 @@ package tools.refinery.store.reasoning.translator.crossreference;
 
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
+import tools.refinery.store.reasoning.refinement.ConcreteRelationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
+import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
-class UndirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, Boolean> {
+class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	private final PartialRelation sourceType;
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
 
-	protected UndirectedCrossReferenceRefiner(ReasoningAdapter adapter,
-                                              PartialSymbol<TruthValue, Boolean> partialSymbol,
-											  Symbol<TruthValue> concreteSymbol, PartialRelation sourceType) {
-		super(adapter, partialSymbol, concreteSymbol);
+	protected UndirectedCrossReferenceRefiner(
+			ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
+			Symbol<TruthValue> concreteSymbol, PartialRelation sourceType, RoundingMode roundingMode) {
+		super(adapter, partialSymbol, concreteSymbol, roundingMode);
 		this.sourceType = sourceType;
 	}
 
@@ -38,6 +39,9 @@ class UndirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, 
 		int source = key.get(0);
 		int target = key.get(1);
 		var currentValue = get(key);
+		if (forbiddenByConcretization(currentValue, value)) {
+			return false;
+		}
 		var mergedValue = currentValue.meet(value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			var oldValue = put(key, mergedValue);
@@ -73,8 +77,9 @@ class UndirectedCrossReferenceRefiner extends ConcreteSymbolRefiner<TruthValue, 
 		}
 	}
 
-	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, PartialRelation sourceType) {
+	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
+												  RoundingMode roundingMode) {
 		return (adapter, partialSymbol) -> new UndirectedCrossReferenceRefiner(adapter, partialSymbol, concreteSymbol,
-				sourceType);
+				sourceType, roundingMode);
 	}
 }

@@ -23,6 +23,7 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
@@ -776,10 +777,18 @@ public class ModelInitializer {
 						.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
 			}
 			case PROPAGATION -> {
-				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.PARTIAL);
-				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
-				storeBuilder.tryGetAdapter(PropagationBuilder.class)
-						.ifPresent(propagationBuilder -> propagationBuilder.rules(rules));
+				var rules = new ArrayList<Rule>();
+				var propagationRules = ruleCompiler.toPropagationRules(name, ruleDefinition,
+                        ConcretenessSpecification.PARTIAL);
+				var concretizationRules = ruleCompiler.toPropagationRules(name, ruleDefinition,
+						ConcretenessSpecification.CANDIDATE);
+				rules.addAll(propagationRules);
+				rules.addAll(concretizationRules);
+				problemTrace.putPropagationRuleDefinition(ruleDefinition, List.copyOf(rules));
+				storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder -> {
+					propagationBuilder.rules(propagationRules);
+					propagationBuilder.concretizationRules(concretizationRules);
+				});
 			}
 			case CONCRETIZATION -> {
 				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
