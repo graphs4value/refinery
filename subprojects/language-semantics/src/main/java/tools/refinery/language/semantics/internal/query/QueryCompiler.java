@@ -206,9 +206,6 @@ public class QueryCompiler {
 	private Literal createEquivalenceLiteral(
 			ConcreteModality outerModality, boolean positive, Variable left, Variable right,
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
-		if (!outerModality.isSet()) {
-			return new EquivalenceLiteral(positive, left, right);
-		}
 		if (positive) {
 			return outerModality.wrapConstraint(ReasoningAdapter.EQUALS_SYMBOL).call(left, right);
 		}
