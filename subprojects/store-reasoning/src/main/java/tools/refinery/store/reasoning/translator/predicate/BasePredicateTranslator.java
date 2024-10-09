@@ -67,7 +67,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder);
+			configureWithDefaultFalse(storeBuilder, partial);
 		}
 		var roundingMode = partial ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
 		translator.refiner(PredicateRefiner.of(symbol, parameterTypes, roundingMode));
@@ -125,7 +125,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		}
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = predicate.name();
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
@@ -140,6 +140,11 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 			}
 			builder.action(remove(predicate, parameters));
 		}));
+		if (!partial) {
+			// Predicates concretized by rounding down are already {@code false} in the candidate interpretation,
+			// so we don't need to set them to {@code false} manually.
+			return;
+		}
 		propagationBuilder.concretizationRule(Rule.of(name + "#invalidConcretization", builder -> {
 			var parameters = createParameters(builder);
 			int arity = parameters.length;

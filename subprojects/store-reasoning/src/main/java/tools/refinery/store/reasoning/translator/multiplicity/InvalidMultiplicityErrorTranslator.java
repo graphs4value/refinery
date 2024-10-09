@@ -182,5 +182,7 @@ public class InvalidMultiplicityErrorTranslator implements ModelStoreConfigurati
 						remove(nodeType, p1)
 				)
 		));
+		// No need to create concretization rules here, because the {@code nodeType} is never partial (it is always a
+		// class) and any errors during concretization would be caught by the {@code errorSymbol} error predicate.
 	}
 }

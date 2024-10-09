@@ -56,7 +56,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder);
+			configureWithDefaultFalse(storeBuilder, info.partial());
 		}
 		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
 		translator.refiner(DirectedCrossReferenceRefiner.of(symbol, sourceType, targetType, roundingMode));
@@ -140,14 +140,12 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		return CrossReferenceUtils.createCandidateMayHelper(linkType, type, multiplicity, inverse);
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = linkType.name();
 		var sourceType = info.sourceType();
 		var targetType = info.targetType();
 		var mayNewSource = createMayHelper(sourceType, info.sourceMultiplicity(), false);
 		var mayNewTarget = createMayHelper(targetType, info.targetMultiplicity(), true);
-		var candidateMayNewSource = createCandidateMayHelper(sourceType, info.sourceMultiplicity(), false);
-		var candidateMayNewTarget = createCandidateMayHelper(targetType, info.targetMultiplicity(), true);
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
 		propagationBuilder.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
@@ -175,6 +173,13 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 					remove(linkType, p1, p2)
 			);
 		}));
+		if (!partial) {
+			// References concretized by rounding down are already {@code false} in the candidate interpretation,
+			// so we don't need to set them to {@code false} manually.
+			return;
+		}
+		var candidateMayNewSource = createCandidateMayHelper(sourceType, info.sourceMultiplicity(), false);
+		var candidateMayNewTarget = createCandidateMayHelper(targetType, info.targetMultiplicity(), true);
 		propagationBuilder.concretizationRule(Rule.of(name + "#invalidLinkConcretization", (builder, p1, p2) -> {
 			var queryBuilder = Query.builder(name + "#invalidLinkConcretizationPrecondition")
 					.parameters(p1, p2)
