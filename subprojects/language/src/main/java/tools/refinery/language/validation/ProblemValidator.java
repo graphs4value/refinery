@@ -441,16 +441,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
 		if (parametricDefinition instanceof RuleDefinition rule) {
-			var kind = rule.getKind();
 			var binding = parameter.getBinding();
-			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
-				acceptError("Parameter binding annotations are not supported in propagation rules.", parameter,
-						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
-			} else if (kind == RuleKind.CONCRETIZATION && binding != ParameterBinding.SINGLE) {
-					acceptError("Parameter binding annotations are not supported in concretization rules.", parameter,
-							ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
-			} else if (kind != RuleKind.DECISION && binding == ParameterBinding.MULTI) {
-				acceptError("Explicit multi-object bindings are only supported in decision rules.", parameter,
+			var kind = rule.getKind();
+			if (binding == ParameterBinding.FOCUS && (kind != RuleKind.DECISION && kind != RuleKind.REFINEMENT)) {
+				var message = "Focus parameter binding is not supported in %s rules."
+						.formatted(kind.getName().toLowerCase(Locale.ROOT));
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			} else if (binding != ParameterBinding.SINGLE && kind == RuleKind.CONCRETIZATION) {
+				acceptError("Parameter binding annotations are not supported in concretization rules.", parameter,
 						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		} else {

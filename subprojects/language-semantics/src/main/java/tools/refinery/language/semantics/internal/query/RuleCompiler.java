@@ -50,7 +50,7 @@ public class RuleCompiler {
 			return toRule(name, ruleDefinition);
 		}
 		var firstConsequent = consequents.getFirst();
-		var preparedRule = prepareRule(ruleDefinition);
+		var preparedRule = prepareRule(ruleDefinition, true);
 		var parameters = preparedRule.allParameters();
 
 		var moreCommonLiterals = new ArrayList<Literal>();
@@ -84,7 +84,8 @@ public class RuleCompiler {
 
 	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition,
 											   ConcretenessSpecification concreteness) {
-		var preparedRule = prepareRule(ruleDefinition);
+		var parametersMustExist = concreteness == ConcretenessSpecification.CANDIDATE;
+		var preparedRule = prepareRule(ruleDefinition, !parametersMustExist);
 		if (preparedRule.hasFocus()) {
 			throw new IllegalArgumentException("Propagation rule '%s' must not have any focus parameters."
 					.formatted(name));
@@ -101,7 +102,6 @@ public class RuleCompiler {
 		int actionCount = actions.size();
 		var rules = new ArrayList<Rule>(actionCount);
 		var postConditionModality = new ConcreteModality(concreteness, ModalitySpecification.MAY);
-		var parametersMustExist = concreteness == ConcretenessSpecification.CANDIDATE;
 		for (int i = 0; i < actionCount; i++) {
 			var actionName = actionCount == 1 ? name : name + "#" + (i + 1);
 			var action = actions.get(i);
@@ -145,7 +145,7 @@ public class RuleCompiler {
 	}
 
 	public Rule toRule(String name, RuleDefinition ruleDefinition) {
-		var preparedRule = prepareRule(ruleDefinition);
+		var preparedRule = prepareRule(ruleDefinition, true);
 		var parameters = preparedRule.allParameters();
 		var precondition = preparedRule.buildQuery(name, parameters, List.of(), queryCompiler);
 		var ruleBuilder = Rule.builder(name)
@@ -157,7 +157,7 @@ public class RuleCompiler {
 		return ruleBuilder.build();
 	}
 
-	private PreparedRule prepareRule(RuleDefinition ruleDefinition) {
+	private PreparedRule prepareRule(RuleDefinition ruleDefinition, boolean needsExplicitMultiObjectParameters) {
 		var problemParameters = ruleDefinition.getParameters();
 		int arity = problemParameters.size();
 		var parameterMap = LinkedHashMap
@@ -172,8 +172,7 @@ public class RuleCompiler {
 				var partialType = getPartialRelation(parameterType);
 				commonLiterals.add(partialType.call(parameter));
 			}
-			if (ruleDefinition.getKind() == RuleKind.DECISION &&
-					problemParameter.getBinding() == ParameterBinding.SINGLE) {
+			if (needsExplicitMultiObjectParameters && problemParameter.getBinding() == ParameterBinding.SINGLE) {
 				commonLiterals.add(MultiObjectTranslator.MULTI_VIEW.call(CallPolarity.NEGATIVE, parameter));
 			}
 			if (problemParameter.getBinding() == ParameterBinding.FOCUS) {
@@ -268,7 +267,7 @@ public class RuleCompiler {
 	}
 
 	private NodeVariable[] collectArguments(AssertionAction assertionAction, PreparedRule preparedRule,
-                                            List<Literal> literals) {
+											List<Literal> literals) {
 		var problemArguments = assertionAction.getArguments();
 		var arguments = new NodeVariable[problemArguments.size()];
 		for (int i = 0; i < arguments.length; i++) {
