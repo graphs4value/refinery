@@ -8,6 +8,7 @@ package tools.refinery.logic.term.cardinalityinterval;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 
+//Megadja hány lehet valamiből
 public final class CardinalityIntervals {
 	public static final CardinalityInterval NONE = exactly(0);
 

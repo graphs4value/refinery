@@ -364,14 +364,18 @@ public class ModelInitializer {
 
 	private void collectReferenceDeclarationMetamodel(ClassDeclaration classDeclaration,
 													  ReferenceDeclaration referenceDeclaration) {
+		//Relation a reference declarationből
 		var relation = getPartialRelation(referenceDeclaration);
+		//Source a class declarationből
 		var source = getPartialRelation(classDeclaration);
+		//Target a reference declarationből
 		var target = getPartialRelation(referenceDeclaration.getReferenceType());
 		targetTypes.add(target);
 		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 		boolean partial = referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
 		var opposite = referenceDeclaration.getOpposite();
 		PartialRelation oppositeRelation = null;
+		//oppositeRelation beállít
 		if (opposite != null) {
 			oppositeRelation = getPartialRelation(opposite);
 		}
