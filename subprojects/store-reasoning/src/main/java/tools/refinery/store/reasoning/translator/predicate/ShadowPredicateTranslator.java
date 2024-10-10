@@ -36,10 +36,10 @@ public class ShadowPredicateTranslator implements ModelStoreConfiguration {
 	public void apply(ModelStoreBuilder storeBuilder) {
 		var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
 		var may = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
-		var must = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
+		var must = reasoningBuilder.lift(Modality.MUST, Concreteness.PARTIAL, query);
 		// Do not let {@link PartialRelationTranslator} merge the partial queries into the candidate ones.
-		var candidateMay = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
-		var candidateMust = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
+		var candidateMay = reasoningBuilder.lift(Modality.MAY, Concreteness.CANDIDATE, query);
+		var candidateMust = reasoningBuilder.lift(Modality.MUST, Concreteness.CANDIDATE, query);
 		var translator = PartialRelationTranslator.of(relation)
 				.rewriter(new QueryBasedComputedRewriter(may, must, candidateMay, candidateMust, query));
 		if (!hasInterpretation) {
