@@ -146,17 +146,18 @@ public class MetamodelBuilder {
 									targetType, linkType, sourceType));
 				}
 				undirectedCrossReferences.put(linkType, new UndirectedCrossReferenceInfo(sourceType,
-						info.multiplicity(), defaultValue, info.partial()));
+						info.multiplicity(), defaultValue, info.partial(), info.supersets()));
 				return;
 			}
 			oppositeReferences.put(opposite, linkType);
+			oppositeSupersets.addAll(oppositeInfo.supersets());
 		}
 		if (info.containment()) {
 			processContainmentInfo(linkType, info, targetMultiplicity);
 			return;
 		}
 		directedCrossReferences.put(linkType, new DirectedCrossReferenceInfo(sourceType, info.multiplicity(),
-				targetType, targetMultiplicity, defaultValue, info.partial()));
+				targetType, targetMultiplicity, defaultValue, info.partial(), info.supersets(), oppositeSupersets));
 	}
 
 	private void processContainmentInfo(PartialRelation linkType, ReferenceInfo info,
@@ -174,7 +175,8 @@ public class MetamodelBuilder {
 		}
 		containerTypes.add(sourceType);
 		containedTypes.add(targetType);
-		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType));
+		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType, info.supersets(),
+				info.opposite() == null ? new LinkedHashSet<>() : referenceInfoMap.get(opposite).supersets()));
 	}
 
 	private static void validateOpposite(PartialRelation linkType, ReferenceInfo info, PartialRelation opposite,
