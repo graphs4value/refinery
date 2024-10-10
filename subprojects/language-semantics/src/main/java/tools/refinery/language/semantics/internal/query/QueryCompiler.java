@@ -6,17 +6,23 @@
 package tools.refinery.language.semantics.internal.query;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.EcoreUtil2;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.language.validation.ReferenceCounter;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.AbstractQueryBuilder;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.logic.literal.*;
+import tools.refinery.logic.literal.BooleanLiteral;
+import tools.refinery.logic.literal.CallPolarity;
+import tools.refinery.logic.literal.ConstantLiteral;
+import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -28,6 +34,9 @@ import java.util.*;
 public class QueryCompiler {
 	@Inject
 	private SemanticsUtils semanticsUtils;
+
+	@Inject
+	private ReferenceCounter referenceCounter;
 
 	private ProblemTrace problemTrace;
 
@@ -123,9 +132,9 @@ public class QueryCompiler {
 		}
 		case Atom atom -> {
 			var constraint = getConstraint(atom);
-			var argumentList = toArgumentList(atom.getArguments(), localScope, literals);
+			var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
 			literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
-					argumentList));
+					argumentList.arguments()));
 		}
 		case NegationExpr negationExpr -> {
 			var body = negationExpr.getBody();
@@ -134,22 +143,21 @@ public class QueryCompiler {
 				throw new TracedException(extractedInner.body(), "Cannot negate literal");
 			}
 			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-			List<Variable> argumentList = toArgumentList(atom.getArguments(), negatedScope, literals);
+			var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
 			var innerModality = extractedInner.modality().merge(outerModality.negate());
 			var constraint = getConstraint(atom);
-			literals.add(createNegationLiteral(innerModality, constraint, argumentList, localScope));
+			literals.add(createNegationLiteral(innerModality, constraint, argumentList));
 		}
 		case ComparisonExpr comparisonExpr -> {
-			var argumentList = toArgumentList(List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()),
-					localScope, literals);
+			var argumentList = toArgumentList(comparisonExpr,
+					List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
 			boolean positive = switch (comparisonExpr.getOp()) {
 				case NODE_EQ -> true;
 				case NODE_NOT_EQ -> false;
 				default -> throw new TracedException(
 						comparisonExpr, "Unsupported operator");
 			};
-			literals.add(createEquivalenceLiteral(outerModality, positive, argumentList.get(0), argumentList.get(1),
-					localScope));
+			literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
 		}
 		default -> throw new TracedException(extractedOuter.body(), "Unsupported literal");
 		}
@@ -174,50 +182,42 @@ public class QueryCompiler {
 	}
 
 	private static Literal createNegationLiteral(
-			ConcreteModality innerModality, Constraint constraint, List<Variable> argumentList,
-			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
-		if (innerModality.isSet()) {
-			boolean needsQuantification = false;
-			var filteredArguments = new LinkedHashSet<Variable>();
-			for (var argument : argumentList) {
-				if (localScope.containsValue(argument)) {
-					filteredArguments.add(argument);
-				} else {
-					needsQuantification = true;
-				}
-			}
+			ConcreteModality innerModality, Constraint constraint, ArgumentList argumentList) {
+		if (innerModality.isSet() && argumentList.needsQuantification()) {
 			// If there are any quantified arguments, set a helper pattern to be lifted so that the appropriate
 			// {@code EXISTS} call are added by the {@code DnfLifter}.
-			if (needsQuantification) {
-				var filteredArgumentList = List.copyOf(filteredArguments);
-				var quantifiedConstraint = Dnf.builder(constraint.name() + "#quantified")
-						.parameters(filteredArgumentList)
-						.clause(
-								constraint.call(CallPolarity.POSITIVE, argumentList)
-						)
-						.build();
-				return innerModality.wrapConstraint(quantifiedConstraint)
-						.call(CallPolarity.NEGATIVE, filteredArgumentList);
-			}
+			var filteredArgumentList = List.copyOf(argumentList.filteredArguments());
+			var quantifiedConstraint = Dnf.builder(constraint.name() + "#quantified")
+					.parameters(filteredArgumentList)
+					.clause(
+							constraint.call(CallPolarity.POSITIVE, argumentList.arguments())
+					)
+					.build();
+			return innerModality.wrapConstraint(quantifiedConstraint)
+					.call(CallPolarity.NEGATIVE, filteredArgumentList);
 		}
-		return innerModality.wrapConstraint(constraint).call(CallPolarity.NEGATIVE, argumentList);
+
+		return innerModality.wrapConstraint(constraint).call(CallPolarity.NEGATIVE, argumentList.arguments());
 	}
 
 	private Literal createEquivalenceLiteral(
-			ConcreteModality outerModality, boolean positive, Variable left, Variable right,
-			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope) {
+			ConcreteModality outerModality, boolean positive, ArgumentList argumentList) {
 		if (positive) {
-			return outerModality.wrapConstraint(ReasoningAdapter.EQUALS_SYMBOL).call(left, right);
+			return outerModality.wrapConstraint(ReasoningAdapter.EQUALS_SYMBOL).call(CallPolarity.POSITIVE,
+					argumentList.arguments());
 		}
 		// Interpret {@code x != y} as {@code !equals(x, y)} at all times, even in modal operators.
-		return createNegationLiteral(outerModality.negate(), ReasoningAdapter.EQUALS_SYMBOL, List.of(left, right),
-				localScope);
+		return createNegationLiteral(outerModality.negate(), ReasoningAdapter.EQUALS_SYMBOL, argumentList);
 	}
 
-	private List<Variable> toArgumentList(
-			List<Expr> expressions, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
+	private ArgumentList toArgumentList(
+			Expr atom, List<Expr> expressions,
+			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
-		var argumentList = new ArrayList<Variable>(expressions.size());
+		var arguments = new ArrayList<Variable>(expressions.size());
+		var filteredArguments = LinkedHashSet.<Variable>newLinkedHashSet(expressions.size());
+		boolean needsQuantification = false;
+		var referenceCounts = ReferenceCounter.computeReferenceCounts(atom);
 		for (var expr : expressions) {
 			if (!(expr instanceof VariableOrNodeExpr variableOrNodeExpr)) {
 				throw new TracedException(expr, "Unsupported argument");
@@ -228,22 +228,47 @@ public class QueryCompiler {
 				int nodeId = getNodeId(node);
 				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
 				literals.add(new ConstantLiteral(tempVariable, nodeId));
-				argumentList.add(tempVariable);
+				arguments.add(tempVariable);
+				filteredArguments.add(tempVariable);
 			}
 			case tools.refinery.language.model.problem.Variable problemVariable -> {
-				if (variableOrNodeExpr.getSingletonVariable() == problemVariable) {
-					argumentList.add(Variable.of(problemVariable.getName()));
+				if (isEffectivelySingleton(problemVariable, referenceCounts)) {
+					arguments.add(Variable.of(problemVariable.getName()));
+					needsQuantification = true;
 				} else {
 					var variable = localScope.get(problemVariable);
 					if (variable == null) {
 						throw new TracedException(variableOrNode, "Unknown variable: " + problemVariable.getName());
 					}
-					argumentList.add(variable);
+					arguments.add(variable);
+					filteredArguments.add(variable);
 				}
 			}
 			default -> throw new TracedException(variableOrNode, "Unknown argument");
 			}
 		}
-		return argumentList;
+		return new ArgumentList(arguments, filteredArguments, needsQuantification);
+	}
+
+	private boolean isEffectivelySingleton(tools.refinery.language.model.problem.Variable variable,
+										   Map<EObject, Integer> referenceCounts) {
+		if (!(variable instanceof ImplicitVariable)) {
+			// Parameter variables are never effectively singleton.
+			return false;
+		}
+		if (ProblemUtil.isSingletonVariable(variable)) {
+			return true;
+		}
+		var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
+		if (problem == null) {
+			return false;
+		}
+		int crossReferencesInModel = referenceCounter.countReferences(problem, variable);
+		int crossReferencesInAtom = referenceCounts.getOrDefault(variable, 0);
+		return crossReferencesInAtom == crossReferencesInModel;
+	}
+
+	private record ArgumentList(List<Variable> arguments, Set<Variable> filteredArguments,
+								boolean needsQuantification) {
 	}
 }

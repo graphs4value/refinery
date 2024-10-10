@@ -1,0 +1,30 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Foo.
+
+pred bar(Foo a, Foo b, Foo c).
+
+pred quux(Foo a).
+
+Foo(foo1).
+Foo(foo2).
+?exists(foo2).
+bar(foo1, foo2, foo2).
+
+% TEST: modal negation
+
+propagation rule addQuux(Foo a) <-> !must bar(a, b, b) ==> quux(a).
+
+% EXPECT:
+quux(foo1).
+
+% TEST: modal negation with auxiliary predicate
+
+shadow pred baz(a, b) <-> bar(a, b, b).
+
+propagation rule addQuux(Foo a) <-> !must baz(a, b) ==> quux(a).
+
+% EXPECT:
+quux(foo1).

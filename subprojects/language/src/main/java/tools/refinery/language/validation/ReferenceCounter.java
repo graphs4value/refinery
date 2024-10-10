@@ -24,25 +24,25 @@ public class ReferenceCounter {
 	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
 
 	public int countReferences(Problem problem, EObject eObject) {
-		var count = getReferenceCounts(problem).get(eObject);
+		var count = getOrComputeReferenceCounts(problem).get(eObject);
 		if (count == null) {
 			return 0;
 		}
 		return count;
 	}
 
-	protected Map<EObject, Integer> getReferenceCounts(Problem problem) {
+	protected Map<EObject, Integer> getOrComputeReferenceCounts(Problem problem) {
 		var resource = problem.eResource();
 		if (resource == null) {
-			return doGetReferenceCounts(problem);
+			return computeReferenceCounts(problem);
 		}
-		return cache.get(Tuples.create(problem, REFERENCE_COUNTS), resource, () -> doGetReferenceCounts(problem));
+		return cache.get(Tuples.create(problem, REFERENCE_COUNTS), resource, () -> computeReferenceCounts(problem));
 	}
 
-	protected Map<EObject, Integer> doGetReferenceCounts(Problem problem) {
+	public static Map<EObject, Integer> computeReferenceCounts(EObject root) {
 		var map = new HashMap<EObject, Integer>();
-		countCrossReferences(problem, map);
-		var iterator = problem.eAllContents();
+		countCrossReferences(root, map);
+		var iterator = root.eAllContents();
 		while (iterator.hasNext()) {
 			var eObject = iterator.next();
 			countCrossReferences(eObject, map);
@@ -50,7 +50,7 @@ public class ReferenceCounter {
 		return map;
 	}
 
-	protected void countCrossReferences(EObject eObject, Map<EObject, Integer> map) {
+	private static void countCrossReferences(EObject eObject, Map<EObject, Integer> map) {
 		for (var referencedObject : eObject.eCrossReferences()) {
 			map.compute(referencedObject, (key, currentValue) -> currentValue == null ? 1 : currentValue + 1);
 		}
