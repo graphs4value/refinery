@@ -174,11 +174,12 @@ public class MetamodelBuilder {
 				}
 				//Rakja be az undirected cross referencebe
 				undirectedCrossReferences.put(linkType, new UndirectedCrossReferenceInfo(sourceType,
-						info.multiplicity(), defaultValue, info.partial()));
+						info.multiplicity(), defaultValue, info.partial(), info.supersets()));
 				return;
 			}
 			//ha van oppositja de nem containment és nem egyeznek meg akkor oppositereferencebe rakja be DE NEM LÉP KI.
 			oppositeReferences.put(opposite, linkType);
+			oppositeSupersets.addAll(oppositeInfo.supersets());
 		}
 		//Ha a reference containment
 		if (info.containment()) {
@@ -187,7 +188,7 @@ public class MetamodelBuilder {
 		}
 		//Ha nincs opposite és nem containment akkor directed cross referencebe rakja be.
 		directedCrossReferences.put(linkType, new DirectedCrossReferenceInfo(sourceType, info.multiplicity(),
-				targetType, targetMultiplicity, defaultValue, info.partial()));
+				targetType, targetMultiplicity, defaultValue, info.partial(), info.supersets(), oppositeSupersets));
 	}
 
 	//Containmentek feldolgozására
@@ -206,7 +207,8 @@ public class MetamodelBuilder {
 		}
 		containerTypes.add(sourceType);
 		containedTypes.add(targetType);
-		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType));
+		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType, info.supersets(),
+				info.opposite() == null ? new LinkedHashSet<>() : referenceInfoMap.get(opposite).supersets()));
 	}
 
 	//Kell hozzá a reference és referenceInfoja, az opposite és az oppositeInfoja. (mindkét oldal infóostól)

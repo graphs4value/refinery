@@ -9,8 +9,10 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
+import java.util.LinkedHashSet;
+
 public record UndirectedCrossReferenceInfo(PartialRelation type, Multiplicity multiplicity, TruthValue defaultValue,
-										   boolean partial) {
+										   boolean partial, LinkedHashSet<PartialRelation> supersets) {
 	public boolean isConstrained() {
 		return multiplicity.isConstrained();
 	}

@@ -47,6 +47,7 @@ import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ModelInitializer {
 	@Inject
@@ -380,6 +381,9 @@ public class ModelInitializer {
 			oppositeRelation = getPartialRelation(opposite);
 		}
 		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
+		LinkedHashSet<PartialRelation> supersets =referenceDeclaration.getSuperSets().stream()
+				.map(this::getPartialRelation)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 		try {
 			var seed = relationInfoMap.get(referenceDeclaration).toSeed(nodeCount);
 			var defaultValue = seed.majorityValue();
@@ -395,6 +399,7 @@ public class ModelInitializer {
 					.opposite(oppositeRelation)
 					.defaultValue(defaultValue)
 					.partial(partial)
+					.supersets(supersets)
 					.build());
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
