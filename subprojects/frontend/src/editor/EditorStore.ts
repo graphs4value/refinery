@@ -113,6 +113,8 @@ export default class EditorStore {
 
   hexTypeHashes: string[] = [];
 
+  concretize = false;
+
   constructor(
     initialValue: string,
     pwaStore: PWAStore,
@@ -542,5 +544,10 @@ export default class EditorStore {
 
   get simpleNameOrFallback(): string {
     return this.simpleName ?? 'graph';
+  }
+
+  toggleConcretize(): void {
+    this.concretize = !this.concretize;
+    this.client?.updateConcretize();
   }
 }

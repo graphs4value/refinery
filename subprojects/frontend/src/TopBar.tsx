@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from 'react';
 import PaneButtons from './PaneButtons';
 import { useRootStore } from './RootStoreProvider';
 import ToggleDarkModeButton from './ToggleDarkModeButton';
+import ConcretizeButton from './editor/ConcretizeButton';
 import GenerateButton from './editor/GenerateButton';
 
 function useWindowControlsOverlayVisible(): boolean {
@@ -100,6 +101,24 @@ const FileName = styled('span', {
     : theme.palette.text.secondary,
 }));
 
+const ButtonStack = styled(Stack)({
+  gap: '4px',
+  '.rounded': {
+    borderRadius: '0px !important',
+    clipPath: 'inset(0 2px 0 2px)',
+  },
+  '.rounded:first-of-type': {
+    borderTopLeftRadius: '50em !important',
+    borderBottomLeftRadius: '50em !important',
+    clipPath: 'inset(0 2px 0 0)',
+  },
+  '.rounded:last-of-type': {
+    borderTopRightRadius: '50em !important',
+    borderBottomRightRadius: '50em !important',
+    clipPath: 'inset(0 0 0 2px)',
+  },
+});
+
 export default observer(function TopBar(): JSX.Element {
   const { editorStore, themeStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
@@ -107,6 +126,7 @@ export default observer(function TopBar(): JSX.Element {
   const medium = useMediaQuery(breakpoints.up('sm'));
   const large = useMediaQuery(breakpoints.up('md'));
   const veryLarge = useMediaQuery(breakpoints.up('lg'));
+  const extraLarge = useMediaQuery(breakpoints.up('xl'));
 
   return (
     <AppBar
@@ -167,7 +187,7 @@ export default observer(function TopBar(): JSX.Element {
           </Stack>
         )}
         <Stack direction="row" marginLeft={1} gap={1} alignItems="center">
-          {large && (
+          {veryLarge && (
             <Stack direction="row" alignItems="center">
               <Tooltip title="Refinery home page">
                 <IconButton
@@ -198,7 +218,16 @@ export default observer(function TopBar(): JSX.Element {
               </Tooltip>
             </Stack>
           )}
-          <GenerateButton editorStore={editorStore} hideWarnings={!veryLarge} />
+          <ButtonStack direction="row">
+            <ConcretizeButton
+              editorStore={editorStore}
+              abbreviate={!extraLarge}
+            />
+            <GenerateButton
+              editorStore={editorStore}
+              hideWarnings={!extraLarge}
+            />
+          </ButtonStack>
           <ToggleDarkModeButton />
         </Stack>
       </Toolbar>

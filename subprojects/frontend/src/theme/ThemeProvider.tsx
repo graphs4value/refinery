@@ -161,6 +161,20 @@ function createResponsiveTheme(
                 };
               }, {}),
             },
+            '&.shaded-darkened': {
+              color:
+                theme.palette.mode === 'dark'
+                  ? theme.palette.text.secondary
+                  : theme.palette.text.primary,
+              ...shadedButtonStyle(theme.palette.text.secondary),
+              '&.Mui-disabled': {
+                color: theme.palette.text.disabled,
+                background: alpha(
+                  theme.palette.text.disabled,
+                  theme.palette.action.focusOpacity,
+                ),
+              },
+            },
           },
           sizeSmall: { fontSize: '0.875rem', lineHeight: '1.75' },
           sizeLarge: { fontSize: '1rem' },

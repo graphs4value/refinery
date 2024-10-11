@@ -143,6 +143,10 @@ export default class UpdateService {
       requiredStateId: this.xtextStateId,
       ...delta,
     });
+    await this.handleDocumentUpdateResult(result);
+  }
+
+  private async handleDocumentUpdateResult(result: unknown): Promise<void> {
     const parsedDocumentStateResult = DocumentStateResult.safeParse(result);
     if (parsedDocumentStateResult.success) {
       this.tracker.setStateIdExclusive(parsedDocumentStateResult.data.stateId);
@@ -166,9 +170,42 @@ export default class UpdateService {
       resource: this.resourceName,
       serviceType: 'update',
       fullText: this.store.state.doc.sliceString(0),
+      concretize: this.store.concretize,
     });
     const { stateId } = DocumentStateResult.parse(result);
     this.tracker.setStateIdExclusive(stateId);
+  }
+
+  async updateConcretize(): Promise<void> {
+    if (!this.opened) {
+      return;
+    }
+    await this.tracker.runExclusive(() => this.updateConcretizeExclusive());
+  }
+
+  private async updateConcretizeExclusive(): Promise<void> {
+    if (this.xtextStateId === undefined) {
+      await this.updateFullTextExclusive();
+      // We have already sent `this.store.concretize` with the update message.
+      return;
+    }
+    const delta = this.tracker.prepareDeltaUpdateExclusive() ?? {
+      // Always send some delta to trigger semantics re-computation.
+      deltaOffset: 0,
+      deltaReplaceLength: 0,
+      deltaText: '',
+    };
+    const { concretize } = this.store;
+    log.trace('Editor delta', delta, 'with concretize', concretize);
+    this.store.analysisStarted();
+    const result = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'update',
+      requiredStateId: this.xtextStateId,
+      ...delta,
+      concretize,
+    });
+    await this.handleDocumentUpdateResult(result);
   }
 
   async fetchContentAssist(

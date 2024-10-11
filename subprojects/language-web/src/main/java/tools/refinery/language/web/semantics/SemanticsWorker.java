@@ -54,11 +54,12 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	private PartialInterpretation2Json partialInterpretation2Json;
 
 	private Problem problem;
-
+	private boolean concretize;
 	private CancellationToken cancellationToken;
 
-	public void setProblem(Problem problem, CancelIndicator parentIndicator) {
+	public void setProblem(Problem problem, boolean concretize, CancelIndicator parentIndicator) {
 		this.problem = problem;
+		this.concretize = concretize;
 		cancellationToken = () -> {
 			if (Thread.interrupted() || parentIndicator.isCanceled()) {
 				operationCanceledManager.throwOperationCanceledException();
@@ -74,7 +75,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			semantics = semanticsFactory
 					.cancellationToken(cancellationToken)
 					.keepNonExistingObjects(true)
-					.concretize(false)
+					.concretize(concretize)
 					.tryCreateSemantics(problem);
 		} catch (TranslationException e) {
 			return new SemanticsResult(e.getMessage());

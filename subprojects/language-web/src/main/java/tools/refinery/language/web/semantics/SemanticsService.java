@@ -21,10 +21,7 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
@@ -70,7 +67,10 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 		if (LOG.isTraceEnabled()) {
 			start = System.currentTimeMillis();
 		}
-		if (hasError(doc, cancelIndicator)) {
+		if (!(doc instanceof PushWebDocument pushDoc)) {
+			throw new IllegalArgumentException("Unexpected IXtextWebDocument: " + doc);
+		}
+		if (hasError(pushDoc, cancelIndicator)) {
 			return null;
 		}
 		var problem = getProblem(doc);
@@ -78,20 +78,32 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			return new SemanticsResult(SemanticsModelResult.EMPTY);
 		}
 		var worker = workerProvider.get();
-		worker.setProblem(problem, cancelIndicator);
+		worker.setProblem(problem, pushDoc.isConcretize(), cancelIndicator);
 		var future = executorService.submit(worker);
+		var result = handleFuture(future);
+		if (LOG.isTraceEnabled()) {
+			long end = System.currentTimeMillis();
+			LOG.trace("Computed semantics for {} ({}) in {}ms", doc.getResourceId(), doc.getStateId(),
+					end - start);
+		}
+		return result;
+	}
+
+	private SemanticsResult handleFuture(Future<SemanticsResult> future) {
 		boolean warmedUpCurrently = warmedUp.get();
 		long timeout = warmedUpCurrently ? timeoutMs : warmupTimeoutMs;
-		SemanticsResult result = null;
 		try {
-			result = future.get(timeout, TimeUnit.MILLISECONDS);
+			var result = future.get(timeout, TimeUnit.MILLISECONDS);
 			if (!warmedUpCurrently) {
 				warmedUp.set(true);
 			}
+			return result;
 		} catch (InterruptedException e) {
 			future.cancel(true);
-			LOG.error("Semantics service interrupted", e);
+			var message = "Semantics service interrupted";
+			LOG.error(message, e);
 			Thread.currentThread().interrupt();
+			return new SemanticsResult(message);
 		} catch (ExecutionException e) {
 			operationCanceledManager.propagateAsErrorIfCancelException(e.getCause());
 			LOG.debug("Error while computing semantics", e);
@@ -111,18 +123,9 @@ public class SemanticsService extends AbstractCachedService<SemanticsResult> {
 			LOG.trace("Semantics service timeout", e);
 			return new SemanticsResult("Partial interpretation timed out");
 		}
-		if (LOG.isTraceEnabled()) {
-			long end = System.currentTimeMillis();
-			LOG.trace("Computed semantics for {} ({}) in {}ms", doc.getResourceId(), doc.getStateId(),
-					end - start);
-		}
-		return result;
 	}
 
-	private boolean hasError(IXtextWebDocument doc, CancelIndicator cancelIndicator) {
-		if (!(doc instanceof PushWebDocument pushDoc)) {
-			throw new IllegalArgumentException("Unexpected IXtextWebDocument: " + doc);
-		}
+	private boolean hasError(PushWebDocument pushDoc, CancelIndicator cancelIndicator) {
 		var validationResult = pushDoc.getCachedServiceResult(validationService, cancelIndicator, true);
 		return validationResult.getIssues().stream()
 				.anyMatch(issue -> "error".equals(issue.getSeverity()));

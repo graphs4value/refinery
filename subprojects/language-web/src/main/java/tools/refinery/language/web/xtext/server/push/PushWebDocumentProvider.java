@@ -5,14 +5,15 @@
  */
 package tools.refinery.language.web.xtext.server.push;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import org.eclipse.xtext.web.server.IServiceContext;
 import org.eclipse.xtext.web.server.model.DocumentSynchronizer;
 import org.eclipse.xtext.web.server.model.IWebDocumentProvider;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
+import java.util.Optional;
 
 /**
  * Based on
@@ -27,7 +28,17 @@ public class PushWebDocumentProvider implements IWebDocumentProvider {
 
 	@Override
 	public XtextWebDocument get(String resourceId, IServiceContext serviceContext) {
-		return new PushWebDocument(resourceId,
-				serviceContext.getSession().get(DocumentSynchronizer.class, () -> this.synchronizerProvider.get()));
+		var session = serviceContext.getSession().get(DocumentSynchronizer.class,
+				() -> this.synchronizerProvider.get());
+		boolean concretize = getConcretize(serviceContext).orElse(false);
+		return new PushWebDocument(resourceId, session, concretize);
+	}
+
+	public static Optional<Boolean> getConcretize(IServiceContext serviceContext) {
+		var value = serviceContext.getParameter("concretize");
+		if (value == null) {
+			return Optional.empty();
+		}
+		return Optional.of("true".equals(value));
 	}
 }

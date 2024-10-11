@@ -170,6 +170,12 @@ export default class XtextClient {
     });
   }
 
+  updateConcretize(): void {
+    this.updateService.updateConcretize().catch((e) => {
+      log.error('Error while setting concretize flag on server', e);
+    });
+  }
+
   dispose(): void {
     this.keepAliveDisposer();
     this.webSocketClient.disconnect();
