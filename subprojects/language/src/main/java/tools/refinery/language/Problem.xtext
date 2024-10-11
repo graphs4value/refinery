@@ -94,7 +94,7 @@ RuleDefinition:
 	".";
 
 enum ParameterBinding:
-	FOCUS="+" | MULTI="?";
+	FOCUS="+" | LONE="?" | MULTI="*";
 
 Parameter:
 	parameterType=[Relation|QualifiedName]? binding=ParameterBinding? name=Identifier;

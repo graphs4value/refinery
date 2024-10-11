@@ -275,7 +275,8 @@
   <eClassifiers xsi:type="ecore:EEnum" name="ParameterBinding">
     <eLiterals name="SINGLE"/>
     <eLiterals name="FOCUS" value="1"/>
-    <eLiterals name="MULTI" value="2"/>
+    <eLiterals name="LONE" value="2"/>
+    <eLiterals name="MULTI" value="3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Assertion" eSuperTypes="#//Statement #//AbstractAssertion">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="default" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"

@@ -443,18 +443,40 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (parametricDefinition instanceof RuleDefinition rule) {
 			var binding = parameter.getBinding();
 			var kind = rule.getKind();
-			if (binding == ParameterBinding.FOCUS && (kind != RuleKind.DECISION && kind != RuleKind.REFINEMENT)) {
-				var message = "Focus parameter binding is not supported in %s rules."
+			if (binding != ParameterBinding.SINGLE && ProblemUtil.parameterBindingAnnotationsAreForbidden(rule)) {
+				var message = "Parameter binding annotations are not supported in %s rules."
 						.formatted(kind.getName().toLowerCase(Locale.ROOT));
 				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
-			} else if (binding != ParameterBinding.SINGLE && kind == RuleKind.CONCRETIZATION) {
-				acceptError("Parameter binding annotations are not supported in concretization rules.", parameter,
-						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		} else {
 			if (parameter.getBinding() != ParameterBinding.SINGLE) {
-				acceptError("Parameter binding annotations are only supported in decision rules.", parameter,
-						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+				acceptError("Parameter binding annotations are only supported in refinement rules.", parameter,
+						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			}
+		}
+	}
+
+	@Check
+	public void checkDiagonalParameters(RuleDefinition ruleDefinition) {
+		if (ProblemUtil.parameterBindingAnnotationsAreForbidden(ruleDefinition)) {
+			return;
+		}
+		var duplicateParameters = LinkedHashSet.<Parameter>newLinkedHashSet(ruleDefinition.getParameters().size());
+		for (var consequent : ruleDefinition.getConsequents()) {
+			for (var action : consequent.getActions()) {
+				var referenceCounts = ReferenceCounter.computeReferenceCounts(action);
+				for (var entry : referenceCounts.entrySet()) {
+					if (entry.getValue() >= 2 && entry.getKey() instanceof Parameter parameter) {
+						duplicateParameters.add(parameter);
+					}
+				}
+			}
+		}
+		for (var parameter : duplicateParameters) {
+			if (parameter.getBinding() == ParameterBinding.MULTI) {
+				var message = ("Parameter '%s' must not be a multi-object, because it appears multiple times in a " +
+						"rule consequent.").formatted(parameter.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		}
 	}
