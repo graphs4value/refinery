@@ -41,11 +41,12 @@ function GraphArea({ graph }: { graph: GraphStore }): JSX.Element {
     >
       <SVGIcons />
       <ZoomCanvas>
-        {(fitZoom) => (
+        {(fitZoom, zoom) => (
           <DotGraphVisualizer
             graph={graph}
             fitZoom={fitZoom}
             setSvgContainer={setSvgContainer}
+            simplify={zoom <= 0.25}
           />
         )}
       </ZoomCanvas>

@@ -31,12 +31,14 @@ function DotGraphVisualizer({
   transitionTime,
   animateThreshold,
   setSvgContainer,
+  simplify,
 }: {
   graph: GraphStore;
   fitZoom?: FitZoomCallback;
   transitionTime?: number;
   animateThreshold?: number;
   setSvgContainer?: (container: HTMLElement | undefined) => void;
+  simplify?: boolean;
 }): JSX.Element {
   const transitionTimeOrDefault = transitionTime ?? 250;
   const animateThresholdOrDefault = animateThreshold ?? 100;
@@ -154,6 +156,7 @@ function DotGraphVisualizer({
 
   return (
     <GraphTheme
+      className={simplify ? 'simplified' : undefined}
       ref={setElement}
       colorNodes={graph.colorNodes}
       hexTypeHashes={graph.hexTypeHashes}

@@ -51,7 +51,9 @@ export default function ZoomCanvas({
   fitPadding,
   transitionTime,
 }: {
-  children?: React.ReactNode | ((fitZoom: FitZoomCallback) => React.ReactNode);
+  children?:
+    | React.ReactNode
+    | ((fitZoom: FitZoomCallback, zoom: number) => React.ReactNode);
   fitPadding?: number;
   transitionTime?: number;
 }): JSX.Element {
@@ -222,7 +224,7 @@ export default function ZoomCanvas({
           ref={elementRef}
         >
           {typeof children === 'function'
-            ? children(fitZoomCallback)
+            ? children(fitZoomCallback, zoom.k)
             : children}
         </Box>
       </Box>

@@ -170,4 +170,13 @@ export default styled('div', {
     userSelect: 'none',
     ...createGraphTheme(args),
   },
+  '&.simplified svg': {
+    'text, .edge-arrow, .icon, .node-exists-FALSE .node-outline, .node-shadow.node-bg':
+      {
+        display: 'none !important',
+      },
+    '.edge-line, .node-exists-UNKNOWN .node-outline': {
+      strokeDasharray: 'none !important',
+    },
+  },
 }));
