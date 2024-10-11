@@ -39,10 +39,7 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 		int source = key.get(0);
 		int target = key.get(1);
 		var currentValue = get(key);
-		if (forbiddenByConcretization(currentValue, value)) {
-			return false;
-		}
-		var mergedValue = currentValue.meet(value);
+		var mergedValue = concretizationAwareMeet(currentValue, value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			var oldValue = put(key, mergedValue);
 			if (source != target) {

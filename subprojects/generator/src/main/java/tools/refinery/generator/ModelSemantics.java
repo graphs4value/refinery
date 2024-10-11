@@ -11,7 +11,12 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 
 public class ModelSemantics extends ModelFacade {
+	ModelSemantics(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
+				   Concreteness concreteness) {
+		super(problemTrace, store, modelSeed, concreteness);
+	}
+
 	ModelSemantics(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed) {
-		super(problemTrace, store, modelSeed, Concreteness.PARTIAL);
+		this(problemTrace, store, modelSeed, Concreteness.PARTIAL);
 	}
 }

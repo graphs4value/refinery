@@ -55,12 +55,16 @@ public class MetadataCreator {
 	}
 
 	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
+		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
+		return getNodesMetadata(model, concreteness, preserveNewNodes);
+	}
+
+	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness, boolean preserveNewNodes) {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
 		var nodeMetadataFactory = nodeMetadataFactoryProvider.get();
 		nodeMetadataFactory.initialize(problemTrace, concreteness, model);
-		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
 		for (var entry : nodeTrace.keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();

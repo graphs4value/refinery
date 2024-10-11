@@ -13,6 +13,8 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.Objects;
+
 class InferredTypeRefiner extends AbstractPartialInterpretationRefiner.ConcretizationAware<TruthValue, Boolean> {
 	private final Interpretation<InferredType> interpretation;
 	private final TypeAnalysisResult result;
@@ -27,13 +29,17 @@ class InferredTypeRefiner extends AbstractPartialInterpretationRefiner.Concretiz
 	@Override
 	public boolean merge(Tuple key, TruthValue value) {
 		var currentType = interpretation.get(key);
+		InferredType newType;
 		if (value == TruthValue.TRUE &&
 				concretizationInProgress() &&
 				!result.getConcreteSubtypesAndSelf().contains(currentType.candidateType())) {
-			return false;
+			newType = result.merge(currentType, TruthValue.ERROR);
+		} else {
+			newType = result.merge(currentType, value);
 		}
-		var newType = result.merge(currentType, value);
-		interpretation.put(key, newType);
+		if (!Objects.equals(currentType, newType)) {
+			interpretation.put(key, newType);
+		}
 		return true;
 	}
 

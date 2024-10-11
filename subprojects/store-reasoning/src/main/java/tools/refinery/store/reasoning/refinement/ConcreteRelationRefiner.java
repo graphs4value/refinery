@@ -30,15 +30,15 @@ public class ConcreteRelationRefiner extends
 	@Override
 	public boolean merge(Tuple key, TruthValue value) {
 		var currentValue = get(key);
-		if (forbiddenByConcretization(currentValue, value)) {
-			// Make sure to avoid
-			return false;
-		}
-		var mergedValue = currentValue.meet(value);
+		var mergedValue = concretizationAwareMeet(currentValue, value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			put(key, mergedValue);
 		}
 		return true;
+	}
+
+	protected TruthValue concretizationAwareMeet(TruthValue currentValue, TruthValue value) {
+		return forbiddenByConcretization(currentValue, value) ? TruthValue.ERROR : currentValue.meet(value);
 	}
 
 	protected boolean forbiddenByConcretization(TruthValue oldValue, TruthValue newValue) {

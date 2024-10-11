@@ -38,7 +38,7 @@ public abstract class ModelFacade {
 			throw problemTrace.wrapException(e);
 		}
 		model = propagatedModel.model();
-		propagationResult = propagatedModel.propagationResult();
+		propagationResult = afterPropagation(propagatedModel.propagationResult());
 		reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 		this.concreteness = concreteness;
 	}
@@ -53,6 +53,10 @@ public abstract class ModelFacade {
 
 	public Model getModel() {
 		return model;
+	}
+
+	protected PropagationResult afterPropagation(PropagationResult createInitialModelResult) {
+		return createInitialModelResult;
 	}
 
 	public PropagationResult getPropagationResult() {

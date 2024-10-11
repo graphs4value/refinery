@@ -5,14 +5,13 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
-import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.LinkedHashMap;
@@ -51,9 +50,6 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner.Concretizatio
 	public boolean merge(Tuple key, TruthValue value) {
 		var oldValue = interpretation.get(key);
 		var newValue = mergeLink(oldValue, value);
-		if (newValue == null) {
-			return false;
-		}
 		if (oldValue != newValue) {
 			interpretation.put(key, newValue);
 		}
@@ -64,13 +60,14 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner.Concretizatio
 		return true;
 	}
 
-	@Nullable
 	public InferredContainment mergeLink(InferredContainment oldValue, TruthValue toMerge) {
 		var oldContains = oldValue.contains();
+		TruthValue newContains;
 		if (!oldContains.must() && toMerge == TruthValue.TRUE && concretizationInProgress()) {
-			return null;
+			newContains = TruthValue.ERROR;
+		} else {
+			newContains = oldContains.meet(toMerge);
 		}
-		var newContains = oldContains.meet(toMerge);
 		if (newContains.equals(oldContains)) {
 			return oldValue;
 		}

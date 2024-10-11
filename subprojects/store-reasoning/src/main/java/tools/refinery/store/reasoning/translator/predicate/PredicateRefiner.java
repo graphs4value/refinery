@@ -50,10 +50,7 @@ class PredicateRefiner extends ConcreteRelationRefiner {
 	@Override
 	public boolean merge(Tuple key, TruthValue value) {
 		var currentValue = get(key);
-		if (forbiddenByConcretization(currentValue, value)) {
-			return false;
-		}
-		var mergedValue = currentValue.meet(value);
+		var mergedValue = concretizationAwareMeet(currentValue, value);
 		if (!Objects.equals(currentValue, mergedValue)) {
 			put(key, mergedValue);
 		}

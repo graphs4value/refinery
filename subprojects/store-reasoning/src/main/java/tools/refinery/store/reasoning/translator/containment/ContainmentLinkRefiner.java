@@ -5,7 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
-import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
@@ -13,7 +13,6 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
@@ -43,9 +42,6 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	public boolean merge(Tuple key, TruthValue value) {
 		var oldValue = interpretation.get(key);
 		var newValue = mergeLink(oldValue, value);
-		if (newValue == null) {
-			return false;
-		}
 		if (oldValue != newValue) {
 			interpretation.put(key, newValue);
 		}
@@ -56,7 +52,6 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 		return true;
 	}
 
-	@Nullable
 	public InferredContainment mergeLink(InferredContainment oldValue, TruthValue toMerge) {
 		return switch (toMerge) {
 			case UNKNOWN -> oldValue;
@@ -66,17 +61,16 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 		};
 	}
 
-	@Nullable
 	public InferredContainment mustLink(InferredContainment oldValue) {
 		var mustLinks = oldValue.mustLinks();
 		if (oldValue.contains().may() && mustLinks.isEmpty() && oldValue.forbiddenLinks().isEmpty()) {
-			return concretizationInProgress() ? null : factory.trueLink;
+			return concretizationInProgress() ? errorLink(oldValue) : factory.trueLink;
 		}
 		if (mustLinks.contains(factory.linkType)) {
 			return oldValue;
 		}
 		if (concretizationInProgress()) {
-			return null;
+			return errorLink(oldValue);
 		}
 		return new InferredContainment(oldValue.contains().meet(TruthValue.TRUE),
 				addToSet(mustLinks, factory.linkType), oldValue.forbiddenLinks());

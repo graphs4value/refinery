@@ -19,6 +19,7 @@ import java.util.Set;
 @SuppressWarnings("UnusedReturnValue")
 public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanticsFactory> {
 	private boolean withCandidateInterpretations;
+	private boolean concretize;
 
 	@Override
 	protected ModelSemanticsFactory getSelf() {
@@ -27,6 +28,11 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 
 	public ModelSemanticsFactory withCandidateInterpretations(boolean withCandidateInterpretations) {
 		this.withCandidateInterpretations = withCandidateInterpretations;
+		return this;
+	}
+
+	public ModelSemanticsFactory concretize(boolean concretize) {
+		this.concretize = concretize;
 		return this;
 	}
 
@@ -49,11 +55,21 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		return new ModelSemantics(initializer.getProblemTrace(), store, initializer.getModelSeed());
+		var problemTrace = initializer.getProblemTrace();
+		var modelSeed = initializer.getModelSeed();
+		if (concretize) {
+			return new ConcreteModelSemantics(problemTrace, store, modelSeed);
+		}
+		return new ModelSemantics(problemTrace, store, modelSeed);
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {
-		return withCandidateInterpretations ? Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE) :
-				Set.of(Concreteness.PARTIAL);
+		if (concretize) {
+			return Set.of(Concreteness.CANDIDATE);
+		}
+		if (withCandidateInterpretations) {
+			return Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE);
+		}
+		return Set.of(Concreteness.PARTIAL);
 	}
 }

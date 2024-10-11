@@ -27,7 +27,6 @@ import tools.refinery.language.web.semantics.metadata.MetadataCreator;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.transition.Rule;
-import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.util.CancellationToken;
@@ -75,6 +74,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			semantics = semanticsFactory
 					.cancellationToken(cancellationToken)
 					.keepNonExistingObjects(true)
+					.concretize(false)
 					.tryCreateSemantics(problem);
 		} catch (TranslationException e) {
 			return new SemanticsResult(e.getMessage());
@@ -126,7 +126,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	private SemanticsModelResult createSemanticsModelResult(ModelSemantics semantics) {
 		metadataCreator.setProblemTrace(semantics.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), Concreteness.PARTIAL);
+		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), semantics.getConcreteness(), true);
 		cancellationToken.checkCancelled();
 		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
