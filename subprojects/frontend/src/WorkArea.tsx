@@ -17,7 +17,9 @@ export default observer(function WorkArea(): JSX.Element {
   return (
     <DirectionalSplitPane
       primary={<EditorPane />}
-      secondary={<ModelWorkArea />}
+      secondary={(horizontal) => (
+        <ModelWorkArea touchesTop={!themeStore.showCode || !horizontal} />
+      )}
       primaryOnly={!themeStore.showGraph && !themeStore.showTable}
       secondaryOnly={!themeStore.showCode}
     />

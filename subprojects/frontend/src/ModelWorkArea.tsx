@@ -26,14 +26,21 @@ import type ThemeStore from './theme/ThemeStore';
 const SplitGraphPane = observer(function SplitGraphPane({
   graph,
   themeStore,
+  touchesTop,
 }: {
   graph: GraphStore;
   themeStore: ThemeStore;
+  touchesTop: boolean;
 }): JSX.Element {
   return (
     <DirectionalSplitPane
       primary={<GraphPane graph={graph} />}
-      secondary={<TablePane graph={graph} />}
+      secondary={(horizontal) => (
+        <TablePane
+          graph={graph}
+          touchesTop={touchesTop && (!themeStore.showGraph || !horizontal)}
+        />
+      )}
       primaryOnly={!themeStore.showTable}
       secondaryOnly={!themeStore.showGraph}
     />
@@ -57,7 +64,13 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
   const { message, error, graph } = generatedModel;
 
   if (graph !== undefined) {
-    return <SplitGraphPane graph={graph} themeStore={themeStore} />;
+    return (
+      <SplitGraphPane
+        graph={graph}
+        themeStore={themeStore}
+        touchesTop={false}
+      />
+    );
   }
 
   return (
@@ -103,7 +116,7 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
   );
 });
 
-function ModelWorkArea(): JSX.Element {
+function ModelWorkArea({ touchesTop }: { touchesTop: boolean }): JSX.Element {
   const { editorStore, themeStore } = useRootStore();
 
   if (editorStore === undefined) {
@@ -181,7 +194,11 @@ function ModelWorkArea(): JSX.Element {
         </IconButton>
       </Stack>
       {generatedModel === undefined ? (
-        <SplitGraphPane graph={graph} themeStore={themeStore} />
+        <SplitGraphPane
+          graph={graph}
+          themeStore={themeStore}
+          touchesTop={generatedModelTabs.length === 0 && touchesTop}
+        />
       ) : (
         <GeneratedModelPane
           generatedModel={generatedModel}

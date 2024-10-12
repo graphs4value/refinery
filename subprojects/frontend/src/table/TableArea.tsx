@@ -87,7 +87,13 @@ function NoResultsOverlay({
   );
 }
 
-function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
+function TableArea({
+  graph,
+  touchesTop,
+}: {
+  graph: GraphStore;
+  touchesTop: boolean;
+}): JSX.Element {
   const {
     selectedSymbol,
     semantics: { nodes, partialInterpretation },
@@ -173,7 +179,9 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
             borderColor: theme.palette.outer.border,
           },
           '.MuiDataGrid-toolbarContainer': {
-            background: theme.palette.outer.background,
+            background: touchesTop
+              ? 'transparent'
+              : theme.palette.outer.background,
             padding: theme.spacing(1),
             // Correct for the non-integer height of the text box to match up with the editor area toolbar.
             marginBottom: '-0.5px',
@@ -183,6 +191,9 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
               {
                 background: theme.palette.outer.background,
                 borderBottom: `1px solid ${theme.palette.outer.border}`,
+                borderTop: touchesTop
+                  ? `1px solid ${theme.palette.outer.border}`
+                  : 'none',
               },
           },
           '.MuiDataGrid-row--firstVisible .MuiDataGrid-scrollbarFiller': {
