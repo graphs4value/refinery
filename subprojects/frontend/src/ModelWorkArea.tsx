@@ -164,7 +164,9 @@ function ModelWorkArea(): JSX.Element {
           scrollButtons="auto"
           sx={{ flexGrow: 1 }}
         >
-          <Tab label="Initial model" />
+          <Tab
+            label={`${editorStore.concretize ? 'Concrete' : 'Initial'} model`}
+          />
           {generatedModelTabs}
         </Tabs>
         <IconButton
