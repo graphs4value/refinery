@@ -6,6 +6,7 @@
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import { alpha } from '@mui/material/styles';
 import {
   DataGrid,
   type GridRenderCellParams,
@@ -49,7 +50,13 @@ function NoRowsOverlay({
   graph: GraphStore;
 }): JSX.Element {
   return (
-    <Stack height="100%" alignItems="center" justifyContent="center">
+    <Stack
+      height="100%"
+      alignItems="center"
+      justifyContent="center"
+      textAlign="center"
+      p={2}
+    >
       {selectedSymbol === undefined ? (
         noSymbolMessage
       ) : (
@@ -133,19 +140,7 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
   }, [arity, nodes, partialInterpretation, symbolName]);
 
   return (
-    <Box
-      width="100%"
-      height="100%"
-      p={1}
-      sx={(theme) => ({
-        '.MuiDataGrid-withBorderColor': {
-          borderColor:
-            theme.palette.mode === 'dark'
-              ? theme.palette.divider
-              : theme.palette.outer.border,
-        },
-      })}
-    >
+    <Box width="100%" height="100%">
       <DataGrid
         slots={{
           toolbar: TableToolbar,
@@ -168,6 +163,38 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
         columns={columns}
         rows={rows}
         getRowId={(row) => row.nodes.join(',')}
+        sx={(theme) => ({
+          border: 'none',
+          '--DataGrid-rowBorderColor':
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.text.primary, 0.24)
+              : theme.palette.outer.border,
+          '.MuiDataGrid-withBorderColor': {
+            borderColor: theme.palette.outer.border,
+          },
+          '.MuiDataGrid-toolbarContainer': {
+            background: theme.palette.outer.background,
+            padding: theme.spacing(1),
+            // Correct for the non-integer height of the text box to match up with the editor area toolbar.
+            marginBottom: '-0.5px',
+          },
+          '.MuiDataGrid-columnHeaders': {
+            '.MuiDataGrid-columnHeader, .MuiDataGrid-filler, .MuiDataGrid-scrollbarFiller':
+              {
+                background: theme.palette.outer.background,
+                borderBottom: `1px solid ${theme.palette.outer.border}`,
+              },
+          },
+          '.MuiDataGrid-row--firstVisible .MuiDataGrid-scrollbarFiller': {
+            display: 'none',
+          },
+          '.MuiDataGrid-footerContainer': {
+            backgroundColor: theme.palette.outer.background,
+          },
+          '.MuiDataGrid-columnSeparator': {
+            color: theme.palette.text.disabled,
+          },
+        })}
       />
     </Box>
   );

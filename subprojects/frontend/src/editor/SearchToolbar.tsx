@@ -60,7 +60,12 @@ export default observer(function SearchToolbar({
   return (
     <Toolbar
       variant="dense"
-      sx={{ py: 0.5, alignItems: 'center', minHeight: 'auto' }}
+      sx={{
+        // Match the height of the editor toolbar.
+        py: '5px',
+        alignItems: 'center',
+        minHeight: 'auto',
+      }}
       ref={ref}
     >
       <Stack
