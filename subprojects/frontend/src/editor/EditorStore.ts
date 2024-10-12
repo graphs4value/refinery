@@ -432,6 +432,17 @@ export default class EditorStore {
     this.generatedModels.delete(uuid);
   }
 
+  get selectedGeneratedModelStore(): GeneratedModelStore | undefined {
+    if (this.selectedGeneratedModel === undefined) {
+      return undefined;
+    }
+    return this.generatedModels.get(this.selectedGeneratedModel);
+  }
+
+  get selectedGraph(): GraphStore {
+    return this.selectedGeneratedModelStore?.graph ?? this.graph;
+  }
+
   modelGenerationCancelled(): void {
     this.generatedModels.forEach((value) =>
       value.setError('Model generation cancelled'),

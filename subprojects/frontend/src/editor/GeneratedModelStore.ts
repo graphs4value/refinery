@@ -6,7 +6,7 @@
 
 import { makeAutoObservable } from 'mobx';
 
-import GraphStore from '../graph/GraphStore';
+import GraphStore, { type Visibility } from '../graph/GraphStore';
 import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
 
 import type EditorStore from './EditorStore';
@@ -20,13 +20,17 @@ export default class GeneratedModelStore {
 
   graph: GraphStore | undefined;
 
+  savedVisibility: Map<string, Visibility>;
+
   constructor(
     private readonly randomSeed: number,
     private readonly editorStore: EditorStore,
   ) {
     const time = new Date().toLocaleTimeString(undefined, { hour12: false });
     this.title = `Generated at ${time} (${randomSeed})`;
+    this.savedVisibility = new Map(editorStore.selectedGraph.visibility);
     makeAutoObservable<GeneratedModelStore, 'editorStore'>(this, {
+      savedVisibility: false,
       editorStore: false,
     });
   }
@@ -51,11 +55,7 @@ export default class GeneratedModelStore {
   setSemantics(semantics: SemanticsModelResult): void {
     if (this.running) {
       const name = `${this.editorStore.simpleNameOrFallback}_solution_${this.randomSeed}`;
-      this.graph = new GraphStore(
-        this.editorStore,
-        name,
-        this.editorStore.graph.visibility,
-      );
+      this.graph = new GraphStore(this.editorStore, name, this.savedVisibility);
       this.graph.setSemantics(semantics);
     }
   }

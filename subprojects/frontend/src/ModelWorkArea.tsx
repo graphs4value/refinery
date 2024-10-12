@@ -110,7 +110,13 @@ function ModelWorkArea(): JSX.Element {
     return <Loading />;
   }
 
-  const { graph, generatedModels, selectedGeneratedModel } = editorStore;
+  const {
+    concretize,
+    graph,
+    generatedModels,
+    selectedGeneratedModel,
+    selectedGeneratedModelStore: generatedModel,
+  } = editorStore;
 
   const generatedModelNames: string[] = [];
   const generatedModelTabs: JSX.Element[] = [];
@@ -132,10 +138,6 @@ function ModelWorkArea(): JSX.Element {
     );
     /* eslint-enable react/no-array-index-key */
   });
-  const generatedModel =
-    selectedGeneratedModel === undefined
-      ? undefined
-      : generatedModels.get(selectedGeneratedModel);
   const selectedIndex =
     selectedGeneratedModel === undefined
       ? 0
@@ -164,9 +166,7 @@ function ModelWorkArea(): JSX.Element {
           scrollButtons="auto"
           sx={{ flexGrow: 1 }}
         >
-          <Tab
-            label={`${editorStore.concretize ? 'Concrete' : 'Initial'} model`}
-          />
+          <Tab label={`${concretize ? 'Concrete' : 'Initial'} model`} />
           {generatedModelTabs}
         </Tabs>
         <IconButton
