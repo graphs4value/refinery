@@ -51,7 +51,11 @@ export default class GeneratedModelStore {
   setSemantics(semantics: SemanticsModelResult): void {
     if (this.running) {
       const name = `${this.editorStore.simpleNameOrFallback}_solution_${this.randomSeed}`;
-      this.graph = new GraphStore(this.editorStore, name);
+      this.graph = new GraphStore(
+        this.editorStore,
+        name,
+        this.editorStore.graph.visibility,
+      );
       this.graph.setSemantics(semantics);
     }
   }

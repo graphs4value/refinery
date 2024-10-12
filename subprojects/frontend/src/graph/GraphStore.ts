@@ -61,7 +61,7 @@ export default class GraphStore {
 
   relationMetadata = new Map<string, RelationMetadata>();
 
-  visibility = new Map<string, Visibility>();
+  visibility: Map<string, Visibility>;
 
   abbreviate = true;
 
@@ -76,7 +76,13 @@ export default class GraphStore {
   constructor(
     private readonly editorStore: EditorStore,
     private readonly nameOverride?: string,
+    visibility?: Map<string, Visibility>,
   ) {
+    if (visibility === undefined) {
+      this.visibility = new Map<string, Visibility>();
+    } else {
+      this.visibility = new Map(visibility);
+    }
     makeAutoObservable<GraphStore, 'editorStore'>(this, {
       editorStore: false,
       semantics: observable.ref,
