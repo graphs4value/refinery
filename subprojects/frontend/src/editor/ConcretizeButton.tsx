@@ -20,7 +20,8 @@ function ConcretizeButton({
     return null;
   }
 
-  const { concretize } = editorStore;
+  const generatedModel = editorStore.selectedGeneratedModel !== undefined;
+  const concretize = generatedModel || editorStore.concretize;
 
   return (
     <AnimatedButton
@@ -30,9 +31,7 @@ function ConcretizeButton({
       color={concretize ? 'inherit' : 'dim'}
       startIcon={concretize ? <LockIcon /> : <LockOpenIcon />}
       onClick={() => editorStore.toggleConcretize()}
-      disabled={
-        editorStore.selectedGeneratedModel !== undefined || !editorStore.opened
-      }
+      disabled={generatedModel || !editorStore.opened}
     >
       {concretize ? 'Concrete' : 'Partial'}
     </AnimatedButton>
