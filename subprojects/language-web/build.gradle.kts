@@ -51,6 +51,7 @@ tasks {
 		classpath(mainRuntimeClasspath)
 		mainClass.set(application.mainClass)
 		standardInput = System.`in`
+		environment(System.getenv())
 		environment("REFINERY_BASE_RESOURCE", webapp.singleFile)
 		group = "run"
 		description = "Start a Jetty web server serving the Xtext API and assets."
