@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { observer } from 'mobx-react-lite';
@@ -19,7 +19,7 @@ export default observer(function ToggleDarkModeButton(): JSX.Element {
   return (
     <Tooltip title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
       <IconButton color="inherit" onClick={() => themeStore.toggleDarkMode()}>
-        {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+        {darkMode ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
       </IconButton>
     </Tooltip>
   );
