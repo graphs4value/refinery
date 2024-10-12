@@ -425,6 +425,7 @@ export default class EditorStore {
       });
       this.selectGeneratedModel(found);
     }
+
     const generatedModel = this.generatedModels.get(uuid);
     if (generatedModel !== undefined && generatedModel.running) {
       this.cancelModelGeneration();

@@ -45,17 +45,19 @@ export default observer(function ConnectButton({
             : 'Connected (click to disconnect)'
         }
       >
-        <IconButton
-          onClick={() => editorStore.disconnect()}
-          aria-label="Disconnect"
-          color="inherit"
-        >
-          {editorStore.opening ? (
-            <AnimatedSyncIcon fontSize="small" />
-          ) : (
-            <CloudIcon fontSize="small" />
-          )}
-        </IconButton>
+        <span>
+          <IconButton
+            onClick={() => editorStore.disconnect()}
+            aria-label="Disconnect"
+            color="inherit"
+          >
+            {editorStore.opening ? (
+              <AnimatedSyncIcon fontSize="small" />
+            ) : (
+              <CloudIcon fontSize="small" />
+            )}
+          </IconButton>
+        </span>
       </Tooltip>
     );
   }
@@ -75,14 +77,16 @@ export default observer(function ConnectButton({
 
   return (
     <Tooltip title={title}>
-      <IconButton
-        disabled={editorStore === undefined}
-        onClick={() => editorStore?.connect()}
-        aria-label="Connect"
-        color="inherit"
-      >
-        {disconnectedIcon}
-      </IconButton>
+      <span>
+        <IconButton
+          disabled={editorStore === undefined}
+          onClick={() => editorStore?.connect()}
+          aria-label="Connect"
+          color="inherit"
+        >
+          {disconnectedIcon}
+        </IconButton>
+      </span>
     </Tooltip>
   );
 });
