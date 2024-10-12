@@ -12,6 +12,8 @@ import { observer } from 'mobx-react-lite';
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
 
+const placeholderText = `Select symbol to view\u2026`;
+
 function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
   const {
     selectedSymbol,
@@ -29,11 +31,26 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
               // Workaround for type errors.
               className: params.InputLabelProps.className ?? '',
               style: params.InputLabelProps.style ?? {},
+              'aria-placeholder': placeholderText,
             },
           }}
           variant="standard"
           size="medium"
-          placeholder={`Select symbol to view\u2026`}
+          placeholder={
+            // Workaround to reduce flashing when changing generated model tabs
+            selectedSymbol?.name ?? placeholderText
+          }
+          sx={(theme) =>
+            selectedSymbol === undefined
+              ? {}
+              : {
+                  // Workaround to reduce flashing when changing generated model tabs
+                  '.MuiInput-input::placeholder': {
+                    color: theme.palette.text.primary,
+                    opacity: 1,
+                  },
+                }
+          }
         />
       )}
       options={relations}

@@ -115,6 +115,8 @@ export default class EditorStore {
 
   concretize = false;
 
+  selectedSymbolName: string | undefined;
+
   constructor(
     initialValue: string,
     pwaStore: PWAStore,
@@ -561,5 +563,9 @@ export default class EditorStore {
   toggleConcretize(): void {
     this.concretize = !this.concretize;
     this.client?.updateConcretize();
+  }
+
+  setSelectedSymbolName(selectedSymbolName: string | undefined) {
+    this.selectedSymbolName = selectedSymbolName;
   }
 }

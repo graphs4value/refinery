@@ -67,8 +67,6 @@ export default class GraphStore {
 
   scopes = false;
 
-  selectedSymbol: RelationMetadata | undefined;
-
   hexTypeHashes: string[] = [];
 
   private typeHashesMap = new Map<string, number>();
@@ -169,17 +167,16 @@ export default class GraphStore {
     this.scopes = !this.scopes;
   }
 
+  get selectedSymbol(): RelationMetadata | undefined {
+    const { selectedSymbolName } = this.editorStore;
+    if (selectedSymbolName === undefined) {
+      return undefined;
+    }
+    return this.relationMetadata.get(selectedSymbolName);
+  }
+
   setSelectedSymbol(option: RelationMetadata | undefined): void {
-    if (option === undefined) {
-      this.selectedSymbol = undefined;
-      return;
-    }
-    const metadata = this.relationMetadata.get(option.name);
-    if (metadata !== undefined) {
-      this.selectedSymbol = metadata;
-    } else {
-      this.selectedSymbol = undefined;
-    }
+    this.editorStore.setSelectedSymbolName(option?.name);
   }
 
   setSemantics(semantics: SemanticsModelResult) {
@@ -200,7 +197,6 @@ export default class GraphStore {
     toRemove.forEach((key) => {
       this.visibility.delete(key);
     });
-    this.setSelectedSymbol(this.selectedSymbol);
     this.updateTypeHashes();
   }
 
