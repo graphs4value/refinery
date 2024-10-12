@@ -5,7 +5,7 @@
  */
 
 import LockIcon from '@mui/icons-material/Lock';
-import MeetingRoomOutlinedIcon from '@mui/icons-material/MeetingRoomOutlined';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { observer } from 'mobx-react-lite';
 
 import AnimatedButton from './AnimatedButton';
@@ -13,10 +13,8 @@ import type EditorStore from './EditorStore';
 
 function ConcretizeButton({
   editorStore,
-  abbreviate,
 }: {
   editorStore: EditorStore | undefined;
-  abbreviate?: boolean | undefined;
 }): React.ReactNode {
   if (editorStore === undefined) {
     return null;
@@ -29,15 +27,14 @@ function ConcretizeButton({
       role="switch"
       aria-checked={concretize}
       aria-label="Calculate closed world interpretation"
-      color={concretize ? 'inherit' : 'darkened'}
-      startIcon={concretize ? <LockIcon /> : <MeetingRoomOutlinedIcon />}
+      color={concretize ? 'inherit' : 'dim'}
+      startIcon={concretize ? <LockIcon /> : <LockOpenIcon />}
       onClick={() => editorStore.toggleConcretize()}
       disabled={
         editorStore.selectedGeneratedModel !== undefined || !editorStore.opened
       }
     >
-      {concretize ? 'Closed' : 'Open'}
-      {abbreviate ? '' : ' world'}
+      {concretize ? 'Concrete' : 'Partial'}
     </AnimatedButton>
   );
 }

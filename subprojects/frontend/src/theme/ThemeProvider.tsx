@@ -161,7 +161,7 @@ function createResponsiveTheme(
                 };
               }, {}),
             },
-            '&.shaded-darkened': {
+            '&.shaded-dim': {
               color:
                 theme.palette.mode === 'dark'
                   ? theme.palette.text.secondary

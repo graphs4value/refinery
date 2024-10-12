@@ -51,7 +51,7 @@ export default function AnimatedButton({
   'aria-checked'?: boolean;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
-  color: 'error' | 'warning' | 'primary' | 'inherit' | 'darkened';
+  color: 'error' | 'warning' | 'primary' | 'inherit' | 'dim';
   disabled?: boolean;
   startIcon?: JSX.Element;
   sx?: SxProps<Theme> | undefined;
@@ -82,8 +82,8 @@ export default function AnimatedButton({
       {...(ariaChecked === undefined ? {} : { 'aria-checked': ariaChecked })}
       {...(onClick === undefined ? {} : { onClick })}
       {...(sx === undefined ? {} : { sx })}
-      color={color === 'darkened' ? 'inherit' : color}
-      className={`rounded ${color === 'darkened' ? ' shaded-darkened' : 'shaded'}`}
+      color={color === 'dim' ? 'inherit' : color}
+      className={`rounded ${color === 'dim' ? ' shaded-dim' : 'shaded'}`}
       disabled={disabled ?? false}
       startIcon={startIcon}
       width={

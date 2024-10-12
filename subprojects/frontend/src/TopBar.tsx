@@ -219,10 +219,7 @@ export default observer(function TopBar(): JSX.Element {
             </Stack>
           )}
           <ButtonStack direction="row">
-            <ConcretizeButton
-              editorStore={editorStore}
-              abbreviate={!extraLarge}
-            />
+            {medium && <ConcretizeButton editorStore={editorStore} />}
             <GenerateButton
               editorStore={editorStore}
               hideWarnings={!extraLarge}
