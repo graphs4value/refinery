@@ -54,8 +54,17 @@ public class NodeMetadataFactory {
 	public NodeMetadata createFreshlyNamedMetadata(int nodeId) {
 		var type = getType(nodeId);
 		var name = getName(type, nodeId);
-		var escapedName = qualifiedNameConverter.toString(QualifiedName.create(name));
+		String escapedName;
+		if (name == null) {
+			escapedName = "::" + nodeId;
+		} else {
+			escapedName = qualifiedNameConverter.toString(QualifiedName.create(name));
+		}
 		return doCreateMetadata(escapedName, escapedName, type, NodeKind.IMPLICIT);
+	}
+
+	public boolean nodeExists(int nodeId) {
+		return existsInterpretation.get(Tuple.of(nodeId)).may();
 	}
 
 	private PartialRelation getType(int nodeId) {
@@ -67,11 +76,11 @@ public class NodeMetadataFactory {
 	}
 
 	private String getName(PartialRelation type, int nodeId) {
-		if (concreteness == Concreteness.CANDIDATE && !existsInterpretation.get(Tuple.of(nodeId)).may()) {
+		if (concreteness == Concreteness.CANDIDATE && !nodeExists(nodeId)) {
 			// Do not increment the node name counter for non-existent nodes in the candidate interpretation.
 			// While non-existent nodes may appear in the partial interpretation, they are never displayed in the
 			// candidate interpretation.
-			return "::" + nodeId;
+			return null;
 		}
 		if (type == null) {
 			return nodeNameProvider.getNextName(null);

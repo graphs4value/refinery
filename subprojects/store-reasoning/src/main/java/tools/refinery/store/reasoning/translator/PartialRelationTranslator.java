@@ -53,6 +53,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	private RelationalQuery candidateMayMerged;
 	private RelationalQuery candidateMustMerged;
 	private RoundingMode roundingMode;
+	private boolean mergeCandidateWithPartial = true;
 
 	private PartialRelationTranslator(PartialRelation partialRelation) {
 		super(partialRelation);
@@ -196,6 +197,12 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		return this;
 	}
 
+	public PartialRelationTranslator mergeCandidateWithPartial(boolean mergeCandidateWithPartial) {
+		checkNotConfigured();
+		this.mergeCandidateWithPartial = mergeCandidateWithPartial;
+		return this;
+	}
+
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		setFallbackRoundingMode();
@@ -314,6 +321,15 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	}
 
 	private void mergeCandidateQueries() {
+		if (!mergeCandidateWithPartial) {
+			if (candidateMayMerged == null) {
+				candidateMayMerged = candidateMay;
+			}
+			if (candidateMustMerged == null) {
+				candidateMustMerged = candidateMust;
+			}
+			return;
+		}
 		if (candidateMayMerged == null) {
 			candidateMayMerged = createQuery("candidateMayMerged", (builder, arguments) -> builder
 					.clause(

@@ -83,6 +83,10 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 								LOWER_CARDINALITY_VIEW.call(p1, Variable.of(Integer.class)),
 								Literals.not(MULTI_VIEW.call(p1))
 						)))
+				// It is impossible to obey the refinement from the partial to the candidate model,
+				// since scope constraints may force a multi-object to exist in the partial interpretation that we
+				// nevertheless remove in the concrete one.
+				.mergeCandidateWithPartial(false)
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ExistsRefiner.of(COUNT_STORAGE))
 				.exclude(null)

@@ -127,7 +127,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	private SemanticsModelResult createSemanticsModelResult(ModelSemantics semantics) {
 		metadataCreator.setProblemTrace(semantics.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), semantics.getConcreteness(), true);
+		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), semantics.getConcreteness());
 		cancellationToken.checkCancelled();
 		var relationsMetadata = metadataCreator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
