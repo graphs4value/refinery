@@ -9,6 +9,7 @@
 package tools.refinery.language.serializer;
 
 import com.google.inject.Inject;
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -27,7 +28,10 @@ import org.eclipse.xtext.serializer.diagnostic.SerializationDiagnostic;
 import org.eclipse.xtext.serializer.tokens.CrossReferenceSerializer;
 import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding;
 import org.eclipse.xtext.util.EmfFormatter;
-import tools.refinery.language.model.problem.*;
+import tools.refinery.language.model.problem.ProblemPackage;
+import tools.refinery.language.model.problem.ReferenceDeclaration;
+import tools.refinery.language.model.problem.ReferenceKind;
+import tools.refinery.language.model.problem.Variable;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.parser.antlr.IdentifierTokenProvider;
@@ -38,6 +42,8 @@ import java.util.regex.Pattern;
 public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 	public static final String AMBIGUOUS_REFERENCE_DIAGNOSTIC = "tools.refinery.language.serializer" +
 			".ProblemCrossReferenceSerializer.AMBIGUOUS_REFERENCE";
+
+	private static final Logger LOGGER = Logger.getLogger(ProblemCrossReferenceSerializer.class);
 
 	@Inject
 	private LinkingHelper linkingHelper;
@@ -90,7 +96,13 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 										 IScope scope, ISerializationDiagnostic.Acceptor errors) {
 		if (target != null && node != null) {
 			String text = linkingHelper.getCrossRefNodeAsString(node, true);
-			QualifiedName qualifiedName = qualifiedNameConverter.toQualifiedName(text);
+			QualifiedName qualifiedName;
+			try {
+				qualifiedName = qualifiedNameConverter.toQualifiedName(text);
+			} catch (IllegalArgumentException e) {
+				LOGGER.debug("Invalid cross reference", e);
+				return getCrossReferenceNameFromScope(semanticObject, crossref, target, scope, errors);
+			}
 			URI targetUri = EcoreUtil2.getPlatformResourceOrNormalizedURI(target);
 			if (isUniqueInScope(scope, qualifiedName, targetUri)) {
 				return tokenUtil.serializeNode(node);

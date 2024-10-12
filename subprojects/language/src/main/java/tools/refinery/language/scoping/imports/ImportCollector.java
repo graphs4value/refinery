@@ -10,12 +10,14 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.util.IResourceScopeCache;
@@ -26,13 +28,16 @@ import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.LoadOnDemandResourceDescriptionProvider;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.List;
 
 @Singleton
 public class ImportCollector {
 	private static final String PREFIX = "tools.refinery.language.imports.";
 	private static final String DIRECT_IMPORTS_KEY = PREFIX + "DIRECT_IMPORTS";
 	private static final String ALL_IMPORTS_KEY = PREFIX + "ALL_IMPORTS";
+	private static final Logger LOGGER = Logger.getLogger(ImportCollector.class);
 
 	@Inject
 	private IResourceScopeCache cache;
@@ -93,8 +98,15 @@ public class ImportCollector {
 		var nodes = NodeModelUtils.findNodesForFeature(importStatement,
 				ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE);
 		var aliasString = importStatement.getAlias();
+		QualifiedName aliasWithRootPrefix;
+		try {
+			aliasWithRootPrefix = qualifiedNameConverter.toQualifiedName(aliasString);
+		} catch (IllegalArgumentException e) {
+			LOGGER.debug("Invalid import alias", e);
+			return;
+		}
 		var alias = Strings.isNullOrEmpty(aliasString) ? QualifiedName.EMPTY :
-				NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(aliasString));
+				NamingUtil.stripRootPrefix(aliasWithRootPrefix);
 		var referredProblem = (EObject) importStatement.eGet(ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE,
 				false);
 		URI referencedUri = null;
@@ -105,16 +117,27 @@ public class ImportCollector {
 			}
 		}
 		for (var node : nodes) {
-			var qualifiedNameString = linkingHelper.getCrossRefNodeAsString(node, true);
-			if (Strings.isNullOrEmpty(qualifiedNameString)) {
-				continue;
-			}
-			var qualifiedName = NamingUtil.stripRootPrefix(
-					qualifiedNameConverter.toQualifiedName(qualifiedNameString));
-			var uri = referencedUri == null ? adapter.resolveQualifiedName(qualifiedName) : referencedUri;
-			if (uri != null) {
-				collection.add(NamedImport.explicit(uri, qualifiedName, List.of(alias)));
-			}
+			collectCrossRefNode(collection, adapter, node, referencedUri, alias);
+		}
+	}
+
+	private void collectCrossRefNode(ImportCollection collection, ImportAdapter adapter, INode node,
+									 URI referencedUri, QualifiedName alias) {
+		var qualifiedNameString = linkingHelper.getCrossRefNodeAsString(node, true);
+		if (Strings.isNullOrEmpty(qualifiedNameString)) {
+			return;
+		}
+		QualifiedName qualifiedNameWithPrefix;
+		try {
+			qualifiedNameWithPrefix = qualifiedNameConverter.toQualifiedName(qualifiedNameString);
+		} catch (IllegalArgumentException e) {
+			LOGGER.debug("Invalid import", e);
+			return;
+		}
+		var qualifiedName = NamingUtil.stripRootPrefix(qualifiedNameWithPrefix);
+		var uri = referencedUri == null ? adapter.resolveQualifiedName(qualifiedName) : referencedUri;
+		if (uri != null) {
+			collection.add(NamedImport.explicit(uri, qualifiedName, List.of(alias)));
 		}
 	}
 

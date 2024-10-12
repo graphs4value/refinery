@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.validation.Check;
 import org.jetbrains.annotations.Nullable;
@@ -100,7 +101,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (expectedName == null) {
 			return;
 		}
-		var name = NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(nameString));
+		QualifiedName qualifiedName;
+		try {
+			qualifiedName = qualifiedNameConverter.toQualifiedName(nameString);
+		} catch (IllegalArgumentException e) {
+			// No need to display an error, since the document already has a parse error in the qualified name.
+			return;
+		}
+		var name = NamingUtil.stripRootPrefix(qualifiedName);
 		if (!expectedName.equals(name)) {
 			var moduleKindName = switch (problem.getKind()) {
 				case PROBLEM -> "problem";
