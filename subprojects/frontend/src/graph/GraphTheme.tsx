@@ -158,6 +158,14 @@ export function createGraphTheme({
         fill: theme.palette.text.secondary,
       },
     },
+    '.node-exists-ERROR': {
+      '.node-outline': {
+        stroke: theme.palette.error.main,
+      },
+      '.node-header': {
+        fill: theme.palette.background.default,
+      },
+    },
   };
 }
 
@@ -171,12 +179,12 @@ export default styled('div', {
     ...createGraphTheme(args),
   },
   '&.simplified svg': {
-    'text, .edge-arrow, .icon, .node-exists-FALSE .node-outline, .node-shadow.node-bg':
-      {
-        display: 'none !important',
-      },
-    '.edge-line, .node-exists-UNKNOWN .node-outline': {
-      strokeDasharray: 'none !important',
+    'text, .edge-arrow, .icon, .node-shadow.node-bg': {
+      display: 'none !important',
     },
+    '.edge-line, .node-exists-UNKNOWN .node-outline, .node-exists-FALSE .node-outline':
+      {
+        strokeDasharray: 'none !important',
+      },
   },
 }));
