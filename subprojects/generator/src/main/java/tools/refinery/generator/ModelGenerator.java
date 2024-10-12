@@ -131,7 +131,8 @@ public class ModelGenerator extends ModelFacade {
 				new FilteredInterpretation<>(partialInterpretation, existsInterpretation);
 	}
 
-	public Problem serializeSolution() {
+	@Override
+	public Problem serialize() {
 		checkSuccessfulGeneration();
 		var serializer = solutionSerializerProvider.get();
 		return serializer.serializeSolution(getProblemTrace(), getModel());

@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.generator;
 
+import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -18,5 +19,13 @@ public class ModelSemantics extends ModelFacade {
 
 	ModelSemantics(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed) {
 		this(problemTrace, store, modelSeed, Concreteness.PARTIAL);
+	}
+
+	@Override
+	public Problem serialize() {
+		if (getConcreteness() != Concreteness.PARTIAL) {
+			throw new IllegalStateException("Use ConcreteModelSemantics to serialize concrete models");
+		}
+		return getProblemTrace().getProblem();
 	}
 }

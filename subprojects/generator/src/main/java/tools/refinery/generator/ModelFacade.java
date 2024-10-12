@@ -5,6 +5,7 @@
  */
 package tools.refinery.generator;
 
+import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationResult;
@@ -71,4 +72,6 @@ public abstract class ModelFacade {
 			PartialSymbol<A, C> partialSymbol) {
 		return reasoningAdapter.getPartialInterpretation(concreteness, partialSymbol);
 	}
+
+	public abstract Problem serialize();
 }

@@ -5,10 +5,7 @@
  */
 package tools.refinery.generator;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
@@ -26,9 +23,6 @@ import java.util.Set;
 // This class is used as a fluent builder, so it's not necessary to use the return value of all of its methods.
 @SuppressWarnings("UnusedReturnValue")
 public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGeneratorFactory> {
-	@Inject
-	private Provider<SolutionSerializer> solutionSerializerProvider;
-
 	private boolean debugPartialInterpretations;
 
 	private boolean partialInterpretationBasedNeighborhoods;
@@ -77,7 +71,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
 		var generator = new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
-				solutionSerializerProvider, cancellationToken, isKeepNonExistingObjects());
+				getSolutionSerializerProvider(), cancellationToken, isKeepNonExistingObjects());
 		generator.getPropagationResult().throwIfRejected();
 		return generator;
 	}

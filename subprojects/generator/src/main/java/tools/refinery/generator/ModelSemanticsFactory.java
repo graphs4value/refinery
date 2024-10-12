@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -58,7 +58,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 		var problemTrace = initializer.getProblemTrace();
 		var modelSeed = initializer.getModelSeed();
 		if (concretize) {
-			return new ConcreteModelSemantics(problemTrace, store, modelSeed);
+			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider());
 		}
 		return new ModelSemantics(problemTrace, store, modelSeed);
 	}
