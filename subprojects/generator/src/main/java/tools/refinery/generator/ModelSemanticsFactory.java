@@ -5,6 +5,8 @@
  */
 package tools.refinery.generator;
 
+import tools.refinery.generator.impl.ConcreteModelSemantics;
+import tools.refinery.generator.impl.ModelSemanticsImpl;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.ModelStore;
@@ -58,9 +60,10 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 		var problemTrace = initializer.getProblemTrace();
 		var modelSeed = initializer.getModelSeed();
 		if (concretize) {
-			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider());
+			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider(),
+					isKeepNonExistingObjects());
 		}
-		return new ModelSemantics(problemTrace, store, modelSeed);
+		return new ModelSemanticsImpl(problemTrace, store, modelSeed);
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {

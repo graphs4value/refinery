@@ -3,11 +3,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.generator;
+package tools.refinery.generator.impl;
 
+import tools.refinery.generator.GeneratorTimeoutException;
 import tools.refinery.store.util.CancellationToken;
 
-class CancellableCancellationToken implements CancellationToken {
+public class CancellableCancellationToken implements CancellationToken {
 	private volatile boolean cancelled;
 
 	private final CancellationToken wrappedToken;

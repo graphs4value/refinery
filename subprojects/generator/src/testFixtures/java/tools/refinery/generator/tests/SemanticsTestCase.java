@@ -8,7 +8,7 @@ package tools.refinery.generator.tests;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.core.runtime.AssertionFailedException;
-import tools.refinery.generator.FilteredInterpretation;
+import tools.refinery.generator.impl.FilteredInterpretation;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.language.model.problem.Problem;

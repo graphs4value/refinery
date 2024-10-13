@@ -6,7 +6,7 @@
 package tools.refinery.generator.tests;
 
 import org.eclipse.core.runtime.AssertionFailedException;
-import tools.refinery.generator.FilteredInterpretation;
+import tools.refinery.generator.impl.FilteredInterpretation;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.Node;

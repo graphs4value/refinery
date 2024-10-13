@@ -5,6 +5,8 @@
  */
 package tools.refinery.generator;
 
+import tools.refinery.generator.impl.CancellableCancellationToken;
+import tools.refinery.generator.impl.ModelGeneratorImpl;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
@@ -70,7 +72,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		var generator = new ModelGenerator(initializer.getProblemTrace(), store, initializer.getModelSeed(),
+		var generator = new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				getSolutionSerializerProvider(), cancellationToken, isKeepNonExistingObjects());
 		generator.getPropagationResult().throwIfRejected();
 		return generator;
