@@ -3,19 +3,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.generator;
+package tools.refinery.generator.concretization;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.generator.tests.DynamicTestLoader;
 import tools.refinery.language.tests.InjectWithRefinery;
 
 import java.util.stream.Stream;
 
 @InjectWithRefinery
-class FileBasedSemanticsTest {
+class FileBasedConcretizationTest {
 	@Inject
 	private DynamicTestLoader loader;
 
@@ -34,6 +35,7 @@ class FileBasedSemanticsTest {
 
 	private Stream<DynamicNode> getFileBasedTests(boolean keepNonExistingObjects, boolean keepShadowPredicates) {
 		loader.setSemanticsFactoryProvider(() -> semanticsFactoryProvider.get()
+				.concretize(true)
 				.keepNonExistingObjects(keepNonExistingObjects)
 				.keepShadowPredicates(keepShadowPredicates));
 		return loader.allFromClasspath(getClass());

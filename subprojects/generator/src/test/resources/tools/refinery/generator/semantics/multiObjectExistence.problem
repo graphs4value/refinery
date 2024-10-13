@@ -1,0 +1,30 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class A.
+
+class B.
+
+class C.
+
+class D.
+
+scope A = 5..10, B = 0..10, C = 1, D = 1..10.
+
+% EXPECT EXACTLY:
+exists(A::new).
+?equals(A::new, A::new).
+?exists(B::new).
+?equals(B::new, B::new).
+exists(C::new).
+equals(C::new, C::new).
+exists(D::new).
+?equals(D::new, D::new).
+
+% EXPECT CANDIDATE EXACTLY:
+!exists(A::new).
+!exists(B::new).
+exists(C::new).
+equals(C::new, C::new).
+!exists(D::new).
