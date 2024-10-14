@@ -31,7 +31,6 @@ import static tools.refinery.logic.term.int_.IntTerms.*;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
-import static tools.refinery.store.reasoning.literal.PartialLiterals.may;
 
 public class InvalidMultiplicityErrorTranslator implements ModelStoreConfiguration {
 	private final PartialRelation nodeType;

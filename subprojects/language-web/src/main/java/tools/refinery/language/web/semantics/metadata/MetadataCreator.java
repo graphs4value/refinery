@@ -56,6 +56,10 @@ public class MetadataCreator {
 
 	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
 		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
+		return getNodesMetadata(model, concreteness, preserveNewNodes);
+	}
+
+	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness, boolean preserveNewNodes) {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
