@@ -11,6 +11,7 @@ import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.ide.syntaxcoloring.TypeHashProvider;
 import tools.refinery.language.semantics.NodeNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -19,7 +20,6 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.typehierarchy.InferredType;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 public class NodeMetadataFactory {
@@ -72,7 +72,16 @@ public class NodeMetadataFactory {
 		if (inferredType == null) {
 			return null;
 		}
-		return inferredType.candidateType();
+		if (concreteness == Concreteness.CANDIDATE) {
+			return inferredType.candidateType();
+		}
+		var typeHierarchy = problemTrace.getMetamodel().typeHierarchy();
+		var mustTypes = inferredType.mustTypes();
+		return mustTypes.stream()
+				.filter(mustType -> typeHierarchy.getAnalysisResult(mustType).getDirectSubtypes().stream()
+						.noneMatch(mustTypes::contains))
+				.findFirst()
+				.orElse(null);
 	}
 
 	private String getName(PartialRelation type, int nodeId) {
