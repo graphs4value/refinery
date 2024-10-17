@@ -15,14 +15,15 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements PartialInterpretation<A, C> {
 	private final PartialInterpretation<A, C> wrappedInterpretation;
 	private final PartialInterpretation<TruthValue, Boolean> existsInterpretation;
 
-	public FilteredInterpretation(PartialInterpretation<A, C> wrappedInterpretation, PartialInterpretation<TruthValue,
-			Boolean> existsInterpretation) {
+	private FilteredInterpretation(PartialInterpretation<A, C> wrappedInterpretation,
+								   PartialInterpretation<TruthValue, Boolean> existsInterpretation) {
 		this.wrappedInterpretation = wrappedInterpretation;
 		this.existsInterpretation = existsInterpretation;
 	}
@@ -45,7 +46,7 @@ public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements
 	@Override
 	public A get(Tuple key) {
 		return tupleExists(key) ? wrappedInterpretation.get(key) :
-                wrappedInterpretation.getPartialSymbol().defaultValue();
+				wrappedInterpretation.getPartialSymbol().defaultValue();
 	}
 
 	@Override
@@ -61,6 +62,19 @@ public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements
 			}
 		}
 		return true;
+	}
+
+	public static <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> of(
+			PartialInterpretation<A, C> wrappedInterpretation,
+			PartialInterpretation<TruthValue, Boolean> existsInterpretation) {
+		if (Objects.equals(wrappedInterpretation, existsInterpretation)) {
+			return wrappedInterpretation;
+		}
+		if (wrappedInterpretation instanceof FilteredInterpretation<A, C> filteredWrapped &&
+				Objects.equals(filteredWrapped.existsInterpretation, existsInterpretation)) {
+			return wrappedInterpretation;
+		}
+		return new FilteredInterpretation<>(wrappedInterpretation, existsInterpretation);
 	}
 
 	private class FilteredCursor implements Cursor<Tuple, A> {

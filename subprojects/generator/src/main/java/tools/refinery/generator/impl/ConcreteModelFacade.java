@@ -45,7 +45,7 @@ public class ConcreteModelFacade extends ModelFacadeImpl {
 		if (keepNonExistingObjects || ReasoningAdapter.EXISTS_SYMBOL.equals(partialSymbol)) {
 			return partialInterpretation;
 		}
-		return new FilteredInterpretation<>(partialInterpretation, existsInterpretation);
+		return FilteredInterpretation.of(partialInterpretation, existsInterpretation);
 	}
 
 	@Override

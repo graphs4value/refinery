@@ -7,6 +7,7 @@ package tools.refinery.generator.impl;
 
 import com.google.inject.Provider;
 import tools.refinery.generator.ModelSemantics;
+import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
@@ -31,6 +32,14 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 			return createInitialModelResult;
 		}
 		return propagationAdapter.concretize();
+	}
+
+	@Override
+	public Problem serialize() {
+		// {@link SolutionSerializer} can only serialize consistent models.
+		getPropagationResult().throwIfRejected();
+		checkConsistency().throwIfInconsistent();
+		return super.serialize();
 	}
 
 	@Override

@@ -6,7 +6,9 @@
 package tools.refinery.generator.impl;
 
 import tools.refinery.generator.ModelFacade;
+import tools.refinery.generator.ConsistencyCheckResult;
 import tools.refinery.language.semantics.ProblemTrace;
+import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Model;
@@ -18,6 +20,9 @@ import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.PropagatedModel;
 import tools.refinery.store.reasoning.translator.TranslationException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ModelFacadeImpl implements ModelFacade {
 	private final ProblemTrace problemTrace;
@@ -68,5 +73,29 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol) {
 		return reasoningAdapter.getPartialInterpretation(getConcreteness(), partialSymbol);
+	}
+
+	@Override
+	public ConsistencyCheckResult checkConsistency() {
+		var errors = new ArrayList<ConsistencyCheckResult.AnyError>();
+		var existsInterpretation = getPartialInterpretation(ReasoningAdapter.EXISTS_SYMBOL);
+		for (var entry : problemTrace.getRelationTrace().entrySet()) {
+			var relation = entry.getKey();
+			if (ProblemUtil.isShadow(relation)) {
+				continue;
+			}
+			var partialRelation = entry.getValue();
+			// Filter for non-existing errors even if they are retained by getPartialInterpretation.
+			var interpretation = FilteredInterpretation.of(getPartialInterpretation(partialRelation),
+					existsInterpretation);
+			var cursor = interpretation.getAll();
+			while (cursor.move()) {
+				var value = cursor.getValue();
+				if (value.isError()) {
+					errors.add(new ConsistencyCheckResult.Error<>(partialRelation, cursor.getKey(), value));
+				}
+			}
+		}
+		return new ConsistencyCheckResult(this, List.copyOf(errors));
 	}
 }

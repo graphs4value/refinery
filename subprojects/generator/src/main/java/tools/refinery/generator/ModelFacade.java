@@ -36,5 +36,7 @@ public interface ModelFacade {
 	<A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol);
 
+	ConsistencyCheckResult checkConsistency();
+
 	Problem serialize();
 }

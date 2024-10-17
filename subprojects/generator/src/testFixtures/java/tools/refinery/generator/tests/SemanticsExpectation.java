@@ -28,7 +28,7 @@ public record SemanticsExpectation(Assertion assertion, Concreteness concretenes
 		var interpretation = reasoningAdapter.getPartialInterpretation(concreteness, symbol);
 		var existsInterpretation = reasoningAdapter.getPartialInterpretation(concreteness,
 				ReasoningAdapter.EXISTS_SYMBOL);
-		var filteredInterpretation = new FilteredInterpretation<>(interpretation, existsInterpretation);
+		var filteredInterpretation = FilteredInterpretation.of(interpretation, existsInterpretation);
 
 		var arguments = assertion.getArguments();
 		int arity = arguments.size();
