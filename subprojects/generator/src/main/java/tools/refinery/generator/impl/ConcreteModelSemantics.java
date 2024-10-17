@@ -32,4 +32,11 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 		}
 		return propagationAdapter.concretize();
 	}
+
+	@Override
+	protected SolutionSerializer getSolutionSerializer() {
+		var serializer = super.getSolutionSerializer();
+		serializer.setPreserveNewNodes(true);
+		return serializer;
+	}
 }

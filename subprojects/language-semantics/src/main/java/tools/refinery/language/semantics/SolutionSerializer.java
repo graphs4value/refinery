@@ -80,6 +80,15 @@ public class SolutionSerializer {
 	private QualifiedName newProblemName;
 	private NodeDeclaration nodeDeclaration;
 	private final MutableIntObjectMap<Node> nodes = IntObjectMaps.mutable.empty();
+	private boolean preserveNewNodes;
+
+	public boolean isPreserveNewNodes() {
+		return preserveNewNodes;
+	}
+
+	public void setPreserveNewNodes(boolean preserveNewNodes) {
+		this.preserveNewNodes = preserveNewNodes;
+	}
 
 	public Problem serializeSolution(ProblemTrace trace, Model model) {
 		var uri = URI.createURI("__solution_%s.%s".formatted(UUID.randomUUID().toString().replace('-', '_'),
@@ -246,9 +255,18 @@ public class SolutionSerializer {
 				nodes.put(nodeId, newNode);
 			}
 		}
-		for (var newNode : sortedNewNodes.values()) {
-			// If a node is a new node of the class, we should replace it with a normal node.
-			addAssertion(builtinSymbols.exists(), LogicValue.FALSE, newNode);
+		for (var entry : sortedNewNodes.entrySet()) {
+			int nodeId = entry.getKey();
+			var newNode = entry.getValue();
+			// If a node is a new node of the class, we should replace it with a normal node unless
+			// {@code preserveNewNodes} is set.
+			if (preserveNewNodes && ProblemUtil.isMultiNode(newNode) && isExistingNode(nodeId)) {
+				addAssertion(builtinSymbols.exists(), LogicValue.TRUE, newNode);
+				addAssertion(builtinSymbols.equals(), LogicValue.TRUE, newNode, newNode);
+				nodes.put(nodeId, newNode);
+			} else {
+				addAssertion(builtinSymbols.exists(), LogicValue.FALSE, newNode);
+			}
 		}
 	}
 
