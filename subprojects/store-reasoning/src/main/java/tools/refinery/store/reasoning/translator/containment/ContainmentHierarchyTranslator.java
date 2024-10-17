@@ -287,7 +287,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 							may(containmentLink.call(p1, p2)),
 							not(must(containmentLink.call(p1, p2))),
 							containmentCount.assign(possibleContainment.count(p1, p2,
-                                    Variable.of(PartialRelation.class))),
+									Variable.of(PartialRelation.class))),
 							check(IntTerms.eq(containmentCount, constant(1)))
 					))
 					.action(

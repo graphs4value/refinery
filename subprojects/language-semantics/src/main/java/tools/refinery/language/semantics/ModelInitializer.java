@@ -303,6 +303,10 @@ public class ModelInitializer {
 		} else {
 			collectPartialRelation(predicateDefinition, arity, null, TruthValue.UNKNOWN);
 		}
+		var computedPredicate = predicateDefinition.getComputedValue();
+		if (computedPredicate != null) {
+			collectPartialRelation(computedPredicate, arity, null, TruthValue.UNKNOWN);
+		}
 	}
 
 	private void putRelationInfo(Relation relation, RelationInfo info) {
@@ -630,6 +634,18 @@ public class ModelInitializer {
 		var parameterTypes = getParameterTypes(predicateDefinition, null);
 		var translator = new PredicateTranslator(partialRelation, query, parameterTypes, mutable, defaultValue);
 		storeBuilder.with(translator);
+		var computedPredicate = predicateDefinition.getComputedValue();
+		if (computedPredicate != null) {
+			var computedPartialRelation = getPartialRelation(computedPredicate);
+			// Always keep the interpretation of computed predicates, because they are used in solution serialization.
+			// This shouldn't add an overhead, because the lifted versions of the computed predicate are used in the
+			// computation of the interpretation of the original predicate, too. The exceptions with overhead are the
+			// error predicates, which can be safely ignored during serialization of consistent models.
+			var hasComputedInterpretation = !ProblemUtil.isError(predicateDefinition) || keepShadowPredicates;
+			var computedTranslator = new ShadowPredicateTranslator(computedPartialRelation, query,
+					hasComputedInterpretation);
+			storeBuilder.with(computedTranslator);
+		}
 	}
 
 	private boolean isActionTarget(PredicateDefinition predicateDefinition) {
@@ -779,7 +795,7 @@ public class ModelInitializer {
 			case PROPAGATION -> {
 				var rules = new ArrayList<Rule>();
 				var propagationRules = ruleCompiler.toPropagationRules(name, ruleDefinition,
-                        ConcretenessSpecification.PARTIAL);
+						ConcretenessSpecification.PARTIAL);
 				var concretizationRules = ruleCompiler.toPropagationRules(name, ruleDefinition,
 						ConcretenessSpecification.CANDIDATE);
 				rules.addAll(propagationRules);

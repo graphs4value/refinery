@@ -349,11 +349,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 
 	private void createFallbackRewriter() {
 		if (rewriter == null) {
-			if (query == null) {
-				rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
-			} else {
-				rewriter = new QueryBasedComputedRewriter(may, must, candidateMayMerged, candidateMustMerged, query);
-			}
+			rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
 		}
 	}
 

@@ -8,6 +8,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { observer } from 'mobx-react-lite';
+import { useMemo } from 'react';
 
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
@@ -19,6 +20,10 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
     selectedSymbol,
     semantics: { relations },
   } = graph;
+
+  const filteredRelations = useMemo(() => {
+    return relations.filter(({ detail }) => detail.type !== 'computed');
+  }, [relations]);
 
   return (
     <Autocomplete
@@ -53,7 +58,7 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
           }
         />
       )}
-      options={relations}
+      options={filteredRelations}
       getOptionLabel={(option) => option.name}
       renderOption={(props, option) => (
         <Box component="li" {...props}>

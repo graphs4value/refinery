@@ -14,6 +14,17 @@ import type {
 
 export type Visibility = 'all' | 'must' | 'none';
 
+export function isBuiltIn(metadata: RelationMetadata): boolean {
+  return metadata.name.startsWith('builtin::');
+}
+
+function hideBuiltIn(
+  metadata: RelationMetadata,
+  visibility: Visibility,
+): Visibility {
+  return isBuiltIn(metadata) ? 'none' : visibility;
+}
+
 export function getDefaultVisibility(
   metadata: RelationMetadata | undefined,
 ): Visibility {
@@ -25,10 +36,16 @@ export function getDefaultVisibility(
     case 'class':
     case 'reference':
     case 'opposite':
-    case 'base':
-      return 'all';
+      return hideBuiltIn(metadata, 'all');
     case 'predicate':
-      return detail.error ? 'must' : 'none';
+      switch (detail.predicateKind) {
+        case 'BASE':
+          return hideBuiltIn(metadata, 'all');
+        case 'ERROR':
+          return 'must';
+        default:
+          return 'none';
+      }
     default:
       return 'none';
   }
@@ -42,12 +59,19 @@ export function isVisibilityAllowed(
     return visibility === 'none';
   }
   const { detail } = metadata;
-  if (detail.type === 'predicate' && detail.error) {
+  if (detail.type === 'predicate' && detail.predicateKind === 'ERROR') {
     // We can't display may matches of error predicates,
     // because they have none by definition.
     return visibility !== 'all';
   }
+  if (detail.type === 'computed') {
+    return false;
+  }
   return true;
+}
+
+function getComputedName(relationName: string) {
+  return `${relationName}::computed`;
 }
 
 const TYPE_HASH_HEX_PREFFIX = '_';
@@ -179,6 +203,14 @@ export default class GraphStore {
     this.editorStore.setSelectedSymbolName(option?.name);
   }
 
+  get showComputed(): boolean {
+    return this.editorStore.showComputed;
+  }
+
+  toggleShowComputed(): void {
+    this.editorStore.toggleShowComputed();
+  }
+
   setSemantics(semantics: SemanticsModelResult) {
     this.semantics = semantics;
     this.relationMetadata.clear();
@@ -240,5 +272,31 @@ export default class GraphStore {
   get showNonExistent(): boolean {
     const existsVisibility = this.visibility.get('builtin::exists') ?? 'none';
     return existsVisibility !== 'none' || this.scopes;
+  }
+
+  private hasComputed(relationName: string | undefined): boolean {
+    if (relationName === undefined) {
+      return false;
+    }
+    const computedName = getComputedName(relationName);
+    const computedMetadata = this.relationMetadata.get(computedName);
+    if (computedMetadata === undefined) {
+      return false;
+    }
+    const { detail } = computedMetadata;
+    return detail.type === 'computed' && detail.of === relationName;
+  }
+
+  getComputedName(relationName: string | undefined): string | undefined {
+    if (relationName === undefined) {
+      return undefined;
+    }
+    return this.hasComputed(relationName)
+      ? getComputedName(relationName)
+      : relationName;
+  }
+
+  get selectedSymbolHasComputed(): boolean {
+    return this.hasComputed(this.editorStore.selectedSymbolName);
   }
 }

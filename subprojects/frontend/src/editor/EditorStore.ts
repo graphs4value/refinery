@@ -117,6 +117,8 @@ export default class EditorStore {
 
   selectedSymbolName: string | undefined;
 
+  showComputed = false;
+
   constructor(
     initialValue: string,
     pwaStore: PWAStore,
@@ -565,7 +567,11 @@ export default class EditorStore {
     this.client?.updateConcretize();
   }
 
-  setSelectedSymbolName(selectedSymbolName: string | undefined) {
+  setSelectedSymbolName(selectedSymbolName: string | undefined): void {
     this.selectedSymbolName = selectedSymbolName;
+  }
+
+  toggleShowComputed(): void {
+    this.showComputed = !this.showComputed;
   }
 }

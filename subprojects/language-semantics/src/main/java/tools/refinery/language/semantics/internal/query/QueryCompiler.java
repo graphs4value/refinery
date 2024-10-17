@@ -26,7 +26,6 @@ import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.literal.ComputedConstraint;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.*;
@@ -165,13 +164,7 @@ public class QueryCompiler {
 
 	private Constraint getConstraint(Atom atom) {
 		var relation = atom.getRelation();
-		Constraint target;
-		if (ProblemUtil.isComputedValuePredicate(relation)) {
-			var originalTarget = getPartialRelation((PredicateDefinition) relation.eContainer());
-			target = new ComputedConstraint(originalTarget);
-		} else {
-			target = getPartialRelation(relation);
-		}
+		var target = getPartialRelation(relation);
 		return atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
 	}
 

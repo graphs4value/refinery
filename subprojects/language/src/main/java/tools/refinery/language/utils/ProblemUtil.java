@@ -133,7 +133,8 @@ public final class ProblemUtil {
 	}
 
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition);
+		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition) &&
+				!isBuiltIn(predicateDefinition);
 	}
 
 	public static boolean isTypeLike(Relation relation) {

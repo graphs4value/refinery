@@ -29,6 +29,7 @@ const DimLabel = styled(FormControlLabel)(({ theme }) => ({
   '.MuiFormControlLabel-label': {
     ...theme.typography.body2,
     color: theme.palette.text.secondary,
+    userSelect: 'none',
   },
 }));
 

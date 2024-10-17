@@ -96,37 +96,62 @@ function TableArea({
 }): JSX.Element {
   const {
     selectedSymbol,
+    showComputed,
     semantics: { nodes, partialInterpretation },
   } = graph;
   const symbolName = selectedSymbol?.name;
+  const computedName = showComputed
+    ? graph.getComputedName(symbolName)
+    : symbolName;
   const arity = selectedSymbol?.arity ?? 0;
+  const detail = selectedSymbol?.detail;
 
   const columns = useMemo<GridColDef<Row>[]>(() => {
+    let columnNames: string[];
+    if (detail === undefined) {
+      columnNames = [];
+    } else {
+      switch (detail.type) {
+        case 'class':
+          columnNames = ['node'];
+          break;
+        case 'reference':
+        case 'opposite':
+          columnNames = ['source', 'target'];
+          break;
+        case 'predicate':
+          columnNames = detail.parameterNames ?? [];
+          break;
+        default:
+          columnNames = [];
+          break;
+      }
+    }
     const defs: GridColDef<Row>[] = [];
     for (let i = 0; i < arity; i += 1) {
       defs.push({
         field: `n${i}`,
-        headerName: String(i + 1),
+        headerName: columnNames[i] ?? String(i + 1),
         valueGetter: (_, row) => row.nodes[i] ?? '',
         flex: 1,
       });
     }
     defs.push({
       field: 'value',
-      headerName: 'Value',
+      headerName: columnNames.indexOf('value') >= 0 ? '$VALUE' : 'value',
       flex: 1,
       renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
         <ValueRenderer value={value} />
       ),
     });
     return defs;
-  }, [arity]);
+  }, [arity, detail]);
 
   const rows = useMemo<Row[]>(() => {
-    if (symbolName === undefined) {
+    if (computedName === undefined) {
       return [];
     }
-    const interpretation = partialInterpretation[symbolName] ?? [];
+    const interpretation = partialInterpretation[computedName] ?? [];
     return interpretation.map((tuple) => {
       const nodeNames: string[] = [];
       for (let i = 0; i < arity; i += 1) {
@@ -143,7 +168,7 @@ function TableArea({
         value: String(tuple[arity]),
       };
     });
-  }, [arity, nodes, partialInterpretation, symbolName]);
+  }, [arity, nodes, partialInterpretation, computedName]);
 
   return (
     <Box width="100%" height="100%">

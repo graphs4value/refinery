@@ -37,8 +37,7 @@ public class XtextWebSocket implements ResponseHandler {
 					.registerSubtype(ReferenceDetail.class, "reference")
 					.registerSubtype(OppositeReferenceDetail.class, "opposite")
 					.registerSubtype(PredicateDetail.class, "predicate")
-					.registerSubtype(BuiltInDetail.class, "builtin")
-					.registerSubtype(BasePredicateDetail.class, "base"))
+					.registerSubtype(ComputedDetail.class, "computed"))
 			.create();
 
 	private final TransactionExecutor executor;

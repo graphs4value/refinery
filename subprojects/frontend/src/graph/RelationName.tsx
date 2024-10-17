@@ -35,7 +35,7 @@ const FormattedName = observer(function FormattedName({
   if (detail.type === 'reference' && detail.containment) {
     return <b>{name}</b>;
   }
-  if (detail.type === 'predicate' && detail.error) {
+  if (detail.type === 'predicate' && detail.predicateKind === 'ERROR') {
     return <ErrorPredicateName>{name}</ErrorPredicateName>;
   }
   return name;

@@ -127,7 +127,7 @@ export const FormattingResult = DocumentStateResult.extend({
 export type FormattingResult = z.infer<typeof FormattingResult>;
 
 export const ModelGenerationStartedResult = z.object({
-  uuid: z.string().nonempty(),
+  uuid: z.string().min(1),
 });
 
 export type ModelGenerationStartedResult = z.infer<
@@ -155,9 +155,15 @@ export const RelationMetadata = z.object({
       container: z.boolean(),
       opposite: z.string(),
     }),
-    z.object({ type: z.literal('predicate'), error: z.boolean() }),
-    z.object({ type: z.literal('base') }),
-    z.object({ type: z.literal('builtin') }),
+    z.object({
+      type: z.literal('predicate'),
+      predicateKind: z.enum(['DEFAULT', 'BASE', 'ERROR', 'SHADOW']),
+      parameterNames: z.array(z.string()),
+    }),
+    z.object({
+      type: z.literal('computed'),
+      of: z.string(),
+    }),
   ]),
 });
 

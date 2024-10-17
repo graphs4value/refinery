@@ -23,7 +23,7 @@ import { useCallback } from 'react';
 import Tooltip from '../Tooltip';
 
 import type GraphStore from './GraphStore';
-import { isVisibilityAllowed } from './GraphStore';
+import { isBuiltIn, isVisibilityAllowed } from './GraphStore';
 import RelationName from './RelationName';
 import SlideInPanel from './SlideInPanel';
 
@@ -197,7 +197,7 @@ function VisibilityPanel({
         </td>
       </tr>
     );
-    if (name.startsWith('builtin::')) {
+    if (isBuiltIn(metadata)) {
       builtinRows.push(row);
     } else {
       rows.push(row);

@@ -5,12 +5,8 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public record PredicateDetail(boolean error) implements RelationDetail {
-	public static final PredicateDetail PREDICATE = new PredicateDetail(false);
+import java.util.List;
 
-	public static final PredicateDetail ERROR_PREDICATE = new PredicateDetail(true);
-
-	public static PredicateDetail ofError(boolean error) {
-		return error ? ERROR_PREDICATE : PREDICATE;
-	}
+public record PredicateDetail(PredicateDetailKind predicateKind, List<String> parameterNames)
+		implements RelationDetail {
 }

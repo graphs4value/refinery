@@ -122,20 +122,13 @@ public class MetadataCreator {
 	}
 
 	private RelationDetail getRelationDetail(Relation relation, PartialRelation partialRelation) {
-		if (ProblemUtil.isBuiltIn(relation) && !ProblemUtil.isError(relation)) {
-			return getBuiltInDetail();
-		}
-        return switch (relation) {
-            case ClassDeclaration classDeclaration -> getClassDetail(classDeclaration);
-            case ReferenceDeclaration ignored -> getReferenceDetail(partialRelation);
-            case EnumDeclaration ignored -> getEnumDetail();
-            case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
-            default -> throw new TracedException(relation, "Unknown relation");
-        };
-	}
-
-	private RelationDetail getBuiltInDetail() {
-		return BuiltInDetail.INSTANCE;
+		return switch (relation) {
+			case ClassDeclaration classDeclaration -> getClassDetail(classDeclaration);
+			case ReferenceDeclaration ignored -> getReferenceDetail(partialRelation);
+			case EnumDeclaration ignored -> getEnumDetail();
+			case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
+			default -> throw new TracedException(relation, "Unknown relation");
+		};
 	}
 
 	private RelationDetail getClassDetail(ClassDeclaration classDeclaration) {
@@ -159,10 +152,27 @@ public class MetadataCreator {
 	}
 
 	private RelationDetail getPredicateDetail(PredicateDefinition predicate) {
-		if (ProblemUtil.isBasePredicate(predicate)) {
-			return BasePredicateDetail.INSTANCE;
+		if (ProblemUtil.isComputedValuePredicate(predicate) &&
+				predicate.eContainer() instanceof PredicateDefinition parentDefinition) {
+			var parentQualifiedName = getQualifiedName(parentDefinition);
+			var computedOf = qualifiedNameConverter.toString(parentQualifiedName);
+			return new ComputedDetail(computedOf);
 		}
-		return PredicateDetail.ofError(predicate.getKind() == PredicateKind.ERROR);
+		PredicateDetailKind kind = PredicateDetailKind.DEFAULT;
+		if (ProblemUtil.isBasePredicate(predicate)) {
+			kind = PredicateDetailKind.BASE;
+		} else if (ProblemUtil.isError(predicate)) {
+			kind = PredicateDetailKind.ERROR;
+		} else if (ProblemUtil.isShadow(predicate)) {
+			kind = PredicateDetailKind.SHADOW;
+		}
+		var parameterNames = predicate.getParameters().stream()
+				.map(parameter -> {
+					var qualifiedParameterName = QualifiedName.create(parameter.getName());
+					return qualifiedNameConverter.toString(qualifiedParameterName);
+				})
+				.toList();
+		return new PredicateDetail(kind, parameterNames);
 	}
 
 	private QualifiedName getQualifiedName(EObject eObject) {
