@@ -8,5 +8,5 @@ package tools.refinery.generator.cli.commands;
 import java.io.IOException;
 
 public interface Command {
-	void run() throws IOException;
+	int run() throws IOException;
 }

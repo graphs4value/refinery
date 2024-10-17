@@ -9,6 +9,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.inject.Inject;
 import tools.refinery.generator.ModelGeneratorFactory;
+import tools.refinery.generator.cli.RefineryCli;
 import tools.refinery.generator.cli.utils.CliProblemLoader;
 import tools.refinery.generator.cli.utils.CliProblemSerializer;
 import tools.refinery.generator.cli.utils.CliUtils;
@@ -72,7 +73,7 @@ public class GenerateCommand implements Command {
 	}
 
 	@Override
-	public void run() throws IOException {
+	public int run() throws IOException {
 		if (count > 1 && CliUtils.isStandardStream(outputPath)) {
 			throw new IllegalArgumentException("Must provide output path if count is larger than 1");
 		}
@@ -92,5 +93,7 @@ public class GenerateCommand implements Command {
 				serializer.saveModel(generator, pathWithIndex, false);
 			}
 		}
+		return RefineryCli.EXIT_SUCCESS;
 	}
 }
+

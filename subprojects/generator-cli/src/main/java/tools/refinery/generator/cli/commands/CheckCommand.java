@@ -5,32 +5,28 @@
  */
 package tools.refinery.generator.cli.commands;
 
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.inject.Inject;
 import tools.refinery.generator.ModelSemanticsFactory;
 import tools.refinery.generator.cli.RefineryCli;
 import tools.refinery.generator.cli.utils.CliProblemLoader;
-import tools.refinery.generator.cli.utils.CliProblemSerializer;
-import tools.refinery.generator.cli.utils.CliUtils;
 
 import java.io.IOException;
 
-@Parameters(commandDescription = "Concretize a partial model")
-public class ConcretizeCommand implements Command {
+@Parameters(commandDescription = "Check a partial model consistency")
+public class CheckCommand implements Command {
 	private final CliProblemLoader loader;
 	private final ModelSemanticsFactory semanticsFactory;
-	private final CliProblemSerializer serializer;
 
 	private String inputPath;
-	private String outputPath = CliUtils.STANDARD_OUTPUT_PATH;
+	private boolean concretize;
 
 	@Inject
-	public ConcretizeCommand(CliProblemLoader loader, ModelSemanticsFactory semanticsFactory,
-							 CliProblemSerializer serializer) {
+	public CheckCommand(CliProblemLoader loader, ModelSemanticsFactory semanticsFactory) {
 		this.loader = loader;
 		this.semanticsFactory = semanticsFactory;
-		this.serializer = serializer;
 	}
 
 	@Parameter(description = "input path", required = true)
@@ -38,17 +34,24 @@ public class ConcretizeCommand implements Command {
 		this.inputPath = inputPath;
 	}
 
-	@Parameter(names = {"-output", "-o"}, description = "Output path")
-	public void setOutputPath(String outputPath) {
-		this.outputPath = outputPath;
+	@Parameter(names = {"-concretize", "-k"}, description = "Check the concretization of the partial model")
+	public void setConcretize(boolean concretize) {
+		this.concretize = concretize;
 	}
 
 	@Override
 	public int run() throws IOException {
 		var problem = loader.loadProblem(inputPath);
-		var semantics = semanticsFactory.concretize(true)
+		var semantics = semanticsFactory.concretize(concretize)
 				.createSemantics(problem);
-		serializer.saveModel(semantics, outputPath);
-		return RefineryCli.EXIT_SUCCESS;
+		var result = semantics.checkConsistency();
+		printMessage(result.formatMessage());
+		return result.isConsistent() ? RefineryCli.EXIT_SUCCESS : RefineryCli.EXIT_FAILURE;
+	}
+
+	// Deliberately print command result to the standard output.
+	@SuppressWarnings("squid:S106")
+	private void printMessage(String message) {
+		System.out.println(message);
 	}
 }
