@@ -5,8 +5,7 @@
  */
 package tools.refinery.generator;
 
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import tools.refinery.language.semantics.metadata.NodeMetadata;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -30,26 +29,14 @@ public record ConsistencyCheckResult(ModelFacade facade, List<AnyError> inconsis
 			return "Model is consistent";
 		}
 		var errorsBuilder = new StringBuilder("Inconsistencies found in model:\n\n");
-		var nodeNames = getNodeNames();
+		var nodesMetadata = facade.getNodesMetadata();
 		for (var error : inconsistencies) {
-			appendError(error, nodeNames, errorsBuilder);
+			appendError(error, nodesMetadata, errorsBuilder);
 		}
 		return errorsBuilder.toString();
 	}
 
-	private IntObjectMap<String> getNodeNames() {
-		var trace = facade.getProblemTrace();
-		var nodeNames = IntObjectMaps.mutable.<String>empty();
-		trace.getNodeTrace().forEachKeyValue((node, i) -> {
-			var name = node.getName();
-			if (name != null) {
-				nodeNames.put(i, name);
-			}
-		});
-		return nodeNames;
-	}
-
-	private static void appendError(AnyError error, IntObjectMap<String> nodeNames, StringBuilder errorsBuilder) {
+	private static void appendError(AnyError error, List<NodeMetadata> nodesMetadata, StringBuilder errorsBuilder) {
 		var symbol = error.partialSymbol();
 		var key = error.tuple();
 		errorsBuilder.append('\t').append(symbol.name()).append("(");
@@ -59,7 +46,13 @@ public record ConsistencyCheckResult(ModelFacade facade, List<AnyError> inconsis
 				errorsBuilder.append(", ");
 			}
 			int nodeId = key.get(i);
-			var name = nodeNames.get(nodeId);
+			String name = null;
+			if (nodeId >= 0 && nodeId < nodesMetadata.size()) {
+				var metadata = nodesMetadata.get(nodeId);
+				if (metadata != null) {
+					name = metadata.simpleName();
+				}
+			}
 			if (name == null) {
 				errorsBuilder.append("::").append(i);
 			} else {

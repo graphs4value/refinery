@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import tools.refinery.language.semantics.ModelInitializer;
 import tools.refinery.language.semantics.SolutionSerializer;
+import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.store.util.CancellationToken;
 
 // This class is used as a fluent builder, so it's not necessary to use the return value of all of its methods.
@@ -20,6 +21,9 @@ public abstract sealed class ModelFacadeFactory<T extends ModelFacadeFactory<T>>
 
 	@Inject
 	private Provider<SolutionSerializer> solutionSerializerProvider;
+
+	@Inject
+	private Provider<MetadataCreator> metadataCreatorProvider;
 
 	private CancellationToken cancellationToken = CancellationToken.NONE;
 
@@ -65,5 +69,9 @@ public abstract sealed class ModelFacadeFactory<T extends ModelFacadeFactory<T>>
 
 	protected Provider<SolutionSerializer> getSolutionSerializerProvider() {
 		return solutionSerializerProvider;
+	}
+
+	protected Provider<MetadataCreator> getMetadataCreatorProvider() {
+		return metadataCreatorProvider;
 	}
 }

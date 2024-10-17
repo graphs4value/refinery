@@ -3,12 +3,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.semantics.metadata;
+package tools.refinery.language.semantics.metadata;
 
 import com.google.inject.Inject;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
-import tools.refinery.language.ide.syntaxcoloring.TypeHashProvider;
+import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.semantics.NodeNameProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.logic.term.truthvalue.TruthValue;

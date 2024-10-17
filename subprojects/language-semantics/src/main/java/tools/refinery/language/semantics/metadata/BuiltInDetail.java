@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.semantics.metadata;
+package tools.refinery.language.semantics.metadata;
 
 public record BuiltInDetail() implements RelationDetail {
 	public static final BuiltInDetail INSTANCE = new BuiltInDetail();

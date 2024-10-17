@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.semantics.metadata;
+package tools.refinery.language.semantics.metadata;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -41,6 +41,7 @@ public class MetadataCreator {
 	private Provider<NodeMetadataFactory> nodeMetadataFactoryProvider;
 
 	private ProblemTrace problemTrace;
+	private boolean preserveNewNodes;
 	private IScope nodeScope;
 	private IScope relationScope;
 
@@ -54,12 +55,11 @@ public class MetadataCreator {
 		relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION);
 	}
 
-	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
-		boolean preserveNewNodes = concreteness == Concreteness.PARTIAL;
-		return getNodesMetadata(model, concreteness, preserveNewNodes);
+	public void setPreserveNewNodes(boolean preserveNewNodes) {
+		this.preserveNewNodes = preserveNewNodes;
 	}
 
-	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness, boolean preserveNewNodes) {
+	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
@@ -68,7 +68,7 @@ public class MetadataCreator {
 		for (var entry : nodeTrace.keyValuesView()) {
 			var node = entry.getOne();
 			var id = entry.getTwo();
-			nodes[id] = getNodeMetadata(id, node, preserveNewNodes, nodeMetadataFactory);
+			nodes[id] = getNodeMetadata(id, node, nodeMetadataFactory);
 		}
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] == null) {
@@ -78,8 +78,7 @@ public class MetadataCreator {
 		return List.of(nodes);
 	}
 
-	private NodeMetadata getNodeMetadata(int nodeId, Node node, boolean preserveNewNodes,
-										 NodeMetadataFactory nodeMetadataFactory) {
+	private NodeMetadata getNodeMetadata(int nodeId, Node node, NodeMetadataFactory nodeMetadataFactory) {
 		var kind = getNodeKind(node);
 		if (!preserveNewNodes && kind == NodeKind.NEW && nodeMetadataFactory.nodeExists(nodeId)) {
 			return nodeMetadataFactory.createFreshlyNamedMetadata(nodeId);

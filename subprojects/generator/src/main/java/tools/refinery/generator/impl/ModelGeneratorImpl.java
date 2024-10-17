@@ -12,6 +12,7 @@ import tools.refinery.generator.ModelGenerator;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
+import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.statespace.SolutionStore;
@@ -31,10 +32,12 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 	private int maxNumberOfSolutions = 1;
 	private SolutionStore solutionStore;
 
-	public ModelGeneratorImpl(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-							  Provider<SolutionSerializer> solutionSerializerProvider,
-							  CancellableCancellationToken cancellationToken, boolean keepNonExistingObjects) {
-		super(problemTrace, store, modelSeed, solutionSerializerProvider, keepNonExistingObjects);
+	public ModelGeneratorImpl(
+			ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
+			Provider<SolutionSerializer> solutionSerializerProvider, Provider<MetadataCreator> metadataCreatorProvider,
+			CancellableCancellationToken cancellationToken, boolean keepNonExistingObjects) {
+		super(problemTrace, store, modelSeed, solutionSerializerProvider, metadataCreatorProvider,
+				keepNonExistingObjects);
 		this.cancellationToken = cancellationToken;
 		initialVersion = getModel().commit();
 	}

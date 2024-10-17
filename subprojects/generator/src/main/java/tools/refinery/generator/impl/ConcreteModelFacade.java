@@ -9,6 +9,7 @@ import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
+import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.ModelStore;
@@ -25,8 +26,9 @@ public class ConcreteModelFacade extends ModelFacadeImpl {
 
 	protected ConcreteModelFacade(
 			ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-			Provider<SolutionSerializer> solutionSerializerProvider, boolean keepNonExistingObjects) {
-		super(problemTrace, store, modelSeed);
+			Provider<SolutionSerializer> solutionSerializerProvider,
+			Provider<MetadataCreator> metadataCreatorProvider, boolean keepNonExistingObjects) {
+		super(problemTrace, store, modelSeed, metadataCreatorProvider);
 		this.solutionSerializerProvider = solutionSerializerProvider;
 		this.keepNonExistingObjects = keepNonExistingObjects;
 		existsInterpretation = keepNonExistingObjects ? null :

@@ -61,9 +61,9 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 		var modelSeed = initializer.getModelSeed();
 		if (concretize) {
 			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider(),
-					isKeepNonExistingObjects());
+					getMetadataCreatorProvider(), isKeepNonExistingObjects());
 		}
-		return new ModelSemanticsImpl(problemTrace, store, modelSeed);
+		return new ModelSemanticsImpl(problemTrace, store, modelSeed, getMetadataCreatorProvider());
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {

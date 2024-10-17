@@ -5,9 +5,13 @@
  */
 package tools.refinery.generator.impl;
 
-import tools.refinery.generator.ModelFacade;
+import com.google.inject.Provider;
 import tools.refinery.generator.ConsistencyCheckResult;
+import tools.refinery.generator.ModelFacade;
 import tools.refinery.language.semantics.ProblemTrace;
+import tools.refinery.language.semantics.metadata.MetadataCreator;
+import tools.refinery.language.semantics.metadata.NodeMetadata;
+import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationResult;
@@ -30,10 +34,13 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 	private final PropagationResult propagationResult;
 	private final Model model;
 	private final ReasoningAdapter reasoningAdapter;
+	private final Provider<MetadataCreator> metadataCreatorProvider;
 
-	protected ModelFacadeImpl(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed) {
+	protected ModelFacadeImpl(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
+							  Provider<MetadataCreator> metadataCreatorProvider) {
 		this.problemTrace = problemTrace;
 		this.store = store;
+		this.metadataCreatorProvider = metadataCreatorProvider;
 		PropagatedModel propagatedModel;
 		try {
 			propagatedModel = store.getAdapter(ReasoningStoreAdapter.class).tryCreateInitialModel(modelSeed);
@@ -73,6 +80,22 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol) {
 		return reasoningAdapter.getPartialInterpretation(getConcreteness(), partialSymbol);
+	}
+
+	@Override
+	public List<NodeMetadata> getNodesMetadata() {
+		return getMetadataCreator().getNodesMetadata(model, getConcreteness());
+	}
+
+	@Override
+	public List<RelationMetadata> getRelationsMetadata() {
+		return getMetadataCreator().getRelationsMetadata();
+	}
+
+	protected MetadataCreator getMetadataCreator() {
+		var metadataCreator = metadataCreatorProvider.get();
+		metadataCreator.setProblemTrace(problemTrace);
+		return metadataCreator;
 	}
 
 	@Override

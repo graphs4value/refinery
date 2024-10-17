@@ -7,6 +7,8 @@ package tools.refinery.generator;
 
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
+import tools.refinery.language.semantics.metadata.NodeMetadata;
+import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Model;
@@ -16,6 +18,8 @@ import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+
+import java.util.List;
 
 public interface ModelFacade {
 	ProblemTrace getProblemTrace();
@@ -35,6 +39,10 @@ public interface ModelFacade {
 
 	<A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol);
+
+	List<NodeMetadata> getNodesMetadata();
+
+	List<RelationMetadata> getRelationsMetadata();
 
 	ConsistencyCheckResult checkConsistency();
 

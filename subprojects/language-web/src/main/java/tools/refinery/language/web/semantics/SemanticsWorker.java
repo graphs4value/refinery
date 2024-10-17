@@ -23,7 +23,6 @@ import tools.refinery.language.model.problem.ProblemPackage;
 import tools.refinery.language.model.problem.ScopeDeclaration;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
-import tools.refinery.language.web.semantics.metadata.MetadataCreator;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.transition.Rule;
@@ -46,9 +45,6 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	@Inject
 	private ModelSemanticsFactory semanticsFactory;
-
-	@Inject
-	private MetadataCreator metadataCreator;
 
 	@Inject
 	private PartialInterpretation2Json partialInterpretation2Json;
@@ -126,10 +122,9 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	}
 
 	private SemanticsModelResult createSemanticsModelResult(ModelSemantics semantics) {
-		metadataCreator.setProblemTrace(semantics.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(semantics.getModel(), semantics.getConcreteness(), true);
+		var nodesMetadata = semantics.getNodesMetadata();
 		cancellationToken.checkCancelled();
-		var relationsMetadata = metadataCreator.getRelationsMetadata();
+		var relationsMetadata = semantics.getRelationsMetadata();
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics, cancellationToken);
 		return new SemanticsModelResult(nodesMetadata, relationsMetadata, partialInterpretation);

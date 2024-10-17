@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.ide.syntaxcoloring;
+package tools.refinery.language.documentation;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -15,7 +15,6 @@ import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.GlobalResourceDescriptionProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
-import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
@@ -26,7 +25,7 @@ import java.util.*;
 
 @Singleton
 public class TypeHashProvider {
-	private static final String CACHE_KEY = "tools.refinery.language.ide.syntaxcoloring.TypeHashProvider";
+	private static final String CACHE_KEY = "tools.refinery.language.documentation.TypeHashProvider";
 	private static final int COLOR_COUNT = 10;
 
 	@Inject

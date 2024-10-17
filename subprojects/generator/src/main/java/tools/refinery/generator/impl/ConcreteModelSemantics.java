@@ -10,6 +10,7 @@ import tools.refinery.generator.ModelSemantics;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
+import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.ModelStore;
@@ -18,8 +19,10 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 public class ConcreteModelSemantics extends ConcreteModelFacade implements ModelSemantics {
 	public ConcreteModelSemantics(
 			ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-			Provider<SolutionSerializer> solutionSerializerProvider, boolean keepNonExistingObjects) {
-		super(problemTrace, store, modelSeed, solutionSerializerProvider, keepNonExistingObjects);
+			Provider<SolutionSerializer> solutionSerializerProvider, Provider<MetadataCreator> metadataCreatorProvider,
+			boolean keepNonExistingObjects) {
+		super(problemTrace, store, modelSeed, solutionSerializerProvider, metadataCreatorProvider,
+				keepNonExistingObjects);
 	}
 
 	@Override
@@ -33,6 +36,14 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 		}
 		return propagationAdapter.concretize();
 	}
+
+	@Override
+	protected MetadataCreator getMetadataCreator() {
+		var metadataCreator = super.getMetadataCreator();
+		metadataCreator.setPreserveNewNodes(true);
+		return metadataCreator;
+	}
+
 
 	@Override
 	public Problem serialize() {

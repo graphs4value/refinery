@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.semantics.metadata;
+package tools.refinery.language.semantics.metadata;
 
 public record ReferenceDetail(boolean containment) implements RelationDetail {
 	public static final ReferenceDetail CROSS_REFERENCE = new ReferenceDetail(false);
