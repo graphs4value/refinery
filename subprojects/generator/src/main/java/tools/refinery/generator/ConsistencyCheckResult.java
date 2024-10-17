@@ -5,7 +5,7 @@
  */
 package tools.refinery.generator;
 
-import tools.refinery.language.semantics.metadata.NodeMetadata;
+import tools.refinery.language.semantics.metadata.NodesMetadata;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -36,7 +36,7 @@ public record ConsistencyCheckResult(ModelFacade facade, List<AnyError> inconsis
 		return errorsBuilder.toString();
 	}
 
-	private static void appendError(AnyError error, List<NodeMetadata> nodesMetadata, StringBuilder errorsBuilder) {
+	private static void appendError(AnyError error, NodesMetadata nodesMetadata, StringBuilder errorsBuilder) {
 		var symbol = error.partialSymbol();
 		var key = error.tuple();
 		errorsBuilder.append('\t').append(symbol.name()).append("(");
@@ -46,18 +46,7 @@ public record ConsistencyCheckResult(ModelFacade facade, List<AnyError> inconsis
 				errorsBuilder.append(", ");
 			}
 			int nodeId = key.get(i);
-			String name = null;
-			if (nodeId >= 0 && nodeId < nodesMetadata.size()) {
-				var metadata = nodesMetadata.get(nodeId);
-				if (metadata != null) {
-					name = metadata.simpleName();
-				}
-			}
-			if (name == null) {
-				errorsBuilder.append("::").append(i);
-			} else {
-				errorsBuilder.append(name);
-			}
+			errorsBuilder.append(nodesMetadata.getSimpleName(nodeId));
 		}
 		errorsBuilder.append("): error.\n");
 	}

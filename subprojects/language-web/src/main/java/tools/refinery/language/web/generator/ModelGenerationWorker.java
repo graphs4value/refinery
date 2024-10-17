@@ -151,7 +151,7 @@ public class ModelGenerationWorker implements Runnable {
 		var relationsMetadata = generator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator, cancellationToken);
-		return new ModelGenerationSuccessResult(uuid, nodesMetadata, relationsMetadata, partialInterpretation);
+		return new ModelGenerationSuccessResult(uuid, nodesMetadata.list(), relationsMetadata, partialInterpretation);
 	}
 
 	public void cancel() {

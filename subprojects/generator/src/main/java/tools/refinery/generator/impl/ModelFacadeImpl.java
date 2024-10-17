@@ -10,7 +10,7 @@ import tools.refinery.generator.ConsistencyCheckResult;
 import tools.refinery.generator.ModelFacade;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.metadata.MetadataCreator;
-import tools.refinery.language.semantics.metadata.NodeMetadata;
+import tools.refinery.language.semantics.metadata.NodesMetadata;
 import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.logic.AbstractValue;
@@ -83,7 +83,7 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 	}
 
 	@Override
-	public List<NodeMetadata> getNodesMetadata() {
+	public NodesMetadata getNodesMetadata() {
 		return getMetadataCreator().getNodesMetadata(model, getConcreteness());
 	}
 

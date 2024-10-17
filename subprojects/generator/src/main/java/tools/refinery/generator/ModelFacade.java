@@ -7,7 +7,7 @@ package tools.refinery.generator;
 
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
-import tools.refinery.language.semantics.metadata.NodeMetadata;
+import tools.refinery.language.semantics.metadata.NodesMetadata;
 import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationResult;
@@ -40,7 +40,7 @@ public interface ModelFacade {
 	<A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol);
 
-	List<NodeMetadata> getNodesMetadata();
+	NodesMetadata getNodesMetadata();
 
 	List<RelationMetadata> getRelationsMetadata();
 

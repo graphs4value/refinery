@@ -59,7 +59,7 @@ public class MetadataCreator {
 		this.preserveNewNodes = preserveNewNodes;
 	}
 
-	public List<NodeMetadata> getNodesMetadata(Model model, Concreteness concreteness) {
+	public NodesMetadata getNodesMetadata(Model model, Concreteness concreteness) {
 		int nodeCount = model.getAdapter(ReasoningAdapter.class).getNodeCount();
 		var nodeTrace = problemTrace.getNodeTrace();
 		var nodes = new NodeMetadata[Math.max(nodeTrace.size(), nodeCount)];
@@ -75,7 +75,7 @@ public class MetadataCreator {
 				nodes[i] = nodeMetadataFactory.createFreshlyNamedMetadata(i);
 			}
 		}
-		return List.of(nodes);
+		return new NodesMetadata(List.of(nodes));
 	}
 
 	private NodeMetadata getNodeMetadata(int nodeId, Node node, NodeMetadataFactory nodeMetadataFactory) {

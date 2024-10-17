@@ -127,7 +127,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 		var relationsMetadata = semantics.getRelationsMetadata();
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(semantics, cancellationToken);
-		return new SemanticsModelResult(nodesMetadata, relationsMetadata, partialInterpretation);
+		return new SemanticsModelResult(nodesMetadata.list(), relationsMetadata, partialInterpretation);
 	}
 
 	private SemanticsResult createSemanticsResult(
