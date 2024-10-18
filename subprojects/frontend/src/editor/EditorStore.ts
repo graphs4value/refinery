@@ -99,6 +99,8 @@ export default class EditorStore {
 
   semanticsError: string | undefined;
 
+  propagationRejected = false;
+
   graph: GraphStore;
 
   generatedModels = new Map<string, GeneratedModelStore>();
@@ -368,11 +370,16 @@ export default class EditorStore {
     this.analyzing = false;
     if (semanticAnalysisSkipped) {
       this.semanticsError = undefined;
+      this.propagationRejected = false;
     }
   }
 
-  setSemanticsError(semanticsError: string | undefined) {
+  setSemanticsError(
+    semanticsError: string | undefined,
+    propagationRejected: boolean,
+  ) {
     this.semanticsError = semanticsError;
+    this.propagationRejected = propagationRejected;
   }
 
   setSemantics(semantics: SemanticsModelResult) {

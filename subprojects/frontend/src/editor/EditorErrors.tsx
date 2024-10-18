@@ -17,6 +17,7 @@ export interface State {
   warningCount: number;
   infoCount: number;
   semanticsError: string | undefined;
+  propagationRejected: boolean;
 }
 
 export default class EditorErrors implements State {
@@ -33,6 +34,8 @@ export default class EditorErrors implements State {
   infoCount = 0;
 
   semanticsError: string | undefined;
+
+  propagationRejected = false;
 
   constructor(private readonly store: EditorStore) {
     this.updateImmediately(this.getNextState());
@@ -80,6 +83,7 @@ export default class EditorErrors implements State {
       warningCount: this.store.warningCount,
       infoCount: this.store.infoCount,
       semanticsError: this.store.semanticsError,
+      propagationRejected: this.store.propagationRejected,
     };
   }
 

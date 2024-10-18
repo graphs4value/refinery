@@ -25,10 +25,11 @@ export default class SemanticsService {
       } else {
         this.validationService.setSemanticsIssues([]);
       }
+      const propagationRejected = result.propagationRejected ?? false;
       if ('error' in result) {
-        this.store.setSemanticsError(result.error);
+        this.store.setSemanticsError(result.error, propagationRejected);
       } else {
-        this.store.setSemanticsError(undefined);
+        this.store.setSemanticsError(undefined, propagationRejected);
       }
       if ('model' in result && result.model !== undefined) {
         this.store.setSemantics(result.model);

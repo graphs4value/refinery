@@ -183,6 +183,7 @@ export type SemanticsModelResult = z.infer<typeof SemanticsModelResult>;
 export const SemanticsResult = z.object({
   model: SemanticsModelResult.optional(),
   error: z.string().min(1).optional(),
+  propagationRejected: z.boolean().optional(),
   issues: Issue.array().optional(),
 });
 

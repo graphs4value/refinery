@@ -89,7 +89,7 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 
 	private SemanticsResult getTracedErrorResult(EObject sourceElement, String message) {
 		var diagnostics = getTracedDiagnostics(sourceElement, null, message, Diagnostic.ERROR);
-		return getSemanticsResultWithDiagnostics(null, message, diagnostics);
+		return getSemanticsResultWithDiagnostics(null, true, message, diagnostics);
 	}
 
 	private List<FeatureBasedDiagnostic> getTracedDiagnostics(
@@ -103,12 +103,13 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 	}
 
 	private SemanticsResult getSemanticsResultWithDiagnostics(
-			SemanticsModelResult modelResult, String message, List<FeatureBasedDiagnostic> diagnostics) {
+			SemanticsModelResult modelResult, boolean propagationRejected, String message,
+			List<FeatureBasedDiagnostic> diagnostics) {
 		if (diagnostics.isEmpty()) {
-			return new SemanticsResult(modelResult, message);
+			return new SemanticsResult(modelResult, propagationRejected, message);
 		}
 		var issues = convertIssues(diagnostics);
-		return new SemanticsResult(modelResult, issues);
+		return new SemanticsResult(modelResult, propagationRejected, issues);
 	}
 
 	private List<ValidationResult.Issue> convertIssues(List<FeatureBasedDiagnostic> diagnostics) {
@@ -146,14 +147,15 @@ class SemanticsWorker implements Callable<SemanticsResult> {
 			return new SemanticsResult(modelResult);
 		}
 		var message = rejectedResult.formatMessage();
-		int severity = rejectedResult.isPropagationRejected() ? Diagnostic.ERROR : Diagnostic.INFO;
+		var propagationRejected = rejectedResult.isPropagationRejected();
+		int severity = propagationRejected ? Diagnostic.ERROR : Diagnostic.INFO;
 		List<FeatureBasedDiagnostic> diagnostics = switch (rejectedResult.reason()) {
 			case MultiObjectTranslator ignored -> getScopePropagatorDiagnostics(message, severity);
 			case ScopePropagator ignored -> getScopePropagatorDiagnostics(message, severity);
 			case Rule rule -> getRuleDiagnostics(rule, trace, message, severity);
 			default -> List.of();
 		};
-		return getSemanticsResultWithDiagnostics(modelResult, message, diagnostics);
+		return getSemanticsResultWithDiagnostics(modelResult, propagationRejected, message, diagnostics);
 	}
 
 	private List<FeatureBasedDiagnostic> getScopePropagatorDiagnostics(String message, int severity) {
