@@ -13,7 +13,7 @@ import {
   type GridColDef,
 } from '@mui/x-data-grid';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
@@ -94,18 +94,26 @@ function TableArea({
   graph: GraphStore;
   touchesTop: boolean;
 }): JSX.Element {
-  const {
-    concretize,
-    selectedSymbol,
-    showComputed,
-    semantics: { nodes, partialInterpretation },
-  } = graph;
+  const { concretize, selectedSymbol, showComputed, semantics, dimView } =
+    graph;
+  const { nodes, partialInterpretation } = semantics;
   const symbolName = selectedSymbol?.name;
   const computedName = showComputed
     ? graph.getComputedName(symbolName)
     : symbolName;
   const arity = selectedSymbol?.arity ?? 0;
   const detail = selectedSymbol?.detail;
+
+  const [cachedConcretize, setCachedConcretize] = useState(false);
+  useEffect(
+    () => {
+      setCachedConcretize(concretize);
+    },
+    /* eslint-disable-next-line react-hooks/exhaustive-deps --
+     * Deliberately only update `concretize` whenever `semantics` changes to avoid flashing colors.
+     */
+    [semantics],
+  );
 
   const columns = useMemo<GridColDef<Row>[]>(() => {
     let columnNames: string[];
@@ -142,11 +150,11 @@ function TableArea({
       headerName: columnNames.indexOf('value') >= 0 ? '$VALUE' : 'value',
       flex: 1,
       renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
-        <ValueRenderer concretize={concretize} value={value} />
+        <ValueRenderer concretize={cachedConcretize} value={value} />
       ),
     });
     return defs;
-  }, [arity, detail, concretize]);
+  }, [arity, detail, cachedConcretize]);
 
   const rows = useMemo<Row[]>(() => {
     if (computedName === undefined) {
@@ -230,6 +238,16 @@ function TableArea({
           },
           '.MuiDataGrid-columnSeparator': {
             color: theme.palette.text.disabled,
+          },
+          '.MuiDataGrid-virtualScroller': {
+            backgroundColor: theme.palette.background.default,
+            filter: dimView ? 'saturate(50%) contrast(90%)' : 'none',
+            transition: theme.transitions.create('filter', {
+              duration: theme.transitions.duration.short,
+            }),
+            '@media (prefers-reduced-motion: reduce)': {
+              filter: 'none',
+            },
           },
         })}
       />

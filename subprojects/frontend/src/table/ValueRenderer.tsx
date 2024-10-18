@@ -28,9 +28,6 @@ const Label = styled('div', {
         color: concretize ? theme.palette.info.main : theme.palette.error.main,
       }
     : {}),
-  transition: theme.transitions.create('color', {
-    duration: theme.transitions.duration.shortest,
-  }),
   '& svg': {
     marginRight: theme.spacing(0.5),
   },

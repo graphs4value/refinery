@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { clsx } from 'clsx';
 import * as d3 from 'd3';
 import { type Graphviz, graphviz } from 'd3-graphviz';
 import type { BaseType, Selection } from 'd3-selection';
@@ -158,7 +159,7 @@ function DotGraphVisualizer({
 
   return (
     <GraphTheme
-      className={simplify ? 'simplified' : undefined}
+      className={clsx({ simplified: simplify })}
       ref={setElement}
       colorNodes={graph.colorNodes}
       hexTypeHashes={graph.hexTypeHashes}

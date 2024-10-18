@@ -91,7 +91,7 @@ export default class XtextClient {
   }
 
   private onDisconnect(): void {
-    this.store.analysisCompleted(true);
+    this.store.onDisconnect();
     this.highlightingService.onDisconnect();
     this.validationService.onDisconnect();
     this.occurrencesService.onDisconnect();

@@ -97,7 +97,7 @@ export default class GraphStore {
 
   constructor(
     private readonly editorStore: EditorStore,
-    private readonly nameOverride?: string,
+    private readonly generatedModelName?: string,
     visibility?: Map<string, Visibility>,
   ) {
     if (visibility === undefined) {
@@ -109,6 +109,10 @@ export default class GraphStore {
       editorStore: false,
       semantics: observable.ref,
     });
+  }
+
+  get generated(): boolean {
+    return this.generatedModelName !== undefined;
   }
 
   getVisibility(relation: string): Visibility {
@@ -266,7 +270,7 @@ export default class GraphStore {
   }
 
   get name(): string {
-    return this.nameOverride ?? this.editorStore.simpleNameOrFallback;
+    return this.generatedModelName ?? this.editorStore.simpleNameOrFallback;
   }
 
   get showNonExistent(): boolean {
@@ -301,7 +305,20 @@ export default class GraphStore {
   }
 
   get concretize(): boolean {
-    // Generated models are always concretized.
-    return this.nameOverride === undefined ? this.editorStore.concretize : true;
+    return this.generated || this.editorStore.concretize;
+  }
+
+  get upToDate(): boolean {
+    return (
+      this.generated ||
+      this.editorStore.delayedErrors.semanticsUpToDate ||
+      // Do not dim the graph and table views if there are no nodes to show
+      // (e.g., during page loading).
+      this.semantics.nodes.length === 0
+    );
+  }
+
+  get dimView(): boolean {
+    return !this.upToDate;
   }
 }

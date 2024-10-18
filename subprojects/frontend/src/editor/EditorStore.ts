@@ -97,6 +97,8 @@ export default class EditorStore {
 
   analyzing = false;
 
+  semanticsUpToDate = true;
+
   semanticsError: string | undefined;
 
   propagationRejected = false;
@@ -364,6 +366,7 @@ export default class EditorStore {
 
   analysisStarted() {
     this.analyzing = true;
+    this.semanticsUpToDate = false;
   }
 
   analysisCompleted(semanticAnalysisSkipped = false) {
@@ -372,6 +375,11 @@ export default class EditorStore {
       this.semanticsError = undefined;
       this.propagationRejected = false;
     }
+  }
+
+  onDisconnect() {
+    this.semanticsUpToDate = false;
+    this.analysisCompleted(true);
   }
 
   setSemanticsError(
@@ -383,6 +391,7 @@ export default class EditorStore {
   }
 
   setSemantics(semantics: SemanticsModelResult) {
+    this.semanticsUpToDate = true;
     this.graph.setSemantics(semantics);
   }
 

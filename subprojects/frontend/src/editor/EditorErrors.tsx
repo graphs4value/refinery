@@ -13,6 +13,7 @@ const HYSTERESIS_TIME_MS = 250;
 
 export interface State {
   analyzing: boolean;
+  semanticsUpToDate: boolean;
   errorCount: number;
   warningCount: number;
   infoCount: number;
@@ -26,6 +27,8 @@ export default class EditorErrors implements State {
   private timer: number | undefined;
 
   analyzing = false;
+
+  semanticsUpToDate = false;
 
   errorCount = 0;
 
@@ -79,6 +82,7 @@ export default class EditorErrors implements State {
   private getNextState(): State {
     return {
       analyzing: this.store.analyzing,
+      semanticsUpToDate: this.store.semanticsUpToDate,
       errorCount: this.store.errorCount,
       warningCount: this.store.warningCount,
       infoCount: this.store.infoCount,
