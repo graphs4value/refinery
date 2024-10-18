@@ -47,6 +47,7 @@ function DotGraphVisualizer({
     Graphviz<BaseType, unknown, null, undefined> | undefined
   >();
   const [animate, setAnimate] = useState(true);
+  const [concretize, setConcretize] = useState(false);
 
   const setElement = useCallback(
     (element: HTMLDivElement | null) => {
@@ -115,6 +116,7 @@ function DotGraphVisualizer({
           // `d3-graphviz` uses `<title>` elements for traceability,
           // so we only remove them after the rendering is finished.
           d3.select(element).selectAll('title').remove();
+          setConcretize(graph.concretize);
         });
         if (fitZoom !== undefined) {
           if (animate) {
@@ -160,6 +162,7 @@ function DotGraphVisualizer({
       ref={setElement}
       colorNodes={graph.colorNodes}
       hexTypeHashes={graph.hexTypeHashes}
+      concretize={concretize}
     />
   );
 }

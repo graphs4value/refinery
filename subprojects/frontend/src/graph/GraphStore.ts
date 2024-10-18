@@ -299,4 +299,9 @@ export default class GraphStore {
   get selectedSymbolHasComputed(): boolean {
     return this.hasComputed(this.editorStore.selectedSymbolName);
   }
+
+  get concretize(): boolean {
+    // Generated models are always concretized.
+    return this.nameOverride === undefined ? this.editorStore.concretize : true;
+  }
 }

@@ -95,6 +95,7 @@ function TableArea({
   touchesTop: boolean;
 }): JSX.Element {
   const {
+    concretize,
     selectedSymbol,
     showComputed,
     semantics: { nodes, partialInterpretation },
@@ -141,11 +142,11 @@ function TableArea({
       headerName: columnNames.indexOf('value') >= 0 ? '$VALUE' : 'value',
       flex: 1,
       renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
-        <ValueRenderer value={value} />
+        <ValueRenderer concretize={concretize} value={value} />
       ),
     });
     return defs;
-  }, [arity, detail]);
+  }, [arity, detail, concretize]);
 
   const rows = useMemo<Row[]>(() => {
     if (computedName === undefined) {
