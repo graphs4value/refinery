@@ -6,12 +6,14 @@
 package tools.refinery.generator.impl;
 
 import com.google.inject.Provider;
+import tools.refinery.generator.ModelFacadeResult;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
 import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -26,15 +28,21 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 	}
 
 	@Override
-	protected PropagationResult afterPropagation(PropagationResult createInitialModelResult) {
+	protected ModelFacadeResult afterPropagation(ModelFacadeResult createInitialModelResult) {
 		if (createInitialModelResult.isRejected()) {
 			return createInitialModelResult;
 		}
 		var propagationAdapter = getModel().getAdapter(PropagationAdapter.class);
-		if (!propagationAdapter.concretizationRequested()) {
-			return createInitialModelResult;
+		PropagationResult concretizationResult;
+		if (propagationAdapter.concretizationRequested()) {
+			concretizationResult = propagationAdapter.concretize();
+		} else {
+			concretizationResult = propagationAdapter.checkConcretization();
 		}
-		return propagationAdapter.concretize();
+		if (concretizationResult instanceof PropagationRejectedResult rejectedResult) {
+			return new ModelFacadeResult.ConcretizationRejected(rejectedResult);
+		}
+		return createInitialModelResult;
 	}
 
 	@Override
@@ -48,7 +56,7 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 	@Override
 	public Problem serialize() {
 		// {@link SolutionSerializer} can only serialize consistent models.
-		getPropagationResult().throwIfRejected();
+		getInitializationResult().throwIfRejected();
 		checkConsistency().throwIfInconsistent();
 		return super.serialize();
 	}

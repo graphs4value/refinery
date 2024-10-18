@@ -20,6 +20,8 @@ public interface PropagationAdapter extends ModelAdapter {
 
 	PropagationResult concretize();
 
+	PropagationResult checkConcretization();
+
 	static PropagationBuilder builder() {
 		return new PropagationBuilderImpl();
 	}

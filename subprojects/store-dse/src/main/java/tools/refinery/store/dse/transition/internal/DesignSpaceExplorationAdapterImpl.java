@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.dse.transition.internal;
 
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
+import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationStoreAdapter;
 import tools.refinery.store.dse.transition.ObjectiveValue;

@@ -75,7 +75,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 		var generator = new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				getSolutionSerializerProvider(), getMetadataCreatorProvider(), cancellationToken,
 				isKeepNonExistingObjects());
-		generator.getPropagationResult().throwIfRejected();
+		generator.getInitializationResult().throwIfRejected();
 		return generator;
 	}
 

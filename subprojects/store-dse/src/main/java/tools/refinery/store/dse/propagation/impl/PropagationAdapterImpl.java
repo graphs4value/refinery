@@ -48,12 +48,17 @@ class PropagationAdapterImpl implements PropagationAdapter {
 
 	@Override
 	public PropagationResult concretize() {
+		PropagationResult result;
 		concretizationInProgress = true;
 		try {
-			return propagate(PropagationRequest.CONCRETIZE);
+			result = propagate(PropagationRequest.CONCRETIZE);
 		} finally {
 			concretizationInProgress = false;
 		}
+		if (!result.isRejected()) {
+			result = result.andThen(checkConcretization());
+		}
+		return result;
 	}
 
 	private PropagationResult propagate(PropagationRequest request) {
@@ -94,6 +99,23 @@ class PropagationAdapterImpl implements PropagationAdapter {
 			lastResult = propagator.propagateOne(request);
 			result = result.andThen(lastResult);
 		} while (lastResult.isChanged());
+		return result;
+	}
+
+	@Override
+	public PropagationResult checkConcretization() {
+		PropagationResult result = PropagationResult.UNCHANGED;
+		// Use a classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < boundPropagators.length; i++) {
+			model.checkCancelled();
+			var propagator = boundPropagators[i];
+			var lastResult = propagator.checkConcretization();
+			result = result.andThen(lastResult);
+			if (result.isRejected()) {
+				break;
+			}
+		}
 		return result;
 	}
 

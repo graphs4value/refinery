@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.scope;
 
 import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.FunctionalQuery;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.logic.term.Variable;
@@ -13,6 +14,7 @@ import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.objectives.Criteria;
+import tools.refinery.store.dse.transition.objectives.Criterion;
 import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningBuilder;
@@ -32,8 +34,8 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 	private final int lowerBound;
 
 	private LowerTypeScopePropagator(BoundScopePropagator adapter, int lowerBound, RelationalQuery allQuery,
-									 RelationalQuery multiQuery, PartialRelation type) {
-		super(adapter, allQuery, multiQuery, type);
+									 RelationalQuery multiQuery, Criterion acceptCriterion, PartialRelation type) {
+		super(adapter, allQuery, multiQuery, acceptCriterion, type);
 		this.lowerBound = lowerBound;
 	}
 
@@ -52,6 +54,9 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 		private final int lowerBound;
 		private final RelationalQuery allMay;
 		private final RelationalQuery multiMay;
+		private final FunctionalQuery<Integer> requiredObjects;
+		private final RelationalQuery tooFewObjects;
+		private final Criterion acceptCriterion;
 
 		public Factory(PartialRelation type, int lowerBound) {
 			this.type = type;
@@ -63,11 +68,24 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 					may(type.call(instance)),
 					MULTI_VIEW.call(instance)
 			));
+			requiredObjects = Query.of(type.name() + "#required", Integer.class, (builder, output) -> builder
+					.clause(Integer.class, candidateLowerBound -> List.of(
+							new CountCandidateLowerBoundLiteral(candidateLowerBound, type, List.of(Variable.of())),
+							output.assign(sub(constant(lowerBound), candidateLowerBound)),
+							check(greater(output, constant(0)))
+					)));
+			tooFewObjects = Query.of(type.name() + "#tooFew", builder -> builder
+					.clause(UpperCardinality.class, upperBound -> List.of(
+							new CountUpperBoundLiteral(upperBound, type, List.of(Variable.of())),
+							check(UpperCardinalityTerms.less(upperBound,
+									UpperCardinalityTerms.constant(UpperCardinality.of(lowerBound))))
+					)));
+			acceptCriterion = Criteria.whenNoMatch(requiredObjects);
 		}
 
 		@Override
 		public TypeScopePropagator createPropagator(BoundScopePropagator adapter) {
-			return new LowerTypeScopePropagator(adapter, lowerBound, allMay, multiMay, type);
+			return new LowerTypeScopePropagator(adapter, lowerBound, allMay, multiMay, acceptCriterion, type);
 		}
 
 		@Override
@@ -76,25 +94,16 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 		}
 
 		@Override
+		public Criterion getAcceptCriterion() {
+			return acceptCriterion;
+		}
+
+		@Override
 		public void configure(ModelStoreBuilder storeBuilder) {
 			super.configure(storeBuilder);
-
-			var requiredObjects = Query.of(type.name() + "#required", Integer.class, (builder, output) -> builder
-					.clause(Integer.class, candidateLowerBound -> List.of(
-							new CountCandidateLowerBoundLiteral(candidateLowerBound, type, List.of(Variable.of())),
-							output.assign(sub(constant(lowerBound), candidateLowerBound)),
-							check(greater(output, constant(0)))
-					)));
-			var tooFewObjects = Query.of(type.name() + "#tooFew", builder -> builder
-					.clause(UpperCardinality.class, upperBound -> List.of(
-							new CountUpperBoundLiteral(upperBound, type, List.of(Variable.of())),
-							check(UpperCardinalityTerms.less(upperBound,
-									UpperCardinalityTerms.constant(UpperCardinality.of(lowerBound))))
-					)));
-
 			storeBuilder.getAdapter(ReasoningBuilder.class).objective(Objectives.value(requiredObjects));
 			storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class).ifPresent(dseBuilder -> {
-                dseBuilder.accept(Criteria.whenNoMatch(requiredObjects));
+                dseBuilder.accept(acceptCriterion);
 				dseBuilder.exclude(Criteria.whenHasMatch(tooFewObjects));
             });
 		}

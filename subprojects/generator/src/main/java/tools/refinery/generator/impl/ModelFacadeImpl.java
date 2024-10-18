@@ -8,13 +8,14 @@ package tools.refinery.generator.impl;
 import com.google.inject.Provider;
 import tools.refinery.generator.ConsistencyCheckResult;
 import tools.refinery.generator.ModelFacade;
+import tools.refinery.generator.ModelFacadeResult;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.language.semantics.metadata.NodesMetadata;
 import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.logic.AbstractValue;
-import tools.refinery.store.dse.propagation.PropagationResult;
+import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -31,7 +32,7 @@ import java.util.List;
 public abstract class ModelFacadeImpl implements ModelFacade {
 	private final ProblemTrace problemTrace;
 	private final ModelStore store;
-	private final PropagationResult propagationResult;
+	private final ModelFacadeResult initializationResult;
 	private final Model model;
 	private final ReasoningAdapter reasoningAdapter;
 	private final Provider<MetadataCreator> metadataCreatorProvider;
@@ -48,7 +49,10 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 			throw problemTrace.wrapException(e);
 		}
 		model = propagatedModel.model();
-		propagationResult = afterPropagation(propagatedModel.propagationResult());
+		var propagationResult = propagatedModel.propagationResult();
+		var createInitialModelResult = propagationResult instanceof PropagationRejectedResult rejectedResult ?
+				new ModelFacadeResult.PropagationRejected(rejectedResult) : ModelFacadeResult.SUCCESS;
+		initializationResult = afterPropagation(createInitialModelResult);
 		reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 	}
 
@@ -67,13 +71,13 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 		return model;
 	}
 
-	protected PropagationResult afterPropagation(PropagationResult createInitialModelResult) {
+	protected ModelFacadeResult afterPropagation(ModelFacadeResult createInitialModelResult) {
 		return createInitialModelResult;
 	}
 
 	@Override
-	public PropagationResult getPropagationResult() {
-		return propagationResult;
+	public ModelFacadeResult getInitializationResult() {
+		return initializationResult;
 	}
 
 	@Override

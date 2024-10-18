@@ -23,4 +23,8 @@ public interface BoundPropagator {
 	default PropagationResult concretizeOne() {
 		return PropagationResult.UNCHANGED;
 	}
+
+	default PropagationResult checkConcretization() {
+		return PropagationResult.UNCHANGED;
+	}
 }

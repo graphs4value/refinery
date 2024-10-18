@@ -40,7 +40,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 
 	public ModelSemantics createSemantics(Problem problem) {
 		var semantics = tryCreateSemantics(problem);
-		semantics.getPropagationResult().throwIfRejected();
+		semantics.getInitializationResult().throwIfRejected();
 		return semantics;
 	}
 

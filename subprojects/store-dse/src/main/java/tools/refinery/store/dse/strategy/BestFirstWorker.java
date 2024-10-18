@@ -73,20 +73,9 @@ public class BestFirstWorker {
 
 		storeManager.getObjectiveStore().submit(last);
 		storeManager.getActivationStore().markNewAsVisited(last, activationStoreWorker.calculateEmptyActivationSize());
-		if (accepted && (propagationAdapter != null && propagationAdapter.concretizationRequested())) {
-			var concretizationResult = propagationAdapter.concretize();
-			if (concretizationResult.isRejected()) {
-				accepted = false;
-				model.restore(version);
-			} else if (concretizationResult.isChanged()) {
-				var newValue = submitConcrete();
-				if (newValue == null) {
-					accepted = false;
-				} else {
-					versionWithObjectiveValue = newValue;
-				}
-				model.restore(version);
-			}
+		if (accepted) {
+			versionWithObjectiveValue = concretizeIfNeeded(versionWithObjectiveValue);
+			accepted = versionWithObjectiveValue != null;
 		}
 
 		if (accepted) {
@@ -101,6 +90,27 @@ public class BestFirstWorker {
 		}
 
 		return new SubmitResult(true, accepted, objectiveValue, last);
+	}
+
+	private VersionWithObjectiveValue concretizeIfNeeded(VersionWithObjectiveValue originalValue) {
+		if (propagationAdapter == null) {
+			return originalValue;
+		}
+		var version = originalValue.version();
+		if (propagationAdapter.concretizationRequested()) {
+			var concretizationResult = propagationAdapter.concretize();
+			if (concretizationResult.isRejected()) {
+				model.restore(version);
+				return null;
+			} else if (concretizationResult.isChanged()) {
+				var newValue = submitConcrete();
+				model.restore(version);
+				return newValue;
+			}
+		} else if (propagationAdapter.checkConcretization().isRejected()) {
+			return null;
+		}
+		return originalValue;
 	}
 
 	private VersionWithObjectiveValue submitConcrete() {

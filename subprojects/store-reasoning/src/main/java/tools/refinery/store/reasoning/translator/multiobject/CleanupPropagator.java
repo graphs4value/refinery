@@ -7,6 +7,7 @@ package tools.refinery.store.reasoning.translator.multiobject;
 
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
@@ -14,6 +15,7 @@ import tools.refinery.store.dse.propagation.BoundPropagator;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.propagation.Propagator;
+import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -39,6 +41,14 @@ public class CleanupPropagator implements Propagator {
 			))
 	);
 
+	private final boolean keepNonExistingObjects;
+	private final MultiObjectTranslator multiObjectTranslator;
+
+	public CleanupPropagator(boolean keepNonExistingObjects, MultiObjectTranslator multiObjectTranslator) {
+		this.keepNonExistingObjects = keepNonExistingObjects;
+		this.multiObjectTranslator = multiObjectTranslator;
+	}
+
 	@Override
 	public void configure(ModelStoreBuilder storeBuilder) {
 		storeBuilder.getAdapter(ModelQueryBuilder.class).query(CLEANUP_QUERY);
@@ -53,16 +63,21 @@ public class CleanupPropagator implements Propagator {
 		private final Model model;
 		private final ModelQueryAdapter queryEngine;
 		private final ResultSet<Boolean> resultSet;
+		private final Interpretation<CardinalityInterval> countInterpretation;
 		private ReasoningAdapter reasoningAdapter;
 
 		public BoundCleanupPropagator(Model model) {
 			this.model = model;
 			queryEngine = model.getAdapter(ModelQueryAdapter.class);
 			resultSet = queryEngine.getResultSet(CLEANUP_QUERY);
+			countInterpretation = model.getInterpretation(MultiObjectTranslator.COUNT_STORAGE);
 		}
 
 		@Override
 		public PropagationResult propagateOne() {
+			if (keepNonExistingObjects) {
+				return PropagationResult.UNCHANGED;
+			}
 			if (reasoningAdapter == null) {
 				reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 			}
@@ -74,10 +89,23 @@ public class CleanupPropagator implements Propagator {
 				var nodeToDelete = cursor.getKey().get(0);
 				if (!reasoningAdapter.cleanup(nodeToDelete)) {
 					return new PropagationRejectedResult(CleanupPropagator.this,
-                            "Failed to remove node: " + nodeToDelete, true);
+							"Failed to remove node: " + nodeToDelete, true);
 				}
 			}
 			return propagated ? PropagationResult.PROPAGATED : PropagationResult.UNCHANGED;
+		}
+
+		@Override
+		public PropagationResult checkConcretization() {
+			var cursor = countInterpretation.getAll();
+			while (cursor.move()) {
+				var interval = cursor.getValue();
+				if (interval.lowerBound() >= 2) {
+					return new PropagationRejectedResult(multiObjectTranslator,
+							"Multi-objects were not fully instantiated.");
+				}
+			}
+			return PropagationResult.UNCHANGED;
 		}
 	}
 }

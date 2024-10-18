@@ -100,9 +100,7 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		reasoningBuilder.initializer(new MultiObjectInitializer(COUNT_STORAGE));
 		reasoningBuilder.storageRefiner(COUNT_STORAGE, MultiObjectStorageRefiner::new);
 
-		if (!keepNonExistingObjects) {
-			storeBuilder.tryGetAdapter(PropagationBuilder.class)
-					.ifPresent(propagationBuilder -> propagationBuilder.propagator(new CleanupPropagator()));
-		}
+		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder ->
+				propagationBuilder.propagator(new CleanupPropagator(keepNonExistingObjects, this)));
 	}
 }

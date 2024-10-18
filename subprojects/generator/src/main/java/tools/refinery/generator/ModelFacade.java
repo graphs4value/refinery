@@ -10,7 +10,6 @@ import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.metadata.NodesMetadata;
 import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.logic.AbstractValue;
-import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.interpretation.AnyPartialInterpretation;
@@ -28,7 +27,7 @@ public interface ModelFacade {
 
 	Model getModel();
 
-	PropagationResult getPropagationResult();
+	ModelFacadeResult getInitializationResult();
 
 	Concreteness getConcreteness();
 
