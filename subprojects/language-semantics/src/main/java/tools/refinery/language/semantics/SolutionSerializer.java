@@ -120,6 +120,7 @@ public class SolutionSerializer {
 		addClassAssertions();
 		addReferenceAssertions();
 		addBasePredicateAssertions();
+		addComputedPredicateAssertions();
 		if (nodeDeclaration.getNodes().isEmpty()) {
 			problem.getStatements().remove(nodeDeclaration);
 		}
@@ -346,10 +347,7 @@ public class SolutionSerializer {
 		var sortedTuples = new TreeMap<Tuple, LogicValue>();
 		while (cursor.move()) {
 			var tuple = cursor.getKey();
-			var from = nodes.get(tuple.get(0));
-			var to = nodes.get(tuple.get(1));
-			if (from == null || to == null) {
-				// One of the endpoints does not exist in the candidate model.
+			if (isEndpointMissing(tuple)) {
 				continue;
 			}
 			var value = cursor.getValue();
@@ -362,11 +360,28 @@ public class SolutionSerializer {
 			};
 			sortedTuples.put(tuple, logicValue);
 		}
+		addAssertions(sortedTuples, relation);
+	}
+
+	private boolean isEndpointMissing(Tuple tuple) {
+		int arity = tuple.getSize();
+		for (int i = 0; i < arity; i++) {
+			if (!nodes.containsKey(tuple.get(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void addAssertions(Map<Tuple, LogicValue> sortedTuples, Relation relation) {
 		for (var entry : sortedTuples.entrySet()) {
 			var tuple = entry.getKey();
-			var from = nodes.get(tuple.get(0));
-			var to = nodes.get(tuple.get(1));
-			addAssertion(relation, entry.getValue(), from, to);
+			int arity = tuple.getSize();
+			var arguments = new Node[arity];
+			for (int i = 0; i < arity; i++) {
+				arguments[i] = nodes.get(tuple.get(i));
+			}
+			addAssertion(relation, entry.getValue(), arguments);
 		}
 	}
 
@@ -384,5 +399,44 @@ public class SolutionSerializer {
 		logicConstant.setLogicValue(LogicValue.FALSE);
 		assertion.setValue(logicConstant);
 		problem.getStatements().add(assertion);
+	}
+
+	private void addComputedPredicateAssertions() {
+		for (var entry : trace.getRelationTrace().entrySet()) {
+			if (entry.getKey() instanceof PredicateDefinition predicateDefinition &&
+					ProblemUtil.isComputedValuePredicate(predicateDefinition) &&
+					predicateDefinition.eContainer() instanceof PredicateDefinition parentDefinition &&
+					!ProblemUtil.isError(parentDefinition)) {
+				var computedRelation = entry.getValue();
+				var partialRelation = trace.getPartialRelation(parentDefinition);
+				addComputedAssertions(computedRelation, partialRelation);
+			}
+		}
+	}
+
+	private void addComputedAssertions(PartialRelation computedRelation, PartialRelation partialRelation) {
+		var relation = findPartialRelation(partialRelation);
+		var assertedInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE,
+				partialRelation);
+		var cursor = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, computedRelation).getAll();
+		var sortedTuples = new TreeMap<Tuple, LogicValue>();
+		while (cursor.move()) {
+			var tuple = cursor.getKey();
+			if (isEndpointMissing(tuple)) {
+				continue;
+			}
+			var value = assertedInterpretation.get(tuple);
+			if (!Objects.equals(value, cursor.getValue())) {
+				var logicValue = switch (value) {
+					case TRUE -> LogicValue.TRUE;
+					case FALSE -> LogicValue.FALSE;
+					case UNKNOWN -> throw new IllegalStateException("Invalid %s %s asserted for tuple %s"
+							.formatted(partialRelation, value, tuple));
+					case ERROR -> LogicValue.ERROR;
+				};
+				sortedTuples.put(tuple, logicValue);
+			}
+		}
+		addAssertions(sortedTuples, relation);
 	}
 }

@@ -278,9 +278,10 @@ class SolutionSerializerTest {
 				"""), Arguments.of("""
 				class Foo.
 				class Bar.
-				partial pred bar(Foo x, Bar y).
+				partial pred bar(Foo x, Bar y, Bar z).
 				""", """
-				bar(a, b).
+				!bar(*, *, Bar::new).
+				bar(a, b, b).
 				scope Foo = 2, Bar = 2.
 				""", false, """
 				declare a, b, foo1, bar1.
@@ -290,11 +291,11 @@ class SolutionSerializerTest {
 				Bar(bar1).
 				Foo(a).
 				Bar(b).
-				default !bar(*, *).
-				?bar(foo1, bar1).
-				?bar(foo1, b).
-				?bar(a, bar1).
-				bar(a, b).
+				default !bar(*, *, *).
+				?bar(foo1, bar1, b).
+				?bar(foo1, b, b).
+				?bar(a, bar1, b).
+				bar(a, b, b).
 				"""), Arguments.of("""
 				class A {
 					B[] foo
@@ -313,6 +314,70 @@ class SolutionSerializerTest {
 				B(b).
 				default !foo(*, *).
 				foo(A::new, b).
+				"""), Arguments.of("""
+				class Foo {
+					partial Bar[] baz
+					partial Bar[] quux
+				}
+
+				class Bar.
+
+				pred query(a, b) <-> baz(a, b); quux(a, b).
+				""", """
+				scope Foo = 1, Bar = 3.
+				baz(foo1, bar1).
+				query(foo1, bar2).
+				Bar(bar3).
+				""", false, """
+				declare foo1, bar1, bar2, bar3.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Bar(bar2).
+				Bar(bar3).
+				default !baz(*, *).
+				baz(foo1, bar1).
+				?baz(foo1, bar2).
+				?baz(foo1, bar3).
+				default !quux(*, *).
+				?quux(foo1, bar1).
+				?quux(foo1, bar2).
+				?quux(foo1, bar3).
+				query(foo1, bar2).
+				"""), Arguments.of("""
+				class Foo {
+					partial Bar[] baz
+					partial Bar[] quux
+				}
+
+				class Bar.
+
+				pred query(a, b) <-> baz(a, b), quux(a, b).
+				""", """
+				scope Foo = 1, Bar = 3.
+				Foo(foo1).
+				Bar(bar1).
+				!baz(foo1, bar1).
+				Bar(bar2).
+				!query(foo1, bar2).
+				Bar(bar3).
+				""", false, """
+				declare foo1, bar1, bar2, bar3.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Bar(bar2).
+				Bar(bar3).
+				default !baz(*, *).
+				?baz(foo1, bar2).
+				?baz(foo1, bar3).
+				default !quux(*, *).
+				?quux(foo1, bar1).
+				?quux(foo1, bar2).
+				?quux(foo1, bar3).
+				!query(foo1, bar2).
 				"""));
 	}
 }
