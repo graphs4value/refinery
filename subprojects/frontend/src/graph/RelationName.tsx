@@ -29,13 +29,13 @@ const FormattedName = observer(function FormattedName({
   metadata: RelationMetadata;
 }): React.ReactNode {
   const { detail } = metadata;
-  if (detail.type === 'class' && detail.abstractClass) {
+  if (detail.type === 'class' && detail.isAbstract) {
     return <i>{name}</i>;
   }
-  if (detail.type === 'reference' && detail.containment) {
+  if (detail.type === 'reference' && detail.isContainment) {
     return <b>{name}</b>;
   }
-  if (detail.type === 'predicate' && detail.predicateKind === 'ERROR') {
+  if (detail.type === 'pred' && detail.kind === 'error') {
     return <ErrorPredicateName>{name}</ErrorPredicateName>;
   }
   return name;

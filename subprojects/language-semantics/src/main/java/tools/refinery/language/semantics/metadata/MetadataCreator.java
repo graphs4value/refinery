@@ -13,6 +13,8 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
@@ -28,6 +30,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class MetadataCreator {
+	private static final List<String> CLASS_PARAMETER_NAMES = List.of("node");
+	private static final List<String> RELATION_PARAMETER_NAMES = List.of("source", "target");
+
 	@Inject
 	private IScopeProvider scopeProvider;
 
@@ -36,6 +41,9 @@ public class MetadataCreator {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private TypeHashProvider typeHashProvider;
 
 	@Inject
 	private Provider<NodeMetadataFactory> nodeMetadataFactoryProvider;
@@ -80,22 +88,22 @@ public class MetadataCreator {
 
 	private NodeMetadata getNodeMetadata(int nodeId, Node node, NodeMetadataFactory nodeMetadataFactory) {
 		var kind = getNodeKind(node);
-		if (!preserveNewNodes && kind == NodeKind.NEW && nodeMetadataFactory.nodeExists(nodeId)) {
+		if (!preserveNewNodes && kind == NodeKind.MULTI && nodeMetadataFactory.nodeExists(nodeId)) {
 			return nodeMetadataFactory.createFreshlyNamedMetadata(nodeId);
 		}
 		var qualifiedName = getQualifiedName(node);
 		var simpleName = getSimpleName(node, qualifiedName, nodeScope);
 		return nodeMetadataFactory.doCreateMetadata(nodeId, qualifiedNameConverter.toString(qualifiedName),
-				qualifiedNameConverter.toString(simpleName), getNodeKind(node));
+				qualifiedNameConverter.toString(simpleName), kind);
 	}
 
 	private NodeKind getNodeKind(Node node) {
 		if (ProblemUtil.isAtomNode(node)) {
-			return NodeKind.INDIVIDUAL;
+			return NodeKind.ATOM;
 		} else if (ProblemUtil.isMultiNode(node)) {
-			return NodeKind.NEW;
+			return NodeKind.MULTI;
 		} else {
-			return NodeKind.IMPLICIT;
+			return NodeKind.DEFAULT;
 		}
 	}
 
@@ -117,22 +125,44 @@ public class MetadataCreator {
 		var simpleName = getSimpleName(relation, qualifiedName, relationScope);
 		var simpleNameString = qualifiedNameConverter.toString(simpleName);
 		var arity = partialRelation.arity();
+		var parameterNames = getParameterNames(relation);
 		var detail = getRelationDetail(relation, partialRelation);
-		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, detail);
+		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail);
+	}
+
+	@Nullable
+	private List<String> getParameterNames(Relation relation) {
+		return switch (relation) {
+			case ClassDeclaration ignored -> CLASS_PARAMETER_NAMES;
+			case EnumDeclaration ignored -> CLASS_PARAMETER_NAMES;
+			case ReferenceDeclaration ignored -> RELATION_PARAMETER_NAMES;
+			case PredicateDefinition predicateDefinition -> getPredicateParameterNames(predicateDefinition);
+			default -> null;
+		};
+	}
+
+	private List<String> getPredicateParameterNames(PredicateDefinition predicateDefinition) {
+		return predicateDefinition.getParameters().stream()
+				.map(parameter -> {
+					var qualifiedParameterName = QualifiedName.create(parameter.getName());
+					return qualifiedNameConverter.toString(qualifiedParameterName);
+				})
+				.toList();
 	}
 
 	private RelationDetail getRelationDetail(Relation relation, PartialRelation partialRelation) {
 		return switch (relation) {
 			case ClassDeclaration classDeclaration -> getClassDetail(classDeclaration);
 			case ReferenceDeclaration ignored -> getReferenceDetail(partialRelation);
-			case EnumDeclaration ignored -> getEnumDetail();
+			case EnumDeclaration enumDeclaration -> getEnumDetail(enumDeclaration);
 			case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
 			default -> throw new TracedException(relation, "Unknown relation");
 		};
 	}
 
 	private RelationDetail getClassDetail(ClassDeclaration classDeclaration) {
-		return ClassDetail.ofAbstractClass(classDeclaration.isAbstract());
+		var typeHash = typeHashProvider.getTypeHash(classDeclaration);
+		return new RelationDetail.Class(classDeclaration.isAbstract(), typeHash);
 	}
 
 	private RelationDetail getReferenceDetail(PartialRelation partialRelation) {
@@ -140,15 +170,16 @@ public class MetadataCreator {
 		var opposite = metamodel.oppositeReferences().get(partialRelation);
 		if (opposite == null) {
 			boolean isContainment = metamodel.containmentHierarchy().containsKey(partialRelation);
-			return ReferenceDetail.ofContainment(isContainment);
+			return new RelationDetail.Reference(isContainment);
 		} else {
 			boolean isContainer = metamodel.containmentHierarchy().containsKey(opposite);
-			return new OppositeReferenceDetail(isContainer, opposite.name());
+			return new RelationDetail.Opposite(opposite.name(), isContainer);
 		}
 	}
 
-	private RelationDetail getEnumDetail() {
-		return ClassDetail.CONCRETE_CLASS;
+	private RelationDetail getEnumDetail(EnumDeclaration enumDeclaration) {
+		var typeHash = typeHashProvider.getTypeHash(enumDeclaration);
+		return new RelationDetail.Class(false, typeHash);
 	}
 
 	private RelationDetail getPredicateDetail(PredicateDefinition predicate) {
@@ -156,9 +187,9 @@ public class MetadataCreator {
 				predicate.eContainer() instanceof PredicateDefinition parentDefinition) {
 			var parentQualifiedName = getQualifiedName(parentDefinition);
 			var computedOf = qualifiedNameConverter.toString(parentQualifiedName);
-			return new ComputedDetail(computedOf);
+			return new RelationDetail.Computed(computedOf);
 		}
-		PredicateDetailKind kind = PredicateDetailKind.DEFAULT;
+		PredicateDetailKind kind = PredicateDetailKind.DEFINED;
 		if (ProblemUtil.isBasePredicate(predicate)) {
 			kind = PredicateDetailKind.BASE;
 		} else if (ProblemUtil.isError(predicate)) {
@@ -166,13 +197,7 @@ public class MetadataCreator {
 		} else if (ProblemUtil.isShadow(predicate)) {
 			kind = PredicateDetailKind.SHADOW;
 		}
-		var parameterNames = predicate.getParameters().stream()
-				.map(parameter -> {
-					var qualifiedParameterName = QualifiedName.create(parameter.getName());
-					return qualifiedNameConverter.toString(qualifiedParameterName);
-				})
-				.toList();
-		return new PredicateDetail(kind, parameterNames);
+		return new RelationDetail.Predicate(kind);
 	}
 
 	private QualifiedName getQualifiedName(EObject eObject) {

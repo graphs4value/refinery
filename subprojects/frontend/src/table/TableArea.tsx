@@ -101,7 +101,7 @@ function TableArea({
     ? graph.getComputedName(symbolName)
     : symbolName;
   const arity = selectedSymbol?.arity ?? 0;
-  const detail = selectedSymbol?.detail;
+  const parameterNames = selectedSymbol?.parameterNames;
 
   const [cachedConcretize, setCachedConcretize] = useState(false);
   useEffect(
@@ -115,45 +115,26 @@ function TableArea({
   );
 
   const columns = useMemo<GridColDef<Row>[]>(() => {
-    let columnNames: string[];
-    if (detail === undefined) {
-      columnNames = [];
-    } else {
-      switch (detail.type) {
-        case 'class':
-          columnNames = ['node'];
-          break;
-        case 'reference':
-        case 'opposite':
-          columnNames = ['source', 'target'];
-          break;
-        case 'predicate':
-          columnNames = detail.parameterNames ?? [];
-          break;
-        default:
-          columnNames = [];
-          break;
-      }
-    }
+    const namesOrEmpty = parameterNames ?? [];
     const defs: GridColDef<Row>[] = [];
     for (let i = 0; i < arity; i += 1) {
       defs.push({
         field: `n${i}`,
-        headerName: columnNames[i] ?? String(i + 1),
+        headerName: namesOrEmpty[i] ?? String(i + 1),
         valueGetter: (_, row) => row.nodes[i] ?? '',
         flex: 1,
       });
     }
     defs.push({
       field: 'value',
-      headerName: columnNames.indexOf('value') >= 0 ? '$VALUE' : 'value',
+      headerName: namesOrEmpty.indexOf('value') >= 0 ? '$VALUE' : 'value',
       flex: 1,
       renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
         <ValueRenderer concretize={cachedConcretize} value={value} />
       ),
     });
     return defs;
-  }, [arity, detail, cachedConcretize]);
+  }, [arity, cachedConcretize, parameterNames]);
 
   const rows = useMemo<Row[]>(() => {
     if (computedName === undefined) {

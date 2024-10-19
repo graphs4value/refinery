@@ -5,5 +5,7 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public record NodeMetadata(String name, String simpleName, String typeHash, NodeKind kind) implements Metadata {
+import org.jetbrains.annotations.Nullable;
+
+public record NodeMetadata(String name, String simpleName, NodeKind kind, @Nullable String color) implements Metadata {
 }

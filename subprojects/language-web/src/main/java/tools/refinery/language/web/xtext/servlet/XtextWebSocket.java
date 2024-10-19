@@ -33,11 +33,13 @@ public class XtextWebSocket implements ResponseHandler {
 	private final Gson gson = new GsonBuilder()
 			.disableJdkUnsafe()
 			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RelationDetail.class, "type")
-					.registerSubtype(ClassDetail.class, "class")
-					.registerSubtype(ReferenceDetail.class, "reference")
-					.registerSubtype(OppositeReferenceDetail.class, "opposite")
-					.registerSubtype(PredicateDetail.class, "predicate")
-					.registerSubtype(ComputedDetail.class, "computed"))
+					.registerSubtype(RelationDetail.Class.class, "class")
+					.registerSubtype(RelationDetail.Computed.class, "computed")
+					.registerSubtype(RelationDetail.Reference.class, "reference")
+					.registerSubtype(RelationDetail.Opposite.class, "opposite")
+					.registerSubtype(RelationDetail.Predicate.class, "pred"))
+			.registerTypeAdapter(NodeKind.class, new LowercaseTypeAdapter<>(NodeKind.class))
+			.registerTypeAdapter(PredicateDetailKind.class, new LowercaseTypeAdapter<>(PredicateDetailKind.class))
 			.create();
 
 	private final TransactionExecutor executor;

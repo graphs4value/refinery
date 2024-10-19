@@ -37,11 +37,11 @@ export function getDefaultVisibility(
     case 'reference':
     case 'opposite':
       return hideBuiltIn(metadata, 'all');
-    case 'predicate':
-      switch (detail.predicateKind) {
-        case 'BASE':
+    case 'pred':
+      switch (detail.kind) {
+        case 'base':
           return hideBuiltIn(metadata, 'all');
-        case 'ERROR':
+        case 'error':
           return 'must';
         default:
           return 'none';
@@ -59,7 +59,7 @@ export function isVisibilityAllowed(
     return visibility === 'none';
   }
   const { detail } = metadata;
-  if (detail.type === 'predicate' && detail.predicateKind === 'ERROR') {
+  if (detail.type === 'pred' && detail.kind === 'error') {
     // We can't display may matches of error predicates,
     // because they have none by definition.
     return visibility !== 'all';
@@ -245,12 +245,9 @@ export default class GraphStore {
    * keep emitting styles for the colors.
    */
   private updateTypeHashes(): void {
-    this.semantics.nodes.forEach(({ typeHash }) => {
-      if (
-        typeHash !== undefined &&
-        typeHash.startsWith(TYPE_HASH_HEX_PREFFIX)
-      ) {
-        const key = typeHash.substring(TYPE_HASH_HEX_PREFFIX.length);
+    this.semantics.nodes.forEach(({ color }) => {
+      if (color !== undefined && color.startsWith(TYPE_HASH_HEX_PREFFIX)) {
+        const key = color.substring(TYPE_HASH_HEX_PREFFIX.length);
         this.typeHashesMap.set(key, 0);
       }
     });

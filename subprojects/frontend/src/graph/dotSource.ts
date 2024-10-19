@@ -21,7 +21,7 @@ const UNKNOWN_WEIGHT_FACTOR = 0.5;
 function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
   const name = escape(graph.getName(metadata));
   switch (metadata.kind) {
-    case 'INDIVIDUAL':
+    case 'atom':
       return `<b>${name}</b>`;
     default:
       return name;
@@ -31,10 +31,10 @@ function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
 function relationName(graph: GraphStore, metadata: RelationMetadata): string {
   const name = escape(graph.getName(metadata));
   const { detail } = metadata;
-  if (detail.type === 'class' && detail.abstractClass) {
+  if (detail.type === 'class' && detail.isAbstract) {
     return `<i>${name}</i>`;
   }
-  if (detail.type === 'reference' && detail.containment) {
+  if (detail.type === 'reference' && detail.isContainment) {
     return `<b>${name}</b>`;
   }
   return name;
@@ -167,12 +167,12 @@ function createNodes(
     if (data.unaryPredicates.size === 0) {
       classList.push('node-empty');
     }
-    if (node.typeHash !== undefined) {
-      classList.push(`node-typeHash-${obfuscateColor(node.typeHash)}`);
+    if (node.color !== undefined) {
+      classList.push(`node-typeHash-${obfuscateColor(node.color)}`);
     }
     const classes = classList.join(' ');
     const name = nodeName(graph, node);
-    const border = node.kind === 'INDIVIDUAL' ? 2 : 1;
+    const border = node.kind === 'atom' ? 2 : 1;
     const count = scopes ? `&nbsp;${data.count}` : '';
     const encodedNodeName = encodeName(node.name);
     lines.push(`n${i} [id="${encodedNodeName}", class="${classes}", label=<
@@ -288,13 +288,13 @@ function createRelationEdges(
   let penwidth = 1;
   const name = graph.getName(relation);
   let containment = false;
-  if (detail.type === 'reference' && detail.containment) {
+  if (detail.type === 'reference' && detail.isContainment) {
     weight = CONTAINMENT_WEIGHT;
     containment = true;
     penwidth = 2;
   } else if (
     detail.type === 'opposite' &&
-    graph.getVisibility(detail.opposite) !== 'none'
+    graph.getVisibility(detail.of) !== 'none'
   ) {
     constraint = 'false';
     weight = 0;

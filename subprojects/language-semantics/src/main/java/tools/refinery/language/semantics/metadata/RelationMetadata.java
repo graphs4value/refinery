@@ -5,5 +5,10 @@
  */
 package tools.refinery.language.semantics.metadata;
 
-public record RelationMetadata(String name, String simpleName, int arity, RelationDetail detail) implements Metadata {
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+public record RelationMetadata(String name, String simpleName, int arity, @Nullable List<String> parameterNames,
+							   RelationDetail detail) implements Metadata {
 }

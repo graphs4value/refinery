@@ -60,7 +60,7 @@ public class NodeMetadataFactory {
 		} else {
 			escapedName = qualifiedNameConverter.toString(QualifiedName.create(name));
 		}
-		return doCreateMetadata(escapedName, escapedName, type, NodeKind.IMPLICIT);
+		return doCreateMetadata(escapedName, escapedName, type, NodeKind.DEFAULT);
 	}
 
 	public boolean nodeExists(int nodeId) {
@@ -100,7 +100,7 @@ public class NodeMetadataFactory {
 
 	private NodeMetadata doCreateMetadata(String name, String simpleName, PartialRelation type, NodeKind kind) {
 		var typeHash = getTypeHash(type);
-		return new NodeMetadata(name, simpleName, typeHash, kind);
+		return new NodeMetadata(name, simpleName, kind, typeHash);
 	}
 
 	private String getTypeHash(PartialRelation type) {

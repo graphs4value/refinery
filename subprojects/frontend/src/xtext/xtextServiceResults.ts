@@ -137,8 +137,8 @@ export type ModelGenerationStartedResult = z.infer<
 export const NodeMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
-  typeHash: z.string().optional(),
-  kind: z.enum(['IMPLICIT', 'INDIVIDUAL', 'NEW']),
+  color: z.string().optional(),
+  kind: z.enum(['default', 'atom', 'multi']),
 });
 
 export type NodeMetadata = z.infer<typeof NodeMetadata>;
@@ -147,22 +147,23 @@ export const RelationMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
   arity: z.number().nonnegative(),
+  parameterNames: z.string().array().optional(),
   detail: z.union([
-    z.object({ type: z.literal('class'), abstractClass: z.boolean() }),
-    z.object({ type: z.literal('reference'), containment: z.boolean() }),
+    z.object({
+      type: z.literal('class'),
+      isAbstract: z.boolean(),
+      color: z.string().optional(),
+    }),
+    z.object({ type: z.literal('computed'), of: z.string() }),
+    z.object({ type: z.literal('reference'), isContainment: z.boolean() }),
     z.object({
       type: z.literal('opposite'),
-      container: z.boolean(),
-      opposite: z.string(),
-    }),
-    z.object({
-      type: z.literal('predicate'),
-      predicateKind: z.enum(['DEFAULT', 'BASE', 'ERROR', 'SHADOW']),
-      parameterNames: z.array(z.string()),
-    }),
-    z.object({
-      type: z.literal('computed'),
       of: z.string(),
+      isContainer: z.boolean(),
+    }),
+    z.object({
+      type: z.literal('pred'),
+      kind: z.enum(['defined', 'base', 'error', 'shadow']),
     }),
   ]),
 });

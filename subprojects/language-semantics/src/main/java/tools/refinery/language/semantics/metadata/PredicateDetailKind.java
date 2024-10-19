@@ -6,7 +6,7 @@
 package tools.refinery.language.semantics.metadata;
 
 public enum PredicateDetailKind {
-	DEFAULT,
+	DEFINED,
 	BASE,
 	ERROR,
 	SHADOW
