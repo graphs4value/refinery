@@ -159,7 +159,7 @@ function DotGraphVisualizer({
 
   return (
     <GraphTheme
-      className={clsx({ simplified: simplify })}
+      className={clsx({ simplified: simplify, dimmed: graph.dimView })}
       ref={setElement}
       colorNodes={graph.colorNodes}
       hexTypeHashes={graph.hexTypeHashes}

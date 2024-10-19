@@ -22,6 +22,7 @@ import { useRootStore } from '../RootStoreProvider';
 interface OuterPalette {
   background: string;
   border: string;
+  disabled: string;
 }
 
 interface TypeHashPalette {
@@ -268,6 +269,7 @@ export const lightTheme = (() => {
         outer: {
           background: darkBackground,
           border: '#c8c8c8',
+          disabled: '#f0f0f0',
         },
         highlight: {
           number: '#0084bc',
@@ -360,6 +362,7 @@ export const darkTheme = (() => {
         outer: {
           background: darkBackground,
           border: '#181a1f',
+          disabled: '#303541',
         },
         highlight: {
           number: '#6188a6',

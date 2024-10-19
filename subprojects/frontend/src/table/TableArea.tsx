@@ -94,8 +94,7 @@ function TableArea({
   graph: GraphStore;
   touchesTop: boolean;
 }): JSX.Element {
-  const { concretize, selectedSymbol, showComputed, semantics, dimView } =
-    graph;
+  const { concretize, selectedSymbol, showComputed, semantics } = graph;
   const { nodes, partialInterpretation } = semantics;
   const symbolName = selectedSymbol?.name;
   const computedName = showComputed
@@ -238,16 +237,6 @@ function TableArea({
           },
           '.MuiDataGrid-columnSeparator': {
             color: theme.palette.text.disabled,
-          },
-          '.MuiDataGrid-virtualScroller': {
-            backgroundColor: theme.palette.background.default,
-            filter: dimView ? 'saturate(50%) contrast(90%)' : 'none',
-            transition: theme.transitions.create('filter', {
-              duration: theme.transitions.duration.short,
-            }),
-            '@media (prefers-reduced-motion: reduce)': {
-              filter: 'none',
-            },
           },
         })}
       />
