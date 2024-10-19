@@ -272,7 +272,7 @@ export const lightTheme = (() => {
         outer: {
           background: darkBackground,
           border: '#c8c8c8',
-          disabled: '#f0f0f0',
+          disabled: darkBackground,
         },
         highlight: {
           number: '#0084bc',
@@ -365,7 +365,7 @@ export const darkTheme = (() => {
         outer: {
           background: darkBackground,
           border: '#181a1f',
-          disabled: '#303541',
+          disabled: '#2e333c',
         },
         highlight: {
           number: '#6188a6',

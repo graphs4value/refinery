@@ -187,6 +187,7 @@ export default function ZoomCanvas({
         height: '100%',
         position: 'relative',
         overflow: 'hidden',
+        contain: 'content',
       }}
     >
       <Box

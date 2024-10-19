@@ -14,7 +14,7 @@ import {
   type CSSObject,
   type Theme,
 } from '@mui/material/styles';
-import { lch } from 'd3-color';
+import { hcl } from 'd3-color';
 import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
@@ -37,7 +37,7 @@ function createTypeHashStyles(
     };
   });
   hexTypeHashes.forEach((typeHash) => {
-    let color = lch(`#${typeHash}`);
+    let color = hcl(`#${typeHash}`);
     if (theme.palette.mode === 'dark') {
       color = color.brighter();
       if (color.l < 60) {

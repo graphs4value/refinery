@@ -10,7 +10,7 @@ import {
   type CSSObject,
   type Theme,
 } from '@mui/material/styles';
-import { lch } from 'd3-color';
+import { type HCLColor, lch } from 'd3-color';
 import { range } from 'lodash-es';
 
 import obfuscateColor from './obfuscateColor';
@@ -35,10 +35,20 @@ function createEdgeColor(
   };
 }
 
+function saturate(color: HCLColor | string, saturation: number): string {
+  if (saturation === 1) {
+    return typeof color === 'string' ? color : color.formatRgb();
+  }
+  const parsedColor = typeof color === 'string' ? lch(color) : color;
+  parsedColor.c *= saturation;
+  return parsedColor.formatRgb();
+}
+
 function createTypeHashStyles(
   theme: Theme,
   colorNodes: boolean,
   typeHashes: string[],
+  saturation = 1,
 ): CSSObject {
   if (!colorNodes) {
     return {};
@@ -46,7 +56,10 @@ function createTypeHashStyles(
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
     result[`.node-typeHash-${obfuscateColor(i.toString(10))} .node-header`] = {
-      fill: theme.palette.highlight.typeHash[i]?.box,
+      fill: saturate(
+        theme.palette.highlight.typeHash[i]?.box ?? '#fff',
+        saturation,
+      ),
     };
   });
   typeHashes.forEach((typeHash) => {
@@ -56,9 +69,11 @@ function createTypeHashStyles(
       if (color.l > 50) {
         color.l = 50;
       }
+    } else if (color.l < 70) {
+      color.l = 70;
     }
     result[`.node-typeHash-_${obfuscateColor(typeHash)} .node-header`] = {
-      fill: color.formatRgb(),
+      fill: saturate(color, saturation),
     };
   });
   return result;
@@ -191,15 +206,44 @@ export default styled('div', {
           strokeDasharray: 'none !important',
         },
     },
-    '.node-bg': {
+    '.node-bg, .node-header': {
       transition: args.theme.transitions.create('fill', {
         duration: args.theme.transitions.duration.short,
       }),
     },
-    '&.dimmed svg .node .node-bg:not(.node-shadow)': {
-      fill: args.theme.palette.outer.disabled,
+    '&.dimmed svg': {
+      '.node .node-bg:not(.node-shadow)': {
+        fill: args.theme.palette.outer.disabled,
+        '@media (prefers-reduced-motion: reduce)': {
+          fill: args.theme.palette.background.default,
+        },
+      },
+      '.node-header': {
+        fill: saturate(
+          args.theme.palette.mode === 'dark'
+            ? args.theme.palette.primary.dark
+            : args.theme.palette.primary.light,
+          0.6,
+        ),
+      },
+      ...createTypeHashStyles(
+        args.theme,
+        args.colorNodes,
+        args.hexTypeHashes,
+        0.6,
+      ),
       '@media (prefers-reduced-motion: reduce)': {
-        fill: args.theme.palette.background.default,
+        '.node-header': {
+          fill:
+            args.theme.palette.mode === 'dark'
+              ? args.theme.palette.primary.dark
+              : args.theme.palette.primary.light,
+        },
+        ...createTypeHashStyles(
+          args.theme,
+          args.colorNodes,
+          args.hexTypeHashes,
+        ),
       },
     },
   }),
