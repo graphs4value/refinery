@@ -144,6 +144,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				mayNewSourceHelper.call(parent),
 				mayNewTargetHelper.call(child),
 				not(mustAnyContainmentLinkView.call(parent, child)),
+				not(forbiddenContainsView.call(parent, child)),
 				not(forbiddenLinkView.call(parent, child))
 		));
 

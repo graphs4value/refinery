@@ -1,0 +1,61 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class A {
+    contains B[] foo
+    contains B[] bar
+}
+
+class B.
+
+A(a).
+B(b).
+!exists(A::new).
+!exists(B::new).
+
+% TEST: containment link true
+foo(a, b).
+
+% EXPECT:
+!bar(a, b).
+contains(a, b).
+
+% TEST: containment link false
+A(other).
+!foo(a, b).
+
+% EXPECT EXACTLY:
+?bar(a, b).
+?contains(a, b).
+
+% TEST: both containment links false
+A(other).
+!foo(a, b).
+!bar(a, b).
+
+% EXPECT:
+!contains(a, b).
+
+% TEST: do not propagation contains true
+contains(a, b).
+
+% EXPECT EXACTLY:
+?foo(a, b).
+?bar(a, b).
+
+% TEST: propagate contains true by exclusion
+contains(a, b).
+!foo(a, b).
+
+% EXPECT:
+bar(a, b).
+
+% TEST: propagate contains false by container exclusion
+A(other).
+!contains(a, b).
+
+% EXPECT:
+!foo(a, b).
+!bar(a, b).
+contains(other, b).
