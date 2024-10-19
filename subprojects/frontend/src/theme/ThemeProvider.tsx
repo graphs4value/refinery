@@ -132,6 +132,9 @@ function createResponsiveTheme(
         styleOverrides: {
           body: {
             overscrollBehavior: 'contain',
+            '&.notransition *': {
+              transition: 'none !important',
+            },
           },
         },
       },
