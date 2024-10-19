@@ -7,13 +7,8 @@
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 
+import typeHashTextColor from '../utils/typeHashTextColor';
 import { RelationMetadata } from '../xtext/xtextServiceResults';
-
-const ErrorPredicateName = styled('span', {
-  name: 'RelationName-Error',
-})(({ theme }) => ({
-  color: theme.palette.error.main,
-}));
 
 const Qualifier = styled('span', {
   name: 'RelationName-Qualifier',
@@ -21,24 +16,40 @@ const Qualifier = styled('span', {
   color: theme.palette.text.secondary,
 }));
 
-const FormattedName = observer(function FormattedName({
-  name,
-  metadata,
-}: {
-  name: string;
-  metadata: RelationMetadata;
-}): React.ReactNode {
-  const { detail } = metadata;
-  if (detail.type === 'class' && detail.isAbstract) {
-    return <i>{name}</i>;
+const FormattedName = styled('span', {
+  name: 'RelationName-FormattedName',
+  shouldForwardProp: (propName) => propName !== 'detail',
+})<{ metadata: RelationMetadata }>(({ theme, metadata: { detail } }) => {
+  let color = theme.palette.text.primary;
+  let fontStyle = 'normal';
+  let fontWeight = theme.typography.fontWeightRegular;
+  let textDecoration = 'none';
+  switch (detail.type) {
+    case 'class':
+      if (detail.color !== undefined) {
+        color = typeHashTextColor(detail.color, theme);
+        fontWeight = theme.typography.fontWeightMedium;
+      }
+      if (detail.isAbstract) {
+        fontStyle = 'italic';
+      }
+      break;
+    case 'reference':
+      if (detail.isContainment) {
+        fontWeight = theme.typography.fontWeightBold;
+      }
+      break;
+    case 'pred':
+      if (detail.kind === 'error') {
+        color = theme.palette.text.secondary;
+        textDecoration = 'line-through';
+      }
+      break;
+    default:
+      // Nothing to change by default.
+      break;
   }
-  if (detail.type === 'reference' && detail.isContainment) {
-    return <b>{name}</b>;
-  }
-  if (detail.type === 'pred' && detail.kind === 'error') {
-    return <ErrorPredicateName>{name}</ErrorPredicateName>;
-  }
-  return name;
+  return { color, fontStyle, fontWeight, textDecoration };
 });
 
 function RelationName({
@@ -50,7 +61,7 @@ function RelationName({
 }): JSX.Element {
   const { name, simpleName } = metadata;
   if (abbreviate) {
-    return <FormattedName name={simpleName} metadata={metadata} />;
+    return <FormattedName metadata={metadata}>{simpleName}</FormattedName>;
   }
   if (name.endsWith(simpleName)) {
     return (
@@ -58,11 +69,11 @@ function RelationName({
         <Qualifier>
           {name.substring(0, name.length - simpleName.length)}
         </Qualifier>
-        <FormattedName name={simpleName} metadata={metadata} />
+        <FormattedName metadata={metadata}>{simpleName}</FormattedName>
       </>
     );
   }
-  return <FormattedName name={name} metadata={metadata} />;
+  return <FormattedName metadata={metadata}>{name}</FormattedName>;
 }
 
 export default observer(RelationName);

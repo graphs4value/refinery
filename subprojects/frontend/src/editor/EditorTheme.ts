@@ -14,10 +14,10 @@ import {
   type CSSObject,
   type Theme,
 } from '@mui/material/styles';
-import { hcl } from 'd3-color';
 import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
+import typeHashTextColor from '../utils/typeHashTextColor';
 
 function createTypeHashStyles(
   theme: Theme,
@@ -37,21 +37,9 @@ function createTypeHashStyles(
     };
   });
   hexTypeHashes.forEach((typeHash) => {
-    let color = hcl(`#${typeHash}`);
-    if (theme.palette.mode === 'dark') {
-      color = color.brighter();
-      if (color.l < 60) {
-        color.l = 60;
-      }
-    } else {
-      color = color.darker();
-      if (color.l > 60) {
-        color.l = 60;
-      }
-    }
     result[`.tok-problem-typeHash-_${typeHash}`] = {
       '&, .tok-typeName': {
-        color: color.formatRgb(),
+        color: typeHashTextColor(`#${typeHash}`, theme),
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
     };
@@ -178,6 +166,7 @@ export default styled('div', {
     '.tok-problem-error': {
       '&, & .tok-typeName': {
         color: theme.palette.highlight.comment,
+        textDecoration: 'line-through',
       },
     },
     '.tok-invalid': {

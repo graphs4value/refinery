@@ -57,7 +57,8 @@ function createTypeHashStyles(
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
     result[`.node-typeHash-${obfuscateColor(i.toString(10))} .node-header`] = {
       fill: saturate(
-        theme.palette.highlight.typeHash[i]?.box ?? '#fff',
+        theme.palette.highlight.typeHash[i]?.box ??
+          theme.palette.background.default,
         saturation,
       ),
     };
