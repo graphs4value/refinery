@@ -136,6 +136,16 @@ code {
   --ifm-menu-color: var(--ifm-color-content-secondary) !important;
 }
 
+.dropdown__menu {
+  background: #fff;
+}
+
+[data-theme="dark"] .dropdown__menu {
+  background-color: var(--ifm-background-surface-color);
+  /* Apply material-ui style elevation with MUI `getOverlayAlpha(4)`. */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.051), rgba(255, 255, 255, 0.051));
+}
+
 .footer {
   --ifm-footer-background-color: var(--ifm-background-surface-color) !important;
   --ifm-footer-link-color: var(--ifm-color-content-secondary) !important;

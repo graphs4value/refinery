@@ -28,9 +28,10 @@ If you want Refinery CLI to print its documentation, run
 docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest -help
 ```
 
-## The `generate` subcommand {#generate}
+## The `generate` (`g`) subcommand {#generate}
 
 The `generate` subcommand generates a consistent concrete model from a partial model.
+You can also use the short name `g` to access this subcommand.
 
 ```shell
 docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest generate [options] input path
@@ -143,3 +144,14 @@ The generation is considered successful if it finds at least one solution, but m
 In this case, there will be fewer output files than requested.
 
 **Default value:** `1`
+
+## The `concretize` subcommand {#concretize}
+
+### `-output`, `-o` {#concretize-output}
+
+The output path for the concretized model.
+Passing `-o -` will write the concretized model to the standard output.
+
+**Default value:** `-`, i.e., the model is written to the standard output.
+
+## The `check` (`c`) subcommand {#concretize}

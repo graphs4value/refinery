@@ -69,6 +69,13 @@
   transform: scale(1.414);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .use-case:hover svg,
+  .use-case:focus-within svg {
+    transform: none;
+  }
+}
+
 .use-case__title {
   margin: 0;
   padding: 1rem;
