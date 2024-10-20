@@ -12,13 +12,16 @@ import { useRootStore } from './RootStoreProvider';
 import EditorPane from './editor/EditorPane';
 
 export default observer(function WorkArea(): JSX.Element {
-  const { themeStore } = useRootStore();
+  const { themeStore, editorStore } = useRootStore();
+  const lintPanelOpen = editorStore?.lintPanel.state ?? false;
 
   return (
     <DirectionalSplitPane
       primary={<EditorPane />}
       secondary={(horizontal) => (
-        <ModelWorkArea touchesTop={!themeStore.showCode || !horizontal} />
+        <ModelWorkArea
+          touchesTop={!themeStore.showCode || !horizontal || lintPanelOpen}
+        />
       )}
       primaryOnly={!themeStore.showGraph && !themeStore.showTable}
       secondaryOnly={!themeStore.showCode}
