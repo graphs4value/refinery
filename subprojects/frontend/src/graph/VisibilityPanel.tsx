@@ -34,6 +34,7 @@ const VisibilityDialogScroll = styled('div', {
 })<{ dialog: boolean }>(({ theme, dialog }) => {
   const overlayOpacity = dialog ? 0.16 : 0.09;
   return {
+    contain: 'content',
     display: 'flex',
     flexDirection: 'column',
     height: 'auto',

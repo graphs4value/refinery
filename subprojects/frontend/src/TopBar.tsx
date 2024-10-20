@@ -117,6 +117,9 @@ const ButtonStack = styled(Stack)({
     borderBottomRightRadius: '50em !important',
     clipPath: 'inset(0 0 0 2px)',
   },
+  '.rounded:first-of-type:last-of-type': {
+    clipPath: 'none',
+  },
 });
 
 export default observer(function TopBar(): JSX.Element {
