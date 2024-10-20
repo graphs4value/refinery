@@ -165,6 +165,7 @@ function appendStyles(
   themes: ThemeVariant[],
   colorNodes: boolean,
   hexTypeHashes: string[],
+  concretize: boolean,
   fontsCSS: string,
 ): void {
   const className = `refinery-${id}`;
@@ -182,6 +183,7 @@ function appendStyles(
       theme,
       colorNodes,
       hexTypeHashes,
+      concretize,
       useOpacity: true,
     });
     const sheet = {
@@ -379,6 +381,7 @@ export default async function exportDiagram(
     themes,
     colorNodes,
     graph.hexTypeHashes,
+    graph.concretize,
     fontsCSS,
   );
 

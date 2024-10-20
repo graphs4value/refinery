@@ -127,7 +127,7 @@ export const FormattingResult = DocumentStateResult.extend({
 export type FormattingResult = z.infer<typeof FormattingResult>;
 
 export const ModelGenerationStartedResult = z.object({
-  uuid: z.string().nonempty(),
+  uuid: z.string().min(1),
 });
 
 export type ModelGenerationStartedResult = z.infer<
@@ -137,8 +137,8 @@ export type ModelGenerationStartedResult = z.infer<
 export const NodeMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
-  typeHash: z.string().optional(),
-  kind: z.enum(['IMPLICIT', 'INDIVIDUAL', 'NEW']),
+  color: z.string().optional(),
+  kind: z.enum(['default', 'atom', 'multi']),
 });
 
 export type NodeMetadata = z.infer<typeof NodeMetadata>;
@@ -147,17 +147,24 @@ export const RelationMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
   arity: z.number().nonnegative(),
+  parameterNames: z.string().array().optional(),
   detail: z.union([
-    z.object({ type: z.literal('class'), abstractClass: z.boolean() }),
-    z.object({ type: z.literal('reference'), containment: z.boolean() }),
+    z.object({
+      type: z.literal('class'),
+      isAbstract: z.boolean(),
+      color: z.string().optional(),
+    }),
+    z.object({ type: z.literal('computed'), of: z.string() }),
+    z.object({ type: z.literal('reference'), isContainment: z.boolean() }),
     z.object({
       type: z.literal('opposite'),
-      container: z.boolean(),
-      opposite: z.string(),
+      of: z.string(),
+      isContainer: z.boolean(),
     }),
-    z.object({ type: z.literal('predicate'), error: z.boolean() }),
-    z.object({ type: z.literal('base') }),
-    z.object({ type: z.literal('builtin') }),
+    z.object({
+      type: z.literal('pred'),
+      kind: z.enum(['defined', 'base', 'error', 'shadow']),
+    }),
   ]),
 });
 
@@ -177,6 +184,7 @@ export type SemanticsModelResult = z.infer<typeof SemanticsModelResult>;
 export const SemanticsResult = z.object({
   model: SemanticsModelResult.optional(),
   error: z.string().min(1).optional(),
+  propagationRejected: z.boolean().optional(),
   issues: Issue.array().optional(),
 });
 

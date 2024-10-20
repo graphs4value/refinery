@@ -42,6 +42,10 @@ class BoundPropagationRule {
 		});
 	}
 
+	public boolean canFire() {
+		return resultSet.size() > 0;
+	}
+
 	public PropagationResult fireAll() {
 		if (!firedActivations.isEmpty()) {
 			return new PropagationRejectedResult(rule, "Propagation rule '%s' got stuck.".formatted(rule.getName()),

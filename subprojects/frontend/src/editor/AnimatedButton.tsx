@@ -37,6 +37,8 @@ const AnimatedButtonBase = styled(Button, {
 
 export default function AnimatedButton({
   'aria-label': ariaLabel,
+  role: ariaRole,
+  'aria-checked': ariaChecked,
   onClick,
   color,
   disabled,
@@ -45,8 +47,11 @@ export default function AnimatedButton({
   children,
 }: {
   'aria-label'?: string;
+  role?: string;
+  'aria-checked'?: boolean;
+  className?: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
-  color: 'error' | 'warning' | 'primary' | 'inherit';
+  color: 'error' | 'warning' | 'primary' | 'inherit' | 'dim';
   disabled?: boolean;
   startIcon?: JSX.Element;
   sx?: SxProps<Theme> | undefined;
@@ -73,10 +78,12 @@ export default function AnimatedButton({
   return (
     <AnimatedButtonBase
       {...(ariaLabel === undefined ? {} : { 'aria-label': ariaLabel })}
+      {...(ariaRole === undefined ? {} : { role: ariaRole })}
+      {...(ariaChecked === undefined ? {} : { 'aria-checked': ariaChecked })}
       {...(onClick === undefined ? {} : { onClick })}
       {...(sx === undefined ? {} : { sx })}
-      color={color}
-      className="rounded shaded"
+      color={color === 'dim' ? 'inherit' : color}
+      className={`rounded ${color === 'dim' ? ' shaded-dim' : 'shaded'}`}
       disabled={disabled ?? false}
       startIcon={startIcon}
       width={

@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.validation.Check;
 import org.jetbrains.annotations.Nullable;
@@ -100,7 +101,14 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (expectedName == null) {
 			return;
 		}
-		var name = NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(nameString));
+		QualifiedName qualifiedName;
+		try {
+			qualifiedName = qualifiedNameConverter.toQualifiedName(nameString);
+		} catch (IllegalArgumentException e) {
+			// No need to display an error, since the document already has a parse error in the qualified name.
+			return;
+		}
+		var name = NamingUtil.stripRootPrefix(qualifiedName);
 		if (!expectedName.equals(name)) {
 			var moduleKindName = switch (problem.getKind()) {
 				case PROBLEM -> "problem";
@@ -386,7 +394,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
 				!ProblemUtil.isContainerReference(referenceDeclaration);
-		if (isDefaultReference || referenceDeclaration.getKind() == ReferenceKind.REFERENCE) {
+		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE ||
+				referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
+		if (isDefaultReference || isCrossReference) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
 			if (ProblemUtil.isShadow(referenceType)) {
 				var message = "Shadow relations '%s' is not allowed in reference types."
@@ -439,19 +449,42 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
 		if (parametricDefinition instanceof RuleDefinition rule) {
-			var kind = rule.getKind();
 			var binding = parameter.getBinding();
-			if (kind == RuleKind.PROPAGATION && binding != ParameterBinding.SINGLE) {
-				acceptError("Parameter binding annotations are not supported in propagation rules.", parameter,
-						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
-			} else if (kind != RuleKind.DECISION && binding == ParameterBinding.MULTI) {
-				acceptError("Explicit multi-object bindings are only supported in decision rules.", parameter,
-						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			var kind = rule.getKind();
+			if (binding != ParameterBinding.SINGLE && ProblemUtil.parameterBindingAnnotationsAreForbidden(rule)) {
+				var message = "Parameter binding annotations are not supported in %s rules."
+						.formatted(kind.getName().toLowerCase(Locale.ROOT));
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		} else {
 			if (parameter.getBinding() != ParameterBinding.SINGLE) {
-				acceptError("Parameter binding annotations are only supported in decision rules.", parameter,
-						ProblemPackage.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+				acceptError("Parameter binding annotations are only supported in refinement rules.", parameter,
+						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			}
+		}
+	}
+
+	@Check
+	public void checkDiagonalParameters(RuleDefinition ruleDefinition) {
+		if (ProblemUtil.parameterBindingAnnotationsAreForbidden(ruleDefinition)) {
+			return;
+		}
+		var duplicateParameters = LinkedHashSet.<Parameter>newLinkedHashSet(ruleDefinition.getParameters().size());
+		for (var consequent : ruleDefinition.getConsequents()) {
+			for (var action : consequent.getActions()) {
+				var referenceCounts = ReferenceCounter.computeReferenceCounts(action);
+				for (var entry : referenceCounts.entrySet()) {
+					if (entry.getValue() >= 2 && entry.getKey() instanceof Parameter parameter) {
+						duplicateParameters.add(parameter);
+					}
+				}
+			}
+		}
+		for (var parameter : duplicateParameters) {
+			if (parameter.getBinding() == ParameterBinding.MULTI) {
+				var message = ("Parameter '%s' must not be a multi-object, because it appears multiple times in a " +
+						"rule consequent.").formatted(parameter.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
 			}
 		}
 	}

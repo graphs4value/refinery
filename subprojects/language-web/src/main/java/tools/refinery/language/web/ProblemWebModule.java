@@ -23,6 +23,8 @@ import tools.refinery.language.web.xtext.server.push.PushWebDocumentProvider;
 /**
  * Use this class to register additional components to be used within the web application.
  */
+// Unused methods in this class are called by reflection to configure the Xtext Injector.
+@SuppressWarnings("unused")
 public class ProblemWebModule extends AbstractProblemWebModule {
 	public Class<? extends IWebDocumentProvider> bindIWebDocumentProvider() {
 		return PushWebDocumentProvider.class;

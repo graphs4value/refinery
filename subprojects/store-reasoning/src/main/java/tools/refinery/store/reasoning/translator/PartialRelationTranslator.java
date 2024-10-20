@@ -31,7 +31,7 @@ import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
-import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
+import tools.refinery.store.reasoning.refinement.ConcreteRelationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
@@ -56,6 +56,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	private RelationalQuery candidateMayMerged;
 	private RelationalQuery candidateMustMerged;
 	private RoundingMode roundingMode;
+	private boolean mergeCandidateWithPartial = true;
 
 	private PartialRelationTranslator(PartialRelation partialRelation) {
 		super(partialRelation);
@@ -199,6 +200,12 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		return this;
 	}
 
+	public PartialRelationTranslator mergeCandidateWithPartial(boolean mergeCandidateWithPartial) {
+		checkNotConfigured();
+		this.mergeCandidateWithPartial = mergeCandidateWithPartial;
+		return this;
+	}
+
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		setFallbackRoundingMode();
@@ -317,6 +324,15 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 	}
 
 	private void mergeCandidateQueries() {
+		if (!mergeCandidateWithPartial) {
+			if (candidateMayMerged == null) {
+				candidateMayMerged = candidateMay;
+			}
+			if (candidateMustMerged == null) {
+				candidateMustMerged = candidateMust;
+			}
+			return;
+		}
 		if (candidateMayMerged == null) {
 			candidateMayMerged = createQuery("candidateMayMerged", (builder, arguments) -> builder
 					.clause(
@@ -333,11 +349,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 
 	private void createFallbackRewriter() {
 		if (rewriter == null) {
-			if (query == null) {
-				rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
-			} else {
-				rewriter = new QueryBasedComputedRewriter(may, must, candidateMayMerged, candidateMustMerged, query);
-			}
+			rewriter = new QueryBasedRelationRewriter(may, must, candidateMayMerged, candidateMustMerged);
 		}
 	}
 
@@ -353,7 +365,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 			// We checked in the condition that this is safe.
 			@SuppressWarnings("unchecked")
 			var typedStorageSymbol = (Symbol<TruthValue>) storageSymbol;
-			interpretationRefiner = ConcreteSymbolRefiner.of(typedStorageSymbol);
+			interpretationRefiner = ConcreteRelationRefiner.of(typedStorageSymbol, roundingMode);
 		}
 	}
 

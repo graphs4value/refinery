@@ -22,6 +22,7 @@ import { useRootStore } from '../RootStoreProvider';
 interface OuterPalette {
   background: string;
   border: string;
+  disabled: string;
 }
 
 interface TypeHashPalette {
@@ -77,7 +78,7 @@ declare module '@mui/material/styles' {
 
 function createResponsiveTheme(
   options: ThemeOptions,
-  overrides: ThemeOptions = {},
+  overrides: (theme: Theme) => ThemeOptions = () => ({}),
 ): Theme {
   const theme = createTheme({
     ...options,
@@ -130,7 +131,11 @@ function createResponsiveTheme(
       MuiCssBaseline: {
         styleOverrides: {
           body: {
+            overflow: 'hidden',
             overscrollBehavior: 'contain',
+            '&.notransition *': {
+              transition: 'none !important',
+            },
           },
         },
       },
@@ -160,6 +165,20 @@ function createResponsiveTheme(
                     shadedButtonStyle(theme.palette[color].main),
                 };
               }, {}),
+            },
+            '&.shaded-dim': {
+              color:
+                theme.palette.mode === 'dark'
+                  ? theme.palette.text.secondary
+                  : theme.palette.text.primary,
+              ...shadedButtonStyle(theme.palette.text.secondary),
+              '&.Mui-disabled': {
+                color: theme.palette.text.disabled,
+                background: alpha(
+                  theme.palette.text.disabled,
+                  theme.palette.action.focusOpacity,
+                ),
+              },
             },
           },
           sizeSmall: { fontSize: '0.875rem', lineHeight: '1.75' },
@@ -218,7 +237,10 @@ function createResponsiveTheme(
     },
   });
 
-  const themeWithOverrides = createTheme(themeWithComponents, overrides);
+  const themeWithOverrides = createTheme(
+    themeWithComponents,
+    overrides(themeWithComponents),
+  );
 
   return responsiveFontSizes(themeWithOverrides);
 }
@@ -228,61 +250,87 @@ export const lightTheme = (() => {
   const disabledText = '#a0a1a7';
   const darkBackground = '#f5f5f5';
 
-  return createResponsiveTheme({
-    palette: {
-      mode: 'light',
-      primary: { main: '#038a99' },
-      secondary: { main: '#61afef' },
-      error: { main: '#ca1243' },
-      warning: { main: '#c18401' },
-      success: { main: '#50a14f' },
-      info: { main: '#4078f2' },
-      background: {
-        default: '#fff',
-        paper: '#fff',
-      },
-      text: {
-        primary: primaryText,
-        secondary: '#696c77',
-        disabled: disabledText,
-      },
-      divider: alpha(primaryText, 0.16),
-      outer: {
-        background: darkBackground,
-        border: '#c8c8c8',
-      },
-      highlight: {
-        number: '#0084bc',
-        parameter: '#6a3e3e',
-        comment: disabledText,
-        activeLine: darkBackground,
-        selection: '#c8e4fb',
-        foldPlaceholder: alpha(primaryText, 0.08),
-        activeLintRange: alpha('#f2a60d', 0.28),
-        occurences: {
-          read: alpha(primaryText, 0.16),
-          write: alpha(primaryText, 0.16),
+  return createResponsiveTheme(
+    {
+      palette: {
+        mode: 'light',
+        primary: { main: '#038a99' },
+        secondary: { main: '#61afef' },
+        error: { main: '#ca1243' },
+        warning: { main: '#c18401' },
+        success: { main: '#50a14f' },
+        info: { main: '#4078f2' },
+        background: {
+          default: '#fff',
+          paper: '#fff',
         },
-        search: {
-          match: '#00bcd4',
-          selected: '#d500f9',
-          contrastText: '#fff',
+        text: {
+          primary: primaryText,
+          secondary: '#696c77',
+          disabled: disabledText,
         },
-        typeHash: [
-          { text: '#986801', box: '#e5c07b' },
-          { text: '#d6493e', box: '#e06c75' },
-          { text: '#50a14f', box: '#98c379' },
-          { text: '#a626a4', box: '#c678dd' },
-          { text: '#4078f2', box: '#80a7f4' },
-          { text: '#827662', box: '#e3d1b2' },
-          { text: '#904f53', box: '#e78b8f' },
-          { text: '#637855', box: '#abcc94' },
-          { text: '#805f89', box: '#dbb2e8' },
-          { text: '#5987ae', box: '#92c0e9' },
-        ],
+        divider: alpha(primaryText, 0.16),
+        outer: {
+          background: darkBackground,
+          border: '#c8c8c8',
+          disabled: darkBackground,
+        },
+        highlight: {
+          number: '#0084bc',
+          parameter: '#6a3e3e',
+          comment: disabledText,
+          activeLine: darkBackground,
+          selection: '#c8e4fb',
+          foldPlaceholder: alpha(primaryText, 0.08),
+          activeLintRange: alpha('#f2a60d', 0.28),
+          occurences: {
+            read: alpha(primaryText, 0.16),
+            write: alpha(primaryText, 0.16),
+          },
+          search: {
+            match: '#00bcd4',
+            selected: '#d500f9',
+            contrastText: '#fff',
+          },
+          typeHash: [
+            { text: '#986801', box: '#e5c07b' },
+            { text: '#d6493e', box: '#e06c75' },
+            { text: '#50a14f', box: '#98c379' },
+            { text: '#a626a4', box: '#c678dd' },
+            { text: '#4078f2', box: '#80a7f4' },
+            { text: '#827662', box: '#e3d1b2' },
+            { text: '#904f53', box: '#e78b8f' },
+            { text: '#637855', box: '#abcc94' },
+            { text: '#805f89', box: '#dbb2e8' },
+            { text: '#5987ae', box: '#92c0e9' },
+          ],
+        },
       },
     },
-  });
+    (theme) => ({
+      components: {
+        MuiCssBaseline: {
+          styleOverrides: {
+            '.notistack-MuiContent-default': {
+              background: `#282c34 !important`,
+            },
+            '.notistack-MuiContent-error': {
+              background: `${theme.palette.error.main} !important`,
+            },
+            '.notistack-MuiContent-success': {
+              background: `${theme.palette.success.main} !important`,
+            },
+            '.notistack-MuiContent-warning': {
+              background: `${theme.palette.warning.main} !important`,
+            },
+            '.notistack-MuiContent-info': {
+              background: `${theme.palette.info.main} !important`,
+            },
+          },
+        },
+      },
+    }),
+  );
 })();
 
 export const darkTheme = (() => {
@@ -318,6 +366,7 @@ export const darkTheme = (() => {
         outer: {
           background: darkBackground,
           border: '#181a1f',
+          disabled: '#2e333c',
         },
         highlight: {
           number: '#6188a6',
@@ -351,8 +400,27 @@ export const darkTheme = (() => {
         },
       },
     },
-    {
+    (theme) => ({
       components: {
+        MuiCssBaseline: {
+          styleOverrides: {
+            '.notistack-MuiContent-default': {
+              background: `${theme.palette.highlight.activeLine} !important`,
+            },
+            '.notistack-MuiContent-error': {
+              background: `${theme.palette.highlight.typeHash[1]?.box} !important`,
+            },
+            '.notistack-MuiContent-success': {
+              background: `${theme.palette.highlight.typeHash[2]?.box} !important`,
+            },
+            '.notistack-MuiContent-warning': {
+              background: `${theme.palette.warning.dark} !important`,
+            },
+            '.notistack-MuiContent-info': {
+              background: `${theme.palette.highlight.typeHash[4]?.box} !important`,
+            },
+          },
+        },
         MuiTooltip: {
           styleOverrides: {
             tooltip: {
@@ -361,7 +429,7 @@ export const darkTheme = (() => {
           },
         },
       },
-    },
+    }),
   );
 })();
 

@@ -13,6 +13,7 @@ import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.view.ForbiddenView;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -55,12 +56,12 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder);
+			configureWithDefaultFalse(storeBuilder, info.partial());
 		}
-		translator.refiner(DirectedCrossReferenceRefiner.of(symbol, sourceType, targetType));
-		if (info.partial()) {
-			translator.roundingMode(RoundingMode.NONE);
-		} else {
+		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		translator.refiner(DirectedCrossReferenceRefiner.of(symbol, sourceType, targetType, roundingMode));
+		translator.roundingMode(roundingMode);
+		if (!info.partial()) {
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 					.clause(
 							may(linkType.call(source, target)),
@@ -139,7 +140,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		return CrossReferenceUtils.createCandidateMayHelper(linkType, type, multiplicity, inverse);
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = linkType.name();
 		var sourceType = info.sourceType();
 		var targetType = info.targetType();
@@ -168,6 +169,45 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 						not(mayNewTarget.call(p2))
 				);
 			}
+			builder.action(
+					remove(linkType, p1, p2)
+			);
+		}));
+		if (!partial) {
+			// References concretized by rounding down are already {@code false} in the candidate interpretation,
+			// so we don't need to set them to {@code false} manually.
+			return;
+		}
+		var candidateMayNewSource = createCandidateMayHelper(sourceType, info.sourceMultiplicity(), false);
+		var candidateMayNewTarget = createCandidateMayHelper(targetType, info.targetMultiplicity(), true);
+		propagationBuilder.concretizationRule(Rule.of(name + "#invalidLinkConcretization", (builder, p1, p2) -> {
+			var queryBuilder = Query.builder(name + "#invalidLinkConcretizationPrecondition")
+					.parameters(p1, p2)
+					.clause(
+							candidateMay(linkType.call(p1, p2)),
+							not(candidateMay(sourceType.call(p1)))
+					)
+					.clause(
+							candidateMay(linkType.call(p1, p2)),
+							not(candidateMay(targetType.call(p2)))
+					);
+			if (info.isConstrained()) {
+				queryBuilder.clause(
+						candidateMay(linkType.call(p1, p2)),
+						not(candidateMust(linkType.call(p1, p2))),
+						not(candidateMayNewSource.call(p1))
+				);
+				queryBuilder.clause(
+						candidateMay(linkType.call(p1, p2)),
+						not(candidateMust(linkType.call(p1, p2))),
+						not(candidateMayNewTarget.call(p2))
+				);
+			}
+			builder.clause(
+					queryBuilder.build().call(p1, p2),
+					candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(p1)),
+					candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(p2))
+			);
 			builder.action(
 					remove(linkType, p1, p2)
 			);

@@ -6,13 +6,14 @@
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import { alpha } from '@mui/material/styles';
 import {
   DataGrid,
   type GridRenderCellParams,
   type GridColDef,
 } from '@mui/x-data-grid';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
@@ -49,7 +50,13 @@ function NoRowsOverlay({
   graph: GraphStore;
 }): JSX.Element {
   return (
-    <Stack height="100%" alignItems="center" justifyContent="center">
+    <Stack
+      height="100%"
+      alignItems="center"
+      justifyContent="center"
+      textAlign="center"
+      p={2}
+    >
       {selectedSymbol === undefined ? (
         noSymbolMessage
       ) : (
@@ -80,40 +87,60 @@ function NoResultsOverlay({
   );
 }
 
-function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
-  const {
-    selectedSymbol,
-    semantics: { nodes, partialInterpretation },
-  } = graph;
+function TableArea({
+  graph,
+  touchesTop,
+}: {
+  graph: GraphStore;
+  touchesTop: boolean;
+}): JSX.Element {
+  const { concretize, selectedSymbol, showComputed, semantics } = graph;
+  const { nodes, partialInterpretation } = semantics;
   const symbolName = selectedSymbol?.name;
+  const computedName = showComputed
+    ? graph.getComputedName(symbolName)
+    : symbolName;
   const arity = selectedSymbol?.arity ?? 0;
+  const parameterNames = selectedSymbol?.parameterNames;
+
+  const [cachedConcretize, setCachedConcretize] = useState(false);
+  useEffect(
+    () => {
+      setCachedConcretize(concretize);
+    },
+    /* eslint-disable-next-line react-hooks/exhaustive-deps --
+     * Deliberately only update `concretize` whenever `semantics` changes to avoid flashing colors.
+     */
+    [semantics],
+  );
 
   const columns = useMemo<GridColDef<Row>[]>(() => {
+    const namesOrEmpty = parameterNames ?? [];
     const defs: GridColDef<Row>[] = [];
     for (let i = 0; i < arity; i += 1) {
       defs.push({
         field: `n${i}`,
-        headerName: String(i + 1),
+        headerName: namesOrEmpty[i] ?? String(i + 1),
         valueGetter: (_, row) => row.nodes[i] ?? '',
         flex: 1,
       });
     }
     defs.push({
       field: 'value',
-      headerName: 'Value',
+      headerName: namesOrEmpty.indexOf('value') >= 0 ? '$VALUE' : 'value',
       flex: 1,
       renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
-        <ValueRenderer value={value} />
+        <ValueRenderer concretize={cachedConcretize} value={value} />
       ),
     });
     return defs;
-  }, [arity]);
+  }, [arity, cachedConcretize, parameterNames]);
 
   const rows = useMemo<Row[]>(() => {
-    if (symbolName === undefined) {
+    if (computedName === undefined) {
       return [];
     }
-    const interpretation = partialInterpretation[symbolName] ?? [];
+    const interpretation = partialInterpretation[computedName] ?? [];
     return interpretation.map((tuple) => {
       const nodeNames: string[] = [];
       for (let i = 0; i < arity; i += 1) {
@@ -130,22 +157,10 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
         value: String(tuple[arity]),
       };
     });
-  }, [arity, nodes, partialInterpretation, symbolName]);
+  }, [arity, nodes, partialInterpretation, computedName]);
 
   return (
-    <Box
-      width="100%"
-      height="100%"
-      p={1}
-      sx={(theme) => ({
-        '.MuiDataGrid-withBorderColor': {
-          borderColor:
-            theme.palette.mode === 'dark'
-              ? theme.palette.divider
-              : theme.palette.outer.border,
-        },
-      })}
-    >
+    <Box width="100%" height="100%">
       <DataGrid
         slots={{
           toolbar: TableToolbar,
@@ -168,6 +183,43 @@ function TableArea({ graph }: { graph: GraphStore }): JSX.Element {
         columns={columns}
         rows={rows}
         getRowId={(row) => row.nodes.join(',')}
+        sx={(theme) => ({
+          border: 'none',
+          '--DataGrid-rowBorderColor':
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.text.primary, 0.24)
+              : theme.palette.outer.border,
+          '.MuiDataGrid-withBorderColor': {
+            borderColor: theme.palette.outer.border,
+          },
+          '.MuiDataGrid-toolbarContainer': {
+            background: touchesTop
+              ? 'transparent'
+              : theme.palette.outer.background,
+            padding: theme.spacing(1),
+            // Correct for the non-integer height of the text box to match up with the editor area toolbar.
+            marginBottom: '-0.5px',
+          },
+          '.MuiDataGrid-columnHeaders': {
+            '.MuiDataGrid-columnHeader, .MuiDataGrid-filler, .MuiDataGrid-scrollbarFiller':
+              {
+                background: theme.palette.outer.background,
+                borderBottom: `1px solid ${theme.palette.outer.border}`,
+                borderTop: touchesTop
+                  ? `1px solid ${theme.palette.outer.border}`
+                  : 'none',
+              },
+          },
+          '.MuiDataGrid-row--firstVisible .MuiDataGrid-scrollbarFiller': {
+            display: 'none',
+          },
+          '.MuiDataGrid-footerContainer': {
+            backgroundColor: theme.palette.outer.background,
+          },
+          '.MuiDataGrid-columnSeparator': {
+            color: theme.palette.text.disabled,
+          },
+        })}
       />
     </Box>
   );

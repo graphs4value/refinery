@@ -81,6 +81,13 @@ const viteConfig: ViteConfig = {
     emptyOutDir: true,
     sourcemap: isDevelopment,
     minify: !isDevelopment,
+    rollupOptions: {
+      output: {
+        chunkFileNames: ({ isDynamicEntry, isEntry }) =>
+          isDynamicEntry || isEntry ? '[name]-[hash].js' : '[hash].js',
+        experimentalMinChunkSize: 20 * 1024,
+      },
+    },
   },
   server: serverOptions,
 };

@@ -86,8 +86,16 @@ function getOriginalURL(url: string) {
 
 function getResponsiveURL(url: string) {
   const separator = url.indexOf('?') < 0 ? '?' : '&';
-  const quality = /\.png$/.test(url) ? 100 : 85;
-  return `${url}${separator}quality=${quality}&sizes[]=2640,sizes[]=1928,sizes[]=1320,sizes[]=964,sizes[]=640,sizes[]=320&placeholder=true&rl`;
+  let format: string;
+  let quality: number;
+  if (/\.png$/.test(url)) {
+    format = 'png';
+    quality = 100;
+  } else {
+    format = 'webp';
+    quality = 85;
+  }
+  return `${url}${separator}format=${format}&quality=${quality}&sizes[]=2640,sizes[]=1928,sizes[]=1320,sizes[]=964,sizes[]=640,sizes[]=320&placeholder=true&rl`;
 }
 
 function getExpressionAttribute(name: string, value: string): MdxJsxAttribute {

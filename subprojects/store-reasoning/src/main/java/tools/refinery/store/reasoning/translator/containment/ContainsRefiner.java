@@ -5,20 +5,20 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, Boolean> {
+class ContainsRefiner extends AbstractPartialInterpretationRefiner.ConcretizationAware<TruthValue, Boolean> {
 	private static final Map<TruthValue, InferredContainment> EMPTY_VALUES;
 
 	static {
@@ -61,8 +61,14 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner<TruthValue, B
 	}
 
 	public InferredContainment mergeLink(InferredContainment oldValue, TruthValue toMerge) {
-		var newContains = oldValue.contains().meet(toMerge);
-		if (newContains.equals(oldValue.contains())) {
+		var oldContains = oldValue.contains();
+		TruthValue newContains;
+		if (!oldContains.must() && toMerge == TruthValue.TRUE && concretizationInProgress()) {
+			newContains = TruthValue.ERROR;
+		} else {
+			newContains = oldContains.meet(toMerge);
+		}
+		if (newContains.equals(oldContains)) {
 			return oldValue;
 		}
 		var mustLinks = oldValue.mustLinks();

@@ -75,10 +75,12 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/REFINEMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/PROPAGATION"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/DECISION"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/CONCRETIZATION"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ParameterBinding">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/SINGLE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/FOCUS"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/LONE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/MULTI"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//PredicateKind">

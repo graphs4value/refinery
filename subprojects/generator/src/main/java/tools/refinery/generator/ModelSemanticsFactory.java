@@ -1,10 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.generator;
 
+import tools.refinery.generator.impl.ConcreteModelSemantics;
+import tools.refinery.generator.impl.ModelSemanticsImpl;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.ModelStore;
@@ -19,6 +21,7 @@ import java.util.Set;
 @SuppressWarnings("UnusedReturnValue")
 public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanticsFactory> {
 	private boolean withCandidateInterpretations;
+	private boolean concretize;
 
 	@Override
 	protected ModelSemanticsFactory getSelf() {
@@ -30,9 +33,14 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 		return this;
 	}
 
+	public ModelSemanticsFactory concretize(boolean concretize) {
+		this.concretize = concretize;
+		return this;
+	}
+
 	public ModelSemantics createSemantics(Problem problem) {
 		var semantics = tryCreateSemantics(problem);
-		semantics.getPropagationResult().throwIfRejected();
+		semantics.getInitializationResult().throwIfRejected();
 		return semantics;
 	}
 
@@ -49,11 +57,22 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		return new ModelSemantics(initializer.getProblemTrace(), store, initializer.getModelSeed());
+		var problemTrace = initializer.getProblemTrace();
+		var modelSeed = initializer.getModelSeed();
+		if (concretize) {
+			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider(),
+					getMetadataCreatorProvider(), isKeepNonExistingObjects());
+		}
+		return new ModelSemanticsImpl(problemTrace, store, modelSeed, getMetadataCreatorProvider());
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {
-		return withCandidateInterpretations ? Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE) :
-				Set.of(Concreteness.PARTIAL);
+		if (concretize) {
+			return Set.of(Concreteness.CANDIDATE);
+		}
+		if (withCandidateInterpretations) {
+			return Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE);
+		}
+		return Set.of(Concreteness.PARTIAL);
 	}
 }

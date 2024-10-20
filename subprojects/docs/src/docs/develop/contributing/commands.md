@@ -67,6 +67,23 @@ You'll need to use [`yarnw frontend dev`](#frontend-dev)
 Like [`./gradlew serve`](#serve), the behavior of this task is influenced by the same [environmental variables](../../../learn/docker#environmental-variables) as the Refinery [Docker container](../../../learn/docker).
 However, the default value of `REFINERY_LISTEN_PORT` is `1312`.
 
+### `cli`
+
+```bash posix2windows
+./gradlew cli
+```
+
+Runs the [Refinery CLI](../../learn/docker/cli.md) from the project directory.
+The main use of this command is to try out modifications to the Refinery CLI without building a new Docker container.
+
+You can use the `--args` option pass options to the Refinery CLI. For example, the command
+
+```bash posix2windows
+./gradlew cli --args="generate example.problem -o solution.refinery"
+```
+
+will run the model generator on the problem `example.problem` (located in the root directory of the project) and save the generated model to the file `solution.refinery`.
+
 ## Yarn commands
 
 We provide a `yarnw` wrapper script to invoke the Yarn distribution installed by frontend-gradle-plugin directly.

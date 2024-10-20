@@ -18,6 +18,7 @@ import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PushWebDocument extends XtextWebDocument {
 	private static final Logger LOG = LoggerFactory.getLogger(PushWebDocument.class);
@@ -28,9 +29,20 @@ public class PushWebDocument extends XtextWebDocument {
 
 	private final DocumentSynchronizer synchronizer;
 
-	public PushWebDocument(String resourceId, DocumentSynchronizer synchronizer) {
+	private final AtomicBoolean concretize;
+
+	public PushWebDocument(String resourceId, DocumentSynchronizer synchronizer, boolean concretize) {
 		super(resourceId, synchronizer);
 		this.synchronizer = synchronizer;
+		this.concretize = new AtomicBoolean(concretize);
+	}
+
+	public boolean isConcretize() {
+		return concretize.get();
+	}
+
+	public void setConcretize(boolean concretize) {
+		this.concretize.set(concretize);
 	}
 
 	public ModelGenerationManager getModelGenerationManager() {

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 class SemanticsTestBuilder implements ChunkAcceptor {
-	private final Pattern LINE_PATTERN = Pattern.compile("^.+$", Pattern.MULTILINE);
+	private static final Pattern LINE_PATTERN = Pattern.compile("^.+$", Pattern.MULTILINE);
 
 	private final ProblemLoader problemLoader;
 	private final URI uri;

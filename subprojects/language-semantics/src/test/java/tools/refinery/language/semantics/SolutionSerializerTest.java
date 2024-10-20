@@ -44,7 +44,8 @@ class SolutionSerializerTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void solutionSerializerTest(String prefix, String input, String expectedOutput) throws IOException {
+	void solutionSerializerTest(String prefix, String input, boolean preserveNewNodes,
+								String expectedOutput) throws IOException {
 		var problem = parseHelper.parse(prefix + "\n" + input).problem();
 		var storeBuilder = ModelStore.builder()
 				.with(QueryInterpreterAdapter.builder())
@@ -62,6 +63,7 @@ class SolutionSerializerTest {
 		bestFirst.startExploration(initialVersion, 0);
 		model.restore(bestFirst.getSolutionStore().getSolutions().getFirst().version());
 		var serializer = serializerProvider.get();
+		serializer.setPreserveNewNodes(preserveNewNodes);
 		var solution = serializer.serializeSolution(initializer.getProblemTrace(), model);
 		String actualOutput;
 		try (var outputStream = new ByteArrayOutputStream()) {
@@ -78,7 +80,7 @@ class SolutionSerializerTest {
 				class Foo.
 				""", """
 				scope Foo = 3.
-				""", """
+				""", false, """
 				declare foo1, foo2, foo3.
 				!exists(Foo::new).
 				Foo(foo1).
@@ -92,7 +94,7 @@ class SolutionSerializerTest {
 				class Bar.
 				""", """
 				scope Foo = 1.
-				""", """
+				""", false, """
 				declare foo1, bar1, bar2.
 				!exists(Foo::new).
 				!exists(Bar::new).
@@ -111,7 +113,7 @@ class SolutionSerializerTest {
 				}
 				""", """
 				scope Foo = 1, Bar = 2.
-				""", """
+				""", false, """
 				declare foo1, bar1, bar2.
 				!exists(Foo::new).
 				!exists(Bar::new).
@@ -131,7 +133,7 @@ class SolutionSerializerTest {
 				friend(b, c).
 
 				scope Person += 0.
-				""", """
+				""", false, """
 				declare a, b, c.
 				!exists(Person::new).
 				Person(a).
@@ -157,7 +159,7 @@ class SolutionSerializerTest {
 				bar(foo, BAR_A).
 
 				scope Foo += 0.
-				""", """
+				""", false, """
 				declare foo.
 				!exists(Foo::new).
 				Foo(foo).
@@ -168,7 +170,7 @@ class SolutionSerializerTest {
 				class Bar extends Foo.
 				""", """
 				scope Foo = 1, Bar = 0.
-				""", """
+				""", false, """
 				declare foo1.
 				!exists(Foo::new).
 				!exists(Bar::new).
@@ -183,7 +185,7 @@ class SolutionSerializerTest {
 				!exists(b).
 
 				scope Foo += 0.
-				""", """
+				""", false, """
 				declare a.
 				!exists(Foo::new).
 				Foo(a).
@@ -194,7 +196,7 @@ class SolutionSerializerTest {
 				""", """
 				Foo(a).
 				scope Foo += 0.
-				""", """
+				""", false, """
 				!exists(Foo::new).
 				Foo(a).
 				"""), Arguments.of("""
@@ -204,7 +206,7 @@ class SolutionSerializerTest {
 				Foo(a).
 				!exists(Foo::new).
 				scope Foo = 2.
-				""", """
+				""", false, """
 				declare foo1, foo2.
 				!exists(a).
 				!exists(Foo::new).
@@ -217,7 +219,7 @@ class SolutionSerializerTest {
 				Foo(a).
 				?exists(a).
 				scope Foo = 2, Foo += 1.
-				""", """
+				""", false, """
 				declare foo1.
 				!exists(Foo::new).
 				Foo(a).
@@ -229,7 +231,7 @@ class SolutionSerializerTest {
 				Foo(a).
 				?exists(a).
 				scope Foo = 1, Foo += 1.
-				""", """
+				""", false, """
 				declare foo1.
 				!exists(a).
 				!exists(Foo::new).
@@ -243,7 +245,7 @@ class SolutionSerializerTest {
 				""", """
 				bar(a, b).
 				scope Foo = 2, Bar = 2.
-				""", """
+				""", false, """
 				declare a, b, foo1, bar1.
 				!exists(Foo::new).
 				!exists(Bar::new).
@@ -263,7 +265,7 @@ class SolutionSerializerTest {
 				""", """
 				bar(a, b).
 				scope Foo = 2, Bar = 2.
-				""", """
+				""", false, """
 				declare a, b, foo1, bar1.
 				!exists(Foo::new).
 				!exists(Bar::new).
@@ -276,11 +278,12 @@ class SolutionSerializerTest {
 				"""), Arguments.of("""
 				class Foo.
 				class Bar.
-				partial pred bar(Foo x, Bar y).
+				partial pred bar(Foo x, Bar y, Bar z).
 				""", """
-				bar(a, b).
+				!bar(*, *, Bar::new).
+				bar(a, b, b).
 				scope Foo = 2, Bar = 2.
-				""", """
+				""", false, """
 				declare a, b, foo1, bar1.
 				!exists(Foo::new).
 				!exists(Bar::new).
@@ -288,11 +291,93 @@ class SolutionSerializerTest {
 				Bar(bar1).
 				Foo(a).
 				Bar(b).
-				default !bar(*, *).
-				?bar(foo1, bar1).
-				?bar(foo1, b).
-				?bar(a, bar1).
-				bar(a, b).
+				default !bar(*, *, *).
+				?bar(foo1, bar1, b).
+				?bar(foo1, b, b).
+				?bar(a, bar1, b).
+				bar(a, b, b).
+				"""), Arguments.of("""
+				class A {
+					B[] foo
+				}
+				class B.
+				""", """
+				foo(A::new, B::new).
+				foo(A::new, b).
+				scope A = 1, B = 1.
+				""", true, """
+				declare b.
+				exists(A::new).
+				equals(A::new, A::new).
+				!exists(B::new).
+				A(A::new).
+				B(b).
+				default !foo(*, *).
+				foo(A::new, b).
+				"""), Arguments.of("""
+				class Foo {
+					partial Bar[] baz
+					partial Bar[] quux
+				}
+
+				class Bar.
+
+				pred query(a, b) <-> baz(a, b); quux(a, b).
+				""", """
+				scope Foo = 1, Bar = 3.
+				baz(foo1, bar1).
+				query(foo1, bar2).
+				Bar(bar3).
+				""", false, """
+				declare foo1, bar1, bar2, bar3.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Bar(bar2).
+				Bar(bar3).
+				default !baz(*, *).
+				baz(foo1, bar1).
+				?baz(foo1, bar2).
+				?baz(foo1, bar3).
+				default !quux(*, *).
+				?quux(foo1, bar1).
+				?quux(foo1, bar2).
+				?quux(foo1, bar3).
+				query(foo1, bar2).
+				"""), Arguments.of("""
+				class Foo {
+					partial Bar[] baz
+					partial Bar[] quux
+				}
+
+				class Bar.
+
+				pred query(a, b) <-> baz(a, b), quux(a, b).
+				""", """
+				scope Foo = 1, Bar = 3.
+				Foo(foo1).
+				Bar(bar1).
+				!baz(foo1, bar1).
+				Bar(bar2).
+				!query(foo1, bar2).
+				Bar(bar3).
+				""", false, """
+				declare foo1, bar1, bar2, bar3.
+				!exists(Foo::new).
+				!exists(Bar::new).
+				Foo(foo1).
+				Bar(bar1).
+				Bar(bar2).
+				Bar(bar3).
+				default !baz(*, *).
+				?baz(foo1, bar2).
+				?baz(foo1, bar3).
+				default !quux(*, *).
+				?quux(foo1, bar1).
+				?quux(foo1, bar2).
+				?quux(foo1, bar3).
+				!query(foo1, bar2).
 				"""));
 	}
 }

@@ -1,0 +1,66 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Student {
+    Curriculum[0..*] studies
+}
+
+enum Curriculum {
+    BSc,
+    MSc
+}
+
+Student(anne).
+Student(bob).
+!studies(anne, BSc).
+
+% TEST: reference to enum literal in propagation rule
+
+propagation rule studiesMSc(s) <->
+    must Student(s),
+    !may studies(s, BSc)
+==>
+    studies(s, MSc).
+
+% EXPECT EXACTLY:
+studies(anne, MSc).
+?studies(bob, BSc).
+?studies(bob, MSc).
+
+% TEST: reference to enum literal in propagation rule with negation inside
+
+propagation rule studiesMSc(s) <->
+    must Student(s),
+    must !studies(s, BSc)
+==>
+    studies(s, MSc).
+
+% EXPECT EXACTLY:
+studies(anne, MSc).
+?studies(bob, BSc).
+?studies(bob, MSc).
+
+% TEST: reference to enum literal in propagation rule with implicit lifting
+
+propagation rule studiesMSc(Student s) <->
+    !studies(s, BSc)
+==>
+    studies(s, MSc).
+
+% EXPECT EXACTLY:
+studies(anne, MSc).
+?studies(bob, BSc).
+?studies(bob, MSc).
+
+% TEST: positive modal reference to enum literal in propagation rule
+
+propagation rule studiesMSc(s) <->
+    must Student(s),
+    may studies(s, MSc)
+==>
+    studies(s, MSc).
+
+% EXPECT:
+studies(anne, MSc).
+studies(bob, MSc).

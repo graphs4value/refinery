@@ -18,6 +18,7 @@ import tools.refinery.store.query.view.MayView;
 import tools.refinery.store.query.view.MustView;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
 
@@ -85,7 +86,7 @@ public class PredicateTranslator implements ModelStoreConfiguration {
 			translator.may(may);
 
 			if (parameterTypes != null && parameterTypes.stream().anyMatch(Objects::nonNull)) {
-				translator.refiner(PredicateRefiner.of(symbol, parameterTypes));
+				translator.refiner(PredicateRefiner.of(symbol, parameterTypes, RoundingMode.NONE));
 			}
 		} else if (defaultValue.may()) {
 			// If all values are permitted, we don't need to check for any forbidden values in the model.

@@ -14,7 +14,8 @@ const Label = styled('div', {
   shouldForwardProp: (prop) => prop !== 'value',
 })<{
   value: 'TRUE' | 'UNKNOWN' | 'ERROR';
-}>(({ theme, value }) => ({
+  concretize: boolean;
+}>(({ theme, value, concretize }) => ({
   display: 'flex',
   alignItems: 'center',
   ...(value === 'UNKNOWN'
@@ -24,7 +25,7 @@ const Label = styled('div', {
     : {}),
   ...(value === 'ERROR'
     ? {
-        color: theme.palette.error.main,
+        color: concretize ? theme.palette.info.main : theme.palette.error.main,
       }
     : {}),
   '& svg': {
@@ -33,26 +34,28 @@ const Label = styled('div', {
 }));
 
 export default function ValueRenderer({
+  concretize,
   value,
 }: {
+  concretize: boolean;
   value: string | undefined;
 }): React.ReactNode {
   switch (value) {
     case 'TRUE':
       return (
-        <Label value={value}>
+        <Label concretize={concretize} value={value}>
           <LabelIcon fontSize="small" /> true
         </Label>
       );
     case 'UNKNOWN':
       return (
-        <Label value={value}>
+        <Label concretize={concretize} value={value}>
           <LabelOutlinedIcon fontSize="small" /> unknown
         </Label>
       );
     case 'ERROR':
       return (
-        <Label value={value}>
+        <Label concretize={concretize} value={value}>
           <CancelIcon fontSize="small" /> error
         </Label>
       );

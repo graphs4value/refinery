@@ -7,12 +7,20 @@
 import { makeAutoObservable, observable } from 'mobx';
 
 import type EditorStore from '../editor/EditorStore';
+import isBuiltIn from '../utils/isBuiltIn';
 import type {
   RelationMetadata,
   SemanticsModelResult,
 } from '../xtext/xtextServiceResults';
 
 export type Visibility = 'all' | 'must' | 'none';
+
+function hideBuiltIn(
+  metadata: RelationMetadata,
+  visibility: Visibility,
+): Visibility {
+  return isBuiltIn(metadata) ? 'none' : visibility;
+}
 
 export function getDefaultVisibility(
   metadata: RelationMetadata | undefined,
@@ -25,10 +33,16 @@ export function getDefaultVisibility(
     case 'class':
     case 'reference':
     case 'opposite':
-    case 'base':
-      return 'all';
-    case 'predicate':
-      return detail.error ? 'must' : 'none';
+      return hideBuiltIn(metadata, 'all');
+    case 'pred':
+      switch (detail.kind) {
+        case 'base':
+          return hideBuiltIn(metadata, 'all');
+        case 'error':
+          return 'must';
+        default:
+          return 'none';
+      }
     default:
       return 'none';
   }
@@ -42,12 +56,19 @@ export function isVisibilityAllowed(
     return visibility === 'none';
   }
   const { detail } = metadata;
-  if (detail.type === 'predicate' && detail.error) {
+  if (detail.type === 'pred' && detail.kind === 'error') {
     // We can't display may matches of error predicates,
     // because they have none by definition.
     return visibility !== 'all';
   }
+  if (detail.type === 'computed') {
+    return false;
+  }
   return true;
+}
+
+function getComputedName(relationName: string) {
+  return `${relationName}::computed`;
 }
 
 const TYPE_HASH_HEX_PREFFIX = '_';
@@ -61,13 +82,11 @@ export default class GraphStore {
 
   relationMetadata = new Map<string, RelationMetadata>();
 
-  visibility = new Map<string, Visibility>();
+  visibility: Map<string, Visibility>;
 
   abbreviate = true;
 
   scopes = false;
-
-  selectedSymbol: RelationMetadata | undefined;
 
   hexTypeHashes: string[] = [];
 
@@ -75,12 +94,22 @@ export default class GraphStore {
 
   constructor(
     private readonly editorStore: EditorStore,
-    private readonly nameOverride?: string,
+    private readonly generatedModelName?: string,
+    visibility?: Map<string, Visibility>,
   ) {
+    if (visibility === undefined) {
+      this.visibility = new Map<string, Visibility>();
+    } else {
+      this.visibility = new Map(visibility);
+    }
     makeAutoObservable<GraphStore, 'editorStore'>(this, {
       editorStore: false,
       semantics: observable.ref,
     });
+  }
+
+  get generated(): boolean {
+    return this.generatedModelName !== undefined;
   }
 
   getVisibility(relation: string): Visibility {
@@ -163,17 +192,24 @@ export default class GraphStore {
     this.scopes = !this.scopes;
   }
 
+  get selectedSymbol(): RelationMetadata | undefined {
+    const { selectedSymbolName } = this.editorStore;
+    if (selectedSymbolName === undefined) {
+      return undefined;
+    }
+    return this.relationMetadata.get(selectedSymbolName);
+  }
+
   setSelectedSymbol(option: RelationMetadata | undefined): void {
-    if (option === undefined) {
-      this.selectedSymbol = undefined;
-      return;
-    }
-    const metadata = this.relationMetadata.get(option.name);
-    if (metadata !== undefined) {
-      this.selectedSymbol = metadata;
-    } else {
-      this.selectedSymbol = undefined;
-    }
+    this.editorStore.setSelectedSymbolName(option?.name);
+  }
+
+  get showComputed(): boolean {
+    return this.editorStore.showComputed;
+  }
+
+  toggleShowComputed(): void {
+    this.editorStore.toggleShowComputed();
   }
 
   setSemantics(semantics: SemanticsModelResult) {
@@ -194,7 +230,6 @@ export default class GraphStore {
     toRemove.forEach((key) => {
       this.visibility.delete(key);
     });
-    this.setSelectedSymbol(this.selectedSymbol);
     this.updateTypeHashes();
   }
 
@@ -207,12 +242,9 @@ export default class GraphStore {
    * keep emitting styles for the colors.
    */
   private updateTypeHashes(): void {
-    this.semantics.nodes.forEach(({ typeHash }) => {
-      if (
-        typeHash !== undefined &&
-        typeHash.startsWith(TYPE_HASH_HEX_PREFFIX)
-      ) {
-        const key = typeHash.substring(TYPE_HASH_HEX_PREFFIX.length);
+    this.semantics.nodes.forEach(({ color }) => {
+      if (color !== undefined && color.startsWith(TYPE_HASH_HEX_PREFFIX)) {
+        const key = color.substring(TYPE_HASH_HEX_PREFFIX.length);
         this.typeHashesMap.set(key, 0);
       }
     });
@@ -232,11 +264,55 @@ export default class GraphStore {
   }
 
   get name(): string {
-    return this.nameOverride ?? this.editorStore.simpleNameOrFallback;
+    return this.generatedModelName ?? this.editorStore.simpleNameOrFallback;
   }
 
   get showNonExistent(): boolean {
     const existsVisibility = this.visibility.get('builtin::exists') ?? 'none';
     return existsVisibility !== 'none' || this.scopes;
+  }
+
+  private hasComputed(relationName: string | undefined): boolean {
+    if (relationName === undefined) {
+      return false;
+    }
+    const computedName = getComputedName(relationName);
+    const computedMetadata = this.relationMetadata.get(computedName);
+    if (computedMetadata === undefined) {
+      return false;
+    }
+    const { detail } = computedMetadata;
+    return detail.type === 'computed' && detail.of === relationName;
+  }
+
+  getComputedName(relationName: string | undefined): string | undefined {
+    if (relationName === undefined) {
+      return undefined;
+    }
+    return this.hasComputed(relationName)
+      ? getComputedName(relationName)
+      : relationName;
+  }
+
+  get selectedSymbolHasComputed(): boolean {
+    return this.hasComputed(this.editorStore.selectedSymbolName);
+  }
+
+  get concretize(): boolean {
+    return this.generated || this.editorStore.concretize;
+  }
+
+  get upToDate(): boolean {
+    return (
+      this.generated ||
+      this.editorStore.delayedErrors.semanticsUpToDate ||
+      // Do not dim the graph and table views if there are no nodes to show
+      // (e.g., during page loading).
+      this.semantics.nodes.length === 0
+    );
+  }
+
+  get dimView(): boolean {
+    return !this.upToDate;
   }
 }

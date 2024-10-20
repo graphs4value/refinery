@@ -30,7 +30,13 @@ public class ProblemQualifiedNameProvider extends DefaultDeclarativeQualifiedNam
 	protected QualifiedName qualifiedName(Problem problem) {
 		var qualifiedNameString = problem.getName();
 		if (qualifiedNameString != null) {
-			return NamingUtil.stripRootPrefix(qualifiedNameConverter.toQualifiedName(qualifiedNameString));
+			QualifiedName nameWithRootPrefix;
+			try {
+				nameWithRootPrefix = qualifiedNameConverter.toQualifiedName(qualifiedNameString);
+			} catch (IllegalArgumentException e) {
+				return null;
+			}
+			return NamingUtil.stripRootPrefix(nameWithRootPrefix);
 		}
 		if (!ProblemUtil.isModule(problem)) {
 			return null;

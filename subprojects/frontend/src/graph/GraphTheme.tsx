@@ -10,7 +10,7 @@ import {
   type CSSObject,
   type Theme,
 } from '@mui/material/styles';
-import { lch } from 'd3-color';
+import { type HCLColor, lch } from 'd3-color';
 import { range } from 'lodash-es';
 
 import obfuscateColor from './obfuscateColor';
@@ -35,10 +35,20 @@ function createEdgeColor(
   };
 }
 
+function saturate(color: HCLColor | string, saturation: number): string {
+  if (saturation === 1) {
+    return typeof color === 'string' ? color : color.formatRgb();
+  }
+  const parsedColor = typeof color === 'string' ? lch(color) : color;
+  parsedColor.c *= saturation;
+  return parsedColor.formatRgb();
+}
+
 function createTypeHashStyles(
   theme: Theme,
   colorNodes: boolean,
   typeHashes: string[],
+  saturation = 1,
 ): CSSObject {
   if (!colorNodes) {
     return {};
@@ -46,7 +56,11 @@ function createTypeHashStyles(
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
     result[`.node-typeHash-${obfuscateColor(i.toString(10))} .node-header`] = {
-      fill: theme.palette.highlight.typeHash[i]?.box,
+      fill: saturate(
+        theme.palette.highlight.typeHash[i]?.box ??
+          theme.palette.background.default,
+        saturation,
+      ),
     };
   });
   typeHashes.forEach((typeHash) => {
@@ -56,9 +70,11 @@ function createTypeHashStyles(
       if (color.l > 50) {
         color.l = 50;
       }
+    } else if (color.l < 70) {
+      color.l = 70;
     }
     result[`.node-typeHash-_${obfuscateColor(typeHash)} .node-header`] = {
-      fill: color.formatRgb(),
+      fill: saturate(color, saturation),
     };
   });
   return result;
@@ -68,14 +84,17 @@ export function createGraphTheme({
   theme,
   colorNodes,
   hexTypeHashes,
+  concretize,
   useOpacity,
 }: {
   theme: Theme;
   colorNodes: boolean;
   hexTypeHashes: string[];
+  concretize: boolean;
   useOpacity?: boolean;
 }): CSSObject {
   const shadowAlapha = theme.palette.mode === 'dark' ? 0.32 : 0.24;
+  const errorColor = concretize ? theme.palette.info : theme.palette.error;
 
   return {
     '.node': {
@@ -127,7 +146,7 @@ export function createGraphTheme({
       },
     },
     ...createEdgeColor('UNKNOWN', theme.palette.text.secondary, 'none'),
-    ...createEdgeColor('ERROR', theme.palette.error.main),
+    ...createEdgeColor('ERROR', errorColor.main),
     '.icon-TRUE': {
       fill: theme.palette.text.primary,
     },
@@ -135,13 +154,13 @@ export function createGraphTheme({
       fill: theme.palette.text.secondary,
     },
     '.icon-ERROR': {
-      fill: theme.palette.error.main,
+      fill: errorColor.main,
     },
     'text.label-UNKNOWN': {
       fill: theme.palette.text.secondary,
     },
     'text.label-ERROR': {
-      fill: theme.palette.error.main,
+      fill: errorColor.main,
     },
     '.node-exists-FALSE': {
       'text:not(.label-ERROR)': {
@@ -158,16 +177,75 @@ export function createGraphTheme({
         fill: theme.palette.text.secondary,
       },
     },
+    '.node-exists-ERROR': {
+      '.node-outline': {
+        stroke: errorColor.main,
+      },
+      '.node-header': {
+        fill: theme.palette.background.default,
+      },
+    },
   };
 }
 
 export default styled('div', {
   name: 'GraphTheme',
   shouldForwardProp: (prop) =>
-    prop !== 'colorNodes' && prop !== 'hexTypeHashes',
-})<{ colorNodes: boolean; hexTypeHashes: string[] }>((args) => ({
-  '& svg': {
-    userSelect: 'none',
-    ...createGraphTheme(args),
-  },
-}));
+    prop !== 'colorNodes' && prop !== 'hexTypeHashes' && prop !== 'concretize',
+})<{ colorNodes: boolean; hexTypeHashes: string[]; concretize: boolean }>(
+  (args) => ({
+    '& svg': {
+      userSelect: 'none',
+      ...createGraphTheme(args),
+    },
+    '&.simplified svg': {
+      'text, .edge-arrow, .icon, .node-shadow.node-bg': {
+        display: 'none !important',
+      },
+      '.edge-line, .node-exists-UNKNOWN .node-outline, .node-exists-FALSE .node-outline':
+        {
+          strokeDasharray: 'none !important',
+        },
+    },
+    '.node-bg, .node-header': {
+      transition: args.theme.transitions.create('fill', {
+        duration: args.theme.transitions.duration.short,
+      }),
+    },
+    '&.dimmed svg': {
+      '.node .node-bg:not(.node-shadow)': {
+        fill: args.theme.palette.outer.disabled,
+        '@media (prefers-reduced-motion: reduce)': {
+          fill: args.theme.palette.background.default,
+        },
+      },
+      '.node-header': {
+        fill: saturate(
+          args.theme.palette.mode === 'dark'
+            ? args.theme.palette.primary.dark
+            : args.theme.palette.primary.light,
+          0.6,
+        ),
+      },
+      ...createTypeHashStyles(
+        args.theme,
+        args.colorNodes,
+        args.hexTypeHashes,
+        0.6,
+      ),
+      '@media (prefers-reduced-motion: reduce)': {
+        '.node-header': {
+          fill:
+            args.theme.palette.mode === 'dark'
+              ? args.theme.palette.primary.dark
+              : args.theme.palette.primary.light,
+        },
+        ...createTypeHashStyles(
+          args.theme,
+          args.colorNodes,
+          args.hexTypeHashes,
+        ),
+      },
+    },
+  }),
+);

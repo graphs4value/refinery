@@ -10,11 +10,9 @@ import org.eclipse.xtext.service.OperationCanceledManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.refinery.generator.*;
-import tools.refinery.language.web.semantics.metadata.MetadataCreator;
 import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
-import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.util.CancellationToken;
 
 import java.io.IOException;
@@ -42,9 +40,6 @@ public class ModelGenerationWorker implements Runnable {
 
 	@Inject
 	private ModelGeneratorFactory generatorFactory;
-
-	@Inject
-	private MetadataCreator metadataCreator;
 
 	@Inject
 	private PartialInterpretation2Json partialInterpretation2Json;
@@ -151,13 +146,12 @@ public class ModelGenerationWorker implements Runnable {
 		}
 		notifyResult(new ModelGenerationStatusResult(uuid, "Saving generated model"));
 		cancellationToken.checkCancelled();
-		metadataCreator.setProblemTrace(generator.getProblemTrace());
-		var nodesMetadata = metadataCreator.getNodesMetadata(generator.getModel(), Concreteness.CANDIDATE);
+		var nodesMetadata = generator.getNodesMetadata();
 		cancellationToken.checkCancelled();
-		var relationsMetadata = metadataCreator.getRelationsMetadata();
+		var relationsMetadata = generator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator, cancellationToken);
-		return new ModelGenerationSuccessResult(uuid, nodesMetadata, relationsMetadata, partialInterpretation);
+		return new ModelGenerationSuccessResult(uuid, nodesMetadata.list(), relationsMetadata, partialInterpretation);
 	}
 
 	public void cancel() {

@@ -1,0 +1,53 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Person {
+    Person[] friend opposite friend
+}
+
+friend(Person::new, anne).
+Person(bob).
+?exists(bob).
+
+% TEST: ignore multi-objects in diagonal constraints
+
+propagation rule noLoop(Person a) ==> !friend(a, a).
+
+% EXPECT EXACTLY:
+?friend(Person::new, Person::new).
+friend(Person::new, anne).
+!friend(anne, anne).
+?friend(anne, bob).
+!friend(bob, bob).
+
+% TEST: non-diagonal constraint with two variables
+
+propagation rule noLoop(Person a, Person b) <->
+    may equals(a, b)
+==>
+    !friend(a, b).
+
+% EXPECT EXACTLY:
+!friend(Person::new, Person::new).
+friend(Person::new, anne).
+!friend(anne, anne).
+?friend(anne, bob).
+!friend(bob, bob).
+
+
+% TEST: non-diagonal constraint with one variable
+
+pred foo(Person a).
+
+pred bar(Person a).
+
+propagation rule addBoth(Person a) ==> foo(a), bar(a).
+
+% EXPECT:
+foo(Person::new).
+foo(anne).
+foo(bob).
+bar(Person::new).
+bar(anne).
+bar(bob).

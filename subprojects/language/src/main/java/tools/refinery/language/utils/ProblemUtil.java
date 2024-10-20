@@ -133,7 +133,8 @@ public final class ProblemUtil {
 	}
 
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition);
+		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition) &&
+				!isBuiltIn(predicateDefinition);
 	}
 
 	public static boolean isTypeLike(Relation relation) {
@@ -189,5 +190,10 @@ public final class ProblemUtil {
 	public static boolean isInModule(EObject eObject) {
 		var problem = EcoreUtil2.getContainerOfType(eObject, Problem.class);
 		return problem != null && isModule(problem);
+	}
+
+	public static boolean parameterBindingAnnotationsAreForbidden(RuleDefinition ruleDefinition) {
+		var kind = ruleDefinition.getKind();
+		return kind != RuleKind.DECISION && kind != RuleKind.CONCRETIZATION;
 	}
 }

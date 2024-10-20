@@ -19,6 +19,7 @@ import java.util.*;
 public class PropagationBuilderImpl extends AbstractModelAdapterBuilder<PropagationStoreAdapter>
 		implements PropagationBuilder {
 	private final Set<Rule> propagationRules = new LinkedHashSet<>();
+	private final Set<Rule> concretizationRules = new LinkedHashSet<>();
 	private final Deque<Propagator> propagators = new ArrayDeque<>();
 	private boolean throwOnFatalRejection = true;
 
@@ -26,6 +27,13 @@ public class PropagationBuilderImpl extends AbstractModelAdapterBuilder<Propagat
 	public PropagationBuilder rule(Rule propagationRule) {
 		checkNotConfigured();
 		propagationRules.add(propagationRule);
+		return this;
+	}
+
+	@Override
+	public PropagationBuilder concretizationRule(Rule concretizationRule) {
+		checkNotConfigured();
+		concretizationRules.add(concretizationRule);
 		return this;
 	}
 
@@ -46,7 +54,8 @@ public class PropagationBuilderImpl extends AbstractModelAdapterBuilder<Propagat
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		super.doConfigure(storeBuilder);
 		if (!propagationRules.isEmpty()) {
-			propagators.addFirst(new RuleBasedPropagator(List.copyOf(propagationRules)));
+			propagators.addFirst(new RuleBasedPropagator(List.copyOf(propagationRules),
+                    List.copyOf(concretizationRules)));
 		}
 		for (var propagator : propagators) {
 			propagator.configure(storeBuilder);

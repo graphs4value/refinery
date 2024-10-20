@@ -6,7 +6,7 @@
 package tools.refinery.generator.tests;
 
 import org.eclipse.core.runtime.AssertionFailedException;
-import tools.refinery.generator.FilteredInterpretation;
+import tools.refinery.generator.impl.FilteredInterpretation;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.Node;
@@ -28,7 +28,7 @@ public record SemanticsExpectation(Assertion assertion, Concreteness concretenes
 		var interpretation = reasoningAdapter.getPartialInterpretation(concreteness, symbol);
 		var existsInterpretation = reasoningAdapter.getPartialInterpretation(concreteness,
 				ReasoningAdapter.EXISTS_SYMBOL);
-		var filteredInterpretation = new FilteredInterpretation<>(interpretation, existsInterpretation);
+		var filteredInterpretation = FilteredInterpretation.of(interpretation, existsInterpretation);
 
 		var arguments = assertion.getArguments();
 		int arity = arguments.size();

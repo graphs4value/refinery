@@ -91,7 +91,7 @@ export default class XtextClient {
   }
 
   private onDisconnect(): void {
-    this.store.analysisCompleted(true);
+    this.store.onDisconnect();
     this.highlightingService.onDisconnect();
     this.validationService.onDisconnect();
     this.occurrencesService.onDisconnect();
@@ -167,6 +167,12 @@ export default class XtextClient {
   formatText(): void {
     this.updateService.formatText().catch((e) => {
       log.error('Error while formatting text', e);
+    });
+  }
+
+  updateConcretize(): void {
+    this.updateService.updateConcretize().catch((e) => {
+      log.error('Error while setting concretize flag on server', e);
     });
   }
 

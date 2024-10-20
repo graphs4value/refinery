@@ -15,6 +15,7 @@ import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.view.ForbiddenView;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -66,12 +67,12 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder);
+			configureWithDefaultFalse(storeBuilder, partial);
 		}
-		translator.refiner(PredicateRefiner.of(symbol, parameterTypes));
-		if (partial) {
-			translator.roundingMode(RoundingMode.NONE);
-		} else {
+		var roundingMode = partial ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		translator.refiner(PredicateRefiner.of(symbol, parameterTypes, roundingMode));
+		translator.roundingMode(roundingMode);
+		if (!partial) {
 			translator.decision(Rule.of(predicate.name(), builder -> {
 				var parameters = createParameters(builder);
 				var literals = new ArrayList<Literal>(arity + 2);
@@ -124,7 +125,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		}
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = predicate.name();
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
@@ -137,6 +138,30 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 						not(may(parameterTypes.get(i).call(parameters[i])))
 				);
 			}
+			builder.action(remove(predicate, parameters));
+		}));
+		if (!partial) {
+			// Predicates concretized by rounding down are already {@code false} in the candidate interpretation,
+			// so we don't need to set them to {@code false} manually.
+			return;
+		}
+		propagationBuilder.concretizationRule(Rule.of(name + "#invalidConcretization", builder -> {
+			var parameters = createParameters(builder);
+			int arity = parameters.length;
+			var queryBuilder = Query.builder(name + "#invalidConcretizationPrecondition")
+					.parameters(parameters);
+			for (int i = 0; i < arity; i++) {
+				queryBuilder.clause(
+						candidateMay(predicate.call(parameters)),
+						not(candidateMay(parameterTypes.get(i).call(parameters[i])))
+				);
+			}
+			var literals = new ArrayList<Literal>(arity + 1);
+			literals.add(queryBuilder.build().call(parameters));
+			for (var parameter : parameters) {
+				literals.add(candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+			}
+			builder.clause(literals);
 			builder.action(remove(predicate, parameters));
 		}));
 	}

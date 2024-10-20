@@ -6,10 +6,12 @@
 package tools.refinery.store.reasoning.scope;
 
 import com.google.ortools.linearsolver.MPConstraint;
-import tools.refinery.store.model.ModelStoreBuilder;
-import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.logic.dnf.AnyQuery;
 import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.store.dse.transition.objectives.Criterion;
+import tools.refinery.store.dse.transition.objectives.CriterionCalculator;
+import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.tuple.Tuple;
@@ -20,14 +22,16 @@ abstract class TypeScopePropagator {
 	private final BoundScopePropagator adapter;
 	private final ResultSet<Boolean> allNodes;
 	private final ResultSet<Boolean> multiNodes;
+	private final CriterionCalculator acceptCalculator;
 	private final PartialRelation type;
 	protected final MPConstraint constraint;
 
 	protected TypeScopePropagator(BoundScopePropagator adapter, RelationalQuery allQuery,
-								  RelationalQuery multiQuery, PartialRelation type) {
+								  RelationalQuery multiQuery, Criterion acceptCriterion, PartialRelation type) {
 		this.adapter = adapter;
 		this.type = type;
 		var queryEngine = adapter.getQueryEngine();
+		this.acceptCalculator = acceptCriterion.createCalculator(queryEngine.getModel());
 		allNodes = queryEngine.getResultSet(allQuery);
 		multiNodes = queryEngine.getResultSet(multiQuery);
 		constraint = adapter.makeConstraint();
@@ -54,6 +58,10 @@ abstract class TypeScopePropagator {
 		return type;
 	}
 
+	public boolean checkConcretization() {
+		return acceptCalculator.isSatisfied();
+	}
+
 	protected int getSingleCount() {
 		return allNodes.size() - multiNodes.size();
 	}
@@ -73,8 +81,11 @@ abstract class TypeScopePropagator {
 
 		protected abstract Collection<AnyQuery> getQueries();
 
+		protected abstract Criterion getAcceptCriterion();
+
 		public void configure(ModelStoreBuilder storeBuilder) {
 			storeBuilder.getAdapter(ModelQueryBuilder.class).queries(getQueries());
+			getAcceptCriterion().configure(storeBuilder);
 		}
 	}
 }

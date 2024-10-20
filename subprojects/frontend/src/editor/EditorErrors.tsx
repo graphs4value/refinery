@@ -13,10 +13,12 @@ const HYSTERESIS_TIME_MS = 250;
 
 export interface State {
   analyzing: boolean;
+  semanticsUpToDate: boolean;
   errorCount: number;
   warningCount: number;
   infoCount: number;
   semanticsError: string | undefined;
+  propagationRejected: boolean;
 }
 
 export default class EditorErrors implements State {
@@ -26,6 +28,8 @@ export default class EditorErrors implements State {
 
   analyzing = false;
 
+  semanticsUpToDate = false;
+
   errorCount = 0;
 
   warningCount = 0;
@@ -33,6 +37,8 @@ export default class EditorErrors implements State {
   infoCount = 0;
 
   semanticsError: string | undefined;
+
+  propagationRejected = false;
 
   constructor(private readonly store: EditorStore) {
     this.updateImmediately(this.getNextState());
@@ -76,10 +82,12 @@ export default class EditorErrors implements State {
   private getNextState(): State {
     return {
       analyzing: this.store.analyzing,
+      semanticsUpToDate: this.store.semanticsUpToDate,
       errorCount: this.store.errorCount,
       warningCount: this.store.warningCount,
       infoCount: this.store.infoCount,
       semanticsError: this.store.semanticsError,
+      propagationRejected: this.store.propagationRejected,
     };
   }
 

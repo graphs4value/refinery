@@ -1,0 +1,27 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Student {
+    Curriculum studies
+}
+
+enum Curriculum {
+    BSc,
+    MSc
+}
+
+Student(anne).
+studies(anne, MSc).
+Student(bob).
+!studies(bob, MSc).
+
+pred mscStudent(Student s) <-> studies(s, MSc).
+
+pred notMScStudent(Student s) <-> !studies(s, MSc).
+
+% EXPECT:
+mscStudent(anne).
+!mscStudent(bob).
+!notMScStudent(anne).
+notMScStudent(bob).

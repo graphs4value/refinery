@@ -17,6 +17,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.jetbrains.annotations.NotNull;
+import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemUtil;
 

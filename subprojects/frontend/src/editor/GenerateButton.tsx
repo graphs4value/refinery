@@ -30,7 +30,7 @@ const GenerateButton = observer(function GenerateButton({
   }
 
   const {
-    delayedErrors: { analyzing, errorCount, warningCount, semanticsError },
+    delayedErrors: { analyzing, errorCount, warningCount, propagationRejected },
     generating,
   } = editorStore;
 
@@ -54,7 +54,7 @@ const GenerateButton = observer(function GenerateButton({
     );
   }
 
-  if (semanticsError !== undefined && editorStore.opened) {
+  if (propagationRejected && editorStore.opened) {
     return (
       <AnimatedButton
         color="error"

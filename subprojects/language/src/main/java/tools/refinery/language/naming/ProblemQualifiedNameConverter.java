@@ -59,7 +59,7 @@ public class ProblemQualifiedNameConverter implements IQualifiedNameConverter {
 	/**
 	 * Splits the given string into segments and returns them as a {@link QualifiedName}.
 	 *
-	 * @throws IllegalArgumentException if the input is empty or null.
+	 * @throws IllegalArgumentException if the input is empty or null or cannot be parsed.
 	 */
 	@Override
 	public QualifiedName toQualifiedName(String qualifiedNameAsString) {

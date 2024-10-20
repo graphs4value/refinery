@@ -5,7 +5,7 @@
  */
 
 import { reaction } from 'mobx';
-import { type SnackbarKey, useSnackbar } from 'notistack';
+import { type SnackbarKey, type VariantType, useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 
 import type EditorStore from './EditorStore';
@@ -45,16 +45,29 @@ export default function AnalysisErrorNotification({
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   useEffect(() => {
     let key: SnackbarKey | undefined;
+    let lastVariant: VariantType | undefined;
     const disposer = reaction(
-      () => editorStore.delayedErrors.semanticsError !== undefined,
-      (hasError) => {
-        if (hasError) {
-          if (key === undefined) {
+      (): VariantType | undefined => {
+        const {
+          delayedErrors: { semanticsError, propagationRejected },
+        } = editorStore;
+        if (semanticsError === undefined) {
+          return undefined;
+        }
+        return propagationRejected ? 'error' : 'info';
+      },
+      (variant) => {
+        if (variant !== undefined) {
+          if (key === undefined || lastVariant !== variant) {
+            if (key !== undefined) {
+              closeSnackbar(key);
+            }
             key = enqueueSnackbar({
               message: <MessageObserver editorStore={editorStore} />,
-              variant: 'error',
+              variant,
               persist: true,
             });
+            lastVariant = variant;
           }
         } else if (key !== undefined) {
           closeSnackbar(key);

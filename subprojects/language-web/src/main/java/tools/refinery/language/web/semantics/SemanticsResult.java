@@ -10,25 +10,26 @@ import org.eclipse.xtext.web.server.validation.ValidationResult;
 
 import java.util.List;
 
-public record SemanticsResult(SemanticsModelResult model, String error,
+public record SemanticsResult(SemanticsModelResult model, String error, boolean propagationRejected,
 							  List<ValidationResult.Issue> issues) implements IServiceResult {
 	public SemanticsResult(SemanticsModelResult model) {
-		this(model, null, List.of());
+		this(model, null, false, List.of());
 	}
 
 	public SemanticsResult(String error) {
-		this(null, error, List.of());
+		this(null, error, true, List.of());
 	}
 
-	public SemanticsResult(SemanticsModelResult model, String error) {
-		this(model, error, List.of());
+	public SemanticsResult(SemanticsModelResult model, boolean propagationRejected, String error) {
+		this(model, error, propagationRejected, List.of());
 	}
 
 	public SemanticsResult(List<ValidationResult.Issue> issues) {
-		this(null, null, issues);
+		this(null, null, true, issues);
 	}
 
-	public SemanticsResult(SemanticsModelResult model, List<ValidationResult.Issue> issues) {
-		this(model, null, issues);
+	public SemanticsResult(SemanticsModelResult model, boolean propagationRejected,
+						   List<ValidationResult.Issue> issues) {
+		this(model, null, propagationRejected, issues);
 	}
 }

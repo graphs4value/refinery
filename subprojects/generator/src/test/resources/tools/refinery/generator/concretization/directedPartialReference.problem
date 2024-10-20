@@ -1,0 +1,44 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+abstract class A.
+
+class B extends A.
+
+class C extends A {
+    partial F[] foo
+}
+
+abstract class D.
+
+class E extends D.
+
+class F extends D.
+
+A(a1).
+D(d1).
+foo(a2, d2).
+
+% TEST: with default unknown
+
+% EXPECT CANDIDATE:
+B(a1).
+E(d1).
+!foo(a1, d1).
+C(a2).
+F(d2).
+foo(a2, d2).
+
+% TEST: with default false
+
+default !foo(*, *).
+?foo(a1, d1).
+
+% EXPECT CANDIDATE:
+B(a1).
+E(d1).
+!foo(a1, d1).
+C(a2).
+F(d2).
+foo(a2, d2).

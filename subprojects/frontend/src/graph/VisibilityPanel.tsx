@@ -21,6 +21,7 @@ import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 
 import Tooltip from '../Tooltip';
+import isBuiltIn from '../utils/isBuiltIn';
 
 import type GraphStore from './GraphStore';
 import { isVisibilityAllowed } from './GraphStore';
@@ -197,7 +198,7 @@ function VisibilityPanel({
         </td>
       </tr>
     );
-    if (name.startsWith('builtin::')) {
+    if (isBuiltIn(metadata)) {
       builtinRows.push(row);
     } else {
       rows.push(row);

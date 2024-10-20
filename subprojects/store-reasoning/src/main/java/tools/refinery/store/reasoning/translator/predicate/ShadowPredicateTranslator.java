@@ -11,11 +11,8 @@ import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.interpretation.AbstractPartialInterpretation;
-import tools.refinery.store.reasoning.interpretation.QueryBasedComputedRewriter;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
@@ -34,14 +31,10 @@ public class ShadowPredicateTranslator implements ModelStoreConfiguration {
 
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
-		var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
-		var may = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
-		var must = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
-		// Do not let {@link PartialRelationTranslator} merge the partial queries into the candidate ones.
-		var candidateMay = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
-		var candidateMust = reasoningBuilder.lift(Modality.MAY, Concreteness.PARTIAL, query);
 		var translator = PartialRelationTranslator.of(relation)
-				.rewriter(new QueryBasedComputedRewriter(may, must, candidateMay, candidateMust, query));
+				.query(query)
+				// Shadow predicates ddo not have to obey the refinement from the partial to the candidate model.
+				.mergeCandidateWithPartial(false);
 		if (!hasInterpretation) {
 			translator.interpretation(MissingInterpretation::new);
 		}

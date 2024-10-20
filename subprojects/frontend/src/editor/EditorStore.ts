@@ -97,7 +97,11 @@ export default class EditorStore {
 
   analyzing = false;
 
+  semanticsUpToDate = true;
+
   semanticsError: string | undefined;
+
+  propagationRejected = false;
 
   graph: GraphStore;
 
@@ -112,6 +116,12 @@ export default class EditorStore {
   unsavedChanges = false;
 
   hexTypeHashes: string[] = [];
+
+  concretize = false;
+
+  selectedSymbolName: string | undefined;
+
+  showComputed = false;
 
   constructor(
     initialValue: string,
@@ -356,20 +366,32 @@ export default class EditorStore {
 
   analysisStarted() {
     this.analyzing = true;
+    this.semanticsUpToDate = false;
   }
 
   analysisCompleted(semanticAnalysisSkipped = false) {
     this.analyzing = false;
     if (semanticAnalysisSkipped) {
       this.semanticsError = undefined;
+      this.propagationRejected = false;
     }
   }
 
-  setSemanticsError(semanticsError: string | undefined) {
+  onDisconnect() {
+    this.semanticsUpToDate = false;
+    this.analysisCompleted(true);
+  }
+
+  setSemanticsError(
+    semanticsError: string | undefined,
+    propagationRejected: boolean,
+  ) {
     this.semanticsError = semanticsError;
+    this.propagationRejected = propagationRejected;
   }
 
   setSemantics(semantics: SemanticsModelResult) {
+    this.semanticsUpToDate = true;
     this.graph.setSemantics(semantics);
   }
 
@@ -423,11 +445,23 @@ export default class EditorStore {
       });
       this.selectGeneratedModel(found);
     }
+
     const generatedModel = this.generatedModels.get(uuid);
     if (generatedModel !== undefined && generatedModel.running) {
       this.cancelModelGeneration();
     }
     this.generatedModels.delete(uuid);
+  }
+
+  get selectedGeneratedModelStore(): GeneratedModelStore | undefined {
+    if (this.selectedGeneratedModel === undefined) {
+      return undefined;
+    }
+    return this.generatedModels.get(this.selectedGeneratedModel);
+  }
+
+  get selectedGraph(): GraphStore {
+    return this.selectedGeneratedModelStore?.graph ?? this.graph;
   }
 
   modelGenerationCancelled(): void {
@@ -542,5 +576,18 @@ export default class EditorStore {
 
   get simpleNameOrFallback(): string {
     return this.simpleName ?? 'graph';
+  }
+
+  toggleConcretize(): void {
+    this.concretize = !this.concretize;
+    this.client?.updateConcretize();
+  }
+
+  setSelectedSymbolName(selectedSymbolName: string | undefined): void {
+    this.selectedSymbolName = selectedSymbolName;
+  }
+
+  toggleShowComputed(): void {
+    this.showComputed = !this.showComputed;
   }
 }

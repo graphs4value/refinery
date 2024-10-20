@@ -11,7 +11,6 @@ import tools.refinery.logic.term.Variable;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
-import tools.refinery.store.reasoning.literal.ComputedConstraint;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
@@ -49,12 +48,5 @@ public class PartialRelationTranslatorProxy implements ModelStoreConfiguration, 
 	public List<Literal> rewriteLiteral(Set<Variable> positiveVariables, AbstractCallLiteral literal,
 										Modality modality, Concreteness concreteness) {
 		return List.of(literal.withTarget(ModalConstraint.of(modality, concreteness, targetRelation)));
-	}
-
-	@Override
-	public List<Literal> rewriteComputed(Set<Variable> positiveVariables, AbstractCallLiteral literal,
-										 Modality modality, Concreteness concreteness) {
-		return List.of(literal.withTarget(ModalConstraint.of(modality, concreteness,
-				new ComputedConstraint(targetRelation))));
 	}
 }

@@ -1,0 +1,20 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Person {
+    partial Person[] friend opposite friend
+}
+
+concretization rule notFriend(a, b) <->
+    !must friend(a, b)
+==>
+    !friend(a, b).
+
+friend(anne, bob).
+Person(ciri).
+
+% EXPECT CANDIDATE:
+friend(anne, bob).
+!friend(anne, ciri).
+!friend(bob, ciri).

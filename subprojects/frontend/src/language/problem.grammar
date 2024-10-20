@@ -61,7 +61,7 @@ statement {
   //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
   // } |
   RuleDefinition {
-    (ckw<"decision"> | ckw<"propagation">)? kw<"rule">
+    (ckw<"decision"> | ckw<"propagation"> | ckw<"concretization">)? kw<"rule">
     RuleName ParameterList<Parameter>?
     RuleBody { ("<->" sep<OrOp, Conjunction>)? ("==>" sep<OrOp, Consequent>)? "." }
   } |
@@ -95,7 +95,7 @@ FeatureDeclaration {
 
 Parameter {
   RelationName?
-  (FocusBinding | MultiBinding)?
+  (FocusBinding | LoneBinding | MultiBinding)?
   VariableName
 }
 
@@ -258,7 +258,9 @@ sep1<separator, content> { content (separator content)* }
 
   FocusBinding { "+" }
 
-  MultiBinding { "?" }
+  LoneBinding { "?" }
+
+  MultiBinding { "*" }
 
   "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
 }

@@ -47,7 +47,13 @@ public class ProblemLinkingService extends DefaultLinkingService {
 			throw new AssertionError(("Scope provider must not return null for context %s, reference %s! Consider to" +
 					" return IScope.NULLSCOPE instead.").formatted(context, ref));
 		}
-		final QualifiedName qualifiedLinkName = qualifiedNameConverter.toQualifiedName(crossRefString);
+		final QualifiedName qualifiedLinkName;
+		try {
+			qualifiedLinkName = qualifiedNameConverter.toQualifiedName(crossRefString);
+		} catch (IllegalArgumentException e) {
+			logger.debug("Invalid cross reference", e);
+			return List.of();
+		}
 		final Iterator<IEObjectDescription> iterator = scope.getElements(qualifiedLinkName).iterator();
 		StringBuilder debug = null;
 		final Set<EObject> result = new LinkedHashSet<>();

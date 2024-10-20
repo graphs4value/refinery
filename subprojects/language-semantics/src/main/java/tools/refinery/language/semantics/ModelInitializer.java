@@ -23,8 +23,10 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
+import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -300,6 +302,10 @@ public class ModelInitializer {
 			collectPartialRelation(predicateDefinition, arity, TruthValue.FALSE, TruthValue.FALSE);
 		} else {
 			collectPartialRelation(predicateDefinition, arity, null, TruthValue.UNKNOWN);
+		}
+		var computedPredicate = predicateDefinition.getComputedValue();
+		if (computedPredicate != null) {
+			collectPartialRelation(computedPredicate, arity, null, TruthValue.UNKNOWN);
 		}
 	}
 
@@ -628,6 +634,18 @@ public class ModelInitializer {
 		var parameterTypes = getParameterTypes(predicateDefinition, null);
 		var translator = new PredicateTranslator(partialRelation, query, parameterTypes, mutable, defaultValue);
 		storeBuilder.with(translator);
+		var computedPredicate = predicateDefinition.getComputedValue();
+		if (computedPredicate != null) {
+			var computedPartialRelation = getPartialRelation(computedPredicate);
+			// Always keep the interpretation of computed predicates, because they are used in solution serialization.
+			// This shouldn't add an overhead, because the lifted versions of the computed predicate are used in the
+			// computation of the interpretation of the original predicate, too. The exceptions with overhead are the
+			// error predicates, which can be safely ignored during serialization of consistent models.
+			var hasComputedInterpretation = !ProblemUtil.isError(predicateDefinition) || keepShadowPredicates;
+			var computedTranslator = new ShadowPredicateTranslator(computedPartialRelation, query,
+					hasComputedInterpretation);
+			storeBuilder.with(computedTranslator);
+		}
 	}
 
 	private boolean isActionTarget(PredicateDefinition predicateDefinition) {
@@ -775,10 +793,24 @@ public class ModelInitializer {
 						.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
 			}
 			case PROPAGATION -> {
-				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition);
+				var rules = new ArrayList<Rule>();
+				var propagationRules = ruleCompiler.toPropagationRules(name, ruleDefinition,
+						ConcretenessSpecification.PARTIAL);
+				var concretizationRules = ruleCompiler.toPropagationRules(name, ruleDefinition,
+						ConcretenessSpecification.CANDIDATE);
+				rules.addAll(propagationRules);
+				rules.addAll(concretizationRules);
+				problemTrace.putPropagationRuleDefinition(ruleDefinition, List.copyOf(rules));
+				storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder -> {
+					propagationBuilder.rules(propagationRules);
+					propagationBuilder.concretizationRules(concretizationRules);
+				});
+			}
+			case CONCRETIZATION -> {
+				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
 				storeBuilder.tryGetAdapter(PropagationBuilder.class)
-						.ifPresent(propagationBuilder -> propagationBuilder.rules(rules));
+						.ifPresent(propagationBuilder -> propagationBuilder.concretizationRules(rules));
 			}
 			case REFINEMENT -> {
 				// Rules not marked for decision or propagation are not invoked automatically.

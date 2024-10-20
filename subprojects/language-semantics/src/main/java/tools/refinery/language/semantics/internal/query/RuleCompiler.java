@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.validation.ReferenceCounter;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.literal.BooleanLiteral;
 import tools.refinery.logic.literal.CallPolarity;
@@ -21,7 +22,11 @@ import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.dse.transition.actions.ActionLiterals;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.actions.PartialActionLiterals;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
+import tools.refinery.store.reasoning.literal.ModalConstraint;
+import tools.refinery.store.reasoning.literal.ModalitySpecification;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
@@ -47,7 +52,7 @@ public class RuleCompiler {
 			return toRule(name, ruleDefinition);
 		}
 		var firstConsequent = consequents.getFirst();
-		var preparedRule = prepareRule(ruleDefinition);
+		var preparedRule = prepareRule(ruleDefinition, true);
 		var parameters = preparedRule.allParameters();
 
 		var moreCommonLiterals = new ArrayList<Literal>();
@@ -79,8 +84,9 @@ public class RuleCompiler {
 		return ruleBuilder.build();
 	}
 
-	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition) {
-		var preparedRule = prepareRule(ruleDefinition);
+	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition,
+											   ConcretenessSpecification concreteness) {
+		var preparedRule = prepareRule(ruleDefinition, false);
 		if (preparedRule.hasFocus()) {
 			throw new IllegalArgumentException("Propagation rule '%s' must not have any focus parameters."
 					.formatted(name));
@@ -96,6 +102,7 @@ public class RuleCompiler {
 		var actions = consequents.getFirst().getActions();
 		int actionCount = actions.size();
 		var rules = new ArrayList<Rule>(actionCount);
+		var postConditionModality = new ConcreteModality(concreteness, ModalitySpecification.MAY);
 		for (int i = 0; i < actionCount; i++) {
 			var actionName = actionCount == 1 ? name : name + "#" + (i + 1);
 			var action = actions.get(i);
@@ -105,13 +112,16 @@ public class RuleCompiler {
 			try {
 				var parameters = getParameterList(assertionAction, preparedRule);
 				var moreCommonLiterals = new ArrayList<Literal>();
-				toLiterals(assertionAction, preparedRule, false, ConcreteModality.PARTIAL_MAY, moreCommonLiterals);
-				var precondition = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler);
+				toLiterals(assertionAction, preparedRule, false, postConditionModality, moreCommonLiterals);
+				var omittedParametersMustExist = concreteness == ConcretenessSpecification.CANDIDATE;
+				var precondition = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler,
+						omittedParametersMustExist);
 				var actionLiterals = new ArrayList<ActionLiteral>();
 				toActionLiterals(action, preparedRule.parameterMap(), actionLiterals);
 				var rule = Rule.builder(actionName)
 						.parameters(parameters)
-						.clause(PartialLiterals.must(precondition.call(CallPolarity.POSITIVE, parameters)))
+						.clause(new ModalConstraint(ModalitySpecification.MUST, concreteness, precondition.getDnf())
+								.call(CallPolarity.POSITIVE, Collections.unmodifiableList(parameters)))
 						.action(actionLiterals)
 						.build();
 				rules.add(rule);
@@ -137,7 +147,7 @@ public class RuleCompiler {
 	}
 
 	public Rule toRule(String name, RuleDefinition ruleDefinition) {
-		var preparedRule = prepareRule(ruleDefinition);
+		var preparedRule = prepareRule(ruleDefinition, true);
 		var parameters = preparedRule.allParameters();
 		var precondition = preparedRule.buildQuery(name, parameters, List.of(), queryCompiler);
 		var ruleBuilder = Rule.builder(name)
@@ -149,7 +159,7 @@ public class RuleCompiler {
 		return ruleBuilder.build();
 	}
 
-	private PreparedRule prepareRule(RuleDefinition ruleDefinition) {
+	private PreparedRule prepareRule(RuleDefinition ruleDefinition, boolean needsExplicitMultiObjectParameters) {
 		var problemParameters = ruleDefinition.getParameters();
 		int arity = problemParameters.size();
 		var parameterMap = LinkedHashMap
@@ -164,11 +174,17 @@ public class RuleCompiler {
 				var partialType = getPartialRelation(parameterType);
 				commonLiterals.add(partialType.call(parameter));
 			}
-			if (ruleDefinition.getKind() == RuleKind.DECISION &&
-					problemParameter.getBinding() == ParameterBinding.SINGLE) {
-				commonLiterals.add(MultiObjectTranslator.MULTI_VIEW.call(CallPolarity.NEGATIVE, parameter));
+			var binding = problemParameter.getBinding();
+			if (needsExplicitMultiObjectParameters) {
+				if (binding == ParameterBinding.SINGLE) {
+					commonLiterals.add(MultiObjectTranslator.MULTI_VIEW.call(CallPolarity.NEGATIVE, parameter));
+				} else if (binding == ParameterBinding.LONE) {
+					commonLiterals.add(new ModalConstraint(ModalitySpecification.MUST,
+							ConcretenessSpecification.UNSPECIFIED, ReasoningAdapter.EQUALS_SYMBOL)
+							.call(parameter, parameter));
+				}
 			}
-			if (problemParameter.getBinding() == ParameterBinding.FOCUS) {
+			if (binding == ParameterBinding.FOCUS) {
 				parametersToFocus.add(problemParameter);
 			}
 		}
@@ -245,7 +261,7 @@ public class RuleCompiler {
 			return;
 		}
 		var partialRelation = getPartialRelation(assertionAction.getRelation());
-		var arguments = collectArguments(assertionAction, preparedRule, literals);
+		var arguments = collectArguments(assertionAction, preparedRule, concreteModality, literals);
 		if (truthValue == TruthValue.ERROR ||
 				(truthValue == TruthValue.TRUE && positive) ||
 				(truthValue == TruthValue.FALSE && !positive)) {
@@ -260,9 +276,10 @@ public class RuleCompiler {
 	}
 
 	private NodeVariable[] collectArguments(AssertionAction assertionAction, PreparedRule preparedRule,
-                                            List<Literal> literals) {
+											ConcreteModality concreteModality, List<Literal> literals) {
 		var problemArguments = assertionAction.getArguments();
 		var arguments = new NodeVariable[problemArguments.size()];
+		var referenceCounts = ReferenceCounter.computeReferenceCounts(assertionAction);
 		for (int i = 0; i < arguments.length; i++) {
 			var problemArgument = problemArguments.get(i);
 			if (!(problemArgument instanceof NodeAssertionArgument nodeAssertionArgument)) {
@@ -270,8 +287,15 @@ public class RuleCompiler {
 			}
 			var variableOrNode = nodeAssertionArgument.getNode();
 			switch (variableOrNode) {
-			case tools.refinery.language.model.problem.Variable problemVariable ->
-					arguments[i] = preparedRule.parameterMap().get(problemVariable);
+			case tools.refinery.language.model.problem.Variable problemVariable -> {
+				var argument = preparedRule.parameterMap().get(problemVariable);
+				arguments[i] = argument;
+				if (referenceCounts.getOrDefault(problemVariable, 0) >= 2) {
+					// Diagonal assertions can't be represented for multi-objects.
+					literals.add(new ModalConstraint(ModalitySpecification.MUST, concreteModality.concreteness(),
+							ReasoningAdapter.EQUALS_SYMBOL).call(argument, argument));
+				}
+			}
 			case Node node -> {
 				int nodeId = getNodeId(node);
 				var tempVariable = Variable.of(getTempVariableName(node, nodeId));

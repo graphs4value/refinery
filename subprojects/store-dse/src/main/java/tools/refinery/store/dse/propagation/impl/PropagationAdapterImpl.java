@@ -12,6 +12,7 @@ class PropagationAdapterImpl implements PropagationAdapter {
 	private final Model model;
 	private final PropagationStoreAdapterImpl storeAdapter;
 	private final BoundPropagator[] boundPropagators;
+	private boolean concretizationInProgress;
 
 	public PropagationAdapterImpl(Model model, PropagationStoreAdapterImpl storeAdapter) {
 		this.model = model;
@@ -25,11 +26,47 @@ class PropagationAdapterImpl implements PropagationAdapter {
 
 	@Override
 	public PropagationResult propagate() {
+		return propagate(PropagationRequest.PROPAGATE);
+	}
+
+	@Override
+	public boolean concretizationRequested() {
+		// Use a classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < boundPropagators.length; i++) {
+			if (boundPropagators[i].concretizationRequested()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean concretizationInProgress() {
+		return concretizationInProgress;
+	}
+
+	@Override
+	public PropagationResult concretize() {
+		PropagationResult result;
+		concretizationInProgress = true;
+		try {
+			result = propagate(PropagationRequest.CONCRETIZE);
+		} finally {
+			concretizationInProgress = false;
+		}
+		if (!result.isRejected()) {
+			result = result.andThen(checkConcretization());
+		}
+		return result;
+	}
+
+	private PropagationResult propagate(PropagationRequest request) {
 		PropagationResult result = PropagationResult.UNCHANGED;
 		PropagationResult lastResult;
 		do {
 			model.checkCancelled();
-			lastResult = propagateOne();
+			lastResult = propagateOne(request);
 			result = result.andThen(lastResult);
 		} while (lastResult.isChanged());
 		if (lastResult instanceof PropagationRejectedResult rejectedResult &&
@@ -40,11 +77,11 @@ class PropagationAdapterImpl implements PropagationAdapter {
 		return result;
 	}
 
-	private PropagationResult propagateOne() {
+	private PropagationResult propagateOne(PropagationRequest request) {
 		PropagationResult result = PropagationResult.UNCHANGED;
 		for (int i = 0; i < boundPropagators.length; i++) {
 			model.checkCancelled();
-			var lastResult = propagateUntilFixedPoint(i);
+			var lastResult = propagateUntilFixedPoint(i, request);
 			result = result.andThen(lastResult);
 			if (result.isRejected()) {
 				break;
@@ -53,15 +90,32 @@ class PropagationAdapterImpl implements PropagationAdapter {
 		return result;
 	}
 
-	private PropagationResult propagateUntilFixedPoint(int propagatorIndex) {
+	private PropagationResult propagateUntilFixedPoint(int propagatorIndex, PropagationRequest request) {
 		var propagator = boundPropagators[propagatorIndex];
 		PropagationResult result = PropagationResult.UNCHANGED;
 		PropagationResult lastResult;
 		do {
 			model.checkCancelled();
-			lastResult = propagator.propagateOne();
+			lastResult = propagator.propagateOne(request);
 			result = result.andThen(lastResult);
 		} while (lastResult.isChanged());
+		return result;
+	}
+
+	@Override
+	public PropagationResult checkConcretization() {
+		PropagationResult result = PropagationResult.UNCHANGED;
+		// Use a classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < boundPropagators.length; i++) {
+			model.checkCancelled();
+			var propagator = boundPropagators[i];
+			var lastResult = propagator.checkConcretization();
+			result = result.andThen(lastResult);
+			if (result.isRejected()) {
+				break;
+			}
+		}
 		return result;
 	}
 

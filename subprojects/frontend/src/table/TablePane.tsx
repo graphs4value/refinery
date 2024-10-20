@@ -14,13 +14,15 @@ const TableArea = lazy(() => import('./TableArea'));
 
 export default function TablePane({
   graph,
+  touchesTop,
 }: {
   graph: GraphStore;
+  touchesTop: boolean;
 }): JSX.Element {
   return (
     <Stack direction="column" height="100%" overflow="auto" alignItems="center">
       <Suspense fallback={<Loading />}>
-        <TableArea graph={graph} />
+        <TableArea graph={graph} touchesTop={touchesTop} />
       </Suspense>
     </Stack>
   );

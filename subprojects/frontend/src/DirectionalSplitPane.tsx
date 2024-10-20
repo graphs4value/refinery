@@ -18,8 +18,8 @@ export default function DirectionalSplitPane({
   primaryOnly: showLeftOnly,
   secondaryOnly: showRightOnly,
 }: {
-  primary: React.ReactNode;
-  secondary: React.ReactNode;
+  primary: React.ReactNode | ((horizontal: boolean) => React.ReactNode);
+  secondary: React.ReactNode | ((horizontal: boolean) => React.ReactNode);
   primaryOnly?: boolean;
   secondaryOnly?: boolean;
 }): JSX.Element {
@@ -56,7 +56,11 @@ export default function DirectionalSplitPane({
       overflow="hidden"
       ref={ref}
     >
-      {!showRightOnly && <Box {...{ [axis]: primarySize }}>{left}</Box>}
+      {!showRightOnly && (
+        <Box {...{ [axis]: primarySize }}>
+          {typeof left === 'function' ? left(horizontalSplit) : left}
+        </Box>
+      )}
       <Box
         sx={{
           overflow: 'visible',
@@ -147,7 +151,11 @@ export default function DirectionalSplitPane({
           {horizontalSplit ? <MoreHorizIcon /> : <MoreVertIcon />}
         </Box>
       </Box>
-      {!showLeftOnly && <Box {...{ [axis]: secondarySize }}>{right}</Box>}
+      {!showLeftOnly && (
+        <Box {...{ [axis]: secondarySize }}>
+          {typeof right === 'function' ? right(horizontalSplit) : right}
+        </Box>
+      )}
     </Stack>
   );
 }

@@ -26,14 +26,21 @@ import type ThemeStore from './theme/ThemeStore';
 const SplitGraphPane = observer(function SplitGraphPane({
   graph,
   themeStore,
+  touchesTop,
 }: {
   graph: GraphStore;
   themeStore: ThemeStore;
+  touchesTop: boolean;
 }): JSX.Element {
   return (
     <DirectionalSplitPane
       primary={<GraphPane graph={graph} />}
-      secondary={<TablePane graph={graph} />}
+      secondary={(horizontal) => (
+        <TablePane
+          graph={graph}
+          touchesTop={touchesTop && (!themeStore.showGraph || !horizontal)}
+        />
+      )}
       primaryOnly={!themeStore.showTable}
       secondaryOnly={!themeStore.showGraph}
     />
@@ -57,7 +64,13 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
   const { message, error, graph } = generatedModel;
 
   if (graph !== undefined) {
-    return <SplitGraphPane graph={graph} themeStore={themeStore} />;
+    return (
+      <SplitGraphPane
+        graph={graph}
+        themeStore={themeStore}
+        touchesTop={false}
+      />
+    );
   }
 
   return (
@@ -103,14 +116,20 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
   );
 });
 
-function ModelWorkArea(): JSX.Element {
+function ModelWorkArea({ touchesTop }: { touchesTop: boolean }): JSX.Element {
   const { editorStore, themeStore } = useRootStore();
 
   if (editorStore === undefined) {
     return <Loading />;
   }
 
-  const { graph, generatedModels, selectedGeneratedModel } = editorStore;
+  const {
+    concretize,
+    graph,
+    generatedModels,
+    selectedGeneratedModel,
+    selectedGeneratedModelStore: generatedModel,
+  } = editorStore;
 
   const generatedModelNames: string[] = [];
   const generatedModelTabs: JSX.Element[] = [];
@@ -132,14 +151,12 @@ function ModelWorkArea(): JSX.Element {
     );
     /* eslint-enable react/no-array-index-key */
   });
-  const generatedModel =
-    selectedGeneratedModel === undefined
-      ? undefined
-      : generatedModels.get(selectedGeneratedModel);
   const selectedIndex =
     selectedGeneratedModel === undefined
       ? 0
       : generatedModelNames.indexOf(selectedGeneratedModel) + 1;
+  const selectedGraph = generatedModel?.graph ?? graph;
+  const { dimView } = selectedGraph;
 
   return (
     <Stack direction="column" height="100%" width="100%" overflow="hidden">
@@ -164,7 +181,7 @@ function ModelWorkArea(): JSX.Element {
           scrollButtons="auto"
           sx={{ flexGrow: 1 }}
         >
-          <Tab label="Initial model" />
+          <Tab label={`${concretize ? 'Concrete' : 'Initial'} model`} />
           {generatedModelTabs}
         </Tabs>
         <IconButton
@@ -178,14 +195,45 @@ function ModelWorkArea(): JSX.Element {
           <CloseIcon fontSize="small" />
         </IconButton>
       </Stack>
-      {generatedModel === undefined ? (
-        <SplitGraphPane graph={graph} themeStore={themeStore} />
-      ) : (
-        <GeneratedModelPane
-          generatedModel={generatedModel}
-          themeStore={themeStore}
+      <Stack
+        direction="column"
+        height="100%"
+        width="100%"
+        overflow="hidden"
+        position="relative"
+      >
+        <Stack
+          key={(generatedModel?.graph ?? graph).name}
+          sx={(theme) => ({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: dimView
+              ? theme.palette.outer.disabled
+              : 'transparent',
+            transition: theme.transitions.create('background-color', {
+              duration: theme.transitions.duration.short,
+            }),
+            '@media (prefers-reduced-motion: reduce)': {
+              backgroundColor: 'transparent',
+            },
+          })}
         />
-      )}
+        {generatedModel === undefined ? (
+          <SplitGraphPane
+            graph={graph}
+            themeStore={themeStore}
+            touchesTop={generatedModelTabs.length === 0 && touchesTop}
+          />
+        ) : (
+          <GeneratedModelPane
+            generatedModel={generatedModel}
+            themeStore={themeStore}
+          />
+        )}
+      </Stack>
     </Stack>
   );
 }

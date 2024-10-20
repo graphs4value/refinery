@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.containment;
 
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
@@ -12,13 +13,12 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
 import java.util.Set;
 
-class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner<TruthValue, Boolean> {
+class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.ConcretizationAware<TruthValue, Boolean> {
 	private final Factory factory;
 	private final Interpretation<InferredContainment> interpretation;
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
@@ -64,10 +64,13 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner<TruthV
 	public InferredContainment mustLink(InferredContainment oldValue) {
 		var mustLinks = oldValue.mustLinks();
 		if (oldValue.contains().may() && mustLinks.isEmpty() && oldValue.forbiddenLinks().isEmpty()) {
-			return factory.trueLink;
+			return concretizationInProgress() ? errorLink(oldValue) : factory.trueLink;
 		}
 		if (mustLinks.contains(factory.linkType)) {
 			return oldValue;
+		}
+		if (concretizationInProgress()) {
+			return errorLink(oldValue);
 		}
 		return new InferredContainment(oldValue.contains().meet(TruthValue.TRUE),
 				addToSet(mustLinks, factory.linkType), oldValue.forbiddenLinks());

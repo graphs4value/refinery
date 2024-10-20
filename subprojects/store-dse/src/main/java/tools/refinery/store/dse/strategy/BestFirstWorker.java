@@ -56,32 +56,80 @@ public class BestFirstWorker {
 		}
 
 		var code = stateCoderAdapter.calculateStateCode();
-
 		boolean isNew = storeManager.getEquivalenceClassStore().submit(code);
 		if (isNew) {
-			Version version = model.commit();
-			ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
-			var versionWithObjectiveValue = new VersionWithObjectiveValue(version, objectiveValue);
-			last = versionWithObjectiveValue;
-			var accepted = explorationAdapter.checkAccept();
-
-			storeManager.getObjectiveStore().submit(versionWithObjectiveValue);
-			storeManager.getActivationStore().markNewAsVisited(versionWithObjectiveValue, activationStoreWorker.calculateEmptyActivationSize());
-			if(accepted) {
-				storeManager.solutionStore.submit(versionWithObjectiveValue);
-			}
-
-			if (isVisualizationEnabled) {
-				visualizationStore.addState(last.version(), last.objectiveValue().toString());
-				if (accepted) {
-					visualizationStore.addSolution(last.version());
-				}
-			}
-
-			return new SubmitResult(true, accepted, objectiveValue, last);
+			return submitNew();
 		}
 
 		return new SubmitResult(false, false, null, null);
+	}
+
+	private SubmitResult submitNew() {
+		Version version = model.commit();
+		ObjectiveValue objectiveValue = explorationAdapter.getObjectiveValue();
+		var versionWithObjectiveValue = new VersionWithObjectiveValue(version, objectiveValue);
+		last = versionWithObjectiveValue;
+		var accepted = explorationAdapter.checkAccept();
+
+		storeManager.getObjectiveStore().submit(last);
+		storeManager.getActivationStore().markNewAsVisited(last, activationStoreWorker.calculateEmptyActivationSize());
+		if (accepted) {
+			versionWithObjectiveValue = concretizeIfNeeded(versionWithObjectiveValue);
+			accepted = versionWithObjectiveValue != null;
+		}
+
+		if (accepted) {
+			storeManager.solutionStore.submit(versionWithObjectiveValue);
+		}
+
+		if (isVisualizationEnabled) {
+			visualizationStore.addState(version, objectiveValue.toString());
+			if (accepted) {
+				visualizationStore.addSolution(version);
+			}
+		}
+
+		return new SubmitResult(true, accepted, objectiveValue, last);
+	}
+
+	private VersionWithObjectiveValue concretizeIfNeeded(VersionWithObjectiveValue originalValue) {
+		if (propagationAdapter == null) {
+			return originalValue;
+		}
+		var version = originalValue.version();
+		if (propagationAdapter.concretizationRequested()) {
+			var concretizationResult = propagationAdapter.concretize();
+			if (concretizationResult.isRejected()) {
+				model.restore(version);
+				return null;
+			} else if (concretizationResult.isChanged()) {
+				var newValue = submitConcrete();
+				model.restore(version);
+				return newValue;
+			}
+		} else if (propagationAdapter.checkConcretization().isRejected()) {
+			return null;
+		}
+		return originalValue;
+	}
+
+	private VersionWithObjectiveValue submitConcrete() {
+		if (queryAdapter.hasPendingChanges()) {
+			throw new AssertionError("Pending changes detected before model submission");
+		}
+		if (explorationAdapter.checkExclude()) {
+			return null;
+		}
+
+		var code = stateCoderAdapter.calculateStateCode();
+		if (!storeManager.getEquivalenceClassStore().submit(code)) {
+			return null;
+		}
+
+		var concreteVersion = model.commit();
+		var concreteObjectiveValue = explorationAdapter.getObjectiveValue();
+		var versionWithObjectiveValue = new VersionWithObjectiveValue(concreteVersion, concreteObjectiveValue);
+		return explorationAdapter.checkAccept() ? versionWithObjectiveValue : null;
 	}
 
 	public void restoreToLast() {

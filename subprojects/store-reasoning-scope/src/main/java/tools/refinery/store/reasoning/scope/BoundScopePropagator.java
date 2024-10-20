@@ -235,6 +235,17 @@ class BoundScopePropagator implements BoundPropagator {
 		}
 	}
 
+	@Override
+	public PropagationResult checkConcretization() {
+		for (var propagator : propagators) {
+			model.checkCancelled();
+			if (!propagator.checkConcretization()) {
+				return createRejectedResult("The %s was not satisfied.".formatted(propagator.getName()));
+			}
+		}
+		return PropagationResult.UNCHANGED;
+	}
+
 	private PropagationResult createRejectedResult() {
 		return createRejectedResult("Scope bounds are unsatisfiable.");
 	}

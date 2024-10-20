@@ -6,59 +6,99 @@
 package tools.refinery.generator.cli;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.refinery.generator.cli.commands.CheckCommand;
+import tools.refinery.generator.cli.commands.Command;
+import tools.refinery.generator.cli.commands.ConcretizeCommand;
 import tools.refinery.generator.cli.commands.GenerateCommand;
 import tools.refinery.generator.standalone.StandaloneRefinery;
 
 import java.io.IOException;
 
 public class RefineryCli {
-	private static final String GENERATE_COMMAND = "generate";
+	public static final int EXIT_SUCCESS = 0;
+	public static final int EXIT_FAILURE = 1;
+	public static final int EXIT_USAGE = 2;
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(RefineryCli.class);
+
+	@Inject
+	private CheckCommand checkCommand;
+
+	@Inject
+	private ConcretizeCommand concretizeCommand;
 
 	@Inject
 	private GenerateCommand generateCommand;
 
 	private JCommander jCommander;
 
-	public String parseArguments(String... args) {
-		var jc = getJCommander();
-		jc.parse(args);
-		return jc.getParsedCommand();
-	}
-
-	public void run(String command) throws IOException {
-		switch (command) {
-		case GENERATE_COMMAND -> generateCommand.run();
-		case null, default -> showUsageAndExit();
+	public int run(String[] args) {
+		Command command = null;
+		try {
+			command = parseArguments(args);
+		} catch (RuntimeException e) {
+			LOGGER.error("Error while parsing arguments", e);
+		}
+		if (command == null) {
+			showUsage();
+			return EXIT_USAGE;
+		}
+		try {
+			return command.run();
+		} catch (IOException | RuntimeException e) {
+			LOGGER.error("Error while executing command", e);
+			return EXIT_FAILURE;
 		}
 	}
 
-	public void showUsageAndExit() {
-		getJCommander().usage();
-		System.exit(1);
-	}
-
-	private JCommander getJCommander() {
+	private JCommander getjCommander() {
 		if (jCommander == null) {
 			jCommander = JCommander.newBuilder()
 					.programName("refinery")
 					.addObject(this)
-					.addCommand(GENERATE_COMMAND, generateCommand)
+					.addCommand("generate", generateCommand, "g")
+					.addCommand("check", checkCommand)
+					.addCommand("concretize", concretizeCommand)
 					.build();
 		}
 		return jCommander;
 	}
 
-	public static void main(String[] args) throws IOException {
-		var cli = StandaloneRefinery.getInjector().getInstance(RefineryCli.class);
-		String command = null;
-		try {
-			command = cli.parseArguments(args);
-		} catch (ParameterException e) {
-			System.err.println(e.getMessage());
-			cli.showUsageAndExit();
+	private Command parseArguments(String... args) {
+		var jc = getjCommander();
+		jc.parse(args);
+		var parsedCommand = jc.getParsedCommand();
+		if (parsedCommand == null) {
+			return null;
 		}
-		cli.run(command);
+		var commandParser = jc.getCommands().get(parsedCommand);
+		if (commandParser == null) {
+			throw new IllegalStateException("Not an executable command: " + parsedCommand);
+		}
+		return (Command) commandParser.getObjects().stream()
+				.filter(Command.class::isInstance)
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("Command parsed but not registered: " + parsedCommand));
+	}
+
+	private void showUsage() {
+		getjCommander().usage();
+	}
+
+	public static void main(String[] args) {
+		int exitValue = EXIT_FAILURE;
+		RefineryCli cli = null;
+		try {
+			cli = StandaloneRefinery.getInjector().getInstance(RefineryCli.class);
+		} catch (RuntimeException e) {
+			LOGGER.error("Initialization error", e);
+		}
+		if (cli != null) {
+			exitValue = cli.run(args);
+		}
+		System.exit(exitValue);
 	}
 }
