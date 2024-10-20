@@ -60,7 +60,7 @@ public class RefineryCli {
 					.programName("refinery")
 					.addObject(this)
 					.addCommand("generate", generateCommand, "g")
-					.addCommand("check", checkCommand, "c")
+					.addCommand("check", checkCommand)
 					.addCommand("concretize", concretizeCommand)
 					.build();
 		}
@@ -76,12 +76,12 @@ public class RefineryCli {
 		}
 		var commandParser = jc.getCommands().get(parsedCommand);
 		if (commandParser == null) {
-			throw new IllegalStateException("Command parsed but not registered: " + parsedCommand);
+			throw new IllegalStateException("Not an executable command: " + parsedCommand);
 		}
 		return (Command) commandParser.getObjects().stream()
 				.filter(Command.class::isInstance)
 				.findFirst()
-				.orElseThrow(() -> new IllegalStateException("Not an executable command: " + parsedCommand));
+				.orElseThrow(() -> new IllegalStateException("Command parsed but not registered: " + parsedCommand));
 	}
 
 	private void showUsage() {

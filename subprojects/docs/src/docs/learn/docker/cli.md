@@ -28,7 +28,7 @@ If you want Refinery CLI to print its documentation, run
 docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest -help
 ```
 
-## The `generate` (`g`) subcommand {#generate}
+## The `generate` subcommand {#generate}
 
 The `generate` subcommand generates a consistent concrete model from a partial model.
 You can also use the short name `g` to access this subcommand.
@@ -48,7 +48,7 @@ See below for the list of supported `[options]`.
 
 ### `-output`, `-o` {#generate-output}
 
-The output path for the generated model.
+The output path for the concretized model, usually a file with the `.refinery` extension.
 Passing `-o -` will write the generated model to the standard output.
 
 When generating multiple models with [`-solution-number`](#generate-solution-number), the value `-` is not supported and individual solutions will be saved to numbered files.
@@ -130,7 +130,7 @@ scope File = 10..12.
 
 and model generation can proceed as requested. Since we had specified no override for `Directory`, its type scope declared in `input.problem` was preserved.
 
-Scope overrides do not override additional scopes, i.e., `-s File=20..30 -S File=10..25` is interpreted as `-S File=20..25`.
+Scope overrides do not override additional scopes specified with [`-scope`](#generate-scope), i.e., `-s File=20..30 -S File=10..25` is interpreted as `-S File=20..25`.
 
 ### `-solution-number`, `-n` {#generate-solution-number}
 
@@ -145,13 +145,54 @@ In this case, there will be fewer output files than requested.
 
 **Default value:** `1`
 
+## The `check` subcommand {#check}
+
+The `check` subcommand checks a partial model for inconsistencies.
+
+* For **consistent** partial models, it has an exit value of `0`.
+* For **inconsistent** partial models that contains `error` logic values, it prints the occurrences of `error` logic values to the standard output and sets the exit value to `1`.
+* For partial models that can't be constructed due to **syntax or propagation errors**, it prints and error message to the standard output and sets the exit value to `1`.
+
+```shell
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest check [options] input path
+```
+
+The `input path` should be a path to a `.problem` or `.refinery` file relative to the current directory.
+Due to Docker containerization, paths _outside_ the current directory (e.g., `../input.problem`) are not supported.
+
+Passing `-` as the `input path` will read a partial model from the standard input.
+
+### `-concretize`, `-k` {#check-concretize}
+
+If you provide this flag, the partial model will be concretized according to the behavior of the [`concretize` subcommand](#concretize) before checking for inconsistencies.
+You can use this flag to check whether a partial model can be concretized consistently without having to save the result somewhere.
+
 ## The `concretize` subcommand {#concretize}
+
+import LockIcon from '@material-icons/svg/svg/lock/baseline.svg';
+
+The `concretize` subcommand creates a concrete model by replacing `unknown` aspects of a partial model with `false` logic values.
+The resulting concrete model is the same as the one shown in the <LockIcon className="inline-icon" aria-hidden="true" /> **concrete** view in the [Refinery web UI](../tutorials/file-system/index.md#refinery-web-ui).
+
+This subcommand is only able to save *consistent* concrete models.
+If the result of the concretization is inconsistent, it shows an error with a form similar to the [`check`](#check) subcommand.
+
+Scope constraints will likely render your partial model inconsistent after concretization if they prescribe multiple nodes to be created. You should the required nodes manually to the model or remove the scope constraints before concretization.
+
+```shell
+docker run --rm -it -v ${PWD}:/data ghcr.io/graphs4value/refinery-cli:latest concretize [options] input path
+```
+
+The `input path` should be a path to a `.problem` or `.refinery` file relative to the current directory.
+Due to Docker containerization, paths _outside_ the current directory (e.g., `../input.problem`) are not supported.
+
+Passing `-` as the `input path` will read a partial model from the standard input.
+
+See below for the list of supported `[options]`.
 
 ### `-output`, `-o` {#concretize-output}
 
-The output path for the concretized model.
+The output path for the concretized model, usually a file with the `.refinery` extension.
 Passing `-o -` will write the concretized model to the standard output.
 
 **Default value:** `-`, i.e., the model is written to the standard output.
-
-## The `check` (`c`) subcommand {#concretize}
