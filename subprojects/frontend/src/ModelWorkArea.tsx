@@ -155,8 +155,6 @@ function ModelWorkArea({ touchesTop }: { touchesTop: boolean }): JSX.Element {
     selectedGeneratedModel === undefined
       ? 0
       : generatedModelNames.indexOf(selectedGeneratedModel) + 1;
-  const selectedGraph = generatedModel?.graph ?? graph;
-  const { dimView } = selectedGraph;
 
   return (
     <Stack direction="column" height="100%" width="100%" overflow="hidden">
@@ -202,25 +200,6 @@ function ModelWorkArea({ touchesTop }: { touchesTop: boolean }): JSX.Element {
         overflow="hidden"
         position="relative"
       >
-        <Stack
-          key={(generatedModel?.graph ?? graph).name}
-          sx={(theme) => ({
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: dimView
-              ? theme.palette.outer.disabled
-              : 'transparent',
-            transition: theme.transitions.create('background-color', {
-              duration: theme.transitions.duration.short,
-            }),
-            '@media (prefers-reduced-motion: reduce)': {
-              backgroundColor: 'transparent',
-            },
-          })}
-        />
         {generatedModel === undefined ? (
           <SplitGraphPane
             graph={graph}

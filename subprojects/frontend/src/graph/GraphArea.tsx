@@ -62,6 +62,33 @@ const SyncWarning = observer(function SyncWarning({
   );
 });
 
+const Overlay = observer(function Overlay({
+  graph: { dimView },
+}: {
+  graph: GraphStore;
+}): JSX.Element {
+  return (
+    <Box
+      sx={(theme) => ({
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        backgroundColor: dimView ? theme.palette.outer.disabled : 'transparent',
+        mixBlendMode: theme.palette.mode === 'dark' ? 'lighten' : 'darken',
+        transition: theme.transitions.create('background-color', {
+          duration: theme.transitions.duration.short,
+        }),
+        '@media (prefers-reduced-motion: reduce)': {
+          backgroundColor: 'transparent',
+        },
+      })}
+    />
+  );
+});
+
 export default function GraphArea({
   graph,
 }: {
@@ -99,6 +126,7 @@ export default function GraphArea({
           />
         )}
       </ZoomCanvas>
+      <Overlay graph={graph} />
       <SyncWarning graph={graph} />
       <VisibilityPanel graph={graph} dialog={dialog} />
       <ExportPanel graph={graph} svgContainer={svgContainer} dialog={dialog} />

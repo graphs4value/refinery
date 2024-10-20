@@ -94,7 +94,8 @@ function TableArea({
   graph: GraphStore;
   touchesTop: boolean;
 }): JSX.Element {
-  const { concretize, selectedSymbol, showComputed, semantics } = graph;
+  const { concretize, selectedSymbol, showComputed, semantics, dimView } =
+    graph;
   const { nodes, partialInterpretation } = semantics;
   const symbolName = selectedSymbol?.name;
   const computedName = showComputed
@@ -185,6 +186,15 @@ function TableArea({
         getRowId={(row) => row.nodes.join(',')}
         sx={(theme) => ({
           border: 'none',
+          backgroundColor: dimView
+            ? theme.palette.outer.disabled
+            : 'transparent',
+          transition: theme.transitions.create('background-color', {
+            duration: theme.transitions.duration.short,
+          }),
+          '@media (prefers-reduced-motion: reduce)': {
+            backgroundColor: 'transparent',
+          },
           '--DataGrid-rowBorderColor':
             theme.palette.mode === 'dark'
               ? alpha(theme.palette.text.primary, 0.24)

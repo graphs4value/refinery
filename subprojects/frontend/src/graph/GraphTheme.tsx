@@ -207,18 +207,12 @@ export default styled('div', {
           strokeDasharray: 'none !important',
         },
     },
-    '.node-bg, .node-header': {
+    '.node-header': {
       transition: args.theme.transitions.create('fill', {
         duration: args.theme.transitions.duration.short,
       }),
     },
     '&.dimmed svg': {
-      '.node .node-bg:not(.node-shadow)': {
-        fill: args.theme.palette.outer.disabled,
-        '@media (prefers-reduced-motion: reduce)': {
-          fill: args.theme.palette.background.default,
-        },
-      },
       '.node-header': {
         fill: saturate(
           args.theme.palette.mode === 'dark'
