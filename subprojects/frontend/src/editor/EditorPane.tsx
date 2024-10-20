@@ -41,7 +41,18 @@ export default observer(function EditorPane(): JSX.Element {
 
   return (
     <Stack direction="column" height="100%" overflow="auto">
-      <Toolbar variant="dense">
+      <Toolbar
+        variant="dense"
+        sx={{
+          overflowY: 'scroll',
+          scrollbarWidth: 0,
+          '::-webkit-scrollbar': {
+            background: 'transparent',
+            width: 0,
+            height: 0,
+          },
+        }}
+      >
         <EditorButtons editorStore={editorStore} />
       </Toolbar>
       <Box display="flex" flexGrow={1} flexShrink={1} overflow="auto">

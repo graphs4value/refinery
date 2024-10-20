@@ -131,6 +131,7 @@ function createResponsiveTheme(
       MuiCssBaseline: {
         styleOverrides: {
           body: {
+            overflow: 'hidden',
             overscrollBehavior: 'contain',
             '&.notransition *': {
               transition: 'none !important',
