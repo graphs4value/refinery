@@ -7,11 +7,14 @@
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
 
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
+import isBuiltIn from '../utils/isBuiltIn';
+import type { RelationMetadata } from '../xtext/xtextServiceResults';
 
 const placeholderText = `Select symbol to view\u2026`;
 
@@ -22,7 +25,18 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
   } = graph;
 
   const filteredRelations = useMemo(() => {
-    return relations.filter(({ detail }) => detail.type !== 'computed');
+    const userRelations: RelationMetadata[] = [];
+    const builtInRelations: RelationMetadata[] = [];
+    relations.forEach((metadata) => {
+      if (metadata.detail.type !== 'computed') {
+        if (isBuiltIn(metadata)) {
+          builtInRelations.push(metadata);
+        } else {
+          userRelations.push(metadata);
+        }
+      }
+    });
+    return [...userRelations, ...builtInRelations];
   }, [relations]);
 
   return (
@@ -60,8 +74,14 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
       )}
       options={filteredRelations}
       getOptionLabel={(option) => option.name}
-      renderOption={(props, option) => (
-        <Box component="li" {...props}>
+      renderOption={({ className, ...props }, option) => (
+        <Box
+          component="li"
+          {...props}
+          className={clsx(className ?? '', {
+            builtInOption: isBuiltIn(option),
+          })}
+        >
           <RelationName metadata={option} />
         </Box>
       )}
@@ -80,6 +100,16 @@ function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
               : theme.palette.outer.border,
         },
       })}
+      slotProps={{
+        listbox: {
+          sx: (theme) => ({
+            '.builtInOption:not(.builtInOption + .builtInOption):not(:first-of-type)':
+              {
+                borderTop: `1px solid ${theme.palette.divider}`,
+              },
+          }),
+        },
+      }}
     />
   );
 }

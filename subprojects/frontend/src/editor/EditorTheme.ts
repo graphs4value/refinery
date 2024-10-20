@@ -177,7 +177,7 @@ export default styled('div', {
     '.tok-problem-builtin': {
       '&, & .tok-typeName, & .tok-atom, & .tok-variableName': {
         color: theme.palette.primary.main,
-        fontWeight: 400,
+        fontWeight: theme.typography.fontWeightEditorNormal,
         fontStyle: 'normal',
       },
     },

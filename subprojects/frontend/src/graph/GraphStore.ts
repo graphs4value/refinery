@@ -7,16 +7,13 @@
 import { makeAutoObservable, observable } from 'mobx';
 
 import type EditorStore from '../editor/EditorStore';
+import isBuiltIn from '../utils/isBuiltIn';
 import type {
   RelationMetadata,
   SemanticsModelResult,
 } from '../xtext/xtextServiceResults';
 
 export type Visibility = 'all' | 'must' | 'none';
-
-export function isBuiltIn(metadata: RelationMetadata): boolean {
-  return metadata.name.startsWith('builtin::');
-}
 
 function hideBuiltIn(
   metadata: RelationMetadata,

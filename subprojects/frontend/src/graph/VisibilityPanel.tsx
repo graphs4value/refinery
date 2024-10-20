@@ -21,9 +21,10 @@ import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 
 import Tooltip from '../Tooltip';
+import isBuiltIn from '../utils/isBuiltIn';
 
 import type GraphStore from './GraphStore';
-import { isBuiltIn, isVisibilityAllowed } from './GraphStore';
+import { isVisibilityAllowed } from './GraphStore';
 import RelationName from './RelationName';
 import SlideInPanel from './SlideInPanel';
 
