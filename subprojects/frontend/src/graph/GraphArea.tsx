@@ -4,8 +4,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import UpdatedDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import Box from '@mui/material/Box';
+import Grow from '@mui/material/Grow';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
@@ -15,6 +19,48 @@ import SVGIcons from './SVGIcons';
 import VisibilityPanel from './VisibilityPanel';
 import ZoomCanvas from './ZoomCanvas';
 import ExportPanel from './export/ExportPanel';
+
+const SyncWarning = observer(function SyncWarning({
+  graph: { dimView },
+}: {
+  graph: GraphStore;
+}): JSX.Element {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+      }}
+    >
+      <Grow
+        in={dimView}
+        mountOnEnter
+        unmountOnExit
+        timeout={theme.transitions.duration.short}
+      >
+        <Box sx={{ margin: theme.spacing(2) }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color:
+                theme.palette.mode === 'dark'
+                  ? theme.palette.text.primary
+                  : theme.palette.text.secondary,
+            }}
+          >
+            <UpdatedDisabledIcon
+              fontSize="small"
+              sx={{ verticalAlign: 'text-top', marginRight: '0.5ch' }}
+            />
+            View not in sync with code editor
+          </Typography>
+        </Box>
+      </Grow>
+    </Box>
+  );
+});
 
 export default function GraphArea({
   graph,
@@ -53,6 +99,7 @@ export default function GraphArea({
           />
         )}
       </ZoomCanvas>
+      <SyncWarning graph={graph} />
       <VisibilityPanel graph={graph} dialog={dialog} />
       <ExportPanel graph={graph} svgContainer={svgContainer} dialog={dialog} />
     </Box>
