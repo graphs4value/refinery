@@ -24,23 +24,23 @@ Below, you can find instructions on using [Gradle](#gradle) or [Apache Maven](#m
 We recommend [Gradle](https://gradle.org/) as a build system for creating Java programs that use Refinery as a library.
 We created a [Gradle plugin](pathname://../javadoc/refinery-gradle-plugins/) to simplify project configuration.
 
-To find out the configuration for using our artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
+To find out the configuration for using our snapshot artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
 
-import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs';
 
 <Tabs groupId="gradleLanguage">
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="settings.gradle.kts"
     plugins {
-        id("tools.refinery.settings") version "0.1.1"
+        id("tools.refinery.settings") version "0.1.2"
     }
     ```
   </TabItem>
   <TabItem value="groovy" label="Groovy">
     ```groovy title="settings.gradle"
     plugins {
-        id 'tools.refinery.settings' version '0.1.1'
+        id 'tools.refinery.settings' version '0.1.2'
     }
     ```
   </TabItem>
@@ -307,8 +307,10 @@ Do *not* attempt to set a `version` for this plugin, because versioning is alrea
 
 ## Working with Maven {#maven}
 
-You may also develop applications based on Refiney using [Apache Maven](https://maven.apache.org/) as the build system.
+You may also develop applications based on Refinery using [Apache Maven](https://maven.apache.org/) as the build system.
 Although we don't provide a Maven plugin for simplified configuration, you can still use our [platform](https://docs.gradle.org/current/userguide/platforms.html#sub:using-platform-to-control-transitive-deps) (Maven BOM) to lock the versions of Refinery and its dependencies to tested versions.
+
+You should add the following configuration to your `pom.xml` file. If you use multi-module projects, we recommend that you add this to your parent POM.
 
 ```xml title="pom.xml"
 <project>
@@ -318,7 +320,7 @@ Although we don't provide a Maven plugin for simplified configuration, you can s
             <dependency>
                 <groupId>tools.refinery</groupId>
                 <artifactId>refinery-bom</artifactId>
-                <version>0.1.1</version>
+                <version>0.1.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

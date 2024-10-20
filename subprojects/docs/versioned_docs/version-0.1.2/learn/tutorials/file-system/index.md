@@ -104,6 +104,8 @@ We annotated the following screenshot to show your the various parts of the inte
 import CloudIcon from '@material-icons/svg/svg/cloud/baseline.svg';
 import CloudOffIcon from '@material-icons/svg/svg/cloud_off/baseline.svg';
 import CodeIcon from '@material-icons/svg/svg/code/baseline.svg';
+import LockIcon from '@material-icons/svg/svg/lock/baseline.svg';
+import LockOpenIcon from '@material-icons/svg/svg/lock_open/baseline.svg';
 import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg';
 import SaveAltIcon from '@material-icons/svg/svg/save_alt/baseline.svg';
 import SchemaIcon from '@material-icons/svg/svg/schema/round.svg';
@@ -119,6 +121,8 @@ import TuneIcon from '@material-icons/svg/svg/tune/baseline.svg';
 
 3. The **graph view** shows a visualization of your problem specification. The visualization of generated models will also appear here. We'll discuss the notation used in the visualization [later in this tutorial](#partial-models).
 
+    This view is continuously updated according to the contents of the code editor. If the update fails (e.g., due to syntax errors in your model or disconnecting from Refinery), the colors of the visualization are dimmed until the next successful update.
+
 4. The <TuneIcon className="inline-icon" aria-hidden="true" /> **filter panel** lets you customize what should appear in the visualization. Click the button to open the panel.
 
 5. The <SaveAltIcon className="inline-icon" aria-hidden="true" /> **export panel** lets you save the diagram as an SVG, PDF, or PNG file. Click the button to open the panel.
@@ -126,6 +130,8 @@ import TuneIcon from '@material-icons/svg/svg/tune/baseline.svg';
 6. **Zoom controls** lat you adjust the size of the visualization and make it automatically fit the screen.
 
 7. The **view selector** lets you toggle the <CodeIcon className="inline-icon" aria-hidden="true" /> **code,** <SchemaIcon className="inline-icon" aria-hidden="true" /> **graph,** and <TableChartIcon className="inline-icon" aria-hidden="true" /> **table views.** You can have all three views open at the same time, or even just a single one to take a deeper look at the model.
+
+9. The **concretization button** lets you switch between <LockOpenIcon className="inline-icon" aria-hidden="true" /> **partial** and <LockIcon className="inline-icon" aria-hidden="true" /> **concrete** views of your model. Model generation always starts from the partial model, but switching concretization off can help you inspecting your model with closed-world semantics.
 
 8. Finally, the <PlayArrowIcon className="inline-icon" aria-hidden="true" /> **generate** button initiates model generation. You may only press this button of you problem specification is valid. Otherwise, it'll jump to the validation errors in your specification in the code view. Pressing the button while model generation is running will cancel the generation.
 

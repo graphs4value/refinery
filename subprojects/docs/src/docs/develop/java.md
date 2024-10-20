@@ -373,7 +373,7 @@ Do *not* attempt to set a `version` for this plugin, because versioning is alrea
 
 ## Working with Maven {#maven}
 
-You may also develop applications based on Refiney using [Apache Maven](https://maven.apache.org/) as the build system.
+You may also develop applications based on Refinery using [Apache Maven](https://maven.apache.org/) as the build system.
 Although we don't provide a Maven plugin for simplified configuration, you can still use our [platform](https://docs.gradle.org/current/userguide/platforms.html#sub:using-platform-to-control-transitive-deps) (Maven BOM) to lock the versions of Refinery and its dependencies to tested versions.
 
 This tutorial explains how to use a **snapshot** or **local** pre-release version of Refinery with Maven.
