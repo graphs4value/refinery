@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
@@ -55,12 +55,12 @@ val lintingFiles: FileCollection = sourcesWithTypes + assembleConfigFiles + file
 )
 
 tasks {
-	val generateXStateTypes by registering(RunYarn::class) {
+	val generateXStateTypes by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
 		inputs.files(sourcesWithoutTypes)
 		inputs.files(installationState)
 		outputs.dir("src")
-		script.set("run typegen")
+		args.set("run typegen")
 		description = "Generate TypeScript typings for XState state machines."
 	}
 
@@ -70,33 +70,33 @@ tasks {
 		outputs.dir(productionResources)
 	}
 
-	val typeCheckFrontend by registering(RunYarn::class) {
+	val typeCheckFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
 		dependsOn(generateXStateTypes)
 		inputs.files(lintingFiles)
 		outputs.dir(layout.buildDirectory.dir("typescript"))
-		script.set("run typecheck")
+		args.set("run typecheck")
 		group = "verification"
 		description = "Check for TypeScript type errors."
 	}
 
-	val lintFrontend by registering(RunYarn::class) {
+	val lintFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
 		dependsOn(generateXStateTypes)
 		dependsOn(typeCheckFrontend)
 		inputs.files(lintingFiles)
 		outputs.file(layout.buildDirectory.file("eslint.json"))
-		script.set("run lint")
+		args.set("run lint")
 		group = "verification"
 		description = "Check for TypeScript lint errors and warnings."
 	}
 
-	register<RunYarn>("fixFrontend") {
+	register<RunYarnTaskType>("fixFrontend") {
 		dependsOn(installFrontend)
 		dependsOn(generateXStateTypes)
 		dependsOn(typeCheckFrontend)
 		inputs.files(lintingFiles)
-		script.set("run lint:fix")
+		args.set("run lint:fix")
 		group = "verification"
 		description = "Fix TypeScript lint errors and warnings."
 	}

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarn
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
 import tools.refinery.gradle.MavenPublishPlugin
 
 plugins {
@@ -29,30 +29,30 @@ val frontendFiles: FileCollection = files(
 val mavenRepositoryDir = layout.buildDirectory.map { it.dir("repo") }
 
 tasks {
-	val typeCheckFrontend by registering(RunYarn::class) {
+	val typeCheckFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
 		inputs.files(frontendFiles)
 		outputs.dir(layout.buildDirectory.dir("typescript"))
-		script.set("run typecheck")
+		args.set("run typecheck")
 		group = "verification"
 		description = "Check for TypeScript type errors."
 	}
 
-	val lintFrontend by registering(RunYarn::class) {
+	val lintFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
 		dependsOn(typeCheckFrontend)
 		inputs.files(frontendFiles)
 		outputs.file(layout.buildDirectory.file("eslint.json"))
-		script.set("run lint")
+		args.set("run lint")
 		group = "verification"
 		description = "Check for TypeScript lint errors and warnings."
 	}
 
-	register<RunYarn>("fixFrontend") {
+	register<RunYarnTaskType>("fixFrontend") {
 		dependsOn(installFrontend)
 		dependsOn(typeCheckFrontend)
 		inputs.files(frontendFiles)
-		script.set("run lint:fix")
+		args.set("run lint:fix")
 		group = "verification"
 		description = "Fix TypeScript lint errors and warnings."
 	}
