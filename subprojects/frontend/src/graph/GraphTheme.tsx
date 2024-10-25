@@ -233,6 +233,7 @@ export default styled('div', {
             args.theme.palette.mode === 'dark'
               ? args.theme.palette.primary.dark
               : args.theme.palette.primary.light,
+          transition: 'none',
         },
         ...createTypeHashStyles(
           args.theme,

@@ -5,6 +5,7 @@
  */
 
 import Box from '@mui/material/Box';
+import { useMediaQuery } from '@mui/system';
 import * as d3 from 'd3';
 import { zoom as d3Zoom } from 'd3-zoom';
 import React, { useCallback, useRef, useState } from 'react';
@@ -58,7 +59,12 @@ export default function ZoomCanvas({
   transitionTime?: number;
 }): JSX.Element {
   const fitPaddingOrDefault = fitPadding ?? 8;
-  const transitionTimeOrDefault = transitionTime ?? 250;
+  const prefersReducedMotion = useMediaQuery(
+    '(prefers-reduced-motion: reduce)',
+  );
+  const transitionTimeOrDefault = prefersReducedMotion
+    ? 0
+    : (transitionTime ?? 250);
 
   const canvasRef = useRef<HTMLDivElement | undefined>();
   const elementRef = useRef<HTMLDivElement | undefined>();
@@ -70,8 +76,13 @@ export default function ZoomCanvas({
   const fitZoomRef = useRef(fitZoom);
 
   const makeTransition = useCallback(
-    (element: HTMLDivElement) =>
-      d3.select(element).transition().duration(transitionTimeOrDefault),
+    (element: HTMLDivElement) => {
+      const selection = d3.select(element);
+      if (transitionTimeOrDefault <= 0) {
+        return selection;
+      }
+      return selection.transition().duration(transitionTimeOrDefault);
+    },
     [transitionTimeOrDefault],
   );
 

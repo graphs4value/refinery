@@ -45,7 +45,7 @@ export default observer(function EditorPane(): JSX.Element {
         variant="dense"
         sx={{
           overflowY: 'scroll',
-          scrollbarWidth: 0,
+          scrollbarWidth: 'none',
           '::-webkit-scrollbar': {
             background: 'transparent',
             width: 0,

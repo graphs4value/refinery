@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { useMediaQuery } from '@mui/system';
 import { clsx } from 'clsx';
 import * as d3 from 'd3';
 import { type Graphviz, graphviz } from 'd3-graphviz';
@@ -49,6 +50,9 @@ function DotGraphVisualizer({
   >();
   const [animate, setAnimate] = useState(true);
   const [concretize, setConcretize] = useState(false);
+  const prefersReducedMotion = useMediaQuery(
+    '(prefers-reduced-motion: reduce)',
+  );
 
   const setElement = useCallback(
     (element: HTMLDivElement | null) => {
@@ -135,7 +139,8 @@ function DotGraphVisualizer({
             const [source, size] = result;
             // Disable tweening for large graphs to improve performance.
             // See https://github.com/magjac/d3-graphviz/issues/232#issuecomment-1157555213
-            const newAnimate = size < animateThresholdOrDefault;
+            const newAnimate =
+              size < animateThresholdOrDefault && !prefersReducedMotion;
             if (animate === newAnimate) {
               renderer.renderDot(source);
             } else {
@@ -152,6 +157,7 @@ function DotGraphVisualizer({
       fitZoom,
       transitionTimeOrDefault,
       animateThresholdOrDefault,
+      prefersReducedMotion,
       animate,
       setSvgContainer,
     ],
