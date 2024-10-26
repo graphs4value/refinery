@@ -53,6 +53,7 @@
     "@mui/material": "^6.1.5",
     "@mui/system": "^6.1.5",
     "@mui/x-data-grid": "^7.22.0",
+    "@replit/codemirror-indentation-markers": "^6.5.3",
     "ansi-styles": "^6.2.1",
     "clsx": "^2.1.1",
     "csstype": "^3.1.3",

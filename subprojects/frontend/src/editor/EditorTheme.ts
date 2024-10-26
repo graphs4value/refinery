@@ -93,12 +93,23 @@ export default styled('div', {
       ...editorFontStyle,
     },
     '.cm-activeLine': {
-      background: showActiveLine
+      backgroundColor: showActiveLine
         ? theme.palette.highlight.activeLine
         : 'transparent',
     },
     '.cm-activeLineGutter': {
       background: 'transparent',
+    },
+    '.cm-indent-markers': {
+      '--indent-marker-bg-color':
+        theme.palette.mode === 'dark'
+          ? theme.palette.divider
+          : theme.palette.outer.border,
+      '--indent-marker-active-bg-color': theme.palette.text.secondary,
+    },
+    '.cm-indent-markers::before': {
+      left: -4,
+      zIndex: 0,
     },
     '.cm-cursor, .cm-dropCursor, .cm-cursor-primary': {
       borderLeft: `2px solid ${theme.palette.info.main}`,
@@ -114,7 +125,7 @@ export default styled('div', {
       },
     },
     '.cm-line': {
-      padding: '0 12px 0 0px',
+      padding: '0 12px 0 0',
     },
   };
 

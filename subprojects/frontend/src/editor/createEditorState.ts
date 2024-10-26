@@ -39,6 +39,7 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { classHighlighter } from '@lezer/highlight';
+import { indentationMarkers } from '@replit/codemirror-indentation-markers';
 
 import problemLanguageSupport from '../language/problemLanguageSupport';
 
@@ -76,6 +77,9 @@ export default function createEditorState(
       highlightSpecialChars(),
       historyCompartment.of([createHistoryExtension()]),
       indentOnInput(),
+      indentationMarkers({
+        markerType: 'codeOnly',
+      }),
       rectangularSelection(),
       search({
         createPanel(view) {
