@@ -17,21 +17,38 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
+import java.util.Set;
 
 class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	private final PartialRelation sourceType;
+	private final Set<PartialRelation> supersets;
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean>[] supersetRefiners;
 
 	protected UndirectedCrossReferenceRefiner(
 			ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-			Symbol<TruthValue> concreteSymbol, PartialRelation sourceType, RoundingMode roundingMode) {
+			Symbol<TruthValue> concreteSymbol, UndirectedCrossReferenceInfo info, RoundingMode roundingMode) {
 		super(adapter, partialSymbol, concreteSymbol, roundingMode);
-		this.sourceType = sourceType;
+		this.sourceType = info.type();
+		this.supersets = info.supersets();
 	}
 
 	@Override
 	public void afterCreate() {
 		sourceRefiner = getAdapter().getRefiner(sourceType);
+		supersetRefiners = getSupersetRefiners(supersets);
+	}
+
+	private PartialInterpretationRefiner<TruthValue, Boolean>[] getSupersetRefiners(Set<PartialRelation> relations) {
+		// Creation of array with generic member type.
+		@SuppressWarnings("unchecked") var refiners =
+				(PartialInterpretationRefiner<TruthValue, Boolean>[]) new PartialInterpretationRefiner<?, ?>[relations.size()];
+		var i = 0;
+		for (var relation : relations) {
+			refiners[i] = getAdapter().getRefiner(relation);
+			i++;
+		}
+		return refiners;
 	}
 
 	@Override
@@ -50,8 +67,21 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 			}
 		}
 		if (value.must()) {
-			return sourceRefiner.merge(Tuple.of(source), TruthValue.TRUE) &&
-					sourceRefiner.merge(Tuple.of(target), TruthValue.TRUE);
+			return sourceRefiner.merge(Tuple.of(source), TruthValue.TRUE) && sourceRefiner.merge(Tuple.of(target),
+					TruthValue.TRUE) && mergeSupersets(key);
+		}
+		return true;
+	}
+
+	private boolean mergeSupersets(Tuple key) {
+		var oppositeKey = Tuple.of(key.get(1), key.get(0));
+		// Use classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < supersetRefiners.length; i++) {
+			var refiner = supersetRefiners[i];
+			if (!refiner.merge(key, TruthValue.TRUE) || !refiner.merge(oppositeKey, TruthValue.TRUE)) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -64,19 +94,21 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 			var value = cursor.getValue();
 			if (value.must()) {
 				var key = cursor.getKey();
-				boolean merged = sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-						sourceRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
-				if (!merged) {
-					throw new IllegalArgumentException("Failed to merge end types of reference %s for key %s"
-							.formatted(linkType, key));
+				boolean mergedTypes =
+						sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) && sourceRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+				if (!mergedTypes) {
+					throw new IllegalArgumentException("Failed to merge end types of reference %s for key %s".formatted(linkType, key));
+				}
+				if (!mergeSupersets(key)) {
+					throw new IllegalArgumentException("Failed to merge supersets of reference %s for key %s".formatted(linkType, key));
 				}
 			}
 		}
 	}
 
-	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
+	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, UndirectedCrossReferenceInfo info,
 												  RoundingMode roundingMode) {
 		return (adapter, partialSymbol) -> new UndirectedCrossReferenceRefiner(adapter, partialSymbol, concreteSymbol,
-				sourceType, roundingMode);
+				info, roundingMode);
 	}
 }

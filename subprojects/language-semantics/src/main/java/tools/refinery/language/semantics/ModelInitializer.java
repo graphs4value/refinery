@@ -383,7 +383,7 @@ public class ModelInitializer {
 			oppositeRelation = getPartialRelation(opposite);
 		}
 		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
-		LinkedHashSet<PartialRelation> supersets =referenceDeclaration.getSuperSets().stream()
+		Set<PartialRelation> supersets =referenceDeclaration.getSuperSets().stream()
 				.map(this::getPartialRelation)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 		try {

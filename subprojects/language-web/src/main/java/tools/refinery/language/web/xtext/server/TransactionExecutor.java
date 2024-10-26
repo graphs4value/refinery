@@ -145,12 +145,13 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 
 	/**
 	 * Get the injector to satisfy the request in the {@code serviceContext}.
-	 * Based on {@link org.eclipse.xtext.web.servlet.XtextServlet#getInjector}.
+	 *
 	 *
 	 * @param context the Xtext service context of the request
 	 * @return the injector for the Xtext language in the request
 	 * @throws UnknownLanguageException if the Xtext language cannot be determined
 	 */
+	//Based on {@link org.eclipse.xtext.web.servlet.XtextServlet#getInjector}.
 	protected Injector getInjector(IServiceContext context) {
 		IResourceServiceProvider resourceServiceProvider;
 		var resourceName = context.getParameter("resource");

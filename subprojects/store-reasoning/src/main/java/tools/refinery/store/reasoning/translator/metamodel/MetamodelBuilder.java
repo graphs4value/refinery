@@ -130,6 +130,7 @@ public class MetamodelBuilder {
 		var opposite = info.opposite();
 		Multiplicity targetMultiplicity = UnconstrainedMultiplicity.INSTANCE;
 		var defaultValue = info.defaultValue();
+		Set<PartialRelation> oppositeSupersets = Set.of();
 		if (opposite != null) {
 			var oppositeInfo = referenceInfoMap.get(opposite);
 			validateOpposite(linkType, info, opposite, oppositeInfo);
@@ -150,7 +151,7 @@ public class MetamodelBuilder {
 				return;
 			}
 			oppositeReferences.put(opposite, linkType);
-			oppositeSupersets.addAll(oppositeInfo.supersets());
+			oppositeSupersets = oppositeInfo.supersets();
 		}
 		if (info.containment()) {
 			processContainmentInfo(linkType, info, targetMultiplicity);

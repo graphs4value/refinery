@@ -5,8 +5,11 @@
  */
 package tools.refinery.store.reasoning.translator.crossreference;
 
+import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.ParameterDirection;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.Rule;
@@ -24,6 +27,8 @@ import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.representation.Symbol;
+
+import java.util.ArrayList;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
@@ -59,7 +64,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 			configureWithDefaultFalse(storeBuilder, info.partial());
 		}
 		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
-		translator.refiner(DirectedCrossReferenceRefiner.of(symbol, sourceType, targetType, roundingMode));
+		translator.refiner(DirectedCrossReferenceRefiner.of(symbol, info, roundingMode));
 		translator.roundingMode(roundingMode);
 		if (!info.partial()) {
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
@@ -86,10 +91,12 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		var targetType = info.targetType();
 		var mayNewSource = createMayHelper(sourceType, info.sourceMultiplicity(), false);
 		var mayNewTarget = createMayHelper(targetType, info.targetMultiplicity(), true);
+		var superset = createSupersetHelper();
 		var mayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.PARTIAL);
 		var forbiddenView = new ForbiddenView(symbol);
 		translator.may(Query.of(mayName, (builder, source, target) -> {
 			builder.clause(
+					may(superset.call(source, target)),
 					mayNewSource.call(source),
 					mayNewTarget.call(target),
 					not(forbiddenView.call(source, target))
@@ -100,6 +107,8 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 				// corresponding error pattern will already mark the node as invalid.
 				builder.clause(
 						must(linkType.call(source, target)),
+						may(superset.call(source, target)),
+						//negálás
 						not(forbiddenView.call(source, target)),
 						may(sourceType.call(source)),
 						may(targetType.call(target))
@@ -112,6 +121,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 			var candidateMayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.CANDIDATE);
 			translator.candidateMay(Query.of(candidateMayName, (builder, source, target) -> {
 				builder.clause(
+						candidateMay(superset.call(source, target)),
 						candidateMayNewSource.call(source),
 						candidateMayNewTarget.call(target),
 						not(forbiddenView.call(source, target))
@@ -122,6 +132,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 					// corresponding error pattern will already mark the node as invalid.
 					builder.clause(
 							candidateMust(linkType.call(source, target)),
+							candidateMay(superset.call(source, target)),
 							not(forbiddenView.call(source, target)),
 							candidateMay(sourceType.call(source)),
 							candidateMay(targetType.call(target))
@@ -130,6 +141,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 			}));
 		}
 	}
+
 
 	private RelationalQuery createMayHelper(PartialRelation type, Multiplicity multiplicity, boolean inverse) {
 		return CrossReferenceUtils.createMayHelper(linkType, type, multiplicity, inverse);
@@ -140,12 +152,32 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		return CrossReferenceUtils.createCandidateMayHelper(linkType, type, multiplicity, inverse);
 	}
 
+	private Dnf createSupersetHelper() {
+		int supersetCount = info.supersets().size();
+		int oppositeSupersetCount = info.oppositeSupersets().size();
+		int literalCount = supersetCount + oppositeSupersetCount;
+		var direction = literalCount >= 1 ? ParameterDirection.OUT : ParameterDirection.IN;
+		return Dnf.of(linkType.name() + "#superset", builder -> {
+			var p1 = builder.parameter("p1", direction);
+			var p2 = builder.parameter("p2", direction);
+			var literals = new ArrayList<Literal>(literalCount);
+			for (PartialRelation superset : info.supersets()) {
+				literals.add(superset.call(p1, p2));
+			}
+			for (PartialRelation oppositeSuperset : info.oppositeSupersets()) {
+				literals.add(oppositeSuperset.call(p2, p1));
+			}
+			builder.clause(literals);
+		});
+	}
+
 	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = linkType.name();
 		var sourceType = info.sourceType();
 		var targetType = info.targetType();
 		var mayNewSource = createMayHelper(sourceType, info.sourceMultiplicity(), false);
 		var mayNewTarget = createMayHelper(targetType, info.targetMultiplicity(), true);
+		var superset = createSupersetHelper();
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
 		propagationBuilder.rule(Rule.of(name + "#invalidLink", (builder, p1, p2) -> {
@@ -156,6 +188,10 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 			builder.clause(
 					may(linkType.call(p1, p2)),
 					not(may(targetType.call(p2)))
+			);
+			builder.clause(
+					may(linkType.call(p1, p2)),
+					not(may(superset.call(p1, p2)))
 			);
 			if (info.isConstrained()) {
 				builder.clause(
@@ -190,6 +226,10 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 					.clause(
 							candidateMay(linkType.call(p1, p2)),
 							not(candidateMay(targetType.call(p2)))
+					)
+					.clause(
+							candidateMay(linkType.call(p1, p2)),
+							not(candidateMay(superset.call(p1, p2)))
 					);
 			if (info.isConstrained()) {
 				queryBuilder.clause(
