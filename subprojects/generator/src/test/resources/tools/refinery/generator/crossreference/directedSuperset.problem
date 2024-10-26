@@ -1,0 +1,31 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Definition.
+
+class Usage {
+    Definition[] def
+}
+
+class PartDefinition extends Definition.
+
+class PartUsage extends Usage {
+    PartDefinition[] partDef subsets def
+}
+
+% TEST: subset not allowed
+
+PartUsage(part1).
+PartDefinition(partDef1).
+!def(part1, partDef1).
+
+% EXPECT:
+!partDef(part1, partDef1).
+
+% TEST: superset forced
+
+partDef(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1).

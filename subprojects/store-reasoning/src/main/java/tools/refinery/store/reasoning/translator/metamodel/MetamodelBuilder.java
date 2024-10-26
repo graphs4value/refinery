@@ -148,7 +148,7 @@ public class MetamodelBuilder {
 		Multiplicity targetMultiplicity = UnconstrainedMultiplicity.INSTANCE;
 		//A ReferenceInfoból szedje ki a reference default truth valueját.
 		var defaultValue = info.defaultValue();
-		LinkedHashSet<PartialRelation> oppositeSupersets = new LinkedHashSet<>();
+		Set<PartialRelation> oppositeSupersets = new LinkedHashSet<>();
 		//Ha van a referencenek van oppositeja.
 		if (opposite != null) {
 			//Keresse ki a referenceInfoMapből az oppositeot.
