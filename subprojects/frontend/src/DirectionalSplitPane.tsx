@@ -148,6 +148,17 @@ export default function DirectionalSplitPane({
               : (event.clientX - rect.left) / rect.width;
             setFraction(Math.min(0.9, Math.max(0.1, newFraction)));
           }}
+          onMouseEnter={(event) => {
+            // Update `z-index` explicitly instead of relying on the `:hover` style
+            // to avoid interference with the `doubleclick` handler in the area located
+            // above the editor scrollbar in Firefox.
+            // eslint-disable-next-line no-param-reassign -- Update event target.
+            event.currentTarget.style.zIndex = '1100';
+          }}
+          onMouseLeave={(event) => {
+            // eslint-disable-next-line no-param-reassign -- Update event target.
+            event.currentTarget.style.zIndex = '999';
+          }}
           onDoubleClick={() => setFraction(0.5)}
         >
           {horizontalSplit ? <MoreHorizIcon /> : <MoreVertIcon />}
