@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import type { Extension } from '@codemirror/state';
+import { EditorSelection, type Extension } from '@codemirror/state';
 import {
   EditorView,
   ViewPlugin,
@@ -27,9 +27,13 @@ class ScrollbarsPlugin implements PluginValue {
 
   private readonly gutterDOM: HTMLElement;
 
+  private readonly contentDOM: HTMLElement;
+
   private readonly rightTrack: HTMLElement;
 
   private readonly rightThumb: HTMLElement;
+
+  private readonly annotationsDOM: HTMLElement;
 
   private readonly topShadow: HTMLElement;
 
@@ -39,7 +43,7 @@ class ScrollbarsPlugin implements PluginValue {
 
   private readonly bottomThumb: HTMLElement;
 
-  private readonly listener: () => void;
+  private readonly layoutListener: () => void;
 
   private readonly resizeObserver: ResizeObserver;
 
@@ -53,6 +57,10 @@ class ScrollbarsPlugin implements PluginValue {
 
   private annotations: HTMLElement[] = [];
 
+  private readonly overscrollClickListener: (event: MouseEvent) => void;
+
+  private lastPaddingBottom = 0;
+
   constructor(private readonly view: EditorView) {
     this.editorDOM = view.dom;
     this.scrollDOM = view.scrollDOM;
@@ -62,6 +70,7 @@ class ScrollbarsPlugin implements PluginValue {
       throw new Error('CodeMirror scrollDOM without gutter element');
     }
     this.gutterDOM = gutterElement as HTMLElement;
+    this.contentDOM = view.contentDOM;
     this.rightTrack = document.createElement('div');
     this.rightTrack.classList.add('cm-track', 'cm-right-track');
     this.rightThumb = document.createElement('div');
@@ -109,6 +118,9 @@ class ScrollbarsPlugin implements PluginValue {
         behavior: 'instant',
       });
     });
+    this.annotationsDOM = document.createElement('div');
+    this.annotationsDOM.classList.add('cm-track-annotations');
+    this.rightTrack.appendChild(this.annotationsDOM);
     this.editorDOM.appendChild(this.rightTrack);
     this.bottomTrack = document.createElement('div');
     this.bottomTrack.classList.add('cm-track', 'cm-bottom-track');
@@ -165,11 +177,32 @@ class ScrollbarsPlugin implements PluginValue {
     this.leftShadow = document.createElement('div');
     this.leftShadow.classList.add('cm-shadow', 'cm-left-shadow');
     this.editorDOM.appendChild(this.leftShadow);
-    this.listener = () => this.updateLayout();
-    this.view.scrollDOM.addEventListener('scroll', this.listener);
-    this.resizeObserver = new ResizeObserver(this.listener);
+    this.overscrollClickListener = (event) => {
+      const scrollX = this.scrollDOM.scrollLeft + event.offsetX;
+      const scrollY = this.scrollDOM.scrollTop + event.offsetY;
+      if (
+        scrollX > this.gutterDOM.offsetWidth &&
+        scrollY > this.contentDOM.offsetHeight
+      ) {
+        event.preventDefault();
+        this.view.focus();
+        this.view.dispatch({
+          scrollIntoView: true,
+          selection: EditorSelection.create([
+            EditorSelection.cursor(
+              this.view.state.doc.line(this.view.state.doc.lines).from,
+            ),
+          ]),
+        });
+      }
+    };
+    this.scrollDOM.addEventListener('click', this.overscrollClickListener);
+    this.layoutListener = () => this.updateLayout();
+    this.view.scrollDOM.addEventListener('scroll', this.layoutListener);
+    this.resizeObserver = new ResizeObserver(this.layoutListener);
     this.resizeObserver.observe(this.scrollDOM);
     this.resizeObserver.observe(this.gutterDOM);
+    this.resizeObserver.observe(this.contentDOM);
   }
 
   private scaleRight(amount: number) {
@@ -212,7 +245,7 @@ class ScrollbarsPlugin implements PluginValue {
       let annotation = this.annotations[i];
       if (annotation === undefined) {
         annotation = document.createElement('div');
-        this.rightTrack.appendChild(annotation);
+        this.annotationsDOM.appendChild(annotation);
         this.annotations.push(annotation);
       }
       annotation.className = className;
@@ -250,7 +283,7 @@ class ScrollbarsPlugin implements PluginValue {
     this.annotations
       .splice(i)
       .forEach((staleAnnotation) =>
-        this.rightTrack.removeChild(staleAnnotation),
+        this.annotationsDOM.removeChild(staleAnnotation),
       );
   }
 
@@ -264,13 +297,17 @@ class ScrollbarsPlugin implements PluginValue {
         const {
           scrollTop,
           scrollLeft,
-          scrollHeight,
-          scrollWidth,
           offsetTop,
+          scrollWidth,
+          scrollHeight,
           clientWidth,
           clientHeight,
         } = this.scrollDOM;
         const { offsetWidth: gutterWidth } = this.gutterDOM;
+        const { offsetHeight: contentHeight } = this.contentDOM;
+        const contentStyle = getComputedStyle(this.contentDOM);
+        const lineHeight = parseFloat(contentStyle.lineHeight);
+        const paddingBottom = Math.max(0, clientHeight - lineHeight);
         let bottom = 0;
         const bottomPanel = this.editorDOM.querySelector(
           ':scope > div.cm-panels-bottom',
@@ -281,32 +318,38 @@ class ScrollbarsPlugin implements PluginValue {
         return {
           scrollTop,
           scrollLeft,
-          scrollHeight,
+          scrollHeight: scrollHeight - this.lastPaddingBottom + paddingBottom,
           scrollWidth: scrollWidth - gutterWidth,
           top: offsetTop,
           height: clientHeight,
           width: clientWidth - gutterWidth,
           bottom,
           gutterWidth,
+          contentHeight,
+          paddingBottom,
         };
       },
       write: (measure) => {
-        const newNeedsBottomTrack = measure.scrollWidth > measure.width;
-        const newNeedsRightTrack = measure.scrollHeight > measure.height;
-        if (newNeedsBottomTrack !== this.needsBottomTrack) {
-          const value = String(newNeedsBottomTrack);
-          this.editorDOM.setAttribute('data-needs-bottom-track', value);
-          // Workaround since we can't apply selector to `.cm-editor` in a `@media` query.
-          this.scrollDOM.setAttribute('data-needs-bottom-track', value);
+        if (this.lastPaddingBottom !== measure.paddingBottom) {
+          this.contentDOM.style.marginBottom = `${measure.paddingBottom}px`;
+          this.lastPaddingBottom = measure.paddingBottom;
         }
-        this.needsBottomTrack = newNeedsBottomTrack;
+        const newNeedsRightTrack = measure.scrollHeight > measure.height;
         if (newNeedsRightTrack !== this.needsRightTrack) {
           const value = String(newNeedsRightTrack);
           this.editorDOM.setAttribute('data-needs-right-track', value);
           // Workaround since we can't apply selector to `.cm-editor` in a `@media` query.
           this.scrollDOM.setAttribute('data-needs-right-track', value);
+          this.needsRightTrack = newNeedsRightTrack;
         }
-        this.needsRightTrack = newNeedsRightTrack;
+        const newNeedsBottomTrack = measure.scrollWidth > measure.width;
+        if (newNeedsBottomTrack !== this.needsBottomTrack) {
+          const value = String(newNeedsBottomTrack);
+          this.editorDOM.setAttribute('data-needs-bottom-track', value);
+          // Workaround since we can't apply selector to `.cm-editor` in a `@media` query.
+          this.scrollDOM.setAttribute('data-needs-bottom-track', value);
+          this.needsBottomTrack = newNeedsBottomTrack;
+        }
         if (this.needsBottomTrack) {
           this.bottomTrack.style.bottom = `${measure.bottom}px`;
           this.bottomTrack.style.left = `${measure.gutterWidth}px`;
@@ -318,6 +361,7 @@ class ScrollbarsPlugin implements PluginValue {
           this.rightTrack.style.bottom = `${measure.bottom}px`;
           this.rightThumb.style.height = `${(measure.height / measure.scrollHeight) * 100}%`;
           this.rightThumb.style.top = `${(measure.scrollTop / measure.scrollHeight) * 100}%`;
+          this.annotationsDOM.style.height = `${(measure.contentHeight / measure.scrollHeight) * 100}%`;
         }
         this.topShadow.style.top = `${measure.top}px`;
         this.topShadow.style.height = `${Math.min(measure.scrollTop, shadowWidth)}px`;
@@ -331,8 +375,9 @@ class ScrollbarsPlugin implements PluginValue {
   }
 
   destroy(): void {
+    this.scrollDOM.removeEventListener('click', this.overscrollClickListener);
     this.resizeObserver.disconnect();
-    this.view.scrollDOM.removeEventListener('scroll', this.listener);
+    this.view.scrollDOM.removeEventListener('scroll', this.layoutListener);
     this.editorDOM.removeChild(this.rightTrack);
     this.editorDOM.removeChild(this.bottomTrack);
   }
@@ -376,12 +421,19 @@ const scrollbarsTheme = EditorView.baseTheme({
       height: 0,
     },
   },
+  '.cm-content': {
+    minHeight: 'auto',
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   '.cm-track': {
     display: 'none',
     position: 'absolute',
+    overflow: 'hidden',
   },
   '.cm-thumb': {
     position: 'absolute',
+    zIndex: 300,
   },
   '.cm-right-track': {
     top: 0,
@@ -390,7 +442,7 @@ const scrollbarsTheme = EditorView.baseTheme({
     width: `${scrollbarWidth}px`,
   },
   '.cm-right-thumb': {
-    position: 'absolute',
+    left: 0,
     width: `${scrollbarWidth}px`,
   },
   '&[data-needs-right-track="true"]': {
@@ -406,8 +458,10 @@ const scrollbarsTheme = EditorView.baseTheme({
     left: 0,
     right: 0,
     height: `${scrollbarWidth}px`,
+    marginRight: `${scrollbarWidth}px`,
   },
   '.cm-bottom-thumb': {
+    top: 0,
     height: `${scrollbarWidth}px`,
   },
   '&[data-needs-bottom-track="true"]': {
@@ -434,6 +488,13 @@ const scrollbarsTheme = EditorView.baseTheme({
     left: 0,
     width: 0,
     ...shadowTheme('0 50%', true, false),
+  },
+  '.cm-track-annotations': {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    maxHeight: '100%',
   },
   '.cm-track-annotation': {
     position: 'absolute',

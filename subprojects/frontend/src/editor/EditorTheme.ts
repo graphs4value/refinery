@@ -135,15 +135,16 @@ export default styled('div', {
     '.cm-thumb': {
       background: theme.palette.text.secondary,
       opacity: theme.palette.mode === 'dark' ? 0.16 : 0.28,
+      mixBlendMode: theme.palette.mode === 'dark' ? 'screen' : 'multiply',
       transition: theme.transitions.create('opacity', {
         duration: theme.transitions.duration.short,
       }),
       userSelect: 'none',
       '&:hover': {
-        opacity: 0.75,
+        opacity: 0.5,
       },
       '&.active, &.cm-thumb-active': {
-        opacity: 1,
+        opacity: 0.72,
       },
     },
     '.cm-editor:has(> .cm-panels-top) .cm-top-shadow': {
@@ -284,7 +285,7 @@ export default styled('div', {
       borderBottom: `1px solid ${theme.palette.outer.border}`,
     },
     '.cm-panels-top + div + .cm-scroller': {
-      paddingTop: theme.spacing(0.5),
+      marginTop: theme.spacing(0.5),
     },
     '.cm-panel': {
       color: theme.palette.text.primary,
