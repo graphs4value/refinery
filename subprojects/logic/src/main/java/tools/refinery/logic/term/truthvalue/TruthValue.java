@@ -71,10 +71,12 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		return this == TRUE || this == FALSE;
 	}
 
+	//Igaz a return, ha a truth value igaz vagy error, egyébként hamis.
 	public boolean must() {
 		return this == TRUE || this == ERROR;
 	}
 
+	//Igaz a return, ha a truth value igaz vagy unknown, egyébként hamis.
 	public boolean may() {
 		return this == TRUE || this == UNKNOWN;
 	}

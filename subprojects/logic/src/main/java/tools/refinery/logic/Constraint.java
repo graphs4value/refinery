@@ -16,14 +16,17 @@ public interface Constraint {
 
 	List<Parameter> getParameters();
 
+	//Arity az az, hogy hány paramétere van a constraintnek
 	default int arity() {
 		return getParameters().size();
 	}
 
+	//Invalid index i, ha i kisebb mint 0 vagy nagyobb egyenlő mint az arity.
 	default boolean invalidIndex(int i) {
 		return i < 0 || i >= arity();
 	}
 
+	//A constraint mindig olyan literál ami nem reducible.
 	default Reduction getReduction() {
 		return Reduction.NOT_REDUCIBLE;
 	}
@@ -36,6 +39,7 @@ public interface Constraint {
 		return name();
 	}
 
+	//Létrehoz egy CallLiteralt a polarityből, a constraintből, és az arguments-ből.
 	default CallLiteral call(CallPolarity polarity, List<Variable> arguments) {
 		return new CallLiteral(polarity, this, arguments);
 	}

@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * A disjunctive normal form (DNF) is a disjunction of conjunctions of literals.
+ */
 public final class Dnf implements Constraint {
 	private static final String INDENTATION = "    ";
 

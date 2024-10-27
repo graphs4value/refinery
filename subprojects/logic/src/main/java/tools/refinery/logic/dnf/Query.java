@@ -84,10 +84,12 @@ public abstract sealed class Query<T> implements AnyQuery permits FunctionalQuer
 		return dnf.toString();
 	}
 
+
 	public static QueryBuilder builder() {
 		return builder(null);
 	}
 
+	//QueryBuilder névből
 	public static QueryBuilder builder(String name) {
 		return new QueryBuilder(name);
 	}

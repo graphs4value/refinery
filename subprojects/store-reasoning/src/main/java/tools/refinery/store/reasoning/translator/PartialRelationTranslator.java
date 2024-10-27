@@ -433,6 +433,7 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		return rewriter;
 	}
 
+	//PartialRelationTranslatort csinál egy PartialRelationből
 	public static PartialRelationTranslator of(PartialRelation relation) {
 		return new PartialRelationTranslator(relation);
 	}

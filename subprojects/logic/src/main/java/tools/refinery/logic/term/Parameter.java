@@ -12,8 +12,10 @@ public class Parameter {
 	public static final Parameter NODE_OUT = new Parameter(null);
 
 	private final Class<?> dataType;
+	//IN or OUT
 	private final ParameterDirection direction;
 
+	//A default direction az out
 	public Parameter(Class<?> dataType) {
 		this(dataType, ParameterDirection.OUT);
 	}
@@ -23,14 +25,17 @@ public class Parameter {
 		this.direction = direction;
 	}
 
+	//Ha a dataType null akkor node variable egyébkét data variable
 	public boolean isNodeVariable() {
 		return dataType == null;
 	}
 
+	//Vagy ez vagy az
 	public boolean isDataVariable() {
 		return !isNodeVariable();
 	}
 
+	//Típusra getter de ugye lehet hogy nulla
 	public Optional<Class<?>> tryGetType() {
 		return Optional.ofNullable(dataType);
 	}
@@ -39,6 +44,7 @@ public class Parameter {
 		return direction;
 	}
 
+	//Ez a metódus a két paramétert hasonlítja össze
 	public boolean matches(Parameter other) {
 		return Objects.equals(dataType, other.dataType) && direction == other.direction;
 	}

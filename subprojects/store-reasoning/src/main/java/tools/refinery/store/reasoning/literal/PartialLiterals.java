@@ -29,6 +29,7 @@ public final class PartialLiterals {
 		return addModality(literal, Modality.MUST, Concreteness.CANDIDATE);
 	}
 
+	//
 	public static CallLiteral addModality(CallLiteral literal, Modality modality, Concreteness concreteness) {
 		var target = literal.getTarget();
 		if (target instanceof ModalConstraint) {
