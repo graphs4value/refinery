@@ -5,6 +5,11 @@
  */
 package tools.refinery.logic.literal;
 
+/**
+ * Represents the possible reductions of a clause. A clause may be reduced to a smaller clause by omitting literals that
+ * are always true or by omitting the clause entirely if it is always false. Sometimes it is not possible to reduce
+ * the clause.
+ */
 public enum Reduction {
 	/**
 	 * Signifies that a literal should be preserved in the clause.

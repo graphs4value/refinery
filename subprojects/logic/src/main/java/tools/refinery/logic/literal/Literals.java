@@ -12,6 +12,7 @@ public final class Literals {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
+	// Negates the given literal.
 	public static <T extends CanNegate<T>> T not(CanNegate<T> literal) {
 		return literal.negate();
 	}
