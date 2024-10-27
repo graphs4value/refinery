@@ -47,6 +47,7 @@ import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
 import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
+import scrollbarsExtension from './scrollbarsExtension';
 import semanticHighlighting from './semanticHighlighting';
 
 export const historyCompartment = new Compartment();
@@ -113,6 +114,8 @@ export default function createEditorState(
           return div;
         },
       }),
+      // Place this extension after the gutter, because it has to listen to gutter size changes.
+      scrollbarsExtension(),
       keymap.of([
         { key: 'Mod-Shift-f', run: () => store.formatText() },
         { key: 'Mod-o', run: () => store.openFile() },

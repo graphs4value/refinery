@@ -112,6 +112,8 @@ export default function DirectionalSplitPane({
                       theme.palette.text.primary,
                       theme.palette.action.hoverOpacity,
                     ),
+                    // Appear above the editor scrollbar when hovered.
+                    zIndex: 1100,
                     '.MuiSvgIcon-root': {
                       opacity: 1,
                     },

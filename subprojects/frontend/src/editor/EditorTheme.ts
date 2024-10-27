@@ -79,6 +79,7 @@ export default styled('div', {
   const generalStyle: CSSObject = {
     background: theme.palette.background.default,
     '&, .cm-editor': {
+      overflow: 'none',
       height: '100%',
     },
     '.cm-scroller': {
@@ -101,11 +102,11 @@ export default styled('div', {
       background: 'transparent',
     },
     '.cm-indent-markers': {
-      '--indent-marker-bg-color':
+      '--indent-marker-bg-color': theme.palette.text.disabled,
+      '--indent-marker-active-bg-color':
         theme.palette.mode === 'dark'
-          ? theme.palette.divider
-          : theme.palette.outer.border,
-      '--indent-marker-active-bg-color': theme.palette.text.secondary,
+          ? theme.palette.text.secondary
+          : theme.palette.text.primary,
     },
     '.cm-indent-markers::before': {
       left: -4,
@@ -126,6 +127,27 @@ export default styled('div', {
     },
     '.cm-line': {
       padding: '0 12px 0 0',
+    },
+    '.cm-track': {
+      // Appar above the directional splitter.
+      zIndex: 1000,
+    },
+    '.cm-thumb': {
+      background: theme.palette.text.secondary,
+      opacity: theme.palette.mode === 'dark' ? 0.16 : 0.28,
+      transition: theme.transitions.create('opacity', {
+        duration: theme.transitions.duration.short,
+      }),
+      userSelect: 'none',
+      '&:hover': {
+        opacity: 0.75,
+      },
+      '&.active, &.cm-thumb-active': {
+        opacity: 1,
+      },
+    },
+    '.cm-editor:has(> .cm-panels-top) .cm-top-shadow': {
+      display: 'none',
     },
   };
 
@@ -226,15 +248,16 @@ export default styled('div', {
     '.cm-searchMatch-selected': {
       background: theme.palette.highlight.search.selected,
     },
-    '.cm-scroller-selection': {
-      position: 'absolute',
-      right: 0,
+    '.cm-track-annotation-selection': {
+      left: 0,
+      width: '100%',
       boxShadow: `0 2px 0 ${theme.palette.info.main} inset`,
       zIndex: 200,
     },
-    '.cm-scroller-occurrence': {
-      position: 'absolute',
-      background: theme.palette.text.secondary,
+    '.cm-track-annotation-occurrence': {
+      left: 0,
+      width: '50%',
+      background: theme.palette.highlight.comment,
       zIndex: 150,
     },
   };
@@ -335,9 +358,7 @@ export default styled('div', {
           display: 'none',
         },
       },
-      [`.cm-scroller-diagnostic-${severity}`]: {
-        position: 'absolute',
-        right: 0,
+      [`.cm-track-annotation-diagnostic-${severity}`]: {
         background: color,
         zIndex,
       },
@@ -398,6 +419,10 @@ export default styled('div', {
     },
     '.cm-lintRange-active': {
       background: theme.palette.highlight.activeLintRange,
+    },
+    '.cm-track-annotation-diagnostic': {
+      left: '50%',
+      width: '50%',
     },
     ...lintSeverityStyle('error', cancelSVG, 120),
     ...lintSeverityStyle('warning', warningSVG, 110),
