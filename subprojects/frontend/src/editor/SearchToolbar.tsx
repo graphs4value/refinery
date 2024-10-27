@@ -131,22 +131,26 @@ export default observer(function SearchToolbar({
             rowGap={0.5}
           >
             <Tooltip title="Previous match">
-              <IconButton
-                disabled={!valid}
-                onClick={() => searchPanelStore.findPrevious()}
-                color="inherit"
-              >
-                <KeyboardArrowUpIcon fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  disabled={!valid}
+                  onClick={() => searchPanelStore.findPrevious()}
+                  color="inherit"
+                >
+                  <KeyboardArrowUpIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip title="Next match">
-              <IconButton
-                disabled={!valid}
-                onClick={() => searchPanelStore.findNext()}
-                color="inherit"
-              >
-                <KeyboardArrowDownIcon fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  disabled={!valid}
+                  onClick={() => searchPanelStore.findNext()}
+                  color="inherit"
+                >
+                  <KeyboardArrowDownIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
           </Stack>
           <Stack
