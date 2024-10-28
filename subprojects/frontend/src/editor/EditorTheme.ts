@@ -76,6 +76,8 @@ export default styled('div', {
     },
   };
 
+  const scrollbarOpacity = theme.palette.mode === 'dark' ? 0.16 : 0.28;
+
   const generalStyle: CSSObject = {
     background: theme.palette.background.default,
     '&, .cm-editor': {
@@ -134,14 +136,16 @@ export default styled('div', {
     },
     '.cm-thumb': {
       background: theme.palette.text.secondary,
-      opacity: theme.palette.mode === 'dark' ? 0.16 : 0.28,
+      opacity: scrollbarOpacity,
       mixBlendMode: theme.palette.mode === 'dark' ? 'screen' : 'multiply',
-      transition: theme.transitions.create('opacity', {
-        duration: theme.transitions.duration.short,
-      }),
-      userSelect: 'none',
-      '&:hover': {
-        opacity: 0.5,
+      '&.active, &.cm-thumb-active': {
+        opacity: 0.72,
+      },
+    },
+    '.cm-track:hover .cm-thumb': {
+      opacity: 0.5,
+      '@media (hover: none)': {
+        opacity: scrollbarOpacity,
       },
       '&.active, &.cm-thumb-active': {
         opacity: 0.72,

@@ -27,7 +27,7 @@ export default function DirectionalSplitPane({
   const stackRef = useRef<HTMLDivElement | null>(null);
   const { ref: resizeRef, width, height } = useResizeDetector();
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [resizing, setResizing] = useState(false);
+  const [resizing, setResizing] = useState<number | undefined>();
   const [fraction, setFraction] = useState(0.5);
 
   const horizontalSplit =
@@ -40,6 +40,14 @@ export default function DirectionalSplitPane({
   const secondarySize = showRightOnly
     ? '100%'
     : `calc(${(1 - fraction) * 100}% - 0.5px)`;
+  let snapPosition: number | undefined;
+  if (fraction >= 0.45 && fraction <= 0.55) {
+    snapPosition = 0.5;
+  } else if (fraction >= 0.2833 && fraction <= 0.3833) {
+    snapPosition = 0.3333;
+  } else if (fraction >= 0.6166 && fraction <= 0.7166) {
+    snapPosition = 0.6666;
+  }
   const ref = useCallback(
     (element: HTMLDivElement | null) => {
       resizeRef(element);
@@ -51,9 +59,12 @@ export default function DirectionalSplitPane({
   return (
     <Stack
       direction={direction}
-      height="100%"
-      width="100%"
-      overflow="hidden"
+      sx={{
+        height: '100%',
+        width: '100%',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
       ref={ref}
     >
       {!showRightOnly && (
@@ -96,10 +107,16 @@ export default function DirectionalSplitPane({
             justifyContent: 'center',
             color: theme.palette.text.secondary,
             cursor: horizontalSplit ? 'ns-resize' : 'ew-resize',
-            '.MuiSvgIcon-root': {
-              opacity: resizing ? 1 : 0,
+            touchAction: 'none',
+            userSelect: 'none',
+            '@media (pointer: coarse)': {
+              [axis]: '24px',
+              [horizontalSplit ? 'top' : 'left']: '-12px',
             },
-            ...(resizing
+            '.MuiSvgIcon-root': {
+              opacity: resizing !== undefined ? 1 : 0,
+            },
+            ...(resizing !== undefined
               ? {
                   background: alpha(
                     theme.palette.text.primary,
@@ -117,6 +134,13 @@ export default function DirectionalSplitPane({
                     '.MuiSvgIcon-root': {
                       opacity: 1,
                     },
+                    '@media (hover: none)': {
+                      background: 'transparent',
+                      zIndex: 999,
+                      '.MuiSvgIcon-root': {
+                        opacity: 0,
+                      },
+                    },
                   },
                 }),
           }}
@@ -125,17 +149,26 @@ export default function DirectionalSplitPane({
               return;
             }
             sliderRef.current?.setPointerCapture(event.pointerId);
-            setResizing(true);
+            setResizing(event.pointerId);
           }}
           onPointerUp={(event) => {
-            if (event.button !== 0) {
+            if (resizing !== event.pointerId || event.button !== 0) {
               return;
             }
             sliderRef.current?.releasePointerCapture(event.pointerId);
-            setResizing(false);
+            if (
+              snapPosition !== undefined &&
+              !event.shiftKey &&
+              !event.altKey
+            ) {
+              // Since there is no `doubleclick` even on touchscreen,
+              // also allow resetting the split by snapping to the middle.
+              setFraction(snapPosition);
+            }
+            setResizing(undefined);
           }}
           onPointerMove={(event) => {
-            if (!resizing) {
+            if (resizing !== event.pointerId) {
               return;
             }
             const container = stackRef.current;
@@ -168,6 +201,34 @@ export default function DirectionalSplitPane({
         <Box {...{ [axis]: secondarySize }}>
           {typeof right === 'function' ? right(horizontalSplit) : right}
         </Box>
+      )}
+      {resizing !== undefined && snapPosition !== undefined && (
+        <Box
+          sx={{
+            position: 'absolute',
+            pointerEvents: 'none',
+            zIndex: 1200,
+            backgroundRepeat: 'repeat',
+            ...(horizontalSplit
+              ? {
+                  top: `${snapPosition * 100}%`,
+                  left: 0,
+                  width: '100%',
+                  height: '1px',
+                  // 5pt dash, 2pt space, just as in the graph view for unknown edges.
+                  backgroundImage: `linear-gradient(to right, ${theme.palette.primary.main} 6.666px, transparent 6.666px)`,
+                  backgroundSize: '9.333px 100%',
+                }
+              : {
+                  left: `${snapPosition * 100}%`,
+                  top: 0,
+                  height: '100%',
+                  width: '1px',
+                  backgroundImage: `linear-gradient(to bottom, ${theme.palette.primary.main} 6.666px, transparent 6.666px)`,
+                  backgroundSize: '100% 9.333px',
+                }),
+          }}
+        />
       )}
     </Stack>
   );

@@ -53,7 +53,11 @@ class ScrollbarsPlugin implements PluginValue {
 
   private scrollingRight: number | undefined;
 
+  private previousRight = 0;
+
   private scrollingBottom: number | undefined;
+
+  private previousBottom = 0;
 
   private annotations: HTMLElement[] = [];
 
@@ -99,7 +103,9 @@ class ScrollbarsPlugin implements PluginValue {
       if (this.scrollingRight !== event.pointerId) {
         return;
       }
-      const scaledDelta = this.scaleRight(event.movementY);
+      // We can't use `movementY` here because of https://github.com/w3c/pointerlock/issues/100
+      const scaledDelta = this.scaleRight(event.clientY - this.previousRight);
+      this.previousRight = event.clientY;
       this.scrollDOM.scrollBy({ top: scaledDelta, behavior: 'instant' });
     });
     this.rightTrack.addEventListener('pointerup', (event) => {
@@ -150,7 +156,9 @@ class ScrollbarsPlugin implements PluginValue {
       if (this.scrollingBottom !== event.pointerId) {
         return;
       }
-      const scaledDelta = this.scaleBottom(event.movementX);
+      // We can't use `movementX` here because of https://github.com/w3c/pointerlock/issues/100
+      const scaledDelta = this.scaleBottom(event.clientX - this.previousBottom);
+      this.previousBottom = event.clientX;
       this.scrollDOM.scrollBy({ left: scaledDelta, behavior: 'instant' });
     });
     this.bottomTrack.addEventListener('pointerup', (event) => {
@@ -181,6 +189,10 @@ class ScrollbarsPlugin implements PluginValue {
       const scrollX = this.scrollDOM.scrollLeft + event.offsetX;
       const scrollY = this.scrollDOM.scrollTop + event.offsetY;
       if (
+        // This even may be triggered after a selection when CodeMirror virutalizes part of the lines.
+        // Testing the event target makes sure that we don't accidentally scroll down to the last line
+        // after the user completes a selection.
+        event.target === this.scrollDOM &&
         scrollX > this.gutterDOM.offsetWidth &&
         scrollY > this.contentDOM.offsetHeight
       ) {
@@ -220,6 +232,7 @@ class ScrollbarsPlugin implements PluginValue {
       return;
     }
     this.scrollingRight = event.pointerId;
+    this.previousRight = event.clientY;
     this.rightTrack.setPointerCapture(event.pointerId);
     this.rightThumb.classList.add('cm-thumb-active');
   }
@@ -229,6 +242,7 @@ class ScrollbarsPlugin implements PluginValue {
       return;
     }
     this.scrollingBottom = event.pointerId;
+    this.previousBottom = event.clientX;
     this.bottomTrack.setPointerCapture(event.pointerId);
     this.bottomThumb.classList.add('cm-thumb-active');
   }
@@ -430,10 +444,14 @@ const scrollbarsTheme = EditorView.baseTheme({
     display: 'none',
     position: 'absolute',
     overflow: 'hidden',
+    userSelect: 'none',
+    touchAction: 'none',
   },
   '.cm-thumb': {
     position: 'absolute',
     zIndex: 300,
+    userSelect: 'none',
+    touchAction: 'none',
   },
   '.cm-right-track': {
     top: 0,
