@@ -33,9 +33,7 @@ class CrossReferenceUtils {
 
 	public static RelationalQuery createMayHelper(PartialRelation linkType, PartialRelation type,
 												  Multiplicity multiplicity, boolean inverse) {
-		//dnf builder, query builder előkészítése
 		var preparedBuilder = prepareBuilder(linkType, inverse);
-		//üres literálok lista
 		var literals = new ArrayList<Literal>();
 
 		literals.add(may(type.call(preparedBuilder.variable())));
@@ -67,23 +65,16 @@ class CrossReferenceUtils {
 		String name;
 		NodeVariable variable;
 		List<Variable> arguments;
-		//Ha inverz akkor tudja, hogy target
 		if (inverse) {
 			name = "Target";
-			//NodeVariablet csinál belőle target névvel
 			variable = Variable.of("target");
-			//Arguments listába belerakja a source-t és a targetet miután NodeVariableöket csinált belőle
 			arguments = List.of(Variable.of("source"), variable);
 		} else {
 			name = "Source";
-			//NodeVariablet csinál belőle source névvel
 			variable = Variable.of("source");
-			//Arguments listába belerakja a source-t és a targetet miután NodeVariableöket csinált belőle
 			arguments = List.of(variable, Variable.of("target"));
 		}
-		//Csinál egy dnf buildert névvel majd ebből csinál egy query buildert ami most a builder.
 		var builder = Query.builder(linkType.name() + "#mayNew" + name);
-		//DnfBuilderben hozzáadja a variablet, ami a target vagy source variable symbolic parameterként out directiönnel
 		builder.parameter(variable);
 		return new PreparedBuilder(builder, variable, arguments);
 	}

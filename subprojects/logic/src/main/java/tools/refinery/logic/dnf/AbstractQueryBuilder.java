@@ -40,7 +40,6 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<T>> {
 		return dnfBuilder.parameter(name, direction);
 	}
 
-	//dnf builderbe hív
 	public T parameter(NodeVariable variable) {
 		dnfBuilder.parameter(variable);
 		return self();

@@ -8,7 +8,6 @@ package tools.refinery.logic.term.truthvalue;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.AbstractValue;
 
-//Igazságérték
 public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 	TRUE("true"),
 
@@ -55,7 +54,6 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		return this != UNKNOWN;
 	}
 
-	//Ha igaz vagy hamis a truth value akkor ezeknek megfelelő booleannal tér vissza, egyébként meg nullal.
 	@Override
 	@Nullable
 	public Boolean getConcrete() {
@@ -71,12 +69,10 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		return this == TRUE || this == FALSE;
 	}
 
-	//Igaz a return, ha a truth value igaz vagy error, egyébként hamis.
 	public boolean must() {
 		return this == TRUE || this == ERROR;
 	}
 
-	//Igaz a return, ha a truth value igaz vagy unknown, egyébként hamis.
 	public boolean may() {
 		return this == TRUE || this == UNKNOWN;
 	}
@@ -99,17 +95,12 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		};
 	}
 
-	//Két TruthValue értékein alapul
 	@Override
 	public TruthValue meet(TruthValue other) {
 		return switch (this) {
-			//Ha az egyik igaz és a másik igaz vagy unknown akkor igaz, egyébként error.
 			case TRUE -> other == UNKNOWN || other == TRUE ? TRUE : ERROR;
-			//Ha az egyik hamis és a másik hamis vagy unknown akkor hamis, egyébként error.
 			case FALSE -> other == UNKNOWN || other == FALSE ? FALSE : ERROR;
-			//Ha az egyik unknown akkor a másik.
 			case UNKNOWN -> other;
-			//Ha az egyik error akkor az.
 			case ERROR -> ERROR;
 		};
 	}

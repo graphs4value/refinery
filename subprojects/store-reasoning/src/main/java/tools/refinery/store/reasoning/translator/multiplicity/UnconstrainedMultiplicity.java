@@ -16,7 +16,6 @@ public final class UnconstrainedMultiplicity implements Multiplicity {
 	private UnconstrainedMultiplicity() {
 	}
 
-	//Visszaadja a kardinalitást, hogy a dologból legalább 1 van.
 	@Override
 	public CardinalityInterval multiplicity() {
 		return CardinalityIntervals.SET;

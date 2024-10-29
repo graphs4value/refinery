@@ -14,15 +14,10 @@ import java.util.*;
 
 @SuppressWarnings("UnusedReturnValue")
 public final class DnfBuilder {
-	//Név
 	private final String name;
-	//Paraméter változók halmaza
 	private final Set<Variable> parameterVariables = new LinkedHashSet<>();
-	//Szimbolikus paraméterek?
 	private final List<SymbolicParameter> parameters = new ArrayList<>();
-	//Funkcionális függőségek listája
 	private final List<FunctionalDependency<Variable>> functionalDependencies = new ArrayList<>();
-	//Clauses listában mindegyikben literálok listája
 	private final List<List<Literal>> clauses = new ArrayList<>();
 
 	DnfBuilder(String name) {
@@ -77,12 +72,10 @@ public final class DnfBuilder {
 		return parameter(name, parameter.getDirection());
 	}
 
-	//Meghív egy másik függvényt a változóval és a direction-nel ami out (ez a hozzáadott érték).
 	public DnfBuilder parameter(Variable variable) {
 		return parameter(variable, ParameterDirection.OUT);
 	}
 
-	//Meghív egy másik függvényt egy symbolic parameterrel amit a változóból és a directionből állít elő.
 	public DnfBuilder parameter(Variable variable, ParameterDirection direction) {
 		return symbolicParameter(new SymbolicParameter(variable, direction));
 	}
@@ -103,14 +96,11 @@ public final class DnfBuilder {
 	}
 
 	public DnfBuilder symbolicParameter(SymbolicParameter symbolicParameter) {
-		//Kiszedi a variablet
 		var variable = symbolicParameter.getVariable();
-		//Ha már benne van a parameterVariables-ben akkor InvalidQueryException-t dob
 		if (!parameterVariables.add(variable)) {
 			throw new InvalidQueryException("Variable %s is already on the parameter list %s"
 					.formatted(variable, parameters));
 		}
-		//Hozzáadja a symbolicParameter-t a parameters listához
 		parameters.add(symbolicParameter);
 		return this;
 	}

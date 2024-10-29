@@ -12,11 +12,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
-	//Van neki unique neve meg explicit neve
 	private final String explicitName;
 	private final String uniqueName;
 
-	//Konstruktor, explicit nevet kap, ezzel a névvel hívja meg az egyedi generálós függvényt.
 	protected Variable(String name) {
 		this.explicitName = name;
 		uniqueName = DnfUtils.generateUniqueName(name);
@@ -72,7 +70,6 @@ public abstract sealed class Variable permits AnyDataVariable, NodeVariable {
 		return Objects.hash(uniqueName);
 	}
 
-	//NodeVariable gyártásra
 	public static NodeVariable of(@Nullable String name) {
 		return new NodeVariable(name);
 	}
