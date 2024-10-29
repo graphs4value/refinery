@@ -20,6 +20,8 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.Set;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -48,19 +50,23 @@ class MetamodelTest {
 						.containment(true)
 						.source(university)
 						.target(course)
-						.opposite(location))
+						.opposite(location)
+						.supersets(Set.of()))
 				.reference(location, builder -> builder
 						.source(course)
 						.target(university)
-						.opposite(courses))
+						.opposite(courses)
+						.supersets(Set.of()))
 				.reference(lecturer, builder -> builder
 						.source(course)
 						.multiplicity(CardinalityIntervals.ONE, invalidLecturerCount)
-						.target(teacher))
+						.target(teacher)
+						.supersets(Set.of()))
 				.reference(enrolledStudents, builder -> builder
 						.source(course)
 						.multiplicity(CardinalityIntervals.SOME, invalidStudentCount)
-						.target(student))
+						.target(student)
+						.supersets(Set.of()))
 				.build();
 
 		var seed = ModelSeed.builder(5)

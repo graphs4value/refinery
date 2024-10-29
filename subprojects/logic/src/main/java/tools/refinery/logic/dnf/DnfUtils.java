@@ -8,9 +8,11 @@ package tools.refinery.logic.dnf;
 import java.util.UUID;
 
 public final class DnfUtils {
+
 	private DnfUtils() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
+
 
 	public static String generateUniqueName(String originalName) {
 		UUID uuid = UUID.randomUUID();

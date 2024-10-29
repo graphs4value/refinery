@@ -84,6 +84,7 @@ public abstract sealed class Query<T> implements AnyQuery permits FunctionalQuer
 		return dnf.toString();
 	}
 
+
 	public static QueryBuilder builder() {
 		return builder(null);
 	}

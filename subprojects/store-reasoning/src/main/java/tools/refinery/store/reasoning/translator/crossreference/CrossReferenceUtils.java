@@ -35,6 +35,7 @@ class CrossReferenceUtils {
 												  Multiplicity multiplicity, boolean inverse) {
 		var preparedBuilder = prepareBuilder(linkType, inverse);
 		var literals = new ArrayList<Literal>();
+
 		literals.add(may(type.call(preparedBuilder.variable())));
 		if (multiplicity.multiplicity().upperBound() instanceof FiniteUpperCardinality(var finiteUpperBound)) {
 			var existingLinks = Variable.of("existingLinks", Integer.class);

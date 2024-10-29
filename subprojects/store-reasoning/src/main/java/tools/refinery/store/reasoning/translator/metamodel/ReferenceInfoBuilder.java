@@ -14,6 +14,9 @@ import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMulti
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public final class ReferenceInfoBuilder {
 	private boolean containment;
 	private PartialRelation sourceType;
@@ -22,6 +25,7 @@ public final class ReferenceInfoBuilder {
 	private PartialRelation opposite;
 	private TruthValue defaultValue = TruthValue.UNKNOWN;
 	private boolean partial;
+	private Set<PartialRelation> supersets;
 
 	ReferenceInfoBuilder() {
 	}
@@ -78,6 +82,11 @@ public final class ReferenceInfoBuilder {
 		return this;
 	}
 
+	public ReferenceInfoBuilder supersets(@NotNull Set<PartialRelation> supersets) {
+		this.supersets = supersets;
+		return this;
+	}
+
 	public ReferenceInfo build() {
 		if (sourceType == null) {
 			throw new IllegalStateException("Source type is required");
@@ -85,6 +94,7 @@ public final class ReferenceInfoBuilder {
 		if (targetType == null) {
 			throw new IllegalStateException("Target type is required");
 		}
-		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue, partial);
+		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue, partial,
+				supersets);
 	}
 }
