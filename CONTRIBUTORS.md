@@ -16,6 +16,7 @@ Other contributors (in alphabetical order):
 * Garami, Bence &lt;85867500+garamibence@users.noreply.github.com&gt;
 * Golej, Márton Marcell &lt;golejmarci@gmail.com&gt;
 * Marussy, Kristóf &lt;marussy@mit.bme.hu&gt;
+* Nemes, Lili &lt;lili.nemes@outlook.com&gt;
 * Semeráth, Oszkár &lt;semerath@mit.bme.hu&gt;
 
 ## Support
