@@ -13,6 +13,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.RoundingMode;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -37,7 +38,7 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	public void afterCreate() {
 		var adapter = getAdapter();
 		sourceRefiner = adapter.getRefiner(sourceType);
-		supersetRefiners = CrossReferenceUtils.getRefiners(adapter, supersets);
+		supersetRefiners = TranslatorUtils.getRefiners(adapter, supersets);
 	}
 
 	@Override
@@ -63,7 +64,7 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	}
 
 	private boolean mergeSupersets(Tuple key) {
-		return CrossReferenceUtils.mergeAll(supersetRefiners, supersetRefiners, key, TruthValue.TRUE);
+		return TranslatorUtils.mergeAll(supersetRefiners, supersetRefiners, key, TruthValue.TRUE);
 	}
 
 	@Override

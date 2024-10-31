@@ -12,6 +12,7 @@ import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRe
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -23,6 +24,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	private final Interpretation<InferredContainment> interpretation;
 	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
 	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
+	private PartialInterpretationRefiner<TruthValue, Boolean>[] supersetRefiners;
+	private PartialInterpretationRefiner<TruthValue, Boolean>[] oppositeSupersetRefiners;
 
 	private ContainmentLinkRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 								   Factory factory) {
@@ -36,6 +39,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 		var adapter = getAdapter();
 		sourceRefiner = adapter.getRefiner(factory.sourceType);
 		targetRefiner = adapter.getRefiner(factory.targetType);
+		supersetRefiners = TranslatorUtils.getRefiners(adapter, factory.supersets);
+		oppositeSupersetRefiners = TranslatorUtils.getRefiners(adapter, factory.oppositeSupersets);
 	}
 
 	@Override
@@ -47,7 +52,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 		}
 		if (value.must()) {
 			return sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-					targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+					targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE) &&
+					TranslatorUtils.mergeAll(supersetRefiners, oppositeSupersetRefiners, key, TruthValue.TRUE);
 		}
 		return true;
 	}
@@ -104,9 +110,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	}
 
 	public static PartialInterpretationRefiner.Factory<TruthValue, Boolean> of(
-			PartialRelation linkType, Symbol<InferredContainment> symbol, PartialRelation sourceType,
-			PartialRelation targetType) {
-		return new Factory(linkType, symbol, sourceType, targetType);
+			PartialRelation linkType, Symbol<InferredContainment> symbol, ContainmentInfo info) {
+		return new Factory(linkType, symbol, info);
 	}
 
 	private static class Factory implements PartialInterpretationRefiner.Factory<TruthValue, Boolean> {
@@ -114,15 +119,18 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 		public final Symbol<InferredContainment> symbol;
 		public final PartialRelation targetType;
 		public final PartialRelation sourceType;
+		public final Set<PartialRelation> supersets;
+		public final Set<PartialRelation> oppositeSupersets;
 		public final InferredContainment trueLink;
 		public final InferredContainment falseLinkUnknownContains;
 
-		public Factory(PartialRelation linkType, Symbol<InferredContainment> symbol, PartialRelation sourceType,
-					   PartialRelation targetType) {
+		public Factory(PartialRelation linkType, Symbol<InferredContainment> symbol, ContainmentInfo info) {
 			this.linkType = linkType;
 			this.symbol = symbol;
-			this.sourceType = sourceType;
-			this.targetType = targetType;
+			this.sourceType = info.sourceType();
+			this.targetType = info.targetType();
+			this.supersets = info.supersets();
+			this.oppositeSupersets = info.oppositeSupersets();
 			trueLink = new InferredContainment(TruthValue.TRUE, Set.of(linkType), Set.of());
 			falseLinkUnknownContains = new InferredContainment(TruthValue.UNKNOWN, Set.of(), Set.of(linkType));
 		}

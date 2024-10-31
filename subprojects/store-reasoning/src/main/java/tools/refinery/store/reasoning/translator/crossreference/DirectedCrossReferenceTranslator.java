@@ -22,6 +22,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.reasoning.translator.TranslationException;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.representation.Symbol;
@@ -104,7 +105,6 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 				builder.clause(
 						must(linkType.call(source, target)),
 						may(superset.call(source, target)),
-						//negálás
 						not(forbiddenView.call(source, target)),
 						may(sourceType.call(source)),
 						may(targetType.call(target))
@@ -149,7 +149,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 	}
 
 	private Dnf createSupersetHelper() {
-		return CrossReferenceUtils.createSupersetHelper(linkType, info.supersets(), info.oppositeSupersets());
+		return TranslatorUtils.createSupersetHelper(linkType, info.supersets(), info.oppositeSupersets());
 	}
 
 	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {

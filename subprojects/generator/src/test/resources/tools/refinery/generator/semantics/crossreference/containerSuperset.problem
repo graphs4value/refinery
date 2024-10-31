@@ -1,0 +1,53 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Definition {
+    Usage[] usages opposite def
+}
+
+class Usage {
+    Definition[] def opposite usages
+}
+
+class PartDefinition extends Definition {
+    container PartUsage partUsages opposite partDef subsets usages
+}
+
+class PartUsage extends Usage {
+    contains PartDefinition[] partDef opposite partUsages
+}
+
+% TEST: subset not allowed
+
+PartUsage(part1).
+PartDefinition(partDef1).
+!def(part1, partDef1).
+
+% EXPECT:
+!partDef(part1, partDef1).
+
+% TEST: superset forced
+
+partDef(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1).
+
+% TEST: superset forced with default false
+
+default !def(*, *).
+partDef(part1, partDef1).
+?def(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1).
+
+% TEST WITH ERRORS: inconsistency with default false
+
+default !def(*, *).
+partDef(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1): error.
+partDef(part1, partDef1): error.

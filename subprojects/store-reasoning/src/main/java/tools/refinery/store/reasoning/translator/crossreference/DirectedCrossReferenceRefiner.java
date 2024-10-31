@@ -13,6 +13,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.RoundingMode;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -43,8 +44,8 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 		var adapter = getAdapter();
 		sourceRefiner = adapter.getRefiner(sourceType);
 		targetRefiner = adapter.getRefiner(targetType);
-		supersetRefiners = CrossReferenceUtils.getRefiners(adapter, supersets);
-		oppositeSupersetRefiners = CrossReferenceUtils.getRefiners(adapter, oppositeSupersets);
+		supersetRefiners = TranslatorUtils.getRefiners(adapter, supersets);
+		oppositeSupersetRefiners = TranslatorUtils.getRefiners(adapter, oppositeSupersets);
 	}
 
 	@Override
@@ -61,7 +62,7 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	}
 
 	private boolean mergeSupersets(Tuple key) {
-		return CrossReferenceUtils.mergeAll(supersetRefiners, oppositeSupersetRefiners, key, TruthValue.TRUE);
+		return TranslatorUtils.mergeAll(supersetRefiners, oppositeSupersetRefiners, key, TruthValue.TRUE);
 	}
 
 	@Override
@@ -72,13 +73,15 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 			var value = cursor.getValue();
 			if (value.must()) {
 				var key = cursor.getKey();
-				boolean mergedTypes =
-						sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) && targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+				boolean mergedTypes = sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
+						targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
 				if (!mergedTypes) {
-					throw new IllegalArgumentException("Failed to merge end types of reference %s for key %s".formatted(linkType, key));
+					throw new IllegalArgumentException("Failed to merge end types of reference %s for key %s"
+							.formatted(linkType, key));
 				}
 				if (!mergeSupersets(key)) {
-					throw new IllegalArgumentException("Failed to merge supersets of reference %s for key %s".formatted(linkType, key));
+					throw new IllegalArgumentException("Failed to merge supersets of reference %s for key %s"
+							.formatted(linkType, key));
 				}
 			}
 		}
