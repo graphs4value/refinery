@@ -5,20 +5,28 @@
  */
 package tools.refinery.store.reasoning.translator.crossreference;
 
+import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.QueryBuilder;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.ParameterDirection;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.CountCandidateLowerBoundLiteral;
 import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
+import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
+import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static tools.refinery.logic.literal.Literals.check;
 import static tools.refinery.logic.term.int_.IntTerms.constant;
@@ -76,5 +84,70 @@ class CrossReferenceUtils {
 		var builder = Query.builder(linkType.name() + "#mayNew" + name);
 		builder.parameter(variable);
 		return new PreparedBuilder(builder, variable, arguments);
+	}
+
+	public static Dnf createSupersetHelper(PartialRelation linkType, Set<PartialRelation> supersets) {
+		return createSupersetHelper(linkType, supersets, Set.of());
+	}
+
+	public static Dnf createSupersetHelper(PartialRelation linkType, Set<PartialRelation> supersets,
+										   Set<PartialRelation> oppositeSupersets) {
+		int supersetCount = supersets.size();
+		int oppositeSupersetCount = oppositeSupersets.size();
+		int literalCount = supersetCount + oppositeSupersetCount;
+		var direction = literalCount >= 1 ? ParameterDirection.OUT : ParameterDirection.IN;
+		return Dnf.of(linkType.name() + "#superset", builder -> {
+			var p1 = builder.parameter("p1", direction);
+			var p2 = builder.parameter("p2", direction);
+			var literals = new ArrayList<Literal>(literalCount);
+			for (PartialRelation superset : supersets) {
+				literals.add(superset.call(p1, p2));
+			}
+			for (PartialRelation oppositeSuperset : oppositeSupersets) {
+				literals.add(oppositeSuperset.call(p2, p1));
+			}
+			builder.clause(literals);
+		});
+	}
+
+	public static PartialInterpretationRefiner<TruthValue, Boolean>[] getRefiners(ReasoningAdapter adapter,
+																				  Set<PartialRelation> relations) {
+		// Creation of array with generic member type.
+		@SuppressWarnings("unchecked")
+		var refiners = (PartialInterpretationRefiner<TruthValue, Boolean>[])
+				new PartialInterpretationRefiner<?, ?>[relations.size()];
+		var i = 0;
+		for (var relation : relations) {
+			refiners[i] = adapter.getRefiner(relation);
+			i++;
+		}
+		return refiners;
+	}
+
+	public static <A extends AbstractValue<A, C>, C> boolean mergeAll(
+			PartialInterpretationRefiner<A, C>[] refiners, Tuple key, A value) {
+		int count = refiners.length;
+		// Use classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < count; i++) {
+			var refiner = refiners[i];
+			if (!refiner.merge(key, value)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static <A extends AbstractValue<A, C>, C> boolean mergeAll(
+			PartialInterpretationRefiner<A, C>[] refiners, PartialInterpretationRefiner<A, C>[] oppositeRefiners,
+			Tuple key, A value) {
+		if (!CrossReferenceUtils.mergeAll(refiners, key, value)) {
+			return false;
+		}
+		if (oppositeRefiners.length > 0) {
+			var oppositeKey = Tuple.of(key.get(1), key.get(0));
+			return CrossReferenceUtils.mergeAll(oppositeRefiners, oppositeKey, value);
+		}
+		return true;
 	}
 }

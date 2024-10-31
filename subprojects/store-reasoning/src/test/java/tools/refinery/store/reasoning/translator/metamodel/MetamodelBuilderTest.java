@@ -6,11 +6,9 @@
 package tools.refinery.store.reasoning.translator.metamodel;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -64,14 +62,12 @@ class MetamodelBuilderTest {
 						.containment(true)
 						.source(university)
 						.target(course)
-						.opposite(location)
-						.supersets(Set.of()))
+						.opposite(location))
 				.reference(location, referenceBuilder -> referenceBuilder
 						.source(course)
 						.multiplicity(CardinalityIntervals.atLeast(2), invalidMultiplicity)
 						.target(university)
-						.opposite(courses)
-						.supersets(Set.of()));
+						.opposite(courses));
 
 		assertThrows(TranslationException.class, builder::build);
 	}

@@ -7,15 +7,14 @@ package tools.refinery.store.reasoning.translator.metamodel;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
-import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 public final class ReferenceInfoBuilder {
 	private boolean containment;
@@ -25,7 +24,7 @@ public final class ReferenceInfoBuilder {
 	private PartialRelation opposite;
 	private TruthValue defaultValue = TruthValue.UNKNOWN;
 	private boolean partial;
-	private Set<PartialRelation> supersets;
+	private final Set<PartialRelation> supersets = new LinkedHashSet<>();
 
 	ReferenceInfoBuilder() {
 	}
@@ -82,8 +81,12 @@ public final class ReferenceInfoBuilder {
 		return this;
 	}
 
-	public ReferenceInfoBuilder supersets(@NotNull Set<PartialRelation> supersets) {
-		this.supersets = supersets;
+	public ReferenceInfoBuilder supersets(PartialRelation... supersets) {
+		return this.supersets(List.of(supersets));
+	}
+
+	public ReferenceInfoBuilder supersets(Collection<PartialRelation> supersets) {
+		this.supersets.addAll(supersets);
 		return this;
 	}
 
@@ -95,6 +98,6 @@ public final class ReferenceInfoBuilder {
 			throw new IllegalStateException("Target type is required");
 		}
 		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue, partial,
-				supersets);
+				Collections.unmodifiableSet(supersets));
 	}
 }

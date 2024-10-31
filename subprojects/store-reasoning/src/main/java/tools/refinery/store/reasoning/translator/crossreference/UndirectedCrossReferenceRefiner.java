@@ -35,20 +35,9 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 
 	@Override
 	public void afterCreate() {
-		sourceRefiner = getAdapter().getRefiner(sourceType);
-		supersetRefiners = getSupersetRefiners(supersets);
-	}
-
-	private PartialInterpretationRefiner<TruthValue, Boolean>[] getSupersetRefiners(Set<PartialRelation> relations) {
-		// Creation of array with generic member type.
-		@SuppressWarnings("unchecked") var refiners =
-				(PartialInterpretationRefiner<TruthValue, Boolean>[]) new PartialInterpretationRefiner<?, ?>[relations.size()];
-		var i = 0;
-		for (var relation : relations) {
-			refiners[i] = getAdapter().getRefiner(relation);
-			i++;
-		}
-		return refiners;
+		var adapter = getAdapter();
+		sourceRefiner = adapter.getRefiner(sourceType);
+		supersetRefiners = CrossReferenceUtils.getRefiners(adapter, supersets);
 	}
 
 	@Override
@@ -74,16 +63,7 @@ class UndirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	}
 
 	private boolean mergeSupersets(Tuple key) {
-		var oppositeKey = Tuple.of(key.get(1), key.get(0));
-		// Use classic for loop to avoid allocating an iterator.
-		//noinspection ForLoopReplaceableByForEach
-		for (int i = 0; i < supersetRefiners.length; i++) {
-			var refiner = supersetRefiners[i];
-			if (!refiner.merge(key, TruthValue.TRUE) || !refiner.merge(oppositeKey, TruthValue.TRUE)) {
-				return false;
-			}
-		}
-		return true;
+		return CrossReferenceUtils.mergeAll(supersetRefiners, supersetRefiners, key, TruthValue.TRUE);
 	}
 
 	@Override

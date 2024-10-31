@@ -7,8 +7,6 @@ package tools.refinery.store.reasoning.translator.crossreference;
 
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
-import tools.refinery.logic.literal.Literal;
-import tools.refinery.logic.term.ParameterDirection;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.Rule;
@@ -25,8 +23,6 @@ import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.representation.Symbol;
-
-import java.util.ArrayList;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
@@ -135,17 +131,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 	}
 
 	private Dnf createSupersetHelper() {
-		int supersetCount = info.supersets().size();
-		var direction = supersetCount >= 1 ? ParameterDirection.OUT : ParameterDirection.IN;
-		return Dnf.of(linkType.name() + "#superset", builder -> {
-			var p1 = builder.parameter("p1", direction);
-			var p2 = builder.parameter("p2", direction);
-			var literals = new ArrayList<Literal>(supersetCount);
-			for (var superset : info.supersets()) {
-				literals.add(superset.call(p1, p2));
-			}
-			builder.clause(literals);
-		});
+		return CrossReferenceUtils.createSupersetHelper(linkType, info.supersets());
 	}
 
 	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {

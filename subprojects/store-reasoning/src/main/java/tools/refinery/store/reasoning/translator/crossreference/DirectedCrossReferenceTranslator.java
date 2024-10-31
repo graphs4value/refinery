@@ -8,8 +8,6 @@ package tools.refinery.store.reasoning.translator.crossreference;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.logic.literal.Literal;
-import tools.refinery.logic.term.ParameterDirection;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.Rule;
@@ -27,8 +25,6 @@ import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.representation.Symbol;
-
-import java.util.ArrayList;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
@@ -153,22 +149,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 	}
 
 	private Dnf createSupersetHelper() {
-		int supersetCount = info.supersets().size();
-		int oppositeSupersetCount = info.oppositeSupersets().size();
-		int literalCount = supersetCount + oppositeSupersetCount;
-		var direction = literalCount >= 1 ? ParameterDirection.OUT : ParameterDirection.IN;
-		return Dnf.of(linkType.name() + "#superset", builder -> {
-			var p1 = builder.parameter("p1", direction);
-			var p2 = builder.parameter("p2", direction);
-			var literals = new ArrayList<Literal>(literalCount);
-			for (PartialRelation superset : info.supersets()) {
-				literals.add(superset.call(p1, p2));
-			}
-			for (PartialRelation oppositeSuperset : info.oppositeSupersets()) {
-				literals.add(oppositeSuperset.call(p2, p1));
-			}
-			builder.clause(literals);
-		});
+		return CrossReferenceUtils.createSupersetHelper(linkType, info.supersets(), info.oppositeSupersets());
 	}
 
 	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {

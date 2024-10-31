@@ -32,8 +32,6 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.Set;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static tools.refinery.logic.literal.Literals.not;
@@ -118,14 +116,12 @@ class PredicateScopeTest {
 						.source(index)
 						.target(index)
 						.multiplicity(CardinalityIntervals.LONE, nextInvalidMultiplicity)
-						.opposite(prev)
-						.supersets(Set.of()))
+						.opposite(prev))
 				.reference(prev, builder -> builder
 						.source(index)
 						.target(index)
 						.multiplicity(CardinalityIntervals.LONE, prevInvalidMultiplicity)
-						.opposite(next)
-						.supersets(Set.of()))
+						.opposite(next))
 				.build();
 		return ModelStore.builder()
 				.with(QueryInterpreterAdapter.builder())

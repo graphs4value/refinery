@@ -43,20 +43,8 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 		var adapter = getAdapter();
 		sourceRefiner = adapter.getRefiner(sourceType);
 		targetRefiner = adapter.getRefiner(targetType);
-		supersetRefiners = getSupersetRefiners(supersets);
-		oppositeSupersetRefiners = getSupersetRefiners(oppositeSupersets);
-	}
-
-	private PartialInterpretationRefiner<TruthValue, Boolean>[] getSupersetRefiners(Set<PartialRelation> relations) {
-		// Creation of array with generic member type.
-		@SuppressWarnings("unchecked") var refiners =
-				(PartialInterpretationRefiner<TruthValue, Boolean>[]) new PartialInterpretationRefiner<?, ?>[relations.size()];
-		var i = 0;
-		for (var relation : relations) {
-			refiners[i] = getAdapter().getRefiner(relation);
-			i++;
-		}
-		return refiners;
+		supersetRefiners = CrossReferenceUtils.getRefiners(adapter, supersets);
+		oppositeSupersetRefiners = CrossReferenceUtils.getRefiners(adapter, oppositeSupersets);
 	}
 
 	@Override
@@ -73,23 +61,7 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	}
 
 	private boolean mergeSupersets(Tuple key) {
-		// Use classic for loop to avoid allocating an iterator.
-		//noinspection ForLoopReplaceableByForEach
-		for (int i = 0; i < supersetRefiners.length; i++) {
-			if (!supersetRefiners[i].merge(key, TruthValue.TRUE)) {
-				return false;
-			}
-		}
-		if (oppositeSupersetRefiners.length > 0) {
-			var oppositeKey = Tuple.of(key.get(1), key.get(0));
-			//noinspection ForLoopReplaceableByForEach
-			for (int i = 0; i < oppositeSupersetRefiners.length; i++) {
-				if (!oppositeSupersetRefiners[i].merge(oppositeKey, TruthValue.TRUE)) {
-					return false;
-				}
-			}
-		}
-		return true;
+		return CrossReferenceUtils.mergeAll(supersetRefiners, oppositeSupersetRefiners, key, TruthValue.TRUE);
 	}
 
 	@Override

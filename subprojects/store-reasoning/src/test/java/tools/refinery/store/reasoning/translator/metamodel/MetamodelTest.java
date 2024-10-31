@@ -6,6 +6,8 @@
 package tools.refinery.store.reasoning.translator.metamodel;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
@@ -16,11 +18,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
-import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
-
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -50,23 +48,19 @@ class MetamodelTest {
 						.containment(true)
 						.source(university)
 						.target(course)
-						.opposite(location)
-						.supersets(Set.of()))
+						.opposite(location))
 				.reference(location, builder -> builder
 						.source(course)
 						.target(university)
-						.opposite(courses)
-						.supersets(Set.of()))
+						.opposite(courses))
 				.reference(lecturer, builder -> builder
 						.source(course)
 						.multiplicity(CardinalityIntervals.ONE, invalidLecturerCount)
-						.target(teacher)
-						.supersets(Set.of()))
+						.target(teacher))
 				.reference(enrolledStudents, builder -> builder
 						.source(course)
 						.multiplicity(CardinalityIntervals.SOME, invalidStudentCount)
-						.target(student)
-						.supersets(Set.of()))
+						.target(student))
 				.build();
 
 		var seed = ModelSeed.builder(5)
