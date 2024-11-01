@@ -142,10 +142,49 @@ function encodeName(name: string): string {
     .replaceAll('%', '_');
 }
 
+let measureDiv: HTMLElement | undefined;
+
+type SizeCache = Map<string, string>;
+
+function setLabelWidth(
+  text: string,
+  align: 'left' | 'center' | 'right',
+  size: number,
+  sizeCache: SizeCache,
+) {
+  const key = `${text}|${align}|${size}`;
+  let cached = sizeCache.get(key);
+  if (cached === undefined) {
+    if (measureDiv === undefined) {
+      measureDiv = document.createElement('measureDiv');
+      measureDiv.style.position = 'absolute';
+      measureDiv.style.left = '-1000rem';
+      measureDiv.style.top = '-1000rem';
+      measureDiv.style.opacity = '0';
+      measureDiv.style.pointerEvents = 'none';
+      measureDiv.style.width = 'auto';
+      measureDiv.style.height = 'auto';
+      measureDiv.style.padding = '0';
+      measureDiv.style.whiteSpace = 'pre';
+      measureDiv.style.lineHeight = String(14 / 12);
+      document.body.appendChild(measureDiv);
+    }
+    measureDiv.style.fontSize = `${size}px`;
+    measureDiv.innerHTML = text;
+    const { width, height } = measureDiv.getBoundingClientRect();
+    cached = `<table align="${align}" fixedsize="TRUE" width="${width}" height="${height}" border="0" cellborder="0" cellpadding="0" cellspacing="0">
+            <tr><td>${text}</td></tr>
+          </table>`;
+    sizeCache.set(key, cached);
+  }
+  return cached;
+}
+
 function createNodes(
   graph: GraphStore,
   nodeData: NodeData[],
   lines: string[],
+  sizeCache: SizeCache,
 ): void {
   const {
     semantics: { nodes },
@@ -177,21 +216,28 @@ function createNodes(
     const name = nodeName(graph, node);
     const border = node.kind === 'atom' ? 2 : 1;
     const count = scopes ? `&nbsp;${data.count}` : '';
+    const nodeLabel = setLabelWidth(`${name}${count}`, 'center', 12, sizeCache);
     const encodedNodeName = encodeName(node.name);
     lines.push(`n${i} [id="${encodedNodeName}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">
-          <tr><td cellpadding="4.5" width="32" bgcolor="green">${name}${count}</td></tr>`);
+          <tr><td cellpadding="4.5" width="32" bgcolor="green">${nodeLabel}</td></tr>`);
     if (data.unaryPredicates.size > 0) {
       lines.push(
         '<hr/><tr><td cellpadding="4.5"><table fixedsize="TRUE" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="1.5">',
       );
       data.unaryPredicates.forEach((value, relation) => {
         const encodedRelationName = `${encodedNodeName},${encodeName(relation.name)}`;
+        const relationLabel = setLabelWidth(
+          relationName(graph, relation),
+          'left',
+          12,
+          sizeCache,
+        );
         lines.push(
           `<tr>
               <td><img src="#${value}"/></td>
               <td width="1.5"></td>
-              <td align="left" href="#${value}" id="${encodedRelationName},label">${relationName(graph, relation)}</td>
+              <td align="left" href="#${value}" id="${encodedRelationName},label">${relationLabel}</td>
             </tr>`,
         );
       });
@@ -258,17 +304,24 @@ function getEdgeLabel(
   name: string,
   containment: boolean,
   value: string,
+  sizeCache: SizeCache,
 ): string {
+  const label = setLabelWidth(
+    containment ? `<b>${name}</b>` : name,
+    'left',
+    10.5,
+    sizeCache,
+  );
   if (value !== 'ERROR') {
-    return containment ? `<<b>${name}</b>>` : `"${name}"`;
+    return `<${label}>`;
   }
   // No need to set an id for the image for animation,
   // because it will be the only `<use>` element in its group.
-  return `<<table fixedsize="TRUE" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="0">
+  return `<<table align="left" border="0" cellborder="0" cellspacing="0" cellpadding="0">
     <tr>
       <td><img src="#ERROR"/></td>
       <td width="3.9375"></td>
-      <td align="left">${containment ? `<b>${name}</b>` : name}</td>
+      <td align="left">${label}</td>
     </tr>
   </table>>`;
 }
@@ -279,6 +332,7 @@ function createRelationEdges(
   relation: RelationMetadata,
   showUnknown: boolean,
   lines: string[],
+  sizeCache: SizeCache,
 ): void {
   const {
     semantics: { nodes, partialInterpretation },
@@ -362,7 +416,7 @@ function createRelationEdges(
     const encodedFrom = encodeName(fromNode.name);
     const encodedTo = encodeName(toNode.name);
     const id = `${encodedFrom},${encodedTo},${encodedRelation}`;
-    const label = getEdgeLabel(name, containment, value);
+    const label = getEdgeLabel(name, containment, value, sizeCache);
     lines.push(`n${from} -> n${to} [
       id="${id}",
       dir="${dir}",
@@ -381,6 +435,7 @@ function createEdges(
   graph: GraphStore,
   nodeData: NodeData[],
   lines: string[],
+  sizeCache: SizeCache,
 ): void {
   const {
     semantics: { relations },
@@ -397,6 +452,7 @@ function createEdges(
         relation,
         visibility === 'all',
         lines,
+        sizeCache,
       );
     }
   });
@@ -415,8 +471,9 @@ export default function dotSource(
     'edge [fontsize=10.5, color=black, fontname="OpenSans"];',
   ];
   const nodeData = computeNodeData(graph);
-  createNodes(graph, nodeData, lines);
-  createEdges(graph, nodeData, lines);
+  const sizeCache: SizeCache = new Map();
+  createNodes(graph, nodeData, lines, sizeCache);
+  createEdges(graph, nodeData, lines, sizeCache);
   lines.push('}');
   return [lines.join('\n'), lines.length];
 }
