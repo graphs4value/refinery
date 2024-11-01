@@ -136,6 +136,9 @@ function encodeName(name: string): string {
     .replaceAll('%3A', ':')
     .replaceAll('_', '__')
     .replaceAll("'", '_27')
+    .replaceAll('(', '_28')
+    .replaceAll(')', '_29')
+    .replaceAll(',', '_2C')
     .replaceAll('%', '_');
 }
 

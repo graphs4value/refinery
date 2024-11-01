@@ -45,6 +45,7 @@ import problemLanguageSupport from '../language/problemLanguageSupport';
 
 import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
+import bidiIsolatesExtension from './bidiIsolatesExtension';
 import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
 import scrollbarsExtension from './scrollbarsExtension';
@@ -68,6 +69,7 @@ export default function createEditorState(
         override: [(context) => store.contentAssist(context)],
       }),
       closeBrackets(),
+      bidiIsolatesExtension(),
       bracketMatching(),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),

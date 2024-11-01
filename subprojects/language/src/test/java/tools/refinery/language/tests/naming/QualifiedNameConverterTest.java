@@ -49,7 +49,8 @@ class QualifiedNameConverterTest {
 				Arguments.of("'a b'::c1::_d", QualifiedName.create("a b", "c1", "_d")),
 				Arguments.of("::a", QualifiedName.create("", "a")),
 				Arguments.of("::'a b'", QualifiedName.create("", "a b")),
-				Arguments.of("::'a b'::c1::_d", QualifiedName.create("", "a b", "c1", "_d"))
+				Arguments.of("::'a b'::c1::_d", QualifiedName.create("", "a b", "c1", "_d")),
+				Arguments.of("'نور'", QualifiedName.create("نور"))
 		);
 	}
 

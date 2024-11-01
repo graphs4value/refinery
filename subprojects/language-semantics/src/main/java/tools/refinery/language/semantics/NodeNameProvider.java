@@ -54,7 +54,7 @@ public class NodeNameProvider {
 		do {
 			index++;
 			nodeName = namePrefix + index;
-			qualifiedName = qualifiedNameConverter.toQualifiedName(nodeName);
+			qualifiedName = QualifiedName.create(nodeName);
 		} while (semanticsUtils.maybeGetElement(problem, scope, qualifiedName, Node.class) != null);
 		indexMap.put(namePrefix, index);
 		return nodeName;
