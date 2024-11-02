@@ -10,12 +10,12 @@ import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
+import tools.refinery.language.semantics.internal.MutableRelationCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.semantics.internal.query.QueryCompiler;
 import tools.refinery.language.semantics.internal.query.RuleCompiler;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
-import tools.refinery.language.validation.ActionTargetCollector;
 import tools.refinery.logic.dnf.InvalidClauseException;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
@@ -65,7 +65,7 @@ public class ModelInitializer {
 	private ImportAdapterProvider importAdapterProvider;
 
 	@Inject
-	private ActionTargetCollector actionTargetCollector;
+	private MutableRelationCollector mutableRelationCollector;
 
 	@Inject
 	private QueryCompiler queryCompiler;
@@ -91,8 +91,6 @@ public class ModelInitializer {
 
 	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new HashMap<>();
 
-	private final Set<PartialRelation> targetTypes = new HashSet<>();
-
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
 	private Metamodel metamodel;
@@ -116,6 +114,7 @@ public class ModelInitializer {
 		this.problem = problem;
 		loadImportedProblems();
 		importedProblems.add(problem);
+		mutableRelationCollector.collectMutableRelations(importedProblems);
 		problemTrace.setProblem(problem);
 		queryCompiler.setProblemTrace(problemTrace);
 		ruleCompiler.setQueryCompiler(queryCompiler);
@@ -374,7 +373,6 @@ public class ModelInitializer {
 		var relation = getPartialRelation(referenceDeclaration);
 		var source = getPartialRelation(classDeclaration);
 		var target = getPartialRelation(referenceDeclaration.getReferenceType());
-		targetTypes.add(target);
 		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
 		boolean partial = referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
 		var opposite = referenceDeclaration.getOpposite();
@@ -383,7 +381,7 @@ public class ModelInitializer {
 			oppositeRelation = getPartialRelation(opposite);
 		}
 		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
-		Set<PartialRelation> supersets =referenceDeclaration.getSuperSets().stream()
+		Set<PartialRelation> supersets = referenceDeclaration.getSuperSets().stream()
 				.map(this::getPartialRelation)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 		try {
@@ -625,7 +623,7 @@ public class ModelInitializer {
 													ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var query = queryCompiler.toQuery(partialRelation.name(), predicateDefinition);
-		boolean mutable = targetTypes.contains(partialRelation) || isActionTarget(predicateDefinition);
+		boolean mutable = mutableRelationCollector.isMutable(predicateDefinition);
 		TruthValue defaultValue;
 		if (predicateDefinition.getKind() == PredicateKind.ERROR) {
 			defaultValue = TruthValue.FALSE;
@@ -637,7 +635,9 @@ public class ModelInitializer {
 			mutable = mutable || cursor.move();
 		}
 		var parameterTypes = getParameterTypes(predicateDefinition, null);
-		var translator = new PredicateTranslator(partialRelation, query, parameterTypes, mutable, defaultValue);
+		var supersets = getSupersets(predicateDefinition);
+		var translator = new PredicateTranslator(partialRelation, query, parameterTypes, supersets, mutable,
+				defaultValue);
 		storeBuilder.with(translator);
 		var computedPredicate = predicateDefinition.getComputedValue();
 		if (computedPredicate != null) {
@@ -653,15 +653,6 @@ public class ModelInitializer {
 		}
 	}
 
-	private boolean isActionTarget(PredicateDefinition predicateDefinition) {
-		for (var importedProblem : importedProblems) {
-			if (actionTargetCollector.isActionTarget(importedProblem, predicateDefinition)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private List<PartialRelation> getParameterTypes(ParametricDefinition parametricDefinition,
 													PartialRelation defaultType) {
 		var parameters = parametricDefinition.getParameters();
@@ -673,14 +664,22 @@ public class ModelInitializer {
 		return Collections.unmodifiableList(parameterTypes);
 	}
 
+	private Set<PartialRelation> getSupersets(PredicateDefinition predicateDefinition) {
+		return predicateDefinition.getSuperSets().stream()
+				.map(this::getPartialRelation)
+				.collect(Collectors.toUnmodifiableSet());
+	}
+
 	private void collectBasePredicateDefinition(PredicateDefinition predicateDefinition,
 												ModelStoreBuilder storeBuilder) {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var parameterTypes = getParameterTypes(predicateDefinition, nodeRelation);
+		var supersets = getSupersets(predicateDefinition);
 		var seed = modelSeed.getSeed(partialRelation);
 		var defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
 		boolean partial = predicateDefinition.getKind() == PredicateKind.PARTIAL;
-		var translator = new BasePredicateTranslator(partialRelation, parameterTypes, defaultValue, partial);
+		var translator = new BasePredicateTranslator(partialRelation, parameterTypes, supersets, defaultValue,
+                partial);
 		storeBuilder.with(translator);
 	}
 

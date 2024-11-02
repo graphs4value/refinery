@@ -10,6 +10,7 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.ConcreteRelationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
+import tools.refinery.store.reasoning.refinement.RefinementUtils;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -19,16 +20,21 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 class PredicateRefiner extends ConcreteRelationRefiner {
 	private final List<PartialRelation> parameterTypes;
+	private final Set<PartialRelation> supertypes;
 	private @Nullable PartialInterpretationRefiner<TruthValue, Boolean>[] parameterTypeRefiners;
+	private PartialInterpretationRefiner<TruthValue, Boolean>[] supertypeRefiners;
 
 	protected PredicateRefiner(
 			ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-			Symbol<TruthValue> concreteSymbol, List<PartialRelation> parameterTypes, RoundingMode roundingMode) {
+			Symbol<TruthValue> concreteSymbol, List<PartialRelation> parameterTypes, Set<PartialRelation> supertypes,
+			RoundingMode roundingMode) {
 		super(adapter, partialSymbol, concreteSymbol, roundingMode);
 		this.parameterTypes = parameterTypes;
+		this.supertypes = supertypes;
 	}
 
 	@Override
@@ -45,6 +51,7 @@ class PredicateRefiner extends ConcreteRelationRefiner {
 				array[i] = adapter.getRefiner(parameterType);
 			}
 		}
+		supertypeRefiners = RefinementUtils.getRefiners(adapter, supertypes);
 	}
 
 	@Override
@@ -70,7 +77,7 @@ class PredicateRefiner extends ConcreteRelationRefiner {
 			if (value.must()) {
 				var key = cursor.getKey();
 				if (!refineParameters(key)) {
-					throw new IllegalArgumentException("Failed to merge parameter types of predicate %s for key %s"
+					throw new IllegalArgumentException("Failed to merge type constraints of predicate %s for key %s"
 							.formatted(predicate, key));
 				}
 			}
@@ -85,12 +92,13 @@ class PredicateRefiner extends ConcreteRelationRefiner {
 				return false;
 			}
 		}
-		return true;
+		return RefinementUtils.mergeAll(supertypeRefiners, key, TruthValue.TRUE);
 	}
 
-	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol,
-												  List<PartialRelation> parameterTypes, RoundingMode roundingMode) {
+	public static Factory<TruthValue, Boolean> of(
+			Symbol<TruthValue> concreteSymbol, List<PartialRelation> parameterTypes, Set<PartialRelation> supertypes,
+			RoundingMode roundingMode) {
 		return (adapter, partialSymbol) -> new PredicateRefiner(adapter, partialSymbol, concreteSymbol,
-				parameterTypes, roundingMode);
+				parameterTypes, supertypes, roundingMode);
 	}
 }

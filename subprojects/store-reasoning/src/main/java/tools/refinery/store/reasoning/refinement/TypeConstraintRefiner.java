@@ -24,22 +24,8 @@ public class TypeConstraintRefiner {
 								 Set<PartialRelation> supersets, Set<PartialRelation> oppositeSupersets) {
 		sourceRefiner = adapter.getRefiner(sourceType);
 		targetRefiner = adapter.getRefiner(targetType);
-		supersetRefiners = getRefiners(adapter, supersets);
-		oppositeSupersetRefiners = getRefiners(adapter, oppositeSupersets);
-	}
-
-	private static PartialInterpretationRefiner<TruthValue, Boolean>[] getRefiners(ReasoningAdapter adapter,
-																				   Set<PartialRelation> relations) {
-		// Creation of array with generic member type.
-		@SuppressWarnings("unchecked")
-		var refiners = (PartialInterpretationRefiner<TruthValue, Boolean>[])
-				new PartialInterpretationRefiner<?, ?>[relations.size()];
-		var i = 0;
-		for (var relation : relations) {
-			refiners[i] = adapter.getRefiner(relation);
-			i++;
-		}
-		return refiners;
+		supersetRefiners = RefinementUtils.getRefiners(adapter, supersets);
+		oppositeSupersetRefiners = RefinementUtils.getRefiners(adapter, oppositeSupersets);
 	}
 
 	public boolean merge(Tuple key) {
@@ -72,15 +58,6 @@ public class TypeConstraintRefiner {
 	}
 
 	private static boolean mergeSupersets(PartialInterpretationRefiner<TruthValue, Boolean>[] refiners, Tuple key) {
-		int count = refiners.length;
-		// Use classic for loop to avoid allocating an iterator.
-		//noinspection ForLoopReplaceableByForEach
-		for (int i = 0; i < count; i++) {
-			var refiner = refiners[i];
-			if (!refiner.merge(key, TruthValue.TRUE)) {
-				return false;
-			}
-		}
-		return true;
+		return RefinementUtils.mergeAll(refiners, key, TruthValue.TRUE);
 	}
 }
