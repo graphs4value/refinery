@@ -477,11 +477,66 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
+	public void checkPredicateSubSetting(PredicateDefinition predicateDefinition) {
+		var superSets = predicateDefinition.getSuperSets();
+		int superSetCount = superSets.size();
+		if (superSetCount == 0) {
+			return;
+		}
+		if (ProblemUtil.isShadow(predicateDefinition)) {
+			var message = "Shadow predicate '%s' cannot have any supersets."
+					.formatted(predicateDefinition.getName());
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
+					INVALID_SUPERSET_ISSUE);
+			return;
+		}
+		if (ProblemUtil.isError(predicateDefinition)) {
+			var message = ("Error predicate '%s' is the trivial (empty) subset of any relation. Remove redundant " +
+					"superset declarations.").formatted(predicateDefinition.getName());
+			acceptWarning(message, predicateDefinition, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
+					INVALID_SUPERSET_ISSUE);
+			return;
+		}
+		int expectedArity = predicateDefinition.getParameters().size();
+		for (int i = 0; i < superSetCount; i++) {
+			var superSet = superSets.get(i);
+			checkSuperset(predicateDefinition, expectedArity, superSet, i);
+		}
+	}
+
+	private void checkSuperset(PredicateDefinition predicateDefinition, int expectedArity, Relation superSet, int i) {
+		if (superSet.eIsProxy()) {
+			return;
+		}
+		if (superSet.equals(predicateDefinition)) {
+			var message = "Predicate '%s' cannot subset itself."
+					.formatted(predicateDefinition.getName());
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
+			return;
+		}
+		if (superSet instanceof DatatypeDeclaration) {
+			var message = "Predicate '%s' cannot subset datatypes."
+					.formatted(predicateDefinition.getName());
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
+			return;
+		}
+		int arity = signatureProvider.getArity(superSet);
+		if (arity != expectedArity) {
+			var message = "Superset '%s' of reference '%s' must have arity %d, got arity %d instead."
+					.formatted(superSet.getName(), predicateDefinition.getName(), expectedArity, arity);
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
+					i, INVALID_ARITY_ISSUE);
+		}
+	}
+
+	@Check
 	public void checkParameter(Parameter parameter) {
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var type = parameter.getParameterType();
 		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
-			var message = "Shadow relations '%s' is not allowed in parameter types.".formatted(type.getName());
+			var message = "Shadow relation '%s' is not allowed in parameter types.".formatted(type.getName());
 			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
 					SHADOW_RELATION_ISSUE);
 		}

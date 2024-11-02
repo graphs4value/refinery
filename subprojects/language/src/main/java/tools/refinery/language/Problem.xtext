@@ -70,6 +70,9 @@ PredicateDefinition:
 	(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
 	name=Identifier
 	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+	("subsets" superSets+=[ReferenceDeclaration|QualifiedName]
+		("," superSets+=[ReferenceDeclaration|QualifiedName])*
+	)?
 	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
 	".";
 

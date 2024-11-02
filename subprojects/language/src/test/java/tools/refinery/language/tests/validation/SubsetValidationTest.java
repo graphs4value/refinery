@@ -65,6 +65,20 @@ class SubsetValidationTest {
 			class Foo {
 				Foo[] bar2 subsets bar
 			}
+			""", """
+			pred foo(a, b, c).
+
+			pred bar(a, b, c) subsets foo.
+			""", """
+			class Foo.
+
+			pred bar(x) subsets Foo.
+			""", """
+			class Foo {
+				Foo[] bar
+			}
+
+			pred quux(x, y) subsets bar.
 			"""})
 	void validSubsetTest(String text) {
 		var problem = parseHelper.parse(text);
@@ -105,13 +119,16 @@ class SubsetValidationTest {
 		)));
 	}
 
-	@Test
-	void subsetDatatypeTest() {
-		var problem = parseHelper.parse("""
-				class Foo {
-					Foo[] bar subsets string
-				}
-				""");
+	@ParameterizedTest
+	@ValueSource(strings = {"""
+			class Foo {
+				Foo[] bar subsets string
+			}
+			""", """
+			pred bar(a) subsets string.
+			"""})
+	void subsetDatatypeTest(String text) {
+		var problem = parseHelper.parse(text);
 		var issues = problem.validate();
 		assertThat(issues, hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
@@ -120,18 +137,51 @@ class SubsetValidationTest {
 		)));
 	}
 
-	@Test
-	void subsetSelfTest() {
-		var problem = parseHelper.parse("""
-				class Foo {
-					Foo[] bar subsets bar
-				}
-				""");
+	@ParameterizedTest
+	@ValueSource(strings = {"""
+			class Foo {
+				Foo[] bar subsets bar
+			}
+			""", """
+			pred bar(a) subsets bar.
+			"""})
+	void subsetSelfTest(String text) {
+		var problem = parseHelper.parse(text);
 		var issues = problem.validate();
 		assertThat(issues, hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
 				hasProperty("issueCode", is(ProblemValidator.INVALID_SUPERSET_ISSUE)),
 				hasProperty("message", stringContainsInOrder("bar", "itself"))
+		)));
+	}
+
+	@Test
+	void shadowPredicateSubsetTest() {
+		var problem = parseHelper.parse("""
+				pred foo(a, b).
+
+				shadow pred bar(a, b) subsets foo <-> node(a), node(b).
+				""");
+		var issues = problem.validate();
+		assertThat(issues, hasItem(allOf(
+				hasProperty("severity", is(Diagnostic.ERROR)),
+				hasProperty("issueCode", is(ProblemValidator.INVALID_SUPERSET_ISSUE)),
+				hasProperty("message", stringContainsInOrder("Shadow", "bar"))
+		)));
+	}
+
+	@Test
+	void errorPredicateSubsetTest() {
+		var problem = parseHelper.parse("""
+				pred foo(a, b).
+
+				error pred bar(a, b) subsets foo <-> node(a), node(b), !foo(b, a).
+				""");
+		var issues = problem.validate();
+		assertThat(issues, hasItem(allOf(
+				hasProperty("severity", is(Diagnostic.WARNING)),
+				hasProperty("issueCode", is(ProblemValidator.INVALID_SUPERSET_ISSUE)),
+				hasProperty("message", stringContainsInOrder("Error", "bar"))
 		)));
 	}
 }
