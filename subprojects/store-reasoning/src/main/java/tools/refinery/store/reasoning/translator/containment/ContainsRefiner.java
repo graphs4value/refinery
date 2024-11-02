@@ -10,7 +10,10 @@ import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
+import tools.refinery.store.reasoning.refinement.RefinementUtils;
+import tools.refinery.store.reasoning.refinement.TypeConstraintRefiner;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -30,8 +33,7 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner.Concretizatio
 	}
 
 	private final Interpretation<InferredContainment> interpretation;
-	private PartialInterpretationRefiner<TruthValue, Boolean> containerRefiner;
-	private PartialInterpretationRefiner<TruthValue, Boolean> containedRefiner;
+	private TypeConstraintRefiner typeConstraintRefiner;
 
 	private ContainsRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 							Symbol<InferredContainment> containsStorage) {
@@ -42,8 +44,8 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner.Concretizatio
 	@Override
 	public void afterCreate() {
 		var adapter = getAdapter();
-		containerRefiner = adapter.getRefiner(ContainmentHierarchyTranslator.CONTAINER_SYMBOL);
-		containedRefiner = adapter.getRefiner(ContainmentHierarchyTranslator.CONTAINED_SYMBOL);
+		typeConstraintRefiner = new TypeConstraintRefiner(adapter, ContainmentHierarchyTranslator.CONTAINER_SYMBOL,
+				ContainmentHierarchyTranslator.CONTAINED_SYMBOL, Set.of(), Set.of());
 	}
 
 	@Override
@@ -54,10 +56,14 @@ class ContainsRefiner extends AbstractPartialInterpretationRefiner.Concretizatio
 			interpretation.put(key, newValue);
 		}
 		if (value.must()) {
-			return containerRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-					containedRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+			return typeConstraintRefiner.merge(key);
 		}
 		return true;
+	}
+
+	@Override
+	public void afterInitialize(ModelSeed modelSeed) {
+		RefinementUtils.refineFromSeed(this, modelSeed);
 	}
 
 	public InferredContainment mergeLink(InferredContainment oldValue, TruthValue toMerge) {

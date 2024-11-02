@@ -1,0 +1,39 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class A {
+    A[] foo
+}
+
+pred hasCommonFoo(A a1, A a2) <->
+    a1 != a2,
+    a1 != a3,
+    a2 != a3,
+    foo(a1, a3),
+    foo(a2, a3).
+
+pred noCommonFoo(A a1, A a2) subsets foo <->
+    a1 != a2,
+    !hasCommonFoo(a1, a2).
+
+!exists(A::new).
+A(x).
+A(y).
+A(z).
+
+% TEST: no propagation without assertion
+
+% EXPECT EXACTLY:
+?foo(x, y).
+?foo(y, x).
+?noCommonFoo(x, z).
+
+% TEST: with negative assertion
+
+!foo(x, z).
+
+% EXPECT:
+foo(x, y).
+foo(y, x).
+!noCommonFoo(x, z).

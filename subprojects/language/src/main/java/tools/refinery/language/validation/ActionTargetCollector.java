@@ -12,6 +12,7 @@ import org.eclipse.xtext.util.IResourceScopeCache;
 import org.eclipse.xtext.util.Tuples;
 import tools.refinery.language.model.problem.*;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,7 +41,7 @@ public class ActionTargetCollector {
 		return false;
 	}
 
-	protected Set<Relation> getActionTargets(Problem problem) {
+	public Set<Relation> getActionTargets(Problem problem) {
 		var resource = problem.eResource();
 		if (resource == null) {
 			return doGetActionTargets(problem);
@@ -55,7 +56,7 @@ public class ActionTargetCollector {
 				collectTargets(ruleDefinition, targets);
 			}
 		}
-		return targets;
+		return Collections.unmodifiableSet(targets);
 	}
 
 	private static void collectTargets(RuleDefinition ruleDefinition, HashSet<Relation> targets) {

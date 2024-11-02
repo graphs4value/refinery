@@ -15,7 +15,6 @@ import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.refinement.RefinementBasedInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.TranslationException;
@@ -47,8 +46,7 @@ public class OppositeRelationTranslator implements ModelStoreConfiguration, Part
 		storeBuilder.with(PartialRelationTranslator.of(linkType)
 				.rewriter(this)
 				.interpretation(OppositeInterpretation.of(opposite))
-				.refiner(OppositeRefiner.of(opposite))
-				.initializer(new RefinementBasedInitializer<>(linkType)));
+				.refiner(OppositeRefiner.of(opposite)));
 	}
 
 	@Override

@@ -9,9 +9,12 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public record ReferenceInfo(boolean containment, PartialRelation sourceType, Multiplicity multiplicity,
 							PartialRelation targetType, PartialRelation opposite, TruthValue defaultValue,
-							boolean partial) {
+							boolean partial, Set<PartialRelation> supersets) {
 	public ReferenceInfo {
 		if (containment && partial) {
 			throw new IllegalArgumentException("Containment references cannot be partial");

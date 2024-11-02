@@ -27,6 +27,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="referenceType" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="invalidMultiplicity" eType="#//Relation"
         transient="true" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superSets" upperBound="-1"
+        eType="#//Relation"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -37,6 +39,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//PredicateKind"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="computedValue" eType="#//PredicateDefinition"
         transient="true" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superSets" upperBound="-1"
+        eType="#//Relation"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>

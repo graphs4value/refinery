@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.crossreference;
 
+import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
@@ -20,6 +21,7 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.reasoning.translator.TranslationException;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
 import tools.refinery.store.representation.Symbol;
 
@@ -57,7 +59,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		}
 		translator.initializer(new UndirectedCrossReferenceInitializer(linkType, symbol));
 		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
-		translator.refiner(UndirectedCrossReferenceRefiner.of(symbol, type, roundingMode));
+		translator.refiner(UndirectedCrossReferenceRefiner.of(symbol, info, roundingMode));
 		translator.roundingMode(roundingMode);
 		if (!info.partial()) {
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
@@ -81,9 +83,12 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		var multiplicity = info.multiplicity();
 		var mayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.PARTIAL);
 		var mayNewSource = CrossReferenceUtils.createMayHelper(linkType, type, multiplicity, false);
+		var superset = createSupersetHelper();
 		var forbiddenView = new ForbiddenView(symbol);
 		translator.may(Query.of(mayName, (builder, source, target) -> {
 			builder.clause(
+					may(superset.call(source, target)),
+					may(superset.call(target, source)),
 					mayNewSource.call(source),
 					mayNewSource.call(target),
 					not(forbiddenView.call(source, target))
@@ -94,6 +99,8 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 				// corresponding error pattern will already mark the node as invalid.
 				builder.clause(
 						must(linkType.call(source, target)),
+						may(superset.call(source, target)),
+						may(superset.call(target, source)),
 						not(forbiddenView.call(source, target)),
 						may(type.call(source)),
 						may(type.call(target))
@@ -106,6 +113,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 					false);
 			translator.candidateMay(Query.of(candidateMayName, (builder, source, target) -> {
 				builder.clause(
+						candidateMay(superset.call(source, target)),
 						candidateMayNewSource.call(source),
 						candidateMayNewSource.call(target),
 						not(forbiddenView.call(source, target))
@@ -113,6 +121,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 				if (info.isConstrained()) {
 					builder.clause(
 							candidateMust(linkType.call(source, target)),
+							candidateMay(superset.call(source, target)),
 							not(forbiddenView.call(source, target)),
 							candidateMay(type.call(source)),
 							candidateMay(type.call(target))
@@ -122,9 +131,14 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		}
 	}
 
+	private Dnf createSupersetHelper() {
+		return TranslatorUtils.createSupersetHelper(linkType, info.supersets());
+	}
+
 	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = linkType.name();
 		var type = info.type();
+		var superset = createSupersetHelper();
 		var mayNewSource = CrossReferenceUtils.createMayHelper(linkType, type, info.multiplicity(), false);
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
@@ -132,6 +146,14 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 			builder.clause(
 					may(linkType.call(p1, p2)),
 					not(may(type.call(p1)))
+			);
+			builder.clause(
+					may(linkType.call(p1, p2)),
+					not(may(superset.call(p1, p2)))
+			);
+			builder.clause(
+					may(linkType.call(p1, p2)),
+					not(may(superset.call(p2, p1)))
 			);
 			if (info.isConstrained()) {
 				builder.clause(
@@ -157,6 +179,14 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 					.clause(
 							candidateMay(linkType.call(p1, p2)),
 							not(candidateMay(type.call(p1)))
+					)
+					.clause(
+							candidateMay(linkType.call(p1, p2)),
+							not(candidateMay(superset.call(p1, p2)))
+					)
+					.clause(
+							candidateMay(linkType.call(p1, p2)),
+							not(candidateMay(superset.call(p2, p1)))
 					);
 			if (info.isConstrained()) {
 				queryBuilder.clause(

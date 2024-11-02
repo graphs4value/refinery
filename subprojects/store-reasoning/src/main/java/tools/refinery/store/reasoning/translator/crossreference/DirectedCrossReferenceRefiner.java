@@ -8,7 +8,7 @@ package tools.refinery.store.reasoning.translator.crossreference;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.ConcreteRelationRefiner;
-import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
+import tools.refinery.store.reasoning.refinement.TypeConstraintRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
@@ -16,25 +16,30 @@ import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.Set;
+
 class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	private final PartialRelation sourceType;
 	private final PartialRelation targetType;
-	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
-	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
+	private final Set<PartialRelation> supersets;
+	private final Set<PartialRelation> oppositeSupersets;
+	private TypeConstraintRefiner typeConstraintRefiner;
 
-	protected DirectedCrossReferenceRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
-											Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
-											PartialRelation targetType, RoundingMode roundingMode) {
+	protected DirectedCrossReferenceRefiner(
+			ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
+			Symbol<TruthValue> concreteSymbol, DirectedCrossReferenceInfo info, RoundingMode roundingMode) {
 		super(adapter, partialSymbol, concreteSymbol, roundingMode);
-		this.sourceType = sourceType;
-		this.targetType = targetType;
+		this.sourceType = info.sourceType();
+		this.targetType = info.targetType();
+		this.supersets = info.supersets();
+		this.oppositeSupersets = info.oppositeSupersets();
 	}
 
 	@Override
 	public void afterCreate() {
 		var adapter = getAdapter();
-		sourceRefiner = adapter.getRefiner(sourceType);
-		targetRefiner = adapter.getRefiner(targetType);
+		typeConstraintRefiner = new TypeConstraintRefiner(adapter, sourceType, targetType, supersets,
+				oppositeSupersets);
 	}
 
 	@Override
@@ -43,8 +48,7 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 			return false;
 		}
 		if (value.must()) {
-			return sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-					targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+			return typeConstraintRefiner.merge(key);
 		}
 		return true;
 	}
@@ -52,24 +56,12 @@ class DirectedCrossReferenceRefiner extends ConcreteRelationRefiner {
 	@Override
 	public void afterInitialize(ModelSeed modelSeed) {
 		var linkType = getPartialSymbol();
-		var cursor = modelSeed.getCursor(linkType);
-		while (cursor.move()) {
-			var value = cursor.getValue();
-			if (value.must()) {
-				var key = cursor.getKey();
-				boolean merged = sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-						targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
-				if (!merged) {
-					throw new IllegalArgumentException("Failed to merge end types of reference %s for key %s"
-							.formatted(linkType, key));
-				}
-			}
-		}
+		typeConstraintRefiner.mergeFromSeed(linkType, modelSeed);
 	}
 
-	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, PartialRelation sourceType,
-												  PartialRelation targetType, RoundingMode roundingMode) {
+	public static Factory<TruthValue, Boolean> of(Symbol<TruthValue> concreteSymbol, DirectedCrossReferenceInfo info,
+												  RoundingMode roundingMode) {
 		return (adapter, partialSymbol) -> new DirectedCrossReferenceRefiner(adapter, partialSymbol, concreteSymbol,
-				sourceType, targetType, roundingMode);
+				info, roundingMode);
 	}
 }

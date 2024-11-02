@@ -10,8 +10,11 @@ import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
+import tools.refinery.store.reasoning.refinement.RefinementUtils;
+import tools.refinery.store.reasoning.refinement.TypeConstraintRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -21,8 +24,7 @@ import java.util.Set;
 class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.ConcretizationAware<TruthValue, Boolean> {
 	private final Factory factory;
 	private final Interpretation<InferredContainment> interpretation;
-	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
-	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
+	private TypeConstraintRefiner typeConstraintRefiner;
 
 	private ContainmentLinkRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 								   Factory factory) {
@@ -34,8 +36,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	@Override
 	public void afterCreate() {
 		var adapter = getAdapter();
-		sourceRefiner = adapter.getRefiner(factory.sourceType);
-		targetRefiner = adapter.getRefiner(factory.targetType);
+		typeConstraintRefiner = new TypeConstraintRefiner(adapter, factory.sourceType, factory.targetType,
+				factory.supersets, factory.oppositeSupersets);
 	}
 
 	@Override
@@ -46,8 +48,7 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 			interpretation.put(key, newValue);
 		}
 		if (value.must()) {
-			return sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-					targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE);
+			return typeConstraintRefiner.merge(key);
 		}
 		return true;
 	}
@@ -93,6 +94,11 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 				addToSet(oldValue.forbiddenLinks(), factory.linkType));
 	}
 
+	@Override
+	public void afterInitialize(ModelSeed modelSeed) {
+		RefinementUtils.refineFromSeed(this, modelSeed);
+	}
+
 	private static Set<PartialRelation> addToSet(Set<PartialRelation> oldSet, PartialRelation linkType) {
 		if (oldSet.isEmpty()) {
 			return Set.of(linkType);
@@ -104,9 +110,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	}
 
 	public static PartialInterpretationRefiner.Factory<TruthValue, Boolean> of(
-			PartialRelation linkType, Symbol<InferredContainment> symbol, PartialRelation sourceType,
-			PartialRelation targetType) {
-		return new Factory(linkType, symbol, sourceType, targetType);
+			PartialRelation linkType, Symbol<InferredContainment> symbol, ContainmentInfo info) {
+		return new Factory(linkType, symbol, info);
 	}
 
 	private static class Factory implements PartialInterpretationRefiner.Factory<TruthValue, Boolean> {
@@ -114,15 +119,18 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 		public final Symbol<InferredContainment> symbol;
 		public final PartialRelation targetType;
 		public final PartialRelation sourceType;
+		public final Set<PartialRelation> supersets;
+		public final Set<PartialRelation> oppositeSupersets;
 		public final InferredContainment trueLink;
 		public final InferredContainment falseLinkUnknownContains;
 
-		public Factory(PartialRelation linkType, Symbol<InferredContainment> symbol, PartialRelation sourceType,
-					   PartialRelation targetType) {
+		public Factory(PartialRelation linkType, Symbol<InferredContainment> symbol, ContainmentInfo info) {
 			this.linkType = linkType;
 			this.symbol = symbol;
-			this.sourceType = sourceType;
-			this.targetType = targetType;
+			this.sourceType = info.sourceType();
+			this.targetType = info.targetType();
+			this.supersets = info.supersets();
+			this.oppositeSupersets = info.oppositeSupersets();
 			trueLink = new InferredContainment(TruthValue.TRUE, Set.of(linkType), Set.of());
 			falseLinkUnknownContains = new InferredContainment(TruthValue.UNKNOWN, Set.of(), Set.of(linkType));
 		}

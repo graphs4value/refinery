@@ -1,0 +1,29 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Usage {
+    Usage[] usage
+}
+
+class PartUsage extends Usage {
+    PartUsage[] partUsage opposite partUsage subsets usage
+}
+
+% TEST: subset not allowed
+
+PartUsage(part1).
+PartUsage(part2).
+!usage(part1, part2).
+
+% EXPECT:
+!partUsage(part1, part2).
+!partUsage(part2, part1).
+
+% TEST: superset forced
+
+partUsage(part1, part2).
+
+% EXPECT:
+usage(part1, part2).
+usage(part2, part1).

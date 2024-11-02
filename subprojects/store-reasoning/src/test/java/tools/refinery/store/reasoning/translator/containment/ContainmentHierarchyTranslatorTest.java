@@ -23,6 +23,7 @@ import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -48,7 +49,7 @@ class ContainmentHierarchyTranslatorTest {
 
 		var containmentHierarchy = Map.of(
 				entry,
-				new ContainmentInfo(c1, UnconstrainedMultiplicity.INSTANCE, c2)
+				new ContainmentInfo(c1, UnconstrainedMultiplicity.INSTANCE, c2, Set.of(), Set.of())
 		);
 
 		store = ModelStore.builder()

@@ -26,10 +26,10 @@ import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.refinement.RefinementBasedInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.InvalidMultiplicityErrorTranslator;
@@ -140,9 +140,13 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 
 		var forbiddenLinkView = new ForbiddenContainmentLinkView(containsStorage, linkType);
 
+		var supersetHelper = TranslatorUtils.createSupersetHelper(linkType, info.supersets(),
+				info.oppositeSupersets());
+
 		var mayNewHelper = Query.of(name + "#mayNewHelper", (builder, parent, child) -> builder.clause(
 				mayNewSourceHelper.call(parent),
 				mayNewTargetHelper.call(child),
+				may(supersetHelper.call(parent, child)),
 				not(mustAnyContainmentLinkView.call(parent, child)),
 				not(forbiddenContainsView.call(parent, child)),
 				not(forbiddenLinkView.call(parent, child))
@@ -158,6 +162,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 
 		var mayExistingHelper = Query.of(name + "#mayExistingHelper", (builder, parent, child) -> builder.clause(
 				existingContainsLink.call(parent, child),
+				may(supersetHelper.call(parent, child)),
 				not(forbiddenContainsView.call(parent, child)),
 				may(sourceType.call(parent)),
 				may(targetType.call(child)),
@@ -205,8 +210,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 						new MustContainmentLinkView(containsStorage, linkType).call(parent, child)
 				)))
 				.roundingMode(RoundingMode.PREFER_FALSE)
-				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info.sourceType(), info.targetType()))
-				.initializer(new RefinementBasedInitializer<>(linkType))
+				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info))
 				.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 						.clause(
 								may(linkType.call(source, target)),
@@ -238,8 +242,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				.must(Query.of(mustName, (builder, parent, child) -> builder.clause(
 						new MustContainsView(containsStorage).call(parent, child)
 				)))
-				.refiner(ContainsRefiner.of(containsStorage))
-				.initializer(new RefinementBasedInitializer<>(CONTAINS_SYMBOL)));
+				.refiner(ContainsRefiner.of(containsStorage)));
 	}
 
 	private void translateInvalidContainer(ModelStoreBuilder storeBuilder) {

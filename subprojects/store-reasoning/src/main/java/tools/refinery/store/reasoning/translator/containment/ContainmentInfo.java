@@ -9,8 +9,11 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 
+import java.util.Set;
+
 public record ContainmentInfo(PartialRelation sourceType, Multiplicity multiplicity,
-							  PartialRelation targetType) {
+							  PartialRelation targetType, Set<PartialRelation> supersets,
+							  Set<PartialRelation> oppositeSupersets) {
 	public ContainmentInfo {
 		if (sourceType.arity() != 1) {
 			throw new TranslationException(sourceType, "Expected source type %s to be of arity 1, got %d instead"

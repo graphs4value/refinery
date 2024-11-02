@@ -1,0 +1,38 @@
+% Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Definition.
+
+class Usage.
+
+class PartDefinition extends Definition.
+
+class PartUsage extends Usage.
+
+class FeatureTyping {
+    Usage[1] typedFeature
+    Definition[1] featureType
+}
+
+pred def(Usage u, Definition d) <->
+    typedFeature(t, u),
+    featureType(t, d).
+
+pred partDef(PartUsage u, PartDefinition d) subsets def.
+
+% TEST: subset not allowed
+
+PartUsage(part1).
+PartDefinition(partDef1).
+!exists(FeatureTyping::new).
+
+% EXPECT:
+!partDef(part1, partDef1).
+
+% TEST: superset forced
+
+partDef(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1).

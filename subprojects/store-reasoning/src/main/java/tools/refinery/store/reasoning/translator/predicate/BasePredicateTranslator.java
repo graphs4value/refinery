@@ -23,10 +23,12 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.reasoning.translator.TranslationException;
+import tools.refinery.store.reasoning.translator.TranslatorUtils;
 import tools.refinery.store.representation.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
@@ -37,14 +39,16 @@ import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectT
 public class BasePredicateTranslator implements ModelStoreConfiguration {
 	private final PartialRelation predicate;
 	private final List<PartialRelation> parameterTypes;
+	private final Set<PartialRelation> supersets;
 	private final TruthValue defaultValue;
 	private final boolean partial;
 	private final Symbol<TruthValue> symbol;
 
 	public BasePredicateTranslator(PartialRelation predicate, List<PartialRelation> parameterTypes,
-								   TruthValue defaultValue, boolean partial) {
+								   Set<PartialRelation> supersets, TruthValue defaultValue, boolean partial) {
 		this.predicate = predicate;
 		this.parameterTypes = parameterTypes;
+		this.supersets = supersets;
 		this.defaultValue = defaultValue;
 		this.partial = partial;
 		symbol = Symbol.of(predicate.name(), predicate.arity(), TruthValue.class, defaultValue);
@@ -70,7 +74,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 			configureWithDefaultFalse(storeBuilder, partial);
 		}
 		var roundingMode = partial ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
-		translator.refiner(PredicateRefiner.of(symbol, parameterTypes, roundingMode));
+		translator.refiner(PredicateRefiner.of(symbol, parameterTypes, supersets, roundingMode));
 		translator.roundingMode(roundingMode);
 		if (!partial) {
 			translator.decision(Rule.of(predicate.name(), builder -> {
@@ -89,12 +93,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 	}
 
 	private NodeVariable[] createParameters(AbstractQueryBuilder<?> builder) {
-		int arity = predicate.arity();
-		var parameters = new NodeVariable[arity];
-		for (int i = 0; i < arity; i++) {
-			parameters[i] = builder.parameter("p" + (i + 1));
-		}
-		return parameters;
+		return TranslatorUtils.createParameters(predicate.arity(), builder);
 	}
 
 	private void configureWithDefaultUnknown(PartialRelationTranslator translator) {
@@ -102,9 +101,11 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		var mayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.PARTIAL);
 		int arity = predicate.arity();
 		var forbiddenView = new ForbiddenView(symbol);
+		var superset = TranslatorUtils.createSupersetHelper(predicate, supersets);
 		translator.may(Query.of(mayName, builder -> {
 			var parameters = createParameters(builder);
-			var literals = new ArrayList<Literal>(arity + 1);
+			var literals = new ArrayList<Literal>(arity + 2);
+			literals.add(may(superset.call(parameters)));
 			for (int i = 0; i < arity; i++) {
 				literals.add(may(parameterTypes.get(i).call(parameters[i])));
 			}
@@ -115,7 +116,8 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 			var candidateMayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.CANDIDATE);
 			translator.candidateMay(Query.of(candidateMayName, builder -> {
 				var parameters = createParameters(builder);
-				var literals = new ArrayList<Literal>(arity + 1);
+				var literals = new ArrayList<Literal>(arity + 2);
+				literals.add(candidateMay(superset.call(parameters)));
 				for (int i = 0; i < arity; i++) {
 					literals.add(candidateMay(parameterTypes.get(i).call(parameters[i])));
 				}
@@ -127,6 +129,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 
 	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
 		var name = predicate.name();
+		var superset = TranslatorUtils.createSupersetHelper(predicate, supersets);
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
 		var propagationBuilder = storeBuilder.getAdapter(PropagationBuilder.class);
 		propagationBuilder.rule(Rule.of(name + "#invalid", builder -> {
@@ -138,6 +141,10 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 						not(may(parameterTypes.get(i).call(parameters[i])))
 				);
 			}
+			builder.clause(
+					may(predicate.call(parameters)),
+					not(may(superset.call(parameters)))
+			);
 			builder.action(remove(predicate, parameters));
 		}));
 		if (!partial) {
@@ -156,6 +163,10 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 						not(candidateMay(parameterTypes.get(i).call(parameters[i])))
 				);
 			}
+			queryBuilder.clause(
+					may(predicate.call(parameters)),
+					not(candidateMay(superset.call(parameters)))
+			);
 			var literals = new ArrayList<Literal>(arity + 1);
 			literals.add(queryBuilder.build().call(parameters));
 			for (var parameter : parameters) {
