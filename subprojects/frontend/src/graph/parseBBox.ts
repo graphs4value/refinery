@@ -23,8 +23,8 @@ export interface BBox {
 }
 
 function parsePoints(points: string[]): BBox {
-  const x = points.map((p) => Number(p.split(',')[0] ?? 0));
-  const y = points.map((p) => Number(p.split(',')[1] ?? 0));
+  const x = points.map((p) => parseFloat(p.split(',')[0] ?? '0'));
+  const y = points.map((p) => parseFloat(p.split(',')[1] ?? '0'));
   const xmin = Math.min.apply(null, x);
   const xmax = Math.max.apply(null, x);
   const ymin = Math.min.apply(null, y);

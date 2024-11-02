@@ -160,19 +160,23 @@ function setLabelWidth(
       measureDiv.style.position = 'absolute';
       measureDiv.style.left = '-1000rem';
       measureDiv.style.top = '-1000rem';
-      measureDiv.style.opacity = '0';
-      measureDiv.style.pointerEvents = 'none';
+      measureDiv.style.visibility = 'hidden';
       measureDiv.style.width = 'auto';
       measureDiv.style.height = 'auto';
       measureDiv.style.padding = '0';
       measureDiv.style.whiteSpace = 'pre';
       measureDiv.style.lineHeight = String(14 / 12);
+      measureDiv.style.fontOpticalSizing = 'none';
+      measureDiv.style.letterSpacing = '0';
+      measureDiv.style.textRendering = 'geometricPreicision';
       document.body.appendChild(measureDiv);
     }
-    measureDiv.style.fontSize = `${size}px`;
+    measureDiv.style.fontSize = `${size}pt`;
     measureDiv.innerHTML = text;
     const { width, height } = measureDiv.getBoundingClientRect();
-    cached = `<table align="${align}" fixedsize="TRUE" width="${width}" height="${height}" border="0" cellborder="0" cellpadding="0" cellspacing="0">
+    // Rounding the length (converted to points) to 1 decimal precision seems to yield the best alignment.
+    // The rounding matters here, because Graphviz will also apply some rounding internall.
+    cached = `<table align="${align}" fixedsize="TRUE" width="${Math.ceil(width * 7.5) / 10}" height="${Math.ceil(height * 7.5) / 10}" border="0" cellborder="0" cellpadding="0" cellspacing="0">
             <tr><td>${text}</td></tr>
           </table>`;
     sizeCache.set(key, cached);

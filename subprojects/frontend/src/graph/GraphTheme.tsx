@@ -101,6 +101,9 @@ export function createGraphTheme({
       '& text': {
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
+        fontOpticalSizing: 'none',
+        letterSpacing: 0,
+        textRendering: 'geometricPrecision',
       },
       '.node-outline': {
         stroke: theme.palette.text.primary,
@@ -137,6 +140,9 @@ export function createGraphTheme({
       '& text': {
         fontFamily: theme.typography.fontFamily,
         fill: theme.palette.text.primary,
+        fontOpticalSizing: 'none',
+        letterSpacing: 0,
+        textRendering: 'geometricPrecision',
       },
       '.edge-line': {
         stroke: theme.palette.text.primary,

@@ -9,13 +9,19 @@ import { type BBox, parsePolygonBBox, parsePathBBox } from './parseBBox';
 export const SVG_NS = 'http://www.w3.org/2000/svg';
 export const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
-function modifyAttribute(element: Element, attribute: string, change: number) {
-  const valueString = element.getAttribute(attribute);
-  if (valueString === null) {
-    return;
-  }
-  const value = parseInt(valueString, 10);
-  element.setAttribute(attribute, String(value + change));
+function parseCoordinate(element: SVGElement, attribute: string): number {
+  return parseFloat(element.getAttribute(attribute)?.replace('px', '') ?? '0');
+}
+
+function modifyAttribute(
+  element: SVGElement,
+  attribute: string,
+  change: number,
+): number {
+  const value = parseCoordinate(element, attribute);
+  const newValue = value + change;
+  element.setAttribute(attribute, String(newValue));
+  return value;
 }
 
 function addShadow(
@@ -59,18 +65,26 @@ function clipCompartmentBackground(node: SVGGElement) {
   node.appendChild(clipPath);
   compartment.setAttribute('clip-path', `url(#${clipId})`);
   // Enlarge the compartment to completely cover the background.
-  modifyAttribute(compartment, 'y', -5);
-  modifyAttribute(compartment, 'x', -5);
-  modifyAttribute(compartment, 'width', 10);
+  const y = modifyAttribute(compartment, 'y', -5);
+  const x = modifyAttribute(compartment, 'x', -5);
+  const width = modifyAttribute(compartment, 'width', 10);
   const isEmpty = node.classList.contains('node-empty');
   // Make sure that empty nodes are fully filled.
-  modifyAttribute(compartment, 'height', isEmpty ? 10 : 5);
+  const height = modifyAttribute(compartment, 'height', isEmpty ? 10 : 5);
   if (node.classList.contains('node-equalsSelf-UNKNOWN')) {
     addShadow(node, container, 6);
   }
   container.id = `${node.id},container`;
   compartment.id = `${node.id},compartment`;
   border.id = `${node.id},border`;
+  const label = node.querySelector(':scope > text');
+  if (label === null) {
+    return;
+  }
+  label.setAttribute('dominant-baseline', 'central');
+  label.setAttribute('text-anchor', 'middle');
+  label.setAttribute('x', String(x + width / 2));
+  label.setAttribute('y', String(y + height / 2 - 0.75));
 }
 
 function createRect(
@@ -135,10 +149,6 @@ function hrefToClass(node: SVGGElement) {
   });
 }
 
-function parseCoordinate(element: SVGElement, attribute: string): number {
-  return Number(element.getAttribute(attribute)?.replace('px', '') ?? '0');
-}
-
 function replaceImages(node: SVGGElement) {
   node.querySelectorAll<SVGImageElement>('image').forEach((image) => {
     const href =
@@ -153,8 +163,10 @@ function replaceImages(node: SVGGElement) {
     const size = Math.min(width, height);
     const sizeString = String(size);
     const use = document.createElementNS(SVG_NS, 'use');
-    use.setAttribute('x', String(x + (width - size) / 2));
-    use.setAttribute('y', String(y + (height - size) / 2));
+    const xOffset = x + (width - size) / 2;
+    use.setAttribute('x', String(xOffset));
+    const yOffset = y + (height - size) / 2;
+    use.setAttribute('y', String(yOffset));
     use.setAttribute('width', sizeString);
     use.setAttribute('height', sizeString);
     const iconName = `icon-${href.replace('#', '')}`;
@@ -169,6 +181,19 @@ function replaceImages(node: SVGGElement) {
       sibling.id !== ''
     ) {
       use.id = `${sibling.id},icon`;
+      sibling.querySelectorAll('text').forEach((textElement) => {
+        // Fix rounded text placement by dot.
+        textElement.setAttribute('dominant-baseline', 'central');
+        textElement.setAttribute('text-anchor', 'start');
+        textElement.setAttribute('x', String(xOffset + size + 4));
+        textElement.setAttribute('y', String(y + height / 2 - 0.75));
+      });
+    } else if (sibling !== null && sibling.tagName.toLowerCase() === 'text') {
+      // Fix rounded text placement of error labels by dot.
+      sibling.setAttribute('dominant-baseline', 'central');
+      sibling.setAttribute('text-anchor', 'start');
+      sibling.setAttribute('x', String(xOffset + size + 3));
+      sibling.setAttribute('y', String(y + height / 2));
     }
     image.parentNode?.replaceChild(use, image);
   });
