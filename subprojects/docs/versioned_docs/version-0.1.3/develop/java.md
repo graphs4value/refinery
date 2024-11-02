@@ -24,7 +24,7 @@ Below, you can find instructions on using [Gradle](#gradle) or [Apache Maven](#m
 We recommend [Gradle](https://gradle.org/) as a build system for creating Java programs that use Refinery as a library.
 We created a [Gradle plugin](pathname://../javadoc/refinery-gradle-plugins/) to simplify project configuration.
 
-To find out the configuration for using our snapshot artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
+To find out the configuration for using our artifacts, select whether you use a Kotlin-based (`.gradle.kts`) or a Groovy-based (`.gradle`) configuration format for your Gradle build. You should add this code to your Gradle *settings* file, which is named `settings.gradle.kts` or `settings.gradle`.
 
 import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
@@ -33,14 +33,14 @@ import Tabs from '@theme/Tabs';
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="settings.gradle.kts"
     plugins {
-        id("tools.refinery.settings") version "0.1.2"
+        id("tools.refinery.settings") version "0.1.3"
     }
     ```
   </TabItem>
   <TabItem value="groovy" label="Groovy">
     ```groovy title="settings.gradle"
     plugins {
-        id 'tools.refinery.settings' version '0.1.2'
+        id 'tools.refinery.settings' version '0.1.3'
     }
     ```
   </TabItem>
@@ -320,7 +320,7 @@ You should add the following configuration to your `pom.xml` file. If you use mu
             <dependency>
                 <groupId>tools.refinery</groupId>
                 <artifactId>refinery-bom</artifactId>
-                <version>0.1.2</version>
+                <version>0.1.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
