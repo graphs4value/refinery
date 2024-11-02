@@ -29,3 +29,21 @@ partDef(part1, partDef1).
 
 % EXPECT:
 def(part1, partDef1).
+
+% TEST: superset forced with default false
+
+default !def(*, *).
+partDef(part1, partDef1).
+?def(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1).
+
+% TEST WITH ERRORS: inconsistency with default false
+
+default !def(*, *).
+partDef(part1, partDef1).
+
+% EXPECT:
+def(part1, partDef1): error.
+partDef(part1, partDef1): error.

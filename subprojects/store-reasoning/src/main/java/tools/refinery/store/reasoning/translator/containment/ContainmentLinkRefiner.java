@@ -10,9 +10,11 @@ import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.AbstractPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
+import tools.refinery.store.reasoning.refinement.RefinementUtils;
+import tools.refinery.store.reasoning.refinement.TypeConstraintRefiner;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.reasoning.translator.TranslatorUtils;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
@@ -22,10 +24,7 @@ import java.util.Set;
 class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.ConcretizationAware<TruthValue, Boolean> {
 	private final Factory factory;
 	private final Interpretation<InferredContainment> interpretation;
-	private PartialInterpretationRefiner<TruthValue, Boolean> sourceRefiner;
-	private PartialInterpretationRefiner<TruthValue, Boolean> targetRefiner;
-	private PartialInterpretationRefiner<TruthValue, Boolean>[] supersetRefiners;
-	private PartialInterpretationRefiner<TruthValue, Boolean>[] oppositeSupersetRefiners;
+	private TypeConstraintRefiner typeConstraintRefiner;
 
 	private ContainmentLinkRefiner(ReasoningAdapter adapter, PartialSymbol<TruthValue, Boolean> partialSymbol,
 								   Factory factory) {
@@ -37,10 +36,8 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	@Override
 	public void afterCreate() {
 		var adapter = getAdapter();
-		sourceRefiner = adapter.getRefiner(factory.sourceType);
-		targetRefiner = adapter.getRefiner(factory.targetType);
-		supersetRefiners = TranslatorUtils.getRefiners(adapter, factory.supersets);
-		oppositeSupersetRefiners = TranslatorUtils.getRefiners(adapter, factory.oppositeSupersets);
+		typeConstraintRefiner = new TypeConstraintRefiner(adapter, factory.sourceType, factory.targetType,
+				factory.supersets, factory.oppositeSupersets);
 	}
 
 	@Override
@@ -51,9 +48,7 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 			interpretation.put(key, newValue);
 		}
 		if (value.must()) {
-			return sourceRefiner.merge(Tuple.of(key.get(0)), TruthValue.TRUE) &&
-					targetRefiner.merge(Tuple.of(key.get(1)), TruthValue.TRUE) &&
-					TranslatorUtils.mergeAll(supersetRefiners, oppositeSupersetRefiners, key, TruthValue.TRUE);
+			return typeConstraintRefiner.merge(key);
 		}
 		return true;
 	}
@@ -97,6 +92,11 @@ class ContainmentLinkRefiner extends AbstractPartialInterpretationRefiner.Concre
 	public InferredContainment errorLink(InferredContainment oldValue) {
 		return new InferredContainment(TruthValue.ERROR, addToSet(oldValue.mustLinks(), factory.linkType),
 				addToSet(oldValue.forbiddenLinks(), factory.linkType));
+	}
+
+	@Override
+	public void afterInitialize(ModelSeed modelSeed) {
+		RefinementUtils.refineFromSeed(this, modelSeed);
 	}
 
 	private static Set<PartialRelation> addToSet(Set<PartialRelation> oldSet, PartialRelation linkType) {

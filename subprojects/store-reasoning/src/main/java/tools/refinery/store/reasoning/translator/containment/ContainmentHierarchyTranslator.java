@@ -26,7 +26,6 @@ import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.CountLowerBoundLiteral;
 import tools.refinery.store.reasoning.literal.Modality;
-import tools.refinery.store.reasoning.refinement.RefinementBasedInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
@@ -212,7 +211,6 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				)))
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info))
-				.initializer(new RefinementBasedInitializer<>(linkType))
 				.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 						.clause(
 								may(linkType.call(source, target)),
@@ -244,8 +242,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				.must(Query.of(mustName, (builder, parent, child) -> builder.clause(
 						new MustContainsView(containsStorage).call(parent, child)
 				)))
-				.refiner(ContainsRefiner.of(containsStorage))
-				.initializer(new RefinementBasedInitializer<>(CONTAINS_SYMBOL)));
+				.refiner(ContainsRefiner.of(containsStorage)));
 	}
 
 	private void translateInvalidContainer(ModelStoreBuilder storeBuilder) {
