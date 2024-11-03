@@ -81,10 +81,10 @@ function clipCompartmentBackground(node: SVGGElement) {
   if (label === null) {
     return;
   }
-  label.setAttribute('dominant-baseline', 'central');
+  label.setAttribute('dominant-baseline', 'middle');
   label.setAttribute('text-anchor', 'middle');
   label.setAttribute('x', String(x + width / 2));
-  label.setAttribute('y', String(y + height / 2 - 0.75));
+  label.setAttribute('y', String(y + height / 2));
 }
 
 function createRect(
@@ -183,17 +183,15 @@ function replaceImages(node: SVGGElement) {
       use.id = `${sibling.id},icon`;
       sibling.querySelectorAll('text').forEach((textElement) => {
         // Fix rounded text placement by dot.
-        textElement.setAttribute('dominant-baseline', 'central');
+        textElement.setAttribute('dominant-baseline', 'middle');
         textElement.setAttribute('text-anchor', 'start');
         textElement.setAttribute('x', String(xOffset + size + 4));
-        textElement.setAttribute('y', String(y + height / 2 - 0.75));
+        textElement.setAttribute('y', String(y + height / 2));
       });
     } else if (sibling !== null && sibling.tagName.toLowerCase() === 'text') {
       // Fix rounded text placement of error labels by dot.
-      sibling.setAttribute('dominant-baseline', 'central');
       sibling.setAttribute('text-anchor', 'start');
       sibling.setAttribute('x', String(xOffset + size + 3));
-      sibling.setAttribute('y', String(y + height / 2));
     }
     image.parentNode?.replaceChild(use, image);
   });
