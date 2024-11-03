@@ -12,7 +12,9 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { alpha, styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 
+import Tooltip from './Tooltip';
 import type ThemeStore from './theme/ThemeStore';
+import type { SelectedPane } from './theme/ThemeStore';
 
 const PaneButtonGroup = styled(ToggleButtonGroup, {
   name: 'PaneButtons-Group',
@@ -82,6 +84,38 @@ const PaneButtonGroup = styled(ToggleButtonGroup, {
   };
 });
 
+const PaneButton = observer(function PaneButton({
+  themeStore,
+  value,
+  label,
+  icon,
+  hideLabel,
+}: {
+  themeStore: ThemeStore;
+  value: SelectedPane;
+  label: string;
+  icon: React.ReactNode;
+  hideLabel: boolean;
+}): JSX.Element {
+  const button = (
+    <ToggleButton
+      value={value}
+      selected={themeStore.isShowing(value)}
+      onClick={(event) => {
+        if (event.shiftKey || event.ctrlKey) {
+          themeStore.setSelectedPane(value, event.shiftKey);
+        } else {
+          themeStore.togglePane(value);
+        }
+      }}
+    >
+      {icon}
+      {!hideLabel && label}
+    </ToggleButton>
+  );
+  return hideLabel ? <Tooltip title={label}>{button}</Tooltip> : button;
+});
+
 function PaneButtons({
   themeStore,
   hideLabel,
@@ -89,53 +123,33 @@ function PaneButtons({
   themeStore: ThemeStore;
   hideLabel?: boolean;
 }): JSX.Element {
+  const hideLabelOrDefault = hideLabel ?? false;
   return (
     <PaneButtonGroup
       size={hideLabel ? 'small' : 'medium'}
-      hideLabel={hideLabel ?? false}
+      hideLabel={hideLabelOrDefault}
     >
-      <ToggleButton
+      <PaneButton
+        themeStore={themeStore}
         value="code"
-        selected={themeStore.showCode}
-        onClick={(event) => {
-          if (event.shiftKey || event.ctrlKey) {
-            themeStore.setSelectedPane('code');
-          } else {
-            themeStore.toggleCode();
-          }
-        }}
-      >
-        <CodeIcon fontSize="small" />
-        {!hideLabel && 'Code'}
-      </ToggleButton>
-      <ToggleButton
+        label="Code"
+        icon={<CodeIcon fontSize="small" />}
+        hideLabel={hideLabelOrDefault}
+      />
+      <PaneButton
+        themeStore={themeStore}
         value="graph"
-        selected={themeStore.showGraph}
-        onClick={(event) => {
-          if (event.shiftKey || event.ctrlKey) {
-            themeStore.setSelectedPane('graph', event.shiftKey);
-          } else {
-            themeStore.toggleGraph();
-          }
-        }}
-      >
-        <SchemaRoundedIcon fontSize="small" />
-        {!hideLabel && 'Graph'}
-      </ToggleButton>
-      <ToggleButton
+        label="Graph"
+        icon={<SchemaRoundedIcon fontSize="small" />}
+        hideLabel={hideLabelOrDefault}
+      />
+      <PaneButton
+        themeStore={themeStore}
         value="table"
-        selected={themeStore.showTable}
-        onClick={(event) => {
-          if (event.shiftKey || event.ctrlKey) {
-            themeStore.setSelectedPane('table', event.shiftKey);
-          } else {
-            themeStore.toggleTable();
-          }
-        }}
-      >
-        <TableChartIcon fontSize="small" />
-        {!hideLabel && 'Table'}
-      </ToggleButton>
+        label="Table"
+        icon={<TableChartIcon fontSize="small" />}
+        hideLabel={hideLabelOrDefault}
+      />
     </PaneButtonGroup>
   );
 }

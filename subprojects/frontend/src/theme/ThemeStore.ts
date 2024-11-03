@@ -31,7 +31,9 @@ export default class ThemeStore {
     mediaQuery.addEventListener('change', (event) => {
       this.systemDarkMode = event.matches;
     });
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      isShowing: false,
+    });
   }
 
   get darkMode(): boolean {
@@ -54,6 +56,35 @@ export default class ThemeStore {
       this.preference = this.systemDarkMode
         ? ThemePreference.System
         : ThemePreference.PreferDark;
+    }
+  }
+
+  togglePane(pane: SelectedPane) {
+    switch (pane) {
+      case 'code':
+        this.toggleCode();
+        break;
+      case 'graph':
+        this.toggleGraph();
+        break;
+      case 'table':
+        this.toggleTable();
+        break;
+      default:
+        throw new Error(`Unknown pane: ${String(pane)}`);
+    }
+  }
+
+  isShowing(pane: SelectedPane): boolean {
+    switch (pane) {
+      case 'code':
+        return this.showCode;
+      case 'graph':
+        return this.showGraph;
+      case 'table':
+        return this.showTable;
+      default:
+        throw new Error(`Unknown pane: ${String(pane)}`);
     }
   }
 

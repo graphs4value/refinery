@@ -17,11 +17,12 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
+
+import Tooltip from '../Tooltip';
 
 import type SearchPanelStore from './SearchPanelStore';
 
@@ -131,26 +132,22 @@ export default observer(function SearchToolbar({
             rowGap={0.5}
           >
             <Tooltip title="Previous match">
-              <span>
-                <IconButton
-                  disabled={!valid}
-                  onClick={() => searchPanelStore.findPrevious()}
-                  color="inherit"
-                >
-                  <KeyboardArrowUpIcon fontSize="small" />
-                </IconButton>
-              </span>
+              <IconButton
+                disabled={!valid}
+                onClick={() => searchPanelStore.findPrevious()}
+                color="inherit"
+              >
+                <KeyboardArrowUpIcon fontSize="small" />
+              </IconButton>
             </Tooltip>
             <Tooltip title="Next match">
-              <span>
-                <IconButton
-                  disabled={!valid}
-                  onClick={() => searchPanelStore.findNext()}
-                  color="inherit"
-                >
-                  <KeyboardArrowDownIcon fontSize="small" />
-                </IconButton>
-              </span>
+              <IconButton
+                disabled={!valid}
+                onClick={() => searchPanelStore.findNext()}
+                color="inherit"
+              >
+                <KeyboardArrowDownIcon fontSize="small" />
+              </IconButton>
             </Tooltip>
           </Stack>
           <Stack
