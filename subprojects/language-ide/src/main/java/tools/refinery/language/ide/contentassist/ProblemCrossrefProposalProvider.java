@@ -210,6 +210,18 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 					candidate.getUserData(ProblemResourceDescriptionStrategy.TYPE_LIKE));
 		}
 
+		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS) &&
+				context.getCurrentModel() instanceof ReferenceDeclaration referenceDeclaration) {
+			return supersetShouldBeVisible(candidate, 2, referenceDeclaration.getSuperSets(),
+					referenceDeclaration, builtinSymbols, candidateEObjectOrProxy);
+		}
+
+		if (eReference.equals(ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS) &&
+				context.getCurrentModel() instanceof PredicateDefinition predicateDefinition) {
+			return supersetShouldBeVisible(candidate, predicateDefinition.getParameters().size(),
+					predicateDefinition.getSuperSets(), predicateDefinition, builtinSymbols, candidateEObjectOrProxy);
+		}
+
 		if (eReference.equals(ProblemPackage.Literals.CLASS_DECLARATION__SUPER_TYPES)) {
 			return supertypeShouldBeVisible(candidate, context, builtinSymbols, candidateEObjectOrProxy);
 		}
@@ -217,10 +229,33 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		return true;
 	}
 
+	private boolean supersetShouldBeVisible(
+			IEObjectDescription candidate, int expectedArity, List<Relation> existingSupersets, EObject currentModel,
+			BuiltinSymbols builtinSymbols, EObject candidateEObjectOrProxy) {
+		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(candidate.getEClass()) ||
+				builtinSymbols.node().equals(candidateEObjectOrProxy) ||
+				builtinSymbols.exists().equals(candidateEObjectOrProxy) ||
+				builtinSymbols.equals().equals(candidateEObjectOrProxy) ||
+				currentModel.equals(candidateEObjectOrProxy)) {
+			return false;
+		}
+		if (candidateEObjectOrProxy instanceof Relation candidateRelation &&
+				existingSupersets.contains(candidateRelation)) {
+			return false;
+		}
+		var arityString = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
+		if (arityString == null) {
+			return true;
+		}
+		int arity = Integer.parseInt(arityString, 10);
+		return arity == expectedArity;
+	}
+
 	private boolean supertypeShouldBeVisible(IEObjectDescription candidate, ContentAssistContext context,
 											 BuiltinSymbols builtinSymbols, EObject candidateEObjectOrProxy) {
 		if (!ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(candidate.getEClass()) ||
 				builtinSymbols.node().equals(candidateEObjectOrProxy) ||
+				builtinSymbols.container().equals(candidateEObjectOrProxy) ||
 				builtinSymbols.contained().equals(candidateEObjectOrProxy)) {
 			return false;
 		}

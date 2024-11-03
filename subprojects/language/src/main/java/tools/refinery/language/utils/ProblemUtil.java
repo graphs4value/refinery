@@ -138,14 +138,7 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isTypeLike(Relation relation) {
-		if (relation instanceof ClassDeclaration || relation instanceof EnumDeclaration ||
-				relation instanceof DatatypeDeclaration) {
-			return true;
-		}
-		if (relation instanceof PredicateDefinition predicateDefinition) {
-			return predicateDefinition.getParameters().size() == 1;
-		}
-		return false;
+		return getArityWithoutProxyResolution(relation) == 1;
 	}
 
 	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
@@ -195,5 +188,16 @@ public final class ProblemUtil {
 	public static boolean parameterBindingAnnotationsAreForbidden(RuleDefinition ruleDefinition) {
 		var kind = ruleDefinition.getKind();
 		return kind != RuleKind.DECISION && kind != RuleKind.CONCRETIZATION;
+	}
+
+	public static int getArityWithoutProxyResolution(Relation relation) {
+		return switch (relation) {
+			case ClassDeclaration ignoredClassDeclaration -> 1;
+			case EnumDeclaration ignoredEnumDeclaration -> 1;
+			case DatatypeDeclaration ignoredDatatypeDeclaration -> 1;
+			case ReferenceDeclaration ignoredReferenceDeclaration -> 2;
+			case PredicateDefinition predicateDefinition -> predicateDefinition.getParameters().size();
+			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
+		};
 	}
 }
