@@ -92,6 +92,7 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
         sx={(theme) => ({
           maxHeight: '6rem',
           height: 'calc(100% - 8rem)',
+          width: '100%',
           marginBottom: theme.spacing(1),
           padding: error ? 0 : theme.spacing(1),
           color: theme.palette.text.secondary,
