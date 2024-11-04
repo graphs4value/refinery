@@ -56,7 +56,7 @@ public final class ConstantTerm<T> extends AbstractTerm<T> {
 	}
 
 	@Override
-	public Set<AnyDataVariable> getInputVariables() {
+	public Set<Variable> getVariables() {
 		return Set.of();
 	}
 

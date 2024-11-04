@@ -13,7 +13,6 @@ import tools.refinery.logic.term.DataVariable;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,7 +27,7 @@ public class AssignLiteral<T> extends AbstractLiteral {
 			throw new InvalidQueryException("Term %s must be of type %s, got %s instead".formatted(
 					term, variable.getType().getName(), term.getType().getName()));
 		}
-		var inputVariables = term.getInputVariables();
+		var inputVariables = term.getVariables();
 		if (inputVariables.contains(variable)) {
 			throw new InvalidQueryException("Result variable %s must not appear in the term %s".formatted(
 					variable, term));
@@ -52,12 +51,12 @@ public class AssignLiteral<T> extends AbstractLiteral {
 
 	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Collections.unmodifiableSet(term.getInputVariables());
+		return term.getInputVariables(positiveVariablesInClause);
 	}
 
 	@Override
 	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Set.of();
+		return term.getPrivateVariables(positiveVariablesInClause);
 	}
 
 	@Override

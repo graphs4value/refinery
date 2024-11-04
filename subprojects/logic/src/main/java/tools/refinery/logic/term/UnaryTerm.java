@@ -68,7 +68,17 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	protected abstract Term<R> doSubstitute(Substitution substitution, Term<T> substitutedBody);
 
 	@Override
-	public Set<AnyDataVariable> getInputVariables() {
-		return body.getInputVariables();
+	public Set<Variable> getVariables() {
+		return body.getVariables();
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return body.getInputVariables(positiveVariablesInClause);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return body.getPrivateVariables(positiveVariablesInClause);
 	}
 }

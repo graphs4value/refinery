@@ -5,16 +5,13 @@
  */
 package tools.refinery.logic.term;
 
-import tools.refinery.logic.equality.LiteralHashCodeHelper;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.equality.LiteralEqualityHelper;
+import tools.refinery.logic.equality.LiteralHashCodeHelper;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 // {@link Object#equals(Object)} is implemented by {@link AbstractTerm}.
 @SuppressWarnings("squid:S2160")
@@ -98,9 +95,29 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 										 Term<T2> substitutedRight);
 
 	@Override
-	public Set<AnyDataVariable> getInputVariables() {
-		var inputVariables = new HashSet<>(left.getInputVariables());
-		inputVariables.addAll(right.getInputVariables());
+	public Set<Variable> getVariables() {
+		var variables = new LinkedHashSet<>(left.getVariables());
+		variables.addAll(right.getVariables());
+		return Collections.unmodifiableSet(variables);
+	}
+
+	@Override
+	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		var inputVariables = new LinkedHashSet<>(left.getInputVariables(positiveVariablesInClause));
+		inputVariables.addAll(right.getInputVariables(positiveVariablesInClause));
 		return Collections.unmodifiableSet(inputVariables);
+	}
+
+	@Override
+	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		var privateVariables = new LinkedHashSet<>(left.getPrivateVariables(positiveVariablesInClause));
+		var rightPrivateVariables = right.getPrivateVariables(positiveVariablesInClause);
+		for (var rightPrivateVariable : rightPrivateVariables) {
+			if (privateVariables.contains(rightPrivateVariable)) {
+				throw new InvalidQueryException("Private variables %s occurs of both sides of %s."
+						.formatted(rightPrivateVariable, this));
+			}
+		}
+		return Collections.unmodifiableSet(privateVariables);
 	}
 }

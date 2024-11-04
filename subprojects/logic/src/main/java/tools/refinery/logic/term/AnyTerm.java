@@ -20,5 +20,13 @@ public sealed interface AnyTerm permits AnyDataVariable, Term {
 
 	int hashCodeWithSubstitution(LiteralHashCodeHelper helper);
 
-	Set<AnyDataVariable> getInputVariables();
+	Set<Variable> getVariables();
+
+	default Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return getVariables();
+	}
+
+	default Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
+	}
 }

@@ -15,7 +15,6 @@ import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.bool.BoolNotTerm;
 import tools.refinery.logic.term.bool.BoolTerms;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,12 +42,12 @@ public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLite
 
 	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Collections.unmodifiableSet(term.getInputVariables());
+		return term.getInputVariables(positiveVariablesInClause);
 	}
 
 	@Override
 	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Set.of();
+		return term.getPrivateVariables(positiveVariablesInClause);
 	}
 
 	@Override

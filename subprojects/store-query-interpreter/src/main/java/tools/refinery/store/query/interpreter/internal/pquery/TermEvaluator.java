@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.query.interpreter.internal.pquery;
 
+import tools.refinery.logic.dnf.DnfClause;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.interpreter.matchers.psystem.IExpressionEvaluator;
@@ -14,9 +15,11 @@ import java.util.stream.Collectors;
 
 class TermEvaluator<T> implements IExpressionEvaluator {
 	private final Term<T> term;
+	private final DnfClause clause;
 
-	public TermEvaluator(Term<T> term) {
+	public TermEvaluator(Term<T> term, DnfClause clause) {
 		this.term = term;
+		this.clause = clause;
 	}
 
 	@Override
@@ -26,7 +29,9 @@ class TermEvaluator<T> implements IExpressionEvaluator {
 
 	@Override
 	public Iterable<String> getInputParameterNames() {
-		return term.getInputVariables().stream().map(Variable::getUniqueName).collect(Collectors.toUnmodifiableSet());
+		return term.getInputVariables(clause.positiveVariables()).stream()
+				.map(Variable::getUniqueName)
+				.collect(Collectors.toUnmodifiableSet());
 	}
 
 	@Override
