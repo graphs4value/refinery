@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.int_;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class IntMaxTerm extends IntBinaryTerm {
@@ -14,9 +13,9 @@ public class IntMaxTerm extends IntBinaryTerm {
 	}
 
 	@Override
-	public Term<Integer> doSubstitute(Substitution substitution, Term<Integer> substitutedLeft,
-                                      Term<Integer> substitutedRight) {
-		return new IntMaxTerm(substitutedLeft, substitutedRight);
+	public Term<Integer> withSubTerms(Term<Integer> newLeft,
+									  Term<Integer> newRight) {
+		return new IntMaxTerm(newLeft, newRight);
 	}
 
 	@Override

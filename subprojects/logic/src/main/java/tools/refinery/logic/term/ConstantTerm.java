@@ -8,6 +8,7 @@ package tools.refinery.logic.term;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.equality.LiteralEqualityHelper;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
@@ -34,6 +35,12 @@ public final class ConstantTerm<T> extends AbstractTerm<T> {
 	@Override
 	public T evaluate(Valuation valuation) {
 		return getValue();
+	}
+
+	@Override
+	public Term<T> rewriteSubTerms(TermRewriter termRewriter) {
+		// No sub-terms to rewrite.
+		return this;
 	}
 
 	@Override

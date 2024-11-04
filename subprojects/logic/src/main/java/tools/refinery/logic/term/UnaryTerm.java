@@ -8,6 +8,7 @@ package tools.refinery.logic.term;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
@@ -61,11 +62,16 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	}
 
 	@Override
-	public Term<R> substitute(Substitution substitution) {
-		return doSubstitute(substitution, body.substitute(substitution));
+	public Term<R> rewriteSubTerms(TermRewriter termRewriter) {
+		return withBody(body.rewriteSubTerms(termRewriter));
 	}
 
-	protected abstract Term<R> doSubstitute(Substitution substitution, Term<T> substitutedBody);
+	@Override
+	public Term<R> substitute(Substitution substitution) {
+		return withBody(body.substitute(substitution));
+	}
+
+	public abstract Term<R> withBody(Term<T> newBody);
 
 	@Override
 	public Set<Variable> getVariables() {

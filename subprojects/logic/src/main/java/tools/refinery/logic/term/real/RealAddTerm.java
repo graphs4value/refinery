@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.real;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class RealAddTerm extends RealBinaryTerm {
@@ -14,9 +13,9 @@ public class RealAddTerm extends RealBinaryTerm {
 	}
 
 	@Override
-	public Term<Double> doSubstitute(Substitution substitution, Term<Double> substitutedLeft,
-									 Term<Double> substitutedRight) {
-		return new RealAddTerm(substitutedLeft, substitutedRight);
+	public Term<Double> withSubTerms(Term<Double> newLeft,
+									 Term<Double> newRight) {
+		return new RealAddTerm(newLeft, newRight);
 	}
 
 	@Override

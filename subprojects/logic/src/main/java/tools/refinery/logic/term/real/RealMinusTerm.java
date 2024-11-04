@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.real;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class RealMinusTerm extends RealUnaryTerm {
@@ -14,8 +13,8 @@ public class RealMinusTerm extends RealUnaryTerm {
 	}
 
 	@Override
-	protected Term<Double> doSubstitute(Substitution substitution, Term<Double> substitutedBody) {
-		return new RealMinusTerm(substitutedBody);
+	public Term<Double> withBody(Term<Double> newBody) {
+		return new RealMinusTerm(newBody);
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
 import tools.refinery.logic.literal.EquivalenceLiteral;
 import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
@@ -53,6 +54,12 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	@Override
 	public T evaluate(Valuation valuation) {
 		return valuation.getValue(this);
+	}
+
+	@Override
+	public Term<T> rewriteSubTerms(TermRewriter termRewriter) {
+		// No sub-terms to rewrite.
+		return this;
 	}
 
 	@Override

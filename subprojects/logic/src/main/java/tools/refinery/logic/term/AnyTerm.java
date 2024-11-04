@@ -7,12 +7,15 @@ package tools.refinery.logic.term;
 
 import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 
 import java.util.Set;
 
 public sealed interface AnyTerm permits AnyDataVariable, Term {
 	Class<?> getType();
+
+	AnyTerm rewriteSubTerms(TermRewriter termRewriter);
 
 	AnyTerm substitute(Substitution substitution);
 

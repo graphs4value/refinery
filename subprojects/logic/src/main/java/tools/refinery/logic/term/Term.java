@@ -7,6 +7,7 @@ package tools.refinery.logic.term;
 
 import tools.refinery.logic.literal.AssignLiteral;
 import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
@@ -15,6 +16,9 @@ public non-sealed interface Term<T> extends AnyTerm, AssignedValue<T> {
 	Class<T> getType();
 
 	T evaluate(Valuation valuation);
+
+	@Override
+	Term<T> rewriteSubTerms(TermRewriter termRewriter);
 
 	@Override
 	Term<T> substitute(Substitution substitution);

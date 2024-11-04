@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.real;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class RealMaxTerm extends RealBinaryTerm {
@@ -14,9 +13,9 @@ public class RealMaxTerm extends RealBinaryTerm {
 	}
 
 	@Override
-	public Term<Double> doSubstitute(Substitution substitution, Term<Double> substitutedLeft,
-									 Term<Double> substitutedRight) {
-		return new RealMaxTerm(substitutedLeft, substitutedRight);
+	public Term<Double> withSubTerms(Term<Double> newLeft,
+									 Term<Double> newRight) {
+		return new RealMaxTerm(newLeft, newRight);
 	}
 
 	@Override

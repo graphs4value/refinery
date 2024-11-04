@@ -8,6 +8,7 @@ package tools.refinery.logic.term;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
@@ -87,12 +88,16 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 	}
 
 	@Override
-	public Term<R> substitute(Substitution substitution) {
-		return doSubstitute(substitution, left.substitute(substitution), right.substitute(substitution));
+	public Term<R> rewriteSubTerms(TermRewriter termRewriter) {
+		return withSubTerms(left.rewriteSubTerms(termRewriter), right.rewriteSubTerms(termRewriter));
 	}
 
-	public abstract Term<R> doSubstitute(Substitution substitution, Term<T1> substitutedLeft,
-										 Term<T2> substitutedRight);
+	@Override
+	public Term<R> substitute(Substitution substitution) {
+		return withSubTerms(left.substitute(substitution), right.substitute(substitution));
+	}
+
+	public abstract Term<R> withSubTerms(Term<T1> newLeft, Term<T2> newRight);
 
 	@Override
 	public Set<Variable> getVariables() {

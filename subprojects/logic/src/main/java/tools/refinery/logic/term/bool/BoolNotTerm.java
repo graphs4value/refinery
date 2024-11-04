@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.bool;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.UnaryTerm;
 
@@ -15,8 +14,8 @@ public class BoolNotTerm extends UnaryTerm<Boolean, Boolean> {
 	}
 
 	@Override
-	protected Term<Boolean> doSubstitute(Substitution substitution, Term<Boolean> substitutedBody) {
-		return new BoolNotTerm(substitutedBody);
+	public Term<Boolean> withBody(Term<Boolean> newBody) {
+		return new BoolNotTerm(newBody);
 	}
 
 	@Override
