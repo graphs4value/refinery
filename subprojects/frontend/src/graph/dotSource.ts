@@ -169,6 +169,7 @@ function setLabelWidth(
       measureDiv.style.fontOpticalSizing = 'none';
       measureDiv.style.letterSpacing = '0';
       measureDiv.style.textRendering = 'geometricPreicision';
+      measureDiv.ariaHidden = 'true';
       document.body.appendChild(measureDiv);
     }
     measureDiv.style.fontSize = `${size}pt`;
