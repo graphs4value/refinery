@@ -54,7 +54,7 @@ statement {
   PredicateDefinition {
     ((kw<"error"> | kw<"partial"> | ckw<"shadow">)* kw<"pred"> | kw<"error">)
     RelationName ParameterList<Parameter>?
-    (kw<"subsets"> sep1<",", RelationName>)*
+    (ckw<"subsets"> sep1<",", RelationName>)*
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
   // FunctionDefinition {
@@ -91,8 +91,10 @@ FeatureDeclaration {
   ("[" Multiplicity? "]")?
   RelationName
   (
-    kw<"opposite"> RelationName |
-    kw<"subsets"> sep1<",", RelationName>
+    !feature RelationOptions[@dynamicPrecedence=1] {
+      ckw<"opposite"> RelationName |
+      ckw<"subsets"> sep1<",", RelationName>
+    }
   )*
   ";"?
 }

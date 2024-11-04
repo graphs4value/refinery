@@ -301,7 +301,7 @@ NonContainmentQualifiedName hidden():
 	(NonContainmentIdentifier | "::" Identifier) (QUALIFIED_NAME_SEPARATOR Identifier)*;
 
 Identifier:
-	NonContainmentIdentifier | "contains" | "container";
+	NonContainmentIdentifier | "contains" | "container" | "opposite" | "subsets";
 
 NonContainmentIdentifier:
 	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
