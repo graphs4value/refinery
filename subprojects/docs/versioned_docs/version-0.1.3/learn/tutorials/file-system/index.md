@@ -127,7 +127,7 @@ import TuneIcon from '@material-icons/svg/svg/tune/baseline.svg';
 
 5. The <SaveAltIcon className="inline-icon" aria-hidden="true" /> **export panel** lets you save the diagram as an SVG, PDF, or PNG file. Click the button to open the panel.
 
-6. **Zoom controls** lat you adjust the size of the visualization and make it automatically fit the screen.
+6. **Zoom controls** let you adjust the size of the visualization and make it automatically fit the screen.
 
 7. The **view selector** lets you toggle the <CodeIcon className="inline-icon" aria-hidden="true" /> **code,** <SchemaIcon className="inline-icon" aria-hidden="true" /> **graph,** and <TableChartIcon className="inline-icon" aria-hidden="true" /> **table views.** You can have all three views open at the same time, or even just a single one to take a deeper look at the model.
 
