@@ -67,15 +67,12 @@ val cleanMavenRepository by tasks.registering(Delete::class) {
 	delete(mavenRepositoryDir)
 }
 
-val mavenRepositoryTar by tasks.registering(Tar::class) {
+val mavenRepository by tasks.registering(Task::class) {
 	dependsOn(cleanMavenRepository)
-	from(mavenRepositoryDir)
-	archiveFileName = "refinery-maven-repository.tar"
-	destinationDirectory = layout.buildDirectory
 }
 
 gradle.projectsEvaluated {
-	mavenRepositoryTar.configure {
+	mavenRepository.configure {
 		for (subproject in rootProject.subprojects) {
 			if (subproject.plugins.hasPlugin(MavenPublishPlugin::class)) {
 				dependsOn(subproject.tasks.named("publishMavenJavaPublicationToFileRepository"))
