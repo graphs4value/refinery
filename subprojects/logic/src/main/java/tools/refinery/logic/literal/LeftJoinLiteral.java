@@ -40,7 +40,7 @@ public class LeftJoinLiteral<T> extends AbstractCallLiteral {
 		if (!getArgumentsOfDirection(ParameterDirection.OUT).contains(placeholderVariable)) {
 			throw new InvalidQueryException(
 					"Placeholder variable %s must be bound with direction %s in the argument list"
-							.formatted(resultVariable, ParameterDirection.OUT));
+							.formatted(placeholderVariable, ParameterDirection.OUT));
 		}
 		if (arguments.contains(resultVariable)) {
 			throw new InvalidQueryException("Result variable must not appear in the argument list");
@@ -66,6 +66,9 @@ public class LeftJoinLiteral<T> extends AbstractCallLiteral {
 
 	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		if (positiveVariablesInClause.contains(placeholderVariable)) {
+			throw new InvalidQueryException("Placeholder variable %s must not be bound".formatted(placeholderVariable));
+		}
 		var inputVariables = new LinkedHashSet<>(getArguments());
 		inputVariables.remove(placeholderVariable);
 		return Collections.unmodifiableSet(inputVariables);
@@ -118,6 +121,8 @@ public class LeftJoinLiteral<T> extends AbstractCallLiteral {
 	@Override
 	public String toString() {
 		var builder = new StringBuilder();
+		builder.append(getTarget().toReferenceString());
+		builder.append("(");
 		var argumentIterator = getArguments().iterator();
 		if (argumentIterator.hasNext()) {
 			appendArgument(builder, argumentIterator.next());

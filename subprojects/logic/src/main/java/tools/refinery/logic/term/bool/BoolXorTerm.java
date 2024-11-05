@@ -13,8 +13,8 @@ public class BoolXorTerm extends BoolBinaryTerm {
 	}
 
 	@Override
-	public Term<Boolean> withSubTerms(Term<Boolean> newLeft,
-									  Term<Boolean> newRight) {
+    protected Term<Boolean> constructWithSubTerms(Term<Boolean> newLeft,
+                                                  Term<Boolean> newRight) {
 		return new BoolXorTerm(newLeft, newRight);
 	}
 

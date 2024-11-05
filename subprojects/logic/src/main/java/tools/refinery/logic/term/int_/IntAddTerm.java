@@ -13,8 +13,8 @@ public class IntAddTerm extends IntBinaryTerm {
 	}
 
 	@Override
-	public Term<Integer> withSubTerms(Term<Integer> newLeft,
-									  Term<Integer> newRight) {
+    protected Term<Integer> constructWithSubTerms(Term<Integer> newLeft,
+                                                  Term<Integer> newRight) {
 		return new IntAddTerm(newLeft, newRight);
 	}
 

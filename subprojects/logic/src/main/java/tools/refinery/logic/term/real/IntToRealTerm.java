@@ -14,7 +14,7 @@ public class IntToRealTerm extends UnaryTerm<Double, Integer> {
 	}
 
 	@Override
-	public Term<Double> withBody(Term<Integer> newBody) {
+	protected Term<Double> constructWithBody(Term<Integer> newBody) {
 		return new IntToRealTerm(newBody);
 	}
 

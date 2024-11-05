@@ -18,7 +18,7 @@ public class EqTerm<T> extends ComparisonTerm<T> {
 	}
 
 	@Override
-	public Term<Boolean> withSubTerms(Term<T> newLeft, Term<T> newRight) {
+    protected Term<Boolean> constructWithSubTerms(Term<T> newLeft, Term<T> newRight) {
 		return new EqTerm<>(getArgumentType(), newLeft, newRight);
 	}
 

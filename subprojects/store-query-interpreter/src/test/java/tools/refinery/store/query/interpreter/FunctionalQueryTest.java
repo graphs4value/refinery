@@ -86,7 +86,7 @@ class FunctionalQueryTest {
 		));
 		var query = Query.of("Predicate", Integer.class, (builder, p1, output) -> builder.clause(
 				personView.call(p1),
-				output.assign(subQuery.call(p1))
+				subQuery.getDnf().call(p1, output)
 		));
 
 		var store = ModelStore.builder()
@@ -360,7 +360,7 @@ class FunctionalQueryTest {
 	@QueryEngineTest
 	void invalidComputationTest(QueryEvaluationHint hint) {
 		var query = Query.of("InvalidComputation", Integer.class,
-				(builder, p1, output) -> builder.clause(Integer.class, (x) -> List.of(
+				(builder, p1, output) -> builder.clause(Integer.class, x -> List.of(
 						personView.call(p1),
 						ageView.call(p1, x),
 						output.assign(div(constant(120), x))
@@ -396,7 +396,7 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void invalidAssumeTest(QueryEvaluationHint hint) {
-		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, (x) -> List.of(
+		var query = Query.of("InvalidAssume", (builder, p1) -> builder.clause(Integer.class, x -> List.of(
 				personView.call(p1),
 				ageView.call(p1, x),
 				check(lessEq(div(constant(120), x), constant(5)))
@@ -472,7 +472,7 @@ class FunctionalQueryTest {
 
 	@QueryEngineTest
 	void notFunctionalTest(QueryEvaluationHint hint) {
-		var query = Query.of("NotFunctional", Integer.class, (builder, p1, output) -> builder.clause((p2) -> List.of(
+		var query = Query.of("NotFunctional", Integer.class, (builder, p1, output) -> builder.clause(p2 -> List.of(
 				personView.call(p1),
 				friendMustView.call(p1, p2),
 				ageView.call(p2, output)
@@ -534,8 +534,8 @@ class FunctionalQueryTest {
 		));
 		var query = Query.of("Query", Integer.class, (builder, p1, output) -> builder
 				.clause(Integer.class, Integer.class, (v1, v2) -> List.of(
-						v1.assign(subQuery1.call(p1)),
-						v2.assign(subQuery2.call(p1)),
+						subQuery1.getDnf().call(p1, v1),
+						subQuery2.getDnf().call(p1, v2),
 						output.assign(add(v1, v2))
 				)));
 

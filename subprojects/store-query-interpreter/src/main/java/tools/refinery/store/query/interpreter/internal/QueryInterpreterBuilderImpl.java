@@ -6,21 +6,6 @@
 package tools.refinery.store.query.interpreter.internal;
 
 import org.eclipse.emf.ecore.EPackage;
-import tools.refinery.interpreter.rete.recipes.RecipesPackage;
-import tools.refinery.logic.InvalidQueryException;
-import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
-import tools.refinery.store.model.ModelStore;
-import tools.refinery.logic.dnf.AnyQuery;
-import tools.refinery.logic.dnf.Dnf;
-import tools.refinery.logic.rewriter.CompositeRewriter;
-import tools.refinery.logic.rewriter.DnfRewriter;
-import tools.refinery.logic.rewriter.DuplicateDnfRemover;
-import tools.refinery.logic.rewriter.InputParameterResolver;
-import tools.refinery.store.query.interpreter.QueryInterpreterBuilder;
-import tools.refinery.store.query.interpreter.internal.localsearch.FlatCostFunction;
-import tools.refinery.store.query.interpreter.internal.matcher.RawPatternMatcher;
-import tools.refinery.store.query.interpreter.internal.pquery.Dnf2PQuery;
 import tools.refinery.interpreter.api.IQuerySpecification;
 import tools.refinery.interpreter.api.InterpreterEngineOptions;
 import tools.refinery.interpreter.localsearch.matcher.integration.LocalSearchGenericBackendFactory;
@@ -28,6 +13,18 @@ import tools.refinery.interpreter.localsearch.matcher.integration.LocalSearchHin
 import tools.refinery.interpreter.matchers.backend.IQueryBackendFactory;
 import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
 import tools.refinery.interpreter.rete.matcher.ReteBackendFactory;
+import tools.refinery.interpreter.rete.recipes.RecipesPackage;
+import tools.refinery.logic.InvalidQueryException;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.Dnf;
+import tools.refinery.logic.dnf.RelationalQuery;
+import tools.refinery.logic.rewriter.*;
+import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
+import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.query.interpreter.QueryInterpreterBuilder;
+import tools.refinery.store.query.interpreter.internal.localsearch.FlatCostFunction;
+import tools.refinery.store.query.interpreter.internal.matcher.RawPatternMatcher;
+import tools.refinery.store.query.interpreter.internal.pquery.Dnf2PQuery;
 
 import java.util.*;
 import java.util.function.Function;
@@ -52,6 +49,7 @@ public class QueryInterpreterBuilderImpl extends AbstractModelAdapterBuilder<Que
 		rewriter = new CompositeRewriter();
 		rewriter.addFirst(new DuplicateDnfRemover());
 		rewriter.addFirst(new InputParameterResolver());
+		rewriter.addFirst(new CompoundTermToLiteralsRewriter());
 	}
 
 	@Override

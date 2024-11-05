@@ -13,7 +13,7 @@ public class RealPlusTerm extends RealUnaryTerm {
 	}
 
 	@Override
-	public Term<Double> withBody(Term<Double> newBody) {
+	protected Term<Double> constructWithBody(Term<Double> newBody) {
 		return new RealPlusTerm(newBody);
 	}
 

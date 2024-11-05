@@ -70,13 +70,12 @@ public interface Constraint {
 		return aggregateBy(inputVariable, aggregator, List.of(arguments));
 	}
 
-	default <T> AssignedValue<T> leftJoinBy(DataVariable<T> placeholderVariable, T defaultValue,
+	default <T> Term<T> leftJoinBy(DataVariable<T> placeholderVariable, T defaultValue,
 											List<Variable> arguments) {
-		return targetVariable -> new LeftJoinLiteral<>(targetVariable, placeholderVariable, defaultValue, this,
-				arguments);
+		return new LeftJoinTerm<>(placeholderVariable, defaultValue, this, arguments);
 	}
 
-	default <T> AssignedValue<T> leftJoinBy(DataVariable<T> inputVariable, T defaultValue, Variable... arguments) {
+	default <T> Term<T> leftJoinBy(DataVariable<T> inputVariable, T defaultValue, Variable... arguments) {
 		return leftJoinBy(inputVariable, defaultValue, List.of(arguments));
 	}
 }

@@ -45,8 +45,8 @@ class PartialQueryRewriter extends AbstractRecursiveRewriter {
 		var builder = Dnf.builderFrom(dnf);
 		for (var clause : dnf.getClauses()) {
 			var clauseRewriter = new PartialClauseRewriter(this);
-			var rewrittenClauses = clauseRewriter.rewriteClause(clause);
-			builder.clause(rewrittenClauses);
+			var rewrittenLiterals = clauseRewriter.rewriteClause(clause);
+			builder.clause(rewrittenLiterals);
 		}
 		return builder.build();
 	}

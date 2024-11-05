@@ -13,8 +13,8 @@ public class RealSubTerm extends RealBinaryTerm {
 	}
 
 	@Override
-	public Term<Double> withSubTerms(Term<Double> newLeft,
-									 Term<Double> newRight) {
+    protected Term<Double> constructWithSubTerms(Term<Double> newLeft,
+                                                 Term<Double> newRight) {
 		return new RealSubTerm(newLeft, newRight);
 	}
 

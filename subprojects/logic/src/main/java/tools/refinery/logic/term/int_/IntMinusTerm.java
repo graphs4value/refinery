@@ -13,7 +13,7 @@ public class IntMinusTerm extends IntUnaryTerm {
 	}
 
 	@Override
-	public Term<Integer> withBody(Term<Integer> newBody) {
+	protected Term<Integer> constructWithBody(Term<Integer> newBody) {
 		return new IntMinusTerm(newBody);
 	}
 

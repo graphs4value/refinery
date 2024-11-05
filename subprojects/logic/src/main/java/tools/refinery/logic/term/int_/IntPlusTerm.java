@@ -13,7 +13,7 @@ public class IntPlusTerm extends IntUnaryTerm {
 	}
 
 	@Override
-	public Term<Integer> withBody(Term<Integer> newBody) {
+	protected Term<Integer> constructWithBody(Term<Integer> newBody) {
 		return new IntPlusTerm(newBody);
 	}
 

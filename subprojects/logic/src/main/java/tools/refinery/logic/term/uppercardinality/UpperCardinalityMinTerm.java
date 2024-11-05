@@ -18,7 +18,7 @@ public class UpperCardinalityMinTerm extends UpperCardinalityBinaryTerm {
 	}
 
 	@Override
-	public Term<UpperCardinality> withSubTerms(Term<UpperCardinality> newLeft, Term<UpperCardinality> newRight) {
+    protected Term<UpperCardinality> constructWithSubTerms(Term<UpperCardinality> newLeft, Term<UpperCardinality> newRight) {
 		return new UpperCardinalityMinTerm(newLeft, newRight);
 	}
 

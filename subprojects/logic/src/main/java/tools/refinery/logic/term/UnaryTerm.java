@@ -63,7 +63,7 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 
 	@Override
 	public Term<R> rewriteSubTerms(TermRewriter termRewriter) {
-		return withBody(body.rewriteSubTerms(termRewriter));
+		return withBody(termRewriter.rewriteTerm(body));
 	}
 
 	@Override
@@ -71,7 +71,14 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 		return withBody(body.substitute(substitution));
 	}
 
-	public abstract Term<R> withBody(Term<T> newBody);
+	public Term<R> withBody(Term<T> newBody) {
+		if (body == newBody) {
+			return this;
+		}
+		return constructWithBody(newBody);
+	}
+
+	protected abstract Term<R> constructWithBody(Term<T> newBody);
 
 	@Override
 	public Set<Variable> getVariables() {

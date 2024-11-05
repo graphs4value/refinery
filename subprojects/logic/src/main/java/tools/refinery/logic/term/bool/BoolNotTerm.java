@@ -14,7 +14,7 @@ public class BoolNotTerm extends UnaryTerm<Boolean, Boolean> {
 	}
 
 	@Override
-	public Term<Boolean> withBody(Term<Boolean> newBody) {
+	protected Term<Boolean> constructWithBody(Term<Boolean> newBody) {
 		return new BoolNotTerm(newBody);
 	}
 

@@ -89,7 +89,7 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 
 	@Override
 	public Term<R> rewriteSubTerms(TermRewriter termRewriter) {
-		return withSubTerms(left.rewriteSubTerms(termRewriter), right.rewriteSubTerms(termRewriter));
+		return withSubTerms(termRewriter.rewriteTerm(left), termRewriter.rewriteTerm(right));
 	}
 
 	@Override
@@ -97,7 +97,14 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 		return withSubTerms(left.substitute(substitution), right.substitute(substitution));
 	}
 
-	public abstract Term<R> withSubTerms(Term<T1> newLeft, Term<T2> newRight);
+	public Term<R> withSubTerms(Term<T1> newLeft, Term<T2> newRight) {
+		if (left == newLeft && right == newRight) {
+			return this;
+		}
+		return constructWithSubTerms(newLeft, newRight);
+	}
+
+	protected abstract Term<R> constructWithSubTerms(Term<T1> newLeft, Term<T2> newRight);
 
 	@Override
 	public Set<Variable> getVariables() {
