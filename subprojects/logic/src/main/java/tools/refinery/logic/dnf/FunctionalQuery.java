@@ -61,19 +61,15 @@ public final class FunctionalQuery<T> extends Query<T> {
 		return (FunctionalQuery<T>) super.withDnf(newDnf);
 	}
 
-	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, List<NodeVariable> arguments) {
-		return targetVariable -> {
-			var placeholderVariable = Variable.of(type);
-			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
-			argumentsWithPlaceholder.addAll(arguments);
-			argumentsWithPlaceholder.add(placeholderVariable);
-			return getDnf()
-					.aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder)
-					.toLiteral(targetVariable);
-		};
+	public <R> Term<R> aggregate(Aggregator<R, T> aggregator, List<NodeVariable> arguments) {
+		var placeholderVariable = Variable.of(type);
+		var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
+		argumentsWithPlaceholder.addAll(arguments);
+		argumentsWithPlaceholder.add(placeholderVariable);
+		return getDnf().aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder);
 	}
 
-	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
+	public <R> Term<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
 		return aggregate(aggregator, List.of(arguments));
 	}
 

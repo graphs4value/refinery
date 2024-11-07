@@ -5,13 +5,11 @@
  */
 package tools.refinery.logic.term;
 
-import tools.refinery.logic.literal.AssignLiteral;
-import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
-public non-sealed interface Term<T> extends AnyTerm, AssignedValue<T> {
+public non-sealed interface Term<T> extends AnyTerm {
 	@Override
 	Class<T> getType();
 
@@ -22,9 +20,4 @@ public non-sealed interface Term<T> extends AnyTerm, AssignedValue<T> {
 
 	@Override
 	Term<T> substitute(Substitution substitution);
-
-	@Override
-	default Literal toLiteral(DataVariable<T> targetVariable) {
-		return new AssignLiteral<>(targetVariable, this);
-	}
 }

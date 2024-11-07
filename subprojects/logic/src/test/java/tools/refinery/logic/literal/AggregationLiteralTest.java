@@ -57,8 +57,7 @@ class AggregationLiteralTest {
 
 	@Test
 	void missingAggregationVariableTest() {
-		var aggregation = fakeConstraint.aggregateBy(y, INT_SUM, p, z);
-		assertThrows(InvalidQueryException.class, () -> x.assign(aggregation));
+		assertThrows(InvalidQueryException.class, () -> fakeConstraint.aggregateBy(y, INT_SUM, p, z));
 	}
 
 	@Test

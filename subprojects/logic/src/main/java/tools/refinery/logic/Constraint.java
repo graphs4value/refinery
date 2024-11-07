@@ -56,22 +56,22 @@ public interface Constraint {
 		return new CountTerm(this, arguments);
 	}
 
-	default AssignedValue<Integer> count(Variable... arguments) {
+	default Term<Integer> count(Variable... arguments) {
 		return count(List.of(arguments));
 	}
 
-	default <R, T> AssignedValue<R> aggregateBy(DataVariable<T> inputVariable, Aggregator<R, T> aggregator,
-												List<Variable> arguments) {
-		return targetVariable -> new AggregationLiteral<>(targetVariable, aggregator, inputVariable, this, arguments);
+	default <R, T> Term<R> aggregateBy(DataVariable<T> inputVariable, Aggregator<R, T> aggregator,
+									   List<Variable> arguments) {
+		return new AggregationTerm<>(aggregator, inputVariable, this, arguments);
 	}
 
-	default <R, T> AssignedValue<R> aggregateBy(DataVariable<T> inputVariable, Aggregator<R, T> aggregator,
-												Variable... arguments) {
+	default <R, T> Term<R> aggregateBy(DataVariable<T> inputVariable, Aggregator<R, T> aggregator,
+									   Variable... arguments) {
 		return aggregateBy(inputVariable, aggregator, List.of(arguments));
 	}
 
 	default <T> Term<T> leftJoinBy(DataVariable<T> placeholderVariable, T defaultValue,
-											List<Variable> arguments) {
+								   List<Variable> arguments) {
 		return new LeftJoinTerm<>(placeholderVariable, defaultValue, this, arguments);
 	}
 

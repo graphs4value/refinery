@@ -110,27 +110,39 @@ public class CompoundTermToLiteralsRewriter extends AbstractRecursiveRewriter {
 		}
 
 		private <T> Term<T> rewriteTerm(Term<T> term, Supplier<DataVariable<T>> variableSupplier) {
-			switch (term) {
-			case LeftJoinTerm<T> leftJoinTerm -> {
-				var temporaryVariable = variableSupplier.get();
-				outputLiterals.add(new LeftJoinLiteral<>(temporaryVariable, leftJoinTerm.getPlaceholderVariable(),
-						leftJoinTerm.getDefaultValue(), leftJoinTerm.getTarget(), leftJoinTerm.getArguments()));
-				return temporaryVariable;
-			}
-			case CountTerm countTerm -> {
-				var temporaryVariable = variableSupplier.get();
-				// The only choice for {@code T} in {@link CountTerm} is {@link Integer}.
-				@SuppressWarnings("unchecked")
-				var temporaryIntegerVariable = (DataVariable<Integer>) temporaryVariable;
-				outputLiterals.add(new CountLiteral(temporaryIntegerVariable, countTerm.getTarget(),
-						countTerm.getArguments()));
-				return temporaryVariable;
-			}
-			default -> {
-				// Nothing to rewrite.
-			}
-			}
-			return term.rewriteSubTerms(this::rewriteTerm);
+			return switch (term) {
+				case LeftJoinTerm<T> leftJoinTerm -> rewriteLeftJoinTerm(leftJoinTerm, variableSupplier);
+				case CountTerm countTerm -> rewriteCountTerm(countTerm, variableSupplier);
+				case AggregationTerm<T, ?> aggregationTerm -> rewriteAggregationTerm(aggregationTerm,
+						variableSupplier);
+				default -> term.rewriteSubTerms(this::rewriteTerm);
+			};
+		}
+
+		private <T> DataVariable<T> rewriteLeftJoinTerm(LeftJoinTerm<T> leftJoinTerm,
+														Supplier<DataVariable<T>> variableSupplier) {
+			var temporaryVariable = variableSupplier.get();
+			outputLiterals.add(new LeftJoinLiteral<>(temporaryVariable, leftJoinTerm.getPlaceholderVariable(),
+					leftJoinTerm.getDefaultValue(), leftJoinTerm.getTarget(), leftJoinTerm.getArguments()));
+			return temporaryVariable;
+		}
+
+		private <T> DataVariable<T> rewriteCountTerm(CountTerm countTerm, Supplier<DataVariable<T>> variableSupplier) {
+			var temporaryVariable = variableSupplier.get();
+			// The only choice for {@code T} in {@link CountTerm} is {@link Integer}.
+			@SuppressWarnings("unchecked")
+			var temporaryIntegerVariable = (DataVariable<Integer>) temporaryVariable;
+			outputLiterals.add(new CountLiteral(temporaryIntegerVariable, countTerm.getTarget(),
+					countTerm.getArguments()));
+			return temporaryVariable;
+		}
+
+		private <R, T> DataVariable<R> rewriteAggregationTerm(AggregationTerm<R, T> aggregationTerm,
+															  Supplier<DataVariable<R>> variableSupplier) {
+			var temporaryVariable = variableSupplier.get();
+			outputLiterals.add(new AggregationLiteral<>(temporaryVariable, aggregationTerm.getAggregator(),
+					aggregationTerm.getInputVariable(), aggregationTerm.getTarget(), aggregationTerm.getArguments()));
+			return temporaryVariable;
 		}
 	}
 }

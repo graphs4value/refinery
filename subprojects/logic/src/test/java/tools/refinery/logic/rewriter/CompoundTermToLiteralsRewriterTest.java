@@ -9,7 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.literal.AggregationLiteral;
+import tools.refinery.logic.literal.CountLiteral;
 import tools.refinery.logic.literal.LeftJoinLiteral;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.int_.IntTerms;
 import tools.refinery.logic.tests.FakeFunctionView;
 import tools.refinery.logic.tests.FakeKeyOnlyView;
@@ -172,6 +175,50 @@ class CompoundTermToLiteralsRewriterTest {
 						friendView.call(p1, p2),
 						new LeftJoinLiteral<>(v2, v1, 36, expectedSubQuery.getDnf(), List.of(p2, v1)),
 						output.assign(IntTerms.div(v2, IntTerms.constant(2)))
+				)));
+
+		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));
+	}
+
+	@Test
+	void countTermTest() {
+		var query = Query.of("Actual", Integer.class, (builder, p1, output) -> builder
+				.clause(
+						personView.call(p1),
+						output.assign(friendView.count(p1, Variable.of()))
+				));
+
+		var actual = sut.rewrite(query);
+
+		var expected = Query.of("Expected", Integer.class, (builder, p1, output) -> builder
+				.clause(
+						personView.call(p1),
+						new CountLiteral(output, friendView, List.of(p1, Variable.of()))
+				));
+
+		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));
+	}
+
+	@Test
+	void aggregationTermTest() {
+		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, p2, output) -> builder
+				.clause(
+						friendView.call(p1, p2),
+						ageView.call(p2, output)
+				));
+		var query = Query.of("Actual", Integer.class, (builder, p1, output) -> builder
+				.clause(
+						personView.call(p1),
+						output.assign(subQuery.aggregate(IntTerms.INT_SUM, p1, Variable.of()))
+				));
+
+		var actual = sut.rewrite(query);
+
+		var expected = Query.of("Expected", Integer.class, (builder, p1, output) -> builder
+				.clause(Integer.class, v1 -> List.of(
+						personView.call(p1),
+						new AggregationLiteral<>(output, IntTerms.INT_SUM, v1, subQuery.getDnf(),
+								List.of(p1, Variable.of(), v1))
 				)));
 
 		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));
