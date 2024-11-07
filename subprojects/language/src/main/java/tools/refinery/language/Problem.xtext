@@ -16,40 +16,78 @@ enum ModuleKind:
 	PROBLEM="problem" | MODULE="module";
 
 Statement:
-	ImportStatement | Assertion | ClassDeclaration | EnumDeclaration |
-	DatatypeDeclaration | AggregatorDeclaration | PredicateDefinition |
-	/* FunctionDefinition | */ RuleDefinition |
-	ScopeDeclaration | NodeDeclaration;
+	ImportStatement | Assertion | AnnotatedStatement | ScopeDeclaration | NodeDeclaration;
+
+AnnotatedStatement returns Statement:
+	AnnotationContainer
+	(
+		{ClassDeclaration.annotations=current}
+		abstract?="abstract"? "class"
+		name=Identifier
+		("extends" superTypes+=[Relation|QualifiedName] ("," superTypes+=[Relation|QualifiedName])*)?
+		("{" (featureDeclarations+=ReferenceDeclaration ";"?)* "}" | ".")
+	|
+		{EnumDeclaration.annotations=current}
+		"enum"
+		name=Identifier
+		("{" (literals+=EnumLiteral ("," literals+=EnumLiteral)* ("," | ";")?)? "}" | ".")
+	|
+		{DatatypeDeclaration.annotations=current}
+		"extern" "datatype" name=Identifier "."
+	|
+		{AggregatorDeclaration.annotations=current}
+		"extern" "aggregator" name=Identifier "."
+	|
+		{PredicateDefinition.annotations=current}
+		(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
+		name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+		("subsets" superSets+=[ReferenceDeclaration|QualifiedName]
+			("," superSets+=[ReferenceDeclaration|QualifiedName])*
+		)?
+		("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
+		"."
+	|
+		{RuleDefinition.annotations=current}
+		kind=RuleKind? "rule"
+		name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+		("<->" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
+		("==>" consequents+=Consequent (";" consequents+=Consequent)*)?
+		"."
+	|
+		{AnnotationDeclaration.annotations=current}
+		"extern" "annotation" name=Identifier
+		("(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")")? "."
+	|
+		{TopLevelAnnotation.annotations=current} "."
+	);
+
+AnnotationContainer:
+	{AnnotationContainer} annotations+=Annotation*;
+
+EmptyAnnotationContainer returns AnnotationContainer:
+	{AnnotationContainer};
+
+Annotation:
+	{Annotation} "@" declaration=[AnnotationDeclaration|QualifiedName]
+	("(" (arguments+=AnnotationArgument ("," arguments+=AnnotationArgument)?)? ")")?;
+
+AnnotationArgument:
+	(parameter=[Parameter|Identifier] "=")? value=Expr;
 
 ImportStatement:
 	"import" importedModule=[Problem|QualifiedName] ("as" alias=ID)? ".";
 
-ClassDeclaration:
-	abstract?="abstract"? "class"
-	name=Identifier
-	("extends" superTypes+=[Relation|QualifiedName] ("," superTypes+=[Relation|QualifiedName])*)?
-	("{" (featureDeclarations+=ReferenceDeclaration ";"?)* "}" | ".");
-
-EnumDeclaration:
-	"enum"
-	name=Identifier
-	("{" (literals+=EnumLiteral ("," literals+=EnumLiteral)* ("," | ";")?)? "}" | ".");
-
 EnumLiteral returns Node:
 	name=Identifier;
-
-DatatypeDeclaration:
-	"extern" "datatype" name=Identifier ".";
-
-AggregatorDeclaration:
-	"extern" "aggregator" name=Identifier ".";
 
 enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container" | PARTIAL="partial";
 
 ReferenceDeclaration:
-	(referenceType=[Relation|NonContainmentQualifiedName] |
-	kind=ReferenceKind referenceType=[Relation|QualifiedName])
+	(annotations=EmptyAnnotationContainer referenceType=[Relation|NonContainmentQualifiedName] |
+	annotations=AnnotationContainer kind=ReferenceKind referenceType=[Relation|QualifiedName])
 	(multiplicity=ReferenceMultiplicity)?
 	name=Identifier
 	(("opposite" opposite=[ReferenceDeclaration|QualifiedName])? &
@@ -66,16 +104,6 @@ enum ErrorPredicateKind returns PredicateKind:
 enum PredicateKind:
 	ERROR="error" | PARTIAL="partial" | SHADOW="shadow";
 
-PredicateDefinition:
-	(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
-	name=Identifier
-	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-	("subsets" superSets+=[ReferenceDeclaration|QualifiedName]
-		("," superSets+=[ReferenceDeclaration|QualifiedName])*
-	)?
-	("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
-	".";
-
 Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
@@ -90,14 +118,6 @@ Conjunction:
 
 enum RuleKind:
 	DECISION="decision" | PROPAGATION="propagation" | CONCRETIZATION="concretization";
-
-RuleDefinition:
-	kind=RuleKind? "rule"
-	name=Identifier
-	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-	("<->" preconditions+=Conjunction (";" preconditions+=Conjunction)*)?
-	("==>" consequents+=Consequent (";" consequents+=Consequent)*)?
-	".";
 
 enum ParameterBinding:
 	FOCUS="+" | LONE="?" | MULTI="*";
@@ -306,7 +326,7 @@ Identifier:
 NonContainmentIdentifier:
 	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "decision" | "propagation" | "concretization" |
-	"shadow";
+	"shadow" | "annotation";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

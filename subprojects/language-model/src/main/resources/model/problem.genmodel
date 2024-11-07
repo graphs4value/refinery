@@ -260,5 +260,21 @@
     <genClasses ecoreClass="problem.ecore#//Assertion">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>
     </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotatedElement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotatedElement/annotations"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotationContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationContainer/annotations"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotationDeclaration"/>
+    <genClasses ecoreClass="problem.ecore#//Annotation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Annotation/declaration"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Annotation/arguments"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotationArgument">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/value"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/parameter"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//TopLevelAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

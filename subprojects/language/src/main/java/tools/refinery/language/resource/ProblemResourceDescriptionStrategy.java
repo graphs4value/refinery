@@ -40,6 +40,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String SHADOWING_KEY_NODE = "node";
 	public static final String SHADOWING_KEY_RELATION = "relation";
 	public static final String SHADOWING_KEY_AGGREGATOR = "aggregator";
+	public static final String SHADOWING_KEY_ANNOTATION = "annotation";
 	public static final String PREFERRED_NAME = DATA_PREFIX + "PREFERRED_NAME";
 	public static final String PREFERRED_NAME_TRUE = "true";
 	public static final String IMPORTS = DATA_PREFIX + "IMPORTS";
@@ -162,6 +163,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
 		} else if (eObject instanceof AggregatorDeclaration) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_AGGREGATOR);
+		} else if (eObject instanceof AnnotationDeclaration) {
+			builder.put(SHADOWING_KEY, SHADOWING_KEY_ANNOTATION);
 		}
 		if (ProblemUtil.isError(eObject)) {
 			builder.put(ERROR_PREDICATE, ERROR_PREDICATE_TRUE);

@@ -41,6 +41,9 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		if (reference == ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) {
 			return getOppositeScope(context);
 		}
+		if (reference == ProblemPackage.Literals.ANNOTATION_ARGUMENT__PARAMETER) {
+			return getAnnotationParameterScope(context);
+		}
 		return scope;
 	}
 
@@ -98,5 +101,18 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		}
 		var referenceDeclarations = classDeclaration.getFeatureDeclarations();
 		return Scopes.scopeFor(referenceDeclarations);
+	}
+
+	protected IScope getAnnotationParameterScope(EObject context) {
+		var annotation = EcoreUtil2.getContainerOfType(context, Annotation.class);
+		if (annotation == null) {
+			return IScope.NULLSCOPE;
+		}
+		var annotationDeclaration = annotation.getDeclaration();
+		if (annotationDeclaration == null) {
+			return IScope.NULLSCOPE;
+		}
+		var parameters = annotationDeclaration.getParameters();
+		return Scopes.scopeFor(parameters);
 	}
 }

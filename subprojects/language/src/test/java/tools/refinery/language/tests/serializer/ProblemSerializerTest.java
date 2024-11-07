@@ -106,6 +106,7 @@ class ProblemSerializerTest {
 
 	private PredicateDefinition createPred() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
+		pred.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		pred.setName("foo");
 		var parameter = ProblemFactory.eINSTANCE.createParameter();
 		var nodeType = builtin.findClass("node");
@@ -119,6 +120,7 @@ class ProblemSerializerTest {
 	@Test
 	void newNodeTest() {
 		var classDeclaration = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		classDeclaration.setName("Foo");
 		var newNode = ProblemFactory.eINSTANCE.createNode();
 		newNode.setName("new");
@@ -158,6 +160,7 @@ class ProblemSerializerTest {
 	@Test
 	void implicitVariableTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
+		pred.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		pred.setName("foo");
 		var nodeType = builtin.findClass("node");
 		var parameter1 = ProblemFactory.eINSTANCE.createParameter();
@@ -198,6 +201,7 @@ class ProblemSerializerTest {
 	@Test
 	void singletonVariableTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
+		pred.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		pred.setName("foo");
 		var nodeType = builtin.findClass("node");
 		var parameter = ProblemFactory.eINSTANCE.createParameter();
@@ -262,6 +266,7 @@ class ProblemSerializerTest {
 	@Test
 	void implicitVariableWithUnderscoreTest() {
 		var pred = ProblemFactory.eINSTANCE.createPredicateDefinition();
+		pred.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		pred.setName("foo");
 		var conjunction = ProblemFactory.eINSTANCE.createConjunction();
 		var variable = ProblemFactory.eINSTANCE.createImplicitVariable();
@@ -289,11 +294,14 @@ class ProblemSerializerTest {
 	@MethodSource
 	void containmentKeywordInReferenceTypeTest(String keyword, String quoted) {
 		var classDeclaration1 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration1.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		classDeclaration1.setName(keyword);
 		problem.getStatements().add(classDeclaration1);
 		var classDeclaration2 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration2.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		classDeclaration2.setName("foo");
 		var referenceDeclaration = ProblemFactory.eINSTANCE.createReferenceDeclaration();
+		referenceDeclaration.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		referenceDeclaration.setReferenceType(classDeclaration1);
 		referenceDeclaration.setName("ref");
 		classDeclaration2.getFeatureDeclarations().add(referenceDeclaration);
@@ -323,11 +331,14 @@ class ProblemSerializerTest {
 	@MethodSource
 	void containmentKeywordInContainmentReferenceTypeTest(String keyword) {
 		var classDeclaration1 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration1.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		classDeclaration1.setName(keyword);
 		problem.getStatements().add(classDeclaration1);
 		var classDeclaration2 = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration2.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		classDeclaration2.setName("foo");
 		var referenceDeclaration = ProblemFactory.eINSTANCE.createReferenceDeclaration();
+		referenceDeclaration.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		referenceDeclaration.setReferenceType(classDeclaration1);
 		referenceDeclaration.setName("ref");
 		referenceDeclaration.setKind(ReferenceKind.CONTAINMENT);
@@ -349,8 +360,10 @@ class ProblemSerializerTest {
 
 	private void createClassAndAssertion(String className, String nodeName) {
 		var classDeclaration = ProblemFactory.eINSTANCE.createClassDeclaration();
+		classDeclaration.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		classDeclaration.setName(className);
 		var referenceDeclaration = ProblemFactory.eINSTANCE.createReferenceDeclaration();
+		referenceDeclaration.setAnnotations(ProblemFactory.eINSTANCE.createAnnotationContainer());
 		referenceDeclaration.setReferenceType(classDeclaration);
 		referenceDeclaration.setName("ref");
 		classDeclaration.getFeatureDeclarations().add(referenceDeclaration);

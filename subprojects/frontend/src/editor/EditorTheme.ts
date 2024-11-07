@@ -168,7 +168,7 @@ export default styled('div', {
       color: theme.palette.highlight.number,
     },
     '.tok-string': {
-      color: theme.palette.secondary.main,
+      color: theme.palette.highlight.string,
     },
     '.tok-keyword': {
       color: theme.palette.primary.main,
@@ -178,6 +178,9 @@ export default styled('div', {
     },
     '.tok-variableName': {
       color: theme.palette.highlight.parameter,
+    },
+    '.tok-meta': {
+      color: theme.palette.highlight.annotation,
     },
     '.tok-problem-node': {
       '&, & .tok-variableName': {

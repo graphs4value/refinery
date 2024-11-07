@@ -74,6 +74,14 @@ statement {
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
+  } |
+  AnnotationDeclaration {
+    kw<"extern"> ckw<"annotation"> AnnotationName ParameterList<Parameter>? "."
+  } |
+  Annotation {
+    "@" AnnotationName
+    ("(" sep<",", AnnotationArgument> ")")?
+    "."?
   }
 }
 
@@ -176,6 +184,8 @@ ScopeElement { RelationName ("=" | "+=") Multiplicity }
 
 Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 
+AnnotationArgument { (VariableName "=")? Expr }
+
 // The ~name handles the ambiguity between transitve closure a+(b, c) and addition a+(b)
 // in the grammar. We prefer the addition interpretation by applying @dynamicPrecedence=1
 // to the VariableName rule,
@@ -195,6 +205,8 @@ NodeName { QualifiedName }
 ModuleName { QualifiedName }
 
 AggregatorName { QualifiedName }
+
+AnnotationName { QualifiedName }
 
 ID { identifier | QuotedID }
 
@@ -268,5 +280,5 @@ sep1<separator, content> { content (separator content)* }
 
   MultiBinding { "*" }
 
-  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
+  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+=" "@"
 }
