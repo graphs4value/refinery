@@ -52,8 +52,8 @@ public interface Constraint {
 		return call(CallPolarity.TRANSITIVE, List.of(left, right));
 	}
 
-	default AssignedValue<Integer> count(List<Variable> arguments) {
-		return targetVariable -> new CountLiteral(targetVariable, this, arguments);
+	default Term<Integer> count(List<Variable> arguments) {
+		return new CountTerm(this, arguments);
 	}
 
 	default AssignedValue<Integer> count(Variable... arguments) {

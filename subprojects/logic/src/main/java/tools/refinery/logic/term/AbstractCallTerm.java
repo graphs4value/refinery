@@ -14,6 +14,7 @@ import tools.refinery.logic.util.CallSite;
 import tools.refinery.logic.valuation.Valuation;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 // {@link Object#equals(Object)} is implemented by {@link AbstractTerm}.
@@ -56,6 +57,15 @@ public abstract class AbstractCallTerm<T> extends AbstractTerm<T> {
 	}
 
 	protected abstract Term<T> doSubstitute(Substitution substitution, List<Variable> substitutedArguments);
+
+	public Term<T> withTarget(Constraint newTarget) {
+		if (Objects.equals(getTarget(), newTarget)) {
+			return this;
+		}
+		return withArguments(newTarget, getArguments());
+	}
+
+	public abstract Term<T> withArguments(Constraint newTarget, List<Variable> newArguments);
 
 	@Override
 	public Set<Variable> getVariables() {

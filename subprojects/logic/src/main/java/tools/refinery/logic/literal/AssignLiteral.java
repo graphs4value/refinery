@@ -18,7 +18,7 @@ import java.util.Set;
 
 // {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
 @SuppressWarnings("squid:S2160")
-public class AssignLiteral<T> extends AbstractLiteral {
+public class AssignLiteral<T> extends AbstractLiteral implements TermLiteral<T> {
 	private final DataVariable<T> variable;
 	private final Term<T> term;
 
@@ -40,8 +40,17 @@ public class AssignLiteral<T> extends AbstractLiteral {
 		return variable;
 	}
 
+	@Override
 	public Term<T> getTerm() {
 		return term;
+	}
+
+	@Override
+	public AssignLiteral<T> withTerm(Term<T> term) {
+		if (this.term == term) {
+			return this;
+		}
+		return new AssignLiteral<>(variable, term);
 	}
 
 	@Override

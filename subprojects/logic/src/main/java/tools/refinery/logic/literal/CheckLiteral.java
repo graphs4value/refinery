@@ -20,7 +20,7 @@ import java.util.Set;
 
 // {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
 @SuppressWarnings("squid:S2160")
-public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLiteral> {
+public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLiteral>, TermLiteral<Boolean> {
 	private final Term<Boolean> term;
 
 	public CheckLiteral(Term<Boolean> term) {
@@ -31,8 +31,17 @@ public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLite
 		this.term = term;
 	}
 
+	@Override
 	public Term<Boolean> getTerm() {
 		return term;
+	}
+
+	@Override
+	public CheckLiteral withTerm(Term<Boolean> term) {
+		if (this.term == term) {
+			return this;
+		}
+		return new CheckLiteral(term);
 	}
 
 	@Override

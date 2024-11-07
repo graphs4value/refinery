@@ -53,6 +53,11 @@ public class LeftJoinTerm<T> extends AbstractCallTerm<T> {
 	}
 
 	@Override
+	public Term<T> withArguments(Constraint newTarget, List<Variable> newArguments) {
+		return new LeftJoinTerm<>(placeholderVariable, defaultValue, newTarget, newArguments);
+	}
+
+	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
 		if (positiveVariablesInClause.contains(placeholderVariable)) {
 			throw new InvalidQueryException("Placeholder variable %s must not be bound".formatted(placeholderVariable));

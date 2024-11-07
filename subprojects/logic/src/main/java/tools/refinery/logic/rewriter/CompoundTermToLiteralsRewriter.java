@@ -8,10 +8,7 @@ package tools.refinery.logic.rewriter;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.DnfClause;
 import tools.refinery.logic.literal.*;
-import tools.refinery.logic.term.DataVariable;
-import tools.refinery.logic.term.LeftJoinTerm;
-import tools.refinery.logic.term.Term;
-import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.*;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -113,11 +110,25 @@ public class CompoundTermToLiteralsRewriter extends AbstractRecursiveRewriter {
 		}
 
 		private <T> Term<T> rewriteTerm(Term<T> term, Supplier<DataVariable<T>> variableSupplier) {
-			if (term instanceof LeftJoinTerm<T> leftJoinTerm) {
+			switch (term) {
+			case LeftJoinTerm<T> leftJoinTerm -> {
 				var temporaryVariable = variableSupplier.get();
 				outputLiterals.add(new LeftJoinLiteral<>(temporaryVariable, leftJoinTerm.getPlaceholderVariable(),
 						leftJoinTerm.getDefaultValue(), leftJoinTerm.getTarget(), leftJoinTerm.getArguments()));
 				return temporaryVariable;
+			}
+			case CountTerm countTerm -> {
+				var temporaryVariable = variableSupplier.get();
+				// The only choice for {@code T} in {@link CountTerm} is {@link Integer}.
+				@SuppressWarnings("unchecked")
+				var temporaryIntegerVariable = (DataVariable<Integer>) temporaryVariable;
+				outputLiterals.add(new CountLiteral(temporaryIntegerVariable, countTerm.getTarget(),
+						countTerm.getArguments()));
+				return temporaryVariable;
+			}
+			default -> {
+				// Nothing to rewrite.
+			}
 			}
 			return term.rewriteSubTerms(this::rewriteTerm);
 		}
