@@ -25,6 +25,8 @@ abstract class TypeScopePropagator {
 	private final CriterionCalculator acceptCalculator;
 	private final PartialRelation type;
 	protected final MPConstraint constraint;
+	private final String unsatisfiableMessage;
+	private final String notSatisfiedMessage;
 
 	protected TypeScopePropagator(BoundScopePropagator adapter, RelationalQuery allQuery,
 								  RelationalQuery multiQuery, Criterion acceptCriterion, PartialRelation type) {
@@ -43,6 +45,8 @@ abstract class TypeScopePropagator {
 		}
 		allNodes.addListener(this::allChanged);
 		multiNodes.addListener(this::multiChanged);
+		unsatisfiableMessage = "Unsatisfiable %s.".formatted(getName());
+		notSatisfiedMessage = "The %s was not satisfied.".formatted(getName());
 	}
 
 	protected abstract void doUpdateBounds();
@@ -53,6 +57,14 @@ abstract class TypeScopePropagator {
 	}
 
 	public abstract String getName();
+
+	public String getUnsatisfiableMessage() {
+		return unsatisfiableMessage;
+	}
+
+	public String getNotSatisfiedMessage() {
+		return notSatisfiedMessage;
+	}
 
 	public PartialRelation getType() {
 		return type;

@@ -160,7 +160,12 @@ class BoundScopePropagator implements BoundPropagator {
 			model.checkCancelled();
 			if (!propagator.updateBounds()) {
 				// Avoid logging GLOP error to console by checking for inconsistent constraints in advance.
-				return createRejectedResult("Unsatisfiable %s.".formatted(propagator.getName()));
+				return createRejectedResult(propagator.getUnsatisfiableMessage());
+			}
+		}
+		for (var variable : variables) {
+			if (variable.lb() > variable.ub()) {
+				return createRejectedResult("Object with inconsistent existence detected.");
 			}
 		}
 		var result = PropagationResult.UNCHANGED;
@@ -187,7 +192,7 @@ class BoundScopePropagator implements BoundPropagator {
 		var emptinessCheckingResult = solver.solve();
 		return switch (emptinessCheckingResult) {
 			case OPTIMAL, UNBOUNDED -> PropagationResult.UNCHANGED;
-			case INFEASIBLE -> createRejectedResult();
+			case ABNORMAL, INFEASIBLE -> createRejectedResult();
 			default -> throw new IllegalStateException("Failed to check for consistency: " + emptinessCheckingResult);
 		};
 	}
@@ -202,7 +207,7 @@ class BoundScopePropagator implements BoundPropagator {
 			switch (minimizationResult) {
 			case OPTIMAL -> lowerBound = RoundingUtil.roundUp(objective.value());
 			case UNBOUNDED -> lowerBound = 0;
-			case INFEASIBLE -> {
+			case ABNORMAL, INFEASIBLE -> {
 				return createRejectedResult();
 			}
 			default -> throw new IllegalStateException("Failed to solve for minimum of %s: %s"
@@ -217,7 +222,7 @@ class BoundScopePropagator implements BoundPropagator {
 			case OPTIMAL -> upperBound = UpperCardinalities.atMost(RoundingUtil.roundDown(objective.value()));
 			// Problem was feasible when minimizing, the only possible source of {@code UNBOUNDED_OR_INFEASIBLE} is
 			// an unbounded maximization problem. See https://github.com/google/or-tools/issues/3319
-			case UNBOUNDED, INFEASIBLE -> upperBound = UpperCardinalities.UNBOUNDED;
+			case ABNORMAL, UNBOUNDED, INFEASIBLE -> upperBound = UpperCardinalities.UNBOUNDED;
 			default -> throw new IllegalStateException("Failed to solve for maximum of %s: %s"
 					.formatted(variable, minimizationResult));
 			}
@@ -240,7 +245,7 @@ class BoundScopePropagator implements BoundPropagator {
 		for (var propagator : propagators) {
 			model.checkCancelled();
 			if (!propagator.checkConcretization()) {
-				return createRejectedResult("The %s was not satisfied.".formatted(propagator.getName()));
+				return createRejectedResult(propagator.getNotSatisfiedMessage());
 			}
 		}
 		return PropagationResult.UNCHANGED;
