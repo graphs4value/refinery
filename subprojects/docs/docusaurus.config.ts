@@ -15,7 +15,6 @@ import type { Options as ClassicThemeOptions } from '@docusaurus/theme-classic';
 import type { UserThemeConfig } from '@docusaurus/theme-common';
 import type { UserThemeConfig as AlgoliaConfig } from '@docusaurus/theme-search-algolia';
 import type { Config } from '@docusaurus/types';
-import type { Config as SwcConfig } from '@swc/core';
 import { PropertiesFile } from 'java-properties';
 import { themes } from 'prism-react-renderer';
 import smartypants from 'remark-smartypants';
@@ -83,7 +82,6 @@ export default async function createConfigAsync() {
       ],
       '@docusaurus/plugin-sitemap',
       './src/plugins/loadersPlugin.ts',
-      './src/plugins/swcMinifyPlugin.ts',
     ],
     themes: [
       [
@@ -236,32 +234,18 @@ export default async function createConfigAsync() {
         externalUrlRegex: '/([^/]+/)?develop/javadoc/.+',
       },
     } satisfies UserThemeConfig & AlgoliaConfig,
-    webpack: {
-      // Speed up builds by using a native Javascript loader.
-      // See: https://github.com/facebook/docusaurus/issues/4765#issuecomment-841135926
-      // But we follow the Docusaurus upstream from
-      // https://github.com/facebook/docusaurus/blob/791da2e4a1a53aa6309887059e3f112fcb35bec4/website/docusaurus.config.ts#L152-L171
-      // and use swc instead of esbuild.
-      jsLoader: (isServer) => ({
-        loader: require.resolve('swc-loader'),
-        options: {
-          jsc: {
-            parser: {
-              syntax: 'typescript',
-              tsx: true,
-            },
-            transform: {
-              react: {
-                runtime: 'automatic',
-              },
-            },
-            target: 'es2022',
-          },
-          module: {
-            type: isServer ? 'commonjs' : 'es6',
-          },
-        } satisfies SwcConfig,
-      }),
+    future: {
+      experimental_faster: {
+        lightningCssMinimizer: true,
+        mdxCrossCompilerCache: true,
+        // We can't migrate to rspack, since it doesn'y support Yarn PnP yet.
+        // See https://github.com/web-infra-dev/rspack/issues/2236 and
+        // https://github.com/web-infra-dev/rspack/pull/7639
+        rspackBundler: false,
+        swcHtmlMinimizer: true,
+        swcJsLoader: true,
+        swcJsMinimizer: true,
+      },
     },
     headTags: [
       {

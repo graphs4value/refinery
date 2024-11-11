@@ -96,7 +96,7 @@ tasks {
 fun collectDependentProjects(configuration: Configuration, dependentProjects: MutableCollection<Project>) {
 	for (dependency in configuration.dependencies) {
 		if (dependency is ProjectDependency) {
-			val dependentProject = dependency.dependencyProject
+			val dependentProject = project(dependency.path)
 			if (dependentProject.plugins.hasPlugin(JavaPlugin::class) && dependentProjects.add(dependentProject)) {
 				collectDependentProjectsTransitively(dependentProject, dependentProjects)
 			}
