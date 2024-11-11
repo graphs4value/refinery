@@ -247,7 +247,7 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 
 	private void translateInvalidContainer(ModelStoreBuilder storeBuilder) {
 		storeBuilder.with(new InvalidMultiplicityErrorTranslator(CONTAINED_SYMBOL, CONTAINS_SYMBOL, true,
-				ConstrainedMultiplicity.of(CardinalityIntervals.ONE, INVALID_CONTAINER)));
+				new ConstrainedMultiplicity(CardinalityIntervals.ONE, INVALID_CONTAINER)));
 	}
 
 	private void translateFocusNotContained(ModelStoreBuilder storeBuilder) {

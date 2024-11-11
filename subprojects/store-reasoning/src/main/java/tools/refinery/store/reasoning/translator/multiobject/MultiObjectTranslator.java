@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.multiobject;
 
 import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.literal.Literals;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityDomain;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
@@ -77,12 +78,13 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 								LOWER_CARDINALITY_VIEW.call(p1, lower),
 								check(greaterEq(lower, constant(1)))
 						))))
-				// It is impossible to obey the refinement from the partial to the candidate view, since
-				// multi-objects will be turned into single objects by the candidate rewriter of EQUALS_SYMBOL.
-				// Nevertheless, by making sure that surely existing multi-objects are preserved in the candidate
-				// view, we are at least able to display predicates that hold with an error value on the surely
-				// existing multi-objects in the partial view (or have conflicting values in the partial and
-				// candidate views) in the candidate view.
+				// Force multi-objects that surely exist in the partial view to exist with an {@code ERROR} logic
+				// value in the candidate view.
+				.candidateMay(Query.of("exists#candidate", (builder, p1) -> builder
+						.clause(
+								LOWER_CARDINALITY_VIEW.call(p1, Variable.of(Integer.class)),
+								Literals.not(MULTI_VIEW.call(p1))
+						)))
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ExistsRefiner.of(COUNT_STORAGE))
 				.exclude(null)

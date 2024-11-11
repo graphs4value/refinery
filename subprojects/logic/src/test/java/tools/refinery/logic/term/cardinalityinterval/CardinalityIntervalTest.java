@@ -5,17 +5,33 @@
  */
 package tools.refinery.logic.term.cardinalityinterval;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals.*;
 
 class CardinalityIntervalTest {
+	@Test
+	void inconsistentBoundsTest() {
+		assertThat(CardinalityIntervals.ERROR.upperBound().compareToInt(CardinalityIntervals.ERROR.lowerBound()),
+				lessThan(0));
+	}
+
+	@Test
+	void invalidLowerBoundConstructorTest() {
+		assertThrows(IllegalArgumentException.class, () -> new CardinalityInterval(-1,
+				UpperCardinalities.UNBOUNDED));
+	}
+
 	@ParameterizedTest(name = "min({0}, {1}) == {2}")
 	@MethodSource
 	void minTest(CardinalityInterval a, CardinalityInterval b, CardinalityInterval expected) {
@@ -27,11 +43,7 @@ class CardinalityIntervalTest {
 				Arguments.of(atMost(1), atMost(1), atMost(1)),
 				Arguments.of(atMost(1), between(2, 3), atMost(1)),
 				Arguments.of(atMost(1), atLeast(2), atMost(1)),
-				Arguments.of(atMost(1), ERROR, ERROR),
-				Arguments.of(atLeast(1), atLeast(2), atLeast(1)),
-				Arguments.of(atLeast(1), ERROR, ERROR),
-				Arguments.of(ERROR, atLeast(2), ERROR),
-				Arguments.of(ERROR, ERROR, ERROR)
+				Arguments.of(atLeast(1), atLeast(2), atLeast(1))
 		);
 	}
 
@@ -46,11 +58,7 @@ class CardinalityIntervalTest {
 				Arguments.of(atMost(1), atMost(1), atMost(1)),
 				Arguments.of(atMost(1), between(2, 3), between(2, 3)),
 				Arguments.of(atMost(1), atLeast(2), atLeast(2)),
-				Arguments.of(atMost(1), ERROR, ERROR),
-				Arguments.of(atLeast(1), atLeast(2), atLeast(2)),
-				Arguments.of(atLeast(1), ERROR, ERROR),
-				Arguments.of(ERROR, atLeast(2), ERROR),
-				Arguments.of(ERROR, ERROR, ERROR)
+				Arguments.of(atLeast(1), atLeast(2), atLeast(2))
 		);
 	}
 
@@ -65,11 +73,7 @@ class CardinalityIntervalTest {
 				Arguments.of(atMost(1), atMost(1), atMost(2)),
 				Arguments.of(atMost(1), between(2, 3), between(2, 4)),
 				Arguments.of(atMost(1), atLeast(2), atLeast(2)),
-				Arguments.of(atMost(1), ERROR, ERROR),
-				Arguments.of(atLeast(1), atLeast(2), atLeast(3)),
-				Arguments.of(atLeast(1), ERROR, ERROR),
-				Arguments.of(ERROR, atLeast(2), ERROR),
-				Arguments.of(ERROR, ERROR, ERROR)
+				Arguments.of(atLeast(1), atLeast(2), atLeast(3))
 		);
 	}
 
@@ -83,10 +87,7 @@ class CardinalityIntervalTest {
 		return Stream.of(
 				Arguments.of(between(2, 3), between(4, 5), between(8, 15)),
 				Arguments.of(atLeast(2), between(4, 5), atLeast(8)),
-				Arguments.of(between(2, 3), atLeast(4), atLeast(8)),
-				Arguments.of(between(2, 3), ERROR, ERROR),
-				Arguments.of(ERROR, between(4, 5), ERROR),
-				Arguments.of(ERROR, ERROR, ERROR)
+				Arguments.of(between(2, 3), atLeast(4), atLeast(8))
 		);
 	}
 
@@ -100,11 +101,7 @@ class CardinalityIntervalTest {
 		return Stream.of(
 				Arguments.of(atMost(1), atMost(2), atMost(1)),
 				Arguments.of(atMost(2), between(1, 3), between(1, 2)),
-				Arguments.of(atMost(1), between(1, 3), exactly(1)),
-				Arguments.of(atMost(1), between(2, 3), ERROR),
-				Arguments.of(atMost(1), ERROR, ERROR),
-				Arguments.of(ERROR, atMost(1), ERROR),
-				Arguments.of(ERROR, ERROR, ERROR)
+				Arguments.of(atMost(1), between(1, 3), exactly(1))
 		);
 	}
 
@@ -118,10 +115,7 @@ class CardinalityIntervalTest {
 		return Stream.of(
 				Arguments.of(atMost(1), atMost(2), atMost(2)),
 				Arguments.of(atMost(2), between(1, 3), atMost(3)),
-				Arguments.of(atMost(1), between(2, 3), atMost(3)),
-				Arguments.of(atMost(1), ERROR, atMost(1)),
-				Arguments.of(ERROR, atMost(1), atMost(1)),
-				Arguments.of(ERROR, ERROR, ERROR)
+				Arguments.of(atMost(1), between(2, 3), atMost(3))
 		);
 	}
 }

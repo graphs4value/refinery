@@ -43,12 +43,12 @@ public class ExistsRefiner extends AbstractPartialInterpretationRefiner.Concreti
 			newCount = currentCount.meet(CardinalityIntervals.NONE);
 		}
 		case ERROR -> {
-			return false;
+			if (concretizationInProgress()) {
+				return false;
+			}
+			newCount = currentCount.meet(CardinalityIntervals.ERROR);
 		}
 		default -> throw new IllegalArgumentException("Unknown TruthValue: " + value);
-		}
-		if (newCount.isError()) {
-			return false;
 		}
 		countInterpretation.put(key, newCount);
 		return true;

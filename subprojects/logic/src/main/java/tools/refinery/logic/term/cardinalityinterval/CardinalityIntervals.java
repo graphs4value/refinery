@@ -19,17 +19,14 @@ public final class CardinalityIntervals {
 
 	public static final CardinalityInterval SOME = atLeast(1);
 
-	public static final CardinalityInterval ERROR = EmptyCardinalityInterval.INSTANCE;
+	public static final CardinalityInterval ERROR = between(1, UpperCardinalities.ZERO);
 
 	private CardinalityIntervals() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
 	}
 
 	public static CardinalityInterval between(int lowerBound, UpperCardinality upperBound) {
-		if (upperBound.compareToInt(lowerBound) < 0) {
-			return ERROR;
-		}
-		return new NonEmptyCardinalityInterval(lowerBound, upperBound);
+		return new CardinalityInterval(lowerBound, upperBound);
 	}
 
 	public static CardinalityInterval between(int lowerBound, int upperBound) {
@@ -37,7 +34,7 @@ public final class CardinalityIntervals {
 	}
 
 	public static CardinalityInterval atMost(UpperCardinality upperBound) {
-		return new NonEmptyCardinalityInterval(0, upperBound);
+		return new CardinalityInterval(0, upperBound);
 	}
 
 	public static CardinalityInterval atMost(int upperBound) {
@@ -45,10 +42,10 @@ public final class CardinalityIntervals {
 	}
 
 	public static CardinalityInterval atLeast(int lowerBound) {
-		return new NonEmptyCardinalityInterval(lowerBound, UpperCardinalities.UNBOUNDED);
+		return new CardinalityInterval(lowerBound, UpperCardinalities.UNBOUNDED);
 	}
 
 	public static CardinalityInterval exactly(int lowerBound) {
-		return new NonEmptyCardinalityInterval(lowerBound, UpperCardinalities.atMost(lowerBound));
+		return new CardinalityInterval(lowerBound, UpperCardinalities.atMost(lowerBound));
 	}
 }

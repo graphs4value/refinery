@@ -57,7 +57,7 @@ public final class ReferenceInfoBuilder {
 
 	public ReferenceInfoBuilder multiplicity(@NotNull CardinalityInterval multiplicityInterval,
 											 @NotNull PartialRelation errorSymbol) {
-		return multiplicity(ConstrainedMultiplicity.of(multiplicityInterval, errorSymbol));
+		return multiplicity(new ConstrainedMultiplicity(multiplicityInterval, errorSymbol));
 	}
 
 	public ReferenceInfoBuilder opposite(@Nullable PartialRelation opposite) {

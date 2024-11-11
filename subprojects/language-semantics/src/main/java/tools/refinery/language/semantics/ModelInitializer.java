@@ -418,7 +418,7 @@ public class ModelInitializer {
 			interval = getCardinalityInterval(problemMultiplicity);
 		}
 		var constraint = getRelationInfo(referenceDeclaration.getInvalidMultiplicity()).partialRelation();
-		return ConstrainedMultiplicity.of(interval, constraint);
+		return new ConstrainedMultiplicity(interval, constraint);
 	}
 
 	private static CardinalityInterval getCardinalityInterval(
