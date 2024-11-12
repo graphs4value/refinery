@@ -177,7 +177,7 @@ export function createGraphTheme({
         strokeDasharray: '2 4',
       },
       '.node-header': {
-        fill: theme.palette.background.default,
+        fill: `${theme.palette.background.default} !important`,
       },
       '.icon-TRUE': {
         fill: theme.palette.text.secondary,
@@ -188,7 +188,7 @@ export function createGraphTheme({
         stroke: errorColor.main,
       },
       '.node-header': {
-        fill: theme.palette.background.default,
+        fill: `${theme.palette.background.default} !important`,
       },
     },
   };
