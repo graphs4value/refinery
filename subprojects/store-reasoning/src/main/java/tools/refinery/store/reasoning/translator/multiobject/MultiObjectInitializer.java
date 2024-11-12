@@ -36,11 +36,6 @@ class MultiObjectInitializer implements PartialModelInitializer {
 		var countInterpretation = model.getInterpretation(countSymbol);
 		var uniqueTable = new HashMap<CardinalityInterval, CardinalityInterval>();
 		for (int i = 0; i < intervals.length; i++) {
-			var interval = intervals[i];
-			if (interval.isError()) {
-				throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
-						"Inconsistent existence or equality for node " + i);
-			}
 			var uniqueInterval = uniqueTable.computeIfAbsent(intervals[i], Function.identity());
 			countInterpretation.put(Tuple.of(i), uniqueInterval);
 		}
@@ -63,7 +58,7 @@ class MultiObjectInitializer implements PartialModelInitializer {
 			if (!modelSeed.containsSeed(ReasoningAdapter.EXISTS_SYMBOL) ||
 					!modelSeed.containsSeed(ReasoningAdapter.EQUALS_SYMBOL)) {
 				throw new TranslationException(MultiObjectTranslator.COUNT_SYMBOL,
-						"Seed for %s and %s is required if there is no seed for %s".formatted(
+						"Seeds for %s and %s are required if there is no seed for %s".formatted(
 								ReasoningAdapter.EXISTS_SYMBOL, ReasoningAdapter.EQUALS_SYMBOL,
 								MultiObjectTranslator.COUNT_SYMBOL));
 			}
@@ -83,8 +78,7 @@ class MultiObjectInitializer implements PartialModelInitializer {
 			switch (cursor.getValue()) {
 			case TRUE -> intervals[i] = intervals[i].meet(CardinalityIntervals.SOME);
 			case FALSE -> intervals[i] = intervals[i].meet(CardinalityIntervals.NONE);
-			case ERROR -> throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
-					"Inconsistent existence for node " + i);
+			case ERROR -> intervals[i] = intervals[i].meet(CardinalityIntervals.ERROR);
 			default -> throw new TranslationException(ReasoningAdapter.EXISTS_SYMBOL,
 					"Invalid existence truth value %s for node %d".formatted(cursor.getValue(), i));
 			}

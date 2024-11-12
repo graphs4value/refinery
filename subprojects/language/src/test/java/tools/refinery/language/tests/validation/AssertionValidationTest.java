@@ -38,7 +38,6 @@ class AssertionValidationTest {
 			"default exists(n).",
 			"!exists(A).",
 			"exists(A): error.",
-			"exists(n): error.",
 			"!exists(*).",
 			"exists(*): error.",
 			"default equals(n, n).",

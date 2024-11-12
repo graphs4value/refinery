@@ -727,11 +727,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 					ProblemPackage.Literals.ASSERTION__DEFAULT, 0, UNSUPPORTED_ASSERTION_ISSUE);
 			return;
 		}
-		if (value == LogicValue.ERROR) {
-			acceptError("Error assertions for 'exists' and 'equals' are not supported.", assertion,
-					ProblemPackage.Literals.ASSERTION__DEFAULT, 0, UNSUPPORTED_ASSERTION_ISSUE);
-			return;
-		}
 		if (isExists) {
 			checkExistsAssertion(assertion, value);
 			return;

@@ -77,12 +77,8 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 								LOWER_CARDINALITY_VIEW.call(p1, lower),
 								check(greaterEq(lower, constant(1)))
 						))))
-				// It is impossible to obey the refinement from the partial to the candidate view, since
-				// multi-objects will be turned into single objects by the candidate rewriter of EQUALS_SYMBOL.
-				// Nevertheless, by making sure that surely existing multi-objects are preserved in the candidate
-				// view, we are at least able to display predicates that hold with an error value on the surely
-				// existing multi-objects in the partial view (or have conflicting values in the partial and
-				// candidate views) in the candidate view.
+				// Multi-objects which surely exist in the partial view will also exist in the candidate view,
+				// but they may have inconsistent {@code COUNT} that refines their {@code COUNT} from the partial view.
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ExistsRefiner.of(COUNT_STORAGE))
 				.exclude(null)

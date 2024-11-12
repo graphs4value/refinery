@@ -57,7 +57,7 @@ public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements
 	private boolean tupleExists(Tuple key) {
 		int arity = key.getSize();
 		for (int i = 0; i < arity; i++) {
-			if (!existsInterpretation.get(Tuple.of(key.get(i))).may()) {
+			if (existsInterpretation.get(Tuple.of(key.get(i))) == TruthValue.FALSE) {
 				return false;
 			}
 		}
