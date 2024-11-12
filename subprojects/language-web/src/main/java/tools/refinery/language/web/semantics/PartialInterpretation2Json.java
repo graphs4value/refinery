@@ -82,10 +82,9 @@ public class PartialInterpretation2Json {
 		var cursor = interpretation.getAll();
 		UnaryOperator<CardinalityInterval> transform = switch (concreteness) {
 			case PARTIAL -> UnaryOperator.identity();
-			case CANDIDATE -> count -> count.equals(CardinalityIntervals.ONE) ? count :
-					count.meet(CardinalityIntervals.NONE);
+			case CANDIDATE -> count -> count.lowerBound() == 0 ? CardinalityIntervals.NONE :
+					count.meet(CardinalityIntervals.LONE);
 		};
 		return getTuplesJson(cursor, transform);
-
 	}
 }

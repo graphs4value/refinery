@@ -23,10 +23,10 @@ exists(D::new).
 ?equals(D::new, D::new).
 
 % EXPECT CANDIDATE EXACTLY:
-exists(A::new): error.
+exists(A::new).
 equals(A::new, A::new).
 !exists(B::new).
 exists(C::new).
 equals(C::new, C::new).
-exists(D::new): error.
+exists(D::new).
 equals(D::new, D::new).
