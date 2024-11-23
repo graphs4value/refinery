@@ -25,7 +25,7 @@ function findAlignmentAfterOpening(context: TreeIndentContext): number | null {
   }
   const openingLine = context.state.doc.lineAt(openingToken.from);
   const lineEnd =
-    simulatedBreak == null || simulatedBreak <= openingLine.from
+    simulatedBreak === null || simulatedBreak <= openingLine.from
       ? openingLine.to
       : Math.min(openingLine.to, simulatedBreak);
   const cursor = openingToken.cursor();

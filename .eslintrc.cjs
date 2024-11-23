@@ -83,6 +83,7 @@ module.exports = {
     // In typescript, some class methods implementing an inderface do not use `this`:
     // https://github.com/typescript-eslint/typescript-eslint/issues/1103
     'class-methods-use-this': 'off',
+    eqeqeq: 'error',
     // Disable rules with a high performance cost.
     // See https://typescript-eslint.io/linting/troubleshooting/performance-troubleshooting/
     'import/default': 'off',

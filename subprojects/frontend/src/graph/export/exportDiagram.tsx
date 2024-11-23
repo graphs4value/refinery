@@ -296,6 +296,48 @@ async function serializePNG(
   });
 }
 
+/**
+ * Compensate for text baseline alignment as a workaround for the lack of support
+ * for the `dominant-baseline` SVG property for positioning text.
+ *
+ * We remove the `dominant-baseline` attribute from the already in the DOM and
+ * measure the vertical shift to compensate for it in the serialized SVG.
+ * This causes frequent DOM layout calculations, but we only do this when creating
+ * a PDF and make sure to restore the original layout at the end.
+ *
+ * @param svg The original SVG document currently present in the DOM.
+ * @param copyOfSVG The SVG document to be serialized as PDF, not in the DOM.
+ */
+function fixTextBaseline(svg: SVGSVGElement, copyOfSVG: SVGSVGElement): void {
+  const originalText = svg.querySelectorAll<SVGTextElement>(
+    'text[dominant-baseline]',
+  );
+  const copiedText = copyOfSVG.querySelectorAll<SVGTextElement>(
+    'text[dominant-baseline]',
+  );
+  copiedText.forEach((text, i) => {
+    const original = originalText[i];
+    if (original === undefined) {
+      return;
+    }
+    const y = parseFloat(original.getAttribute('y') ?? '');
+    const dominantBaseline = original.getAttribute('dominant-baseline');
+    if (dominantBaseline === null) {
+      return;
+    }
+    const bbox = original.getBBox();
+    let shiftedBBox: DOMRect;
+    try {
+      original.setAttribute('dominant-baseline', 'auto');
+      shiftedBBox = original.getBBox();
+    } finally {
+      original.setAttribute('dominant-baseline', dominantBaseline);
+    }
+    text.setAttribute('y', String(y + bbox.y - shiftedBBox.y));
+    text.setAttribute('dominant-baseline', 'auto');
+  });
+}
+
 let serializePDFCached:
   | ((svg: SVGSVGElement, embedFonts: boolean) => Promise<Blob>)
   | undefined;
@@ -386,6 +428,7 @@ export default async function exportDiagram(
   );
 
   if (settings.format === 'pdf') {
+    fixTextBaseline(svg, copyOfSVG);
     const pdf = await serializePDF(copyOfSVG, settings);
     await saveBlob(pdf, `${graph.name}.pdf`, {
       id: EXPORT_ID,
