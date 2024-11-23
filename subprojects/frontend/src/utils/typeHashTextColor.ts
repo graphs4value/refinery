@@ -14,7 +14,7 @@ export default function typeHashTextColor(
   if (typeHash.length === 0) {
     return theme.palette.text.primary;
   }
-  if (typeHash[0] !== '#') {
+  if (!typeHash.startsWith('#')) {
     let index: number;
     try {
       index = parseInt(typeHash, 10);

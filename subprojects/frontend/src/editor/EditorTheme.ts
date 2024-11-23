@@ -380,7 +380,7 @@ export default styled('div', {
     '.cm-tooltip.cm-tooltip-hover, .cm-tooltip.cm-tooltip-lint': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
         | CSSObject
-        | undefined) || {}),
+        | undefined) ?? {}),
       ...theme.typography.body2,
       borderRadius: theme.shape.borderRadius,
       overflow: 'hidden',

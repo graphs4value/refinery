@@ -8,7 +8,7 @@ import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import labelSVG from '@material-icons/svg/svg/label/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 
-const icons: Map<string, Element> = new Map();
+const icons = new Map<string, Element>();
 
 export default icons;
 

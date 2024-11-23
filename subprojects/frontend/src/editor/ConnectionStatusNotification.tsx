@@ -137,7 +137,7 @@ export default observer(function ConnectionStatusNotification({
       );
     }
 
-    return () => {};
+    return undefined;
   }, [
     editorStore,
     opened,

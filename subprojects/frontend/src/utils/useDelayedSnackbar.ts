@@ -16,14 +16,14 @@ export default function useDelayedSnackbar(
   defaultDelay = 0,
 ): (
   message: SnackbarMessage,
-  options?: OptionsObject | undefined,
-  delay?: number | undefined,
+  options?: OptionsObject,
+  delay?: number,
 ) => () => void {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   return useCallback(
     (
       message: SnackbarMessage,
-      options?: OptionsObject | undefined,
+      options?: OptionsObject,
       delay = defaultDelay,
     ) => {
       let key: SnackbarKey | undefined;

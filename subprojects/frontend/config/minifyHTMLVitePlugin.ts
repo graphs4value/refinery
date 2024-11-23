@@ -8,7 +8,7 @@ import { minify, type Options as TerserOptions } from 'html-minifier-terser';
 import type { PluginOption } from 'vite';
 
 export default function minifyHTMLVitePlugin(
-  options?: TerserOptions | undefined,
+  options?: TerserOptions,
 ): PluginOption {
   return {
     name: 'minify-html',

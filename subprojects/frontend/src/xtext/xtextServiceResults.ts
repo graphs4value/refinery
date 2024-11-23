@@ -32,7 +32,7 @@ export type ServiceConflictResult = z.infer<typeof ServiceConflictResult>;
 
 export function isConflictResult(
   result: unknown,
-  conflictType?: Conflict | undefined,
+  conflictType?: Conflict,
 ): boolean {
   const parsedConflictResult = ServiceConflictResult.safeParse(result);
   return (

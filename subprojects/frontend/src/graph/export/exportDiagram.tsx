@@ -84,7 +84,7 @@ async function fetchAsFontURL(url: string): Promise<string> {
       resolve(fileReader.result as string);
     });
     fileReader.addEventListener('error', () => {
-      reject(fileReader.error);
+      reject(fileReader.error ?? new Error('Unknown error'));
     });
     fileReader.readAsDataURL(blob);
   });

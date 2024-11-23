@@ -243,7 +243,7 @@ export default class GraphStore {
    */
   private updateTypeHashes(): void {
     this.semantics.nodes.forEach(({ color }) => {
-      if (color !== undefined && color.startsWith(TYPE_HASH_HEX_PREFFIX)) {
+      if (color?.startsWith(TYPE_HASH_HEX_PREFFIX)) {
         const key = color.substring(TYPE_HASH_HEX_PREFFIX.length);
         this.typeHashesMap.set(key, 0);
       }

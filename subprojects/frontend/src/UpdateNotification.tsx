@@ -50,7 +50,7 @@ export default observer(function UpdateNotification(): null {
       });
     }
 
-    return () => {};
+    return undefined;
   }, [pwaStore, needsUpdate, updateError, enqueueLater]);
 
   return null;

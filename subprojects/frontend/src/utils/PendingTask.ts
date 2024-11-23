@@ -22,7 +22,7 @@ export default class PendingTask<T> {
     resolveCallback: (value: T) => void,
     rejectCallback: (reason?: unknown) => void,
     timeoutMs: number | undefined,
-    timeoutCallback?: (() => void) | undefined,
+    timeoutCallback?: () => void,
   ) {
     this.resolveCallback = resolveCallback;
     this.rejectCallback = rejectCallback;

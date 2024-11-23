@@ -85,10 +85,10 @@ function getOriginalURL(url: string) {
 }
 
 function getResponsiveURL(url: string) {
-  const separator = url.indexOf('?') < 0 ? '?' : '&';
+  const separator = url.includes('?') ? '&' : '?';
   let format: string;
   let quality: number;
-  if (/\.png$/.test(url)) {
+  if (url.endsWith('.png')) {
     format = 'png';
     quality = 100;
   } else {
@@ -129,10 +129,10 @@ class ImageTransformer {
 
   transformImage(image: Image, index: number): Node[] {
     const { url } = image;
-    if (/\.svg$/.test(url)) {
+    if (url.endsWith('.svg')) {
       return this.transformSVGImage(image, index);
     }
-    if (url.indexOf('|') >= 0) {
+    if (url.includes('|')) {
       return this.transformThemedImage(image, index);
     }
     return this.transformResponsiveImage(image, index);

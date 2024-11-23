@@ -7,7 +7,10 @@
 import type { EditorState } from '@codemirror/state';
 import type { SyntaxNode } from '@lezer/common';
 
-export type FoldRange = { from: number; to: number };
+export interface FoldRange {
+  from: number;
+  to: number;
+}
 
 /**
  * Folds a block comment between its delimiters.

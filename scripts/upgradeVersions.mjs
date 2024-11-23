@@ -75,7 +75,7 @@ async function checkMavenUpdates(repo, libraryName, library, versions) {
 async function checkForUpdates(repo, fileName) {
   console.log('# Upgrades in', fileName);
   const filePath = path.join(import.meta.dirname, '../gradle', fileName);
-  const contents = await readFile(filePath, 'utf-8');
+  const contents = await readFile(filePath, 'utf8');
   const toml = /** @type {VersionCatalog} */ (TOML.parse(contents));
   const versions = toml.versions ?? {};
   const libraries = toml.libraries ?? {};

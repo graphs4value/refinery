@@ -447,7 +447,7 @@ export default class EditorStore {
     }
 
     const generatedModel = this.generatedModels.get(uuid);
-    if (generatedModel !== undefined && generatedModel.running) {
+    if (generatedModel?.running) {
       this.cancelModelGeneration();
     }
     this.generatedModels.delete(uuid);

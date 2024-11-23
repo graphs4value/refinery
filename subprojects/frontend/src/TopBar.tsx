@@ -54,7 +54,7 @@ function useWindowControlsOverlayVisible(): boolean {
       };
     }
     // Nothing to clean up if `windowControlsOverlay` is unsupported.
-    return () => {};
+    return undefined;
   }, [updateWindowControlsOverlayVisible]);
   return windowControlsOverlayVisible;
 }

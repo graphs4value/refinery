@@ -128,7 +128,7 @@ function TableArea({
     }
     defs.push({
       field: 'value',
-      headerName: namesOrEmpty.indexOf('value') >= 0 ? '$VALUE' : 'value',
+      headerName: namesOrEmpty.includes('value') ? '$VALUE' : 'value',
       flex: 1,
       renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
         <ValueRenderer concretize={cachedConcretize} value={value} />

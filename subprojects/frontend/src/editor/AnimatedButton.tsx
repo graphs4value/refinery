@@ -72,7 +72,7 @@ export default function AnimatedButton({
       observer.observe(contentsElement);
       return () => observer.unobserve(contentsElement);
     }
-    return () => {};
+    return undefined;
   }, [setWidth, contentsElement]);
 
   return (

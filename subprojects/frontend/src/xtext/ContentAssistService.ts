@@ -67,7 +67,7 @@ function findToken({ pos, state }: CompletionContext): IFoundToken | undefined {
   return {
     from,
     to,
-    implicitCompletion: token.type.prop(implicitCompletion) || false,
+    implicitCompletion: token.type.prop(implicitCompletion) ?? false,
     text,
   };
 }
@@ -114,7 +114,7 @@ function createCompletion(entry: ContentAssistEntry): Completion {
         boost = -60;
       } else {
         // Penalize qualified names (vs available unqualified names).
-        const extraSegments = entry.proposal.match(/::/g)?.length || 0;
+        const extraSegments = entry.proposal.match(/::/g)?.length ?? 0;
         boost = Math.max(-5 * extraSegments, -50);
       }
       break;

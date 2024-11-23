@@ -9,12 +9,12 @@ const path = require('node:path');
 const { Readable } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
 
-const { ESLint } = require('eslint');
+const { LegacyESLint } = require('eslint/use-at-your-own-risk');
 
 /**
  * Write ESLint report to console.
  *
- * @param cli {import('eslint').ESLint} The ESLint CLI.
+ * @param cli {import('eslint/use-at-your-own-risk').LegacyESLint} The ESLint CLI.
  * @param report {import('eslint').ESLint.LintResult[]} The ESLint report.
  * @return {Promise<void>} A promise that resolves when the report is finished.
  */
@@ -29,7 +29,7 @@ async function reportToConsole(cli, report) {
 /**
  * Write ESLint report to the <code>build</code> directory.
  *
- * @param cli {import('eslint').ESLint} The ESLint CLI.
+ * @param cli {import('eslint/use-at-your-own-risk').LegacyESLint} The ESLint CLI.
  * @param workspace {string} The workspace path.
  * @param report {import('eslint').ESLint.LintResult[]} The ESLint report.
  * @return {Promise<void>} A promise that resolves when the report is finished.
@@ -51,7 +51,7 @@ async function reportToJson(cli, workspace, report) {
  */
 async function createReport(workspace, fix) {
   const absoluteWorkspace = path.resolve(__dirname, '..', workspace ?? '.');
-  /** @type {import('eslint').ESLint.Options} */
+  /** @type {import('eslint').ESLint.LegacyOptions} */
   const options = {
     useEslintrc: true,
     cwd: absoluteWorkspace,
@@ -62,7 +62,7 @@ async function createReport(workspace, fix) {
       ignorePatterns: ['subprojects/**/*'],
     };
   }
-  const cli = new ESLint(options);
+  const cli = new LegacyESLint(options);
   const report = await cli.lintFiles('.');
   await Promise.all([
     reportToConsole(cli, report),

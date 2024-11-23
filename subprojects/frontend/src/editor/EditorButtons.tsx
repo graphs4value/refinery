@@ -63,7 +63,7 @@ export default observer(function EditorButtons({
       </Tooltip>
       <Tooltip title="Save">
         <IconButton
-          disabled={editorStore === undefined || !editorStore.unsavedChanges}
+          disabled={!editorStore?.unsavedChanges}
           onClick={() => editorStore?.saveFile()}
           color="inherit"
         >
@@ -83,7 +83,7 @@ export default observer(function EditorButtons({
       )}
       <Tooltip title="Undo">
         <IconButton
-          disabled={editorStore === undefined || !editorStore.canUndo}
+          disabled={!editorStore?.canUndo}
           onClick={() => editorStore?.undo()}
           color="inherit"
           sx={{ ml: 1 }}
@@ -93,7 +93,7 @@ export default observer(function EditorButtons({
       </Tooltip>
       <Tooltip title="Redo">
         <IconButton
-          disabled={editorStore === undefined || !editorStore.canRedo}
+          disabled={!editorStore?.canRedo}
           onClick={() => editorStore?.redo()}
           color="inherit"
         >
@@ -152,7 +152,7 @@ export default observer(function EditorButtons({
       </ToggleButtonGroup>
       <Tooltip title="Automatic format">
         <IconButton
-          disabled={editorStore === undefined || !editorStore.opened}
+          disabled={!editorStore?.opened}
           onClick={() => editorStore?.formatText()}
           color="inherit"
         >

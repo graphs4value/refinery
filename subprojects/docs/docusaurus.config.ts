@@ -238,7 +238,7 @@ export default async function createConfigAsync() {
       experimental_faster: {
         lightningCssMinimizer: true,
         mdxCrossCompilerCache: true,
-        // We can't migrate to rspack, since it doesn'y support Yarn PnP yet.
+        // We can't migrate to rspack, since it doesn't support Yarn PnP yet.
         // See https://github.com/web-infra-dev/rspack/issues/2236 and
         // https://github.com/web-infra-dev/rspack/pull/7639
         rspackBundler: false,

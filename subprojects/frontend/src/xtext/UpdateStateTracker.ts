@@ -182,10 +182,7 @@ export default class UpdateStateTracker {
     return ChangeSet.of([], this.store.state.doc.length);
   }
 
-  setStateIdExclusive(
-    newStateId: string,
-    remoteChanges?: ChangeSpec | undefined,
-  ): void {
+  setStateIdExclusive(newStateId: string, remoteChanges?: ChangeSpec): void {
     this.ensureLocked();
     if (remoteChanges !== undefined) {
       this.applyRemoteChangesExclusive(remoteChanges);

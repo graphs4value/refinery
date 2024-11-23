@@ -20,9 +20,7 @@ export default class PWAStore {
 
   updateError = false;
 
-  private readonly updateSW: (
-    reloadPage?: boolean | undefined,
-  ) => Promise<void>;
+  private readonly updateSW: (reloadPage?: boolean) => Promise<void>;
 
   private registration: ServiceWorkerRegistration | undefined;
 
@@ -66,7 +64,7 @@ export default class PWAStore {
     this.updateError = true;
   }
 
-  private update(reloadPage?: boolean | undefined): void {
+  private update(reloadPage?: boolean): void {
     this.updateSW(reloadPage).catch((error) => {
       log.error('Error while reloading page with updates', error);
       this.signalError();
@@ -77,7 +75,7 @@ export default class PWAStore {
     this.dismissError();
     // In development mode, the service worker deactives itself,
     // so we must watch out for a deactivated service worker before updating.
-    if (this.registration !== undefined && this.registration.active) {
+    if (this.registration?.active) {
       this.registration.update().catch((error) => {
         log.error('Error while updating service worker', error);
         this.signalError();

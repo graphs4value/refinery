@@ -15,6 +15,8 @@ import type SearchPanelStore from './SearchPanelStore';
 export default class SearchPanel implements Panel {
   readonly dom: HTMLDivElement;
 
+  readonly top = true;
+
   constructor(view: EditorView, store: SearchPanelStore) {
     this.dom = document.createElement('div');
     this.dom.id = store.id;
@@ -30,9 +32,5 @@ export default class SearchPanel implements Panel {
         capture: true,
       },
     );
-  }
-
-  get top(): boolean {
-    return true;
   }
 }

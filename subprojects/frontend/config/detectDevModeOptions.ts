@@ -45,7 +45,7 @@ function listenURL(
 }
 
 export default function detectDevModeOptions(): DevModeOptions {
-  const mode = process.env['MODE'] || 'development';
+  const mode = process.env['MODE'] ?? 'development';
   const isDevelopment = mode === 'development';
 
   if (!isDevelopment) {

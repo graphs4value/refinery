@@ -31,9 +31,9 @@ if ('chrome' in window) {
       const formattedTimestamp = `${styles.gray.open}[${timestamp.toString()}]${
         styles.gray.close
       }`;
-      const levelColor = colors[level.toUpperCase()] || styles.red;
+      const levelColor = colors[level.toUpperCase()] ?? styles.red;
       const formattedLevel = `${levelColor.open}${level}${levelColor.close}`;
-      const formattedName = `${styles.green.open}(${name || 'root'})${
+      const formattedName = `${styles.green.open}(${name ?? 'root'})${
         styles.green.close
       }`;
       return `${formattedTimestamp} ${formattedLevel} ${formattedName}`;

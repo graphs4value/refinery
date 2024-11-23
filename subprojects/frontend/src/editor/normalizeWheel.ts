@@ -137,16 +137,13 @@ export default function normalizeWheel(event: WheelEvent): {
     sY = event.detail;
   }
   if ('wheelDelta' in event) {
-    // @ts-expect-error Legacy wheel event.
-    sY = -event.wheelDelta / 120;
+    sY = -(event.wheelDelta as number) / 120;
   }
   if ('wheelDeltaY' in event) {
-    // @ts-expect-error Legacy wheel event.
-    sY = -event.wheelDeltaY / 120;
+    sY = -(event.wheelDeltaY as number) / 120;
   }
   if ('wheelDeltaX' in event) {
-    // @ts-expect-error Legacy wheel event.
-    sX = -event.wheelDeltaX / 120;
+    sX = -(event.wheelDeltaX as number) / 120;
   }
 
   pX = sX * PIXEL_STEP;

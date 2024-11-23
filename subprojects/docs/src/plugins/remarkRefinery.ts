@@ -74,7 +74,7 @@ class LiterateTransformer {
     }
     let value = `${code.value.trim()}\n`;
 
-    const continueMatch = meta.match(/\bcontinue(?:=(\w+))?\b/);
+    const continueMatch = /\bcontinue(?:=(\w+))?\b/.exec(meta);
     if (continueMatch !== null) {
       let prefix: string;
       const continueID = continueMatch[1];
@@ -97,8 +97,8 @@ class LiterateTransformer {
 
     this.last = value;
 
-    const checkpointMatch = meta.match(/\bcheckpoint=(\w+)\b/);
-    if (checkpointMatch !== null && checkpointMatch[1] !== undefined) {
+    const checkpointMatch = /\bcheckpoint=(\w+)\b/.exec(meta);
+    if (checkpointMatch?.[1] !== undefined) {
       if (this.saved.has(checkpointMatch[1])) {
         throw new Error(`Duplicate checkpoint ID ${checkpointMatch[1]}`);
       }

@@ -21,7 +21,7 @@ async function base64Encode(buffer: Uint8Array): Promise<string> {
   const uri = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () => reject(reader.error ?? new Error('Unknown error'));
     reader.readAsDataURL(new File([buffer], '', { type: CONTENT_TYPE }));
   });
   if (typeof uri !== 'string') {

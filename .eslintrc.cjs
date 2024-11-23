@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+const { readFileSync } = require('node:fs');
 const path = require('node:path');
 
 // Allow the Codium ESLint plugin to find `tsconfig.json` from the repository root.
@@ -15,17 +16,38 @@ const project = [
   path.join(__dirname, 'subprojects/frontend/tsconfig.shared.json'),
 ];
 
+const frontendPackageJSONPath = path.join(
+  __dirname,
+  'subprojects/frontend/package.json',
+);
+const frontendPackageJSON = /** @type {unknown} */ (
+  JSON.parse(readFileSync(frontendPackageJSONPath, 'utf8'))
+);
+const reactVersion = /** @type { {dependencies?: {react?: string}} } */ (
+  frontendPackageJSON
+)?.dependencies?.react?.replace('^', '');
+
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
-  plugins: ['@typescript-eslint', 'mobx'],
+  plugins: [
+    '@typescript-eslint',
+    'import',
+    'jsx-a11y',
+    'mobx',
+    'prettier',
+    'react',
+    'react-hooks',
+  ],
   extends: [
-    'airbnb',
-    'airbnb-typescript',
-    'airbnb/hooks',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:@typescript-eslint/stylistic-type-checked',
+    'plugin:import/recommended',
+    'plugin:jsx-a11y/recommended',
     'plugin:mobx/recommended',
     'plugin:prettier/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
   ],
   parserOptions: {
     project,
@@ -41,6 +63,9 @@ module.exports = {
         alwaysTryTypes: true,
         project,
       },
+    },
+    react: {
+      version: reactVersion,
     },
   },
   env: {
@@ -81,6 +106,8 @@ module.exports = {
     ],
     // Not all components depend on observable state.
     'mobx/missing-observer': 'off',
+    // Prefer a logger instead of `console.log`.
+    'no-console': 'warn',
     // A dangling underscore, while not neccessary for all private fields,
     // is useful for backing fields of properties that should be read-only from outside the class.
     'no-underscore-dangle': [
@@ -108,6 +135,7 @@ module.exports = {
     {
       files: ['*.cjs'],
       rules: {
+        '@typescript-eslint/no-require-imports': 'off',
         // https://github.com/typescript-eslint/typescript-eslint/issues/1724
         '@typescript-eslint/no-var-requires': 'off',
       },
@@ -143,8 +171,6 @@ module.exports = {
         'no-console': 'off',
         // Access to the environment in configuration files.
         'no-process-env': 'off',
-        // There is no need to shim iterators in Node.
-        'no-restricted-syntax': 'off',
       },
     },
     {
