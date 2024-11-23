@@ -16,7 +16,7 @@ const log = getLogger('editor.PanelStore');
 export default class PanelStore {
   state = false;
 
-  element: Element | undefined;
+  element: HTMLElement | undefined;
 
   constructor(
     readonly panelClass: string,
@@ -99,7 +99,8 @@ export default class PanelStore {
     // where we control the creation of the element, so that we can have a uniform way to
     // access panel created by both CodeMirror and us.
     this.element =
-      view.dom.querySelector(`.${this.panelClass}.cm-panel`) ?? undefined;
+      view.dom.querySelector<HTMLElement>(`.${this.panelClass}.cm-panel`) ??
+      undefined;
     if (this.element === undefined) {
       log.error('Failed to add panel', this.panelClass, 'to DOM');
       return;
