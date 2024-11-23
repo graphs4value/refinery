@@ -203,6 +203,11 @@ export default styled('div', {
     '& svg': {
       userSelect: 'none',
       ...createGraphTheme(args),
+      text: {
+        // In WebKit, the cursor for `text` elements is `text` by default,
+        // but it is `default` everywhere else. We set `default` to normalize behavior.
+        cursor: 'default',
+      },
     },
     '&.simplified svg': {
       'text, .edge-arrow, .icon, .node-shadow.node-bg': {

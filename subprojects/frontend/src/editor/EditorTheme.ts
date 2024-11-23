@@ -288,8 +288,8 @@ export default styled('div', {
       color: theme.palette.text.primary,
       borderBottom: `1px solid ${theme.palette.outer.border}`,
     },
-    '.cm-panels-top + div + .cm-scroller': {
-      marginTop: theme.spacing(0.5),
+    '.cm-panels-bottom': {
+      borderTop: 'none',
     },
     '.cm-panel': {
       color: theme.palette.text.primary,
