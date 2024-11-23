@@ -12,8 +12,10 @@ import SearchToolbar from './SearchToolbar';
 
 export default observer(function SearchPanelPortal({
   editorStore: { searchPanel: searchPanelStore },
+  width,
 }: {
   editorStore: EditorStore;
+  width: number | undefined;
 }): JSX.Element | null {
   const { element: searchPanelContainer } = searchPanelStore;
 
@@ -22,7 +24,7 @@ export default observer(function SearchPanelPortal({
   }
   return (
     <Portal container={searchPanelContainer}>
-      <SearchToolbar searchPanelStore={searchPanelStore} />
+      <SearchToolbar searchPanelStore={searchPanelStore} width={width} />
     </Portal>
   );
 });

@@ -10,6 +10,7 @@ import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { useResizeDetector } from 'react-resize-detector';
 
 import { useRootStore } from '../RootStoreProvider';
 
@@ -38,9 +39,10 @@ function EditorLoading(): JSX.Element {
 
 export default observer(function EditorPane(): JSX.Element {
   const { editorStore } = useRootStore();
+  const { width, ref } = useResizeDetector();
 
   return (
-    <Stack direction="column" height="100%" overflow="auto">
+    <Stack direction="column" height="100%" overflow="auto" ref={ref}>
       <Toolbar
         variant="dense"
         sx={{
@@ -62,7 +64,7 @@ export default observer(function EditorPane(): JSX.Element {
           <>
             <AnalysisErrorNotification editorStore={editorStore} />
             <ConnectionStatusNotification editorStore={editorStore} />
-            <SearchPanelPortal editorStore={editorStore} />
+            <SearchPanelPortal editorStore={editorStore} width={width} />
             <EditorArea editorStore={editorStore} />
           </>
         )}

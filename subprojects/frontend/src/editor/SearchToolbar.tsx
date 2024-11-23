@@ -20,7 +20,6 @@ import Toolbar from '@mui/material/Toolbar';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useState } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
 
 import Tooltip from '../Tooltip';
 
@@ -36,15 +35,16 @@ const DimLabel = styled(FormControlLabel)(({ theme }) => ({
 
 export default observer(function SearchToolbar({
   searchPanelStore,
+  width,
 }: {
   searchPanelStore: SearchPanelStore;
+  width: number | undefined;
 }): JSX.Element {
   const {
     id: panelId,
     query: { search, valid, caseSensitive, literal, regexp, replace },
     invalidRegexp,
   } = searchPanelStore;
-  const { width, ref } = useResizeDetector();
   const split = width !== undefined && width <= 1200;
   const [showRepalceState, setShowReplaceState] = useState(false);
 
@@ -68,7 +68,6 @@ export default observer(function SearchToolbar({
         alignItems: 'center',
         minHeight: 'auto',
       }}
-      ref={ref}
     >
       <Stack
         direction={split ? 'column' : 'row'}
