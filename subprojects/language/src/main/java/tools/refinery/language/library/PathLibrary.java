@@ -23,7 +23,10 @@ public final class PathLibrary implements RefineryLibrary {
 		if (qualifiedName.getSegmentCount() == 0) {
 			return Optional.empty();
 		}
-		var relativePath = qualifiedNameToRelativePath(qualifiedName);
+		var relativePath = LibraryResolutionUtil.qualifiedNameToPath(qualifiedName);
+		if (relativePath == null) {
+			return Optional.empty();
+		}
 		for (var library : libraryPaths) {
 			var absoluteResolvedPath = library.resolve(relativePath).toAbsolutePath().normalize();
 			if (absoluteResolvedPath.startsWith(library) && Files.exists(absoluteResolvedPath)) {
@@ -32,27 +35,6 @@ public final class PathLibrary implements RefineryLibrary {
 			}
 		}
 		return Optional.empty();
-	}
-
-	private static Path qualifiedNameToRelativePath(QualifiedName qualifiedName) {
-		int segmentCount = qualifiedName.getSegmentCount();
-		String first = null;
-		var rest = new String[segmentCount - 1];
-		for (var i = 0; i < segmentCount; i++) {
-			var segment = qualifiedName.getSegment(i);
-			if (i == segmentCount - 1) {
-				segment = segment + RefineryLibrary.FILE_NAME_SUFFIX;
-			}
-			if (i == 0) {
-				first = segment;
-			} else {
-				rest[i - 1] = segment;
-			}
-		}
-		if (first == null) {
-			throw new AssertionError("Expected qualified name to have non-null segments");
-		}
-        return Path.of(first, rest);
 	}
 
 	@Override

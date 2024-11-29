@@ -5,11 +5,13 @@
  */
 package tools.refinery.language.library;
 
+import com.google.common.collect.Streams;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.naming.QualifiedName;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 	private final Class<?> context;
@@ -17,8 +19,8 @@ public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 	private final URI rootUri;
 
 	protected ClasspathBasedLibrary(Class<?> context, QualifiedName prefix) {
-        this.context = context == null ? getClass() : context;
-        this.prefix = prefix;
+		this.context = context == null ? getClass() : context;
+		this.prefix = prefix;
 		var contextPath = this.context.getCanonicalName().replace('.', '/') + ".class";
 		var contextResource = this.context.getClassLoader().getResource(contextPath);
 		if (contextResource == null) {
@@ -80,11 +82,23 @@ public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 	}
 
 	public static Optional<URI> getLibraryUri(Class<?> context, QualifiedName qualifiedName) {
-		var packagePath = context.getPackageName().replace('.', '/');
-		var libraryPath = String.join("/", qualifiedName.getSegments());
-		var resourceName = "%s/%s%s".formatted(packagePath, libraryPath, RefineryLibrary.FILE_NAME_SUFFIX);
+		var packagePath = LibraryResolutionUtil.arrayToPath(context.getPackageName().split("\\."));
+		if (packagePath == null) {
+			throw new IllegalArgumentException("Trying to resolve qualified name in the root package.");
+		}
+		var relativePath = LibraryResolutionUtil.qualifiedNameToPath(qualifiedName);
+		if (relativePath == null) {
+			return Optional.empty();
+		}
+		var path = packagePath.resolve(relativePath).normalize();
+		if (!path.startsWith(packagePath)) {
+			// Trying to resolve a module outside the library package.
+			return Optional.empty();
+		}
+		var resourceName = Streams.stream(path).map(Path::toString).collect(Collectors.joining("/"));
 		var resource = context.getClassLoader().getResource(resourceName);
 		if (resource == null) {
+			// Library not found.
 			return Optional.empty();
 		}
 		return Optional.of(URI.createURI(resource.toString()));

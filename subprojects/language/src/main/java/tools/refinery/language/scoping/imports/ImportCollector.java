@@ -98,15 +98,19 @@ public class ImportCollector {
 		var nodes = NodeModelUtils.findNodesForFeature(importStatement,
 				ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE);
 		var aliasString = importStatement.getAlias();
-		QualifiedName aliasWithRootPrefix;
-		try {
-			aliasWithRootPrefix = qualifiedNameConverter.toQualifiedName(aliasString);
-		} catch (IllegalArgumentException e) {
-			LOGGER.debug("Invalid import alias", e);
-			return;
+		QualifiedName alias;
+		if (Strings.isNullOrEmpty(aliasString)) {
+			alias = QualifiedName.EMPTY;
+		} else {
+			QualifiedName aliasWithRootPrefix;
+			try {
+				aliasWithRootPrefix = qualifiedNameConverter.toQualifiedName(aliasString);
+			} catch (IllegalArgumentException e) {
+				LOGGER.debug("Invalid import alias", e);
+				return;
+			}
+			alias = NamingUtil.stripRootPrefix(aliasWithRootPrefix);
 		}
-		var alias = Strings.isNullOrEmpty(aliasString) ? QualifiedName.EMPTY :
-				NamingUtil.stripRootPrefix(aliasWithRootPrefix);
 		var referredProblem = (EObject) importStatement.eGet(ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE,
 				false);
 		URI referencedUri = null;
