@@ -16,7 +16,7 @@ enum ModuleKind:
 	PROBLEM="problem" | MODULE="module";
 
 Statement:
-	ImportStatement | Assertion | AnnotatedStatement | ScopeDeclaration | NodeDeclaration;
+	ImportStatement | Assertion | AnnotatedStatement | ScopeDeclaration;
 
 AnnotatedStatement returns Statement:
 	AnnotationContainer
@@ -60,34 +60,38 @@ AnnotatedStatement returns Statement:
 		"extern" "annotation" name=Identifier
 		("(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")")? "."
 	|
+		{NodeDeclaration.annotations=current}
+		("declare" | "declare"? kind=NodeKind)
+		nodes+=EnumLiteral ("," nodes+=EnumLiteral)* "."
+	|
 		{TopLevelAnnotation.annotations=current} "."
 	);
 
 AnnotationContainer:
 	{AnnotationContainer} annotations+=Annotation*;
 
-EmptyAnnotationContainer returns AnnotationContainer:
-	{AnnotationContainer};
-
 Annotation:
 	{Annotation} "@" declaration=[AnnotationDeclaration|QualifiedName]
 	("(" (arguments+=AnnotationArgument ("," arguments+=AnnotationArgument)?)? ")")?;
 
 AnnotationArgument:
-	(parameter=[Parameter|Identifier] "=")? value=Expr;
+	{AnnotationArgument} (parameter=[Parameter|Identifier] "=")?
+	(values+=Expr | "{" (values+=Expr ("," values+=Expr)*)? "}");
 
 ImportStatement:
 	"import" importedModule=[Problem|QualifiedName] ("as" alias=ID)? ".";
 
 EnumLiteral returns Node:
+	annotations=AnnotationContainer
 	name=Identifier;
 
 enum ReferenceKind:
 	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container" | PARTIAL="partial";
 
 ReferenceDeclaration:
-	(annotations=EmptyAnnotationContainer referenceType=[Relation|NonContainmentQualifiedName] |
-	annotations=AnnotationContainer kind=ReferenceKind referenceType=[Relation|QualifiedName])
+	annotations=AnnotationContainer
+	(referenceType=[Relation|NonContainmentQualifiedName] |
+	kind=ReferenceKind referenceType=[Relation|QualifiedName])
 	(multiplicity=ReferenceMultiplicity)?
 	name=Identifier
 	(("opposite" opposite=[ReferenceDeclaration|QualifiedName])? &
@@ -119,11 +123,17 @@ Conjunction:
 enum RuleKind:
 	DECISION="decision" | PROPAGATION="propagation" | CONCRETIZATION="concretization";
 
+enum ParameterKind:
+	PRED="pred";
+
 enum ParameterBinding:
 	FOCUS="+" | LONE="?" | MULTI="*";
 
 Parameter:
-	parameterType=[Relation|QualifiedName]? binding=ParameterBinding? name=Identifier;
+	annotations=AnnotationContainer
+	(kind=ParameterKind | parameterType=[Relation|QualifiedName])?
+	binding=ParameterBinding?
+	name=Identifier;
 
 Consequent:
 	actions+=Action ("," actions+=Action)*;
@@ -233,7 +243,7 @@ Atom:
 	"(" (arguments+=Expr ("," arguments+=Expr)*)? ")";
 
 VariableOrNodeExpr:
-	variableOrNode=[VariableOrNode|QualifiedName];
+	element=[NamedElement|QualifiedName];
 
 Constant:
 	RealConstant | IntConstant | StringConstant | InfiniteConstant | LogicConstant;
@@ -303,10 +313,6 @@ RangeMultiplicity:
 
 ExactMultiplicity:
 	exactValue=INT;
-
-NodeDeclaration:
-	("declare" | "declare"? kind=NodeKind)
-	nodes+=EnumLiteral ("," nodes+=EnumLiteral)* ".";
 
 enum NodeKind:
 	ATOM="atom" | MULTI="multi";

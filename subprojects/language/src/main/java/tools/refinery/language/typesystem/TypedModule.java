@@ -284,7 +284,7 @@ public class TypedModule {
 			case Variable variable -> {
 				if (variablesToProcess.contains(variable)) {
 					var message = "Circular reference to variable '%s'.".formatted(variable.getName());
-					error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
+					error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
 							ProblemValidator.INVALID_ASSIGNMENT_ISSUE);
 					yield ExprType.INVALID;
 				}
@@ -292,7 +292,7 @@ public class TypedModule {
 			}
 			default -> {
 				error("Unknown variable: " + target.getName(), expr,
-						ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
+						ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
 						ProblemValidator.UNKNOWN_EXPRESSION_ISSUE);
 				yield ExprType.INVALID;
 			}

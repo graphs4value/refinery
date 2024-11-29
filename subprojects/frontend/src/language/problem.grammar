@@ -43,7 +43,7 @@ statement {
   } |
   EnumDefinition {
     kw<"enum"> RelationName
-    (EnumBody { "{" sep<",", AtomNodeName> "}" } | ".")
+    (EnumBody { "{" sep<",", EnumLiteral> "}" } | ".")
   } |
   DatatypeDeclaration {
     kw<"extern"> ckw<"datatype"> DatatypeName "."
@@ -67,10 +67,10 @@ statement {
     RuleBody { ("<->" sep<OrOp, Conjunction>)? ("==>" sep<OrOp, Consequent>)? "." }
   } |
   AtomDeclaration {
-    kw<"declare">? ckw<"atom"> sep<",", AtomNodeName> "."
+    kw<"declare">? ckw<"atom"> sep<",", EnumLiteral> "."
   } |
   NodeDeclaration {
-    (kw<"declare"> | kw<"declare">? ckw<"multi">) sep<",", NodeName> "."
+    (kw<"declare"> | kw<"declare">? ckw<"multi">) sep<",", AnnotatedNodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
@@ -78,14 +78,16 @@ statement {
   AnnotationDeclaration {
     kw<"extern"> ckw<"annotation"> AnnotationName ParameterList<Parameter>? "."
   } |
-  Annotation {
-    "@" AnnotationName
-    ("(" sep<",", AnnotationArgument> ")")?
-    "."?
-  }
+  Annotation "."?
+}
+
+Annotation {
+  "@" AnnotationName
+  ("(" sep<",", AnnotationArgument> ")")?
 }
 
 FeatureDeclaration {
+  Annotation*
   // Prefer parsing `contains` as a contextual keyword.
   (
     FeatureDeclarationHeadWithKind[@dynamicPrecedence=1] {
@@ -107,7 +109,16 @@ FeatureDeclaration {
   ";"?
 }
 
+EnumLiteral {
+  Annotation* AtomNodeName
+}
+
+AnnotatedNodeName {
+  Annotation* NodeName
+}
+
 Parameter {
+  Annotation*
   RelationName?
   (FocusBinding | LoneBinding | MultiBinding)?
   VariableName

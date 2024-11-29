@@ -29,13 +29,17 @@ import java.util.LinkedHashSet;
 public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
-		var scope = super.getScope(context, reference);
 		if (reference == ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE) {
 			// On the right side of a rule, assertion arguments may refer to variables.
 			var rule = EcoreUtil2.getContainerOfType(context, RuleDefinition.class);
+			var scope = super.getScope(context, reference);
 			return rule == null ? getNodesScope(context, scope) : getVariableScope(context, scope);
 		}
+		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT) {
+			return getScope(context, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE);
+		}
 		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
+			var scope = super.getScope(context, reference);
 			return getVariableScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) {
@@ -44,7 +48,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		if (reference == ProblemPackage.Literals.ANNOTATION_ARGUMENT__PARAMETER) {
 			return getAnnotationParameterScope(context);
 		}
-		return scope;
+		return super.getScope(context, reference);
 	}
 
 	protected IScope getNodesScope(EObject context, IScope delegateScope) {

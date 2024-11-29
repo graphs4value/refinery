@@ -23,5 +23,12 @@
             type="problem_xmi"
             class="tools.refinery.language.model.problem.util.ProblemResourceFactoryImpl"/>
    </extension>
+   <extension
+         point="org.eclipse.emf.ecore.setting_delegate">
+      <factory
+            class="tools.refinery.language.model.delegate.ProblemDelegateFactory"
+            uri="https://refinery.tools/emf/2024/ProblemDelegate">
+      </factory>
+   </extension>
 
 </plugin>

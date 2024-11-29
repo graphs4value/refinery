@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="problem" nsURI="https://refinery.tools/emf/2021/Problem" nsPrefix="problem">
+  <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+    <details key="rootExtendsClass" value="tools.refinery.language.model.problem.impl.ProblemEObjectImpl"/>
+  </eAnnotations>
+  <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+    <details key="settingDelegates" value="https://refinery.tools/emf/2024/ProblemDelegate"/>
+  </eAnnotations>
   <eClassifiers xsi:type="ecore:EClass" name="Problem" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="nodes" upperBound="-1"
         eType="#//Node" transient="true" containment="true"/>
@@ -42,9 +48,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="superSets" upperBound="-1"
         eType="#//Relation"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable">
+  <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//Variable #//AnnotatedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterType" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="binding" eType="#//ParameterBinding"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ParameterKind"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Variable" abstract="true" eSuperTypes="#//VariableOrNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="Atom" eSuperTypes="#//Expr">
@@ -66,7 +73,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Node" eSuperTypes="#//VariableOrNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Node" eSuperTypes="#//VariableOrNode #//AnnotatedElement"/>
   <eClassifiers xsi:type="ecore:EEnum" name="LogicValue">
     <eLiterals name="TRUE" literal="TRUE"/>
     <eLiterals name="FALSE" value="1"/>
@@ -117,7 +124,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="node" eType="#//VariableOrNode"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssertionArgument" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NodeDeclaration" eSuperTypes="#//Statement">
+  <eClassifiers xsi:type="ecore:EClass" name="NodeDeclaration" eSuperTypes="#//Statement #//AnnotatedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="nodes" upperBound="-1"
         eType="#//Node" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//NodeKind"/>
@@ -161,9 +168,17 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expr" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableOrNodeExpr" eSuperTypes="#//Expr">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableOrNode" eType="#//VariableOrNode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableOrNode" eType="#//VariableOrNode"
+        volatile="true" transient="true" derived="true">
+      <eAnnotations source="https://refinery.tools/emf/2024/ProblemDelegate"/>
+    </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EReference" name="singletonVariable" eType="#//ImplicitVariable"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"
+        volatile="true" transient="true" derived="true">
+      <eAnnotations source="https://refinery.tools/emf/2024/ProblemDelegate"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="element" eType="#//NamedElement"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BinaryExpr" abstract="true" eSuperTypes="#//Expr">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Expr" containment="true"/>
@@ -307,9 +322,13 @@
         eType="#//AnnotationArgument" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnnotationArgument">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="values" upperBound="-1"
+        eType="#//Expr" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" eType="#//Parameter"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TopLevelAnnotation" eSuperTypes="#//Statement #//AnnotatedElement"/>
+  <eClassifiers xsi:type="ecore:EEnum" name="ParameterKind">
+    <eLiterals name="VALUE"/>
+    <eLiterals name="PRED" value="1"/>
+  </eClassifiers>
 </ecore:EPackage>

@@ -133,7 +133,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return oppositeShouldBeVisible(candidateReferenceDeclaration, context);
 		}
 
-		if (eReference.equals(ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE)) {
+		if (eReference.equals(ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT)) {
 			var assignedVariable = getAssignedVariable(context.getCurrentModel());
 			if (assignedVariable != null && Objects.equals(assignedVariable, candidate.getEObjectOrProxy())) {
 				return false;
@@ -146,7 +146,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 				candidateEObjectOrProxy);
 	}
 
-	private VariableOrNode getAssignedVariable(EObject context) {
+	private NamedElement getAssignedVariable(EObject context) {
 		var assignmentExpr = EcoreUtil2.getContainerOfType(context, AssignmentExpr.class);
 		if (assignmentExpr != null && assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) {
 			return variableOrNodeExpr.getVariableOrNode();

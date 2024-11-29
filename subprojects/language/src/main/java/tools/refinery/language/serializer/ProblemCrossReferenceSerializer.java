@@ -114,7 +114,7 @@ public class ProblemCrossReferenceSerializer extends CrossReferenceSerializer {
 
 	private String postProcessCrossReferenceName(EObject semanticObject, EReference ref, EObject target,
 												 String crossReferenceName) {
-		if (ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE.equals(ref) &&
+		if (ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT.equals(ref) &&
 				target instanceof Variable variable &&
 				NamingUtil.isSingletonVariableName(crossReferenceName) &&
 				!ProblemUtil.isSingletonVariable(variable)) {

@@ -157,15 +157,15 @@ public class ProblemValidator extends AbstractProblemValidator {
 							.append(name).append("'.");
 				}
 				var message = messageBuilder.toString();
-				warning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-						INSIGNIFICANT_INDEX, SINGLETON_VARIABLE_ISSUE);
+				warning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, INSIGNIFICANT_INDEX,
+						SINGLETON_VARIABLE_ISSUE);
 			}
 		}
 	}
 
 	private boolean isUnquotedVariable(VariableOrNodeExpr expr) {
 		var nodes = NodeModelUtils.findNodesForFeature(expr,
-				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE);
+				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT);
 		for (var node : nodes) {
 			var crossRefString = linkingHelper.getCrossRefNodeAsString(node, true);
 			if (NamingUtil.isQuoted(crossRefString)) {
@@ -182,8 +182,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 			var name = node.getName();
 			var message = ("Only atoms can be referenced in predicates. " +
 					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
-			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-					INSIGNIFICANT_INDEX, NODE_CONSTANT_ISSUE);
+			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, INSIGNIFICANT_INDEX,
+					NODE_CONSTANT_ISSUE);
 		}
 	}
 
@@ -838,13 +838,13 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		if (target instanceof Parameter) {
 			var message = "Parameters cannot be assigned.";
-			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-					0, INVALID_ASSIGNMENT_ISSUE);
+			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
+					INVALID_ASSIGNMENT_ISSUE);
 		}
 		if (target instanceof Node) {
 			var message = "Nodes cannot be assigned.";
-			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-					0, INVALID_ASSIGNMENT_ISSUE);
+			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
+					INVALID_ASSIGNMENT_ISSUE);
 		}
 		if (!(assignmentExpr.eContainer() instanceof Conjunction)) {
 			var message = "Assignments may only appear as top-level expressions.";

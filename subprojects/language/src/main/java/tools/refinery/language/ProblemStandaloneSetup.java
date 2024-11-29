@@ -9,10 +9,10 @@
  */
 package tools.refinery.language;
 
-import org.eclipse.emf.ecore.EPackage;
-
 import com.google.inject.Injector;
-
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import tools.refinery.language.model.delegate.ProblemDelegateFactory;
 import tools.refinery.language.model.problem.ProblemPackage;
 
 /**
@@ -32,6 +32,11 @@ public class ProblemStandaloneSetup extends ProblemStandaloneSetupGenerated {
 	@SuppressWarnings("squid:S3824")
 	@Override
 	public Injector createInjectorAndDoEMFRegistration() {
+		if (!EStructuralFeature.Internal.SettingDelegate.Factory.Registry.INSTANCE.containsKey(
+				ProblemDelegateFactory.URI)) {
+			EStructuralFeature.Internal.SettingDelegate.Factory.Registry.INSTANCE.put(ProblemDelegateFactory.URI,
+					new ProblemDelegateFactory());
+		}
 		if (!EPackage.Registry.INSTANCE.containsKey(ProblemPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(ProblemPackage.eNS_URI, ProblemPackage.eINSTANCE);
 		}
