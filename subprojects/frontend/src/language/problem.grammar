@@ -82,7 +82,7 @@ statement {
 }
 
 Annotation {
-  "@" AnnotationName
+  ("@" | "#") AnnotationName
   ("(" sep<",", AnnotationArgument> ")")?
 }
 
@@ -119,6 +119,7 @@ AnnotatedNodeName {
 
 Parameter {
   Annotation*
+  kw<"pred">?
   RelationName?
   (FocusBinding | LoneBinding | MultiBinding)?
   VariableName
@@ -291,5 +292,5 @@ sep1<separator, content> { content (separator content)* }
 
   MultiBinding { "*" }
 
-  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+=" "@"
+  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+=" "@" "#"
 }

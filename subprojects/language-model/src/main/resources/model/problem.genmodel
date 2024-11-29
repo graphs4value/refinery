@@ -279,9 +279,11 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Annotation/arguments"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//AnnotationArgument">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/values"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/value"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/parameter"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//TopLevelAnnotation"/>
+    <genClasses ecoreClass="problem.ecore#//TopLevelAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//TopLevelAnnotation/annotation"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

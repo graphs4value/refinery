@@ -180,7 +180,7 @@ export default styled('div', {
       color: theme.palette.highlight.parameter,
     },
     '.tok-meta': {
-      color: theme.palette.highlight.annotation,
+      color: theme.palette.text.secondary,
     },
     '.tok-problem-node': {
       '&, & .tok-variableName': {

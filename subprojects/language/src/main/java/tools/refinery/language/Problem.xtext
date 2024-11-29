@@ -16,7 +16,7 @@ enum ModuleKind:
 	PROBLEM="problem" | MODULE="module";
 
 Statement:
-	ImportStatement | Assertion | AnnotatedStatement | ScopeDeclaration;
+	ImportStatement | Assertion | AnnotatedStatement | ScopeDeclaration | TopLevelAnnotation;
 
 AnnotatedStatement returns Statement:
 	AnnotationContainer
@@ -63,20 +63,20 @@ AnnotatedStatement returns Statement:
 		{NodeDeclaration.annotations=current}
 		("declare" | "declare"? kind=NodeKind)
 		nodes+=EnumLiteral ("," nodes+=EnumLiteral)* "."
-	|
-		{TopLevelAnnotation.annotations=current} "."
 	);
 
 AnnotationContainer:
-	{AnnotationContainer} annotations+=Annotation*;
+	{AnnotationContainer} ("@" annotations+=Annotation)*;
+
+TopLevelAnnotation:
+	"#" annotation=Annotation ".";
 
 Annotation:
-	{Annotation} "@" declaration=[AnnotationDeclaration|QualifiedName]
+	{Annotation} declaration=[AnnotationDeclaration|QualifiedName]
 	("(" (arguments+=AnnotationArgument ("," arguments+=AnnotationArgument)?)? ")")?;
 
 AnnotationArgument:
-	{AnnotationArgument} (parameter=[Parameter|Identifier] "=")?
-	(values+=Expr | "{" (values+=Expr ("," values+=Expr)*)? "}");
+	{AnnotationArgument} (parameter=[Parameter|Identifier] "=")? value=Expr;
 
 ImportStatement:
 	"import" importedModule=[Problem|QualifiedName] ("as" alias=ID)? ".";

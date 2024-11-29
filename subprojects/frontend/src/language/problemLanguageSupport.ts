@@ -63,7 +63,7 @@ const parserWithMetadata = parser.configure({
       '[ ]': t.squareBracket,
       '. .. , ; :': t.separator,
       '<-> = += -> ==>': t.definitionOperator,
-      '@': t.annotation,
+      '@ #': t.annotation,
     }),
     indentNodeProp.add({
       ProblemDeclaration: indentDeclaration,
