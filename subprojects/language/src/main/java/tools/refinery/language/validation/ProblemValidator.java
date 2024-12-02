@@ -533,6 +533,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkParameter(Parameter parameter) {
+		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
+		if (ProblemUtil.isDerivedStatePredicate(parametricDefinition)) {
+			// No need to generate errors for derived predicates, since the same error will also appear on the
+			// original predicate.
+			return;
+		}
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var type = parameter.getParameterType();
 		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
@@ -540,7 +546,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
 					SHADOW_RELATION_ISSUE);
 		}
-		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
 		if (parametricDefinition instanceof RuleDefinition rule) {
 			var binding = parameter.getBinding();
 			var kind = rule.getKind();
@@ -553,6 +558,17 @@ public class ProblemValidator extends AbstractProblemValidator {
 			if (parameter.getBinding() != ParameterBinding.SINGLE) {
 				acceptError("Parameter binding annotations are only supported in refinement rules.", parameter,
 						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+			}
+		}
+		if (parameter.getKind() != ParameterKind.VALUE) {
+			if (parameter.getParameterType() != null) {
+				// This is also enforced by the grammar.
+				acceptError("Parameters that refer to predicates cannot have a type.", parameter,
+						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
+			}
+			if (!(parametricDefinition instanceof AnnotationDeclaration)) {
+				acceptError("Only annotation parameters may refer to predicates.", parameter,
+						ProblemPackage.Literals.PARAMETER__KIND, 0, INVALID_MODALITY_ISSUE);
 			}
 		}
 	}

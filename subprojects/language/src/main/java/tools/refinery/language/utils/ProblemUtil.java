@@ -114,7 +114,7 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	public static boolean isDerivedStatePredicate(PredicateDefinition predicateDefinition) {
+	public static boolean isDerivedStatePredicate(EObject predicateDefinition) {
 		var containingFeature = predicateDefinition.eContainingFeature();
 		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
 				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;

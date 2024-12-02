@@ -73,7 +73,7 @@ TopLevelAnnotation:
 
 Annotation:
 	{Annotation} declaration=[AnnotationDeclaration|QualifiedName]
-	("(" (arguments+=AnnotationArgument ("," arguments+=AnnotationArgument)?)? ")")?;
+	("(" (arguments+=AnnotationArgument ("," arguments+=AnnotationArgument)*)? ")")?;
 
 AnnotationArgument:
 	{AnnotationArgument} (parameter=[Parameter|Identifier] "=")? value=Expr;
