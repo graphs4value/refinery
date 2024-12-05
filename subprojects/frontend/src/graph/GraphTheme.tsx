@@ -118,7 +118,7 @@ export function createGraphTheme({
         fill: theme.palette.background.default,
       },
     },
-    '.node-INDIVIDUAL .node-outline': {
+    '.node-atom .node-outline': {
       strokeWidth: 2,
     },
     '.node-shadow.node-bg': useOpacity
