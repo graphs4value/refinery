@@ -3,7 +3,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.annotations;
+package tools.refinery.language.annotations.internal;
+
+import tools.refinery.language.annotations.Annotation;
 
 import java.util.List;
 
