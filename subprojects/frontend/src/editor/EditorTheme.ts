@@ -29,8 +29,10 @@ function createTypeHashStyles(
   }
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
+    // We highlight both `.tok-typeName` and `.tok-variableName`, because type names
+    // may occur also in `.tok-variableName` in annotation arguments.
     result[`.tok-problem-typeHash-${i}`] = {
-      '&, .tok-typeName': {
+      '&, .tok-typeName, .tok-variableName': {
         color: theme.palette.highlight.typeHash[i]?.text,
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
@@ -38,7 +40,7 @@ function createTypeHashStyles(
   });
   hexTypeHashes.forEach((typeHash) => {
     result[`.tok-problem-typeHash-_${typeHash}`] = {
-      '&, .tok-typeName': {
+      '&, .tok-typeName, .tok-variableName': {
         color: typeHashTextColor(`#${typeHash}`, theme),
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
@@ -173,7 +175,7 @@ export default styled('div', {
     '.tok-keyword': {
       color: theme.palette.primary.main,
     },
-    '.tok-typeName, .tok-atom': {
+    '.tok-typeName, .tok-problem-relation .tok-variableName, .tok-atom': {
       color: theme.palette.text.primary,
     },
     '.tok-variableName': {

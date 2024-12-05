@@ -33,6 +33,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 	private static final String NODE_CLASS = "node";
 	private static final String ATOM_NODE_CLASS = "atom";
 	private static final String NEW_NODE_CLASS = "new";
+	private static final String RELATION_CLASS = "relation";
 
 	@Inject
 	private OperationCanceledManager operationCanceledManager;
@@ -52,7 +53,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		if (!(object instanceof NamedElement)) {
 			return;
 		}
-		String[] highlightClass = getHighlightClass(object, null, null);
+		String[] highlightClass = getHighlightClass(object, null);
 		if (highlightClass.length > 0) {
 			highlightFeature(acceptor, object, ProblemPackage.Literals.NAMED_ELEMENT__NAME, highlightClass);
 		}
@@ -75,7 +76,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 
 	protected void highlightSingleValue(EObject owner, EReference reference, IHighlightedPositionAcceptor acceptor) {
 		EObject valueObj = (EObject) owner.eGet(reference);
-		String[] highlightClass = getHighlightClass(valueObj, owner, reference);
+		String[] highlightClass = getHighlightClass(valueObj, reference);
 		if (highlightClass.length > 0) {
 			highlightFeature(acceptor, owner, reference, highlightClass);
 		}
@@ -89,14 +90,14 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		for (var i = 0; i < size; i++) {
 			EObject valueInList = values.get(i);
 			INode node = nodes.get(i);
-			String[] highlightClass = getHighlightClass(valueInList, owner, reference);
+			String[] highlightClass = getHighlightClass(valueInList, reference);
 			if (highlightClass.length > 0) {
 				highlightNode(acceptor, node, highlightClass);
 			}
 		}
 	}
 
-	protected String[] getHighlightClass(EObject eObject, EObject owner, EReference reference) {
+	protected String[] getHighlightClass(EObject eObject, EReference reference) {
 		// References to error patterns should be highlighted as errors, but error pattern definitions and
 		// references to the computed values of error patterns shouldn't.
 		boolean isError = ProblemUtil.isError(eObject) && reference != null;
@@ -104,11 +105,11 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			var className = isError ? ERROR_CLASS : BUILTIN_CLASS;
 			return new String[]{className};
 		}
-		return getUserDefinedElementHighlightClass(eObject, isError);
+		return getUserDefinedElementHighlightClass(eObject, reference, isError);
 	}
 
 	@NotNull
-	private String[] getUserDefinedElementHighlightClass(EObject eObject, boolean isError) {
+	private String[] getUserDefinedElementHighlightClass(EObject eObject, EReference reference, boolean isError) {
 		ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
 		if (eObject instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			classesBuilder.add(ABSTRACT_CLASS);
@@ -130,10 +131,7 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 			highlightNode(node, classesBuilder);
 		}
 		if (eObject instanceof Relation relation) {
-			var typeHash = typeHashProvider.getTypeHash(relation);
-			if (typeHash != null) {
-				classesBuilder.add("typeHash-" + typeHash);
-			}
+			highlightRelation(reference, relation, classesBuilder);
 		}
 		List<String> classes = classesBuilder.build();
 		return classes.toArray(new String[0]);
@@ -146,6 +144,18 @@ public class ProblemSemanticHighlightingCalculator extends DefaultSemanticHighli
 		}
 		if (ProblemUtil.isMultiNode(node)) {
 			classesBuilder.add(NEW_NODE_CLASS);
+		}
+	}
+
+	private void highlightRelation(EReference reference, Relation relation,
+								   ImmutableList.Builder<String> classesBuilder) {
+		if (ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT.equals(reference)) {
+			// References to relations in annotation arguments should be highlighted as relations, not variables.
+			classesBuilder.add(RELATION_CLASS);
+		}
+		var typeHash = typeHashProvider.getTypeHash(relation);
+		if (typeHash != null) {
+			classesBuilder.add("typeHash-" + typeHash);
 		}
 	}
 }
