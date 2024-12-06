@@ -57,8 +57,8 @@ AnnotatedStatement returns Statement:
 		"."
 	|
 		{AnnotationDeclaration.annotations=current}
-		"extern" "annotation" name=Identifier
-		("(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")")? "."
+		"#" "pred" name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")" "."
 	|
 		{NodeDeclaration.annotations=current}
 		("declare" | "declare"? kind=NodeKind)
@@ -332,7 +332,7 @@ Identifier:
 NonContainmentIdentifier:
 	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "decision" | "propagation" | "concretization" |
-	"shadow" | "annotation";
+	"shadow";
 
 Real returns ecore::EDouble:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

@@ -47,7 +47,7 @@ class AnnotationContextTest {
     @Test
     void rootAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 #Example.
                 """);
@@ -76,7 +76,7 @@ class AnnotationContextTest {
                 import builtin::annotations.
 
                 @repeatable
-                extern annotation Example.
+                #pred Example().
 
                 #Example.
                 #Example.
@@ -94,7 +94,7 @@ class AnnotationContextTest {
                 import builtin::annotations.
 
                 @repeatable
-                extern annotation Example.
+                #pred Example().
 
                 #Example.
                 """);
@@ -108,7 +108,7 @@ class AnnotationContextTest {
                 import builtin::annotations.
 
                 @repeatable
-                extern annotation Example.
+                #pred Example().
                 """);
         var annotations = annotationContext.annotationsFor(problem.get());
         // We do not throw an exception if the annotation doesn't appear at all.
@@ -118,7 +118,7 @@ class AnnotationContextTest {
     @Test
     void classAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 @Example
                 class Person.
@@ -130,7 +130,7 @@ class AnnotationContextTest {
     @Test
     void referenceAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 class Person {
                 	@Example
@@ -144,7 +144,7 @@ class AnnotationContextTest {
     @Test
     void enumAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 @Example
                 enum Color {
@@ -160,7 +160,7 @@ class AnnotationContextTest {
     @Test
     void enumLiteralAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 enum Color {
                     RED,
@@ -179,7 +179,7 @@ class AnnotationContextTest {
     @Test
     void predAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 @Example
                 pred friend(p1, p2).
@@ -191,7 +191,7 @@ class AnnotationContextTest {
     @Test
     void parameterAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 pred friend(@Example p1, p2).
                 """);
@@ -205,7 +205,7 @@ class AnnotationContextTest {
     @Test
     void atomDeclarationAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 @Example
                 atom foo, bar.
@@ -235,7 +235,7 @@ class AnnotationContextTest {
     @Test
     void atomAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
+                #pred Example().
 
                 atom @Example foo, bar.
                 """);
@@ -251,8 +251,8 @@ class AnnotationContextTest {
     @Test
     void atomAndDeclarationAnnotationTest() {
         var problem = parseHelper.parse("""
-                extern annotation Example.
-                extern annotation Other.
+                #pred Example().
+                #pred Other().
 
                 @Example
                 atom @Other foo, bar.
@@ -274,7 +274,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(Color value).
+                #pred Example(Color value).
 
                 enum Color { RED, GREEN, BLUE }
 
@@ -293,7 +293,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(value).
+                #pred Example(value).
 
                 atom a.
 
@@ -313,7 +313,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(value).
+                #pred Example(value).
 
                 #Example(3).
                 """);
@@ -329,7 +329,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@optional value).
+                #pred Example(@optional value).
 
                 #Example().
                 """);
@@ -345,7 +345,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@repeatable value).
+                #pred Example(@repeatable value).
 
                 atom a, b, c.
 
@@ -366,7 +366,7 @@ class AnnotationContextTest {
     @MethodSource
     void booleanArgumentTest(String valueString, Optional<Boolean> expectedValue) {
         var problem = parseHelper.parse("""
-                extern annotation Example(bool value).
+                #pred Example(bool value).
 
                 #Example(%s).
                 """.formatted(valueString));
@@ -392,7 +392,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@optional bool value).
+                #pred Example(@optional bool value).
 
                 #Example().
                 """);
@@ -408,7 +408,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@repeatable bool value).
+                #pred Example(@repeatable bool value).
 
                 #Example(true, false, "not a boolean", true).
                 """);
@@ -424,7 +424,7 @@ class AnnotationContextTest {
     @MethodSource
     void intArgumentTest(String valueString, OptionalInt expectedValue) {
         var problem = parseHelper.parse("""
-                extern annotation Example(int value).
+                #pred Example(int value).
 
                 #Example(%s).
                 """.formatted(valueString));
@@ -449,7 +449,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@optional int value).
+                #pred Example(@optional int value).
 
                 #Example().
                 """);
@@ -465,7 +465,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@repeatable int value).
+                #pred Example(@repeatable int value).
 
                 #Example(1, 2, "not an int", 3).
                 """);
@@ -481,7 +481,7 @@ class AnnotationContextTest {
     @MethodSource
     void doubleArgumentTest(String valueString, OptionalDouble expectedValue) {
         var problem = parseHelper.parse("""
-                extern annotation Example(real value).
+                #pred Example(real value).
 
                 #Example(%s).
                 """.formatted(valueString));
@@ -508,7 +508,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@optional real value).
+                #pred Example(@optional real value).
 
                 #Example().
                 """);
@@ -524,7 +524,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@repeatable real value).
+                #pred Example(@repeatable real value).
 
                 #Example(1.0, 2.0, "not a double", 3.14).
                 """);
@@ -540,7 +540,7 @@ class AnnotationContextTest {
     @MethodSource
     void stringArgumentTest(String valueString, Optional<String> expectedValue) {
         var problem = parseHelper.parse("""
-                extern annotation Example(string value).
+                #pred Example(string value).
 
                 #Example(%s).
                 """.formatted(valueString));
@@ -564,7 +564,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@optional string value).
+                #pred Example(@optional string value).
 
                 #Example().
                 """);
@@ -580,7 +580,7 @@ class AnnotationContextTest {
         var problem = parseHelper.parse("""
                 import builtin::annotations.
 
-                extern annotation Example(@repeatable string value).
+                #pred Example(@repeatable string value).
 
                 #Example("a a", "b b", 3, "c c").
                 """);

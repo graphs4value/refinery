@@ -76,7 +76,7 @@ statement {
     kw<"scope"> sep<",", ScopeElement> "."
   } |
   AnnotationDeclaration {
-    kw<"extern"> ckw<"annotation"> AnnotationName ParameterList<Parameter>? "."
+    AnnotationKeyword kw<"pred"> AnnotationName ParameterList<Parameter> "."
   } |
   Annotation "."?
 }
@@ -225,6 +225,8 @@ ID { identifier | QuotedID }
 QualifiedName[implicitCompletion=true] { "::"? ID (QualifiedNameSeparator "::" ID)* }
 
 StarMult { Star }
+
+AnnotationKeyword { "#" }
 
 kw<term> { @specialize[@name={term},implicitCompletion=true]<identifier, term> }
 
