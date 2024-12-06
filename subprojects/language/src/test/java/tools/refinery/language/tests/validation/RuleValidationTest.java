@@ -29,7 +29,7 @@ class RuleValidationTest {
 					Foo[] friend
 				}
 
-				decision rule notFriend(Foo *aParameter) ==> !friend(aParameter, aParameter).
+				decision rule notFriend(@multi Foo aParameter) ==> !friend(aParameter, aParameter).
 				""");
 		var issues = problem.validate();
 		assertThat(issues, hasItem(allOf(
@@ -45,13 +45,13 @@ class RuleValidationTest {
 
 			pred quux(Foo a).
 
-			decision rule notMultiple(Foo *a) ==> !bar(a), quux(a).
+			decision rule notMultiple(@multi Foo a) ==> !bar(a), quux(a).
 			""", """
 			class Foo {
 				Foo[] friend
 			}
 
-			decision rule notFriend(Foo *a, Foo *b) <->
+			decision rule notFriend(@multi Foo a, @multi Foo b) <->
 				may equals(a, b)
 			==>
 				!friend(a, b).

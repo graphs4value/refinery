@@ -126,13 +126,9 @@ enum RuleKind:
 enum ParameterKind:
 	PRED="pred";
 
-enum ParameterBinding:
-	FOCUS="+" | LONE="?" | MULTI="*";
-
 Parameter:
 	annotations=AnnotationContainer
 	(kind=ParameterKind | parameterType=[Relation|QualifiedName])?
-	binding=ParameterBinding?
 	name=Identifier;
 
 Consequent:

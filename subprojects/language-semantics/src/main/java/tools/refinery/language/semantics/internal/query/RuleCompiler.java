@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
+import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.validation.ReferenceCounter;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.literal.BooleanLiteral;
@@ -39,6 +41,9 @@ public class RuleCompiler {
 
 	@Inject
 	private SemanticsUtils semanticsUtils;
+
+	@Inject
+	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	private QueryCompiler queryCompiler;
 
@@ -174,7 +179,7 @@ public class RuleCompiler {
 				var partialType = getPartialRelation(parameterType);
 				commonLiterals.add(partialType.call(parameter));
 			}
-			var binding = problemParameter.getBinding();
+			var binding = builtinAnnotationContext.getParameterBinding(problemParameter);
 			if (needsExplicitMultiObjectParameters) {
 				if (binding == ParameterBinding.SINGLE) {
 					commonLiterals.add(MultiObjectTranslator.MULTI_VIEW.call(CallPolarity.NEGATIVE, parameter));

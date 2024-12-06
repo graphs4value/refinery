@@ -121,7 +121,6 @@ Parameter {
   Annotation*
   kw<"pred">?
   RelationName?
-  (FocusBinding | LoneBinding | MultiBinding)?
   VariableName
 }
 
@@ -287,12 +286,6 @@ sep1<separator, content> { content (separator content)* }
   UnknownOp { "?" }
 
   StarArgument { "*" }
-
-  FocusBinding { "+" }
-
-  LoneBinding { "?" }
-
-  MultiBinding { "*" }
 
   "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+=" "@" "#"
 }

@@ -29,3 +29,9 @@ extern aggregator min.
 extern aggregator max.
 
 extern aggregator sum.
+
+#pred focus().
+
+#pred lone().
+
+#pred multi().

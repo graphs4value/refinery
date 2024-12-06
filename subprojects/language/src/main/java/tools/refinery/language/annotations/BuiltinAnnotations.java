@@ -12,14 +12,20 @@ import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.AnnotationDeclaration;
 import tools.refinery.language.model.problem.Parameter;
 import tools.refinery.language.model.problem.ParametricDefinition;
+import tools.refinery.language.model.problem.RuleDefinition;
 
+import java.util.List;
 
 public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
+	public static final QualifiedName FOCUS = BuiltinLibrary.BUILTIN_LIBRARY_NAME.append("focus");
+	public static final QualifiedName LONE = BuiltinLibrary.BUILTIN_LIBRARY_NAME.append("lone");
+	public static final QualifiedName MULTI = BuiltinLibrary.BUILTIN_LIBRARY_NAME.append("multi");
 	public static final QualifiedName OPTIONAL = BuiltinLibrary.BUILTIN_ANNOTATIONS_LIBRARY_NAME.append(
 			"optional");
 	public static final QualifiedName REPEATABLE = BuiltinLibrary.BUILTIN_ANNOTATIONS_LIBRARY_NAME.append(
 			"repeatable");
 
+	private static final List<QualifiedName> BINDING_MODES = List.of(FOCUS, LONE, MULTI);
 
 	@ValidateAnnotation("OPTIONAL")
 	private void validateOptional(Annotation annotation) {
@@ -35,6 +41,26 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 		if (!(annotatedElement instanceof AnnotationDeclaration) &&
 				!isParameter(annotatedElement, AnnotationDeclaration.class)) {
 			error("@repeatable can only be applied to annotation declarations and annotation parameters.", annotation);
+		}
+	}
+
+	@ValidateAnnotation("FOCUS")
+	@ValidateAnnotation("LONE")
+	@ValidateAnnotation("MULTI")
+	private void validateBindingMode(Annotation annotation) {
+		var annotatedElement = annotation.getAnnotatedElement();
+		if (!isParameter(annotatedElement, RuleDefinition.class)) {
+			error("@%s can only be applied to rule parameters."
+					.formatted(annotation.getAnnotationName().getLastSegment()), annotation);
+			return;
+		}
+		var annotations = annotationsFor(annotatedElement);
+		long bindingModeCount = BINDING_MODES.stream()
+				.filter(annotations::hasAnnotation)
+				.count();
+		if (bindingModeCount >= 2) {
+			error("Only one of @focus, @lone, or @multi can be applied to a rule parameter at a time.",
+					annotation);
 		}
 	}
 

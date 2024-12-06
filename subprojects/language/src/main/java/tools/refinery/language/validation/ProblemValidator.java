@@ -26,6 +26,8 @@ import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
+import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
@@ -81,6 +83,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Inject
 	private ProblemTypeAnalyzer typeAnalyzer;
+
+	@Inject
+	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	@Inject
 	private LinkingHelper linkingHelper;
@@ -553,18 +558,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
 					SHADOW_RELATION_ISSUE);
 		}
+		var binding = builtinAnnotationContext.getParameterBinding(parameter);
 		if (parametricDefinition instanceof RuleDefinition rule) {
-			var binding = parameter.getBinding();
 			var kind = rule.getKind();
 			if (binding != ParameterBinding.SINGLE && ProblemUtil.parameterBindingAnnotationsAreForbidden(rule)) {
 				var message = "Parameter binding annotations are not supported in %s rules."
 						.formatted(kind.getName().toLowerCase(Locale.ROOT));
-				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+				acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+						INVALID_MODALITY_ISSUE);
 			}
 		} else {
-			if (parameter.getBinding() != ParameterBinding.SINGLE) {
+			if (binding != ParameterBinding.SINGLE) {
 				acceptError("Parameter binding annotations are only supported in refinement rules.", parameter,
-						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+						ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX, INVALID_MODALITY_ISSUE);
 			}
 		}
 		if (parameter.getKind() != ParameterKind.VALUE) {
@@ -597,10 +603,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 			}
 		}
 		for (var parameter : duplicateParameters) {
-			if (parameter.getBinding() == ParameterBinding.MULTI) {
+			var binding = builtinAnnotationContext.getParameterBinding(parameter);
+			if (binding == ParameterBinding.MULTI) {
 				var message = ("Parameter '%s' must not be a multi-object, because it appears multiple times in a " +
 						"rule consequent.").formatted(parameter.getName());
-				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+				acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+						INVALID_MODALITY_ISSUE);
 			}
 		}
 	}
