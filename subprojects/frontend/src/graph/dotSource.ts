@@ -38,7 +38,11 @@ function nodeName(
 function relationName(graph: GraphStore, metadata: RelationMetadata): string {
   const name = escape(graph.getName(metadata));
   const { detail } = metadata;
-  if (detail.type === 'class' && detail.isAbstract) {
+  if (
+    detail.type === 'class' &&
+    detail.isAbstract &&
+    !metadata.name.startsWith('builtin::')
+  ) {
     return `<i>${name}</i>`;
   }
   if (detail.type === 'reference' && detail.isContainment) {
