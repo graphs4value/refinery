@@ -11,7 +11,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
 import tools.refinery.language.annotations.internal.AnnotationUtil;
-import tools.refinery.language.annotations.internal.BuiltinAnnotations;
+import tools.refinery.language.annotations.BuiltinAnnotations;
 import tools.refinery.language.annotations.internal.TypedAnnotation;
 import tools.refinery.language.annotations.internal.TypedAnnotationContext;
 import tools.refinery.language.expressions.BuiltinTermInterpreter;

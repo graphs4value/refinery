@@ -17,6 +17,7 @@ public @interface ValidateAnnotation {
 	// {@link Identifier} does not support {@code String[]} parameters, so we use a single {@link String} parameter
 	// and make this annotation repeatable instead.
 	@Identifier
-	@Language(value = "Java", prefix = "private static final QualifiedName $VALUE = ", suffix = ";")
+	@Language(value = "Java", prefix = "private static final org.eclipse.xtext.naming.QualifiedName $VALUE = ",
+			suffix = ";")
 	String value();
 }

@@ -34,8 +34,8 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 	private final ThreadLocal<ValidationMessageAcceptor> acceptor = new ThreadLocal<>();
 
 	protected DeclarativeAnnotationValidator() {
-		var lookup = MethodHandles.publicLookup();
-		for (var method : getClass().getMethods()) {
+		var lookup = lookup();
+		for (var method : getClass().getDeclaredMethods()) {
 			processMethod(method, lookup);
 		}
 	}
@@ -50,7 +50,8 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 					method.getName()));
 		}
 		var parameterTypes = method.getParameterTypes();
-		if (parameterTypes.length != 1 || !parameterTypes[0].isAssignableFrom(Annotation.class)) {
+		if (parameterTypes.length != 1 || !Annotation.class.equals(parameterTypes[0])) {
+			// Make sure we are able to use {@code invokeExact()}.
 			throw new IllegalStateException("Method %s.%s must take a single parameter of type %s."
 					.formatted(getClass().getName(), method.getName(), Annotation.class.getName()));
 		}
@@ -58,12 +59,21 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 		try {
 			methodHandle = lookup.unreflect(method);
 		} catch (IllegalAccessException e) {
-			throw new IllegalStateException("Failed to access method handle for %s.%s.".formatted(
-					getClass().getName(), method.getName()));
+			var className = getClass().getName();
+			throw new IllegalStateException("""
+					Failed to access method handle for %s.%s.
+
+					Override %s.lookup() like this to enable access to private and protected methods:
+
+					@Override
+					protected MethodHandles.Lookup lookup() {
+					    return MethodHandles.lookup();
+					}
+					""".formatted(className, method.getName(), className));
 		}
 		var boundHandle = methodHandle.bindTo(this);
 		for (var annotation : annotations) {
-			var qualifiedName = getQualifiedName(annotation);
+			var qualifiedName = getQualifiedName(annotation, lookup);
 			validateMethods.compute(qualifiedName, (ignoredKey, existingHandle) ->
 					existingHandle == null ? boundHandle :
 							MethodHandles.foldArguments(boundHandle, existingHandle));
@@ -84,11 +94,11 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 		return null;
 	}
 
-	private QualifiedName getQualifiedName(ValidateAnnotation annotation) {
+	private QualifiedName getQualifiedName(ValidateAnnotation annotation, MethodHandles.Lookup lookup) {
 		var fieldName = annotation.value();
 		Field field;
 		try {
-			field = getClass().getField(fieldName);
+			field = getClass().getDeclaredField(fieldName);
 		} catch (NoSuchFieldException e) {
 			throw new IllegalArgumentException("Field %s.%s does not exist.".formatted(getClass().getName(),
 					fieldName));
@@ -97,18 +107,56 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 			throw new IllegalArgumentException("Field %s.%s is not static final.".formatted(getClass().getName(),
 					fieldName));
 		}
+		MethodHandle getterHandle;
+		try {
+			getterHandle = lookup.unreflectGetter(field);
+		} catch (IllegalAccessException e) {
+			var className = getClass().getName();
+			throw new IllegalStateException("""
+					Failed to access field getter handle for %s.%s.
+
+					Override %s.lookup() like this to enable access to private and protected fields:
+
+					@Override
+					protected MethodHandles.Lookup lookup() {
+					    return MethodHandles.lookup();
+					}
+					""".formatted(className, field.getName(), className));
+		}
 		Object value;
 		try {
-			value = field.get(null);
-		} catch (IllegalAccessException e) {
-			throw new IllegalArgumentException("Failed to access field %s.%sl.".formatted(getClass().getName(),
-					fieldName), e);
+			value = getterHandle.invoke();
+		} catch (Error e) {
+			// While {@code invokeExact()} may throw any {@code Throwable}, we should not catch JVM errors.
+			throw e;
+		} catch (Throwable e) {
+			throw new IllegalArgumentException("Unexpected error when accessing field %s.%s."
+					.formatted(getClass().getName(), fieldName), e);
 		}
 		if (!(value instanceof QualifiedName qualifiedName)) {
 			throw new IllegalArgumentException("Field %s.%s is not a QualifiedName.".formatted(getClass().getName(),
 					fieldName));
 		}
 		return qualifiedName;
+	}
+
+	protected MethodHandles.Lookup lookup() {
+		var lookup = MethodHandles.lookup();
+		try {
+			return MethodHandles.privateLookupIn(getClass(), lookup);
+		} catch (IllegalAccessException e) {
+			var className = getClass().getName();
+			throw new IllegalStateException("""
+					Failed to create private lookup in %s.
+
+					Override %s.lookup() like this to enable access to private and protected fields:
+
+					@Override
+					protected MethodHandles.Lookup lookup() {
+					    return MethodHandles.lookup();
+					}
+					""".formatted(className, className));
+		}
 	}
 
 	@Override

@@ -52,12 +52,19 @@ public class ImportAdapter extends AdapterImpl {
 	}
 
 	private static <T> List<T> loadServices(Class<T> serviceClass) {
-		var serviceLoader = ServiceLoader.load(serviceClass);
-		var services = new ArrayList<T>();
-		for (var service : serviceLoader) {
-			services.add(service);
-		}
-		return List.copyOf(services);
+		return ServiceLoader.load(serviceClass).stream()
+				.<T>mapMulti((provider, consumer) -> {
+					T service = null;
+					try {
+						service = provider.get();
+					} catch (ServiceConfigurationError e) {
+						LOG.error("Error loading service: " + serviceClass.getName(), e);
+					}
+					if (service != null) {
+						consumer.accept(service);
+					}
+				})
+				.toList();
 	}
 
 	private ResourceSet resourceSet;
