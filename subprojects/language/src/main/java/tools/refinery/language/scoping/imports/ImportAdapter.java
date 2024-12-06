@@ -16,6 +16,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.QualifiedName;
+import tools.refinery.language.annotations.AnnotationValidator;
+import tools.refinery.language.annotations.internal.CompositeAnnotationValidator;
 import tools.refinery.language.expressions.CompositeTermInterpreter;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.library.BuiltinLibrary;
@@ -31,11 +33,13 @@ public class ImportAdapter extends AdapterImpl {
 	private static final Logger LOG = Logger.getLogger(ImportAdapter.class);
 	private static final List<RefineryLibrary> DEFAULT_LIBRARIES;
 	private static final List<TermInterpreter> DEFAULT_TERM_INTERPRETERS;
+	private static final List<AnnotationValidator> DEFAULT_ANNOTATION_VALIDATORS;
 	private static final List<Path> DEFAULT_PATHS;
 
 	static {
 		DEFAULT_LIBRARIES = loadServices(RefineryLibrary.class);
 		DEFAULT_TERM_INTERPRETERS = loadServices(TermInterpreter.class);
+		DEFAULT_ANNOTATION_VALIDATORS = loadServices(AnnotationValidator.class);
 		var pathEnv = System.getenv("REFINERY_LIBRARY_PATH");
 		if (pathEnv == null) {
 			DEFAULT_PATHS = List.of();
@@ -59,7 +63,9 @@ public class ImportAdapter extends AdapterImpl {
 	private ResourceSet resourceSet;
 	private final List<RefineryLibrary> libraries = new ArrayList<>(DEFAULT_LIBRARIES);
 	private final List<TermInterpreter> termInterpreters = new ArrayList<>(DEFAULT_TERM_INTERPRETERS);
+	private final List<AnnotationValidator> annotationValidators = new ArrayList<>(DEFAULT_ANNOTATION_VALIDATORS);
 	private final TermInterpreter termInterpreter = new CompositeTermInterpreter(termInterpreters);
+	private final AnnotationValidator annotationValidator = new CompositeAnnotationValidator(annotationValidators);
 	private final List<Path> libraryPaths = new ArrayList<>(DEFAULT_PATHS);
 	private final Cache<QualifiedName, QualifiedName> failedResolutions =
 			CacheBuilder.newBuilder().maximumSize(100).build();
@@ -88,8 +94,16 @@ public class ImportAdapter extends AdapterImpl {
 		return termInterpreters;
 	}
 
+	public List<AnnotationValidator> getAnnotationValidators() {
+		return annotationValidators;
+	}
+
 	public TermInterpreter getTermInterpreter() {
 		return termInterpreter;
+	}
+
+	public AnnotationValidator getAnnotationValidator() {
+		return annotationValidator;
 	}
 
 	public List<Path> getLibraryPaths() {

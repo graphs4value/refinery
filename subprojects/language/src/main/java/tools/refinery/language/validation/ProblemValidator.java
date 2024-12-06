@@ -19,6 +19,7 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.validation.Check;
+import org.eclipse.xtext.validation.ComposedChecks;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
@@ -35,6 +36,7 @@ import java.util.*;
  * See
  * <a href="https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation">...</a>
  */
+@ComposedChecks(validators = {ProblemAnnotationValidator.class})
 public class ProblemValidator extends AbstractProblemValidator {
 	private static final String ISSUE_PREFIX = "tools.refinery.language.validation.ProblemValidator.";
 	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
@@ -59,8 +61,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
-	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
-	public static final String UNUSED_PARAMETER = ISSUE_PREFIX + "UNUSED_PARAMETER";
+	public static final String UNUSED_PARTIAL_RELATION_ISSUE = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
+	public static final String UNUSED_PARAMETER_ISSUE = ISSUE_PREFIX + "UNUSED_PARAMETER";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
@@ -180,8 +182,10 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
 			var name = node.getName();
-			var message = ("Only atoms can be referenced in predicates. " +
-					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
+			var annotation = EcoreUtil2.getContainerOfType(expr, Annotation.class);
+			var location = annotation == null ? "predicates" : "annotations";
+			var message = ("Only atoms can be referenced in %s. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(location, name, name);
 			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, INSIGNIFICANT_INDEX,
 					NODE_CONSTANT_ISSUE);
 		}
@@ -208,21 +212,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var relations = new ArrayList<NamedElement>();
 		var nodes = new ArrayList<Node>();
 		var aggregators = new ArrayList<AggregatorDeclaration>();
+		var annotationDeclarations = new ArrayList<AnnotationDeclaration>();
 		for (var statement : problem.getStatements()) {
-			if (statement instanceof Relation relation) {
-				relations.add(relation);
-			} else if (statement instanceof RuleDefinition ruleDefinition) {
-				// Rule definitions and predicates live in the same namespace.
-				relations.add(ruleDefinition);
-			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
-				nodes.addAll(nodeDeclaration.getNodes());
-			} else if (statement instanceof AggregatorDeclaration aggregatorDeclaration) {
-				aggregators.add(aggregatorDeclaration);
+			switch (statement) {
+			case Relation relation -> relations.add(relation);
+			case RuleDefinition ruleDefinition -> // Rule definitions and predicates live in the same namespace.
+					relations.add(ruleDefinition);
+			case NodeDeclaration nodeDeclaration -> nodes.addAll(nodeDeclaration.getNodes());
+			case AggregatorDeclaration aggregatorDeclaration -> aggregators.add(aggregatorDeclaration);
+			case AnnotationDeclaration annotationDeclaration -> annotationDeclarations.add(annotationDeclaration);
+			default -> {
+				// Nothing to check.
+			}
 			}
 		}
 		checkUniqueSimpleNames(relations);
 		checkUniqueSimpleNames(nodes);
 		checkUniqueSimpleNames(aggregators);
+		checkUniqueSimpleNames(annotationDeclarations);
 	}
 
 	@Check
@@ -405,7 +412,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 			var message = "Add decision or propagation rules to refine partial relation '%s'."
 					.formatted(referenceDeclaration.getName());
 			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__KIND, 0,
-					UNUSED_PARTIAL_RELATION);
+					UNUSED_PARTIAL_RELATION_ISSUE);
 		}
 	}
 
@@ -642,7 +649,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 				var parameter = entry.getKey();
 				var message = "Unused rule parameter '%s'.".formatted(parameter.getName());
 				acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
-						UNUSED_PARAMETER);
+						UNUSED_PARAMETER_ISSUE);
 			}
 		}
 	}

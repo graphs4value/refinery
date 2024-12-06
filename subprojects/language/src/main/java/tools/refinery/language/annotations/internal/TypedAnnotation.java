@@ -108,16 +108,19 @@ public class TypedAnnotation implements Annotation {
 	}
 
 	@Override
+	@Nullable
 	public EObject getAnnotatedElement() {
 		return annotatedElement;
 	}
 
 	@Override
+	@NotNull
 	public tools.refinery.language.model.problem.Annotation getAnnotation() {
 		return problemAnnotation;
 	}
 
 	@Override
+	@NotNull
 	public QualifiedName getAnnotationName() {
 		return annotationName;
 	}

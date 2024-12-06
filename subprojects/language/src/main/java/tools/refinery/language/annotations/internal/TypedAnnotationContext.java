@@ -11,6 +11,7 @@ import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.util.IResourceScopeCache;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.model.problem.Annotation;
 import tools.refinery.language.model.problem.AnnotationArgument;
@@ -30,6 +31,7 @@ public class TypedAnnotationContext implements AnnotationContext {
 	private Provider<AnnotatedResource> annotatedResourceProvider;
 
 	@Override
+	@NotNull
 	public TypedAnnotations annotationsFor(EObject annotatedElement) {
 		if (annotatedElement == null) {
 			throw new IllegalArgumentException("Trying to get annotations of null.");

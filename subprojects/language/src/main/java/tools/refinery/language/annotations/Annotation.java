@@ -7,6 +7,8 @@ package tools.refinery.language.annotations;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.annotations.internal.AnnotationUtil;
 import tools.refinery.language.model.problem.Expr;
 import tools.refinery.language.model.problem.Node;
@@ -20,10 +22,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public interface Annotation {
+	@Nullable
 	EObject getAnnotatedElement();
 
+	@NotNull
 	tools.refinery.language.model.problem.Annotation getAnnotation();
 
+	@NotNull
 	QualifiedName getAnnotationName();
 
 	Optional<Expr> getValue(String parameterName);
