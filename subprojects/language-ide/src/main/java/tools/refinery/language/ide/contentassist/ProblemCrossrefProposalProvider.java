@@ -6,9 +6,11 @@
 package tools.refinery.language.ide.contentassist;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
@@ -16,6 +18,7 @@ import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xtext.CurrentTypeFinder;
@@ -26,14 +29,12 @@ import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
+import tools.refinery.language.services.ProblemGrammarAccess;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ReferenceCounter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider {
 	@Inject
@@ -47,6 +48,14 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	@Inject
 	private ImportAdapterProvider importAdapterProvider;
+
+	private CrossReference importedModuleCrossReference;
+
+	@Inject
+	public void setGrammarAccess(ProblemGrammarAccess grammarAccess) {
+		importedModuleCrossReference = grammarAccess.getImportStatementAccess()
+				.getImportedModuleProblemCrossReference_1_0();
+	}
 
 	@Override
 	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
@@ -69,6 +78,9 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 					eObjectDescriptions.add(candidate);
 				}
 			}
+		}
+		if (Objects.equals(importedModuleCrossReference, crossReference)) {
+			postProcessImportProposals(eObjectDescriptions, context);
 		}
 		return eObjectDescriptions;
 	}
@@ -120,10 +132,6 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 				!(ProblemPackage.Literals.ATOM__RELATION.equals(eReference) &&
 						ProblemUtil.mayReferToShadow(context.getCurrentModel()))) {
 			return false;
-		}
-
-		if (eReference == ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE) {
-			return importedModuleShouldBeVisible(candidate, context);
 		}
 
 		var candidateEObjectOrProxy = candidate.getEObjectOrProxy();
@@ -294,5 +302,35 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return null;
 		}
 		return (EObject) context.eGet(eReference);
+	}
+
+	protected void postProcessImportProposals(List<IEObjectDescription> descriptions, ContentAssistContext context) {
+		var currentModel = context.getCurrentModel();
+		if (currentModel == null) {
+			return;
+		}
+		var suggestedLibraries = importAdapterProvider.getOrInstall(currentModel).getLibrary().getSuggestedLibraries();
+		if (suggestedLibraries.isEmpty()) {
+			return;
+		}
+		var suggestedSet = new LinkedHashSet<>(suggestedLibraries);
+		for (var description : descriptions) {
+			if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(description.getEClass())) {
+				suggestedSet.remove(description.getQualifiedName());
+			}
+		}
+		for (var suggestedName : suggestedSet) {
+			var uri = URI.createURI("import://%s.%s".formatted(String.join("/", suggestedName.getSegments()),
+					ProblemUtil.MODULE_EXTENSION));
+			var proxy = ProblemFactory.eINSTANCE.createProblem();
+			((InternalEObject) proxy).eSetProxyURI(uri);
+			var description = new EObjectDescription(suggestedName, proxy, Map.of(
+					ProblemResourceDescriptionStrategy.MODULE_KIND, ModuleKind.MODULE.getName()
+			));
+			descriptions.add(description);
+		}
+		// Delay removing modules that should not be visible until here, so that modules even modules that shouldn't
+		// be visible can shadow suggested names.
+		descriptions.removeIf(description -> !importedModuleShouldBeVisible(description, context));
 	}
 }

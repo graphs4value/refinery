@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ImportCollection {
-	public static ImportCollection EMPTY = new ImportCollection() {
+	public static final ImportCollection EMPTY = new ImportCollection() {
 		@Override
 		public void add(Import importEntry) {
 			throw new UnsupportedOperationException("Read-only collection");

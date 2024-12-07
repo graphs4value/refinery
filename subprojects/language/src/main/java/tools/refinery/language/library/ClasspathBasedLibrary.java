@@ -15,70 +15,42 @@ import java.util.stream.Collectors;
 
 public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 	private final Class<?> context;
-	private final QualifiedName prefix;
-	private final URI rootUri;
+	private final List<QualifiedName> mutableSuggestedLibraries = new ArrayList<>();
+	private final List<QualifiedName> suggestedLibraries = Collections.unmodifiableList(mutableSuggestedLibraries);
+	private final Map<QualifiedName, URI> nameToUriMap = new LinkedHashMap<>();
+	private final Map<URI, QualifiedName> uriToNameMap = new LinkedHashMap<>();
 
-	protected ClasspathBasedLibrary(Class<?> context, QualifiedName prefix) {
+	protected ClasspathBasedLibrary(Class<?> context) {
 		this.context = context == null ? getClass() : context;
-		this.prefix = prefix;
-		var contextPath = this.context.getCanonicalName().replace('.', '/') + ".class";
-		var contextResource = this.context.getClassLoader().getResource(contextPath);
-		if (contextResource == null) {
-			throw new IllegalStateException("Failed to find library context");
-		}
-		var contextUri = URI.createURI(contextResource.toString());
-		var segments = Arrays.copyOf(contextUri.segments(), contextUri.segmentCount() - 1);
-		rootUri = URI.createHierarchicalURI(contextUri.scheme(), contextUri.authority(), contextUri.device(),
-				segments, null, null);
+
 	}
 
-	protected ClasspathBasedLibrary(QualifiedName prefix) {
-		this(null, prefix);
+	protected ClasspathBasedLibrary() {
+		this(null);
+	}
+
+	protected void addLibrary(QualifiedName qualifiedName) {
+		var uri = getLibraryUri(context, qualifiedName).orElseThrow(
+				() -> new IllegalArgumentException("Failed to resolve library %s in %s"
+						.formatted(qualifiedName, context.getName())));
+		mutableSuggestedLibraries.add(qualifiedName);
+		nameToUriMap.put(qualifiedName, uri);
+		uriToNameMap.put(uri, qualifiedName);
+    }
+
+	@Override
+	public List<QualifiedName> getSuggestedLibraries() {
+		return suggestedLibraries;
 	}
 
 	@Override
 	public Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths) {
-		if (qualifiedName.startsWith(prefix)) {
-			return getLibraryUri(context, qualifiedName);
-		}
-		return Optional.empty();
+		return Optional.ofNullable(nameToUriMap.get(qualifiedName));
 	}
 
 	@Override
-	public Optional<QualifiedName> getQualifiedName(URI uri, List<Path> libraryPaths) {
-		if (!uri.isHierarchical() ||
-				!Objects.equals(rootUri.scheme(), uri.scheme()) ||
-				!Objects.equals(rootUri.authority(), uri.authority()) ||
-				!Objects.equals(rootUri.device(), uri.device()) ||
-				rootUri.segmentCount() >= uri.segmentCount()) {
-			return Optional.empty();
-		}
-		int rootSegmentCount = rootUri.segmentCount();
-		int uriSegmentCount = uri.segmentCount();
-		if (!uri.segment(uriSegmentCount - 1).endsWith(RefineryLibrary.FILE_NAME_SUFFIX)) {
-			return Optional.empty();
-		}
-		var segments = new ArrayList<String>();
-		int i = 0;
-		while (i < rootSegmentCount) {
-			if (!rootUri.segment(i).equals(uri.segment(i))) {
-				return Optional.empty();
-			}
-			i++;
-		}
-		while (i < uriSegmentCount) {
-			var segment = uri.segment(i);
-			if (i == uriSegmentCount - 1) {
-				segment = segment.substring(0, segment.length() - RefineryLibrary.FILE_NAME_SUFFIX.length());
-			}
-			segments.add(segment);
-			i++;
-		}
-		var qualifiedName = QualifiedName.create(segments);
-		if (!qualifiedName.startsWith(prefix)) {
-			return Optional.empty();
-		}
-		return Optional.of(qualifiedName);
+	public Optional<QualifiedName> computeQualifiedName(URI uri, List<Path> libraryPaths) {
+		return Optional.ofNullable(uriToNameMap.get(uri));
 	}
 
 	public static Optional<URI> getLibraryUri(Class<?> context, QualifiedName qualifiedName) {

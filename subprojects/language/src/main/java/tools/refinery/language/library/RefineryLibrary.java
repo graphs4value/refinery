@@ -20,7 +20,11 @@ public interface RefineryLibrary {
 		return List.of();
 	}
 
+	default List<QualifiedName> getSuggestedLibraries() {
+		return List.of();
+	}
+
 	Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths);
 
-	Optional<QualifiedName> getQualifiedName(URI uri, List<Path> libraryPaths);
+	Optional<QualifiedName> computeQualifiedName(URI uri, List<Path> libraryPaths);
 }

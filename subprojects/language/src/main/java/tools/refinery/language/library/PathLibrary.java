@@ -38,7 +38,7 @@ public final class PathLibrary implements RefineryLibrary {
 	}
 
 	@Override
-	public Optional<QualifiedName> getQualifiedName(URI uri, List<Path> libraryPaths) {
+	public Optional<QualifiedName> computeQualifiedName(URI uri, List<Path> libraryPaths) {
 		if (libraryPaths.isEmpty()) {
 			return Optional.empty();
 		}

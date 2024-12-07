@@ -17,7 +17,8 @@ public class BuiltinLibrary extends ClasspathBasedLibrary {
 	public static final URI BUILTIN_ANNOTATIONS_LIBRARY_URI = getBuiltinLibraryUri(BUILTIN_ANNOTATIONS_LIBRARY_NAME);
 
 	public BuiltinLibrary() {
-		super(BUILTIN_LIBRARY_NAME);
+		addLibrary(BUILTIN_LIBRARY_NAME);
+		addLibrary(BUILTIN_ANNOTATIONS_LIBRARY_NAME);
 	}
 
 	@Override

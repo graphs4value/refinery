@@ -16,12 +16,14 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.annotations.AnnotationValidator;
 import tools.refinery.language.annotations.internal.CompositeAnnotationValidator;
 import tools.refinery.language.expressions.CompositeTermInterpreter;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.library.RefineryLibrary;
+import tools.refinery.language.library.internal.CompositeLibrary;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.utils.BuiltinSymbols;
 
@@ -71,6 +73,7 @@ public class ImportAdapter extends AdapterImpl {
 	private final List<RefineryLibrary> libraries = new ArrayList<>(DEFAULT_LIBRARIES);
 	private final List<TermInterpreter> termInterpreters = new ArrayList<>(DEFAULT_TERM_INTERPRETERS);
 	private final List<AnnotationValidator> annotationValidators = new ArrayList<>(DEFAULT_ANNOTATION_VALIDATORS);
+	private final RefineryLibrary compositeLibrary = new CompositeLibrary(libraries);
 	private final TermInterpreter termInterpreter = new CompositeTermInterpreter(termInterpreters);
 	private final AnnotationValidator annotationValidator = new CompositeAnnotationValidator(annotationValidators);
 	private final List<Path> libraryPaths = new ArrayList<>(DEFAULT_PATHS);
@@ -105,6 +108,10 @@ public class ImportAdapter extends AdapterImpl {
 		return annotationValidators;
 	}
 
+	public RefineryLibrary getLibrary() {
+		return compositeLibrary;
+	}
+
 	public TermInterpreter getTermInterpreter() {
 		return termInterpreter;
 	}
@@ -117,7 +124,8 @@ public class ImportAdapter extends AdapterImpl {
 		return libraryPaths;
 	}
 
-	public URI resolveQualifiedName(QualifiedName qualifiedName) {
+	@Nullable
+	public URI resolveAndCacheQualifiedName(QualifiedName qualifiedName) {
 		var uri = getResolvedUri(qualifiedName);
 		if (uri != null) {
 			return uri;
@@ -125,13 +133,11 @@ public class ImportAdapter extends AdapterImpl {
 		if (isFailed(qualifiedName)) {
 			return null;
 		}
-		for (var library : libraries) {
-			var result = library.resolveQualifiedName(qualifiedName, libraryPaths);
-			if (result.isPresent()) {
-				uri = result.get();
-				markAsResolved(qualifiedName, uri);
-				return uri;
-			}
+		var result = compositeLibrary.resolveQualifiedName(qualifiedName, libraryPaths);
+		if (result.isPresent()) {
+			uri = result.get();
+			markAsResolved(qualifiedName, uri);
+			return uri;
 		}
 		markAsUnresolved(qualifiedName);
 		return null;
@@ -210,20 +216,19 @@ public class ImportAdapter extends AdapterImpl {
 
 	private void resourceAdded(Resource resource) {
 		var uri = resource.getURI();
-		for (var library : libraries) {
-			var result = library.getQualifiedName(uri, libraryPaths);
-			if (result.isPresent()) {
-				var qualifiedName = result.get();
-				var previousQualifiedName = uriToQualifiedNameMap.putIfAbsent(uri, qualifiedName);
-				if (previousQualifiedName == null) {
-					if (qualifiedNameToUriMap.put(qualifiedName, uri) != null) {
-						throw new IllegalArgumentException("Duplicate resource for" + qualifiedName);
-					}
-				} else if (!previousQualifiedName.equals(qualifiedName)) {
-					LOG.warn("Expected %s to have qualified name %s, got %s instead".formatted(
-							uri, previousQualifiedName, qualifiedName));
-				}
+		var result = compositeLibrary.computeQualifiedName(uri, libraryPaths);
+		if (result.isEmpty()) {
+			return;
+		}
+		var qualifiedName = result.get();
+		var previousQualifiedName = uriToQualifiedNameMap.putIfAbsent(uri, qualifiedName);
+		if (previousQualifiedName == null) {
+			if (qualifiedNameToUriMap.put(qualifiedName, uri) != null) {
+				throw new IllegalArgumentException("Duplicate resource for" + qualifiedName);
 			}
+		} else if (!previousQualifiedName.equals(qualifiedName)) {
+			LOG.warn("Expected %s to have qualified name %s, got %s instead".formatted(
+					uri, previousQualifiedName, qualifiedName));
 		}
 	}
 

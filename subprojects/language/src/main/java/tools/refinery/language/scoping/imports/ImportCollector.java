@@ -75,12 +75,10 @@ public class ImportCollector {
 	}
 
 	private void collectAutomaticImports(ImportCollection importCollection, ImportAdapter adapter) {
-		for (var library : adapter.getLibraries()) {
-			for (var qualifiedName : library.getAutomaticImports()) {
-				var uri = adapter.resolveQualifiedName(qualifiedName);
-				if (uri != null) {
-					importCollection.add(NamedImport.implicit(uri, qualifiedName));
-				}
+		for (var qualifiedName : adapter.getLibrary().getAutomaticImports()) {
+			var uri = adapter.resolveAndCacheQualifiedName(qualifiedName);
+			if (uri != null) {
+				importCollection.add(NamedImport.implicit(uri, qualifiedName));
 			}
 		}
 	}
@@ -139,7 +137,7 @@ public class ImportCollector {
 			return;
 		}
 		var qualifiedName = NamingUtil.stripRootPrefix(qualifiedNameWithPrefix);
-		var uri = referencedUri == null ? adapter.resolveQualifiedName(qualifiedName) : referencedUri;
+		var uri = referencedUri == null ? adapter.resolveAndCacheQualifiedName(qualifiedName) : referencedUri;
 		if (uri != null) {
 			collection.add(NamedImport.explicit(uri, qualifiedName, List.of(alias)));
 		}
