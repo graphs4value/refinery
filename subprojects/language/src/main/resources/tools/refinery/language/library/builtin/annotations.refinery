@@ -2,6 +2,13 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
+/**
+ * Marks annotation parameters as optional.
+ */
 #pred optional().
 
+/**
+ * Marks that multiple instances of the same annotation or annotation parameter
+ * are allowed on an element.
+ */
 #pred repeatable().
