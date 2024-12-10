@@ -13,12 +13,14 @@ import java.util.List;
 public class BuiltinLibrary extends ClasspathBasedLibrary {
 	public static final QualifiedName BUILTIN_LIBRARY_NAME = QualifiedName.create("builtin");
 	public static final QualifiedName BUILTIN_ANNOTATIONS_LIBRARY_NAME = BUILTIN_LIBRARY_NAME.append("annotations");
+	public static final QualifiedName BUILTIN_STRATEGY_LIBRARY_NAME = BUILTIN_LIBRARY_NAME.append("strategy");
 	public static final URI BUILTIN_LIBRARY_URI = getBuiltinLibraryUri(BUILTIN_LIBRARY_NAME);
 	public static final URI BUILTIN_ANNOTATIONS_LIBRARY_URI = getBuiltinLibraryUri(BUILTIN_ANNOTATIONS_LIBRARY_NAME);
 
 	public BuiltinLibrary() {
 		addLibrary(BUILTIN_LIBRARY_NAME);
 		addLibrary(BUILTIN_ANNOTATIONS_LIBRARY_NAME);
+		addLibrary(BUILTIN_STRATEGY_LIBRARY_NAME);
 	}
 
 	@Override

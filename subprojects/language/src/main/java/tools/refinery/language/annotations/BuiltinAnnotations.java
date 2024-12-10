@@ -17,9 +17,9 @@ import tools.refinery.language.model.problem.RuleDefinition;
 import java.util.List;
 
 public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
-	public static final QualifiedName FOCUS = BuiltinLibrary.BUILTIN_LIBRARY_NAME.append("focus");
-	public static final QualifiedName LONE = BuiltinLibrary.BUILTIN_LIBRARY_NAME.append("lone");
-	public static final QualifiedName MULTI = BuiltinLibrary.BUILTIN_LIBRARY_NAME.append("multi");
+	public static final QualifiedName FOCUS = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("focus");
+	public static final QualifiedName LONE = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("lone");
+	public static final QualifiedName MULTI = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("multi");
 	public static final QualifiedName OPTIONAL = BuiltinLibrary.BUILTIN_ANNOTATIONS_LIBRARY_NAME.append(
 			"optional");
 	public static final QualifiedName REPEATABLE = BuiltinLibrary.BUILTIN_ANNOTATIONS_LIBRARY_NAME.append(

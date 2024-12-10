@@ -25,6 +25,8 @@ class RuleValidationTest {
 	@Test
 	void diagonalMultiObjectTest() {
 		var problem = parseHelper.parse("""
+				import builtin::strategy.
+
 				class Foo {
 					Foo[] friend
 				}
@@ -39,6 +41,8 @@ class RuleValidationTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {"""
+			import builtin::strategy.
+
 			class Foo.
 
 			pred bar(Foo a).
