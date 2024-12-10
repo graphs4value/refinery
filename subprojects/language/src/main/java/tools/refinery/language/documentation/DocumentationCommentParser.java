@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 public class DocumentationCommentParser {
 	private static final String PREFIX = "tools.refinery.language.documentation.DocumentationCommentParser.";
 	public static final String COLOR_TAG = PREFIX + "COLOR_TAG";
+	public static final String DOCUMENTATION = PREFIX + "DOCUMENTATION";
 
 	private static final Pattern COLOR_PATTERN = Pattern.compile(
 			"(?m)^@color[ \t]+(\\d|#[\\da-fA-F]{6}|#[\\da-fA-F]{3})");
@@ -35,8 +36,8 @@ public class DocumentationCommentParser {
 			// Use a {@code _} instead of a {@code #} to signify hex codes, because the type hashes have to be valid
 			// CSS class names.
 			var color = colorMatch.group(1).toLowerCase(Locale.ROOT).replace("#", "_");
-			return Map.of(COLOR_TAG, color);
+			return Map.of(DOCUMENTATION, documentation, COLOR_TAG, color);
 		}
-		return Map.of();
+		return Map.of(DOCUMENTATION, documentation);
 	}
 }

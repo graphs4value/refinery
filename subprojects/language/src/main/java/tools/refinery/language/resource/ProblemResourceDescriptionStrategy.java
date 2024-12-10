@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -48,7 +49,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String MODULE_KIND = DATA_PREFIX + "MODULE_KIND";
 	public static final String COLOR_RELATION = DATA_PREFIX + "COLOR_RELATION";
 	public static final String COLOR_RELATION_TRUE = "true";
-	public static final String SHADOW_PREDICATE = DATA_PREFIX + "COMPUTED_VALUE";
+	public static final String SHADOW_PREDICATE = DATA_PREFIX + "SHADOW_PREDICATE";
 	public static final String SHADOW_PREDICATE_TRUE = "true";
 
 	@Inject
@@ -62,6 +63,9 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	@Inject
 	private DocumentationCommentParser documentationCommentParser;
+
+	@Inject
+	private IEObjectDocumentationProvider documentationProvider;
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {

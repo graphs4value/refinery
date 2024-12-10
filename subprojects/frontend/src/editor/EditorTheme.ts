@@ -506,16 +506,25 @@ export default styled('div', {
   const completionStyle: CSSObject = {
     '.cm-tooltip.cm-tooltip-autocomplete': {
       ...editorFontStyle,
+      // Appear above the scrollbar (and the splitter handle).
+      zIndex: 2000,
       background: theme.palette.background.paper,
       border: 'none',
       borderRadius: theme.shape.borderRadius,
-      overflow: 'hidden',
       ...(theme.palette.mode === 'dark' && {
         // https://github.com/mui/material-ui/blob/10c72729c7d03bab8cdce6eb422642684c56dca2/packages/mui-material/src/Paper/Paper.js#L18
         backgroundImage:
           'linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07))',
       }),
       boxShadow: theme.shadows[2],
+      '& > ul': {
+        // We can't set `overflow: hidden;` on the container to clip the corners of the scroll bar,
+        // because it would also hide the documentation tooltip.
+        clipPath: `inset(0px round ${theme.shape.borderRadius}px)`,
+      },
+      '&::-webkit-scrollbar': {
+        borderRadius: theme.shape.borderRadius,
+      },
       '.cm-completionIcon': {
         color: theme.palette.text.secondary,
       },
@@ -525,6 +534,7 @@ export default styled('div', {
       },
       '.cm-completionDetail': {
         ...editorFontStyle,
+        marginLeft: 0,
         color: theme.palette.text.secondary,
         fontStyle: 'normal',
       },
@@ -543,6 +553,48 @@ export default styled('div', {
       padding: 0,
       marginRight: '0.5em',
       textAlign: 'center',
+    },
+    '.cm-tooltip.cm-completionInfo': {
+      ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
+        | CSSObject
+        | undefined) ?? {}),
+      ...theme.typography.body2,
+      // Appear above the scrollbar (and the splitter handle).
+      zIndex: 2000,
+      padding: `0 ${theme.spacing(1)}`,
+      borderRadius: theme.shape.borderRadius,
+      overflow: 'hidden',
+      whiteSpace: 'normal',
+      '.refinery-completion-documentation': {
+        margin: 0,
+        p: {
+          margin: `${theme.spacing(1)} 0`,
+        },
+        'code, pre': {
+          ...theme.typography.editor,
+          fontWeight: theme.typography.fontWeightEditorNormal,
+          fontSize: 'inherit',
+        },
+        code: {
+          background: 'rgb(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          borderRadius: theme.shape.borderRadius,
+        },
+      },
+    },
+    '.cm-tooltip.cm-completionInfo-right': {
+      marginLeft: theme.spacing(1),
+    },
+    '.cm-tooltip.cm-completionInfo-left': {
+      marginRight: theme.spacing(1),
+    },
+    '.cm-tooltip.cm-completionInfo-right-narrow': {
+      marginLeft: theme.spacing(1),
+      marginTop: theme.spacing(1),
+    },
+    '.cm-tooltip.cm-completionInfo-left-narrow': {
+      marginRight: theme.spacing(1),
+      marginTop: theme.spacing(1),
     },
   };
 

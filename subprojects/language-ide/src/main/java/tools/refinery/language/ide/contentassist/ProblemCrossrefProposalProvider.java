@@ -16,13 +16,17 @@ import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
+import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
+import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xtext.CurrentTypeFinder;
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
@@ -48,6 +52,12 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	@Inject
 	private ImportAdapterProvider importAdapterProvider;
+
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private IdeContentProposalCreator proposalCreator;
 
 	private CrossReference importedModuleCrossReference;
 
@@ -83,6 +93,99 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			postProcessImportProposals(eObjectDescriptions, context);
 		}
 		return eObjectDescriptions;
+	}
+
+	@Override
+	protected ContentAssistEntry createProposal(IEObjectDescription candidate, CrossReference crossRef,
+												ContentAssistContext context) {
+		return proposalCreator.createProposal(qualifiedNameConverter.toString(candidate.getName()), context, e -> {
+			e.setSource(candidate);
+			e.setDescription(getDescription(candidate));
+			var documentation = candidate.getUserData(DocumentationCommentParser.DOCUMENTATION);
+			if (documentation != null) {
+				e.setDocumentation(documentation);
+			}
+			e.setKind(ContentAssistEntry.KIND_REFERENCE);
+		});
+	}
+
+	private static String getDescription(IEObjectDescription candidate) {
+		int arity = -1;
+		var arityString = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
+		try {
+			arity = Integer.parseInt(arityString, 10);
+		} catch (NumberFormatException e) {
+			// Ignore parse error, omit arity.
+		}
+		var eClassDescription = getEClassDescription(candidate);
+		if (arity < 0) {
+			return eClassDescription;
+		}
+		if (eClassDescription == null) {
+			return "/" + arity;
+		}
+		return "/" + arity + " " + eClassDescription;
+	}
+
+	private static String getEClassDescription(IEObjectDescription candidate) {
+		var eClass = candidate.getEClass();
+		if (eClass == null) {
+			return null;
+		}
+		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(eClass)) {
+			return "module";
+		}
+		if (ProblemPackage.Literals.NODE.isSuperTypeOf(eClass)) {
+			return "node";
+		}
+		if (ProblemPackage.Literals.PARAMETER.isSuperTypeOf(eClass)) {
+			// Parameter must come before Variable, because it is a subclass of Variable.
+			return "parameter";
+		}
+		if (ProblemPackage.Literals.VARIABLE.isSuperTypeOf(eClass)) {
+			return "variable";
+		}
+		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass)) {
+			return getPredicateEClassDescription(candidate);
+		}
+		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(eClass)) {
+			return "class";
+		}
+		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass)) {
+			// For predicates, there is no need to show the exact type of definition, since they behave
+			// logically equivalently.
+			return null;
+		}
+		if (ProblemPackage.Literals.ENUM_DECLARATION.isSuperTypeOf(eClass)) {
+			return "enum";
+		}
+		if (ProblemPackage.Literals.RULE_DEFINITION.isSuperTypeOf(eClass)) {
+			return "rule";
+		}
+		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
+			return "aggregator";
+		}
+		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(eClass)) {
+			return "datatype";
+		}
+		if (ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
+			return "annotation";
+		}
+		return eClass.getName();
+	}
+
+	private static String getPredicateEClassDescription(IEObjectDescription candidate) {
+		if (ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE))) {
+			return "error";
+		}
+		if (ProblemResourceDescriptionStrategy.SHADOW_PREDICATE_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.SHADOW_PREDICATE))) {
+			return "shadow";
+		}
+		// For predicates, there is no need to show the exact type of definition, since they behave
+		// logically equivalently.
+		return null;
 	}
 
 	protected boolean isExistingObject(IEObjectDescription candidate, CrossReference crossRef,

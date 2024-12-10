@@ -125,10 +125,19 @@ function createCompletion(entry: ContentAssistEntry): Completion {
     boost,
   };
   if (entry.documentation !== undefined) {
-    completion.info = entry.documentation;
+    const { documentation } = entry;
+    completion.info = async () => {
+      const { default: transformDocumentation } = await import(
+        './transformDocumentation'
+      );
+      return transformDocumentation(documentation);
+    };
   }
   if (entry.description !== undefined) {
-    completion.detail = entry.description;
+    const { description } = entry;
+    completion.detail = description.startsWith('/')
+      ? description
+      : ` ${description}`;
   }
   return completion;
 }
