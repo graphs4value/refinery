@@ -112,6 +112,10 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 	}
 
 	private static String getDescription(IEObjectDescription candidate) {
+		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(candidate.getEClass())) {
+			// Datatypes shouldn't have their arity displayed.
+			return "datatype";
+		}
 		int arity = -1;
 		var arityString = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
 		try {
@@ -166,9 +170,6 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		}
 		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
 			return "aggregator";
-		}
-		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(eClass)) {
-			return "datatype";
 		}
 		if (ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
 			return "annotation";

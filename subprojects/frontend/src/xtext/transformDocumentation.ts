@@ -11,7 +11,9 @@ const md = markdownit({
   html: true,
   linkify: true,
   typographer: true,
-});
+})
+  // See https://github.com/markdown-it/markdown-it/issues/1066
+  .disable('code');
 
 export default function transformDocumentation(documentation: string): Node {
   const dangeroudHTML = md.render(documentation);

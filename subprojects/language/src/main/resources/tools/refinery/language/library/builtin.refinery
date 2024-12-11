@@ -14,6 +14,8 @@ abstract class node.
  * during refinement.
  *
  * Set `!exists(node)` to remove `node` from the partial model outright.
+ *
+ * @param node The node that exists.
  */
 pred exists(node).
 
@@ -26,6 +28,10 @@ pred exists(node).
  * Setting `!equals(node, node)` or `equals(node, node): error` is not allowed.
  * There is no support for object merges `equals(node1, node2)` where `node1`
  * and `node2` refer to different objects.
+ *
+ * @param left The node.
+ * @param right The node that is equivalent with `left`. Must be the same as
+ *              `left`.
  */
 pred equals(left, right).
 
@@ -45,12 +51,17 @@ abstract class contained extends node.
 
 /**
  * Containment links are formed by references marked with `contains`.
+ *
+ * @param container The source of the containment link.
+ * @param contained The target of the containment link.
  */
 pred contains(container container, contained contained).
 
 /**
  * A `contained` object that has _no_ or _more than one_ incoming containment
  * link.
+ *
+ * @param contained The node with the invalid containment links.
  */
 error invalidContainer(contained contained).
 

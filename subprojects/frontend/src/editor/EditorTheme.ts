@@ -608,26 +608,66 @@ export default styled('div', {
           fontWeight: theme.typography.fontWeightEditorNormal,
           fontSize: 'inherit',
         },
+        pre: {
+          padding: 0,
+          margin: `${theme.spacing(1)} 0`,
+        },
         code: {
           background: 'rgb(255, 255, 255, 0.1)',
           border: '1px solid rgba(255, 255, 255, 0.5)',
           borderRadius: theme.shape.borderRadius,
         },
+        'pre code': {
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+        },
+      },
+      '&.cm-completionInfo-right': {
+        marginLeft: theme.spacing(1),
+      },
+      '&.cm-completionInfo-left': {
+        marginRight: theme.spacing(1),
+      },
+      '&.cm-completionInfo-right-narrow': {
+        marginLeft: theme.spacing(1),
+        marginTop: theme.spacing(1),
+      },
+      '&.cm-completionInfo-left-narrow': {
+        marginRight: theme.spacing(1),
+        marginTop: theme.spacing(1),
+      },
+      h3: {
+        ...theme.typography.body2,
+        padding: 0,
+        margin: `${theme.spacing(1)} 0`,
+        color: theme.palette.text.secondary,
+        fontStyle: 'italic',
       },
     },
-    '.cm-tooltip.cm-completionInfo-right': {
-      marginLeft: theme.spacing(1),
+    '.refinery-completion-parameters': {
+      padding: 0,
+      margin: `${theme.spacing(1)} 0`,
+      display: 'grid',
+      gridTemplateColumns: 'max-content 1fr',
+      gap: theme.spacing(1),
     },
-    '.cm-tooltip.cm-completionInfo-left': {
-      marginRight: theme.spacing(1),
+    '.refinery-completion-parameter-name': {
+      display: 'block',
+      padding: 0,
+      margin: `-${theme.spacing(1)} 0`,
+      fontWeight: theme.typography.fontWeightBold,
     },
-    '.cm-tooltip.cm-completionInfo-right-narrow': {
-      marginLeft: theme.spacing(1),
-      marginTop: theme.spacing(1),
+    '.refinery-completion-parameter-invalid': {
+      color:
+        theme.palette.mode === 'dark'
+          ? theme.palette.error.light
+          : theme.palette.error.main,
     },
-    '.cm-tooltip.cm-completionInfo-left-narrow': {
-      marginRight: theme.spacing(1),
-      marginTop: theme.spacing(1),
+    '.refinery-completion-parameter-description': {
+      display: 'block',
+      padding: 0,
+      margin: `-${theme.spacing(1)} 0`,
     },
   };
 
