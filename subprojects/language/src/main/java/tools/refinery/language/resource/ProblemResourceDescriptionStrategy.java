@@ -51,6 +51,10 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String COLOR_RELATION_TRUE = "true";
 	public static final String SHADOW_PREDICATE = DATA_PREFIX + "SHADOW_PREDICATE";
 	public static final String SHADOW_PREDICATE_TRUE = "true";
+	public static final String ABSTRACT = DATA_PREFIX + "ABSTRACT";
+	public static final String ABSTRACT_TRUE = "true";
+	public static final String CONTAINMENT = DATA_PREFIX + "CONTAINMENT";
+	public static final String CONTAINMENT_TRUE = "true";
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -157,11 +161,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		} else if (eObject instanceof Node) {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
 		} else if (eObject instanceof Relation relation) {
-			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
-			builder.put(ARITY, Integer.toString(ProblemUtil.getArityWithoutProxyResolution(relation), 10));
-			if (ProblemUtil.isTypeLike(relation)) {
-				builder.put(TYPE_LIKE, TYPE_LIKE_TRUE);
-			}
+			addRelationUserData(relation, builder);
 		} else if (eObject instanceof RuleDefinition) {
 			// Rule definitions and predicates live in the same namespace.
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
@@ -179,6 +179,21 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		var documentationMap = documentationCommentParser.parseDocumentation(eObject);
 		builder.putAll(documentationMap);
 		return builder.build();
+	}
+
+	private static void addRelationUserData(Relation relation, ImmutableMap.Builder<String, String> builder) {
+		builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
+		builder.put(ARITY, Integer.toString(ProblemUtil.getArityWithoutProxyResolution(relation), 10));
+		if (ProblemUtil.isTypeLike(relation)) {
+			builder.put(TYPE_LIKE, TYPE_LIKE_TRUE);
+		}
+		if (relation instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
+			builder.put(ABSTRACT, ABSTRACT_TRUE);
+		}
+		if (relation instanceof ReferenceDeclaration referenceDeclaration &&
+				ProblemUtil.isContainmentReference(referenceDeclaration)) {
+			builder.put(CONTAINMENT, CONTAINMENT_TRUE);
+		}
 	}
 
 	protected boolean shouldExportSimpleName(EObject eObject) {

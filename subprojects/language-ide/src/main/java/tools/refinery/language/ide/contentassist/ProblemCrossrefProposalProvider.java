@@ -27,6 +27,8 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xtext.CurrentTypeFinder;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.documentation.DocumentationCommentParser;
+import tools.refinery.language.documentation.TypeHashProvider;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
@@ -58,6 +60,9 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	@Inject
 	private IdeContentProposalCreator proposalCreator;
+
+	@Inject
+	private TypeHashProvider typeHashProvider;
 
 	private CrossReference importedModuleCrossReference;
 
@@ -105,7 +110,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			if (documentation != null) {
 				e.setDocumentation(documentation);
 			}
-			e.setKind(ContentAssistEntry.KIND_REFERENCE);
+			e.setKind(getKind(candidate));
 		});
 	}
 
@@ -175,10 +180,6 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 	}
 
 	private static String getPredicateEClassDescription(IEObjectDescription candidate) {
-		if (ProblemResourceDescriptionStrategy.ERROR_PREDICATE_TRUE.equals(
-				candidate.getUserData(ProblemResourceDescriptionStrategy.ERROR_PREDICATE))) {
-			return "error";
-		}
 		if (ProblemResourceDescriptionStrategy.SHADOW_PREDICATE_TRUE.equals(
 				candidate.getUserData(ProblemResourceDescriptionStrategy.SHADOW_PREDICATE))) {
 			return "shadow";
@@ -186,6 +187,32 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		// For predicates, there is no need to show the exact type of definition, since they behave
 		// logically equivalently.
 		return null;
+	}
+
+	private String getKind(IEObjectDescription candidate) {
+		var eClass = candidate.getEClass();
+		if (BuiltinLibrary.BUILTIN_LIBRARY_URI.equals(candidate.getEObjectURI().trimFragment()) &&
+				!ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
+			// Built-in annotations are not rendered with the keyword color in the frontend.
+			return "BUILTIN";
+		}
+		if (ProblemResourceDescriptionStrategy.CONTAINMENT_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.CONTAINMENT))) {
+			return "CONTAINMENT";
+		}
+		String typeHashKind = null;
+		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass) &&
+				candidate.getEObjectOrProxy() instanceof Relation relation) {
+			var typeHash = typeHashProvider.getTypeHash(relation);
+			if (typeHash != null) {
+				typeHashKind = "typeHash-" + typeHash;
+			}
+		}
+		if (ProblemResourceDescriptionStrategy.ABSTRACT_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.ABSTRACT))) {
+			return typeHashKind == null ? "ABSTRACT" : "ABSTRACT " + typeHashKind;
+		}
+		return typeHashKind == null ? ContentAssistEntry.KIND_REFERENCE : typeHashKind;
 	}
 
 	protected boolean isExistingObject(IEObjectDescription candidate, CrossReference crossRef,

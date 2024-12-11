@@ -7,6 +7,7 @@
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
+import keySVG from '@material-icons/svg/svg/vpn_key/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import {
   alpha,
@@ -37,13 +38,22 @@ function createTypeHashStyles(
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
     };
+    result[`.cm-completionIcon-typehash-${i} + .cm-completionLabel`] = {
+      color: `${theme.palette.highlight.typeHash[i]?.text} !important`,
+      fontWeight: theme.typography.fontWeightEditorTypeHash,
+    };
   });
   hexTypeHashes.forEach((typeHash) => {
+    const color = typeHashTextColor(`#${typeHash}`, theme);
     result[`.tok-problem-typeHash-_${typeHash}`] = {
       '&, .tok-typeName, .tok-variableName': {
-        color: typeHashTextColor(`#${typeHash}`, theme),
+        color,
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
+    };
+    result[`.cm-completionIcon-typehash-_${typeHash} + .cm-completionLabel`] = {
+      color: `${color} !important`,
+      fontWeight: theme.typography.fontWeightEditorTypeHash,
     };
   });
   return result;
@@ -534,11 +544,24 @@ export default styled('div', {
       },
       '.cm-completionDetail': {
         ...editorFontStyle,
-        marginLeft: 0,
+        margin: 0,
         color: theme.palette.text.secondary,
         fontStyle: 'normal',
       },
-      'li[aria-selected="true"]': {
+      '.cm-completionIcon-keyword + .cm-completionLabel, .cm-completionIcon-builtin + .cm-completionLabel':
+        {
+          color: `${theme.palette.primary.main} !important`,
+        },
+      '.cm-completionIcon-abstract + .cm-completionLabel': {
+        fontStyle: 'italic',
+      },
+      '.cm-completionIcon-containment + .cm-completionLabel': {
+        fontWeight: theme.typography.fontWeightEditorBold,
+      },
+      '& > ul > li': {
+        padding: `0 ${theme.spacing(0.5)}`,
+      },
+      '& > ul > li[aria-selected="true"]': {
         background: alpha(
           theme.palette.text.primary,
           theme.palette.action.focusOpacity,
@@ -551,8 +574,18 @@ export default styled('div', {
     '.cm-completionIcon': {
       width: 16,
       padding: 0,
-      marginRight: '0.5em',
+      margin: `0 ${theme.spacing(0.5)} 0 0`,
       textAlign: 'center',
+    },
+    '.cm-completionIcon-keyword::after, .cm-completionIcon-operator::after': {
+      content: '" "',
+      display: 'inline-block',
+      background: 'currentColor',
+      maskImage: svgURL(keySVG),
+      maskSize: '16px 16px',
+      height: 16,
+      width: 16,
+      verticalAlign: 'middle',
     },
     '.cm-tooltip.cm-completionInfo': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
