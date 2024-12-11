@@ -27,6 +27,11 @@ public final class LibraryResolutionUtil {
 
 	@Nullable
 	public static Path qualifiedNameToPath(QualifiedName qualifiedName) {
+		return qualifiedNameToPath(qualifiedName, RefineryLibrary.FILE_NAME_SUFFIX);
+	}
+
+	@Nullable
+	public static Path qualifiedNameToPath(QualifiedName qualifiedName, String suffix) {
 		if (!isValidPathName(qualifiedName)) {
 			return null;
 		}
@@ -36,7 +41,7 @@ public final class LibraryResolutionUtil {
 			// Trying to resolve empty qualified name.
 			return null;
 		}
-		pathSegments[lastSegmentIndex] += RefineryLibrary.FILE_NAME_SUFFIX;
+		pathSegments[lastSegmentIndex] += suffix;
 		return arrayToPath(pathSegments);
 	}
 

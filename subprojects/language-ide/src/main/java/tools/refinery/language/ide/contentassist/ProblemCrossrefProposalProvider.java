@@ -106,10 +106,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		return proposalCreator.createProposal(qualifiedNameConverter.toString(candidate.getName()), context, e -> {
 			e.setSource(candidate);
 			e.setDescription(getDescription(candidate));
-			var documentation = candidate.getUserData(DocumentationCommentParser.DOCUMENTATION);
-			if (documentation != null) {
-				e.setDocumentation(documentation);
-			}
+			e.setDocumentation(getDocumentation(candidate, context));
 			e.setKind(getKind(candidate));
 		});
 	}
@@ -186,6 +183,19 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		}
 		// For predicates, there is no need to show the exact type of definition, since they behave
 		// logically equivalently.
+		return null;
+	}
+
+	private String getDocumentation(IEObjectDescription candidate, ContentAssistContext context) {
+		var documentation = candidate.getUserData(DocumentationCommentParser.DOCUMENTATION);
+		if (documentation != null) {
+			return documentation;
+		}
+		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(candidate.getEClass())) {
+			var name = NamingUtil.stripRootPrefix(candidate.getQualifiedName());
+			var importAdapter = importAdapterProvider.getOrInstall(context.getResource());
+			return importAdapter.getLibrary().getDocumentation(name).orElse(null);
+		}
 		return null;
 	}
 

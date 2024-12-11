@@ -37,6 +37,17 @@ public class CompositeLibrary implements RefineryLibrary {
 	}
 
 	@Override
+	public Optional<String> getDocumentation(QualifiedName qualifiedName) {
+		for (var library : libraries) {
+			var documentation = library.getDocumentation(qualifiedName);
+			if (documentation.isPresent()) {
+				return documentation;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
 	public Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths) {
 		for (var library : libraries) {
 			var uri = library.resolveQualifiedName(qualifiedName, libraryPaths);

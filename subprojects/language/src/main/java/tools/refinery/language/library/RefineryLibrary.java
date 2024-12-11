@@ -24,6 +24,10 @@ public interface RefineryLibrary {
 		return List.of();
 	}
 
+	default Optional<String> getDocumentation(QualifiedName qualifiedName) {
+		return Optional.empty();
+	}
+
 	Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths);
 
 	Optional<QualifiedName> computeQualifiedName(URI uri, List<Path> libraryPaths);
