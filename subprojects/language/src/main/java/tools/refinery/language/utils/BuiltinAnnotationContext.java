@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.annotations.BuiltinAnnotations;
 import tools.refinery.language.model.problem.Parameter;
+import tools.refinery.language.model.problem.Relation;
 
 public class BuiltinAnnotationContext {
 	@Inject
@@ -26,5 +27,20 @@ public class BuiltinAnnotationContext {
 			return ParameterBinding.MULTI;
 		}
 		return ParameterBinding.SINGLE;
+	}
+
+	public ConcretizationSettings getConcretizationSettings(Relation relation) {
+		var annotations = annotationContext.annotationsFor(relation);
+		var concretize = annotations.getAnnotation(BuiltinAnnotations.CONCRETIZE)
+				.flatMap(annotation -> annotation.getBoolean(BuiltinAnnotations.CONCRETIZE_AUTO));
+		var decide = annotations.getAnnotation(BuiltinAnnotations.DECIDE)
+				.flatMap(annotation -> annotation.getBoolean(BuiltinAnnotations.DECIDE_AUTO));
+		return new ConcretizationSettings(concretize.orElseGet(() -> ProblemUtil.isConcretizeByDefault(relation)),
+				decide.orElseGet(() -> {
+					if (concretize.isPresent() && Boolean.FALSE.equals(concretize.get())) {
+						return false;
+					}
+					return ProblemUtil.isDecideByDefault(relation);
+				}));
 	}
 }

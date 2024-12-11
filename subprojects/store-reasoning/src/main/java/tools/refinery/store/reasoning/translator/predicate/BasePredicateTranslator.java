@@ -20,10 +20,7 @@ import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
-import tools.refinery.store.reasoning.translator.RoundingMode;
-import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.store.reasoning.translator.TranslatorUtils;
+import tools.refinery.store.reasoning.translator.*;
 import tools.refinery.store.representation.Symbol;
 
 import java.util.ArrayList;
@@ -41,16 +38,17 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 	private final List<PartialRelation> parameterTypes;
 	private final Set<PartialRelation> supersets;
 	private final TruthValue defaultValue;
-	private final boolean partial;
+	private final ConcretizationSettings concretizationSettings;
 	private final Symbol<TruthValue> symbol;
 
-	public BasePredicateTranslator(PartialRelation predicate, List<PartialRelation> parameterTypes,
-								   Set<PartialRelation> supersets, TruthValue defaultValue, boolean partial) {
+	public BasePredicateTranslator(
+			PartialRelation predicate, List<PartialRelation> parameterTypes, Set<PartialRelation> supersets,
+			TruthValue defaultValue, ConcretizationSettings concretizationSettings) {
 		this.predicate = predicate;
 		this.parameterTypes = parameterTypes;
 		this.supersets = supersets;
 		this.defaultValue = defaultValue;
-		this.partial = partial;
+		this.concretizationSettings = concretizationSettings;
 		symbol = Symbol.of(predicate.name(), predicate.arity(), TruthValue.class, defaultValue);
 	}
 
@@ -71,12 +69,12 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder, partial);
+			configureWithDefaultFalse(storeBuilder);
 		}
-		var roundingMode = partial ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		var roundingMode = concretizationSettings.concretize() ? RoundingMode.PREFER_FALSE : RoundingMode.NONE;
 		translator.refiner(PredicateRefiner.of(symbol, parameterTypes, supersets, roundingMode));
 		translator.roundingMode(roundingMode);
-		if (!partial) {
+		if (concretizationSettings.decide()) {
 			translator.decision(Rule.of(predicate.name(), builder -> {
 				var parameters = createParameters(builder);
 				var literals = new ArrayList<Literal>(arity + 2);
@@ -112,7 +110,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 			literals.add(not(forbiddenView.call(parameters)));
 			builder.clause(literals);
 		}));
-		if (partial) {
+		if (!concretizationSettings.concretize()) {
 			var candidateMayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.CANDIDATE);
 			translator.candidateMay(Query.of(candidateMayName, builder -> {
 				var parameters = createParameters(builder);
@@ -127,7 +125,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 		}
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
 		var name = predicate.name();
 		var superset = TranslatorUtils.createSupersetHelper(predicate, supersets);
 		// Fail if there is no {@link PropagationBuilder}, since it is required for soundness.
@@ -147,7 +145,7 @@ public class BasePredicateTranslator implements ModelStoreConfiguration {
 			);
 			builder.action(remove(predicate, parameters));
 		}));
-		if (!partial) {
+		if (concretizationSettings.concretize()) {
 			// Predicates concretized by rounding down are already {@code false} in the candidate interpretation,
 			// so we don't need to set them to {@code false} manually.
 			return;

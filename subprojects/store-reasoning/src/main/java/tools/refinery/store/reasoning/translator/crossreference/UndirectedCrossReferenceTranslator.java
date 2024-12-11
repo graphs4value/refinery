@@ -55,13 +55,13 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder, info.partial());
+			configureWithDefaultFalse(storeBuilder);
 		}
 		translator.initializer(new UndirectedCrossReferenceInitializer(linkType, symbol));
-		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		var roundingMode = info.concretizationSettings().concretize() ? RoundingMode.PREFER_FALSE : RoundingMode.NONE;
 		translator.refiner(UndirectedCrossReferenceRefiner.of(symbol, info, roundingMode));
 		translator.roundingMode(roundingMode);
-		if (!info.partial()) {
+		if (info.concretizationSettings().decide()) {
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 					.clause(
 							may(linkType.call(source, target)),
@@ -107,7 +107,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 				);
 			}
 		}));
-		if (info.partial()) {
+		if (!info.concretizationSettings().concretize()) {
 			var candidateMayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.CANDIDATE);
 			var candidateMayNewSource = CrossReferenceUtils.createCandidateMayHelper(linkType, type, multiplicity,
 					false);
@@ -135,7 +135,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 		return TranslatorUtils.createSupersetHelper(linkType, info.supersets());
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
 		var name = linkType.name();
 		var type = info.type();
 		var superset = createSupersetHelper();
@@ -166,7 +166,7 @@ public class UndirectedCrossReferenceTranslator implements ModelStoreConfigurati
 					remove(linkType, p1, p2)
 			);
 		}));
-		if (!partial) {
+		if (info.concretizationSettings().concretize()) {
 			// References concretized by rounding down are already {@code false} in the candidate interpretation,
 			// so we don't need to set them to {@code false} manually.
 			return;

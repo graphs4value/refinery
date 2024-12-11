@@ -86,7 +86,7 @@ EnumLiteral returns Node:
 	name=Identifier;
 
 enum ReferenceKind:
-	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container" | PARTIAL="partial";
+	REFERENCE="refers" | CONTAINMENT="contains" | CONTAINER="container";
 
 ReferenceDeclaration:
 	annotations=AnnotationContainer
@@ -106,7 +106,7 @@ enum ErrorPredicateKind returns PredicateKind:
 	ERROR="error";
 
 enum PredicateKind:
-	ERROR="error" | PARTIAL="partial" | SHADOW="shadow";
+	ERROR="error" | SHADOW="shadow";
 
 Conjunction:
 	literals+=Expr ("," literals+=Expr)*;

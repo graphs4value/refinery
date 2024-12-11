@@ -54,16 +54,23 @@ class OppositeValidationTest {
 				Foo foo[] opposite foo
 			}
 			""", """
+			import builtin::strategy.
+
 			class Foo {
-				partial Bar bar opposite foo
+				@concretize(false)
+				Bar bar opposite foo
 			}
 
 			class Bar {
-				partial Foo foo opposite bar
+				@concretize(false)
+				Foo foo opposite bar
 			}
 			""", """
+			import builtin::strategy.
+
 			class Foo {
-				partial Foo foo[] opposite foo
+				@concretize(false)
+				Foo foo[] opposite foo
 			}
 			"""})
 	void validOppositeTest(String text) {
@@ -196,9 +203,11 @@ class OppositeValidationTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"Foo foo", "container Foo foo", "partial Foo foo"})
+	@ValueSource(strings = {"Foo foo", "container Foo foo", "@concretize(false) Foo foo"})
 	void containerInvalidOppositeTest(String reference) {
 		var problem = parseHelper.parse("""
+				import builtin::strategy.
+
 				class Foo {
 					container Bar bar opposite foo
 				}
@@ -219,8 +228,11 @@ class OppositeValidationTest {
 	@ValueSource(strings = {"Foo foo", "contains Foo foo", "container Foo foo"})
 	void partialWithConcreteOppositeTest(String reference) {
 		var problem = parseHelper.parse("""
+				import builtin::strategy.
+
 				class Foo {
-					partial Bar bar opposite foo
+					@concretize(false)
+					Bar bar opposite foo
 				}
 
 				class Bar {
@@ -231,7 +243,7 @@ class OppositeValidationTest {
 		assertThat(issues, hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
 				hasProperty("issueCode", is(ProblemValidator.INVALID_OPPOSITE_ISSUE)),
-				hasProperty("message", stringContainsInOrder("foo", "partial", "bar"))
+				hasProperty("message", stringContainsInOrder("concretization", "bar", "foo"))
 		)));
 	}
 }

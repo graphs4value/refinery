@@ -365,9 +365,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 						referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 						INVALID_OPPOSITE_ISSUE);
 			}
-		} else if (kind == ReferenceKind.PARTIAL && opposite != null && opposite.getKind() != ReferenceKind.PARTIAL) {
-			acceptError("Opposite '%s' of partial reference '%s' is not a partial reference."
-							.formatted(opposite.getName(), referenceDeclaration.getName()),
+		}
+		if (opposite != null &&
+				!builtinAnnotationContext.getConcretizationSettings(referenceDeclaration)
+						.equals(builtinAnnotationContext.getConcretizationSettings(opposite))) {
+			acceptError("The concretization settings of reference '%s' don't match its opposite '%s'."
+							.formatted(referenceDeclaration.getName(), opposite.getName()),
 					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 					INVALID_OPPOSITE_ISSUE);
 		}
@@ -411,17 +414,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkPartialReference(ReferenceDeclaration referenceDeclaration) {
-		if (referenceDeclaration.getKind() == ReferenceKind.PARTIAL &&
-				!actionTargetCollector.isActionTarget(referenceDeclaration)) {
-			var message = "Add decision or propagation rules to refine partial relation '%s'."
-					.formatted(referenceDeclaration.getName());
-			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__KIND, 0,
-					UNUSED_PARTIAL_RELATION_ISSUE);
-		}
-	}
-
-	@Check
 	public void checkSupertypes(ClassDeclaration classDeclaration) {
 		var supertypes = classDeclaration.getSuperTypes();
 		int supertypeCount = supertypes.size();
@@ -444,12 +436,11 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
 				!ProblemUtil.isContainerReference(referenceDeclaration);
-		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE ||
-				referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
+		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE;
 		if (isDefaultReference || isCrossReference) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
 			if (ProblemUtil.isShadow(referenceType)) {
-				var message = "Shadow relations '%s' is not allowed in reference types."
+				var message = "Shadow relation '%s' is not allowed in reference types."
 						.formatted(referenceType.getName());
 				acceptError(message, referenceDeclaration,
 						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, SHADOW_RELATION_ISSUE);
@@ -470,9 +461,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		String message = null;
 		if (ProblemUtil.isBasePredicate(predicateDefinition)) {
 			if (!predicateDefinition.getBodies().isEmpty()) {
-				var predicateType = predicateDefinition.getKind() == PredicateKind.PARTIAL ? "Partial base predicate" :
-						"Base predicate";
-				message = "%s '%s' must not have any clauses.".formatted(predicateType, predicateDefinition.getName());
+				message = "Base predicate '%s' must not have any clauses.".formatted(predicateDefinition.getName());
 			}
 		} else if (predicateDefinition.getBodies().isEmpty()) {
 			var predicateType = switch (predicateDefinition.getKind()) {

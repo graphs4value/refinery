@@ -163,7 +163,6 @@
     <eLiterals name="REFERENCE" value="2"/>
     <eLiterals name="CONTAINMENT" value="3"/>
     <eLiterals name="CONTAINER" value="3"/>
-    <eLiterals name="PARTIAL" value="4"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expr" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableOrNodeExpr" eSuperTypes="#//Expr">
@@ -298,7 +297,6 @@
     <eLiterals name="DEFAULT"/>
     <eLiterals name="ERROR" value="1"/>
     <eLiterals name="SHADOW" value="2"/>
-    <eLiterals name="PARTIAL" value="3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnnotatedElement" abstract="true" interface="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" eType="#//AnnotationContainer"

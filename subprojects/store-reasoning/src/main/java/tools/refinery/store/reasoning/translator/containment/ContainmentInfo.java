@@ -11,9 +11,9 @@ import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 
 import java.util.Set;
 
-public record ContainmentInfo(PartialRelation sourceType, Multiplicity multiplicity,
-							  PartialRelation targetType, Set<PartialRelation> supersets,
-							  Set<PartialRelation> oppositeSupersets) {
+public record ContainmentInfo(
+		PartialRelation sourceType, Multiplicity multiplicity, PartialRelation targetType, boolean decide,
+		Set<PartialRelation> supersets, Set<PartialRelation> oppositeSupersets) {
 	public ContainmentInfo {
 		if (sourceType.arity() != 1) {
 			throw new TranslationException(sourceType, "Expected source type %s to be of arity 1, got %d instead"
@@ -23,5 +23,9 @@ public record ContainmentInfo(PartialRelation sourceType, Multiplicity multiplic
 			throw new TranslationException(targetType, "Expected target type %s to be of arity 1, got %d instead"
 					.formatted(targetType, targetType.arity()));
 		}
+	}
+
+	public ContainmentInfo(PartialRelation sourceType, Multiplicity multiplicity, PartialRelation targetType) {
+		this(sourceType, multiplicity, targetType, true, Set.of(), Set.of());
 	}
 }

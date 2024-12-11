@@ -32,7 +32,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/REFERENCE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINER"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/PARTIAL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//UnaryOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//UnaryOp/PLUS"/>
@@ -81,7 +80,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/DEFAULT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/ERROR"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/SHADOW"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/PARTIAL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ParameterKind">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterKind/VALUE"/>

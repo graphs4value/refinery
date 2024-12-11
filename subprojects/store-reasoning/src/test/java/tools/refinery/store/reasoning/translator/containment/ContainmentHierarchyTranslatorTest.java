@@ -7,6 +7,8 @@ package tools.refinery.store.reasoning.translator.containment;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -18,12 +20,9 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchy;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
-import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -49,7 +48,7 @@ class ContainmentHierarchyTranslatorTest {
 
 		var containmentHierarchy = Map.of(
 				entry,
-				new ContainmentInfo(c1, UnconstrainedMultiplicity.INSTANCE, c2, Set.of(), Set.of())
+				new ContainmentInfo(c1, UnconstrainedMultiplicity.INSTANCE, c2)
 		);
 
 		store = ModelStore.builder()

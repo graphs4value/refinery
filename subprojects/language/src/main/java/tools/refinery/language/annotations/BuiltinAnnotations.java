@@ -9,21 +9,25 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.library.BuiltinLibrary;
-import tools.refinery.language.model.problem.AnnotationDeclaration;
-import tools.refinery.language.model.problem.Parameter;
-import tools.refinery.language.model.problem.ParametricDefinition;
-import tools.refinery.language.model.problem.RuleDefinition;
+import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.List;
 
 public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
-	public static final QualifiedName FOCUS = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("focus");
-	public static final QualifiedName LONE = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("lone");
-	public static final QualifiedName MULTI = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("multi");
 	public static final QualifiedName OPTIONAL = BuiltinLibrary.BUILTIN_ANNOTATIONS_LIBRARY_NAME.append(
 			"optional");
 	public static final QualifiedName REPEATABLE = BuiltinLibrary.BUILTIN_ANNOTATIONS_LIBRARY_NAME.append(
 			"repeatable");
+	public static final QualifiedName FOCUS = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("focus");
+	public static final QualifiedName LONE = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("lone");
+	public static final QualifiedName MULTI = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append("multi");
+	public static final QualifiedName CONCRETIZE = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append(
+			"concretize");
+	public static final String CONCRETIZE_AUTO = "auto";
+	public static final QualifiedName DECIDE = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append(
+			"decide");
+	public static final String DECIDE_AUTO = CONCRETIZE_AUTO;
 
 	private static final List<QualifiedName> BINDING_MODES = List.of(FOCUS, LONE, MULTI);
 
@@ -70,5 +74,57 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 									   Class<? extends ParametricDefinition> definitionType) {
 		return annotatedElement instanceof Parameter &&
 				definitionType.isInstance(EcoreUtil2.getContainerOfType(annotatedElement, ParametricDefinition.class));
+	}
+
+	@ValidateAnnotation("CONCRETIZE")
+	private void validateConcretize(Annotation annotation) {
+		if (!(annotation.getAnnotatedElement() instanceof Relation relation)) {
+			error("@concretize can only be applied to logical relations.", annotation);
+			return;
+		}
+		boolean value = annotation.getBoolean(CONCRETIZE_AUTO).orElse(true);
+		if (value) {
+			if (!ProblemUtil.canEnableConcretization(relation)) {
+				error("Automatic concretization can't be enabled for '%s'.".formatted(relation.getName()), annotation);
+				return;
+			}
+		} else if (!ProblemUtil.canDisableConcretization(relation)) {
+			error("Automatic concretization can't be disabled for '%s'.".formatted(relation.getName()), annotation);
+			return;
+		}
+		if (value == ProblemUtil.isConcretizeByDefault(relation)) {
+			warning("Automatic concretization for '%s' is already %s."
+							.formatted(relation.getName(), value ? "enabled" : "disabled"), annotation);
+		}
+	}
+
+	@ValidateAnnotation("DECIDE")
+	private void validateDecide(Annotation annotation) {
+		if (!(annotation.getAnnotatedElement() instanceof Relation relation)) {
+			error("@decide can only be applied to logical relations.", annotation);
+			return;
+		}
+		boolean value = annotation.getBoolean(DECIDE_AUTO).orElse(true);
+		if (value) {
+			if (!ProblemUtil.canEnableDecision(relation)) {
+				error("Automatic decision can't be enabled for '%s'.".formatted(relation.getName()), annotation);
+				return;
+			}
+		} else if (!ProblemUtil.canDisableDecision(relation)) {
+			error("Automatic decision can't be disabled for '%s'.".formatted(relation.getName()), annotation);
+			return;
+		}
+		var concretize = annotationsFor(relation).getAnnotation(CONCRETIZE)
+				.flatMap(a -> a.getBoolean(CONCRETIZE_AUTO));
+		boolean defaultValue;
+		if (concretize.isPresent() && Boolean.FALSE.equals(concretize.get())) {
+			defaultValue = false;
+		} else {
+			defaultValue = ProblemUtil.isDecideByDefault(relation);
+		}
+		if (value == defaultValue) {
+			warning("Automatic decision for '%s' is already %s."
+					.formatted(relation.getName(), value ? "enabled" : "disabled"), annotation);
+		}
 	}
 }
