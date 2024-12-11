@@ -7,7 +7,6 @@
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
-import keySVG from '@material-icons/svg/svg/vpn_key/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import {
   alpha,
@@ -19,6 +18,8 @@ import { range } from 'lodash-es';
 
 import svgURL from '../utils/svgURL';
 import typeHashTextColor from '../utils/typeHashTextColor';
+
+import keywordSVG from './icons/symbol-keyword.svg?raw';
 
 function createTypeHashStyles(
   theme: Theme,
@@ -513,6 +514,21 @@ export default styled('div', {
     },
   };
 
+  function completionIconStyle(name: string, icon: string): CSSObject {
+    return {
+      [`.cm-completionIcon-${name}::after`]: {
+        content: '" "',
+        display: 'inline-block',
+        background: 'currentColor',
+        maskImage: svgURL(icon),
+        maskSize: '16px 16px',
+        height: 16,
+        width: 16,
+        verticalAlign: 'middle',
+      },
+    };
+  }
+
   const completionStyle: CSSObject = {
     '.cm-tooltip.cm-tooltip-autocomplete': {
       ...editorFontStyle,
@@ -536,7 +552,7 @@ export default styled('div', {
         borderRadius: theme.shape.borderRadius,
       },
       '.cm-completionIcon': {
-        color: theme.palette.text.secondary,
+        color: theme.palette.text.primary,
       },
       '.cm-completionLabel': {
         ...editorFontStyle,
@@ -577,16 +593,8 @@ export default styled('div', {
       margin: `0 ${theme.spacing(0.5)} 0 0`,
       textAlign: 'center',
     },
-    '.cm-completionIcon-keyword::after, .cm-completionIcon-operator::after': {
-      content: '" "',
-      display: 'inline-block',
-      background: 'currentColor',
-      maskImage: svgURL(keySVG),
-      maskSize: '16px 16px',
-      height: 16,
-      width: 16,
-      verticalAlign: 'middle',
-    },
+    ...completionIconStyle('keyword', keywordSVG),
+    ...completionIconStyle('operator', keywordSVG),
     '.cm-tooltip.cm-completionInfo': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
         | CSSObject
@@ -641,7 +649,10 @@ export default styled('div', {
         ...theme.typography.body2,
         padding: 0,
         margin: `${theme.spacing(1)} 0`,
-        color: theme.palette.text.secondary,
+        color:
+          theme.palette.mode === 'dark'
+            ? theme.palette.text.secondary
+            : '#d7d7d7',
         fontStyle: 'italic',
       },
     },
