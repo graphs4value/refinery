@@ -14,10 +14,7 @@ import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.conversion.IdentifierValueConverter;
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.EnumDeclaration;
-import tools.refinery.language.model.problem.ParametricDefinition;
-import tools.refinery.language.model.problem.ReferenceDeclaration;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.utils.ProblemUtil;
 
@@ -63,6 +60,10 @@ public class DocumentationCommentParser {
 	}
 
 	private Map<String, String> doParseDocumentation(EObject eObject) {
+		if (eObject instanceof Problem) {
+			// There is no way to attach a documentation comment to a top-level module.
+			return Map.of();
+		}
 		var documentation = documentationProvider.getDocumentation(eObject);
 		return parseDocumentationText(eObject, Objects.requireNonNullElse(documentation, ""));
 
