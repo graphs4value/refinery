@@ -10,6 +10,10 @@ import builtin::annotations.
  *
  * If the parameter matches a single object, no new object will be created, but
  * the postcondition of the decision rule will still be executed.
+ *
+ * Two `@focus` parameters can't match the same concrete object, i.e., they're
+ * always matched _monomorphically_. However, it's possible to match the same
+ * multi-object several times and split off several distinct objects from it.
  */
 #pred focus().
 
