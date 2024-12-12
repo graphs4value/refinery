@@ -1,0 +1,72 @@
+% SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::annotations.
+
+/**
+ * Makes a decision rule parameter to match multi-objects and split off an
+ * object from a multi-object whenever the rule is executed.
+ *
+ * If the parameter matches a single object, no new object will be created, but
+ * the postcondition of the decision rule will still be executed.
+ *
+ * Two `@focus` parameters can't match the same concrete object, i.e., they're
+ * always matched _monomorphically_. However, it's possible to match the same
+ * multi-object several times and split off several distinct objects from it.
+ */
+#pred focus().
+
+/**
+ * Allows a decision rule parameter to match objects that do not necessarily
+ * exist.
+ *
+ * By default, decision rules parameters can only match objects that are _not_
+ * multi-objects to avoid decisions that don't refine the model productively.
+ */
+#pred lone().
+
+/**
+ * Allows a decision rule parameter to match multi-objects.
+ *
+ * The postcondition of the rule will be executed without splitting of an
+ * object from the multi-object and will affect all objects represented by the
+ * multi-object simultaneously.
+ *
+ * The postcondition can't contain assertions where the parameter appears more
+ * than once, e.g., `reference(multi, multi)`, because the partial model can't
+ * represent such effects faithfully.
+ *
+ * By default, decision rules parameters can only match objects that are _not_
+ * multi-objects to avoid decisions that don't refine the model productively.
+ */
+#pred multi().
+
+/**
+ * Enables or disables automatic concretization for a relation.
+ *
+ * Setting `@concretize(false)` also implies `@decide(false)` unless a value
+ * for `@decide` is also set manually.
+ *
+ * @param auto `true` if `unknown` values should be automatically replaced with
+ *             `false`, `false` otherwise.
+ *
+ *             Default value: `true`.
+ */
+#pred concretize(@optional boolean auto).
+
+/**
+ * Enables or disables automatic decisions for a relation.
+ *
+ * Set `@decide(false)` to disable automatically created decision rules without
+ * disabling concretization.
+ *
+ * Set `@decide(true)` along with `@concretize(false)` to disable automatic
+ * concretization without disabling automatically created decision rules.
+ *
+ * @param auto `true` if a decision rule that sets the value of the target
+ *             predicate to `true` should be created automatically.
+ *
+ *             Default value: `true`.
+ */
+#pred decide(@optional boolean auto).

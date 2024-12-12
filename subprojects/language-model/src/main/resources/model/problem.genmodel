@@ -3,7 +3,7 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
     modelDirectory="/tools.refinery.refinery-language-model/src/main/emf-gen"
     creationIcons="false" editDirectory="/language-edit/src/main/emf-gen" editorDirectory="/org.eclipse.viatra.solver.language.model.editor/src-gen"
-    modelPluginID="language-model" modelName="Problem" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    modelPluginID="language-model" modelName="Problem" rootExtendsClass="tools.refinery.language.model.problem.impl.ProblemEObjectImpl"
     codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0"
     copyrightFields="false" operationReflection="true" importOrganizing="true">
   <foreignModel>problem.ecore</foreignModel>
@@ -32,7 +32,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/REFERENCE"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINMENT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/CONTAINER"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/PARTIAL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//UnaryOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//UnaryOp/PLUS"/>
@@ -77,17 +76,14 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/DECISION"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//RuleKind/CONCRETIZATION"/>
     </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ParameterBinding">
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/SINGLE"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/FOCUS"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/LONE"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterBinding/MULTI"/>
-    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//PredicateKind">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/DEFAULT"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/ERROR"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/SHADOW"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//PredicateKind/PARTIAL"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ParameterKind">
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterKind/VALUE"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ParameterKind/PRED"/>
     </genEnums>
     <genClasses ecoreClass="problem.ecore#//Problem">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Problem/nodes"/>
@@ -120,7 +116,7 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Parameter">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Parameter/parameterType"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/binding"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Parameter/kind"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Variable"/>
     <genClasses ecoreClass="problem.ecore#//Atom">
@@ -196,6 +192,8 @@
     <genClasses ecoreClass="problem.ecore#//VariableOrNodeExpr">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//VariableOrNodeExpr/variableOrNode"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//VariableOrNodeExpr/singletonVariable"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//VariableOrNodeExpr/relation"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//VariableOrNodeExpr/element"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//BinaryExpr">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//BinaryExpr/left"/>
@@ -259,6 +257,24 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//Assertion">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//Assertion/default"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotatedElement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotatedElement/annotations"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotationContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationContainer/annotations"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotationDeclaration"/>
+    <genClasses ecoreClass="problem.ecore#//Annotation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Annotation/declaration"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//Annotation/arguments"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//AnnotationArgument">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/value"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//AnnotationArgument/parameter"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//TopLevelAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//TopLevelAnnotation/annotation"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -5,5 +5,5 @@
  */
 
 export default function svgURL(svg: string): string {
-  return `url('data:image/svg+xml;utf8,${svg}')`;
+  return `url('data:image/svg+xml;utf8,${svg.replaceAll('\n', '')}')`;
 }

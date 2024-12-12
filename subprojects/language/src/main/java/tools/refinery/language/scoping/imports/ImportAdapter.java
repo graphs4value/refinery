@@ -16,10 +16,14 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.annotations.AnnotationValidator;
+import tools.refinery.language.annotations.internal.CompositeAnnotationValidator;
 import tools.refinery.language.expressions.CompositeTermInterpreter;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.library.RefineryLibrary;
+import tools.refinery.language.library.internal.CompositeLibrary;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.utils.BuiltinSymbols;
 
@@ -31,11 +35,13 @@ public class ImportAdapter extends AdapterImpl {
 	private static final Logger LOG = Logger.getLogger(ImportAdapter.class);
 	private static final List<RefineryLibrary> DEFAULT_LIBRARIES;
 	private static final List<TermInterpreter> DEFAULT_TERM_INTERPRETERS;
+	private static final List<AnnotationValidator> DEFAULT_ANNOTATION_VALIDATORS;
 	private static final List<Path> DEFAULT_PATHS;
 
 	static {
 		DEFAULT_LIBRARIES = loadServices(RefineryLibrary.class);
 		DEFAULT_TERM_INTERPRETERS = loadServices(TermInterpreter.class);
+		DEFAULT_ANNOTATION_VALIDATORS = loadServices(AnnotationValidator.class);
 		var pathEnv = System.getenv("REFINERY_LIBRARY_PATH");
 		if (pathEnv == null) {
 			DEFAULT_PATHS = List.of();
@@ -48,18 +54,28 @@ public class ImportAdapter extends AdapterImpl {
 	}
 
 	private static <T> List<T> loadServices(Class<T> serviceClass) {
-		var serviceLoader = ServiceLoader.load(serviceClass);
-		var services = new ArrayList<T>();
-		for (var service : serviceLoader) {
-			services.add(service);
-		}
-		return List.copyOf(services);
+		return ServiceLoader.load(serviceClass).stream()
+				.<T>mapMulti((provider, consumer) -> {
+					T service = null;
+					try {
+						service = provider.get();
+					} catch (ServiceConfigurationError e) {
+						LOG.error("Error loading service: " + serviceClass.getName(), e);
+					}
+					if (service != null) {
+						consumer.accept(service);
+					}
+				})
+				.toList();
 	}
 
 	private ResourceSet resourceSet;
 	private final List<RefineryLibrary> libraries = new ArrayList<>(DEFAULT_LIBRARIES);
 	private final List<TermInterpreter> termInterpreters = new ArrayList<>(DEFAULT_TERM_INTERPRETERS);
+	private final List<AnnotationValidator> annotationValidators = new ArrayList<>(DEFAULT_ANNOTATION_VALIDATORS);
+	private final RefineryLibrary compositeLibrary = new CompositeLibrary(libraries);
 	private final TermInterpreter termInterpreter = new CompositeTermInterpreter(termInterpreters);
+	private final AnnotationValidator annotationValidator = new CompositeAnnotationValidator(annotationValidators);
 	private final List<Path> libraryPaths = new ArrayList<>(DEFAULT_PATHS);
 	private final Cache<QualifiedName, QualifiedName> failedResolutions =
 			CacheBuilder.newBuilder().maximumSize(100).build();
@@ -88,15 +104,28 @@ public class ImportAdapter extends AdapterImpl {
 		return termInterpreters;
 	}
 
+	public List<AnnotationValidator> getAnnotationValidators() {
+		return annotationValidators;
+	}
+
+	public RefineryLibrary getLibrary() {
+		return compositeLibrary;
+	}
+
 	public TermInterpreter getTermInterpreter() {
 		return termInterpreter;
+	}
+
+	public AnnotationValidator getAnnotationValidator() {
+		return annotationValidator;
 	}
 
 	public List<Path> getLibraryPaths() {
 		return libraryPaths;
 	}
 
-	public URI resolveQualifiedName(QualifiedName qualifiedName) {
+	@Nullable
+	public URI resolveAndCacheQualifiedName(QualifiedName qualifiedName) {
 		var uri = getResolvedUri(qualifiedName);
 		if (uri != null) {
 			return uri;
@@ -104,13 +133,11 @@ public class ImportAdapter extends AdapterImpl {
 		if (isFailed(qualifiedName)) {
 			return null;
 		}
-		for (var library : libraries) {
-			var result = library.resolveQualifiedName(qualifiedName, libraryPaths);
-			if (result.isPresent()) {
-				uri = result.get();
-				markAsResolved(qualifiedName, uri);
-				return uri;
-			}
+		var result = compositeLibrary.resolveQualifiedName(qualifiedName, libraryPaths);
+		if (result.isPresent()) {
+			uri = result.get();
+			markAsResolved(qualifiedName, uri);
+			return uri;
 		}
 		markAsUnresolved(qualifiedName);
 		return null;
@@ -189,20 +216,19 @@ public class ImportAdapter extends AdapterImpl {
 
 	private void resourceAdded(Resource resource) {
 		var uri = resource.getURI();
-		for (var library : libraries) {
-			var result = library.getQualifiedName(uri, libraryPaths);
-			if (result.isPresent()) {
-				var qualifiedName = result.get();
-				var previousQualifiedName = uriToQualifiedNameMap.putIfAbsent(uri, qualifiedName);
-				if (previousQualifiedName == null) {
-					if (qualifiedNameToUriMap.put(qualifiedName, uri) != null) {
-						throw new IllegalArgumentException("Duplicate resource for" + qualifiedName);
-					}
-				} else if (!previousQualifiedName.equals(qualifiedName)) {
-					LOG.warn("Expected %s to have qualified name %s, got %s instead".formatted(
-							uri, previousQualifiedName, qualifiedName));
-				}
+		var result = compositeLibrary.computeQualifiedName(uri, libraryPaths);
+		if (result.isEmpty()) {
+			return;
+		}
+		var qualifiedName = result.get();
+		var previousQualifiedName = uriToQualifiedNameMap.putIfAbsent(uri, qualifiedName);
+		if (previousQualifiedName == null) {
+			if (qualifiedNameToUriMap.put(qualifiedName, uri) != null) {
+				throw new IllegalArgumentException("Duplicate resource for" + qualifiedName);
 			}
+		} else if (!previousQualifiedName.equals(qualifiedName)) {
+			LOG.warn("Expected %s to have qualified name %s, got %s instead".formatted(
+					uri, previousQualifiedName, qualifiedName));
 		}
 	}
 

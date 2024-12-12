@@ -5,88 +5,116 @@
  */
 package tools.refinery.language.library;
 
+import com.google.common.collect.Streams;
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.naming.QualifiedName;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class ClasspathBasedLibrary implements RefineryLibrary {
-	private final Class<?> context;
-	private final QualifiedName prefix;
-	private final URI rootUri;
+	private static final Logger LOG = Logger.getLogger(ClasspathBasedLibrary.class);
+	private static final String DOCUMENTATION_FILE_NAME_SUFFIX = FILE_NAME_SUFFIX + ".md";
 
-	protected ClasspathBasedLibrary(Class<?> context, QualifiedName prefix) {
-        this.context = context == null ? getClass() : context;
-        this.prefix = prefix;
-		var contextPath = this.context.getCanonicalName().replace('.', '/') + ".class";
-		var contextResource = this.context.getClassLoader().getResource(contextPath);
-		if (contextResource == null) {
-			throw new IllegalStateException("Failed to find library context");
-		}
-		var contextUri = URI.createURI(contextResource.toString());
-		var segments = Arrays.copyOf(contextUri.segments(), contextUri.segmentCount() - 1);
-		rootUri = URI.createHierarchicalURI(contextUri.scheme(), contextUri.authority(), contextUri.device(),
-				segments, null, null);
+	private final Class<?> context;
+	private final List<QualifiedName> mutableSuggestedLibraries = new ArrayList<>();
+	private final List<QualifiedName> suggestedLibraries = Collections.unmodifiableList(mutableSuggestedLibraries);
+	private final Map<QualifiedName, URI> nameToUriMap = new LinkedHashMap<>();
+	private final Map<URI, QualifiedName> uriToNameMap = new LinkedHashMap<>();
+	private final Map<QualifiedName, String> documentationMap = new LinkedHashMap<>();
+
+	protected ClasspathBasedLibrary(Class<?> context) {
+		this.context = context == null ? getClass() : context;
+
 	}
 
-	protected ClasspathBasedLibrary(QualifiedName prefix) {
-		this(null, prefix);
+	protected ClasspathBasedLibrary() {
+		this(null);
+	}
+
+	protected void addLibrary(QualifiedName qualifiedName) {
+		var uri = getLibraryUri(context, qualifiedName).orElseThrow(
+				() -> new IllegalArgumentException("Failed to resolve library %s in %s"
+						.formatted(qualifiedName, context.getName())));
+		mutableSuggestedLibraries.add(qualifiedName);
+		nameToUriMap.put(qualifiedName, uri);
+		uriToNameMap.put(uri, qualifiedName);
+		var documentation = loadDocumentation(qualifiedName);
+		if (documentation != null) {
+			documentationMap.put(qualifiedName, documentation);
+		}
+	}
+
+	private String loadDocumentation(QualifiedName qualifiedName) {
+		var resourceName = getResourceName(context, qualifiedName, DOCUMENTATION_FILE_NAME_SUFFIX);
+		var inputStream = context.getClassLoader().getResourceAsStream(resourceName);
+		if (inputStream == null) {
+			return null;
+		}
+		byte[] bytes;
+		try {
+			bytes = inputStream.readAllBytes();
+		} catch (IOException e) {
+			LOG.error("Error while reading documentation for library " + qualifiedName, e);
+			return null;
+		} finally {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				LOG.error("Error while closing input stream", e);
+			}
+		}
+		return new String(bytes, StandardCharsets.UTF_8);
+	}
+
+	@Override
+	public List<QualifiedName> getSuggestedLibraries() {
+		return suggestedLibraries;
+	}
+
+	@Override
+	public Optional<String> getDocumentation(QualifiedName qualifiedName) {
+		return Optional.ofNullable(documentationMap.get(qualifiedName));
 	}
 
 	@Override
 	public Optional<URI> resolveQualifiedName(QualifiedName qualifiedName, List<Path> libraryPaths) {
-		if (qualifiedName.startsWith(prefix)) {
-			return getLibraryUri(context, qualifiedName);
-		}
-		return Optional.empty();
+		return Optional.ofNullable(nameToUriMap.get(qualifiedName));
 	}
 
 	@Override
-	public Optional<QualifiedName> getQualifiedName(URI uri, List<Path> libraryPaths) {
-		if (!uri.isHierarchical() ||
-				!Objects.equals(rootUri.scheme(), uri.scheme()) ||
-				!Objects.equals(rootUri.authority(), uri.authority()) ||
-				!Objects.equals(rootUri.device(), uri.device()) ||
-				rootUri.segmentCount() >= uri.segmentCount()) {
-			return Optional.empty();
-		}
-		int rootSegmentCount = rootUri.segmentCount();
-		int uriSegmentCount = uri.segmentCount();
-		if (!uri.segment(uriSegmentCount - 1).endsWith(RefineryLibrary.FILE_NAME_SUFFIX)) {
-			return Optional.empty();
-		}
-		var segments = new ArrayList<String>();
-		int i = 0;
-		while (i < rootSegmentCount) {
-			if (!rootUri.segment(i).equals(uri.segment(i))) {
-				return Optional.empty();
-			}
-			i++;
-		}
-		while (i < uriSegmentCount) {
-			var segment = uri.segment(i);
-			if (i == uriSegmentCount - 1) {
-				segment = segment.substring(0, segment.length() - RefineryLibrary.FILE_NAME_SUFFIX.length());
-			}
-			segments.add(segment);
-			i++;
-		}
-		var qualifiedName = QualifiedName.create(segments);
-		if (!qualifiedName.startsWith(prefix)) {
-			return Optional.empty();
-		}
-		return Optional.of(qualifiedName);
+	public Optional<QualifiedName> computeQualifiedName(URI uri, List<Path> libraryPaths) {
+		return Optional.ofNullable(uriToNameMap.get(uri));
 	}
 
 	public static Optional<URI> getLibraryUri(Class<?> context, QualifiedName qualifiedName) {
-		var packagePath = context.getPackageName().replace('.', '/');
-		var libraryPath = String.join("/", qualifiedName.getSegments());
-		var resourceName = "%s/%s%s".formatted(packagePath, libraryPath, RefineryLibrary.FILE_NAME_SUFFIX);
+		var resourceName = getResourceName(context, qualifiedName, FILE_NAME_SUFFIX);
 		var resource = context.getClassLoader().getResource(resourceName);
 		if (resource == null) {
+			// Library not found.
 			return Optional.empty();
 		}
 		return Optional.of(URI.createURI(resource.toString()));
+	}
+
+	private static String getResourceName(Class<?> context, QualifiedName qualifiedName, String suffix) {
+		var packagePath = LibraryResolutionUtil.arrayToPath(context.getPackageName().split("\\."));
+		if (packagePath == null) {
+			throw new IllegalArgumentException("Trying to resolve qualified name in the root package.");
+		}
+		var relativePath = LibraryResolutionUtil.qualifiedNameToPath(qualifiedName, suffix);
+		if (relativePath == null) {
+			return null;
+		}
+		var path = packagePath.resolve(relativePath).normalize();
+		if (!path.startsWith(packagePath)) {
+			// Trying to resolve a module outside the library package.
+			return null;
+		}
+		return Streams.stream(path).map(Path::toString).collect(Collectors.joining("/"));
 	}
 }

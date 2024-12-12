@@ -2,18 +2,67 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
+/**
+ * All objects in the model.
+ */
 abstract class node.
 
+/**
+ * Four-valued existence predicate.
+ *
+ * Set `?exists(node)` to allow `node` to be removed from the partial model
+ * during refinement.
+ *
+ * Set `!exists(node)` to remove `node` from the partial model outright.
+ *
+ * @param node The node that exists.
+ */
 pred exists(node).
 
+/**
+ * Four-valued equivalence predicate.
+ *
+ * Set `?equals(node, node)` to allow `node` to act as a multi-object and be
+ * split into multiple objects during refinement.
+ *
+ * Setting `!equals(node, node)` or `equals(node, node): error` is not allowed.
+ * There is no support for object merges `equals(node1, node2)` where `node1`
+ * and `node2` refer to different objects.
+ *
+ * @param left The node.
+ * @param right The node that is equivalent with `left`. Must be the same as
+ *              `left`.
+ */
 pred equals(left, right).
 
+/**
+ * Instances of classes with at least one outgoing reference marked with
+ * `contains`.
+ */
 abstract class container extends node.
 
+/**
+ * Instances of classes with at least one incoming reference marked with
+ * `contains`.
+ *
+ * `contained` objects must have _exactly one_ incoming containment link.
+ */
 abstract class contained extends node.
 
-pred contains(container, contained contained).
+/**
+ * Containment links are formed by references marked with `contains`.
+ *
+ * @param container The source of the containment link.
+ * @param contained The target of the containment link.
+ */
+pred contains(container container, contained contained).
 
+/**
+ * A `contained` object that has _no_ or _more than one_ incoming containment
+ * link.
+ *
+ * @param contained The node with the invalid containment links.
+ */
 error invalidContainer(contained contained).
 
 extern datatype boolean.

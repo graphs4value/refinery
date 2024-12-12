@@ -2,8 +2,11 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
+import builtin::strategy.
+
 class A {
-    partial A[] foo
+    @concretize(false)
+    A[] foo
 }
 
 pred hasCommonFoo(A a1, A a2) <->

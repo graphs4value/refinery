@@ -8,6 +8,11 @@ package tools.refinery.language.utils;
 import tools.refinery.language.model.problem.*;
 
 public final class BuiltinSymbols {
+	public static final String BOOLEAN_NAME = "boolean";
+	public static final String INT_NAME = "int";
+	public static final String REAL_NAME = "real";
+	public static final String STRING_NAME = "string";
+
     private final Problem problem;
     private final ClassDeclaration node;
     private final PredicateDefinition equals;
@@ -16,6 +21,10 @@ public final class BuiltinSymbols {
     private final ClassDeclaration contained;
     private final PredicateDefinition contains;
     private final PredicateDefinition invalidContainer;
+	private final DatatypeDeclaration booleanDatatype;
+	private final DatatypeDeclaration intDatatype;
+	private final DatatypeDeclaration realDatatype;
+	private final DatatypeDeclaration stringDatatype;
 
     public BuiltinSymbols(Problem problem) {
         this.problem = problem;
@@ -26,6 +35,10 @@ public final class BuiltinSymbols {
 		contained = getDeclaration(ClassDeclaration.class, "contained");
 		contains = getDeclaration(PredicateDefinition.class, "contains");
 		invalidContainer = getDeclaration(PredicateDefinition.class, "invalidContainer");
+		booleanDatatype = getDeclaration(DatatypeDeclaration.class, BOOLEAN_NAME);
+		intDatatype = getDeclaration(DatatypeDeclaration.class, INT_NAME);
+		realDatatype = getDeclaration(DatatypeDeclaration.class, REAL_NAME);
+		stringDatatype = getDeclaration(DatatypeDeclaration.class, STRING_NAME);
     }
 
     public Problem problem() {
@@ -60,9 +73,25 @@ public final class BuiltinSymbols {
         return invalidContainer;
     }
 
-	private <T extends Statement & NamedElement> T getDeclaration(Class<T> type, String name) {
-		return problem.getStatements().stream().filter(type::isInstance).map(type::cast)
-				.filter(declaration -> name.equals(declaration.getName())).findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Built-in declaration " + name + " was not found"));
-	}
+    public DatatypeDeclaration booleanDatatype() {
+        return booleanDatatype;
+    }
+
+    public DatatypeDeclaration intDatatype() {
+        return intDatatype;
+    }
+
+    public DatatypeDeclaration realDatatype() {
+        return realDatatype;
+    }
+
+    public DatatypeDeclaration stringDatatype() {
+        return stringDatatype;
+    }
+
+    private <T extends Statement & NamedElement> T getDeclaration(Class<T> type, String name) {
+        return problem.getStatements().stream().filter(type::isInstance).map(type::cast)
+                .filter(declaration -> name.equals(declaration.getName())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Built-in declaration " + name + " was not found"));
+    }
 }

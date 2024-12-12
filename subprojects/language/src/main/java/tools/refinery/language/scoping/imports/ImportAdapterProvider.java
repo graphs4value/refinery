@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.utils.BuiltinSymbols;
 
@@ -62,7 +63,8 @@ public class ImportAdapterProvider {
 		return adapter;
 	}
 
-	public static ImportAdapter getAdapter(@NotNull ResourceSet resourceSet) {
+	@Nullable
+	private static ImportAdapter getAdapter(@NotNull ResourceSet resourceSet) {
 		return (ImportAdapter) EcoreUtil.getAdapter(resourceSet.eAdapters(), ImportAdapter.class);
 	}
 }

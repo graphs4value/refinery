@@ -114,7 +114,7 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	public static boolean isDerivedStatePredicate(PredicateDefinition predicateDefinition) {
+	public static boolean isDerivedStatePredicate(EObject predicateDefinition) {
 		var containingFeature = predicateDefinition.eContainingFeature();
 		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
 				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
@@ -125,11 +125,7 @@ public final class ProblemUtil {
 			// Built-in predicates have no clauses, but are not base.
 			return false;
 		}
-		return switch (predicateDefinition.getKind()) {
-			case DEFAULT -> predicateDefinition.getBodies().isEmpty();
-			case PARTIAL -> true;
-			default -> false;
-		};
+		return predicateDefinition.getKind() == PredicateKind.DEFAULT && predicateDefinition.getBodies().isEmpty();
 	}
 
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
@@ -151,7 +147,7 @@ public final class ProblemUtil {
 			return false;
 		}
 		return switch (kind) {
-			case CONTAINMENT, PARTIAL -> false;
+			case CONTAINMENT -> false;
 			case CONTAINER -> true;
 			case DEFAULT, REFERENCE -> {
 				var opposite = referenceDeclaration.getOpposite();
@@ -199,5 +195,38 @@ public final class ProblemUtil {
 			case PredicateDefinition predicateDefinition -> predicateDefinition.getParameters().size();
 			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
 		};
+	}
+
+	public static boolean isConcretizeByDefault(Relation relation) {
+		return switch (relation) {
+			case ClassDeclaration ignored -> true;
+			case ReferenceDeclaration ignored -> true;
+			case PredicateDefinition predicateDefinition -> isBasePredicate(predicateDefinition);
+			default -> false;
+		};
+	}
+
+	public static boolean canEnableConcretization(Relation relation) {
+		return isConcretizeByDefault(relation);
+	}
+
+	public static boolean canDisableConcretization(Relation relation) {
+		if (relation instanceof ReferenceDeclaration referenceDeclaration &&
+				(isContainmentReference(referenceDeclaration) || isContainerReference(referenceDeclaration))) {
+			return false;
+		}
+		return isConcretizeByDefault(relation);
+	}
+
+	public static boolean isDecideByDefault(Relation relation) {
+		return isConcretizeByDefault(relation);
+	}
+
+	public static boolean canEnableDecision(Relation relation) {
+		return isDecideByDefault(relation);
+	}
+
+	public static boolean canDisableDecision(Relation relation) {
+		return isDecideByDefault(relation);
 	}
 }

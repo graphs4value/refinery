@@ -34,6 +34,7 @@ interface HighlightPalette {
   number: string;
   parameter: string;
   comment: string;
+  string: string;
   activeLine: string;
   selection: string;
   foldPlaceholder: string;
@@ -279,6 +280,7 @@ export const lightTheme = (() => {
           number: '#0084bc',
           parameter: '#6a3e3e',
           comment: disabledText,
+          string: '#50a14f',
           activeLine: darkBackground,
           selection: '#c8e4fb',
           foldPlaceholder: alpha(primaryText, 0.08),
@@ -372,6 +374,7 @@ export const darkTheme = (() => {
           number: '#6188a6',
           parameter: '#c8ae9d',
           comment: '#7f848e',
+          string: '#98c379',
           activeLine: '#2c313c',
           selection: '#404859',
           foldPlaceholder: alpha(primaryText, 0.12),

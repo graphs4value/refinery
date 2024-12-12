@@ -6,34 +6,41 @@
 package tools.refinery.language.ide.contentassist;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
+import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
+import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
+import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xtext.CurrentTypeFinder;
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.documentation.DocumentationCommentParser;
+import tools.refinery.language.documentation.TypeHashProvider;
+import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
+import tools.refinery.language.services.ProblemGrammarAccess;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ReferenceCounter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider {
 	@Inject
@@ -47,6 +54,23 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	@Inject
 	private ImportAdapterProvider importAdapterProvider;
+
+	@Inject
+	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private IdeContentProposalCreator proposalCreator;
+
+	@Inject
+	private TypeHashProvider typeHashProvider;
+
+	private CrossReference importedModuleCrossReference;
+
+	@Inject
+	public void setGrammarAccess(ProblemGrammarAccess grammarAccess) {
+		importedModuleCrossReference = grammarAccess.getImportStatementAccess()
+				.getImportedModuleProblemCrossReference_1_0();
+	}
 
 	@Override
 	protected Iterable<IEObjectDescription> queryScope(IScope scope, CrossReference crossReference,
@@ -70,7 +94,136 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 				}
 			}
 		}
+		if (Objects.equals(importedModuleCrossReference, crossReference)) {
+			postProcessImportProposals(eObjectDescriptions, context);
+		}
 		return eObjectDescriptions;
+	}
+
+	@Override
+	protected ContentAssistEntry createProposal(IEObjectDescription candidate, CrossReference crossRef,
+												ContentAssistContext context) {
+		return proposalCreator.createProposal(qualifiedNameConverter.toString(candidate.getName()), context, e -> {
+			e.setSource(candidate);
+			e.setDescription(getDescription(candidate));
+			e.setDocumentation(getDocumentation(candidate, context));
+			e.setKind(getKind(candidate));
+		});
+	}
+
+	private static String getDescription(IEObjectDescription candidate) {
+		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(candidate.getEClass())) {
+			// Datatypes shouldn't have their arity displayed.
+			return "datatype";
+		}
+		int arity = -1;
+		var arityString = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
+		try {
+			arity = Integer.parseInt(arityString, 10);
+		} catch (NumberFormatException e) {
+			// Ignore parse error, omit arity.
+		}
+		var eClassDescription = getEClassDescription(candidate);
+		if (arity < 0) {
+			return eClassDescription;
+		}
+		if (eClassDescription == null) {
+			return "/" + arity;
+		}
+		return "/" + arity + " " + eClassDescription;
+	}
+
+	private static String getEClassDescription(IEObjectDescription candidate) {
+		var eClass = candidate.getEClass();
+		if (eClass == null) {
+			return null;
+		}
+		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(eClass)) {
+			return "module";
+		}
+		if (ProblemPackage.Literals.NODE.isSuperTypeOf(eClass)) {
+			return "node";
+		}
+		if (ProblemPackage.Literals.PARAMETER.isSuperTypeOf(eClass)) {
+			// Parameter must come before Variable, because it is a subclass of Variable.
+			return "parameter";
+		}
+		if (ProblemPackage.Literals.VARIABLE.isSuperTypeOf(eClass)) {
+			return "variable";
+		}
+		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass)) {
+			return getPredicateEClassDescription(candidate);
+		}
+		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(eClass)) {
+			return "class";
+		}
+		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass)) {
+			// For predicates, there is no need to show the exact type of definition, since they behave
+			// logically equivalently.
+			return null;
+		}
+		if (ProblemPackage.Literals.ENUM_DECLARATION.isSuperTypeOf(eClass)) {
+			return "enum";
+		}
+		if (ProblemPackage.Literals.RULE_DEFINITION.isSuperTypeOf(eClass)) {
+			return "rule";
+		}
+		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
+			return "aggregator";
+		}
+		if (ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
+			return "annotation";
+		}
+		return eClass.getName();
+	}
+
+	private static String getPredicateEClassDescription(IEObjectDescription candidate) {
+		if (ProblemResourceDescriptionStrategy.SHADOW_PREDICATE_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.SHADOW_PREDICATE))) {
+			return "shadow";
+		}
+		// For predicates, there is no need to show the exact type of definition, since they behave
+		// logically equivalently.
+		return null;
+	}
+
+	private String getDocumentation(IEObjectDescription candidate, ContentAssistContext context) {
+		var documentation = candidate.getUserData(DocumentationCommentParser.DOCUMENTATION);
+		if (documentation != null) {
+			return documentation;
+		}
+		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(candidate.getEClass())) {
+			var name = NamingUtil.stripRootPrefix(candidate.getQualifiedName());
+			var importAdapter = importAdapterProvider.getOrInstall(context.getResource());
+			return importAdapter.getLibrary().getDocumentation(name).orElse(null);
+		}
+		return null;
+	}
+
+	private String getKind(IEObjectDescription candidate) {
+		var eClass = candidate.getEClass();
+		if (BuiltinLibrary.BUILTIN_LIBRARY_URI.equals(candidate.getEObjectURI().trimFragment()) &&
+				!ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
+			// Built-in annotations are not rendered with the keyword color in the frontend.
+			return "BUILTIN";
+		}
+		if (ProblemResourceDescriptionStrategy.CONTAINMENT_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.CONTAINMENT))) {
+			return "CONTAINMENT";
+		}
+		String typeHashKind = null;
+		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass) &&
+				candidate.getEObjectOrProxy() instanceof Relation relation) {
+			var typeHash = typeHashProvider.getTypeHash(relation);
+			if (typeHash != null) {
+				typeHashKind = "typeHash-" + typeHash;
+			}
+		}
+		if (ProblemResourceDescriptionStrategy.ABSTRACT_TRUE.equals(
+				candidate.getUserData(ProblemResourceDescriptionStrategy.ABSTRACT))) {
+			return typeHashKind == null ? "ABSTRACT" : "ABSTRACT " + typeHashKind;
+		}
+		return typeHashKind == null ? ContentAssistEntry.KIND_REFERENCE : typeHashKind;
 	}
 
 	protected boolean isExistingObject(IEObjectDescription candidate, CrossReference crossRef,
@@ -122,10 +275,6 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return false;
 		}
 
-		if (eReference == ProblemPackage.Literals.IMPORT_STATEMENT__IMPORTED_MODULE) {
-			return importedModuleShouldBeVisible(candidate, context);
-		}
-
 		var candidateEObjectOrProxy = candidate.getEObjectOrProxy();
 
 		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) &&
@@ -133,7 +282,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return oppositeShouldBeVisible(candidateReferenceDeclaration, context);
 		}
 
-		if (eReference.equals(ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE)) {
+		if (eReference.equals(ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT)) {
 			var assignedVariable = getAssignedVariable(context.getCurrentModel());
 			if (assignedVariable != null && Objects.equals(assignedVariable, candidate.getEObjectOrProxy())) {
 				return false;
@@ -146,7 +295,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 				candidateEObjectOrProxy);
 	}
 
-	private VariableOrNode getAssignedVariable(EObject context) {
+	private NamedElement getAssignedVariable(EObject context) {
 		var assignmentExpr = EcoreUtil2.getContainerOfType(context, AssignmentExpr.class);
 		if (assignmentExpr != null && assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) {
 			return variableOrNodeExpr.getVariableOrNode();
@@ -294,5 +443,35 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			return null;
 		}
 		return (EObject) context.eGet(eReference);
+	}
+
+	protected void postProcessImportProposals(List<IEObjectDescription> descriptions, ContentAssistContext context) {
+		var currentModel = context.getCurrentModel();
+		if (currentModel == null) {
+			return;
+		}
+		var suggestedLibraries = importAdapterProvider.getOrInstall(currentModel).getLibrary().getSuggestedLibraries();
+		if (suggestedLibraries.isEmpty()) {
+			return;
+		}
+		var suggestedSet = new LinkedHashSet<>(suggestedLibraries);
+		for (var description : descriptions) {
+			if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(description.getEClass())) {
+				suggestedSet.remove(description.getQualifiedName());
+			}
+		}
+		for (var suggestedName : suggestedSet) {
+			var uri = URI.createURI("import://%s.%s".formatted(String.join("/", suggestedName.getSegments()),
+					ProblemUtil.MODULE_EXTENSION));
+			var proxy = ProblemFactory.eINSTANCE.createProblem();
+			((InternalEObject) proxy).eSetProxyURI(uri);
+			var description = new EObjectDescription(suggestedName, proxy, Map.of(
+					ProblemResourceDescriptionStrategy.MODULE_KIND, ModuleKind.MODULE.getName()
+			));
+			descriptions.add(description);
+		}
+		// Delay removing modules that should not be visible until here, so that modules even modules that shouldn't
+		// be visible can shadow suggested names.
+		descriptions.removeIf(description -> !importedModuleShouldBeVisible(description, context));
 	}
 }

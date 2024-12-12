@@ -19,6 +19,8 @@ import { range } from 'lodash-es';
 import svgURL from '../utils/svgURL';
 import typeHashTextColor from '../utils/typeHashTextColor';
 
+import keywordSVG from './icons/symbol-keyword.svg?raw';
+
 function createTypeHashStyles(
   theme: Theme,
   colorIdentifiers: boolean,
@@ -29,19 +31,30 @@ function createTypeHashStyles(
   }
   const result: CSSObject = {};
   range(theme.palette.highlight.typeHash.length).forEach((i) => {
+    // We highlight both `.tok-typeName` and `.tok-variableName`, because type names
+    // may occur also in `.tok-variableName` in annotation arguments.
     result[`.tok-problem-typeHash-${i}`] = {
-      '&, .tok-typeName': {
+      '&, .tok-typeName, .tok-variableName': {
         color: theme.palette.highlight.typeHash[i]?.text,
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
     };
+    result[`.cm-completionIcon-typehash-${i} + .cm-completionLabel`] = {
+      color: `${theme.palette.highlight.typeHash[i]?.text} !important`,
+      fontWeight: theme.typography.fontWeightEditorTypeHash,
+    };
   });
   hexTypeHashes.forEach((typeHash) => {
+    const color = typeHashTextColor(`#${typeHash}`, theme);
     result[`.tok-problem-typeHash-_${typeHash}`] = {
-      '&, .tok-typeName': {
-        color: typeHashTextColor(`#${typeHash}`, theme),
+      '&, .tok-typeName, .tok-variableName': {
+        color,
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
+    };
+    result[`.cm-completionIcon-typehash-_${typeHash} + .cm-completionLabel`] = {
+      color: `${color} !important`,
+      fontWeight: theme.typography.fontWeightEditorTypeHash,
     };
   });
   return result;
@@ -168,16 +181,19 @@ export default styled('div', {
       color: theme.palette.highlight.number,
     },
     '.tok-string': {
-      color: theme.palette.secondary.main,
+      color: theme.palette.highlight.string,
     },
     '.tok-keyword': {
       color: theme.palette.primary.main,
     },
-    '.tok-typeName, .tok-atom': {
+    '.tok-typeName, .tok-problem-relation .tok-variableName, .tok-atom': {
       color: theme.palette.text.primary,
     },
     '.tok-variableName': {
       color: theme.palette.highlight.parameter,
+    },
+    '.tok-meta': {
+      color: theme.palette.text.secondary,
     },
     '.tok-problem-node': {
       '&, & .tok-variableName': {
@@ -498,21 +514,45 @@ export default styled('div', {
     },
   };
 
+  function completionIconStyle(name: string, icon: string): CSSObject {
+    return {
+      [`.cm-completionIcon-${name}::after`]: {
+        content: '" "',
+        display: 'inline-block',
+        background: 'currentColor',
+        maskImage: svgURL(icon),
+        maskSize: '16px 16px',
+        height: 16,
+        width: 16,
+        verticalAlign: 'middle',
+      },
+    };
+  }
+
   const completionStyle: CSSObject = {
     '.cm-tooltip.cm-tooltip-autocomplete': {
       ...editorFontStyle,
+      // Appear above the scrollbar (and the splitter handle).
+      zIndex: 2000,
       background: theme.palette.background.paper,
       border: 'none',
       borderRadius: theme.shape.borderRadius,
-      overflow: 'hidden',
       ...(theme.palette.mode === 'dark' && {
         // https://github.com/mui/material-ui/blob/10c72729c7d03bab8cdce6eb422642684c56dca2/packages/mui-material/src/Paper/Paper.js#L18
         backgroundImage:
           'linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07))',
       }),
       boxShadow: theme.shadows[2],
+      '& > ul': {
+        // We can't set `overflow: hidden;` on the container to clip the corners of the scroll bar,
+        // because it would also hide the documentation tooltip.
+        clipPath: `inset(0px round ${theme.shape.borderRadius}px)`,
+      },
+      '&::-webkit-scrollbar': {
+        borderRadius: theme.shape.borderRadius,
+      },
       '.cm-completionIcon': {
-        color: theme.palette.text.secondary,
+        color: theme.palette.text.primary,
       },
       '.cm-completionLabel': {
         ...editorFontStyle,
@@ -520,10 +560,24 @@ export default styled('div', {
       },
       '.cm-completionDetail': {
         ...editorFontStyle,
+        margin: 0,
         color: theme.palette.text.secondary,
         fontStyle: 'normal',
       },
-      'li[aria-selected="true"]': {
+      '.cm-completionIcon-keyword + .cm-completionLabel, .cm-completionIcon-builtin + .cm-completionLabel':
+        {
+          color: `${theme.palette.primary.main} !important`,
+        },
+      '.cm-completionIcon-abstract + .cm-completionLabel': {
+        fontStyle: 'italic',
+      },
+      '.cm-completionIcon-containment + .cm-completionLabel': {
+        fontWeight: theme.typography.fontWeightEditorBold,
+      },
+      '& > ul > li': {
+        padding: `0 ${theme.spacing(0.5)}`,
+      },
+      '& > ul > li[aria-selected="true"]': {
         background: alpha(
           theme.palette.text.primary,
           theme.palette.action.focusOpacity,
@@ -536,8 +590,95 @@ export default styled('div', {
     '.cm-completionIcon': {
       width: 16,
       padding: 0,
-      marginRight: '0.5em',
+      margin: `0 ${theme.spacing(0.5)} 0 0`,
       textAlign: 'center',
+    },
+    ...completionIconStyle('keyword', keywordSVG),
+    ...completionIconStyle('operator', keywordSVG),
+    '.cm-tooltip.cm-completionInfo': {
+      ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
+        | CSSObject
+        | undefined) ?? {}),
+      ...theme.typography.body2,
+      // Appear above the scrollbar (and the splitter handle).
+      zIndex: 2000,
+      padding: `0 ${theme.spacing(1)}`,
+      borderRadius: theme.shape.borderRadius,
+      overflow: 'hidden',
+      whiteSpace: 'normal',
+      '.refinery-completion-documentation': {
+        margin: 0,
+        p: {
+          margin: `${theme.spacing(1)} 0`,
+        },
+        'code, pre': {
+          ...theme.typography.editor,
+          fontWeight: theme.typography.fontWeightEditorNormal,
+          fontSize: 'inherit',
+        },
+        pre: {
+          padding: 0,
+          margin: `${theme.spacing(1)} 0`,
+        },
+        code: {
+          background: 'rgb(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          borderRadius: theme.shape.borderRadius,
+        },
+        'pre code': {
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+        },
+      },
+      '&.cm-completionInfo-right': {
+        marginLeft: theme.spacing(1),
+      },
+      '&.cm-completionInfo-left': {
+        marginRight: theme.spacing(1),
+      },
+      '&.cm-completionInfo-right-narrow': {
+        marginLeft: theme.spacing(1),
+        marginTop: theme.spacing(1),
+      },
+      '&.cm-completionInfo-left-narrow': {
+        marginRight: theme.spacing(1),
+        marginTop: theme.spacing(1),
+      },
+      h3: {
+        ...theme.typography.body2,
+        padding: 0,
+        margin: `${theme.spacing(1)} 0`,
+        color:
+          theme.palette.mode === 'dark'
+            ? theme.palette.text.secondary
+            : '#d7d7d7',
+        fontStyle: 'italic',
+      },
+    },
+    '.refinery-completion-parameters': {
+      padding: 0,
+      margin: `${theme.spacing(1)} 0`,
+      display: 'grid',
+      gridTemplateColumns: 'max-content 1fr',
+      gap: theme.spacing(1),
+    },
+    '.refinery-completion-parameter-name': {
+      display: 'block',
+      padding: 0,
+      margin: `-${theme.spacing(1)} 0`,
+      fontWeight: theme.typography.fontWeightBold,
+    },
+    '.refinery-completion-parameter-invalid': {
+      color:
+        theme.palette.mode === 'dark'
+          ? theme.palette.error.light
+          : theme.palette.error.main,
+    },
+    '.refinery-completion-parameter-description': {
+      display: 'block',
+      padding: 0,
+      margin: `-${theme.spacing(1)} 0`,
     },
   };
 

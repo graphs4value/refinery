@@ -149,7 +149,8 @@ class ProblemFormatterTest {
 	@Test
 	void predicateWithBodyTest() {
 		testFormatter(
-				"  pred  foo  (  node  a  ,  b  )  <->  equal  (a  ,  _c  )  ,  !  equal  (  a  ,  b  )  ;  equal+(  a  ,  b  )  .  ",
+				"  pred  foo  (  node  a  ,  b  )  <->  equal  (a  ,  _c  )  ,  !  equal  (  a  ,  b  )  ;  equal+(  a" +
+						"  ,  b  )  .  ",
 				"pred foo(node a, b) <-> equal(a, _c), !equal(a, b); equal+(a, b).\n");
 	}
 
@@ -211,6 +212,154 @@ class ProblemFormatterTest {
 				pred quux().
 
 				default !bar(*, *).
+				""");
+	}
+
+	@Test
+	void topLevelAnnotationTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				#  Example  .  #  Example  (  )  .  #  Example (  "foo"  ,  3  )  .  #  Example (  b  =  2  ,  a  =  "bar"  )  .
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				#Example.
+
+				#Example().
+
+				#Example("foo", 3).
+
+				#Example(b = 2, a = "bar").
+				""");
+	}
+
+	@Test
+	void annotationContainerTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				@  Example  @  Example  (  )  @  Example (  "foo"  ,  3  )  @  Example (  b  =  2  ,  a  =  "bar"  )  class  Foo.
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				@Example
+				@Example()
+				@Example("foo", 3)
+				@Example(b = 2, a = "bar")
+				class Foo.
+				""");
+	}
+
+	@Test
+	void enumLiteralAnnotationTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				enum  Foo  {  @  Example  BAR  ,  @  Example  (  )  @  Example (  "foo"  ,  3  )  @  Example (  b  =  2  ,  a  =  "bar"  )  BAZ  }
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				enum Foo {
+					@Example
+					BAR,
+					@Example()
+					@Example("foo", 3)
+					@Example(b = 2, a = "bar")
+					BAZ
+				}
+				""");
+	}
+
+	@Test
+	void nodeAnnotationTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				atom  @  Example  foo  ,  @  Example  (  )  @  Example (  "foo"  ,  3  )  @  Example (  b  =  2  ,  a  =  "bar"  )  bar  .
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				atom @Example foo, @Example() @Example("foo", 3) @Example(b = 2, a = "bar") bar.
+				""");
+	}
+
+	@Test
+	void nodeDeclarationAnnotationTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				@  Example  @  Example  (  )  @  Example (  "foo"  ,  3  )  @  Example (  b  =  2  ,  a  =  "bar"  )  atom  foo  .
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				@Example
+				@Example()
+				@Example("foo", 3)
+				@Example(b = 2, a = "bar")
+				atom foo.
+				""");
+	}
+
+	@Test
+	void parameterAnnotationTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				pred   foo  (  @  Example  node a  ,  @  Example  (  )  @  Example (  "foo"  ,  3  )  @  Example (  b  =  2  ,  a  =  "bar"  )  b  ).
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				pred foo(@Example node a, @Example() @Example("foo", 3) @Example(b = 2, a = "bar") b).
+				""");
+	}
+	@Test
+	void referenceDeclarationAnnotationTest() {
+		testFormatter("""
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				class  Foo  {  @  Example  contains  Bar[  1  ..  *  ] bar  @  Example  (  )  @  Example (  "foo"  ,  3  )  @  Example (  b  =  2  ,  a  =  "bar"  )  Foo  foo  }  class  Bar.
+				""", """
+				import builtin::annotations.
+
+				#pred Example(@optional string a, @optional int b).
+
+				class Foo {
+					@Example
+					contains Bar[1..*] bar
+					@Example()
+					@Example("foo", 3)
+					@Example(b = 2, a = "bar")
+					Foo foo
+				}
+
+				class Bar.
 				""");
 	}
 

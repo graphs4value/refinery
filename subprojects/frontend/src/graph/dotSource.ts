@@ -18,8 +18,15 @@ const EDGE_WEIGHT = 1;
 const CONTAINMENT_WEIGHT = 5;
 const UNKNOWN_WEIGHT_FACTOR = 0.5;
 
-function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
-  const name = escape(graph.getName(metadata));
+function nodeName(
+  graph: GraphStore,
+  metadata: NodeMetadata,
+  count?: string,
+): string {
+  let name = escape(graph.getName(metadata));
+  if (count !== undefined) {
+    name = `${name}&nbsp;${count}`;
+  }
   switch (metadata.kind) {
     case 'atom':
       return `<b>${name}</b>`;
@@ -31,7 +38,11 @@ function nodeName(graph: GraphStore, metadata: NodeMetadata): string {
 function relationName(graph: GraphStore, metadata: RelationMetadata): string {
   const name = escape(graph.getName(metadata));
   const { detail } = metadata;
-  if (detail.type === 'class' && detail.isAbstract) {
+  if (
+    detail.type === 'class' &&
+    detail.isAbstract &&
+    !metadata.name.startsWith('builtin::')
+  ) {
     return `<i>${name}</i>`;
   }
   if (detail.type === 'reference' && detail.isContainment) {
@@ -218,10 +229,9 @@ function createNodes(
       classList.push(`node-typeHash-${obfuscateColor(node.color)}`);
     }
     const classes = classList.join(' ');
-    const name = nodeName(graph, node);
+    const name = nodeName(graph, node, scopes ? data.count : undefined);
     const border = node.kind === 'atom' ? 2 : 1;
-    const count = scopes ? `&nbsp;${data.count}` : '';
-    const nodeLabel = setLabelWidth(`${name}${count}`, 'center', 12, sizeCache);
+    const nodeLabel = setLabelWidth(name, 'center', 12, sizeCache);
     const encodedNodeName = encodeName(node.name);
     lines.push(`n${i} [id="${encodedNodeName}", class="${classes}", label=<
         <table border="${border}" cellborder="0" cellspacing="0" style="rounded" bgcolor="white">

@@ -2,6 +2,8 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
+import builtin::strategy.
+
 abstract class A.
 
 class B extends A.
@@ -14,7 +16,8 @@ class E extends D.
 
 class F extends D.
 
-partial pred foo(C c, F f).
+@concretize(false)
+pred foo(C c, F f).
 
 A(a1).
 D(d1).

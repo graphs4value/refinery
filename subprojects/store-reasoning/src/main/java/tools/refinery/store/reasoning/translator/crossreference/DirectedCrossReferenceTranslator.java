@@ -58,12 +58,12 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		if (defaultValue.may()) {
 			configureWithDefaultUnknown(translator);
 		} else {
-			configureWithDefaultFalse(storeBuilder, info.partial());
+			configureWithDefaultFalse(storeBuilder);
 		}
-		var roundingMode = info.partial() ? RoundingMode.NONE : RoundingMode.PREFER_FALSE;
+		var roundingMode = info.concretizationSettings().concretize() ? RoundingMode.PREFER_FALSE : RoundingMode.NONE;
 		translator.refiner(DirectedCrossReferenceRefiner.of(symbol, info, roundingMode));
 		translator.roundingMode(roundingMode);
-		if (!info.partial()) {
+		if (info.concretizationSettings().decide()) {
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 					.clause(
 							may(linkType.call(source, target)),
@@ -111,7 +111,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 				);
 			}
 		}));
-		if (info.partial()) {
+		if (!info.concretizationSettings().concretize()) {
 			var candidateMayNewSource = createCandidateMayHelper(sourceType, info.sourceMultiplicity(), false);
 			var candidateMayNewTarget = createCandidateMayHelper(targetType, info.targetMultiplicity(), true);
 			var candidateMayName = DnfLifter.decorateName(name, Modality.MAY, Concreteness.CANDIDATE);
@@ -152,7 +152,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 		return TranslatorUtils.createSupersetHelper(linkType, info.supersets(), info.oppositeSupersets());
 	}
 
-	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder, boolean partial) {
+	private void configureWithDefaultFalse(ModelStoreBuilder storeBuilder) {
 		var name = linkType.name();
 		var sourceType = info.sourceType();
 		var targetType = info.targetType();
@@ -190,7 +190,7 @@ public class DirectedCrossReferenceTranslator implements ModelStoreConfiguration
 					remove(linkType, p1, p2)
 			);
 		}));
-		if (!partial) {
+		if (info.concretizationSettings().concretize()) {
 			// References concretized by rounding down are already {@code false} in the candidate interpretation,
 			// so we don't need to set them to {@code false} manually.
 			return;

@@ -43,7 +43,7 @@ statement {
   } |
   EnumDefinition {
     kw<"enum"> RelationName
-    (EnumBody { "{" sep<",", AtomNodeName> "}" } | ".")
+    (EnumBody { "{" sep<",", EnumLiteral> "}" } | ".")
   } |
   DatatypeDeclaration {
     kw<"extern"> ckw<"datatype"> DatatypeName "."
@@ -67,17 +67,27 @@ statement {
     RuleBody { ("<->" sep<OrOp, Conjunction>)? ("==>" sep<OrOp, Consequent>)? "." }
   } |
   AtomDeclaration {
-    kw<"declare">? ckw<"atom"> sep<",", AtomNodeName> "."
+    kw<"declare">? ckw<"atom"> sep<",", EnumLiteral> "."
   } |
   NodeDeclaration {
-    (kw<"declare"> | kw<"declare">? ckw<"multi">) sep<",", NodeName> "."
+    (kw<"declare"> | kw<"declare">? ckw<"multi">) sep<",", AnnotatedNodeName> "."
   } |
   ScopeDeclaration {
     kw<"scope"> sep<",", ScopeElement> "."
-  }
+  } |
+  AnnotationDeclaration {
+    AnnotationKeyword kw<"pred"> AnnotationName ParameterList<Parameter> "."
+  } |
+  Annotation "."?
+}
+
+Annotation {
+  ("@" | "#") AnnotationName
+  ("(" sep<",", AnnotationArgument> ")")?
 }
 
 FeatureDeclaration {
+  Annotation*
   // Prefer parsing `contains` as a contextual keyword.
   (
     FeatureDeclarationHeadWithKind[@dynamicPrecedence=1] {
@@ -99,9 +109,18 @@ FeatureDeclaration {
   ";"?
 }
 
+EnumLiteral {
+  Annotation* AtomNodeName
+}
+
+AnnotatedNodeName {
+  Annotation* NodeName
+}
+
 Parameter {
+  Annotation*
+  kw<"pred">?
   RelationName?
-  (FocusBinding | LoneBinding | MultiBinding)?
   VariableName
 }
 
@@ -176,6 +195,8 @@ ScopeElement { RelationName ("=" | "+=") Multiplicity }
 
 Multiplicity { (IntMult "..")? (IntMult | StarMult)}
 
+AnnotationArgument { (VariableName "=")? Expr }
+
 // The ~name handles the ambiguity between transitve closure a+(b, c) and addition a+(b)
 // in the grammar. We prefer the addition interpretation by applying @dynamicPrecedence=1
 // to the VariableName rule,
@@ -196,11 +217,15 @@ ModuleName { QualifiedName }
 
 AggregatorName { QualifiedName }
 
+AnnotationName { QualifiedName }
+
 ID { identifier | QuotedID }
 
 QualifiedName[implicitCompletion=true] { "::"? ID (QualifiedNameSeparator "::" ID)* }
 
 StarMult { Star }
+
+AnnotationKeyword { "#" }
 
 kw<term> { @specialize[@name={term},implicitCompletion=true]<identifier, term> }
 
@@ -262,11 +287,5 @@ sep1<separator, content> { content (separator content)* }
 
   StarArgument { "*" }
 
-  FocusBinding { "+" }
-
-  LoneBinding { "?" }
-
-  MultiBinding { "*" }
-
-  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+="
+  "{" "}" "(" ")" "[" "]" "." ".." "," ";" ":" "->" "<->" "==>" "+" "-" "**" "=" "+=" "@" "#"
 }

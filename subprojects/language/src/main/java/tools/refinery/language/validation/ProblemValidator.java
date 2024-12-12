@@ -19,12 +19,15 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.validation.Check;
+import org.eclipse.xtext.validation.ComposedChecks;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
+import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
@@ -35,6 +38,7 @@ import java.util.*;
  * See
  * <a href="https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation">...</a>
  */
+@ComposedChecks(validators = {ProblemAnnotationValidator.class})
 public class ProblemValidator extends AbstractProblemValidator {
 	private static final String ISSUE_PREFIX = "tools.refinery.language.validation.ProblemValidator.";
 	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
@@ -59,8 +63,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
-	public static final String UNUSED_PARTIAL_RELATION = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
-	public static final String UNUSED_PARAMETER = ISSUE_PREFIX + "UNUSED_PARAMETER";
+	public static final String UNUSED_PARTIAL_RELATION_ISSUE = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
+	public static final String UNUSED_PARAMETER_ISSUE = ISSUE_PREFIX + "UNUSED_PARAMETER";
 
 	@Inject
 	private ReferenceCounter referenceCounter;
@@ -79,6 +83,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Inject
 	private ProblemTypeAnalyzer typeAnalyzer;
+
+	@Inject
+	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	@Inject
 	private LinkingHelper linkingHelper;
@@ -157,15 +164,15 @@ public class ProblemValidator extends AbstractProblemValidator {
 							.append(name).append("'.");
 				}
 				var message = messageBuilder.toString();
-				warning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-						INSIGNIFICANT_INDEX, SINGLETON_VARIABLE_ISSUE);
+				warning(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, INSIGNIFICANT_INDEX,
+						SINGLETON_VARIABLE_ISSUE);
 			}
 		}
 	}
 
 	private boolean isUnquotedVariable(VariableOrNodeExpr expr) {
 		var nodes = NodeModelUtils.findNodesForFeature(expr,
-				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE);
+				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT);
 		for (var node : nodes) {
 			var crossRefString = linkingHelper.getCrossRefNodeAsString(node, true);
 			if (NamingUtil.isQuoted(crossRefString)) {
@@ -180,10 +187,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var variableOrNode = expr.getVariableOrNode();
 		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
 			var name = node.getName();
-			var message = ("Only atoms can be referenced in predicates. " +
-					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(name, name);
-			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-					INSIGNIFICANT_INDEX, NODE_CONSTANT_ISSUE);
+			var annotation = EcoreUtil2.getContainerOfType(expr, Annotation.class);
+			var location = annotation == null ? "predicates" : "annotations";
+			var message = ("Only atoms can be referenced in %s. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(location, name, name);
+			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, INSIGNIFICANT_INDEX,
+					NODE_CONSTANT_ISSUE);
 		}
 	}
 
@@ -208,21 +217,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var relations = new ArrayList<NamedElement>();
 		var nodes = new ArrayList<Node>();
 		var aggregators = new ArrayList<AggregatorDeclaration>();
+		var annotationDeclarations = new ArrayList<AnnotationDeclaration>();
 		for (var statement : problem.getStatements()) {
-			if (statement instanceof Relation relation) {
-				relations.add(relation);
-			} else if (statement instanceof RuleDefinition ruleDefinition) {
-				// Rule definitions and predicates live in the same namespace.
-				relations.add(ruleDefinition);
-			} else if (statement instanceof NodeDeclaration nodeDeclaration) {
-				nodes.addAll(nodeDeclaration.getNodes());
-			} else if (statement instanceof AggregatorDeclaration aggregatorDeclaration) {
-				aggregators.add(aggregatorDeclaration);
+			switch (statement) {
+			case Relation relation -> relations.add(relation);
+			case RuleDefinition ruleDefinition -> // Rule definitions and predicates live in the same namespace.
+					relations.add(ruleDefinition);
+			case NodeDeclaration nodeDeclaration -> nodes.addAll(nodeDeclaration.getNodes());
+			case AggregatorDeclaration aggregatorDeclaration -> aggregators.add(aggregatorDeclaration);
+			case AnnotationDeclaration annotationDeclaration -> annotationDeclarations.add(annotationDeclaration);
+			default -> {
+				// Nothing to check.
+			}
 			}
 		}
 		checkUniqueSimpleNames(relations);
 		checkUniqueSimpleNames(nodes);
 		checkUniqueSimpleNames(aggregators);
+		checkUniqueSimpleNames(annotationDeclarations);
 	}
 
 	@Check
@@ -353,9 +365,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 						referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 						INVALID_OPPOSITE_ISSUE);
 			}
-		} else if (kind == ReferenceKind.PARTIAL && opposite != null && opposite.getKind() != ReferenceKind.PARTIAL) {
-			acceptError("Opposite '%s' of partial reference '%s' is not a partial reference."
-							.formatted(opposite.getName(), referenceDeclaration.getName()),
+		}
+		if (opposite != null &&
+				!builtinAnnotationContext.getConcretizationSettings(referenceDeclaration)
+						.equals(builtinAnnotationContext.getConcretizationSettings(opposite))) {
+			acceptError("The concretization settings of reference '%s' don't match its opposite '%s'."
+							.formatted(referenceDeclaration.getName(), opposite.getName()),
 					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 					INVALID_OPPOSITE_ISSUE);
 		}
@@ -399,17 +414,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkPartialReference(ReferenceDeclaration referenceDeclaration) {
-		if (referenceDeclaration.getKind() == ReferenceKind.PARTIAL &&
-				!actionTargetCollector.isActionTarget(referenceDeclaration)) {
-			var message = "Add decision or propagation rules to refine partial relation '%s'."
-					.formatted(referenceDeclaration.getName());
-			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__KIND, 0,
-					UNUSED_PARTIAL_RELATION);
-		}
-	}
-
-	@Check
 	public void checkSupertypes(ClassDeclaration classDeclaration) {
 		var supertypes = classDeclaration.getSuperTypes();
 		int supertypeCount = supertypes.size();
@@ -432,12 +436,11 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		boolean isDefaultReference = referenceDeclaration.getKind() == ReferenceKind.DEFAULT &&
 				!ProblemUtil.isContainerReference(referenceDeclaration);
-		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE ||
-				referenceDeclaration.getKind() == ReferenceKind.PARTIAL;
+		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE;
 		if (isDefaultReference || isCrossReference) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
 			if (ProblemUtil.isShadow(referenceType)) {
-				var message = "Shadow relations '%s' is not allowed in reference types."
+				var message = "Shadow relation '%s' is not allowed in reference types."
 						.formatted(referenceType.getName());
 				acceptError(message, referenceDeclaration,
 						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, SHADOW_RELATION_ISSUE);
@@ -458,9 +461,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		String message = null;
 		if (ProblemUtil.isBasePredicate(predicateDefinition)) {
 			if (!predicateDefinition.getBodies().isEmpty()) {
-				var predicateType = predicateDefinition.getKind() == PredicateKind.PARTIAL ? "Partial base predicate" :
-						"Base predicate";
-				message = "%s '%s' must not have any clauses.".formatted(predicateType, predicateDefinition.getName());
+				message = "Base predicate '%s' must not have any clauses.".formatted(predicateDefinition.getName());
 			}
 		} else if (predicateDefinition.getBodies().isEmpty()) {
 			var predicateType = switch (predicateDefinition.getKind()) {
@@ -533,6 +534,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkParameter(Parameter parameter) {
+		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
+		if (ProblemUtil.isDerivedStatePredicate(parametricDefinition)) {
+			// No need to generate errors for derived predicates, since the same error will also appear on the
+			// original predicate.
+			return;
+		}
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var type = parameter.getParameterType();
 		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
@@ -540,19 +547,30 @@ public class ProblemValidator extends AbstractProblemValidator {
 			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
 					SHADOW_RELATION_ISSUE);
 		}
-		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
+		var binding = builtinAnnotationContext.getParameterBinding(parameter);
 		if (parametricDefinition instanceof RuleDefinition rule) {
-			var binding = parameter.getBinding();
 			var kind = rule.getKind();
 			if (binding != ParameterBinding.SINGLE && ProblemUtil.parameterBindingAnnotationsAreForbidden(rule)) {
 				var message = "Parameter binding annotations are not supported in %s rules."
 						.formatted(kind.getName().toLowerCase(Locale.ROOT));
-				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+				acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+						INVALID_MODALITY_ISSUE);
 			}
 		} else {
-			if (parameter.getBinding() != ParameterBinding.SINGLE) {
+			if (binding != ParameterBinding.SINGLE) {
 				acceptError("Parameter binding annotations are only supported in refinement rules.", parameter,
-						ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+						ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX, INVALID_MODALITY_ISSUE);
+			}
+		}
+		if (parameter.getKind() != ParameterKind.VALUE) {
+			if (parameter.getParameterType() != null) {
+				// This is also enforced by the grammar.
+				acceptError("Parameters that refer to predicates cannot have a type.", parameter,
+						ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0, INVALID_MODALITY_ISSUE);
+			}
+			if (!(parametricDefinition instanceof AnnotationDeclaration)) {
+				acceptError("Only annotation parameters may refer to predicates.", parameter,
+						ProblemPackage.Literals.PARAMETER__KIND, 0, INVALID_MODALITY_ISSUE);
 			}
 		}
 	}
@@ -574,10 +592,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 			}
 		}
 		for (var parameter : duplicateParameters) {
-			if (parameter.getBinding() == ParameterBinding.MULTI) {
+			var binding = builtinAnnotationContext.getParameterBinding(parameter);
+			if (binding == ParameterBinding.MULTI) {
 				var message = ("Parameter '%s' must not be a multi-object, because it appears multiple times in a " +
 						"rule consequent.").formatted(parameter.getName());
-				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__BINDING, 0, INVALID_MODALITY_ISSUE);
+				acceptError(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+						INVALID_MODALITY_ISSUE);
 			}
 		}
 	}
@@ -626,7 +646,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 				var parameter = entry.getKey();
 				var message = "Unused rule parameter '%s'.".formatted(parameter.getName());
 				acceptWarning(message, parameter, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0,
-						UNUSED_PARAMETER);
+						UNUSED_PARAMETER_ISSUE);
 			}
 		}
 	}
@@ -838,13 +858,13 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		if (target instanceof Parameter) {
 			var message = "Parameters cannot be assigned.";
-			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-					0, INVALID_ASSIGNMENT_ISSUE);
+			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
+					INVALID_ASSIGNMENT_ISSUE);
 		}
 		if (target instanceof Node) {
 			var message = "Nodes cannot be assigned.";
-			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE,
-					0, INVALID_ASSIGNMENT_ISSUE);
+			acceptError(message, variableOrNodeExpr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
+					INVALID_ASSIGNMENT_ISSUE);
 		}
 		if (!(assignmentExpr.eContainer() instanceof Conjunction)) {
 			var message = "Assignments may only appear as top-level expressions.";

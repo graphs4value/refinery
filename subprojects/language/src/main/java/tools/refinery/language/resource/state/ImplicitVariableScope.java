@@ -84,7 +84,7 @@ public class ImplicitVariableScope {
 		IScope scope = scopeProvider.getScope(variableOrNodeExpr,
 				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE);
 		List<INode> nodes = NodeModelUtils.findNodesForFeature(variableOrNodeExpr,
-				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE);
+				ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT);
 		for (INode node : nodes) {
 			var variableName = linkingHelper.getCrossRefNodeAsString(node, true);
 			var created = tryCreateVariableForArgument(variableOrNodeExpr, variableName, qualifiedNameConverter,

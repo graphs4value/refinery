@@ -11,8 +11,11 @@ import java.util.regex.Pattern;
 
 public final class NamingUtil {
 	public static final QualifiedName ROOT_NAME = QualifiedName.create("");
+	public static final String ID_REGEX_STRING = "[a-zA-Z_]\\w*";
+	public static final String QUOTED_ID_REGEX_STRING = "'[^']*'";
+	public static final String IDENTIFIER_REGEX_STRING = ID_REGEX_STRING + "|" + QUOTED_ID_REGEX_STRING;
 
-	private static final Pattern ID_REGEX = Pattern.compile("[_a-zA-Z]\\w*");
+	private static final Pattern ID_REGEX = Pattern.compile(ID_REGEX_STRING);
 
 	private NamingUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");

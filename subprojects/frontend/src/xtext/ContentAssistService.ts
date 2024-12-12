@@ -98,10 +98,12 @@ function computeSpan(prefix: string, entryCount: number): RegExp {
 
 function createCompletion(entry: ContentAssistEntry): Completion {
   let boost: number;
+  let type: string | undefined;
   switch (entry.kind) {
     case 'KEYWORD':
       // Some hard-to-type operators should be on top.
       boost = HIGH_PRIORITY_KEYWORDS.includes(entry.proposal) ? 10 : -99;
+      type = /^[a-z]+$/.test(entry.proposal) ? 'keyword' : 'operator';
       break;
     case 'TEXT':
     case 'SNIPPET':
@@ -121,14 +123,23 @@ function createCompletion(entry: ContentAssistEntry): Completion {
   }
   const completion: Completion = {
     label: entry.proposal,
-    type: entry.kind?.toLowerCase(),
+    type: type ?? entry.kind?.toLowerCase(),
     boost,
   };
   if (entry.documentation !== undefined) {
-    completion.info = entry.documentation;
+    const { documentation } = entry;
+    completion.info = async () => {
+      const { default: transformDocumentation } = await import(
+        './transformDocumentation'
+      );
+      return transformDocumentation(documentation);
+    };
   }
   if (entry.description !== undefined) {
-    completion.detail = entry.description;
+    const { description } = entry;
+    completion.detail = description.startsWith('/')
+      ? description
+      : ` ${description}`;
   }
   return completion;
 }

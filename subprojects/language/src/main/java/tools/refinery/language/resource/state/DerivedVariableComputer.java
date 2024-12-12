@@ -44,14 +44,17 @@ public class DerivedVariableComputer {
 				knownVariables.add(name);
 			}
 		}
-        switch (definition) {
-            case PredicateDefinition predicateDefinition ->
-                    installDerivedPredicateDefinitionState(predicateDefinition, knownVariables);
-            case FunctionDefinition functionDefinition ->
-                    installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
-            case RuleDefinition ruleDefinition -> installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
-            default -> throw new IllegalArgumentException("Unknown ParametricDefinition: " + definition);
-        }
+		switch (definition) {
+		case PredicateDefinition predicateDefinition ->
+				installDerivedPredicateDefinitionState(predicateDefinition, knownVariables);
+		case FunctionDefinition functionDefinition ->
+				installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
+		case RuleDefinition ruleDefinition -> installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
+		case AnnotationDeclaration ignoredAnnotationDeclaration -> {
+			// No derived state to install.
+		}
+		default -> throw new IllegalArgumentException("Unknown ParametricDefinition: " + definition);
+		}
 	}
 
 	protected void installDerivedPredicateDefinitionState(PredicateDefinition definition, Set<String> knownVariables) {
@@ -62,15 +65,16 @@ public class DerivedVariableComputer {
 
 	protected void installDerivedFunctionDefinitionState(FunctionDefinition definition, Set<String> knownVariables) {
 		for (Case body : definition.getCases()) {
-			if (body instanceof Conjunction conjunction) {
-				createVariablesForScope(new ImplicitVariableScope(conjunction, knownVariables));
-			} else if (body instanceof Match match) {
+			switch (body) {
+			case Conjunction conjunction ->
+					createVariablesForScope(new ImplicitVariableScope(conjunction, knownVariables));
+			case Match match -> {
 				var condition = match.getCondition();
 				if (condition != null) {
 					createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables));
 				}
-			} else {
-				throw new IllegalArgumentException("Unknown Case: " + body);
+			}
+			default -> throw new IllegalArgumentException("Unknown Case: " + body);
 			}
 		}
 	}

@@ -204,23 +204,26 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 						not(strongComponents.call(child, representative))
 				)));
 
-		storeBuilder.with(PartialRelationTranslator.of(linkType)
+		var translator = PartialRelationTranslator.of(linkType)
 				.may(may)
 				.must(Query.of(name + "#must", (builder, parent, child) -> builder.clause(
 						new MustContainmentLinkView(containsStorage, linkType).call(parent, child)
 				)))
 				.roundingMode(RoundingMode.PREFER_FALSE)
-				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info))
-				.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
-						.clause(
-								may(linkType.call(source, target)),
-								not(candidateMust(linkType.call(source, target))),
-								not(MultiObjectTranslator.MULTI_VIEW.call(source))
-						)
-						.action(focusedTarget -> List.of(
-								focus(target, focusedTarget),
-								add(linkType, source, focusedTarget)
-						)))));
+				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info));
+		if (info.decide()) {
+			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
+					.clause(
+							may(linkType.call(source, target)),
+							not(candidateMust(linkType.call(source, target))),
+							not(MultiObjectTranslator.MULTI_VIEW.call(source))
+					)
+					.action(focusedTarget -> List.of(
+							focus(target, focusedTarget),
+							add(linkType, source, focusedTarget)
+					))));
+		}
+		storeBuilder.with(translator);
 	}
 
 	private void translateInvalidMultiplicity(ModelStoreBuilder storeBuilder, PartialRelation linkType,

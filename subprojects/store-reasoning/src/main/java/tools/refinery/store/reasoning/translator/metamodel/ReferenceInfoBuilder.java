@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.ConcretizationSettings;
 import tools.refinery.store.reasoning.translator.multiplicity.ConstrainedMultiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.Multiplicity;
 import tools.refinery.store.reasoning.translator.multiplicity.UnconstrainedMultiplicity;
@@ -23,7 +24,7 @@ public final class ReferenceInfoBuilder {
 	private PartialRelation targetType;
 	private PartialRelation opposite;
 	private TruthValue defaultValue = TruthValue.UNKNOWN;
-	private boolean partial;
+	private ConcretizationSettings concretizationSettings = new ConcretizationSettings(true, true);
 	private final Set<PartialRelation> supersets = new LinkedHashSet<>();
 
 	ReferenceInfoBuilder() {
@@ -76,8 +77,8 @@ public final class ReferenceInfoBuilder {
 		return this;
 	}
 
-	public ReferenceInfoBuilder partial(boolean partial) {
-		this.partial = partial;
+	public ReferenceInfoBuilder concretizationSettings(ConcretizationSettings concretizationSettings) {
+		this.concretizationSettings = concretizationSettings;
 		return this;
 	}
 
@@ -97,7 +98,7 @@ public final class ReferenceInfoBuilder {
 		if (targetType == null) {
 			throw new IllegalStateException("Target type is required");
 		}
-		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue, partial,
-				Collections.unmodifiableSet(supersets));
+		return new ReferenceInfo(containment, sourceType, multiplicity, targetType, opposite, defaultValue,
+				concretizationSettings, Collections.unmodifiableSet(supersets));
 	}
 }

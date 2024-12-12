@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
+import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.expressions.BuiltinTermInterpreter;
@@ -36,6 +37,7 @@ public class TypedModule {
 	private final Map<Expr, ExprType> expressionTypes = new HashMap<>();
 	private final Set<Variable> variablesToProcess = new LinkedHashSet<>();
 	private final List<FeatureBasedDiagnostic> diagnostics = new ArrayList<>();
+	private ValidationMessageAcceptor acceptor;
 
 	void setProblem(Problem problem) {
 		interpreter = importAdapterProvider.getTermInterpreter(problem);
@@ -284,7 +286,7 @@ public class TypedModule {
 			case Variable variable -> {
 				if (variablesToProcess.contains(variable)) {
 					var message = "Circular reference to variable '%s'.".formatted(variable.getName());
-					error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
+					error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
 							ProblemValidator.INVALID_ASSIGNMENT_ISSUE);
 					yield ExprType.INVALID;
 				}
@@ -292,7 +294,7 @@ public class TypedModule {
 			}
 			default -> {
 				error("Unknown variable: " + target.getName(), expr,
-						ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0,
+						ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, 0,
 						ProblemValidator.UNKNOWN_EXPRESSION_ISSUE);
 				yield ExprType.INVALID;
 			}
@@ -668,7 +670,23 @@ public class TypedModule {
 
 	private void error(String message, EObject object, EStructuralFeature feature, int index, String code,
 					   String... issueData) {
-		diagnostics.add(new FeatureBasedDiagnostic(Diagnostic.ERROR, message, object, feature, index,
-				CheckType.NORMAL, code, issueData));
+		if (acceptor == null) {
+			diagnostics.add(new FeatureBasedDiagnostic(Diagnostic.ERROR, message, object, feature, index,
+					CheckType.NORMAL, code, issueData));
+			return;
+		}
+		acceptor.acceptError(message, object, feature, index, code, issueData);
+	}
+
+	public boolean expectType(ValidationMessageAcceptor acceptor, Expr expr, FixedType expectedType) {
+		// The methods of {@link TypedModule} are only called from a single thread, so there is no need to use a
+		// {@code ThreadLocal} here.
+		var oldAcceptor = this.acceptor;
+		this.acceptor = acceptor;
+		try {
+			return expectType(expr, expectedType);
+		} finally {
+			this.acceptor = oldAcceptor;
+		}
 	}
 }

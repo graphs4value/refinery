@@ -9,11 +9,13 @@
  */
 package tools.refinery.language.scoping;
 
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import tools.refinery.language.annotations.internal.TypedAnnotationContext;
 import tools.refinery.language.model.problem.*;
 
 import java.util.Collection;
@@ -27,21 +29,31 @@ import java.util.LinkedHashSet;
  * on how and when to use it.
  */
 public class ProblemScopeProvider extends AbstractProblemScopeProvider {
+	@Inject
+	private TypedAnnotationContext annotationContext;
+
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
-		var scope = super.getScope(context, reference);
 		if (reference == ProblemPackage.Literals.NODE_ASSERTION_ARGUMENT__NODE) {
 			// On the right side of a rule, assertion arguments may refer to variables.
 			var rule = EcoreUtil2.getContainerOfType(context, RuleDefinition.class);
+			var scope = super.getScope(context, reference);
 			return rule == null ? getNodesScope(context, scope) : getVariableScope(context, scope);
 		}
+		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT) {
+			return getVariableOrNodeElementScope(context);
+		}
 		if (reference == ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE) {
+			var scope = super.getScope(context, reference);
 			return getVariableScope(context, scope);
 		}
 		if (reference == ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE) {
 			return getOppositeScope(context);
 		}
-		return scope;
+		if (reference == ProblemPackage.Literals.ANNOTATION_ARGUMENT__PARAMETER) {
+			return getAnnotationParameterScope(context);
+		}
+		return super.getScope(context, reference);
 	}
 
 	protected IScope getNodesScope(EObject context, IScope delegateScope) {
@@ -50,6 +62,17 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 			return delegateScope;
 		}
 		return Scopes.scopeFor(problem.getNodes(), delegateScope);
+	}
+
+	protected IScope getVariableOrNodeElementScope(EObject context) {
+		var parameterKind = annotationContext.getParameter(context)
+				.map(Parameter::getKind)
+				.orElse(ParameterKind.VALUE);
+		var reference = switch (parameterKind) {
+			case VALUE -> ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE;
+			case PRED -> ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__RELATION;
+		};
+		return getScope(context, reference);
 	}
 
 	protected IScope getVariableScope(EObject context, IScope delegateScope) {
@@ -98,5 +121,18 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 		}
 		var referenceDeclarations = classDeclaration.getFeatureDeclarations();
 		return Scopes.scopeFor(referenceDeclarations);
+	}
+
+	protected IScope getAnnotationParameterScope(EObject context) {
+		var annotation = EcoreUtil2.getContainerOfType(context, Annotation.class);
+		if (annotation == null) {
+			return IScope.NULLSCOPE;
+		}
+		var annotationDeclaration = annotation.getDeclaration();
+		if (annotationDeclaration == null) {
+			return IScope.NULLSCOPE;
+		}
+		var parameters = annotationDeclaration.getParameters();
+		return Scopes.scopeFor(parameters);
 	}
 }

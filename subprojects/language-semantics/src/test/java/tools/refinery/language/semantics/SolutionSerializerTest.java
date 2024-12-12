@@ -237,8 +237,11 @@ class SolutionSerializerTest {
 				!exists(Foo::new).
 				Foo(foo1).
 				"""), Arguments.of("""
+				import builtin::strategy.
+
 				class Foo {
-					partial Bar[] bar
+					@concretize(false)
+					Bar[] bar
 				}
 
 				class Bar.
@@ -276,9 +279,13 @@ class SolutionSerializerTest {
 				default !bar(*, *).
 				bar(a, b).
 				"""), Arguments.of("""
+				import builtin::strategy.
+
 				class Foo.
 				class Bar.
-				partial pred bar(Foo x, Bar y, Bar z).
+
+				@concretize(false)
+				pred bar(Foo x, Bar y, Bar z).
 				""", """
 				!bar(*, *, Bar::new).
 				bar(a, b, b).
@@ -315,9 +322,14 @@ class SolutionSerializerTest {
 				default !foo(*, *).
 				foo(A::new, b).
 				"""), Arguments.of("""
+				import builtin::strategy.
+
 				class Foo {
-					partial Bar[] baz
-					partial Bar[] quux
+					@concretize(false)
+					Bar[] baz
+
+					@concretize(false)
+					Bar[] quux
 				}
 
 				class Bar.
@@ -346,9 +358,14 @@ class SolutionSerializerTest {
 				?quux(foo1, bar3).
 				query(foo1, bar2).
 				"""), Arguments.of("""
+				import builtin::strategy.
+
 				class Foo {
-					partial Bar[] baz
-					partial Bar[] quux
+					@concretize(false)
+					Bar[] baz
+
+					@concretize(false)
+					Bar[] quux
 				}
 
 				class Bar.

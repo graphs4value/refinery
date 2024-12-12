@@ -2,12 +2,15 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
+import builtin::strategy.
+
 abstract class A.
 
 class B extends A.
 
 class C extends A {
-    partial C[] foo opposite foo
+    @concretize(false)
+    C[] foo opposite foo
 }
 
 A(a1).
