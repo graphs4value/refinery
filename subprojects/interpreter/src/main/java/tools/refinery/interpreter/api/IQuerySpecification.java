@@ -11,8 +11,12 @@ package tools.refinery.interpreter.api;
 
 import tools.refinery.interpreter.api.scope.QueryScope;
 import tools.refinery.interpreter.matchers.InterpreterRuntimeException;
+import tools.refinery.interpreter.matchers.psystem.queries.PProblem;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
+import tools.refinery.interpreter.matchers.psystem.queries.PQuery.PQueryStatus;
 import tools.refinery.interpreter.matchers.psystem.queries.PQueryHeader;
+
+import java.util.List;
 
 /**
  * API interface for a Refinery Interpreter query specification. Each query is associated with a pattern. Methods
@@ -73,6 +77,26 @@ public interface IQuerySpecification<Matcher extends InterpreterMatcher<? extend
      * @return the internal representation of the query.
      */
     public PQuery getInternalQueryRepresentation();
+
+	/**
+	 * Returns the initialization status of the query specification
+	 * @see PQuery#getStatus()
+	 * @since 2.9
+	 */
+	default PQueryStatus getStatus() {
+		return getInternalQueryRepresentation().getStatus();
+	}
+
+	/**
+	 * Returns a list describing the problems that were found in this query.
+	 *
+	 * @return a non-null, but possibly empty list of problems
+	 * @see PQuery#getPProblems()
+	 * @since 2.9
+	 */
+	default List<PProblem> getPProblems() {
+		return getInternalQueryRepresentation().getPProblems();
+	}
 
     /**
      * Creates a new uninitialized matcher, which is not functional until an engine initializes it. Clients
