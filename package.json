@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
-    "@types/node": "^22.10.1",
-    "@types/react": "^18.3.14",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.16",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "cheerio": "^1.0.0",
