@@ -33,14 +33,14 @@ import Tabs from '@theme/Tabs';
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="settings.gradle.kts"
     plugins {
-        id("tools.refinery.settings") version "0.1.3"
+        id("tools.refinery.settings") version "0.1.4"
     }
     ```
   </TabItem>
   <TabItem value="groovy" label="Groovy">
     ```groovy title="settings.gradle"
     plugins {
-        id 'tools.refinery.settings' version '0.1.3'
+        id 'tools.refinery.settings' version '0.1.4'
     }
     ```
   </TabItem>
@@ -320,7 +320,7 @@ You should add the following configuration to your `pom.xml` file. If you use mu
             <dependency>
                 <groupId>tools.refinery</groupId>
                 <artifactId>refinery-bom</artifactId>
-                <version>0.1.3</version>
+                <version>0.1.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
