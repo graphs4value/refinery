@@ -11,6 +11,7 @@ import type {
 } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
 import type { Transaction } from '@codemirror/state';
+import type { SyntaxNode } from '@lezer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 
 import { implicitCompletion } from '../language/props';
@@ -38,18 +39,27 @@ interface IFoundToken {
 }
 
 function findToken({ pos, state }: CompletionContext): IFoundToken | undefined {
-  const token = syntaxTree(state).resolveInner(pos, -1);
-  const { from } = token;
-  if (from > pos) {
+  let token = syntaxTree(state).resolveInner(pos, -1);
+  let qualifiedName: SyntaxNode | null = token;
+  while (
+    qualifiedName !== null &&
+    qualifiedName.type.name !== 'QualifiedName'
+  ) {
+    qualifiedName = qualifiedName.parent;
+  }
+  if (qualifiedName !== null) {
+    token = qualifiedName;
+  }
+  const isQualifiedName = token.type.name === 'QualifiedName';
+  if (!isQualifiedName && token.firstChild !== null) {
+    // Only complete terminals and qualified names.
+    return undefined;
+  }
+  const { from, to: endIndex } = token;
+  if (from > pos || endIndex < pos) {
     // We haven't found the token we want to complete.
     // Complete with an empty prefix from `pos` instead.
     // The other `return undefined;` lines also handle this condition.
-    return undefined;
-  }
-  // We look at the text at the beginning of the token.
-  // For QualifiedName tokens right before a comment, this may be a comment token.
-  const endIndex = token.firstChild?.from ?? token.to;
-  if (pos > endIndex) {
     return undefined;
   }
   const text = state.sliceDoc(from, endIndex).trimEnd();
@@ -57,11 +67,6 @@ function findToken({ pos, state }: CompletionContext): IFoundToken | undefined {
   // at the end of the token.
   const to = from + text.length;
   if (to > endIndex) {
-    return undefined;
-  }
-  if (from > pos || endIndex < pos) {
-    // We haven't found the token we want to complete.
-    // Complete with an empty prefix from `pos` instead.
     return undefined;
   }
   return {
@@ -96,7 +101,17 @@ function computeSpan(prefix: string, entryCount: number): RegExp {
   return new RegExp(`^${escapedPrefix}$`);
 }
 
-function createCompletion(entry: ContentAssistEntry): Completion {
+function createCompletion(
+  prefix: string,
+  entry: ContentAssistEntry,
+): Completion | undefined {
+  if (!prefix.endsWith(entry.prefix)) {
+    // Since CodeMirror will fuzzy match all entries, we only work with completions that match
+    // some suffix of the current prefix according to Xtext. The remaining part of the prefix
+    // will be added to each completion using `remainingPrefix` to make the fuzzy match successful
+    // and avoid replacing the current prefix in the editor.
+    return undefined;
+  }
   let boost: number;
   let type: string | undefined;
   switch (entry.kind) {
@@ -121,8 +136,11 @@ function createCompletion(entry: ContentAssistEntry): Completion {
       }
       break;
   }
+  // The server thinks this part of the prefix is not needed, but we need to add it back to satisfy CodeMirror.
+  const remainingPrefix = prefix.slice(0, prefix.length - entry.prefix.length);
   const completion: Completion = {
-    label: entry.proposal,
+    label: remainingPrefix + entry.proposal,
+    displayLabel: entry.proposal,
     type: type ?? entry.kind?.toLowerCase(),
     boost,
   };
@@ -142,6 +160,31 @@ function createCompletion(entry: ContentAssistEntry): Completion {
       : ` ${description}`;
   }
   return completion;
+}
+
+function getMatch(
+  completion: Completion,
+  matched?: readonly number[],
+): readonly number[] {
+  if (matched === undefined || matched.length < 2) {
+    return [];
+  }
+  if (completion.displayLabel === undefined) {
+    return matched;
+  }
+  const adjustment = completion.label.length - completion.displayLabel.length;
+  if (adjustment <= 0) {
+    return matched;
+  }
+  const adjusted: number[] = [];
+  for (let i = 0; i < matched.length; i += 2) {
+    const start = Math.max(0, matched[i]! - adjustment);
+    const end = matched[i + 1]! - adjustment;
+    if (end >= 1) {
+      adjusted.push(start, end);
+    }
+  }
+  return adjusted;
 }
 
 export default class ContentAssistService {
@@ -216,11 +259,9 @@ export default class ContentAssistService {
     }
     const options: Completion[] = [];
     entries.forEach((entry) => {
-      if (prefix === entry.prefix) {
-        // Xtext will generate completions that do not complete the current token,
-        // e.g., `(` after trying to complete an indetifier,
-        // but we ignore those, since CodeMirror won't filter for them anyways.
-        options.push(createCompletion(entry));
+      const completion = createCompletion(prefix, entry);
+      if (completion !== undefined) {
+        options.push(completion);
       }
     });
     log.debug('Fetched', options.length, 'completions from server');
@@ -228,6 +269,7 @@ export default class ContentAssistService {
       ...range,
       options,
       validFor: computeSpan(prefix, entries.length),
+      getMatch,
     };
     return this.lastCompletion;
   }
