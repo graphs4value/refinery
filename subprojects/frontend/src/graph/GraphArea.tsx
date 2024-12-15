@@ -95,9 +95,7 @@ export default function GraphArea({
   graph: GraphStore;
 }): JSX.Element {
   const { breakpoints } = useTheme();
-  const { ref, width, height } = useResizeDetector({
-    refreshMode: 'debounce',
-  });
+  const { ref, width, height } = useResizeDetector();
   const [svgContainer, setSvgContainer] = useState<HTMLElement | undefined>();
 
   const breakpoint = breakpoints.values.sm;
