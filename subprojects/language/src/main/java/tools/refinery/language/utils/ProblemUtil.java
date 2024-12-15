@@ -215,6 +215,9 @@ public final class ProblemUtil {
 				(isContainmentReference(referenceDeclaration) || isContainerReference(referenceDeclaration))) {
 			return false;
 		}
+		if (relation instanceof ClassDeclaration) {
+			return false;
+		}
 		return isConcretizeByDefault(relation);
 	}
 
@@ -227,6 +230,9 @@ public final class ProblemUtil {
 	}
 
 	public static boolean canDisableDecision(Relation relation) {
+		if (relation instanceof ClassDeclaration) {
+			return false;
+		}
 		return isDecideByDefault(relation);
 	}
 }
