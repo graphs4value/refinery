@@ -31,6 +31,7 @@ import { search, searchKeymap, selectNextOccurrence } from '@codemirror/search';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import {
   drawSelection,
+  EditorView,
   highlightActiveLine,
   highlightActiveLineGutter,
   highlightSpecialChars,
@@ -47,6 +48,7 @@ import problemLanguageSupport from '../language/problemLanguageSupport';
 import type EditorStore from './EditorStore';
 import SearchPanel from './SearchPanel';
 import bidiIsolatesExtension from './bidiIsolatesExtension';
+import crosshairCursor from './crosshairCursor';
 import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
 import scrollbarsExtension from './scrollbarsExtension';
@@ -75,6 +77,8 @@ export default function createEditorState(
       bracketMatching(),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),
+      // See https://discuss.codemirror.net/t/adding-multiple-selections-with-alt-click-instead-of-ctrl-click/5034
+      EditorView.clickAddsSelectionRange.of((e) => e.altKey && !e.shiftKey),
       exposeDiagnostics,
       findOccurrences,
       highlightActiveLine(),
@@ -85,7 +89,10 @@ export default function createEditorState(
       indentationMarkers({
         markerType: 'codeOnly',
       }),
-      rectangularSelection(),
+      rectangularSelection({
+        eventFilter: (e) => e.altKey && e.shiftKey,
+      }),
+      crosshairCursor(),
       search({
         createPanel(view) {
           return new SearchPanel(view, store.searchPanel);
