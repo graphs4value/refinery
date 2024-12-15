@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
@@ -56,28 +57,53 @@ public class DocumentationCommentParser {
 
 	@NotNull
 	public Map<String, String> parseDocumentation(EObject eObject) {
+		return getParsedDocumentation(eObject).userData();
+	}
+
+	@NotNull
+	public ParsedDocumentation getParsedDocumentation(EObject eObject) {
 		if (eObject == null) {
-			return Map.of();
+			return ParsedDocumentation.EMPTY;
 		}
 		var resource = eObject.eResource();
 		if (resource == null) {
 			return doParseDocumentation(eObject);
 		}
-		var cache = resourceScopeCache.get(CACHE_KEY, resource, HashMap<EObject, Map<String, String>>::new);
+		var cache = resourceScopeCache.get(CACHE_KEY, resource, HashMap<EObject, ParsedDocumentation>::new);
 		return cache.computeIfAbsent(eObject, this::doParseDocumentation);
 	}
 
-	private Map<String, String> doParseDocumentation(EObject eObject) {
+	private ParsedDocumentation doParseDocumentation(EObject eObject) {
 		if (eObject instanceof Problem) {
 			// There is no way to attach a documentation comment to a top-level module.
-			return Map.of();
+			return ParsedDocumentation.EMPTY;
+		}
+		if (eObject instanceof Parameter parameter) {
+			// Parameters inherit their documentation from the containing definition.
+			return getParameterDocumentation(parameter);
 		}
 		var documentation = documentationProvider.getDocumentation(eObject);
 		return parseDocumentationText(eObject, Objects.requireNonNullElse(documentation, ""));
-
 	}
 
-	private Map<String, String> parseDocumentationText(EObject eObject, String documentation) {
+	private ParsedDocumentation getParameterDocumentation(Parameter parameter) {
+		var name = parameter.getName();
+		if (name == null) {
+			return ParsedDocumentation.EMPTY;
+		}
+		var parametricDefinition = EcoreUtil2.getContainerOfType(parameter, ParametricDefinition.class);
+		if (parametricDefinition == null) {
+			return ParsedDocumentation.EMPTY;
+		}
+		var parameterDocumentation = getParsedDocumentation(parametricDefinition).parameterDocumentation().
+				get(name);
+		if (parameterDocumentation == null) {
+			return ParsedDocumentation.EMPTY;
+		}
+		return new ParsedDocumentation(Map.of(DOCUMENTATION, parameterDocumentation), Map.of());
+	}
+
+	private ParsedDocumentation parseDocumentationText(EObject eObject, String documentation) {
 		var splits = splitDocumentation(documentation);
 		var parsedMap = new LinkedHashMap<String, String>();
 		var documentationPrefix = splits.removeFirst();
@@ -113,7 +139,8 @@ public class DocumentationCommentParser {
 		if (!Strings.isNullOrEmpty(transformedDocumentation)) {
 			parsedMap.put(DOCUMENTATION, transformedDocumentation);
 		}
-		return Collections.unmodifiableMap(parsedMap);
+		return new ParsedDocumentation(Collections.unmodifiableMap(parsedMap),
+				Collections.unmodifiableMap(parameters));
 	}
 
 	private Deque<String> splitDocumentation(String documentation) {
