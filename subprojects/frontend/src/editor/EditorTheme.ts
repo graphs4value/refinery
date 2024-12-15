@@ -604,13 +604,6 @@ export default styled('div', {
     '.cm-completionLabel': {
       ...editorFontStyle,
       color: theme.palette.text.primary,
-      flexShrink: 1,
-      // See https://davidwalsh.name/css-ellipsis-left
-      whiteSpace: 'nowrap',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      direction: 'rtl',
-      textAlign: 'left',
     },
     '.cm-completionDetail': {
       ...editorFontStyle,
@@ -713,6 +706,17 @@ export default styled('div', {
       '.cm-completionLabel': {
         color:
           theme.palette.mode === 'dark' ? theme.palette.text.primary : '#fff',
+        flexShrink: 1,
+        // See https://davidwalsh.name/css-ellipsis-left
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        direction: 'rtl',
+        textAlign: 'left',
+        span: {
+          // Hack to restore writing direction.
+          direction: 'ltr',
+        }
       },
       '.cm-completionIcon, .cm-completionDetail': {
         color:

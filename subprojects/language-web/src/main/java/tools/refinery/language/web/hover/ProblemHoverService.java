@@ -59,9 +59,9 @@ public class ProblemHoverService extends HoverService {
 		for (var kind : proposalUtils.getKind(eObject)) {
 			builder.append(" cm-completionIcon-").append(kind);
 		}
-		builder.append("\"></span><span class=\"cm-completionLabel\">")
+		builder.append("\"></span><span class=\"cm-completionLabel\"><span>")
 				.append(name)
-				.append("</span>");
+				.append("</span></span>");
 		var description = proposalUtils.getDescription(eObject);
 		if (description != null) {
 			builder.append("<span class=\"cm-completionDetail\">");
