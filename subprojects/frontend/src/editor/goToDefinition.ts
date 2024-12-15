@@ -12,7 +12,8 @@ import findToken from '../xtext/findToken';
 import type EditorStore from './EditorStore';
 import defineDecorationSetExtension from './defineDecorationSetExtension';
 
-const showPointer = { style: 'cursor: pointer' };
+// Do not overwrite `style`, because it would interfere with the overscroll effect.
+const showPointer = { class: 'cm-pointer-cursor' };
 
 const [setGoToDefinitionDecorations, goToDefinitionDecorations] =
   defineDecorationSetExtension();

@@ -12,7 +12,8 @@
 import type { Extension } from '@codemirror/state';
 import { EditorView, ViewPlugin } from '@codemirror/view';
 
-const showCrosshair = { style: 'cursor: crosshair' };
+// Do not overwrite `style`, because it would interfere with the overscroll effect.
+const showCrosshair = { class: 'cm-crosshair-cursor' };
 
 /// Returns an extension that turns the pointer cursor into a
 /// crosshair when Shift and Alt are held down together.

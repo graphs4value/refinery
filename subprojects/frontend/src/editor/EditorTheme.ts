@@ -187,6 +187,12 @@ export default styled('div', {
     '.cm-editor:has(> .cm-panels-top) .cm-top-shadow': {
       display: 'none',
     },
+    '.cm-crosshair-cursor': {
+      cursor: 'crosshair',
+    },
+    '.cm-pointer-cursor': {
+      cursor: 'pointer',
+    },
   };
 
   const highlightingStyle: CSSObject = {
@@ -418,6 +424,8 @@ export default styled('div', {
         | CSSObject
         | undefined) ?? {}),
       ...theme.typography.body2,
+      // Appear above the scrollbar (and the splitter handle).
+      zIndex: 2000,
       borderRadius: theme.shape.borderRadius,
       overflow: 'hidden',
       maxWidth: 400,
