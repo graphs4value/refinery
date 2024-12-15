@@ -142,6 +142,10 @@ export default function createEditorState(
         ...completionKeymap,
         ...foldKeymap,
         ...historyKeymap,
+        {
+          key: 'F3',
+          run: () => store.goToDefinition(),
+        },
         // Enable accepting completions with tab, overrides `Tab` from
         // `indentWithTab` if there is an active completion.
         { key: 'Tab', run: acceptCompletion },

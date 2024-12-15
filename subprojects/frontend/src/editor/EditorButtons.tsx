@@ -16,6 +16,7 @@ import RedoIcon from '@mui/icons-material/Redo';
 import SaveIcon from '@mui/icons-material/Save';
 import SaveAsIcon from '@mui/icons-material/SaveAs';
 import SearchIcon from '@mui/icons-material/Search';
+import ShortcutIcon from '@mui/icons-material/ShortcutOutlined';
 import UndoIcon from '@mui/icons-material/Undo';
 import WarningIcon from '@mui/icons-material/Warning';
 import IconButton from '@mui/material/IconButton';
@@ -150,6 +151,15 @@ export default observer(function EditorButtons({
           </ToggleButton>
         </MuiTooltip>
       </ToggleButtonGroup>
+      <Tooltip title="Go to definition">
+        <IconButton
+          disabled={!editorStore?.opened}
+          onClick={() => editorStore?.goToDefinition()}
+          color="inherit"
+        >
+          <ShortcutIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
       <Tooltip title="Automatic format">
         <IconButton
           disabled={!editorStore?.opened}

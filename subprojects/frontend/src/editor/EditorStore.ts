@@ -351,8 +351,9 @@ export default class EditorStore {
     return this.client.hoverTooltip(pos);
   }
 
-  goToDefinition(pos: number): void {
+  goToDefinition(pos?: number): boolean {
     this.client?.goToDefinition(pos);
+    return true;
   }
 
   /**

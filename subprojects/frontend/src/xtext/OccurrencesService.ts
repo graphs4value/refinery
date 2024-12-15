@@ -144,7 +144,7 @@ export default class OccurrencesService {
     this.store.updateOccurrences(write, read, goToFirst, pos);
   }
 
-  goToDefinition(pos: number): Promise<void> {
+  goToDefinition(pos?: number): Promise<void> {
     return this.updateOccurrences(pos, true);
   }
 }

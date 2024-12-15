@@ -165,7 +165,7 @@ export default class XtextClient {
     return this.hoverService.hoverTooltip(pos);
   }
 
-  goToDefinition(pos: number): void {
+  goToDefinition(pos?: number): void {
     this.occurrencesService.goToDefinition(pos).catch((e) => {
       log.error('Error while fetching occurrences', e);
     });
