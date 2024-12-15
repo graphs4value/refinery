@@ -15,6 +15,8 @@ export interface FoundToken {
 
   to: number;
 
+  idenfitier: boolean;
+
   implicitCompletion: boolean;
 
   text: string;
@@ -57,6 +59,7 @@ export default function findToken(
   return {
     from,
     to,
+    idenfitier: isQualifiedName,
     implicitCompletion: token.type.prop(implicitCompletion) ?? false,
     text,
   };

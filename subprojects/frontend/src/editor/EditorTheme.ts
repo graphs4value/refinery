@@ -716,7 +716,7 @@ export default styled('div', {
         span: {
           // Hack to restore writing direction.
           direction: 'ltr',
-        }
+        },
       },
       '.cm-completionIcon, .cm-completionDetail': {
         color:

@@ -154,6 +154,8 @@ export default class EditorStore {
       searchPanel: false,
       lintPanel: false,
       contentAssist: false,
+      hoverTooltip: false,
+      goToDefinition: false,
       formatText: false,
     });
   }
@@ -307,8 +309,30 @@ export default class EditorStore {
     this.hexTypeHashes = hexTypeHashes;
   }
 
-  updateOccurrences(write: IOccurrence[], read: IOccurrence[]): void {
-    this.dispatch(setOccurrences(write, read));
+  updateOccurrences(
+    write: IOccurrence[],
+    read: IOccurrence[],
+    goToFirst = false,
+    fallbackPos?: number,
+  ): void {
+    let goTo: number | undefined;
+    if (goToFirst) {
+      goTo = write[0]?.from ?? read[0]?.from ?? fallbackPos;
+    }
+    this.dispatch(
+      setOccurrences(write, read),
+      ...(goTo === undefined
+        ? []
+        : [
+            {
+              selection: { anchor: goTo },
+              effects: [EditorView.scrollIntoView(goTo)],
+            },
+          ]),
+    );
+    if (goTo !== undefined) {
+      this.view?.focus();
+    }
   }
 
   async contentAssist(
@@ -325,6 +349,10 @@ export default class EditorStore {
       return null;
     }
     return this.client.hoverTooltip(pos);
+  }
+
+  goToDefinition(pos: number): void {
+    this.client?.goToDefinition(pos);
   }
 
   /**

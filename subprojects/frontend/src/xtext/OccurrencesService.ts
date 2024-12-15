@@ -106,7 +106,7 @@ export default class OccurrencesService {
     });
   }
 
-  private async updateOccurrences() {
+  private async updateOccurrences(pos?: number, goToFirst = false) {
     if (!this.needsOccurrences || !this.updateService.opened) {
       this.clearOccurrences();
       return;
@@ -115,7 +115,7 @@ export default class OccurrencesService {
       return this.needsOccurrences
         ? {
             cancelled: false,
-            data: this.store.state.selection.main.head,
+            data: pos ?? this.store.state.selection.main.head,
           }
         : { cancelled: true };
     });
@@ -141,6 +141,10 @@ export default class OccurrencesService {
       read.length,
       'read occurrences',
     );
-    this.store.updateOccurrences(write, read);
+    this.store.updateOccurrences(write, read, goToFirst, pos);
+  }
+
+  goToDefinition(pos: number): Promise<void> {
+    return this.updateOccurrences(pos, true);
   }
 }

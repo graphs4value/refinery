@@ -51,6 +51,7 @@ import bidiIsolatesExtension from './bidiIsolatesExtension';
 import crosshairCursor from './crosshairCursor';
 import exposeDiagnostics from './exposeDiagnostics';
 import findOccurrences from './findOccurrences';
+import goToDefinition from './goToDefinition';
 import scrollbarsExtension from './scrollbarsExtension';
 import semanticHighlighting from './semanticHighlighting';
 
@@ -81,6 +82,7 @@ export default function createEditorState(
       EditorView.clickAddsSelectionRange.of((e) => e.altKey && !e.shiftKey),
       exposeDiagnostics,
       findOccurrences,
+      goToDefinition(store),
       highlightActiveLine(),
       highlightActiveLineGutter(),
       highlightSpecialChars(),
