@@ -9,15 +9,14 @@ import type {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
-import { syntaxTree } from '@codemirror/language';
 import type { Transaction } from '@codemirror/state';
-import type { SyntaxNode } from '@lezer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 
-import { implicitCompletion } from '../language/props';
 import getLogger from '../utils/getLogger';
 
 import type UpdateService from './UpdateService';
+import type { FoundToken } from './findToken';
+import findToken from './findToken';
 import type { ContentAssistEntry } from './xtextServiceResults';
 
 const PROPOSALS_LIMIT = 1000;
@@ -28,57 +27,8 @@ const HIGH_PRIORITY_KEYWORDS = ['<->', '->', '==>'];
 
 const log = getLogger('xtext.ContentAssistService');
 
-interface IFoundToken {
-  from: number;
-
-  to: number;
-
-  implicitCompletion: boolean;
-
-  text: string;
-}
-
-function findToken({ pos, state }: CompletionContext): IFoundToken | undefined {
-  let token = syntaxTree(state).resolveInner(pos, -1);
-  let qualifiedName: SyntaxNode | null = token;
-  while (
-    qualifiedName !== null &&
-    qualifiedName.type.name !== 'QualifiedName'
-  ) {
-    qualifiedName = qualifiedName.parent;
-  }
-  if (qualifiedName !== null) {
-    token = qualifiedName;
-  }
-  const isQualifiedName = token.type.name === 'QualifiedName';
-  if (!isQualifiedName && token.firstChild !== null) {
-    // Only complete terminals and qualified names.
-    return undefined;
-  }
-  const { from, to: endIndex } = token;
-  if (from > pos || endIndex < pos) {
-    // We haven't found the token we want to complete.
-    // Complete with an empty prefix from `pos` instead.
-    // The other `return undefined;` lines also handle this condition.
-    return undefined;
-  }
-  const text = state.sliceDoc(from, endIndex).trimEnd();
-  // Due to parser error recovery, we may get spurious whitespace
-  // at the end of the token.
-  const to = from + text.length;
-  if (to > endIndex) {
-    return undefined;
-  }
-  return {
-    from,
-    to,
-    implicitCompletion: token.type.prop(implicitCompletion) ?? false,
-    text,
-  };
-}
-
 function shouldCompleteImplicitly(
-  token: IFoundToken | undefined,
+  token: FoundToken | undefined,
   context: CompletionContext,
 ): boolean {
   return (
@@ -141,7 +91,7 @@ function createCompletion(
   const completion: Completion = {
     label: remainingPrefix + entry.proposal,
     displayLabel: entry.proposal,
-    type: type ?? entry.kind?.toLowerCase(),
+    type: type ?? entry.kind,
     boost,
   };
   if (entry.documentation !== undefined) {
@@ -157,7 +107,7 @@ function createCompletion(
     const { description } = entry;
     completion.detail = description.startsWith('/')
       ? description
-      : ` ${description}`;
+      : `\u00a0${description}`;
   }
   return completion;
 }
@@ -206,7 +156,7 @@ export default class ContentAssistService {
         options: [],
       };
     }
-    const tokenBefore = findToken(context);
+    const tokenBefore = findToken(context.pos, context.state);
     if (!context.explicit && !shouldCompleteImplicitly(tokenBefore, context)) {
       return {
         from: context.pos,

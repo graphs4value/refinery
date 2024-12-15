@@ -9,6 +9,7 @@ import type {
   CompletionResult,
 } from '@codemirror/autocomplete';
 import type { Transaction } from '@codemirror/state';
+import type { Tooltip } from '@codemirror/view';
 import { type IReactionDisposer, reaction } from 'mobx';
 
 import type PWAStore from '../PWAStore';
@@ -17,6 +18,7 @@ import getLogger from '../utils/getLogger';
 
 import ContentAssistService from './ContentAssistService';
 import HighlightingService from './HighlightingService';
+import HoverService from './HoverService';
 import ModelGenerationService from './ModelGenerationService';
 import OccurrencesService from './OccurrencesService';
 import SemanticsService from './SemanticsService';
@@ -39,6 +41,8 @@ export default class XtextClient {
   private readonly validationService: ValidationService;
 
   private readonly occurrencesService: OccurrencesService;
+
+  private readonly hoverService: HoverService;
 
   private readonly semanticsService: SemanticsService;
 
@@ -68,6 +72,7 @@ export default class XtextClient {
     );
     this.validationService = new ValidationService(store, this.updateService);
     this.occurrencesService = new OccurrencesService(store, this.updateService);
+    this.hoverService = new HoverService(store, this.updateService);
     this.semanticsService = new SemanticsService(store, this.validationService);
     this.modelGenerationService = new ModelGenerationService(
       store,
@@ -154,6 +159,10 @@ export default class XtextClient {
 
   contentAssist(context: CompletionContext): Promise<CompletionResult> {
     return this.contentAssistService.contentAssist(context);
+  }
+
+  hoverTooltip(pos: number): Promise<Tooltip | null> {
+    return this.hoverService.hoverTooltip(pos);
   }
 
   startModelGeneration(randomSeed?: number): Promise<void> {

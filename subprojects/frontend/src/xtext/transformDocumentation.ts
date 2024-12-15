@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -15,7 +15,9 @@ const md = markdownit({
   // See https://github.com/markdown-it/markdown-it/issues/1066
   .disable('code');
 
-export default function transformDocumentation(documentation: string): Node {
+export default function transformDocumentation(
+  documentation: string,
+): HTMLElement {
   const dangeroudHTML = md.render(documentation);
   const html = DOMPurify.sanitize(dangeroudHTML);
   const node = document.createElement('div');

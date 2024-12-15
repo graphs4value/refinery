@@ -26,9 +26,6 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xtext.CurrentTypeFinder;
 import org.jetbrains.annotations.Nullable;
-import tools.refinery.language.documentation.DocumentationCommentParser;
-import tools.refinery.language.documentation.TypeHashProvider;
-import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
@@ -62,7 +59,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 	private IdeContentProposalCreator proposalCreator;
 
 	@Inject
-	private TypeHashProvider typeHashProvider;
+	private ProblemProposalUtils proposalUtils;
 
 	private CrossReference importedModuleCrossReference;
 
@@ -105,125 +102,10 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 												ContentAssistContext context) {
 		return proposalCreator.createProposal(qualifiedNameConverter.toString(candidate.getName()), context, e -> {
 			e.setSource(candidate);
-			e.setDescription(getDescription(candidate));
-			e.setDocumentation(getDocumentation(candidate, context));
-			e.setKind(getKind(candidate));
+			e.setDescription(proposalUtils.getDescription(candidate));
+			e.setDocumentation(proposalUtils.getDocumentation(candidate, context));
+			e.setKind(String.join(" ", proposalUtils.getKind(candidate)));
 		});
-	}
-
-	private static String getDescription(IEObjectDescription candidate) {
-		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(candidate.getEClass())) {
-			// Datatypes shouldn't have their arity displayed.
-			return "datatype";
-		}
-		int arity = -1;
-		var arityString = candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY);
-		try {
-			arity = Integer.parseInt(arityString, 10);
-		} catch (NumberFormatException e) {
-			// Ignore parse error, omit arity.
-		}
-		var eClassDescription = getEClassDescription(candidate);
-		if (arity < 0) {
-			return eClassDescription;
-		}
-		if (eClassDescription == null) {
-			return "/" + arity;
-		}
-		return "/" + arity + " " + eClassDescription;
-	}
-
-	private static String getEClassDescription(IEObjectDescription candidate) {
-		var eClass = candidate.getEClass();
-		if (eClass == null) {
-			return null;
-		}
-		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(eClass)) {
-			return "module";
-		}
-		if (ProblemPackage.Literals.NODE.isSuperTypeOf(eClass)) {
-			return "node";
-		}
-		if (ProblemPackage.Literals.PARAMETER.isSuperTypeOf(eClass)) {
-			// Parameter must come before Variable, because it is a subclass of Variable.
-			return "parameter";
-		}
-		if (ProblemPackage.Literals.VARIABLE.isSuperTypeOf(eClass)) {
-			return "variable";
-		}
-		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass)) {
-			return getPredicateEClassDescription(candidate);
-		}
-		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(eClass)) {
-			return "class";
-		}
-		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass)) {
-			// For predicates, there is no need to show the exact type of definition, since they behave
-			// logically equivalently.
-			return null;
-		}
-		if (ProblemPackage.Literals.ENUM_DECLARATION.isSuperTypeOf(eClass)) {
-			return "enum";
-		}
-		if (ProblemPackage.Literals.RULE_DEFINITION.isSuperTypeOf(eClass)) {
-			return "rule";
-		}
-		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
-			return "aggregator";
-		}
-		if (ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
-			return "annotation";
-		}
-		return eClass.getName();
-	}
-
-	private static String getPredicateEClassDescription(IEObjectDescription candidate) {
-		if (ProblemResourceDescriptionStrategy.SHADOW_PREDICATE_TRUE.equals(
-				candidate.getUserData(ProblemResourceDescriptionStrategy.SHADOW_PREDICATE))) {
-			return "shadow";
-		}
-		// For predicates, there is no need to show the exact type of definition, since they behave
-		// logically equivalently.
-		return null;
-	}
-
-	private String getDocumentation(IEObjectDescription candidate, ContentAssistContext context) {
-		var documentation = candidate.getUserData(DocumentationCommentParser.DOCUMENTATION);
-		if (documentation != null) {
-			return documentation;
-		}
-		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(candidate.getEClass())) {
-			var name = NamingUtil.stripRootPrefix(candidate.getQualifiedName());
-			var importAdapter = importAdapterProvider.getOrInstall(context.getResource());
-			return importAdapter.getLibrary().getDocumentation(name).orElse(null);
-		}
-		return null;
-	}
-
-	private String getKind(IEObjectDescription candidate) {
-		var eClass = candidate.getEClass();
-		if (BuiltinLibrary.BUILTIN_LIBRARY_URI.equals(candidate.getEObjectURI().trimFragment()) &&
-				!ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
-			// Built-in annotations are not rendered with the keyword color in the frontend.
-			return "BUILTIN";
-		}
-		if (ProblemResourceDescriptionStrategy.CONTAINMENT_TRUE.equals(
-				candidate.getUserData(ProblemResourceDescriptionStrategy.CONTAINMENT))) {
-			return "CONTAINMENT";
-		}
-		String typeHashKind = null;
-		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass) &&
-				candidate.getEObjectOrProxy() instanceof Relation relation) {
-			var typeHash = typeHashProvider.getTypeHash(relation);
-			if (typeHash != null) {
-				typeHashKind = "typeHash-" + typeHash;
-			}
-		}
-		if (ProblemResourceDescriptionStrategy.ABSTRACT_TRUE.equals(
-				candidate.getUserData(ProblemResourceDescriptionStrategy.ABSTRACT))) {
-			return typeHashKind == null ? "ABSTRACT" : "ABSTRACT " + typeHashKind;
-		}
-		return typeHashKind == null ? ContentAssistEntry.KIND_REFERENCE : typeHashKind;
 	}
 
 	protected boolean isExistingObject(IEObjectDescription candidate, CrossReference crossRef,

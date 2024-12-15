@@ -119,6 +119,13 @@ export const OccurrencesResult = DocumentStateResult.extend({
 
 export type OccurrencesResult = z.infer<typeof OccurrencesResult>;
 
+export const HoverResult = DocumentStateResult.extend({
+  title: z.string().optional(),
+  content: z.string().optional(),
+});
+
+export type HoverResult = z.infer<typeof HoverResult>;
+
 export const FormattingResult = DocumentStateResult.extend({
   formattedText: z.string(),
   replaceRegion: TextRegion,

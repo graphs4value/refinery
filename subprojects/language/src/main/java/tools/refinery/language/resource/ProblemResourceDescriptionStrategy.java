@@ -55,6 +55,10 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String ABSTRACT_TRUE = "true";
 	public static final String CONTAINMENT = DATA_PREFIX + "CONTAINMENT";
 	public static final String CONTAINMENT_TRUE = "true";
+	public static final String ATOM = DATA_PREFIX + "ATOM";
+	public static final String ATOM_TRUE = "true";
+	public static final String MULTI = DATA_PREFIX + "MULTI";
+	public static final String MULTI_TRUE = "true";
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -158,8 +162,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 					.collect(Collectors.joining(IMPORTS_SEPARATOR));
 			builder.put(IMPORTS, importsString);
 			builder.put(MODULE_KIND, problem.getKind().getName());
-		} else if (eObject instanceof Node) {
-			builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
+		} else if (eObject instanceof Node node) {
+			addNodeUserData(node, builder);
 		} else if (eObject instanceof Relation relation) {
 			addRelationUserData(relation, builder);
 		} else if (eObject instanceof RuleDefinition) {
@@ -179,6 +183,16 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		var documentationMap = documentationCommentParser.parseDocumentation(eObject);
 		builder.putAll(documentationMap);
 		return builder.build();
+	}
+
+	private static void addNodeUserData(Node node, ImmutableMap.Builder<String, String> builder) {
+		builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
+		if (ProblemUtil.isAtomNode(node)) {
+			builder.put(ATOM, ATOM_TRUE);
+		}
+		if (ProblemUtil.isMultiNode(node)) {
+			builder.put(MULTI, MULTI_TRUE);
+		}
 	}
 
 	private static void addRelationUserData(Relation relation, ImmutableMap.Builder<String, String> builder) {

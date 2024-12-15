@@ -23,6 +23,7 @@ import {
   isConflictResult,
   OccurrencesResult,
   ModelGenerationStartedResult,
+  HoverResult,
 } from './xtextServiceResults';
 
 const UPDATE_TIMEOUT_MS = 500;
@@ -380,6 +381,41 @@ export default class UpdateService {
       return { cancelled: true };
     }
     return { cancelled: false, data: parsedOccurrencesResult };
+  }
+
+  async fetchHoverTooltip(
+    caretOffset: number,
+  ): Promise<CancellableResult<HoverResult>> {
+    try {
+      await this.updateOrThrow();
+    } catch (error) {
+      if (error instanceof CancelledError || error instanceof TimeoutError) {
+        return { cancelled: true };
+      }
+      throw error;
+    }
+    const expectedStateId = this.xtextStateId;
+    if (expectedStateId === undefined || this.tracker.hasPendingChanges) {
+      // Just give up if another update is in progress.
+      return { cancelled: true };
+    }
+    const data = await this.webSocketClient.send({
+      resource: this.resourceName,
+      serviceType: 'hover',
+      caretOffset,
+      expectedStateId,
+    });
+    if (
+      isConflictResult(data) ||
+      this.tracker.hasChangesSince(expectedStateId)
+    ) {
+      return { cancelled: true };
+    }
+    const parsedHoverResult = HoverResult.parse(data);
+    if (parsedHoverResult.stateId !== expectedStateId) {
+      return { cancelled: true };
+    }
+    return { cancelled: false, data: parsedHoverResult };
   }
 
   async startModelGeneration(

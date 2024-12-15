@@ -21,7 +21,7 @@ import {
   type TransactionSpec,
   type EditorState,
 } from '@codemirror/state';
-import { type Command, EditorView } from '@codemirror/view';
+import { type Command, EditorView, type Tooltip } from '@codemirror/view';
 import { makeAutoObservable, observable, runInAction } from 'mobx';
 import { nanoid } from 'nanoid';
 
@@ -318,6 +318,13 @@ export default class EditorStore {
       return null;
     }
     return this.client.contentAssist(context);
+  }
+
+  async hoverTooltip(pos: number): Promise<Tooltip | null> {
+    if (this.client === undefined) {
+      return null;
+    }
+    return this.client.hoverTooltip(pos);
   }
 
   /**

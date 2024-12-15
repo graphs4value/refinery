@@ -4,6 +4,6 @@ Copyright (c) 2024 The Refinery Authors <https://refinery.tools/>
 SPDX-License-Identifier: CC-BY-4.0 and MIT
 
 This icon is based on
-https://github.com/microsoft/vscode-icons/blob/2ca0f3225c1ecd16537107f60f109317fcfc3eb0/icons/dark/symbol-keyword.svg
+https://github.com/microsoft/vscode-icons/blob/2ca0f3225c1ecd16537107f60f109317fcfc3eb0/icons/dark/symbol-structure.svg
 but its foreground color was changed to black to make it suitable
 for use as a CSS `mask-image`.

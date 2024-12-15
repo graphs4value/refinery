@@ -16,10 +16,17 @@ import {
 } from '@mui/material/styles';
 import { range } from 'lodash-es';
 
+import { darkTheme } from '../theme/ThemeProvider';
 import svgURL from '../utils/svgURL';
 import typeHashTextColor from '../utils/typeHashTextColor';
 
+import fieldSVG from './icons/symbol-field.svg?raw';
 import keywordSVG from './icons/symbol-keyword.svg?raw';
+import methodSVG from './icons/symbol-method.svg?raw';
+import miscSVG from './icons/symbol-misc.svg?raw';
+import namespaceSVG from './icons/symbol-namespace.svg?raw';
+import structureSVG from './icons/symbol-structure.svg?raw';
+import variableSVG from './icons/symbol-variable.svg?raw';
 
 function createTypeHashStyles(
   theme: Theme,
@@ -39,22 +46,35 @@ function createTypeHashStyles(
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
     };
-    result[`.cm-completionIcon-typehash-${i} + .cm-completionLabel`] = {
+    result[`.cm-completionIcon-typeHash-${i} + .cm-completionLabel`] = {
       color: `${theme.palette.highlight.typeHash[i]?.text} !important`,
       fontWeight: theme.typography.fontWeightEditorTypeHash,
+    };
+    result[
+      `.refinery-completion-documentation .cm-completionIcon-typeHash-${i} + .cm-completionLabel`
+    ] = {
+      color: `${darkTheme.palette.highlight.typeHash[i]?.text} !important`,
+      fontWeight: darkTheme.typography.fontWeightEditorTypeHash,
     };
   });
   hexTypeHashes.forEach((typeHash) => {
     const color = typeHashTextColor(`#${typeHash}`, theme);
+    const darkColor = typeHashTextColor(`#${typeHash}`, darkTheme);
     result[`.tok-problem-typeHash-_${typeHash}`] = {
       '&, .tok-typeName, .tok-variableName': {
         color,
         fontWeight: theme.typography.fontWeightEditorTypeHash,
       },
     };
-    result[`.cm-completionIcon-typehash-_${typeHash} + .cm-completionLabel`] = {
+    result[`.cm-completionIcon-typeHash-_${typeHash} + .cm-completionLabel`] = {
       color: `${color} !important`,
       fontWeight: theme.typography.fontWeightEditorTypeHash,
+    };
+    result[
+      `.refinery-completion-documentation .cm-completionIcon-typeHash-_${typeHash} + .cm-completionLabel`
+    ] = {
+      color: `${darkColor} !important`,
+      fontWeight: darkTheme.typography.fontWeightEditorTypeHash,
     };
   });
   return result;
@@ -524,7 +544,6 @@ export default styled('div', {
         maskSize: '16px 16px',
         height: 16,
         width: 16,
-        verticalAlign: 'middle',
       },
     };
   }
@@ -551,31 +570,9 @@ export default styled('div', {
       '&::-webkit-scrollbar': {
         borderRadius: theme.shape.borderRadius,
       },
-      '.cm-completionIcon': {
-        color: theme.palette.text.primary,
-      },
-      '.cm-completionLabel': {
-        ...editorFontStyle,
-        color: theme.palette.text.primary,
-      },
-      '.cm-completionDetail': {
-        ...editorFontStyle,
-        margin: 0,
-        color: theme.palette.text.secondary,
-        fontStyle: 'normal',
-      },
-      '.cm-completionIcon-keyword + .cm-completionLabel, .cm-completionIcon-builtin + .cm-completionLabel':
-        {
-          color: `${theme.palette.primary.main} !important`,
-        },
-      '.cm-completionIcon-abstract + .cm-completionLabel': {
-        fontStyle: 'italic',
-      },
-      '.cm-completionIcon-containment + .cm-completionLabel': {
-        fontWeight: theme.typography.fontWeightEditorBold,
-      },
       '& > ul > li': {
         padding: `0 ${theme.spacing(0.5)}`,
+        display: 'flex',
       },
       '& > ul > li[aria-selected="true"]': {
         background: alpha(
@@ -583,6 +580,12 @@ export default styled('div', {
           theme.palette.action.focusOpacity,
         ),
         '.cm-completionIcon, .cm-completionLabel, .cm-completionDetail': {
+          color:
+            theme.palette.mode === 'dark'
+              ? theme.palette.text.primary
+              : theme.palette.text.secondary,
+        },
+        '.cm-completionLabel': {
           color: theme.palette.text.primary,
         },
       },
@@ -592,9 +595,51 @@ export default styled('div', {
       padding: 0,
       margin: `0 ${theme.spacing(0.5)} 0 0`,
       textAlign: 'center',
+      color: theme.palette.text.secondary,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      opacity: 1,
     },
+    '.cm-completionLabel': {
+      ...editorFontStyle,
+      color: theme.palette.text.primary,
+      flexShrink: 1,
+      // See https://davidwalsh.name/css-ellipsis-left
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      direction: 'rtl',
+      textAlign: 'left',
+    },
+    '.cm-completionDetail': {
+      ...editorFontStyle,
+      margin: 0,
+      color: theme.palette.text.secondary,
+      fontStyle: 'normal',
+      whiteSpace: 'nowrap',
+    },
+    '.cm-completionIcon-keyword + .cm-completionLabel, .cm-completionIcon-builtin + .cm-completionLabel':
+      {
+        color: `${theme.palette.primary.main} !important`,
+      },
+    '.cm-completionIcon-abstract + .cm-completionLabel': {
+      fontStyle: 'italic',
+    },
+    '.cm-completionIcon-containment + .cm-completionLabel': {
+      fontWeight: theme.typography.fontWeightEditorBold,
+    },
+    '.cm-completionIcon-variable + .cm-completionLabel': {
+      color: `${theme.palette.highlight.parameter} !important`,
+    },
+    ...completionIconStyle('annotation', miscSVG),
+    ...completionIconStyle('datatype', structureSVG),
     ...completionIconStyle('keyword', keywordSVG),
+    ...completionIconStyle('module', namespaceSVG),
+    ...completionIconStyle('node', fieldSVG),
     ...completionIconStyle('operator', keywordSVG),
+    ...completionIconStyle('relation', methodSVG),
+    ...completionIconStyle('variable', variableSVG),
     '.cm-tooltip.cm-completionInfo': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
         | CSSObject
@@ -602,35 +647,10 @@ export default styled('div', {
       ...theme.typography.body2,
       // Appear above the scrollbar (and the splitter handle).
       zIndex: 2000,
-      padding: `0 ${theme.spacing(1)}`,
+      padding: 0,
       borderRadius: theme.shape.borderRadius,
       overflow: 'hidden',
       whiteSpace: 'normal',
-      '.refinery-completion-documentation': {
-        margin: 0,
-        p: {
-          margin: `${theme.spacing(1)} 0`,
-        },
-        'code, pre': {
-          ...theme.typography.editor,
-          fontWeight: theme.typography.fontWeightEditorNormal,
-          fontSize: 'inherit',
-        },
-        pre: {
-          padding: 0,
-          margin: `${theme.spacing(1)} 0`,
-        },
-        code: {
-          background: 'rgb(255, 255, 255, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
-          borderRadius: theme.shape.borderRadius,
-        },
-        'pre code': {
-          background: 'transparent',
-          border: 'none',
-          borderRadius: 0,
-        },
-      },
       '&.cm-completionInfo-right': {
         marginLeft: theme.spacing(1),
       },
@@ -645,6 +665,32 @@ export default styled('div', {
         marginRight: theme.spacing(1),
         marginTop: theme.spacing(1),
       },
+    },
+    '.refinery-completion-documentation': {
+      margin: 0,
+      padding: `0 ${theme.spacing(1)}`,
+      p: {
+        margin: `${theme.spacing(1)} 0`,
+      },
+      'code, pre': {
+        ...theme.typography.editor,
+        fontWeight: darkTheme.typography.fontWeightEditorNormal,
+        fontSize: 'inherit',
+      },
+      pre: {
+        padding: 0,
+        margin: `${theme.spacing(1)} 0`,
+      },
+      code: {
+        background: 'rgb(255, 255, 255, 0.1)',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        borderRadius: theme.shape.borderRadius,
+      },
+      'pre code': {
+        background: 'transparent',
+        border: 'none',
+        borderRadius: 0,
+      },
       h3: {
         ...theme.typography.body2,
         padding: 0,
@@ -652,8 +698,33 @@ export default styled('div', {
         color:
           theme.palette.mode === 'dark'
             ? theme.palette.text.secondary
-            : '#d7d7d7',
+            : '#d0d0d0',
         fontStyle: 'italic',
+      },
+    },
+    '.refinery-completion-title': {
+      ...editorFontStyle,
+      padding: 0,
+      margin: `${theme.spacing(1)} 0`,
+      fontWeight: darkTheme.typography.fontWeightEditorNormal,
+      display: 'flex',
+      // See https://leonardofaria.net/2020/07/18/using-flexbox-and-text-ellipsis-together
+      minWidth: 0,
+      '.cm-completionLabel': {
+        color:
+          theme.palette.mode === 'dark' ? theme.palette.text.primary : '#fff',
+      },
+      '.cm-completionIcon, .cm-completionDetail': {
+        color:
+          theme.palette.mode === 'dark'
+            ? theme.palette.text.secondary
+            : '#d0d0d0',
+      },
+      '.cm-completionIcon-containment + .cm-completionLabel': {
+        fontWeight: darkTheme.typography.fontWeightEditorBold,
+      },
+      '.cm-completionIcon-variable + .cm-completionLabel': {
+        color: `${darkTheme.palette.highlight.parameter} !important`,
       },
     },
     '.refinery-completion-parameters': {
@@ -667,7 +738,7 @@ export default styled('div', {
       display: 'block',
       padding: 0,
       margin: `-${theme.spacing(1)} 0`,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: darkTheme.typography.fontWeightBold,
     },
     '.refinery-completion-parameter-invalid': {
       color:
