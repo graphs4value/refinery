@@ -11,6 +11,7 @@ import findToken from '../xtext/findToken';
 
 import type EditorStore from './EditorStore';
 import defineDecorationSetExtension from './defineDecorationSetExtension';
+import isMac from './isMac';
 
 // Do not overwrite `style`, because it would interfere with the overscroll effect.
 const showPointer = { class: 'cm-pointer-cursor' };
@@ -29,6 +30,8 @@ export default function goToDefinition(store: EditorStore): Extension {
 
       hasToken = false;
 
+      hovered = false;
+
       ctrlDown = false;
 
       metaDown = false;
@@ -39,20 +42,13 @@ export default function goToDefinition(store: EditorStore): Extension {
 
       constructor(private readonly view: EditorView) {}
 
-      setCtrl(ctrlDown: boolean) {
-        this.ctrlDown = ctrlDown;
-      }
-
-      setMeta(metaDown: boolean) {
-        this.metaDown = metaDown;
-      }
-
       update() {
         this.updateDecoration();
       }
 
       updateDecoration(clientX?: number, clientY?: number) {
-        const newState = this.ctrlDown || this.metaDown;
+        const newState =
+          this.hovered && (this.ctrlDown || (isMac && this.metaDown));
         let shouldUpdate = this.state !== newState;
         if (clientX !== undefined && this.x !== clientX) {
           this.x = clientX;
@@ -129,6 +125,14 @@ export default function goToDefinition(store: EditorStore): Extension {
           }
           this.updateDecoration();
         },
+        mouseenter() {
+          this.hovered = true;
+          this.updateDecoration();
+        },
+        mouseleave() {
+          this.hovered = false;
+          this.updateDecoration();
+        },
         mousemove(e) {
           this.ctrlDown = e.ctrlKey;
           this.metaDown = e.metaKey;
@@ -145,7 +149,7 @@ export default function goToDefinition(store: EditorStore): Extension {
           return true;
         },
         click(e) {
-          if (!this.state) {
+          if (!e.ctrlKey && !(isMac && e.metaKey)) {
             return false;
           }
           this.goToDefinition(e.clientX, e.clientY);
