@@ -348,6 +348,8 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			var proxy = ProblemFactory.eINSTANCE.createProblem();
 			((InternalEObject) proxy).eSetProxyURI(uri);
 			var description = new EObjectDescription(suggestedName, proxy, Map.of(
+					ProblemResourceDescriptionStrategy.SHADOWING_KEY,
+					ProblemResourceDescriptionStrategy.SHADOWING_KEY_PROBLEM,
 					ProblemResourceDescriptionStrategy.MODULE_KIND, ModuleKind.MODULE.getName()
 			));
 			descriptions.add(description);
