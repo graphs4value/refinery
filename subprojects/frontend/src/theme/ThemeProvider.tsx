@@ -408,7 +408,7 @@ export const darkTheme = (() => {
         MuiCssBaseline: {
           styleOverrides: {
             '.notistack-MuiContent-default': {
-              background: `${theme.palette.highlight.activeLine} !important`,
+              background: `#35393e !important`,
             },
             '.notistack-MuiContent-error': {
               background: `${theme.palette.highlight.typeHash[1]?.box} !important`,
