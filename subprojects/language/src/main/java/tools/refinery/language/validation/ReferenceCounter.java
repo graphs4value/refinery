@@ -8,6 +8,7 @@ package tools.refinery.language.validation;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EContentsEList;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import org.eclipse.xtext.util.Tuples;
 import tools.refinery.language.model.problem.Problem;
@@ -51,8 +52,14 @@ public class ReferenceCounter {
 	}
 
 	private static void countCrossReferences(EObject eObject, Map<EObject, Integer> map) {
-		for (var referencedObject : eObject.eCrossReferences()) {
-			map.compute(referencedObject, (key, currentValue) -> currentValue == null ? 1 : currentValue + 1);
+		var featureIterator = (EContentsEList.FeatureIterator<EObject>) eObject.eCrossReferences().iterator();
+		while (featureIterator.hasNext()) {
+			var referencedObject = featureIterator.next();
+			// Avoid double-counting the derived reference {@code variableOrNode} of {@code VariableOrNodeExpression},
+			// as the original reference is just {@code element}.
+			if (!featureIterator.feature().isDerived()) {
+				map.compute(referencedObject, (key, currentValue) -> currentValue == null ? 1 : currentValue + 1);
+			}
 		}
 	}
 }
