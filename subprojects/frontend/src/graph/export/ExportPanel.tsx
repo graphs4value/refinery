@@ -135,7 +135,7 @@ function ExportPanel({
       dialog={dialog}
       title="Export diagram"
       icon={icon}
-      iconLabel={`Export image\u2026`}
+      iconLabel={`Export image`}
       buttons={buttons}
     >
       <SwitchButtonGroup size="small" className="rounded">
