@@ -100,6 +100,7 @@ public class ServerLauncher {
 		// See also the related Jetty ticket:
 		// https://github.com/eclipse/jetty.project/issues/2925
 		defaultServletHolder.setInitParameter("useFileMappedBuffer", isWindows ? "false" : "true");
+		defaultServletHolder.setInitParameter("precompressed", "br=.br,gzip=.gz");
 		handler.addServlet(defaultServletHolder, "/");
 	}
 

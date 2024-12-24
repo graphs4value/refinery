@@ -3975,6 +3975,7 @@ __metadata:
     direction: "npm:^2.0.1"
     dompurify: "npm:^3.2.3"
     escape-string-regexp: "npm:^5.0.0"
+    fast-glob: "npm:^3.3.2"
     html-minifier-terser: "npm:^7.2.0"
     jspdf: "npm:^2.5.2"
     lodash-es: "npm:^4.17.21"

@@ -10,7 +10,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "MODE=production vite build",
+    "build": "MODE=production vite build && node scripts/compressFiles.mjs",
     "dev": "MODE=development vite serve",
     "typegen": "xstate typegen \"src/**/*.ts?(x)\"",
     "typecheck": "yarn run g:tsc -p subprojects/frontend/tsconfig.shared.json && yarn run g:tsc -p subprojects/frontend/tsconfig.node.json && yarn run g:tsc -p subprojects/frontend/tsconfig.json",
@@ -101,6 +101,7 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react-swc": "^3.7.2",
     "@xstate/cli": "^0.5.17",
+    "fast-glob": "^3.3.2",
     "html-minifier-terser": "^7.2.0",
     "micromatch": "^4.0.8",
     "pnpapi": "^0.0.0",
