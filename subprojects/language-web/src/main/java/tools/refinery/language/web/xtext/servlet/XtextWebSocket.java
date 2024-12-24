@@ -9,10 +9,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
+import org.eclipse.jetty.io.EofException;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.StatusCode;
 import org.eclipse.jetty.websocket.api.annotations.*;
+import org.eclipse.jetty.websocket.api.exceptions.WebSocketTimeoutException;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
@@ -83,10 +85,16 @@ public class XtextWebSocket implements ResponseHandler {
 	@OnWebSocketError
 	public void onError(Throwable error) {
 		executor.dispose();
-		if (webSocketSession == null) {
+		if (webSocketSession == null || !webSocketSession.isOpen()) {
 			return;
 		}
-		LOG.error("Internal websocket error in connection from " + webSocketSession.getRemoteSocketAddress(), error);
+		switch (error) {
+		case WebSocketTimeoutException ignored -> LOG.warn("Websocket connection timed out", error);
+		case EofException ignored -> LOG.warn("Websocket connection already closed", error);
+		default ->
+				LOG.error("Internal websocket error in connection from " + webSocketSession.getRemoteSocketAddress(),
+						error);
+		}
 	}
 
 	@OnWebSocketMessage
@@ -126,16 +134,17 @@ public class XtextWebSocket implements ResponseHandler {
 
 	@Override
 	public void onResponse(XtextWebResponse response) throws ResponseHandlerException {
-		if (webSocketSession == null) {
+		if (webSocketSession == null || !webSocketSession.isOpen()) {
 			throw new ResponseHandlerException("Trying to send message when websocket is disconnected");
 		}
 		var responseString = gson.toJson(response);
-		webSocketSession.sendText(responseString, Callback.from(() -> {}, this::writeFailed));
+		webSocketSession.sendText(responseString, Callback.from(() -> {
+		}, this::writeFailed));
 	}
 
 	public void writeFailed(Throwable x) {
-		if (webSocketSession == null) {
-			LOG.error("Cannot complete async write to disconnected websocket", x);
+		if (webSocketSession == null || !webSocketSession.isOpen()) {
+			LOG.warn("Cannot complete async write to disconnected websocket", x);
 			return;
 		}
 		LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteSocketAddress(), x);
