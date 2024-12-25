@@ -38,8 +38,7 @@ public class BackendConfigServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		resp.setStatus(HttpStatus.OK_200);
 		resp.setContentType("application/json");
-		try {
-			var writer = resp.getWriter();
+		try (var writer = resp.getWriter()) {
 			writer.write(serializedConfig);
 			writer.flush();
 		} catch (IOException e) {

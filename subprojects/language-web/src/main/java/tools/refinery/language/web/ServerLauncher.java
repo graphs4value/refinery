@@ -10,11 +10,9 @@
 package tools.refinery.language.web;
 
 import jakarta.servlet.DispatcherType;
-import jakarta.servlet.SessionTrackingMode;
 import org.eclipse.jetty.ee10.servlet.DefaultServlet;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.eclipse.jetty.ee10.servlet.SessionHandler;
 import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
@@ -30,7 +28,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.EnumSet;
-import java.util.Set;
 
 public class ServerLauncher {
 	public static final String DEFAULT_LISTEN_HOST = "localhost";
@@ -53,9 +50,9 @@ public class ServerLauncher {
 		server = new Server(bindAddress);
 		((QueuedThreadPool) server.getThreadPool()).setName("jetty");
 		var handler = new ServletContextHandler();
-		addSessionHandler(handler);
 		addProblemServlet(handler, allowedOrigins);
 		addBackendConfigServlet(handler, webSocketUrl);
+		addHealthCheckServlet(handler);
 		var baseResource = getBaseResource();
 		if (baseResource != null) {
 			handler.setBaseResource(baseResource);
@@ -65,12 +62,6 @@ public class ServerLauncher {
 		handler.addFilter(CacheControlFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 		handler.addFilter(SecurityHeadersFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 		server.setHandler(handler);
-	}
-
-	private void addSessionHandler(ServletContextHandler handler) {
-		var sessionHandler = new SessionHandler();
-		sessionHandler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
-		handler.setSessionHandler(sessionHandler);
 	}
 
 	private void addProblemServlet(ServletContextHandler handler, String[] allowedOrigins) {
@@ -91,6 +82,11 @@ public class ServerLauncher {
 		var backendConfigServletHolder = new ServletHolder(BackendConfigServlet.class);
 		backendConfigServletHolder.setInitParameter(BackendConfigServlet.WEBSOCKET_URL_INIT_PARAM, webSocketUrl);
 		handler.addServlet(backendConfigServletHolder, "/config.json");
+	}
+
+	private void addHealthCheckServlet(ServletContextHandler handler) {
+		var healthCheckServletHolder = new ServletHolder(HealthCheckServlet.class);
+		handler.addServlet(healthCheckServletHolder, "/health");
 	}
 
 	private void addDefaultServlet(ServletContextHandler handler) {
