@@ -28,6 +28,8 @@ import { nanoid } from 'nanoid';
 import type PWAStore from '../PWAStore';
 import GraphStore from '../graph/GraphStore';
 import {
+  REFINERY_CONTENT_TYPE,
+  FILE_TYPE_OPTIONS,
   type OpenResult,
   type OpenTextFileResult,
   openTextFile,
@@ -36,7 +38,10 @@ import {
 } from '../utils/fileIO';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
-import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
+import type {
+  SemanticsModelResult,
+  GeneratedModelSemanticsResult,
+} from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
 import GeneratedModelStore from './GeneratedModelStore';
@@ -55,23 +60,9 @@ import {
 
 const log = getLogger('editor.EditorStore');
 
-const REFINERY_CONTENT_TYPE = 'text/x-refinery';
-
 const FILE_PICKER_OPTIONS: FilePickerOptions = {
   id: 'problem',
-  types: [
-    {
-      description: 'Refinery files',
-      accept: {
-        [REFINERY_CONTENT_TYPE]: [
-          '.problem',
-          '.PROBLEM',
-          '.refinery',
-          '.REFINERY',
-        ],
-      },
-    },
-  ],
+  ...FILE_TYPE_OPTIONS,
 };
 
 export default class EditorStore {
@@ -516,7 +507,7 @@ export default class EditorStore {
 
   setGeneratedModelSemantics(
     uuid: string,
-    semantics: SemanticsModelResult,
+    semantics: GeneratedModelSemanticsResult,
   ): void {
     this.generatedModels.get(uuid)?.setSemantics(semantics);
   }

@@ -16,7 +16,12 @@ import type { Theme } from '@mui/material/styles';
 import { nanoid } from 'nanoid';
 
 import { darkTheme, lightTheme } from '../../theme/ThemeProvider';
-import { copyBlob, saveBlob } from '../../utils/fileIO';
+import {
+  REFINERY_CONTENT_TYPE,
+  FILE_TYPE_OPTIONS,
+  copyBlob,
+  saveBlob,
+} from '../../utils/fileIO';
 import type GraphStore from '../GraphStore';
 import { createGraphTheme } from '../GraphTheme';
 import icons from '../icons';
@@ -352,12 +357,43 @@ async function serializePDF(
   return serializePDFCached(svg, settings.embedFonts);
 }
 
+async function exportRefinery(
+  graphStore: GraphStore,
+  mode: 'download' | 'copy' | 'edit',
+): Promise<void> {
+  if (mode === 'edit') {
+    graphStore.editorStore.dispatch({
+      changes: [
+        {
+          from: 0,
+          to: graphStore.editorStore.state.doc.length,
+          insert: graphStore.source,
+        },
+      ],
+    });
+    graphStore.editorStore.selectGeneratedModel(undefined);
+  } else if (mode === 'copy') {
+    await navigator.clipboard.writeText(graphStore.source);
+  } else {
+    const blob = new Blob([graphStore.source], { type: REFINERY_CONTENT_TYPE });
+    const extension = graphStore.generated ? 'refinery' : 'problem';
+    await saveBlob(blob, `${graphStore.name}.${extension}`, {
+      id: EXPORT_ID,
+      ...FILE_TYPE_OPTIONS,
+    });
+  }
+}
+
 export default async function exportDiagram(
   svgContainer: HTMLElement | undefined,
   graph: GraphStore,
   settings: ExportSettingsStore,
-  mode: 'download' | 'copy',
+  mode: 'download' | 'copy' | 'edit',
 ): Promise<void> {
+  if (settings.format === 'refinery') {
+    return exportRefinery(graph, mode);
+  }
+
   const svg = svgContainer?.querySelector('svg');
   if (!svg) {
     return;
@@ -436,7 +472,7 @@ export default async function exportDiagram(
         {
           description: 'PDF files',
           accept: {
-            'application/pdf': ['.pdf', '.PDF'],
+            'application/pdf': ['.pdf'],
           },
         },
       ],
@@ -455,7 +491,7 @@ export default async function exportDiagram(
           {
             description: 'PNG graphics',
             accept: {
-              [PNG_CONTENT_TYPE]: ['.png', '.PNG'],
+              [PNG_CONTENT_TYPE]: ['.png'],
             },
           },
         ],
@@ -470,7 +506,7 @@ export default async function exportDiagram(
         {
           description: 'SVG graphics',
           accept: {
-            [SVG_CONTENT_TYPE]: ['.svg', '.SVG'],
+            [SVG_CONTENT_TYPE]: ['.svg'],
           },
         },
       ],

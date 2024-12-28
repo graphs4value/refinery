@@ -15,7 +15,10 @@ import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvide
 import tools.refinery.language.web.xtext.server.push.PushWebDocument;
 import tools.refinery.store.util.CancellationToken;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -151,7 +154,24 @@ public class ModelGenerationWorker implements Runnable {
 		var relationsMetadata = generator.getRelationsMetadata();
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator, cancellationToken);
-		return new ModelGenerationSuccessResult(uuid, nodesMetadata.list(), relationsMetadata, partialInterpretation);
+		String source;
+		try {
+			source = serializeSolution(generator);
+		} catch (IOException e) {
+			LOG.error("Error while serializing generated model", e);
+			return new ModelGenerationErrorResult(uuid, "Failed to save solution: " + e.getMessage());
+		}
+		return new ModelGenerationSuccessResult(uuid, nodesMetadata.list(), relationsMetadata, partialInterpretation,
+				source);
+	}
+
+	private String serializeSolution(ModelGenerator generator) throws IOException {
+		cancellationToken.checkCancelled();
+		var serializedSolution = generator.serialize();
+		try (var outputStream = new ByteArrayOutputStream()) {
+			serializedSolution.eResource().save(outputStream, Map.of());
+			return outputStream.toString(StandardCharsets.UTF_8);
+		}
 	}
 
 	public void cancel() {

@@ -4,6 +4,19 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+export const REFINERY_CONTENT_TYPE = 'application/x-refinery';
+
+export const FILE_TYPE_OPTIONS: FilePickerOptions = {
+  types: [
+    {
+      description: 'Refinery files',
+      accept: {
+        [REFINERY_CONTENT_TYPE]: ['.problem', '.refinery'],
+      },
+    },
+  ],
+};
+
 export interface OpenResult {
   name: string;
   handle: FileSystemFileHandle | undefined;
@@ -93,12 +106,12 @@ export async function saveBlob(
   return undefined;
 }
 
-export async function copyBlob(blob: Blob): Promise<void> {
+export async function copyBlob(blob: Blob, type?: string): Promise<void> {
   const { clipboard } = navigator;
   if ('write' in clipboard) {
     await clipboard.write([
       new ClipboardItem({
-        [blob.type]: blob,
+        [type ?? blob.type]: blob,
       }),
     ]);
   }

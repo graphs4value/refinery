@@ -197,6 +197,14 @@ export const SemanticsResult = z.object({
 
 export type SemanticsResult = z.infer<typeof SemanticsResult>;
 
+export const GeneratedModelSemanticsResult = SemanticsModelResult.extend({
+  source: z.string(),
+});
+
+export type GeneratedModelSemanticsResult = z.infer<
+  typeof GeneratedModelSemanticsResult
+>;
+
 export const ModelGenerationResult = z.union([
   z.object({
     uuid: z.string().min(1),
@@ -206,7 +214,7 @@ export const ModelGenerationResult = z.union([
     uuid: z.string().min(1),
     error: z.string(),
   }),
-  SemanticsModelResult.extend({
+  GeneratedModelSemanticsResult.extend({
     uuid: z.string().min(1),
   }),
 ]);
