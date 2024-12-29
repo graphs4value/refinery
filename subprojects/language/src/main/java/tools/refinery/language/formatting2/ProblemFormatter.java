@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.formatting2.AbstractJavaFormatter;
 import org.eclipse.xtext.formatting2.IFormattableDocument;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
+import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegionsFinder;
 import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
@@ -20,6 +21,9 @@ import tools.refinery.language.model.problem.*;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ProblemFormatter extends AbstractJavaFormatter {
+	public static final int MAX_LENGTH = 80;
+	public static final int TAB_SIZE = 4;
+
 	@Override
 	public void format(Object child, IFormattableDocument document) {
 		if (child instanceof AnnotatedElement annotatedElement) {
@@ -176,11 +180,42 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 	protected void format(NodeDeclaration nodeDeclaration, IFormattableDocument doc) {
 		surroundNewLines(doc, nodeDeclaration, this::singleNewLine);
 		var region = regionFor(nodeDeclaration);
-		doc.append(region.keyword("declare"), this::oneSpace);
-		doc.append(region.feature(ProblemPackage.Literals.NODE_DECLARATION__KIND), this::oneSpace);
-		formatList(region, ",", doc);
-		doc.prepend(region.keyword("."), this::noSpace);
-		for (var node : nodeDeclaration.getNodes()) {
+		var declare = region.keyword("declare");
+		int indentation = declare == null ? 0 : declare.getLength() + 1;
+		doc.append(declare, this::oneSpace);
+		var start = region.feature(ProblemPackage.Literals.NODE_DECLARATION__KIND);
+		doc.append(start, this::oneSpace);
+		if (start == null) {
+			start = declare;
+		} else {
+			indentation += start.getLength() + 1;
+		}
+		var end = region.keyword(".");
+		if (!nodeDeclaration.getNodes().isEmpty()) {
+			// This is a syntax error, but we should avoid clash between this and the space before even if we're
+			// asked to format an invalid document.
+			doc.prepend(end, this::noSpace);
+		}
+		doc.interior(start, end, IHiddenRegionFormatter::indent);
+		var commaIterator = region.keywords(",").iterator();
+		var nodeIterator = nodeDeclaration.getNodes().iterator();
+		ISemanticRegion lastComma = null;
+		while (nodeIterator.hasNext()) {
+			var node = nodeIterator.next();
+			var nodeRegion = regionForEObject(node);
+			// Add 1 for the space after the previous comma and add 1 for the comma or dot after.
+			int totalLength = 1 + nodeRegion.getLength() + 1;
+			int newOffset = indentation + totalLength;
+			boolean breakLineBefore = newOffset >= MAX_LENGTH;
+			if (breakLineBefore) {
+				doc.append(lastComma, this::newLine);
+				indentation = TAB_SIZE + totalLength;
+			} else {
+				doc.append(lastComma, this::oneSpace);
+				indentation = newOffset;
+			}
+			lastComma = commaIterator.hasNext() ? commaIterator.next() : null;
+			doc.prepend(lastComma, this::noSpace);
 			doc.format(node);
 		}
 	}
