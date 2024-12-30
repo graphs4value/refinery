@@ -49,6 +49,8 @@ class ProblemWebSocketServletIntegrationTest {
 
 	private GlobalStateMemento stateBeforeInjectorCreation;
 
+	private ProblemInjectorHolder injectorHolder;
+
 	private TestInfo testInfo;
 
 	private int serverPort;
@@ -69,6 +71,7 @@ class ProblemWebSocketServletIntegrationTest {
 		stateBeforeInjectorCreation = GlobalRegistries.makeCopyOfGlobalState();
 		client = new WebSocketClient();
 		client.start();
+		injectorHolder = new ProblemInjectorHolder();
 	}
 
 	@AfterEach
@@ -79,6 +82,8 @@ class ProblemWebSocketServletIntegrationTest {
 			server.stop();
 			server = null;
 		}
+		injectorHolder.dispose();
+		injectorHolder = null;
 		stateBeforeInjectorCreation.restoreGlobalState();
 		stateBeforeInjectorCreation = null;
 	}
@@ -221,9 +226,9 @@ class ProblemWebSocketServletIntegrationTest {
 		server = new Server(listenAddress);
 		((QueuedThreadPool) server.getThreadPool()).setName(testName);
 		var handler = new ServletContextHandler();
-		var holder = new ServletHolder(ProblemWebSocketServlet.class);
+		var holder = new ServletHolder(XtextWebSocketServlet.class);
 		if (allowedOrigins != null) {
-			holder.setInitParameter(ProblemWebSocketServlet.ALLOWED_ORIGINS_INIT_PARAM, allowedOrigins);
+			holder.setInitParameter(XtextWebSocketServlet.ALLOWED_ORIGINS_INIT_PARAM, allowedOrigins);
 		}
 		handler.addServlet(holder, SERVLET_URI);
 		JettyWebSocketServletContainerInitializer.configure(handler, null);

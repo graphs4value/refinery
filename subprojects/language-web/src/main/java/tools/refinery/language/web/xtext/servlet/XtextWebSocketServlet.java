@@ -17,7 +17,7 @@ import java.io.Serial;
 import java.time.Duration;
 import java.util.Set;
 
-public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implements JettyWebSocketCreator {
+public class XtextWebSocketServlet extends JettyWebSocketServlet implements JettyWebSocketCreator {
 	@Serial
 	private static final long serialVersionUID = -3772740838165122685L;
 

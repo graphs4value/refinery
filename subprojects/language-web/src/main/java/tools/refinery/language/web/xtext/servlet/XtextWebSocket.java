@@ -6,7 +6,6 @@
 package tools.refinery.language.web.xtext.servlet;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import org.eclipse.jetty.io.EofException;
@@ -19,9 +18,7 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.language.semantics.metadata.NodeKind;
-import tools.refinery.language.semantics.metadata.PredicateDetailKind;
-import tools.refinery.language.semantics.metadata.RelationDetail;
+import tools.refinery.language.web.gson.GsonUtil;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;
@@ -44,17 +41,7 @@ public class XtextWebSocket implements ResponseHandler {
 	 */
 	private static final int MAX_OUTGOING_FRAMES = 10;
 
-	private final Gson gson = new GsonBuilder()
-			.disableJdkUnsafe()
-			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RelationDetail.class, "type")
-					.registerSubtype(RelationDetail.Class.class, "class")
-					.registerSubtype(RelationDetail.Computed.class, "computed")
-					.registerSubtype(RelationDetail.Reference.class, "reference")
-					.registerSubtype(RelationDetail.Opposite.class, "opposite")
-					.registerSubtype(RelationDetail.Predicate.class, "pred"))
-			.registerTypeAdapter(NodeKind.class, new LowercaseTypeAdapter<>(NodeKind.class))
-			.registerTypeAdapter(PredicateDetailKind.class, new LowercaseTypeAdapter<>(PredicateDetailKind.class))
-			.create();
+	private final Gson gson = GsonUtil.getGson();
 
 	private final TransactionExecutor executor;
 

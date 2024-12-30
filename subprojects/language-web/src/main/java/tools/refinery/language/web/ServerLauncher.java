@@ -18,9 +18,20 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.spi.AbstractContainerLifecycleListener;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.jvnet.hk2.guice.bridge.api.GuiceBridge;
+import org.jvnet.hk2.guice.bridge.api.GuiceIntoHK2Bridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+import tools.refinery.language.web.api.SemanticsApi;
 import tools.refinery.language.web.config.BackendConfigServlet;
+import tools.refinery.language.web.gson.GsonJerseyProvider;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
 
 import java.io.File;
@@ -28,6 +39,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.EnumSet;
+import java.util.Map;
 
 public class ServerLauncher {
 	public static final String DEFAULT_LISTEN_HOST = "localhost";
@@ -44,13 +56,18 @@ public class ServerLauncher {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServerLauncher.class);
 
+	// Register Xtext services as soon as this class is instantiated.
+	private final ProblemInjectorHolder injectorHolder = new ProblemInjectorHolder();
+
 	private final Server server;
 
 	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String webSocketUrl) {
 		server = new Server(bindAddress);
 		((QueuedThreadPool) server.getThreadPool()).setName("jetty");
-		var handler = new ServletContextHandler();
+		var handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+		handler.setContextPath("/");
 		addProblemServlet(handler, allowedOrigins);
+		addApiServlet(handler);
 		addBackendConfigServlet(handler, webSocketUrl);
 		addHealthCheckServlet(handler);
 		var baseResource = getBaseResource();
@@ -65,7 +82,7 @@ public class ServerLauncher {
 	}
 
 	private void addProblemServlet(ServletContextHandler handler, String[] allowedOrigins) {
-		var problemServletHolder = new ServletHolder(ProblemWebSocketServlet.class);
+		var problemServletHolder = new ServletHolder(XtextWebSocketServlet.class);
 		if (allowedOrigins == null) {
 			LOG.warn("All WebSocket origins are allowed! This setting should not be used in production!");
 		} else {
@@ -76,6 +93,34 @@ public class ServerLauncher {
 		}
 		handler.addServlet(problemServletHolder, "/xtext-service");
 		JettyWebSocketServletContainerInitializer.configure(handler, null);
+	}
+
+	private void addApiServlet(ServletContextHandler handler) {
+		var resourceConfig = new ResourceConfig();
+		resourceConfig.setProperties(Map.of(
+				// See https://stackoverflow.com/a/69986144
+				ServerProperties.WADL_FEATURE_DISABLE, "true",
+				// See https://stackoverflow.com/a/34358215
+				ServerProperties.OUTBOUND_CONTENT_LENGTH_BUFFER, "0"
+		));
+		// See https://stackoverflow.com/a/46840247
+		// We'll have to use {@code jakarta.inject.Inject} instead of {@code com.google.inject.Inject} to inject
+		// Guice dependencies into beans instantiated by HK2.
+		resourceConfig.register(new AbstractContainerLifecycleListener() {
+			@Override
+			public void onStartup(Container container) {
+				var servletContainer = (ServletContainer) container;
+				var injectionManager = servletContainer.getApplicationHandler().getInjectionManager();
+				var serviceLocator = injectionManager.getInstance(ServiceLocator.class);
+				GuiceBridge.getGuiceBridge().initializeGuiceBridge(serviceLocator);
+				var guiceIntoHK2Bridge = serviceLocator.getService(GuiceIntoHK2Bridge.class);
+				guiceIntoHK2Bridge.bridgeGuiceInjector(injectorHolder.getInjector());
+			}
+		});
+		resourceConfig.register(GsonJerseyProvider.class);
+		resourceConfig.register(SemanticsApi.class);
+		var apiServletHolder = new ServletHolder(new ServletContainer(resourceConfig));
+		handler.addServlet(apiServletHolder, "/api/*");
 	}
 
 	private void addBackendConfigServlet(ServletContextHandler handler, String webSocketUrl) {
@@ -133,12 +178,18 @@ public class ServerLauncher {
 	}
 
 	public void start() throws Exception {
-		server.start();
-		LOG.info("Server started on {}", server.getURI());
-		server.join();
+		try {
+			server.start();
+			LOG.info("Server started on {}", server.getURI());
+			server.join();
+		} finally {
+			injectorHolder.dispose();
+		}
 	}
 
 	public static void main(String[] args) {
+		SLF4JBridgeHandler.removeHandlersForRootLogger();
+		SLF4JBridgeHandler.install();
 		try {
 			var bindAddress = getBindAddress();
 			var allowedOrigins = getAllowedOrigins();

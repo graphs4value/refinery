@@ -5,7 +5,8 @@
  */
 package tools.refinery.language.web.config;
 
-import com.google.gson.Gson;
+import com.google.gson.FormattingStyle;
+import com.google.gson.GsonBuilder;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -30,7 +31,7 @@ public class BackendConfigServlet extends HttpServlet {
 		super.init(config);
 		var webSocketUrl = config.getInitParameter(WEBSOCKET_URL_INIT_PARAM);
 		var backendConfig = new BackendConfig(webSocketUrl);
-		var gson = new Gson();
+		var gson = new GsonBuilder().setFormattingStyle(FormattingStyle.COMPACT).create();
 		serializedConfig = gson.toJson(backendConfig);
 	}
 
