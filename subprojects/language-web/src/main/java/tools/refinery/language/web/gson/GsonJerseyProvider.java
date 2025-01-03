@@ -6,6 +6,7 @@
 package tools.refinery.language.web.gson;
 
 import com.google.gson.Gson;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -29,6 +30,7 @@ import java.lang.reflect.Type;
  * {@code application/json} media type.
  * </p>
  */
+@Singleton
 @Provider
 public class GsonJerseyProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 	private final Gson gson = GsonUtil.getGson();

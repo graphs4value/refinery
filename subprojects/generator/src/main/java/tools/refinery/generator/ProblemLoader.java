@@ -233,7 +233,7 @@ public class ProblemLoader {
 		var modifiedStatements = modifiedProblem.getStatements();
 		int modifiedStatementCount = modifiedStatements.size();
 		if (modifiedStatementCount != originalStatementCount + allScopes.size()) {
-			throw new IllegalArgumentException("Failed to parse scope constraints");
+			throw new InvalidScopeConstraintException("Failed to parse scope constraints");
 		}
 		// Override scopes remove any scope constraint from the original problem with the same target type.
 		var overriddenScopes = new HashSet<Relation>();

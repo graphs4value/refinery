@@ -56,7 +56,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 		return this;
 	}
 
-	public ModelGenerator createGenerator(Problem problem) {
+	public ModelGenerator tryCreateGenerator(Problem problem) {
 		var initializer = createModelInitializer();
 		initializer.readProblem(problem);
 		checkCancelled();
@@ -72,9 +72,13 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
 		var store = storeBuilder.build();
-		var generator = new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
+		return new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				getSolutionSerializerProvider(), getMetadataCreatorProvider(), cancellationToken,
 				isKeepNonExistingObjects());
+	}
+
+	public ModelGenerator createGenerator(Problem problem) {
+		var generator = tryCreateGenerator(problem);
 		generator.getInitializationResult().throwIfRejected();
 		return generator;
 	}

@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder;
 import tools.refinery.language.semantics.metadata.NodeKind;
 import tools.refinery.language.semantics.metadata.PredicateDetailKind;
 import tools.refinery.language.semantics.metadata.RelationDetail;
+import tools.refinery.language.web.api.dto.RefineryResponse;
 import tools.refinery.language.web.xtext.servlet.LowercaseTypeAdapter;
 import tools.refinery.language.web.xtext.servlet.RuntimeTypeAdapterFactory;
 
@@ -33,6 +34,15 @@ public class GsonUtil {
 					.registerSubtype(RelationDetail.Predicate.class, "pred"))
 			.registerTypeAdapter(NodeKind.class, new LowercaseTypeAdapter<>(NodeKind.class))
 			.registerTypeAdapter(PredicateDetailKind.class, new LowercaseTypeAdapter<>(PredicateDetailKind.class))
+			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RefineryResponse.class, "result")
+					.recognizeSubtypes()
+					.registerSubtype(RefineryResponse.Timeout.class, "timeout")
+					.registerSubtype(RefineryResponse.Cancelled.class, "cancelled")
+					.registerSubtype(RefineryResponse.RequestError.class, "requestError")
+					.registerSubtype(RefineryResponse.ServerError.class, "internalError")
+					.registerSubtype(RefineryResponse.InvalidProblem.class, "invalidProblem")
+					.registerSubtype(RefineryResponse.Unsatisfiable.class, "unsatisfiable")
+					.registerSubtype(RefineryResponse.Success.class, "success"))
 			.create();
 
 	private GsonUtil() {

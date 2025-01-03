@@ -5,9 +5,9 @@
  */
 package tools.refinery.language.web.xtext.server.message;
 
-import java.util.Objects;
-
 import com.google.gson.annotations.SerializedName;
+
+import java.util.Objects;
 
 public final class XtextWebErrorResponse implements XtextWebResponse {
 	private String id;
@@ -25,8 +25,7 @@ public final class XtextWebErrorResponse implements XtextWebResponse {
 		this.errorMessage = errorMessage;
 	}
 
-	public XtextWebErrorResponse(XtextWebRequest request, XtextWebErrorKind errorKind,
-			String errorMessage) {
+	public XtextWebErrorResponse(XtextWebRequest request, XtextWebErrorKind errorKind, String errorMessage) {
 		this(request.getId(), errorKind, errorMessage);
 	}
 

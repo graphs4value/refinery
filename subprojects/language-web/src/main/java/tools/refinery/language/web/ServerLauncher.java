@@ -29,7 +29,9 @@ import org.jvnet.hk2.guice.bridge.api.GuiceIntoHK2Bridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-import tools.refinery.language.web.api.SemanticsApi;
+import tools.refinery.language.web.api.GenerateApi;
+import tools.refinery.language.web.api.RefineryResponseFilter;
+import tools.refinery.language.web.api.ServerExceptionMapperProvider;
 import tools.refinery.language.web.config.BackendConfigServlet;
 import tools.refinery.language.web.gson.GsonJerseyProvider;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
@@ -118,7 +120,9 @@ public class ServerLauncher {
 			}
 		});
 		resourceConfig.register(GsonJerseyProvider.class);
-		resourceConfig.register(SemanticsApi.class);
+		resourceConfig.register(RefineryResponseFilter.class);
+		resourceConfig.register(ServerExceptionMapperProvider.class);
+		resourceConfig.register(GenerateApi.class);
 		var apiServletHolder = new ServletHolder(new ServletContainer(resourceConfig));
 		handler.addServlet(apiServletHolder, "/api/*");
 	}
