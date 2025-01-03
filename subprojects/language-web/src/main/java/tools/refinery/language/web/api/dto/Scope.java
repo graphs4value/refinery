@@ -5,11 +5,23 @@
  */
 package tools.refinery.language.web.api.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import tools.refinery.language.web.api.util.ConsistentBounds;
+
+@ConsistentBounds
 public class Scope {
+	@NotNull
 	private String relation;
+
 	private boolean override;
+
 	private boolean incremental;
+
+	@Min(0)
 	private int lowerBound;
+
+	@Min(0)
 	private Integer upperBound;
 
 	public String getRelation() {
@@ -37,7 +49,7 @@ public class Scope {
 	}
 
 	public int getLowerBound() {
-		return Math.max(0, lowerBound);
+		return lowerBound;
 	}
 
 	public void setLowerBound(int lowerBound) {
@@ -45,7 +57,7 @@ public class Scope {
 	}
 
 	public Integer getUpperBound() {
-		return upperBound == null ? null : Math.max(0, upperBound);
+		return upperBound;
 	}
 
 	public void setUpperBound(Integer upperBound) {

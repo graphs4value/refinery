@@ -8,7 +8,6 @@ package tools.refinery.language.web.api.dto;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
-import tools.refinery.generator.InvalidScopeConstraintException;
 import tools.refinery.generator.ValidationErrorsException;
 
 import java.util.List;
@@ -50,13 +49,6 @@ public sealed interface RefineryResponse {
         @Override
         public Response.Status getStatus() {
             return Response.Status.BAD_REQUEST;
-        }
-
-        public static RequestError ofInvalidScopeConstraintException(
-                String propertyPath, InvalidScopeConstraintException e) {
-            return new RequestError("Invalid scope constraint: " + e.getMessage(), List.of(
-                    new Detail(propertyPath, e.getMessage())
-            ));
         }
 
         public static RequestError of() {

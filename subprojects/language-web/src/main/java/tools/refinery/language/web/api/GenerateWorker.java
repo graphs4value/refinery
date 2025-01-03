@@ -18,6 +18,7 @@ import tools.refinery.language.web.api.dto.GenerateSuccessResult;
 import tools.refinery.language.web.api.dto.JsonOutput;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 import tools.refinery.language.web.api.util.ResponseSink;
+import tools.refinery.language.web.api.util.ServerExceptionMapper;
 import tools.refinery.language.web.generator.ModelGenerationService;
 import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.language.web.semantics.SemanticsService;
@@ -28,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -136,9 +138,8 @@ public class GenerateWorker implements Runnable {
 		Problem problem;
 		try {
 			problem = loadProblem();
-		} catch (InvalidScopeConstraintException e) {
-			LOG.debug("Invalid scope constraints", e);
-			setResponse( RefineryResponse.RequestError.ofInvalidScopeConstraintException("$.scopes", e));
+		} catch (InvalidScopeConstraintException | ValidationErrorsException e) {
+			setInvalidScopeConstraintsError(e);
 			return;
 		}
 		var generator = createModelGenerator(problem);
@@ -153,6 +154,31 @@ public class GenerateWorker implements Runnable {
 		}
 		updateStatus("Saving generated model");
 		saveModel(generator);
+	}
+
+	private Problem loadProblem() throws IOException {
+		var originalProblem = problemLoader.loadString(request.getInput().getSource());
+		var scopeConstraints = new ArrayList<String>();
+		var overrideScopeConstraints = new ArrayList<String>();
+		for (var scope : request.getScopes()) {
+			var scopeConstraint = scope.toScopeConstraint();
+			if (scope.isOverride()) {
+				overrideScopeConstraints.add(scopeConstraint);
+			} else {
+				scopeConstraints.add(scopeConstraint);
+			}
+		}
+		return problemLoader.loadScopeConstraints(originalProblem, scopeConstraints, overrideScopeConstraints);
+	}
+
+	private void setInvalidScopeConstraintsError(Throwable t) {
+		var message = "Invalid scope constraints";
+		LOG.debug(message, t);
+		var exceptionMessage = t.getMessage();
+		var summary = exceptionMessage == null ? message : message + ": " + exceptionMessage;
+		setResponse(new RefineryResponse.RequestError(summary, List.of(
+				new RefineryResponse.RequestError.Detail("$.scopes", message)
+		)));
 	}
 
 	private @Nullable ModelGenerator createModelGenerator(Problem problem) {
@@ -172,20 +198,6 @@ public class GenerateWorker implements Runnable {
 		return generator;
 	}
 
-	private Problem loadProblem() throws IOException {
-		var originalProblem = problemLoader.loadString(request.getInput().getSource());
-		var scopeConstraints = new ArrayList<String>();
-		var overrideScopeConstraints = new ArrayList<String>();
-		for (var scope : request.getScopes()) {
-			var scopeConstraint = scope.toScopeConstraint();
-			if (scope.isOverride()) {
-				overrideScopeConstraints.add(scopeConstraint);
-			} else {
-				scopeConstraints.add(scopeConstraint);
-			}
-		}
-		return problemLoader.loadScopeConstraints(originalProblem, scopeConstraints, overrideScopeConstraints);
-	}
 
 	private void saveModel(ModelGenerator generator) throws IOException {
 		boolean jsonEnabled = request.getFormat().getJson().isEnabled();

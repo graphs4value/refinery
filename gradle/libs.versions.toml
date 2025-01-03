@@ -110,6 +110,7 @@ jersey-hk2 = { group = "org.glassfish.jersey.inject", name = "jersey-hk2", versi
 jersey-server = { group = "org.glassfish.jersey.core", name = "jersey-server", version.ref = "jersey" }
 jersey-servlet = { group = "org.glassfish.jersey.containers", name = "jersey-container-servlet", version.ref = "jersey" }
 jersey-sse = { group = "org.glassfish.jersey.media", name = "jersey-media-sse", version.ref = "jersey" }
+jersey-validation = { group = "org.glassfish.jersey.ext", name = "jersey-bean-validation", version.ref = "jersey" }
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotations" }
 jetty-server = { group = "org.eclipse.jetty", name = "jetty-server", version.ref = "jetty" }
 jetty-servlet = { group = "org.eclipse.jetty.ee10", name = "jetty-ee10-servlet", version.ref = "jetty" }

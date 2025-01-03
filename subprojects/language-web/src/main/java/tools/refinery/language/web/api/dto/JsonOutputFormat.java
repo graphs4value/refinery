@@ -5,8 +5,13 @@
  */
 package tools.refinery.language.web.api.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 public class JsonOutputFormat extends OutputFormat {
+	@NotNull
 	private PartialInterpretationPreservation nonExistingObjects = PartialInterpretationPreservation.DISCARD;
+
+	@NotNull
 	private PartialInterpretationPreservation shadowPredicates = PartialInterpretationPreservation.DISCARD;
 
 	public PartialInterpretationPreservation getNonExistingObjects() {

@@ -6,6 +6,7 @@
 package tools.refinery.language.web.api;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -38,7 +39,7 @@ public class GenerateApi {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public void generate(GenerateRequest request, @Suspended AsyncResponse asyncResponse) {
+	public void generate(@Valid GenerateRequest request, @Suspended AsyncResponse asyncResponse) {
 		var responseSink = new AsyncResponseSink(asyncResponse);
 		worker.initialize(request, responseSink);
 		// Fire and forget, because the worker will handle its own exceptions.
@@ -49,7 +50,7 @@ public class GenerateApi {
 	@Path("/stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.SERVER_SENT_EVENTS)
-	public void generate(GenerateRequest request, @Context SseEventSink eventSink, @Context Sse sse)
+	public void generate(@Valid GenerateRequest request, @Context SseEventSink eventSink, @Context Sse sse)
 			throws InterruptedException {
 		var responseSink = new SseResponseSink(eventSink, sse);
 		worker.initialize(request, responseSink);

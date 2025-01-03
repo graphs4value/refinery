@@ -3,12 +3,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.api;
+package tools.refinery.language.web.api.util;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.MalformedJsonException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ElementKind;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -78,6 +80,8 @@ public class ServerExceptionMapper {
 				yield toResponse(RefineryResponse.InvalidProblem.ofValidationErrorsException(
 						validationErrorsException));
 			}
+			case ConstraintViolationException constraintViolationException ->
+					toResponse(translateConstraintViolationException(constraintViolationException));
 			case null, default -> {
 				LOG.error("Unexpected exception", exception);
 				yield toResponse(RefineryResponse.ServerError.of());
@@ -100,11 +104,36 @@ public class ServerExceptionMapper {
 		}
 		var matcher = JSON_ERROR_REGEX.matcher(message);
 		if (!matcher.find()) {
-			return new RefineryResponse.RequestError(message);
+			return new RefineryResponse.RequestError("Invalid JSON: " + message);
 		}
 		var path = matcher.group(1);
-		return new RefineryResponse.RequestError(message, List.of(
+		return new RefineryResponse.RequestError("Invalid JSON", List.of(
 				new RefineryResponse.RequestError.Detail(path, message)
 		));
+	}
+
+	private RefineryResponse.RequestError translateConstraintViolationException(ConstraintViolationException e) {
+		LOG.debug("Invalid request payload", e);
+		var details = e.getConstraintViolations().stream()
+				.map(violation -> {
+					var path = violation.getPropertyPath();
+					var pathBuilder = new StringBuilder("$");
+					for (var node : path) {
+						var kind = node.getKind();
+						// The path starts with the called method of the resource bean and its argument index,
+						// but the client doesn't need this information, so we just skip it.
+						if (kind != ElementKind.METHOD && kind != ElementKind.PARAMETER) {
+							var nodeString = node.toString();
+							if (!nodeString.isEmpty()) {
+								// Applying a validation annotation directly to a class might result in an empty
+								// path segment.
+								pathBuilder.append(".").append(nodeString);
+							}
+						}
+					}
+					return new RefineryResponse.RequestError.Detail(pathBuilder.toString(), violation.getMessage());
+				})
+				.toList();
+		return new RefineryResponse.RequestError("Invalid request payload", details);
 	}
 }

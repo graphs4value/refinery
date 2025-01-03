@@ -29,6 +29,7 @@ dependencies {
 	implementation(libs.jersey.hk2)
 	implementation(libs.jersey.server)
 	implementation(libs.jersey.servlet)
+	implementation(libs.jersey.validation)
 	implementation(libs.slf4j)
 	// Jersey uses java.util.logging.
 	implementation(libs.slf4j.jul)

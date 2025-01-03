@@ -5,12 +5,24 @@
  */
 package tools.refinery.language.web.api.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 public class GenerateRequest {
+	@NotNull
+	@Valid
 	private ProblemInput input;
+
+	@NotNull
+	@Valid
 	private OutputFormats format = new OutputFormats();
+
+	@NotNull
+	@Valid
 	private List<Scope> scopes = List.of();
+
 	private long randomSeed;
 
 	public ProblemInput getInput() {

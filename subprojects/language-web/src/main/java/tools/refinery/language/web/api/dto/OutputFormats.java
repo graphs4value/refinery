@@ -5,8 +5,16 @@
  */
 package tools.refinery.language.web.api.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 public final class OutputFormats {
+	@NotNull
+	@Valid
 	private JsonOutputFormat json = new JsonOutputFormat();
+
+	@NotNull
+	@Valid
 	private SourceOutputFormat source = new SourceOutputFormat();
 
 	public JsonOutputFormat getJson() {
