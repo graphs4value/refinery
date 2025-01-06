@@ -162,7 +162,7 @@ public class ProblemLoader {
 		addNameClashIssues(issues, shadowedNames);
 		var errors = issues.stream().filter(issue -> issue.getSeverity() == Severity.ERROR).toList();
 		if (!errors.isEmpty()) {
-			throw new ValidationErrorsException(resource.getURI(), errors);
+			throw new InvalidProblemException(resource.getURI(), errors);
 		}
 		if (resource.getContents().isEmpty() || !(resource.getContents().getFirst() instanceof Problem problem)) {
 			throw new IllegalArgumentException("Model generation problem not found in resource " + resource.getURI());

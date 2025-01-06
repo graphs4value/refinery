@@ -143,7 +143,7 @@ public class ModelGenerationWorker implements Runnable {
 		ModelGenerator generator;
 		try {
 			generator = generatorFactory.cancellationToken(cancellationToken).createGenerator(problem);
-		} catch (ValidationErrorsException e) {
+		} catch (InvalidProblemException e) {
 			var errors = e.getErrors();
 			if (errors != null && !errors.isEmpty()) {
 				return new ModelGenerationErrorResult(uuid, "Validation error: " + errors.getFirst().getMessage());

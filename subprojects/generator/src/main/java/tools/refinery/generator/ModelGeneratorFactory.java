@@ -71,7 +71,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
-		var store = storeBuilder.build();
+		var store = buildWithTrace(storeBuilder, initializer.getProblemTrace());
 		return new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
 				getSolutionSerializerProvider(), getMetadataCreatorProvider(), cancellationToken,
 				isKeepNonExistingObjects());

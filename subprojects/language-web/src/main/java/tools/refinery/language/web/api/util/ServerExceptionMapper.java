@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.generator.ValidationErrorsException;
+import tools.refinery.generator.InvalidProblemException;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 
 import java.util.List;
@@ -75,10 +75,10 @@ public class ServerExceptionMapper {
 				var toTranslate = cause == null ? jsonParseException : cause;
 				yield toResponse(translateJsonException(toTranslate));
 			}
-			case ValidationErrorsException validationErrorsException -> {
-				LOG.debug("Invalid problem", validationErrorsException);
+			case InvalidProblemException invalidProblemException -> {
+				LOG.debug("Invalid problem", invalidProblemException);
 				yield toResponse(RefineryResponse.InvalidProblem.ofValidationErrorsException(
-						validationErrorsException));
+						invalidProblemException));
 			}
 			case ConstraintViolationException constraintViolationException ->
 					toResponse(translateConstraintViolationException(constraintViolationException));

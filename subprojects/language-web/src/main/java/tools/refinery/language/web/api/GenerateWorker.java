@@ -135,11 +135,8 @@ public class GenerateWorker implements Runnable {
 
 	private void generateModel() throws IOException {
 		updateStatus("Initializing model generator");
-		Problem problem;
-		try {
-			problem = loadProblem();
-		} catch (InvalidScopeConstraintException | ValidationErrorsException e) {
-			setInvalidScopeConstraintsError(e);
+		var problem = loadProblem();
+		if (problem == null) {
 			return;
 		}
 		var generator = createModelGenerator(problem);
@@ -156,7 +153,7 @@ public class GenerateWorker implements Runnable {
 		saveModel(generator);
 	}
 
-	private Problem loadProblem() throws IOException {
+	private @Nullable Problem loadProblem() throws IOException {
 		var originalProblem = problemLoader.loadString(request.getInput().getSource());
 		var scopeConstraints = new ArrayList<String>();
 		var overrideScopeConstraints = new ArrayList<String>();
@@ -168,7 +165,12 @@ public class GenerateWorker implements Runnable {
 				scopeConstraints.add(scopeConstraint);
 			}
 		}
-		return problemLoader.loadScopeConstraints(originalProblem, scopeConstraints, overrideScopeConstraints);
+		try {
+			return problemLoader.loadScopeConstraints(originalProblem, scopeConstraints, overrideScopeConstraints);
+		} catch (InvalidScopeConstraintException | InvalidProblemException e) {
+			setInvalidScopeConstraintsError(e);
+			return null;
+		}
 	}
 
 	private void setInvalidScopeConstraintsError(Throwable t) {

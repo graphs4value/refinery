@@ -10,47 +10,48 @@ import org.eclipse.xtext.validation.Issue;
 
 import java.util.List;
 
-public class ValidationErrorsException extends IllegalArgumentException {
+public class InvalidProblemException extends IllegalArgumentException {
 	private final transient URI resourceUri;
-
-	private final String resourceUriString;
 
 	private final transient List<Issue> errors;
 
-	private final List<String> errorStrings;
+	public InvalidProblemException(URI resourceUri, List<Issue> errors) {
+		this(resourceUri, errors, null);
+	}
 
-	public ValidationErrorsException(URI resourceUri, List<Issue> errors) {
+	public InvalidProblemException(URI resourceUri, List<Issue> errors, Throwable cause) {
+		super(cause == null ? null : cause.getMessage(), cause);
 		this.resourceUri = resourceUri;
-		resourceUriString = resourceUri.toString();
 		this.errors = errors;
-		errorStrings = errors.stream()
-				.map(Issue::toString)
-				.toList();
 	}
 
 	public URI getResourceUri() {
 		return resourceUri;
 	}
 
-	public String getResourceUriString() {
-		return resourceUriString;
-	}
-
 	public List<Issue> getErrors() {
 		return errors;
 	}
 
-	public List<String> getErrorStrings() {
-		return errorStrings;
+	public String getShortMessage() {
+		var detailMessage = super.getMessage();
+		return detailMessage == null ? "Validation errors detected" : detailMessage;
 	}
 
 	@Override
 	public String getMessage() {
+		var detailMessage = super.getMessage();
+		if (detailMessage != null) {
+			return detailMessage;
+		}
 		var builder = new StringBuilder();
-		builder.append("Validation errors in resource ");
-		builder.append(resourceUriString);
+		builder.append("Errors ");
+		if (resourceUri != null) {
+			builder.append("in resource ");
+			builder.append(resourceUri);
+		}
 		builder.append(": ");
-		var iterator = errorStrings.iterator();
+		var iterator = errors.iterator();
 		if (!iterator.hasNext()) {
 			return builder.toString();
 		}

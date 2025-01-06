@@ -25,7 +25,7 @@ public class TranslationException extends RuntimeException {
 	}
 
 	public TranslationException(AnyPartialSymbol partialSymbol, Throwable cause) {
-		super(cause);
+		super(cause == null ? null : cause.getMessage(), cause);
 		this.partialSymbol = partialSymbol;
 	}
 
