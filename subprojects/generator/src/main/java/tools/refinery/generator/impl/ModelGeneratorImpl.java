@@ -5,22 +5,17 @@
  */
 package tools.refinery.generator.impl;
 
-import com.google.inject.Provider;
 import tools.refinery.generator.GeneratorResult;
 import tools.refinery.generator.GeneratorTimeoutException;
 import tools.refinery.generator.ModelGenerator;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.ProblemTrace;
-import tools.refinery.language.semantics.SolutionSerializer;
-import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.statespace.SolutionStore;
 import tools.refinery.store.map.Version;
-import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.reasoning.seed.ModelSeed;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,12 +27,8 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 	private int maxNumberOfSolutions = 1;
 	private SolutionStore solutionStore;
 
-	public ModelGeneratorImpl(
-			ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-			Provider<SolutionSerializer> solutionSerializerProvider, Provider<MetadataCreator> metadataCreatorProvider,
-			CancellableCancellationToken cancellationToken, boolean keepNonExistingObjects) {
-		super(problemTrace, store, modelSeed, solutionSerializerProvider, metadataCreatorProvider,
-				keepNonExistingObjects);
+	public ModelGeneratorImpl(Args args, CancellableCancellationToken cancellationToken) {
+		super(args);
 		this.cancellationToken = cancellationToken;
 		initialVersion = getModel().commit();
 	}
@@ -92,7 +83,12 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 		solutionStore = null;
 		randomSeed++;
 		var bestFirst = new BestFirstStoreManager(getModelStore(), maxNumberOfSolutions);
-		bestFirst.startExploration(initialVersion, randomSeed);
+		try {
+			bestFirst.startExploration(initialVersion, randomSeed);
+		} catch (PropagationRejectedException e) {
+			// Fatal propagation error.
+			throw getDiagnostics().wrapPropagationRejectedException(e, getProblemTrace());
+		}
 		var solutions = bestFirst.getSolutionStore().getSolutions();
 		if (solutions.isEmpty()) {
 			return GeneratorResult.UNSATISFIABLE;

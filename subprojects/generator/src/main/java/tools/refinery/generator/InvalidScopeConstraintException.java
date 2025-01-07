@@ -5,7 +5,6 @@
  */
 package tools.refinery.generator;
 
-
 public class InvalidScopeConstraintException extends IllegalArgumentException {
 	public InvalidScopeConstraintException(String message) {
 		super(message);

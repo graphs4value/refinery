@@ -71,15 +71,12 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
-		var store = buildWithTrace(storeBuilder, initializer.getProblemTrace());
-		return new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
-				getSolutionSerializerProvider(), getMetadataCreatorProvider(), cancellationToken,
-				isKeepNonExistingObjects());
+		return new ModelGeneratorImpl(createConcreteFacadeArgs(initializer, storeBuilder), cancellationToken);
 	}
 
 	public ModelGenerator createGenerator(Problem problem) {
 		var generator = tryCreateGenerator(problem);
-		generator.getInitializationResult().throwIfRejected();
+		generator.throwIfInitializationFailed();
 		return generator;
 	}
 

@@ -19,6 +19,7 @@ import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ModelFacade {
 	ProblemTrace getProblemTrace();
@@ -28,6 +29,8 @@ public interface ModelFacade {
 	Model getModel();
 
 	ModelFacadeResult getInitializationResult();
+
+	void throwIfInitializationFailed();
 
 	Concreteness getConcreteness();
 
@@ -46,4 +49,6 @@ public interface ModelFacade {
 	ConsistencyCheckResult checkConsistency();
 
 	Problem serialize();
+
+	Optional<Problem> trySerialize();
 }

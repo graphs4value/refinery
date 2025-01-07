@@ -5,8 +5,8 @@ package tools.refinery.logic.util;
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-public class CircularReferenceException extends RuntimeException {
-	public CircularReferenceException(String message) {
+public final class CircularReferenceException extends RuntimeException {
+	CircularReferenceException(String message) {
 		super(message);
 	}
 }

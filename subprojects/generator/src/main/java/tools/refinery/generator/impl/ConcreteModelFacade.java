@@ -7,32 +7,25 @@ package tools.refinery.generator.impl;
 
 import com.google.inject.Provider;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SolutionSerializer;
-import tools.refinery.language.semantics.metadata.MetadataCreator;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.store.reasoning.seed.ModelSeed;
 
 public class ConcreteModelFacade extends ModelFacadeImpl {
 	private final Provider<SolutionSerializer> solutionSerializerProvider;
 	private final boolean keepNonExistingObjects;
 	private final PartialInterpretation<TruthValue, Boolean> existsInterpretation;
 
-	protected ConcreteModelFacade(
-			ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-			Provider<SolutionSerializer> solutionSerializerProvider,
-			Provider<MetadataCreator> metadataCreatorProvider, boolean keepNonExistingObjects) {
-		super(problemTrace, store, modelSeed, metadataCreatorProvider);
-		this.solutionSerializerProvider = solutionSerializerProvider;
-		this.keepNonExistingObjects = keepNonExistingObjects;
+	protected ConcreteModelFacade(Args args) {
+		super(args.facadeArgs());
+		solutionSerializerProvider = args.solutionSerializerProvider();
+		keepNonExistingObjects = args.keepNonExistingObjects();
 		existsInterpretation = keepNonExistingObjects ? null :
-                super.getPartialInterpretation(ReasoningAdapter.EXISTS_SYMBOL);
+				super.getPartialInterpretation(ReasoningAdapter.EXISTS_SYMBOL);
 	}
 
 	@Override
@@ -58,5 +51,9 @@ public class ConcreteModelFacade extends ModelFacadeImpl {
 
 	protected SolutionSerializer getSolutionSerializer() {
 		return solutionSerializerProvider.get();
+	}
+
+	public record Args(ModelFacadeImpl.Args facadeArgs, Provider<SolutionSerializer> solutionSerializerProvider,
+					   boolean keepNonExistingObjects) {
 	}
 }

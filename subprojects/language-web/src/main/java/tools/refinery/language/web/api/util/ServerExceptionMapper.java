@@ -17,7 +17,9 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.refinery.generator.GeneratorTimeoutException;
 import tools.refinery.generator.InvalidProblemException;
+import tools.refinery.generator.UnsatisfiableProblemException;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 
 import java.util.List;
@@ -68,9 +70,12 @@ public class ServerExceptionMapper {
 					default -> response;
 				};
 			}
-			case MalformedJsonException malformedJsonException ->
-					toResponse(translateJsonException(malformedJsonException));
+			case MalformedJsonException malformedJsonException -> {
+				LOG.debug("JSON parser exception", malformedJsonException);
+				yield toResponse(translateJsonException(malformedJsonException));
+			}
 			case JsonParseException jsonParseException -> {
+				LOG.debug("JSON parser exception", jsonParseException);
 				var cause = jsonParseException.getCause();
 				var toTranslate = cause == null ? jsonParseException : cause;
 				yield toResponse(translateJsonException(toTranslate));
@@ -79,6 +84,14 @@ public class ServerExceptionMapper {
 				LOG.debug("Invalid problem", invalidProblemException);
 				yield toResponse(RefineryResponse.InvalidProblem.ofValidationErrorsException(
 						invalidProblemException));
+			}
+			case UnsatisfiableProblemException unsatisfiableProblemException -> {
+				LOG.debug("Unsatisfiable problem", unsatisfiableProblemException);
+				yield toResponse(new RefineryResponse.Unsatisfiable(unsatisfiableProblemException.getMessage()));
+			}
+			case GeneratorTimeoutException generatorTimeoutException -> {
+				LOG.debug("Generator timed out", generatorTimeoutException);
+				yield toResponse(RefineryResponse.Timeout.of());
 			}
 			case ConstraintViolationException constraintViolationException ->
 					toResponse(translateConstraintViolationException(constraintViolationException));
@@ -97,7 +110,6 @@ public class ServerExceptionMapper {
 	}
 
 	private RefineryResponse.RequestError translateJsonException(Throwable t) {
-		LOG.debug("JSON parser exception", t);
 		var message = t.getMessage();
 		if (message == null) {
 			return RefineryResponse.RequestError.of();

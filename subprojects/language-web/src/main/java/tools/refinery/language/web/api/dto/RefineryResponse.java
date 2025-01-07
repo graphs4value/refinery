@@ -73,8 +73,6 @@ public sealed interface RefineryResponse {
 	}
 
 	record InvalidProblem(String message, List<ValidationResult.Issue> issues) implements RefineryResponse {
-		private static final String DEFAULT_MESSAGE = "Invalid problem";
-
 		@Override
 		public Response.Status getStatus() {
 			return Response.Status.BAD_REQUEST;

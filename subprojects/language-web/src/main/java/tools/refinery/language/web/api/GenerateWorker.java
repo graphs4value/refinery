@@ -140,15 +140,8 @@ public class GenerateWorker implements Runnable {
 			return;
 		}
 		var generator = createModelGenerator(problem);
-		if (generator == null) {
-			return;
-		}
 		updateStatus("Generating model");
-		if (generator.tryGenerate() != GeneratorResult.SUCCESS) {
-			LOG.debug("Problem is unsatisfiable");
-			setResponse(new RefineryResponse.Unsatisfiable("Problem is unsatisfiable"));
-			return;
-		}
+		generator.generate();
 		updateStatus("Saving generated model");
 		saveModel(generator);
 	}
@@ -183,18 +176,12 @@ public class GenerateWorker implements Runnable {
 		)));
 	}
 
-	private @Nullable ModelGenerator createModelGenerator(Problem problem) {
+	private ModelGenerator createModelGenerator(Problem problem) {
 		checkCancelled();
 		var jsonFormat = request.getFormat().getJson();
 		modelGeneratorFactory.keepNonExistingObjects(jsonFormat.getNonExistingObjects().isKeep());
 		modelGeneratorFactory.keepShadowPredicates(jsonFormat.getShadowPredicates().isKeep());
-		var generator = modelGeneratorFactory.tryCreateGenerator(problem);
-		if (generator.getInitializationResult() instanceof ModelFacadeResult.Rejected rejectedResult) {
-			var message = rejectedResult.formatMessage();
-			LOG.debug("Propagation rejected: {}", message);
-			setResponse(new RefineryResponse.Unsatisfiable("Problem is unsatisfiable: " + message));
-			return null;
-		}
+		var generator = modelGeneratorFactory.createGenerator(problem);
 		generator.setRandomSeed(request.getRandomSeed());
 		generator.setMaxNumberOfSolutions(1);
 		return generator;

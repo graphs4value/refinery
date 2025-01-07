@@ -5,19 +5,14 @@
  */
 package tools.refinery.generator.impl;
 
-import com.google.inject.Provider;
 import tools.refinery.generator.ModelSemantics;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.metadata.MetadataCreator;
-import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.seed.ModelSeed;
 
 public class ModelSemanticsImpl extends ModelFacadeImpl implements ModelSemantics {
-	public ModelSemanticsImpl(ProblemTrace problemTrace, ModelStore store, ModelSeed modelSeed,
-							  Provider<MetadataCreator> metadataCreatorProvider) {
-		super(problemTrace, store, modelSeed, metadataCreatorProvider);
+	public ModelSemanticsImpl(Args args) {
+		super(args);
 	}
 
 	@Override
