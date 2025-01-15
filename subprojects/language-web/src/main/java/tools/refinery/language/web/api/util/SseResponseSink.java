@@ -12,7 +12,6 @@ import org.eclipse.jetty.io.EofException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.refinery.language.web.api.dto.RefineryResponse;
-import tools.refinery.language.web.api.dto.StatusUpdate;
 
 import java.util.concurrent.*;
 
@@ -40,9 +39,6 @@ public class SseResponseSink implements ResponseSink {
 							.build())
 					.toCompletableFuture()
 					.join();
-			eventSink.send(sse.newEvent("[DONE]"))
-					.toCompletableFuture()
-					.join();
 		} catch (CompletionException e) {
 			if (e.getCause() instanceof EofException) {
 				// Ignore exception, since the client has already disconnected.
@@ -61,7 +57,7 @@ public class SseResponseSink implements ResponseSink {
 		try {
 			eventSink.send(sse.newEventBuilder()
 							.mediaType(MediaType.APPLICATION_JSON_TYPE)
-							.data(new StatusUpdate(status))
+							.data(new RefineryResponse.Status(status))
 							.build())
 					.toCompletableFuture()
 					.join();

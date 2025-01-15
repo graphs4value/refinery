@@ -42,7 +42,8 @@ public class GsonUtil {
 					.registerSubtype(RefineryResponse.ServerError.class, "internalError")
 					.registerSubtype(RefineryResponse.InvalidProblem.class, "invalidProblem")
 					.registerSubtype(RefineryResponse.Unsatisfiable.class, "unsatisfiable")
-					.registerSubtype(RefineryResponse.Success.class, "success"))
+					.registerSubtype(RefineryResponse.Success.class, "success")
+					.registerSubtype(RefineryResponse.Status.class, "status"))
 			.create();
 
 	private GsonUtil() {

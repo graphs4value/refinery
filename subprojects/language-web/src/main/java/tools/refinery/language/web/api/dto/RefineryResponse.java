@@ -124,4 +124,11 @@ public sealed interface RefineryResponse {
 			return Response.Status.OK;
 		}
 	}
+
+	record Status(Object value) implements RefineryResponse {
+		@Override
+		public Response.Status getStatus() {
+			return Response.Status.ACCEPTED;
+		}
+	}
 }
