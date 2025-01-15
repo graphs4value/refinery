@@ -59,6 +59,7 @@ public class XtextWebSocket implements ResponseHandler {
 
 	@OnWebSocketOpen
 	public void onOpen(Session webSocketSession) {
+		webSocketSession.setMaxOutgoingFrames(10);
 		if (this.webSocketSession != null) {
 			LOG.error("Websocket session onConnect when already connected");
 			return;

@@ -24,6 +24,7 @@ import java.util.concurrent.*;
 
 public class ModelGenerationWorker implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(ModelGenerationWorker.class);
+	private static final int MAX_SERIALIZED_MODEL_SIZE = 200;
 
 	private final UUID uuid = UUID.randomUUID();
 
@@ -155,11 +156,15 @@ public class ModelGenerationWorker implements Runnable {
 		cancellationToken.checkCancelled();
 		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator, cancellationToken);
 		String source;
-		try {
-			source = serializeSolution(generator);
-		} catch (IOException e) {
-			LOG.error("Error while serializing generated model", e);
-			return new ModelGenerationErrorResult(uuid, "Failed to save solution: " + e.getMessage());
+		if (nodesMetadata.list().size() <= MAX_SERIALIZED_MODEL_SIZE) {
+			try {
+				source = serializeSolution(generator);
+			} catch (IOException e) {
+				LOG.error("Error while serializing generated model", e);
+				return new ModelGenerationErrorResult(uuid, "Failed to save solution: " + e.getMessage());
+			}
+		} else {
+			source = null;
 		}
 		return new ModelGenerationSuccessResult(uuid, nodesMetadata.list(), relationsMetadata, partialInterpretation,
 				source);
