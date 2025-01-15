@@ -79,6 +79,9 @@ public class XtextWebSocket implements ResponseHandler {
 			LOG.warn("{} closed connection with status code {}: {}", webSocketSession.getRemoteSocketAddress(),
 					statusCode, reason);
 		}
+		if (!webSocketSession.isOpen()) {
+			webSocketSession.close();
+		}
 		webSocketSession = null;
 	}
 
@@ -91,10 +94,10 @@ public class XtextWebSocket implements ResponseHandler {
 		switch (error) {
 		case WebSocketTimeoutException ignored -> LOG.warn("Websocket connection timed out", error);
 		case EofException ignored -> LOG.warn("Websocket connection already closed", error);
-		default ->
-				LOG.error("Internal websocket error in connection from " + webSocketSession.getRemoteSocketAddress(),
-						error);
+		default -> LOG.error("Internal websocket error in connection from " + webSocketSession.getRemoteSocketAddress(),
+				error);
 		}
+		webSocketSession.close();
 	}
 
 	@OnWebSocketMessage
@@ -148,5 +151,6 @@ public class XtextWebSocket implements ResponseHandler {
 			return;
 		}
 		LOG.warn("Cannot complete async write to websocket " + webSocketSession.getRemoteSocketAddress(), x);
+		webSocketSession.close();
 	}
 }
