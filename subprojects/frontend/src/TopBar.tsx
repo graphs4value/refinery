@@ -59,7 +59,7 @@ function useWindowControlsOverlayVisible(): boolean {
   return windowControlsOverlayVisible;
 }
 
-function RefineryIcon({ size }: { size: number }): JSX.Element {
+function RefineryIcon({ size }: { size: number }): React.ReactElement {
   const theme = useTheme();
   return (
     <svg
@@ -122,7 +122,7 @@ const ButtonStack = styled(Stack)({
   },
 });
 
-export default observer(function TopBar(): JSX.Element {
+export default observer(function TopBar(): React.ReactElement {
   const { editorStore, themeStore } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
   const { breakpoints } = useTheme();

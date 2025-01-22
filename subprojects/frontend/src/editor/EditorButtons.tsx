@@ -50,7 +50,7 @@ export default observer(function EditorButtons({
   editorStore,
 }: {
   editorStore: EditorStore | undefined;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <Stack direction="row" flexGrow={1}>
       <Tooltip title="Open">

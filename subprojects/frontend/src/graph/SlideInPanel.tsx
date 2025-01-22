@@ -58,7 +58,7 @@ export default function SlideInPanel({
   onKeyUp?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onMouseMove?: (e: React.MouseEvent<HTMLDivElement>) => void;
   children?: React.ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   const id = useId();
   const [show, setShow] = useState(false);
   const close = useCallback(() => setShow(false), []);

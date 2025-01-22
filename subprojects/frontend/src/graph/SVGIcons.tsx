@@ -22,7 +22,7 @@ const SVGIconsHolder = styled('div', {
   visibility: 'hidden',
 });
 
-export default function SVGIcons(): JSX.Element {
+export default function SVGIcons(): React.ReactElement {
   const addNodes = useCallback((element: HTMLDivElement | null) => {
     if (element === null) {
       return;

@@ -40,7 +40,7 @@ function toggleWithoutViewTransition(themeStore: ThemeStore): void {
   }
 }
 
-export default observer(function ToggleDarkModeButton(): JSX.Element {
+export default observer(function ToggleDarkModeButton(): React.ReactElement {
   const { themeStore } = useRootStore();
   const { darkMode } = themeStore;
 

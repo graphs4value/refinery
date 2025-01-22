@@ -44,7 +44,7 @@ export default function App({
   rootStore,
 }: {
   rootStore: RootStore;
-}): JSX.Element {
+}): React.ReactElement {
   // See https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
   const innerHeight = useInnerHeight();
 

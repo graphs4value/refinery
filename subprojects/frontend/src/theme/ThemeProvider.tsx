@@ -446,7 +446,7 @@ function ThemeAndContrastThemeProvider({
   theme: Theme;
   contrastTheme: Theme;
   children?: ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <MaterialUiThemeProvider theme={theme}>
       <ContrastThemeContext.Provider value={contrastTheme}>
@@ -460,7 +460,7 @@ export function ContrastThemeProvider({
   children,
 }: {
   children?: ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   const contrastTheme = useContext(ContrastThemeContext);
   if (!contrastTheme) {
     throw new Error('ContrastThemeProvider must be used within ThemeProvider');
@@ -476,7 +476,7 @@ const ThemeProvider = observer(function ThemeProvider({
   children,
 }: {
   children?: ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   const {
     themeStore: { darkMode },
   } = useRootStore();

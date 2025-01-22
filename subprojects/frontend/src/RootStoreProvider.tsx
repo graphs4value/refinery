@@ -24,7 +24,7 @@ export default function RootStoreProvider({
 }: {
   children?: ReactNode;
   rootStore: RootStore;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <StoreContext.Provider value={rootStore}>{children}</StoreContext.Provider>
   );

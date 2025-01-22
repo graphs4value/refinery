@@ -72,7 +72,7 @@ export default function SlideInDialog({
   title: string;
   buttons: React.ReactNode | ((close: () => void) => React.ReactNode);
   children?: React.ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   const titleId = useId();
 
   return (

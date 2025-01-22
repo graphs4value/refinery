@@ -16,7 +16,7 @@ export default observer(function EditorArea({
   editorStore,
 }: {
   editorStore: EditorStore;
-}): JSX.Element {
+}): React.ReactElement {
   const {
     palette: { mode: paletteMode },
   } = useTheme();

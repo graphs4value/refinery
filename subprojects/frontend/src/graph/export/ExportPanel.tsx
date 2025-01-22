@@ -60,7 +60,7 @@ const marks = [100, 200, 300, 400].map((value) => ({
 
 function RoundedSelect<Value = unknown>(
   props: Omit<SelectProps<Value>, 'size' | 'sx' | 'variant' | 'MenuProps'>,
-): JSX.Element {
+): React.ReactElement {
   return (
     <Select
       {...props}
@@ -106,7 +106,7 @@ function ExportPanel({
   graph: GraphStore;
   svgContainer: HTMLElement | undefined;
   dialog: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const { exportSettingsStore } = useRootStore();
   const [shiftDown, setShiftDown] = useState(false);
 

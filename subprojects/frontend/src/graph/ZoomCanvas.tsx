@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import { useMediaQuery } from '@mui/system';
 import * as d3 from 'd3';
 import { zoom as d3Zoom } from 'd3-zoom';
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
 import ZoomButtons from './ZoomButtons';
@@ -57,7 +57,7 @@ export default function ZoomCanvas({
     | ((fitZoom: FitZoomCallback, zoom: number) => React.ReactNode);
   fitPadding?: number;
   transitionTime?: number;
-}): JSX.Element {
+}): React.ReactElement {
   const fitPaddingOrDefault = fitPadding ?? 8;
   const prefersReducedMotion = useMediaQuery(
     '(prefers-reduced-motion: reduce)',
@@ -66,11 +66,11 @@ export default function ZoomCanvas({
     ? 0
     : (transitionTime ?? 250);
 
-  const canvasRef = useRef<HTMLDivElement | undefined>();
-  const elementRef = useRef<HTMLDivElement | undefined>();
-  const zoomRef = useRef<
-    d3.ZoomBehavior<HTMLDivElement, unknown> | undefined
-  >();
+  const canvasRef = useRef<HTMLDivElement | undefined>(undefined);
+  const elementRef = useRef<HTMLDivElement | undefined>(undefined);
+  const zoomRef = useRef<d3.ZoomBehavior<HTMLDivElement, unknown> | undefined>(
+    undefined,
+  );
   const [zoom, setZoom] = useState<Transform>({ x: 0, y: 0, k: 1 });
   const [fitZoom, setFitZoom] = useState(true);
   const fitZoomRef = useRef(fitZoom);

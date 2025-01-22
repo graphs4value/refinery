@@ -12,7 +12,7 @@ import TopBar from './TopBar';
 import UpdateNotification from './UpdateNotification';
 import WorkArea from './WorkArea';
 
-export default function Refinery(): JSX.Element {
+export default function Refinery(): React.ReactElement {
   return (
     <SnackbarProvider TransitionComponent={Grow}>
       <UpdateNotification />

@@ -151,9 +151,9 @@ function VisibilityPanel({
 }: {
   graph: GraphStore;
   dialog: boolean;
-}): JSX.Element {
-  const builtinRows: JSX.Element[] = [];
-  const rows: JSX.Element[] = [];
+}): React.ReactElement {
+  const builtinRows: React.ReactElement[] = [];
+  const rows: React.ReactElement[] = [];
   graph.relationMetadata.forEach((metadata, name) => {
     if (!isVisibilityAllowed(metadata, 'must')) {
       return;

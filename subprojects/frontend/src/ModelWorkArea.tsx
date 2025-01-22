@@ -31,7 +31,7 @@ const SplitGraphPane = observer(function SplitGraphPane({
   graph: GraphStore;
   themeStore: ThemeStore;
   touchesTop: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <DirectionalSplitPane
       primary={<GraphPane graph={graph} />}
@@ -60,7 +60,7 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
 }: {
   generatedModel: GeneratedModelStore;
   themeStore: ThemeStore;
-}): JSX.Element {
+}): React.ReactElement {
   const { message, error, graph } = generatedModel;
 
   if (graph !== undefined) {
@@ -117,7 +117,11 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
   );
 });
 
-function ModelWorkArea({ touchesTop }: { touchesTop: boolean }): JSX.Element {
+function ModelWorkArea({
+  touchesTop,
+}: {
+  touchesTop: boolean;
+}): React.ReactElement {
   const { editorStore, themeStore } = useRootStore();
 
   if (editorStore === undefined) {
@@ -133,7 +137,7 @@ function ModelWorkArea({ touchesTop }: { touchesTop: boolean }): JSX.Element {
   } = editorStore;
 
   const generatedModelNames: string[] = [];
-  const generatedModelTabs: JSX.Element[] = [];
+  const generatedModelTabs: React.ReactElement[] = [];
   generatedModels.forEach((value, key) => {
     generatedModelNames.push(key);
     /* eslint-disable react/no-array-index-key -- Key is a string here, not the array index. */

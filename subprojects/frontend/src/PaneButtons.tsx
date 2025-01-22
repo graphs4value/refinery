@@ -96,7 +96,7 @@ const PaneButton = observer(function PaneButton({
   label: string;
   icon: React.ReactNode;
   hideLabel: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const button = (
     <ToggleButton
       value={value}
@@ -122,7 +122,7 @@ function PaneButtons({
 }: {
   themeStore: ThemeStore;
   hideLabel?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const hideLabelOrDefault = hideLabel ?? false;
   return (
     <PaneButtonGroup

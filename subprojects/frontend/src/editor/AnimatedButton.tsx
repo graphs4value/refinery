@@ -7,7 +7,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { styled, type SxProps, type Theme } from '@mui/material/styles';
-import { type ReactNode, useLayoutEffect, useState } from 'react';
+import React, { type ReactNode, useLayoutEffect, useState } from 'react';
 
 const AnimatedButtonBase = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'width',
@@ -53,10 +53,10 @@ export default function AnimatedButton({
   onClick?: React.MouseEventHandler<HTMLElement>;
   color: 'error' | 'warning' | 'primary' | 'inherit' | 'dim';
   disabled?: boolean;
-  startIcon?: JSX.Element;
+  startIcon?: React.ReactElement;
   sx?: SxProps<Theme> | undefined;
   children?: ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   const [width, setWidth] = useState<string | undefined>();
   const [contentsElement, setContentsElement] = useState<HTMLDivElement | null>(
     null,
