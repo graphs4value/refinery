@@ -198,7 +198,9 @@ export const SemanticsResult = z.object({
 export type SemanticsResult = z.infer<typeof SemanticsResult>;
 
 export const GeneratedModelSemanticsResult = SemanticsModelResult.extend({
-  source: z.string(),
+  // The `source` is only sent for small models, because running the Xtext serializer on
+  // large models would use excessive resources on the server.
+  source: z.string().optional(),
 });
 
 export type GeneratedModelSemanticsResult = z.infer<

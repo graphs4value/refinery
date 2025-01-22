@@ -24,6 +24,13 @@ import java.util.concurrent.*;
 
 public class ModelGenerationWorker implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(ModelGenerationWorker.class);
+
+	/**
+	 * To avoid excessive memory usage by the Xtext serializer, we limit the number of objects in a serialized model.
+	 * <p>
+	 * Model with more objects than this limit will only be returned as JSON.
+	 * </p>
+	 */
 	private static final int MAX_SERIALIZED_MODEL_SIZE = 200;
 
 	private final UUID uuid = UUID.randomUUID();

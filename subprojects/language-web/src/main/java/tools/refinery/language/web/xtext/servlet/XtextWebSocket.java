@@ -19,7 +19,9 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.web.server.ISession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.language.semantics.metadata.*;
+import tools.refinery.language.semantics.metadata.NodeKind;
+import tools.refinery.language.semantics.metadata.PredicateDetailKind;
+import tools.refinery.language.semantics.metadata.RelationDetail;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 import tools.refinery.language.web.xtext.server.TransactionExecutor;
@@ -31,6 +33,16 @@ import java.io.Reader;
 @WebSocket
 public class XtextWebSocket implements ResponseHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(XtextWebSocket.class);
+
+	/**
+	 * Maximum number of outgoing frames per WebSocket session to limit buffer resource usage.
+	 * <p>
+	 * If this limit is exceeded, the WebSocket will throw a {@link java.nio.channels.WritePendingException}, which
+	 * will make us close it in {@link #onError(Throwable)}. This is intended, since having such a large backlog
+	 * likely indicates a lost or timed out connection, which should be cleaned up.
+	 * </p>
+	 */
+	private static final int MAX_OUTGOING_FRAMES = 10;
 
 	private final Gson gson = new GsonBuilder()
 			.disableJdkUnsafe()
@@ -59,7 +71,7 @@ public class XtextWebSocket implements ResponseHandler {
 
 	@OnWebSocketOpen
 	public void onOpen(Session webSocketSession) {
-		webSocketSession.setMaxOutgoingFrames(10);
+		webSocketSession.setMaxOutgoingFrames(MAX_OUTGOING_FRAMES);
 		if (this.webSocketSession != null) {
 			LOG.error("Websocket session onConnect when already connected");
 			return;
