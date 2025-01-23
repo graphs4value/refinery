@@ -115,11 +115,23 @@ export default class GraphStore {
     return this.generatedModelName !== undefined;
   }
 
+  get hasSource(): boolean {
+    return (
+      !!this.semantics.source ||
+      // We currently don't serialize the source code for concretized models on the server.
+      (!this.generated && !this.editorStore.concretize)
+    );
+  }
+
   get source(): string {
-    if (this.generated) {
-      return this.semantics.source ?? '';
+    const { source } = this.semantics;
+    if (source) {
+      return source;
     }
-    return this.editorStore.state.sliceDoc();
+    if (!this.generated) {
+      return this.editorStore.state.sliceDoc();
+    }
+    return '';
   }
 
   getVisibility(relation: string): Visibility {

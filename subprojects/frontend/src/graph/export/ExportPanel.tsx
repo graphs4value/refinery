@@ -118,14 +118,15 @@ function ExportPanel({
 
   const { canCopy, format, plainText } = exportSettingsStore;
   const emptyGraph = graph.semantics.nodes.length === 0;
-  const shouldEdit = plainText && shiftDown;
+  const disabled = emptyGraph || (plainText && !graph.hasSource);
+  const shouldEdit = plainText && shiftDown && !disabled;
   const buttons = useCallback(
     (close: () => void) => (
       <>
         <Button
           color="inherit"
           startIcon={<SaveAltIcon />}
-          disabled={emptyGraph}
+          disabled={disabled}
           onClick={() => {
             exportDiagram(svgContainer, graph, exportSettingsStore, 'download')
               .then(close)
@@ -140,7 +141,7 @@ function ExportPanel({
           <Button
             color="inherit"
             startIcon={shouldEdit ? <EditIcon /> : <ContentCopyIcon />}
-            disabled={emptyGraph}
+            disabled={disabled}
             onClick={() => {
               exportDiagram(
                 svgContainer,
@@ -165,7 +166,7 @@ function ExportPanel({
       exportSettingsStore,
       plainText,
       canCopy,
-      emptyGraph,
+      disabled,
       shouldEdit,
     ],
   );
