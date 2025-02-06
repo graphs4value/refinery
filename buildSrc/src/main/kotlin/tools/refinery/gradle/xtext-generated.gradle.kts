@@ -27,7 +27,7 @@ sourceSets.main {
 tasks {
 	// Based on the idea from https://stackoverflow.com/a/57788355 to safely consume generated sources in sibling
 	// projects.
-	val syncXtextGeneratedSources by tasks.creating(Sync::class) {
+	val syncXtextGeneratedSources by tasks.registering(Sync::class) {
 		from(xtextGenerated)
 		into(xtextGenPath)
 	}
