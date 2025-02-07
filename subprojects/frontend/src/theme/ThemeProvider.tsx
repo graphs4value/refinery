@@ -23,6 +23,7 @@ interface OuterPalette {
   background: string;
   border: string;
   disabled: string;
+  elevated: string;
 }
 
 interface TypeHashPalette {
@@ -275,6 +276,7 @@ export const lightTheme = (() => {
           background: darkBackground,
           border: '#c8c8c8',
           disabled: darkBackground,
+          elevated: '#c9e0ff',
         },
         highlight: {
           number: '#0084bc',
@@ -339,6 +341,7 @@ export const darkTheme = (() => {
   const primaryText = '#ebebff';
   const secondaryText = '#abb2bf';
   const darkBackground = '#21252b';
+  const lightBackground = '#363b43';
 
   return createResponsiveTheme(
     {
@@ -369,6 +372,7 @@ export const darkTheme = (() => {
           background: darkBackground,
           border: '#181a1f',
           disabled: '#2e333c',
+          elevated: lightBackground,
         },
         highlight: {
           number: '#6188a6',
@@ -408,7 +412,7 @@ export const darkTheme = (() => {
         MuiCssBaseline: {
           styleOverrides: {
             '.notistack-MuiContent-default': {
-              background: `#35393e !important`,
+              background: `${lightBackground} !important`,
             },
             '.notistack-MuiContent-error': {
               background: `${theme.palette.highlight.typeHash[1]?.box} !important`,
@@ -428,6 +432,13 @@ export const darkTheme = (() => {
           styleOverrides: {
             tooltip: {
               color: primaryText,
+            },
+          },
+        },
+        MuiPaper: {
+          styleOverrides: {
+            root: {
+              background: lightBackground,
             },
           },
         },
