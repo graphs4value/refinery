@@ -28,7 +28,7 @@
   },
   "homepage": "https://refinery.tools",
   "dependencies": {
-    "@codemirror/autocomplete": "^6.18.4",
+    "@codemirror/autocomplete": "^6.18.5",
     "@codemirror/commands": "^6.8.0",
     "@codemirror/language": "^6.10.8",
     "@codemirror/lint": "^6.8.4",
@@ -49,10 +49,10 @@
     "@lezer/highlight": "^1.2.1",
     "@lezer/lr": "^1.4.2",
     "@material-icons/svg": "^1.0.33",
-    "@mui/icons-material": "^6.4.3",
-    "@mui/material": "^6.4.3",
+    "@mui/icons-material": "^6.4.4",
+    "@mui/material": "^6.4.4",
     "@mui/system": "^6.4.3",
-    "@mui/x-data-grid": "^7.25.0",
+    "@mui/x-data-grid": "^7.26.0",
     "@replit/codemirror-indentation-markers": "^6.5.3",
     "ansi-styles": "^6.2.1",
     "clsx": "^2.1.1",
@@ -80,7 +80,7 @@
     "react-resize-detector": "^12.0.2",
     "svg2pdf.js": "^2.2.4",
     "xstate": "^4.38.3",
-    "zod": "^3.24.1"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@lezer/generator": "^1.7.2",
@@ -99,7 +99,7 @@
     "@types/pnpapi": "^0.0.5",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react-swc": "^3.7.2",
+    "@vitejs/plugin-react-swc": "^3.8.0",
     "@xstate/cli": "^0.5.17",
     "fast-glob": "^3.3.3",
     "html-minifier-terser": "^7.2.0",
