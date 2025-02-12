@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.util.concurrent.*;
 
 public class SseResponseSink implements ResponseSink {
@@ -101,16 +103,27 @@ public class SseResponseSink implements ResponseSink {
 						.toCompletableFuture()
 						.join();
 			} catch (CompletionException e) {
-				if (e.getCause() instanceof EofException) {
-					LOG.debug("Client has disconnected, cancelling worker");
-					// The client has disconnected.
-					eventSink.close();
-					future.cancel(true);
+				if (e.getCause() instanceof EOFException) {
+					handleDisconnect(future);
 				} else {
 					throw e;
 				}
 			}
 		}
-		eventSink.close();
+		closeSink();
+	}
+
+	private void handleDisconnect(Future<?> future) {
+		LOG.debug("Client has disconnected, cancelling worker");
+		closeSink();
+		future.cancel(true);
+	}
+
+	private void closeSink() {
+		try {
+			eventSink.close();
+		} catch (IOException e) {
+			LOG.error("Failed to close SSE sink", e);
+		}
 	}
 }
