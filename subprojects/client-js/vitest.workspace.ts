@@ -5,25 +5,34 @@
  */
 
 import { defineWorkspace } from 'vitest/config';
-import { BrowserConfigOptions } from 'vitest/node';
 
-export default defineWorkspace(
-  (['node', 'chromium', 'firefox', 'webkit'] as const).map((name) => ({
+export default defineWorkspace([
+  {
     extends: 'vite.config.ts',
     test: {
-      name,
+      name: 'node',
       include: ['src/**/*.test.ts'],
       environment: 'node',
       globalSetup: ['src/test/mockServer.ts'],
-      browser:
-        name === 'node'
-          ? ({ enabled: false } as BrowserConfigOptions)
-          : {
-              enabled: true,
-              provider: 'playwright',
-              name,
-              headless: true,
-            },
     },
-  })),
-);
+  },
+  {
+    extends: 'vite.config.ts',
+    test: {
+      name: 'browser',
+      include: ['src/**/*.test.ts'],
+      environment: 'node',
+      globalSetup: ['src/test/mockServer.ts'],
+      browser: {
+        enabled: true,
+        headless: true,
+        provider: 'playwright',
+        instances: [
+          { browser: 'chromium' },
+          { browser: 'firefox' },
+          { browser: 'webkit' },
+        ],
+      },
+    },
+  },
+]);

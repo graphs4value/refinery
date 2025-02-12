@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 
 import cors from 'cors';
 import express from 'express';
-import type { GlobalSetupContext } from 'vitest/node';
+import type { TestProject } from 'vitest/node';
 
 import type { RefineryResult } from '../dto';
 
@@ -157,7 +157,7 @@ app.post('/isOngoing', (req, res) => {
   } satisfies RefineryResult.Success<boolean>);
 });
 
-export default async function setup(context: GlobalSetupContext) {
+export default async function setup(context: TestProject) {
   const server = app.listen(0);
   await new Promise<void>((resolve, reject) => {
     server.once('listening', resolve);
