@@ -29,8 +29,8 @@
     "typecheck": "yarn run g:tsc -p tsconfig.json",
     "lint": "yarn run g:lint",
     "lint:fix": "yarn run lint --fix",
-    "browsers:install": "playwright install chromium chromium-headless-shell firefox webkit",
-    "browsers:install:ci": "CI=true yarn run browsers:install --with-deps",
+    "browsers:install": "playwright install chromium chromium-headless-shell firefox",
+    "browsers:install:ci": "yarn run browsers:install webkit --with-deps",
     "upgrade-versions": "node scripts/upgradeVersions.mjs",
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"

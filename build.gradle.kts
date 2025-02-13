@@ -21,7 +21,6 @@ val frontendFiles: FileCollection = files(
 	"tsconfig.base.json",
 	"eslintrc.cjs",
 	"prettier.config.cjs",
-	"vite.config.ts",
 ) + fileTree("scripts") {
 	include("**/*.cjs")
 }
@@ -58,10 +57,9 @@ tasks {
 	}
 
 	register<RunYarnTaskType>("installBrowsers") {
-		var onlyIfProvider = provider { project.hasProperty("ci") }
-		onlyIf { onlyIfProvider.get() }
 		dependsOn(installFrontend)
-        args.set("run browsers:install:ci")
+		inputs.files(frontendFiles)
+        args.set(if (project.hasProperty("ci")) "run browsers:install:ci" else "run browsers:install")
         description = "Install browser testing dependencies."
 	}
 
