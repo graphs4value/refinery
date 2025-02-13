@@ -14,6 +14,7 @@ plugins {
 
 frontend {
 	assembleScript.set("run build")
+	checkScript.set(if (project.hasProperty("ci")) "run test:run:ci" else "run test:run")
 }
 
 val srcDir = "src"
@@ -27,6 +28,8 @@ val configFiles: FileCollection = files(
 	rootProject.file("tsconfig.base.json"),
 	"tsconfig.json",
 	"vite.config.ts",
+	"vitest.config.ts",
+	"vitest.workspace.ts",
 )
 
 val lintConfigFiles: FileCollection = configFiles + files(
@@ -39,6 +42,13 @@ tasks {
 		inputs.files(configFiles)
 		outputs.dir(distDir)
 		outputs.dir(layout.buildDirectory.dir("vite"))
+	}
+
+	checkFrontend {
+		dependsOn(rootProject.tasks.named("installBrowsers"))
+		inputs.dir(srcDir)
+		inputs.files(configFiles)
+		outputs.dir(layout.buildDirectory.dir("coverage"))
 	}
 
 	val typeCheckFrontend by registering(RunYarnTaskType::class) {
@@ -86,4 +96,5 @@ sonarqube.properties {
 	SonarPropertiesUtils.addToList(properties, "sonar.sources", srcDir)
 	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
 	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
+	property("sonar.javascript.lcov.reportPaths", "${layout.buildDirectory.get()}/coverage/lcov.info")
 }

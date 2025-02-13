@@ -57,6 +57,14 @@ tasks {
 		description = "Fix TypeScript lint errors and warnings."
 	}
 
+	register<RunYarnTaskType>("installBrowsers") {
+		var onlyIfProvider = provider { project.hasProperty("ci") }
+		onlyIf { onlyIfProvider.get() }
+		dependsOn(installFrontend)
+        args.set("run browsers:install:ci")
+        description = "Install browser testing dependencies."
+	}
+
 	check {
 		dependsOn(typeCheckFrontend)
 		dependsOn(lintFrontend)

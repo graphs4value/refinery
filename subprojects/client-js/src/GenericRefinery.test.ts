@@ -10,8 +10,8 @@ import z from 'zod';
 
 import { GenericRefinery, type RefineryOptions } from './GenericRefinery';
 import * as RefineryError from './RefineryError';
+import { Ping, Pong } from './__fixtures__/testDTO';
 import type { RefineryResult } from './dto';
-import { Ping, Pong } from './test/testDTO';
 
 class SUT extends GenericRefinery {
   constructor(options?: RefineryOptions) {

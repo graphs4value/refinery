@@ -159,6 +159,8 @@ module.exports = {
         'subprojects/*/config/*.cjs',
         'prettier.config.cjs',
         'subprojects/*/vite.config.ts',
+        'subprojects/*/vitest.config.ts',
+        'subprojects/*/vitest.workspace.ts',
       ],
       env: {
         browser: false,

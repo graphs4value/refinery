@@ -54,4 +54,14 @@ tasks {
 		// https://github.com/siouan/frontend-gradle-plugin/blob/2add49d3a74c927abc813d98787be116d0074afe/plugin/src/main/java/org/siouan/frontendgradleplugin/FrontendGradlePlugin.java#L513
 		executableType.set(ExecutableType.YARN)
 	}
+
+	checkFrontend {
+		val onlyIfProvider = provider { frontend.checkScript.isPresent }
+		// Workaround to enable this task even if we have disabled `installPackageManager`. See
+		// https://github.com/siouan/frontend-gradle-plugin/blob/2add49d3a74c927abc813d98787be116d0074afe/plugin/src/main/java/org/siouan/frontendgradleplugin/FrontendGradlePlugin.java#L514-L516
+		onlyIf { onlyIfProvider.get() }
+		// Workaround for disabled `resolvePackageManager`. See
+		// https://github.com/siouan/frontend-gradle-plugin/blob/2add49d3a74c927abc813d98787be116d0074afe/plugin/src/main/java/org/siouan/frontendgradleplugin/FrontendGradlePlugin.java#L513
+		executableType.set(ExecutableType.YARN)
+	}
 }
