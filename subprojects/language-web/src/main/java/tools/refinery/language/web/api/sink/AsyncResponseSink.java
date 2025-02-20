@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.api.util;
+package tools.refinery.language.web.api.sink;
 
 import jakarta.ws.rs.container.AsyncResponse;
 import jakarta.ws.rs.core.MediaType;

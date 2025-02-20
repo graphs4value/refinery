@@ -3,11 +3,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.api.util;
+package tools.refinery.language.web.api.dto;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import tools.refinery.language.web.api.dto.Scope;
 
 public class ConsistentBoundsValidator implements ConstraintValidator<ConsistentBounds, Scope> {
 	@Override

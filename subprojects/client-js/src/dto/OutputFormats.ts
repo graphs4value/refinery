@@ -27,9 +27,11 @@ export const SourceOutputFormat = OutputFormat;
 
 export type SourceOutputFormat = z.infer<typeof SourceOutputFormat>;
 
-export const OutputFormats = z.object({
-  json: JsonOutputFormat.default({}),
-  source: SourceOutputFormat.default({}),
-});
+export const OutputFormats = z
+  .object({
+    json: JsonOutputFormat.default({}),
+    source: SourceOutputFormat.default({}),
+  })
+  .default({});
 
 export type OutputFormats = z.infer<typeof OutputFormats>;

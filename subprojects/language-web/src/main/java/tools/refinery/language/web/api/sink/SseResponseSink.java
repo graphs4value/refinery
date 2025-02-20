@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.api.util;
+package tools.refinery.language.web.api.sink;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.sse.Sse;
@@ -11,14 +11,26 @@ import jakarta.ws.rs.sse.SseEventSink;
 import org.eclipse.jetty.io.EofException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.refinery.language.web.api.ScheduledWorker;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.*;
 
 public class SseResponseSink implements ResponseSink {
 	private static final Logger LOG = LoggerFactory.getLogger(SseResponseSink.class);
+
+	/**
+	 * Interval between heartbeats to check whether the client is still listening.
+	 * <p>
+	 * Since this is our only way to know whether the client has cancelled the streaming action, the interval has to
+	 * be short enough so that we don't waste much compute on already cancelled tasks. However, we must not make it
+	 * too frequent due to the network overhead of sending a heartbeat.
+	 * </p>
+	 */
+	private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(1);
 
 	private final SseEventSink eventSink;
 	private final Sse sse;
@@ -77,11 +89,11 @@ public class SseResponseSink implements ResponseSink {
 		return eventSink.isClosed();
 	}
 
-	public void loop(Future<?> future) throws InterruptedException {
-		while (!future.isDone() && !future.isCancelled()) {
+	public void loop(ScheduledWorker<?> worker) throws InterruptedException {
+		while (worker.isRunning()) {
 			boolean finished;
 			try {
-				future.get(1, TimeUnit.SECONDS);
+				worker.poll(HEARTBEAT_INTERVAL);
 				finished = true;
 			} catch (ExecutionException e) {
 				// This should never happen, because the worker will handle its own exceptions.
@@ -104,7 +116,7 @@ public class SseResponseSink implements ResponseSink {
 						.join();
 			} catch (CompletionException e) {
 				if (e.getCause() instanceof EOFException) {
-					handleDisconnect(future);
+					handleDisconnect(worker);
 				} else {
 					throw e;
 				}
@@ -113,10 +125,10 @@ public class SseResponseSink implements ResponseSink {
 		closeSink();
 	}
 
-	private void handleDisconnect(Future<?> future) {
+	private void handleDisconnect(ScheduledWorker<?> worker) {
 		LOG.debug("Client has disconnected, cancelling worker");
 		closeSink();
-		future.cancel(true);
+		worker.cancel();
 	}
 
 	private void closeSink() {

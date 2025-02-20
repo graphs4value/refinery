@@ -7,7 +7,12 @@
 import z from 'zod';
 
 import { GenericRefinery, type RefineryOptions } from './GenericRefinery';
-import { JsonOutput, OutputFormats, ProblemInput, Scope } from './dto';
+import { Issue, JsonOutput, OutputFormats, ProblemInput, Scope } from './dto';
+
+const SemanticsInput = z.object({
+  input: ProblemInput,
+  outputFormats: OutputFormats,
+});
 
 export class Refinery extends GenericRefinery {
   constructor(options: RefineryOptions) {
@@ -27,5 +32,25 @@ export class Refinery extends GenericRefinery {
       source: z.string().optional(),
     }),
     z.string(),
+  );
+
+  readonly semantics = this.interruptible(
+    'semantics',
+    SemanticsInput,
+    z.object({
+      issues: Issue.array(),
+      json: JsonOutput.optional(),
+      source: z.string().optional(),
+    }),
+  );
+
+  readonly concretize = this.interruptible(
+    'concretize',
+    SemanticsInput,
+    z.object({
+      issues: Issue.array(),
+      json: JsonOutput.optional(),
+      source: z.string().optional(),
+    }),
   );
 }

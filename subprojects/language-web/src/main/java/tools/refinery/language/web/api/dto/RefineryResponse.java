@@ -6,7 +6,9 @@
 package tools.refinery.language.web.api.dto;
 
 import jakarta.ws.rs.core.Response;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.diagnostics.Severity;
+import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.generator.InvalidProblemException;
 
@@ -83,9 +85,8 @@ public sealed interface RefineryResponse {
 			return new InvalidProblem(e.getShortMessage(), issues);
 		}
 
-		private static List<ValidationResult.Issue> translateIssues(InvalidProblemException e) {
-			var resourceUri = e.getResourceUri();
-			return e.getErrors().stream()
+		public static List<ValidationResult.Issue> translateIssues(List<Issue> errors, URI resourceUri) {
+			return errors.stream()
 					.map(issue -> {
 						var severity = translateSeverity(issue.getSeverity());
 						var uri = issue.getUriToProblem();
@@ -99,6 +100,11 @@ public sealed interface RefineryResponse {
 						return new ValidationResult.Issue(message, severity, 0, 0, 0, 0);
 					})
 					.toList();
+		}
+
+		private static List<ValidationResult.Issue> translateIssues(InvalidProblemException e) {
+			var resourceUri = e.getResourceUri();
+			return translateIssues(e.getErrors(), resourceUri);
 		}
 
 		private static String translateSeverity(Severity severity) {

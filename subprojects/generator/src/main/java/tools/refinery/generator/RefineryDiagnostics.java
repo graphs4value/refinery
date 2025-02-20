@@ -62,43 +62,51 @@ public class RefineryDiagnostics {
 
 	private InvalidProblemException createInvalidProblemException(
 			URI resourceUri, List<? extends EObject> sourceElements, String message, Throwable cause) {
-		return createInvalidProblemException(resourceUri, sourceElements, message, cause,
-				Diagnostic.ERROR, TRANSLATION_ERROR);
+		var issues = convertIssues(sourceElements, message, Diagnostic.ERROR, TRANSLATION_ERROR);
+		return new InvalidProblemException(resourceUri, issues, cause);
 	}
 
 	public InvalidProblemException createModelFacadeResultException(ModelFacadeResult.Rejected result,
 																	ProblemTrace trace) {
+		var resourceUri = trace.getProblem().eResource().getURI();
+		var issues = convertIssues(result, trace);
+		return new InvalidProblemException(resourceUri, issues, null);
+	}
+
+	public List<Issue> convertIssues(ModelFacadeResult.Rejected result, ProblemTrace trace) {
 		return switch (result) {
 			case ModelFacadeResult.PropagationRejected propagationRejected ->
-					createRejectedResultException(propagationRejected, trace, Diagnostic.ERROR, PROPAGATION_ERROR);
+					convertIssues(propagationRejected, trace, Diagnostic.ERROR, PROPAGATION_ERROR);
 			case ModelFacadeResult.ConcretizationRejected propagationRejected ->
-					createRejectedResultException(propagationRejected, trace, Diagnostic.INFO, CONCRETIZATION_ERROR);
+					convertIssues(propagationRejected, trace, Diagnostic.INFO, CONCRETIZATION_ERROR);
 		};
 	}
 
 	public InvalidProblemException wrapPropagationRejectedException(PropagationRejectedException e,
 																	ProblemTrace trace) {
-		return createRejectedResultException(e.getReason(), e.getMessage(), trace, Diagnostic.ERROR,
-				PROPAGATION_ERROR);
+		var resourceUri = trace.getProblem().eResource().getURI();
+		var issues = convertIssues(e.getReason(), e.getMessage(), trace, Diagnostic.ERROR, PROPAGATION_ERROR);
+		return new InvalidProblemException(resourceUri, issues, null);
 	}
 
-	private InvalidProblemException createRejectedResultException(
-			ModelFacadeResult.Rejected rejectedResult, ProblemTrace trace, int severity, String issueCode) {
-		return createRejectedResultException(rejectedResult.reason(), rejectedResult.formatMessage(), trace, severity,
-				issueCode);
+	private List<Issue> convertIssues(ModelFacadeResult.Rejected rejectedResult, ProblemTrace trace, int severity,
+									  String issueCode) {
+		return convertIssues(rejectedResult.reason(), rejectedResult.formatMessage(), trace, severity, issueCode);
 	}
 
-	private InvalidProblemException createRejectedResultException(
-			Object reason, String message, ProblemTrace trace, int severity, String issueCode) {
-		List<? extends EObject> sourceElements = switch (reason) {
+	private List<Issue> convertIssues(Object reason, String message, ProblemTrace trace, int severity,
+									  String issueCode) {
+		var sourceElements = getSourceElements(reason, trace);
+		return convertIssues(sourceElements, message, severity, issueCode);
+	}
+
+	private List<? extends EObject> getSourceElements(Object reason, ProblemTrace trace) {
+		return switch (reason) {
 			case MultiObjectTranslator ignored -> getScopeDeclarations(trace.getProblem());
 			case ScopePropagator ignored -> getScopeDeclarations(trace.getProblem());
 			case Rule rule -> getRuleDefinitions(rule, trace);
 			default -> List.of();
 		};
-		var resourceUri = trace.getProblem().eResource().getURI();
-		return createInvalidProblemException(resourceUri, sourceElements, message, null,
-				severity, issueCode);
 	}
 
 	private List<Statement> getScopeDeclarations(Problem problem) {
@@ -115,18 +123,16 @@ public class RefineryDiagnostics {
 		return List.of(ruleDefinition);
 	}
 
-	private InvalidProblemException createInvalidProblemException(
-			URI resourceUri, List<? extends EObject> sourceElements, String message, Throwable cause, int severity,
-			String issueCode) {
-		List<Issue> issues;
+	private List<Issue> convertIssues(List<? extends EObject> sourceElements, String message, int severity,
+									  String issueCode) {
 		if (sourceElements.isEmpty()) {
 			var issue = new Issue.IssueImpl();
 			issue.setMessage(message);
 			issue.setSeverity(translateSeverity(severity));
 			issue.setCode(issueCode);
-			issues = List.of(issue);
+			return List.of(issue);
 		} else {
-			issues = sourceElements.stream()
+			return sourceElements.stream()
 					.<Issue>mapMulti((sourceElement, consumer) -> {
 						var diagnostic = new FeatureBasedDiagnostic(severity, message, sourceElement, null,
 								0, CheckType.EXPENSIVE, issueCode);
@@ -134,7 +140,6 @@ public class RefineryDiagnostics {
 					})
 					.toList();
 		}
-		return new InvalidProblemException(resourceUri, issues, cause);
 	}
 
 	private static Severity translateSeverity(int severity) {

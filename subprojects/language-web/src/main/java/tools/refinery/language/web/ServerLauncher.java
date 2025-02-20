@@ -29,10 +29,12 @@ import org.jvnet.hk2.guice.bridge.api.GuiceIntoHK2Bridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-import tools.refinery.language.web.api.util.ConstraintViolationExceptionMapperProvider;
+import tools.refinery.language.web.api.ConcretizeApi;
 import tools.refinery.language.web.api.GenerateApi;
-import tools.refinery.language.web.api.util.RefineryResponseFilter;
-import tools.refinery.language.web.api.util.ServerExceptionMapperProvider;
+import tools.refinery.language.web.api.SemanticsApi;
+import tools.refinery.language.web.api.provider.ConstraintViolationExceptionMapperProvider;
+import tools.refinery.language.web.api.provider.RefineryResponseFilter;
+import tools.refinery.language.web.api.provider.ServerExceptionMapperProvider;
 import tools.refinery.language.web.config.BackendConfigServlet;
 import tools.refinery.language.web.gson.GsonJerseyProvider;
 import tools.refinery.language.web.xtext.servlet.XtextWebSocketServlet;
@@ -124,7 +126,9 @@ public class ServerLauncher {
 		resourceConfig.register(RefineryResponseFilter.class);
 		resourceConfig.register(ServerExceptionMapperProvider.class);
 		resourceConfig.register(ConstraintViolationExceptionMapperProvider.class);
+		resourceConfig.register(ConcretizeApi.class);
 		resourceConfig.register(GenerateApi.class);
+		resourceConfig.register(SemanticsApi.class);
 		var apiServletHolder = new ServletHolder(new ServletContainer(resourceConfig));
 		handler.addServlet(apiServletHolder, "/api/*");
 	}

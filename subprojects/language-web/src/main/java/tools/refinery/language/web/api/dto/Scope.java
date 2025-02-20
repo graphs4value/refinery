@@ -7,7 +7,6 @@ package tools.refinery.language.web.api.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import tools.refinery.language.web.api.util.ConsistentBounds;
 
 @ConsistentBounds
 public class Scope {

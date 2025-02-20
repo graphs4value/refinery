@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.language.web.api.util;
+package tools.refinery.language.web.api.provider;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.MalformedJsonException;

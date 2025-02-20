@@ -17,23 +17,23 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
-import tools.refinery.language.web.api.dto.GenerateRequest;
+import tools.refinery.language.web.api.dto.SemanticsRequest;
 import tools.refinery.language.web.api.sink.AsyncResponseSink;
 import tools.refinery.language.web.api.sink.SseResponseSink;
 
-@Path("/v1/generate")
-public class GenerateApi {
-	private final GenerateWorker worker;
+@Path("/v1/semantics")
+public class SemanticsApi {
+	private final SemanticsWorker worker;
 
 	@Inject
-	public GenerateApi(GenerateWorker worker) {
+	public SemanticsApi(SemanticsWorker worker) {
 		this.worker = worker;
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public void generate(@Valid GenerateRequest request, @Suspended AsyncResponse asyncResponse) {
+	public void generate(@Valid SemanticsRequest request, @Suspended AsyncResponse asyncResponse) {
 		var responseSink = new AsyncResponseSink(asyncResponse);
 		// Fire and forget, because the worker will handle its own exceptions.
 		worker.schedule(request, responseSink);
@@ -43,7 +43,7 @@ public class GenerateApi {
 	@Path("/stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.SERVER_SENT_EVENTS)
-	public void generate(@Valid GenerateRequest request, @Context SseEventSink eventSink, @Context Sse sse)
+	public void generate(@Valid SemanticsRequest request, @Context SseEventSink eventSink, @Context Sse sse)
 			throws InterruptedException {
 		var responseSink = new SseResponseSink(eventSink, sse);
 		worker.schedule(request, responseSink);

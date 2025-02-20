@@ -6,8 +6,6 @@
 package tools.refinery.language.web.api;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.service.OperationCanceledError;
-import org.eclipse.xtext.service.OperationCanceledManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,33 +13,22 @@ import tools.refinery.generator.*;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.api.dto.GenerateRequest;
 import tools.refinery.language.web.api.dto.GenerateSuccessResult;
-import tools.refinery.language.web.api.dto.JsonOutput;
 import tools.refinery.language.web.api.dto.RefineryResponse;
-import tools.refinery.language.web.api.util.ResponseSink;
-import tools.refinery.language.web.api.util.ServerExceptionMapper;
+import tools.refinery.language.web.api.util.OutputSerializer;
+import tools.refinery.language.web.api.sink.ResponseSink;
+import tools.refinery.language.web.api.util.TimeoutManager;
 import tools.refinery.language.web.generator.ModelGenerationService;
-import tools.refinery.language.web.semantics.PartialInterpretation2Json;
-import tools.refinery.language.web.semantics.SemanticsService;
-import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
-import tools.refinery.store.util.CancellationToken;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
-public class GenerateWorker implements Runnable {
+public class GenerateWorker extends ScheduledWorker<GenerateRequest> {
 	private static final Logger LOG = LoggerFactory.getLogger(GenerateWorker.class);
-	private static final long TIMEOUT_SEC =
-			SemanticsService.getTimeout("REFINERY_MODEL_GENERATION_TIMEOUT_SEC").orElse(600L);
 
 	@Inject
-	private OperationCanceledManager operationCanceledManager;
+	private TimeoutManager timeoutManager;
 
 	@Inject
 	private ProblemLoader problemLoader;
@@ -50,90 +37,29 @@ public class GenerateWorker implements Runnable {
 	private ModelGeneratorFactory modelGeneratorFactory;
 
 	@Inject
-	private PartialInterpretation2Json partialInterpretation2Json;
+	private OutputSerializer outputSerializer;
 
-	@Inject
-	private ServerExceptionMapper serverExceptionMapper;
-
-	private GenerateRequest request;
-	private ResponseSink responseSink;
-	private CancellationToken cancellationToken;
-	private ScheduledExecutorService scheduledExecutorService;
-	private ScheduledFuture<?> timeoutFuture;
-	private volatile boolean timedOut;
-
-	@Inject
-	public void setExecutorServiceProvider(ThreadPoolExecutorServiceProvider provider) {
-		scheduledExecutorService = provider.getScheduled(ModelGenerationService.MODEL_GENERATION_TIMEOUT_EXECUTOR);
-	}
-
-	public void initialize(GenerateRequest request, ResponseSink responseSink) {
-		this.request = request;
-		this.responseSink = responseSink;
-		cancellationToken = () -> {
-			if (timedOut || responseSink.isCancelled() || Thread.interrupted()) {
-				operationCanceledManager.throwOperationCanceledException();
-			}
-		};
-		problemLoader.cancellationToken(cancellationToken);
-		modelGeneratorFactory.cancellationToken(cancellationToken);
+	@Override
+	protected String getExecutorServiceKey() {
+		return ModelGenerationService.MODEL_GENERATION_EXECUTOR;
 	}
 
 	@Override
-	public void run() {
-		try {
-			scheduleTimeout();
-			doRun();
-		} catch (RuntimeException e) {
-			// Catch all exceptions here, because we might not get joined to the webserver thread in an asynchronous
-			// API call.
-			LOG.error("Unhandled exception during model generation", e);
-		}
+	protected Duration getTimeout() {
+		return timeoutManager.getModelGenerationTimeout();
 	}
 
-	private void scheduleTimeout() {
-		timeoutFuture = scheduledExecutorService.schedule(() -> {
-			try {
-				LOG.debug("Model generation timed out");
-				timedOut = true;
-				setResponse(RefineryResponse.Timeout.of());
-			} catch (RuntimeException e) {
-				LOG.error("Error sending timeout response", e);
-			}
-		}, TIMEOUT_SEC, TimeUnit.SECONDS);
+	@Override
+	protected void initialize(GenerateRequest request, ResponseSink responseSink) {
+		super.initialize(request, responseSink);
+		var cancellationToken = getCancellationToken();
+		problemLoader.cancellationToken(cancellationToken);
+		modelGeneratorFactory.cancellationToken(cancellationToken);
+		outputSerializer.setCancellationToken(cancellationToken);
 	}
 
-	private void doRun() {
-		try {
-			generateModel();
-		} catch (OperationCanceledError | Exception e) {
-			try (var response = serverExceptionMapper.toResponse(e)) {
-				setResponse(response.getStatus(), (RefineryResponse) response.getEntity());
-			}
-		} finally {
-			timeoutFuture.cancel(true);
-		}
-	}
-
-	private void setResponse(RefineryResponse response) {
-		responseSink.setResponse(response);
-	}
-
-	private void setResponse(int statusCode, RefineryResponse response) {
-		responseSink.setResponse(statusCode, response);
-	}
-
-	private void updateStatus(String status) {
-		checkCancelled();
-		LOG.debug("Status: {}", status);
-		responseSink.updateStatus(status);
-	}
-
-	private void checkCancelled() {
-		cancellationToken.checkCancelled();
-	}
-
-	private void generateModel() throws IOException {
+	@Override
+	protected void run() throws IOException {
 		updateStatus("Initializing model generator");
 		var problem = loadProblem();
 		if (problem == null) {
@@ -147,6 +73,7 @@ public class GenerateWorker implements Runnable {
 	}
 
 	private @Nullable Problem loadProblem() throws IOException {
+		var request = getRequest();
 		var originalProblem = problemLoader.loadString(request.getInput().getSource());
 		var scopeConstraints = new ArrayList<String>();
 		var overrideScopeConstraints = new ArrayList<String>();
@@ -178,6 +105,7 @@ public class GenerateWorker implements Runnable {
 
 	private ModelGenerator createModelGenerator(Problem problem) {
 		checkCancelled();
+		var request = getRequest();
 		var jsonFormat = request.getFormat().getJson();
 		modelGeneratorFactory.keepNonExistingObjects(jsonFormat.getNonExistingObjects().isKeep());
 		modelGeneratorFactory.keepShadowPredicates(jsonFormat.getShadowPredicates().isKeep());
@@ -189,30 +117,11 @@ public class GenerateWorker implements Runnable {
 
 
 	private void saveModel(ModelGenerator generator) throws IOException {
+		var request = getRequest();
 		boolean jsonEnabled = request.getFormat().getJson().isEnabled();
-		var json = jsonEnabled ? savePartialInterpretation(generator) : null;
+		var json = jsonEnabled ? outputSerializer.savePartialInterpretation(generator) : null;
 		boolean sourceEnabled = request.getFormat().getSource().isEnabled();
-		var source = sourceEnabled ? saveSource(generator) : null;
+		var source = sourceEnabled ? outputSerializer.saveSource(generator) : null;
 		setResponse(new RefineryResponse.Success(new GenerateSuccessResult(json, source)));
-	}
-
-	private String saveSource(ModelGenerator generator) throws IOException {
-		checkCancelled();
-		var serializedSolution = generator.serialize();
-		checkCancelled();
-		try (var outputStream = new ByteArrayOutputStream()) {
-			serializedSolution.eResource().save(outputStream, Map.of());
-			return outputStream.toString(StandardCharsets.UTF_8);
-		}
-	}
-
-	private JsonOutput savePartialInterpretation(ModelGenerator generator) {
-		checkCancelled();
-		var nodes = generator.getNodesMetadata().list();
-		checkCancelled();
-		var relations = generator.getRelationsMetadata();
-		checkCancelled();
-		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(generator, cancellationToken);
-		return new JsonOutput(nodes, relations, partialInterpretation);
 	}
 }
