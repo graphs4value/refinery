@@ -20,19 +20,25 @@ export default class SemanticsService {
   onPush(push: unknown): void {
     const result = SemanticsResult.parse(push);
     runInAction(() => {
-      if ('issues' in result && result.issues !== undefined) {
+      if (result.result === 'success') {
+        const { value } = result;
+        this.validationService.setSemanticsIssues(value.issues);
+        if (value.json === undefined) {
+          this.store.setSemanticsError('Internal error', true);
+        } else {
+          this.store.setSemanticsError(undefined, false);
+          this.store.setSemantics(value.json, value.source);
+        }
+      } else if (result.result === 'invalidProblem') {
         this.validationService.setSemanticsIssues(result.issues);
+        if (result.issues.length === 0) {
+          this.store.setSemanticsError(result.message, true);
+        } else {
+          this.store.setSemanticsError(undefined, true);
+        }
       } else {
         this.validationService.setSemanticsIssues([]);
-      }
-      const propagationRejected = result.propagationRejected ?? false;
-      if ('error' in result) {
-        this.store.setSemanticsError(result.error, propagationRejected);
-      } else {
-        this.store.setSemanticsError(undefined, propagationRejected);
-      }
-      if ('model' in result && result.model !== undefined) {
-        this.store.setSemantics(result.model);
+        this.store.setSemanticsError(result.message, true);
       }
       this.store.analysisCompleted();
     });

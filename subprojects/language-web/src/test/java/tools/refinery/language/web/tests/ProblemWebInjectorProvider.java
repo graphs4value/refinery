@@ -5,17 +5,18 @@
  */
 package tools.refinery.language.web.tests;
 
+import com.google.inject.Binder;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.eclipse.xtext.ide.ExecutorServiceProvider;
 import org.eclipse.xtext.util.DisposableRegistry;
 import org.eclipse.xtext.util.Modules2;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
 import tools.refinery.language.ide.ProblemIdeModule;
 import tools.refinery.language.tests.ProblemInjectorProvider;
 import tools.refinery.language.web.ProblemWebModule;
 import tools.refinery.language.web.ProblemWebSetup;
+
+import java.util.concurrent.ExecutorService;
 
 public class ProblemWebInjectorProvider extends ProblemInjectorProvider {
 
@@ -35,9 +36,13 @@ public class ProblemWebInjectorProvider extends ProblemInjectorProvider {
 		// org.eclipse.xtext.testing.extensions.InjectionExtension}.
 		return new ProblemWebModule() {
 			@Override
-			@SuppressWarnings("unused")
 			public Class<? extends ExecutorServiceProvider> bindExecutorServiceProvider() {
-				return AwaitTerminationExecutorServiceProvider.class;
+				return DelegatingExecutorServiceProvider.class;
+			}
+
+			@Override
+			public void configureExecutorServiceProvider(Binder binder) {
+				binder.bind(ExecutorService.class).toProvider(DelegatingExecutorServiceProvider.class);
 			}
 		};
 	}

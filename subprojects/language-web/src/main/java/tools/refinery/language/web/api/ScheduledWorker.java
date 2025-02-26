@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 import tools.refinery.language.web.api.provider.ServerExceptionMapper;
 import tools.refinery.language.web.api.sink.ResponseSink;
-import tools.refinery.language.web.generator.ModelGenerationService;
 import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 import tools.refinery.store.util.CancellationToken;
 
@@ -46,7 +45,8 @@ public abstract class ScheduledWorker<T> {
 	@Inject
 	public void setExecutorServiceProvider(ThreadPoolExecutorServiceProvider provider) {
 		executorService = provider.get(getExecutorServiceKey());
-		scheduledExecutorService = provider.getScheduled(ModelGenerationService.MODEL_GENERATION_TIMEOUT_EXECUTOR);
+		scheduledExecutorService = provider.getScheduled(
+				ThreadPoolExecutorServiceProvider.MODEL_GENERATION_TIMEOUT_EXECUTOR);
 	}
 
 	protected abstract String getExecutorServiceKey();
@@ -63,7 +63,7 @@ public abstract class ScheduledWorker<T> {
 
 	public void schedule(T request, ResponseSink responseSink) {
 		initialize(request, responseSink);
-        schedule();
+		schedule();
 	}
 
 	protected void initialize(T request, ResponseSink responseSink) {
@@ -141,6 +141,10 @@ public abstract class ScheduledWorker<T> {
 		return !cancelled && !timedOut && future != null && !future.isCancelled();
 	}
 
+	public void poll() throws ExecutionException, InterruptedException {
+		future.get();
+	}
+
 	public void poll(Duration duration) throws ExecutionException, InterruptedException, TimeoutException {
 		if (future == null) {
 			// Nothing to poll if already cancelled or not yet scheduled.
@@ -157,7 +161,14 @@ public abstract class ScheduledWorker<T> {
 				setResponse(response.getStatus(), (RefineryResponse) response.getEntity());
 			}
 		} finally {
-			timeoutFuture.cancel(true);
+			lock.lock();
+			try {
+				if (timeoutFuture != null) {
+					timeoutFuture.cancel(true);
+				}
+			} finally {
+				lock.unlock();
+			}
 		}
 	}
 

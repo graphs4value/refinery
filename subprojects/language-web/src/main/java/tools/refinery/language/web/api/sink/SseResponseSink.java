@@ -99,6 +99,9 @@ public class SseResponseSink implements ResponseSink {
 				// This should never happen, because the worker will handle its own exceptions.
 				LOG.error("Uncaught exception in worker", e);
 				finished = true;
+			} catch (CancellationException e) {
+				// Operation was already cancelled.
+				finished = true;
 			} catch (TimeoutException e) {
 				finished = false;
 			}
@@ -106,7 +109,14 @@ public class SseResponseSink implements ResponseSink {
 				break;
 			}
 			LOG.trace("Sending SSE heartbeat");
-			try {
+			sendHeartbeat(worker);
+		}
+		closeSink();
+	}
+
+	private void sendHeartbeat(ScheduledWorker<?> worker) {
+		try {
+			if (!isCancelled()) {
 				// Send and empty comment to check whether the client is still connected. See
 				// https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format
 				eventSink.send(sse.newEventBuilder()
@@ -114,15 +124,14 @@ public class SseResponseSink implements ResponseSink {
 								.build())
 						.toCompletableFuture()
 						.join();
-			} catch (CompletionException e) {
-				if (e.getCause() instanceof EOFException) {
-					handleDisconnect(worker);
-				} else {
-					throw e;
-				}
+			}
+		} catch (CompletionException e) {
+			if (e.getCause() instanceof EOFException) {
+				handleDisconnect(worker);
+			} else {
+				throw e;
 			}
 		}
-		closeSink();
 	}
 
 	private void handleDisconnect(ScheduledWorker<?> worker) {
@@ -132,6 +141,9 @@ public class SseResponseSink implements ResponseSink {
 	}
 
 	private void closeSink() {
+		if (isCancelled()) {
+			return;
+		}
 		try {
 			eventSink.close();
 		} catch (IOException e) {

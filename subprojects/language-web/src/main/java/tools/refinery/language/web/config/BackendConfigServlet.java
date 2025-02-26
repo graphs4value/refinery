@@ -21,6 +21,8 @@ import java.io.IOException;
 public class BackendConfigServlet extends HttpServlet {
 	private static final Logger LOG = LoggerFactory.getLogger(BackendConfigServlet.class);
 
+	public static final String API_BASE_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
+			".apiBase";
 	public static final String WEBSOCKET_URL_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
 			".webSocketUrl";
 
@@ -29,8 +31,9 @@ public class BackendConfigServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+		var apiBase = config.getInitParameter(API_BASE_INIT_PARAM);
 		var webSocketUrl = config.getInitParameter(WEBSOCKET_URL_INIT_PARAM);
-		var backendConfig = new BackendConfig(webSocketUrl);
+		var backendConfig = new BackendConfig(apiBase, webSocketUrl);
 		var gson = new GsonBuilder().setFormattingStyle(FormattingStyle.COMPACT).create();
 		serializedConfig = gson.toJson(backendConfig);
 	}

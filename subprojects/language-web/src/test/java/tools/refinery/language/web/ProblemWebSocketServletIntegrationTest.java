@@ -92,9 +92,9 @@ class ProblemWebSocketServletIntegrationTest {
 	void updateTest() {
 		startServer(null);
 		var clientSocket = new UpdateTestClient();
-		var session = connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
+		var session = connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2);
 		assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(),
-				equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
+				equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2));
 		clientSocket.waitForTestResult();
 		assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
 		var responses = clientSocket.getResponses();
@@ -122,6 +122,8 @@ class ProblemWebSocketServletIntegrationTest {
 	}
 
 	@WebSocket
+	// The string we send must not contain any newline, so we can't use a text block here.
+	@SuppressWarnings("squid:S6126")
 	public static class UpdateTestClient extends WebSocketIntegrationTestClient {
 		@Override
 		protected void arrange(Session session, int responsesReceived) {
@@ -139,6 +141,9 @@ class ProblemWebSocketServletIntegrationTest {
 					Callback.NOOP
 			);
 			case 8 -> session.close();
+			default -> {
+				// No need to respond anything.
+			}
 			}
 		}
 	}
@@ -166,9 +171,9 @@ class ProblemWebSocketServletIntegrationTest {
 		startServer(null);
 		var clientSocket = new CloseImmediatelyTestClient();
 		try (var session = connect(clientSocket, null, "<invalid sub-protocol>",
-				XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1)) {
+				XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2)) {
 			assertThat(session.getUpgradeResponse().getAcceptedSubProtocol(),
-					equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1));
+					equalTo(XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2));
 			clientSocket.waitForTestResult();
 			assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
 		}
@@ -178,7 +183,7 @@ class ProblemWebSocketServletIntegrationTest {
 	void invalidJsonTest() {
 		startServer(null);
 		var clientSocket = new InvalidJsonTestClient();
-		try (var ignored = connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1)) {
+		try (var ignored = connect(clientSocket, null, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2)) {
 			clientSocket.waitForTestResult();
 			assertThat(clientSocket.getCloseStatusCode(), equalTo(XtextStatusCode.INVALID_JSON));
 		}
@@ -197,7 +202,7 @@ class ProblemWebSocketServletIntegrationTest {
 	void validOriginTest(String origin) {
 		startServer("https://refinery.example,https://refinery.example:443");
 		var clientSocket = new CloseImmediatelyTestClient();
-		try (var ignored = connect(clientSocket, origin, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1)) {
+		try (var ignored = connect(clientSocket, origin, XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2)) {
 			clientSocket.waitForTestResult();
 			assertThat(clientSocket.getCloseStatusCode(), equalTo(StatusCode.NORMAL));
 		}
@@ -212,7 +217,7 @@ class ProblemWebSocketServletIntegrationTest {
 		var exception = assertThrows(CompletionException.class,
 				() -> {
 					var session = connect(clientSocket, "https://invalid.example",
-							XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V1);
+							XtextWebSocketServlet.XTEXT_SUBPROTOCOL_V2);
 					session.close();
 				});
 		var innerException = exception.getCause();

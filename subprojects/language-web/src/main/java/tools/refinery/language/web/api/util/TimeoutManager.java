@@ -6,22 +6,25 @@
 package tools.refinery.language.web.api.util;
 
 import com.google.inject.Singleton;
-import tools.refinery.language.web.semantics.SemanticsService;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Singleton
 public class TimeoutManager {
 	private final Duration modelGenerationTimeout = Duration.ofSeconds(
-			SemanticsService.getTimeout("REFINERY_MODEL_GENERATION_TIMEOUT_SEC").orElse(600L));
+			getTimeout("REFINERY_MODEL_GENERATION_TIMEOUT_SEC").orElse(600L));
 	private final Duration modelSemanticsTimeout = Duration.ofMillis(
-			SemanticsService.getTimeout("REFINERY_SEMANTICS_TIMEOUT_MS").orElse(1000L));
+			getTimeout("REFINERY_SEMANTICS_TIMEOUT_MS").orElse(1000L));
 	private final Duration modelSemanticsWarmupTimeout = Duration.ofMillis(
-			SemanticsService.getTimeout("REFINERY_SEMANTICS_WARMUP_TIMEOUT_MS")
-					.orElse(2 * modelSemanticsTimeout.toMillis()));
+			getTimeout("REFINERY_SEMANTICS_WARMUP_TIMEOUT_MS").orElse(2 * modelSemanticsTimeout.toMillis()));
 
 	private volatile boolean modelSemanticsLoaded;
 	private volatile boolean modelConcretizationLoaded;
+
+	private static Optional<Long> getTimeout(String name) {
+		return Optional.ofNullable(System.getenv(name)).map(Long::parseUnsignedLong);
+	}
 
 	public Duration getModelGenerationTimeout() {
 		return modelGenerationTimeout;

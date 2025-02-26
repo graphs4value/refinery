@@ -38,6 +38,9 @@ public class RestartableCachedThreadPool implements ExecutorService {
 	}
 
 	private static void waitForTermination(ExecutorService executorService) {
+		if (executorService.isTerminated()) {
+			return;
+		}
 		boolean result = false;
 		try {
 			result = executorService.awaitTermination(10, TimeUnit.SECONDS);

@@ -4052,7 +4052,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@refinery/client@workspace:subprojects/client-js":
+"@refinery/client@workspace:*, @refinery/client@workspace:subprojects/client-js":
   version: 0.0.0-use.local
   resolution: "@refinery/client@workspace:subprojects/client-js"
   dependencies:
@@ -4155,6 +4155,7 @@ __metadata:
     "@mui/material": "npm:^6.4.4"
     "@mui/system": "npm:^6.4.3"
     "@mui/x-data-grid": "npm:^7.26.0"
+    "@refinery/client": "workspace:*"
     "@replit/codemirror-indentation-markers": "npm:^6.5.3"
     "@types/d3": "npm:^7.4.3"
     "@types/d3-color": "npm:^3.1.3"

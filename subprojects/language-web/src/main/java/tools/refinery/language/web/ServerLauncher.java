@@ -66,14 +66,15 @@ public class ServerLauncher {
 
 	private final Server server;
 
-	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String webSocketUrl) {
+	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String apiBase,
+                          String webSocketUrl) {
 		server = new Server(bindAddress);
 		((QueuedThreadPool) server.getThreadPool()).setName("jetty");
 		var handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
 		handler.setContextPath("/");
 		addProblemServlet(handler, allowedOrigins);
 		addApiServlet(handler);
-		addBackendConfigServlet(handler, webSocketUrl);
+		addBackendConfigServlet(handler, apiBase, webSocketUrl);
 		addHealthCheckServlet(handler);
 		var baseResource = getBaseResource();
 		if (baseResource != null) {
@@ -133,8 +134,9 @@ public class ServerLauncher {
 		handler.addServlet(apiServletHolder, "/api/*");
 	}
 
-	private void addBackendConfigServlet(ServletContextHandler handler, String webSocketUrl) {
+	private void addBackendConfigServlet(ServletContextHandler handler, String apiBase, String webSocketUrl) {
 		var backendConfigServletHolder = new ServletHolder(BackendConfigServlet.class);
+		backendConfigServletHolder.setInitParameter(BackendConfigServlet.API_BASE_INIT_PARAM, apiBase);
 		backendConfigServletHolder.setInitParameter(BackendConfigServlet.WEBSOCKET_URL_INIT_PARAM, webSocketUrl);
 		handler.addServlet(backendConfigServletHolder, "/config.json");
 	}
@@ -203,8 +205,9 @@ public class ServerLauncher {
 		try {
 			var bindAddress = getBindAddress();
 			var allowedOrigins = getAllowedOrigins();
+			var apiBase = getApiBase();
 			var webSocketUrl = getWebSocketUrl();
-			var serverLauncher = new ServerLauncher(bindAddress, allowedOrigins, webSocketUrl);
+			var serverLauncher = new ServerLauncher(bindAddress, allowedOrigins, apiBase, webSocketUrl);
 			serverLauncher.start();
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
@@ -267,24 +270,39 @@ public class ServerLauncher {
 		}
 		int publicPort = getPublicPort();
 		var scheme = publicPort == HTTPS_DEFAULT_PORT ? "https" : "http";
-		var urlWithPort = String.format("%s://%s:%d", scheme, publicHost, publicPort);
+		var urlWithPort = java.lang.String.format("%s://%s:%d", scheme, publicHost, publicPort);
 		if (publicPort == HTTPS_DEFAULT_PORT || publicPort == HTTP_DEFAULT_PORT) {
-			var urlWithoutPort = String.format("%s://%s", scheme, publicHost);
+			var urlWithoutPort = java.lang.String.format("%s://%s", scheme, publicHost);
 			return new String[]{urlWithPort, urlWithoutPort};
 		}
 		return new String[]{urlWithPort};
 	}
 
-	private static String getWebSocketUrl() {
-		String host;
-		int port;
+	private static String getApiBase() {
+		var apiBase = System.getenv("REFINERY_API_BASE");
+		if (apiBase != null) {
+			return apiBase;
+		}
 		var publicHost = getPublicHost();
 		if (publicHost == null) {
 			return null;
 		}
-		host = publicHost;
-		port = getPublicPort();
+		int port = getPublicPort();
+		var scheme = port == HTTPS_DEFAULT_PORT ? "https" : "http";
+		return java.lang.String.format("%s://%s:%d/api/v1", scheme, publicHost, port);
+	}
+
+	private static String getWebSocketUrl() {
+		var websocketUrl = System.getenv("REFINERY_WEBSOCKET_URL");
+		if (websocketUrl != null) {
+			return websocketUrl;
+		}
+		var publicHost = getPublicHost();
+		if (publicHost == null) {
+			return null;
+		}
+		int port = getPublicPort();
 		var scheme = port == HTTPS_DEFAULT_PORT ? "wss" : "ws";
-		return String.format("%s://%s:%d/xtext-service", scheme, host, port);
+		return java.lang.String.format("%s://%s:%d/xtext-service", scheme, publicHost, port);
 	}
 }

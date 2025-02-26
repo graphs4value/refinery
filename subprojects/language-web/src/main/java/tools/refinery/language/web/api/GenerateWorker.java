@@ -14,10 +14,10 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.api.dto.GenerateRequest;
 import tools.refinery.language.web.api.dto.GenerateSuccessResult;
 import tools.refinery.language.web.api.dto.RefineryResponse;
-import tools.refinery.language.web.api.util.OutputSerializer;
 import tools.refinery.language.web.api.sink.ResponseSink;
+import tools.refinery.language.web.api.util.OutputSerializer;
 import tools.refinery.language.web.api.util.TimeoutManager;
-import tools.refinery.language.web.generator.ModelGenerationService;
+import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -41,7 +41,7 @@ public class GenerateWorker extends ScheduledWorker<GenerateRequest> {
 
 	@Override
 	protected String getExecutorServiceKey() {
-		return ModelGenerationService.MODEL_GENERATION_EXECUTOR;
+		return ThreadPoolExecutorServiceProvider.MODEL_GENERATION_EXECUTOR;
 	}
 
 	@Override

@@ -17,7 +17,7 @@ import tools.refinery.language.web.api.dto.SemanticsRequest;
 import tools.refinery.language.web.api.sink.ResponseSink;
 import tools.refinery.language.web.api.util.OutputSerializer;
 import tools.refinery.language.web.api.util.TimeoutManager;
-import tools.refinery.language.web.semantics.SemanticsService;
+import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvider;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -37,7 +37,7 @@ public class ConcretizeWorker extends ScheduledWorker<SemanticsRequest> {
 
 	@Override
 	protected String getExecutorServiceKey() {
-		return SemanticsService.SEMANTICS_EXECUTOR;
+		return ThreadPoolExecutorServiceProvider.SEMANTICS_EXECUTOR;
 	}
 
 	@Override

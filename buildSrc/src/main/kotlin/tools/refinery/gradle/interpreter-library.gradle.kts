@@ -21,6 +21,7 @@ val libs = the<LibrariesForLibs>()
 dependencies {
 	testImplementation(libs.junit4)
 	testRuntimeOnly(libs.junit.engine.vintage)
+	testRuntimeOnly(libs.slf4j.simple)
 }
 
 tasks {

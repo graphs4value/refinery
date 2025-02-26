@@ -23,18 +23,21 @@
       @import '@fontsource-variable/jetbrains-mono/wght-italic.css';
 
       @property --origin-x {
-        syntax: '<length>';
+        syntax: '<length-percentage>';
         inherits: true;
+        initial-value: 50%;
       }
 
       @property --origin-y {
-        syntax: '<length>';
+        syntax: '<length-percentage>';
         inherits: true;
+        initial-value: 50%;
       }
 
       @property --max-radius {
-        syntax: '<length>';
+        syntax: '<length-percentage>';
         inherits: true;
+        initial-value: 100%;
       }
 
       @keyframes circle-in {

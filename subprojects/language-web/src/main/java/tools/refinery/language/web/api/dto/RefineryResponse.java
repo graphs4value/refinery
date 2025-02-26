@@ -9,12 +9,13 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.validation.Issue;
+import org.eclipse.xtext.web.server.IServiceResult;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.generator.InvalidProblemException;
 
 import java.util.List;
 
-public sealed interface RefineryResponse {
+public sealed interface RefineryResponse extends IServiceResult {
 	Response.Status getStatus();
 
 	record Timeout(String message) implements RefineryResponse {

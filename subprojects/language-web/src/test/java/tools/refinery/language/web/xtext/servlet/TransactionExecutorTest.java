@@ -13,6 +13,7 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.web.server.model.DocumentStateResult;
 import org.eclipse.xtext.web.server.syntaxcoloring.HighlightingResult;
 import org.eclipse.xtext.web.server.validation.ValidationResult;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.refinery.language.web.semantics.SemanticsService;
 import tools.refinery.language.web.tests.AwaitTerminationExecutorServiceProvider;
+import tools.refinery.language.web.tests.DelegatingExecutorServiceProvider;
 import tools.refinery.language.web.tests.ProblemWebInjectorProvider;
 import tools.refinery.language.web.xtext.server.ResponseHandler;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
@@ -58,7 +60,9 @@ class TransactionExecutorTest {
 	private IResourceServiceProvider.Registry resourceServiceProviderRegistry;
 
 	@Inject
-	private AwaitTerminationExecutorServiceProvider executorServices;
+	private DelegatingExecutorServiceProvider executorServices;
+
+	private AwaitTerminationExecutorServiceProvider awaitTerminationExecutorServiceProvider;
 
 	@Inject
 	private SemanticsService semanticsService;
@@ -67,9 +71,14 @@ class TransactionExecutorTest {
 
 	@BeforeEach
 	void beforeEach() {
+		awaitTerminationExecutorServiceProvider = new AwaitTerminationExecutorServiceProvider();
+		executorServices.setDelegate(awaitTerminationExecutorServiceProvider);
 		transactionExecutor = new TransactionExecutor(new SimpleSession(), resourceServiceProviderRegistry);
-		// Manually re-create the semantics analysis thread pool if it was disposed by the previous test.
-		semanticsService.setExecutorServiceProvider(executorServices);
+	}
+
+	@AfterEach
+	void afterEach() {
+		awaitTerminationExecutorServiceProvider.dispose();
 	}
 
 	@Test
@@ -88,7 +97,7 @@ class TransactionExecutorTest {
 
 		var captor = newCaptor();
 		verify(responseHandler, times(3)).onResponse(captor.capture());
-		var newStateId = getStateId("bar", captor.getAllValues().get(0));
+		var newStateId = getStateId("bar", captor.getAllValues().getFirst());
 		assertThatPrecomputedMessagesAreReceived(newStateId, captor.getAllValues());
 	}
 
@@ -133,14 +142,14 @@ class TransactionExecutorTest {
 		var responseHandler = sendRequestAndWaitForAllResponses(new XtextWebRequest("foo", UPDATE_FULL_TEXT_PARAMS));
 
 		verify(responseHandler, times(4)).onResponse(captor.capture());
-		return getStateId("foo", captor.getAllValues().get(0));
+		return getStateId("foo", captor.getAllValues().getFirst());
 	}
 
 	private ResponseHandler sendRequestAndWaitForAllResponses(XtextWebRequest request) throws ResponseHandlerException {
 		var responseHandler = mock(ResponseHandler.class);
 		transactionExecutor.setResponseHandler(responseHandler);
 		transactionExecutor.handleRequest(request);
-		executorServices.waitForAllTasksToFinish();
+		awaitTerminationExecutorServiceProvider.waitForAllTasksToFinish();
 		return responseHandler;
 	}
 

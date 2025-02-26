@@ -14,6 +14,22 @@ const SemanticsInput = z.object({
   outputFormats: OutputFormats,
 });
 
+export const SemanticsSuccessResult = z.object({
+  issues: Issue.array(),
+  json: JsonOutput.optional(),
+  source: z.string().optional(),
+});
+
+export type SemanticsSuccessResult = z.infer<typeof SemanticsSuccessResult>;
+
+export const ConcretizationSuccessResult = SemanticsSuccessResult.extend({
+  source: z.string().optional(),
+});
+
+export type ConcretizationSuccessResult = z.infer<
+  typeof ConcretizationSuccessResult
+>;
+
 export class Refinery extends GenericRefinery {
   constructor(options: RefineryOptions) {
     super(options);
@@ -37,20 +53,12 @@ export class Refinery extends GenericRefinery {
   readonly semantics = this.interruptible(
     'semantics',
     SemanticsInput,
-    z.object({
-      issues: Issue.array(),
-      json: JsonOutput.optional(),
-      source: z.string().optional(),
-    }),
+    SemanticsSuccessResult,
   );
 
   readonly concretize = this.interruptible(
     'concretize',
     SemanticsInput,
-    z.object({
-      issues: Issue.array(),
-      json: JsonOutput.optional(),
-      source: z.string().optional(),
-    }),
+    ConcretizationSuccessResult,
   );
 }
