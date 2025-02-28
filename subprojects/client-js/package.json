@@ -24,7 +24,7 @@
   "scripts": {
     "build": "MODE=production vite build",
     "typecheck": "yarn run g:tsc -p subprojects/client-js/tsconfig.json",
-    "test": "vitest",
+    "test": "PLAYWRIGHT_BROWSERS_PATH=../../.playwright vitest",
     "test:run": "yarn run test --run --coverage",
     "test:run:ci": "CI=true yarn run test:run",
     "lint": "yarn run g:lint subprojects/client-js",

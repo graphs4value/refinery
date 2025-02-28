@@ -48,6 +48,7 @@ tasks {
 		dependsOn(rootProject.tasks.named("installBrowsers"))
 		inputs.dir(srcDir)
 		inputs.files(configFiles)
+		inputs.dir(rootProject.layout.projectDirectory.dir(".playwright"))
 		outputs.dir(layout.buildDirectory.dir("coverage"))
 	}
 

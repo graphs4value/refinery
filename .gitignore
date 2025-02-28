@@ -10,6 +10,7 @@
 .launch
 .log/
 .node/
+.playwright/
 .pnp.*
 .project
 .settings
