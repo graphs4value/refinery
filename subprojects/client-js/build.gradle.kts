@@ -95,6 +95,11 @@ tasks {
 
 sonarqube.properties {
 	SonarPropertiesUtils.addToList(properties, "sonar.sources", srcDir)
+	SonarPropertiesUtils.addToList(properties, "sonar.tests", srcDir)
+	SonarPropertiesUtils.addToList(properties, "sonar.exclusions", "**/__fixtures__/**", "**/__tests__/**",
+		"**/*.test.ts")
+	SonarPropertiesUtils.addToList(properties, "sonar.test.inclusions", "**/__fixtures__/**", "**/__tests__/**",
+		"**/*.test.ts")
 	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
 	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
 	property("sonar.javascript.lcov.reportPaths", "${layout.buildDirectory.get()}/coverage/lcov.info")
