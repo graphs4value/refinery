@@ -7,9 +7,12 @@
 import { runInAction } from 'mobx';
 
 import type EditorStore from '../editor/EditorStore';
+import getLogger from '../utils/getLogger';
 
 import type ValidationService from './ValidationService';
 import { SemanticsResult } from './xtextServiceResults';
+
+const log = getLogger('xtext.SemanticsService');
 
 export default class SemanticsService {
   constructor(
@@ -18,7 +21,17 @@ export default class SemanticsService {
   ) {}
 
   onPush(push: unknown): void {
-    const result = SemanticsResult.parse(push);
+    let result: SemanticsResult;
+    try {
+      result = SemanticsResult.parse(push);
+    } catch (e) {
+      log.error('Failed to parse semantics result', e);
+      runInAction(() => {
+        this.store.setSemanticsError('Invalid response from server', true);
+        this.store.analysisCompleted();
+      });
+      return;
+    }
     runInAction(() => {
       if (result.result === 'success') {
         const { value } = result;

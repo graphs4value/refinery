@@ -111,7 +111,7 @@ public sealed interface RefineryResponse extends IServiceResult {
 		private static String translateSeverity(Severity severity) {
 			return switch (severity) {
 				case Severity.WARNING -> "warning";
-				case Severity.ERROR -> "message";
+				case Severity.ERROR -> "error";
 				case Severity.INFO -> "info";
 				case null, default -> "ignore";
 			};

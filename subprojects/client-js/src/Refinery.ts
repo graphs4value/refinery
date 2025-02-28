@@ -17,7 +17,6 @@ const SemanticsInput = z.object({
 export const SemanticsSuccessResult = z.object({
   issues: Issue.array(),
   json: JsonOutput.optional(),
-  source: z.string().optional(),
 });
 
 export type SemanticsSuccessResult = z.infer<typeof SemanticsSuccessResult>;
