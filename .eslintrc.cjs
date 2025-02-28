@@ -51,7 +51,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
   ],
   parserOptions: {
-    project,
+    projectService: true,
     sourceType: 'module',
   },
   parser: '@typescript-eslint/parser',
