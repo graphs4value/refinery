@@ -71,7 +71,7 @@ export default class ModelGenerationService {
         {
           signal,
           onStatus: (status) => {
-            this.store.setGeneratedModelMessage(uuid, status);
+            this.store.setGeneratedModelMessage(uuid, status.message);
           },
         },
       );

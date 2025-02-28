@@ -204,7 +204,7 @@ public abstract class ScheduledWorker<T> {
 		}
 	}
 
-	protected void updateStatus(String status) {
+	protected void updateStatus(Object status) {
 		checkCancelled();
 		LOG.debug("Status: {}", status);
 		responseSink.updateStatus(status);

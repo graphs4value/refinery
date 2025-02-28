@@ -63,7 +63,7 @@ public class SseResponseSink implements ResponseSink {
 	}
 
 	@Override
-	public void updateStatus(String status) {
+	public void updateStatus(Object status) {
 		LOG.debug("Worker status update: {}", status);
 		if (isCancelled()) {
 			return;

@@ -39,7 +39,7 @@ public class AsyncResponseSink implements ResponseSink {
 	}
 
 	@Override
-	public void updateStatus(String status) {
+	public void updateStatus(Object status) {
 		// REST request can't have periodic status updates.
 	}
 

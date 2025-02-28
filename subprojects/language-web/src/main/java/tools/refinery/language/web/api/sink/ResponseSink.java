@@ -19,7 +19,7 @@ public interface ResponseSink {
 
 	void setResponse(int statusCode, RefineryResponse response);
 
-	void updateStatus(String status);
+	void updateStatus(Object status);
 
 	boolean isCancelled();
 }

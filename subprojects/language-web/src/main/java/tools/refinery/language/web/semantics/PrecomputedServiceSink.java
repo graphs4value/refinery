@@ -31,7 +31,7 @@ class PrecomputedServiceSink implements ResponseSink {
 	}
 
 	@Override
-	public void updateStatus(String status) {
+	public void updateStatus(Object status) {
 		throw new UnsupportedOperationException("Cannot update status in precomputed service");
 	}
 

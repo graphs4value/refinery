@@ -46,7 +46,9 @@ export class Refinery extends GenericRefinery {
       json: JsonOutput.optional(),
       source: z.string().optional(),
     }),
-    z.string(),
+    z.object({
+      message: z.string(),
+    }),
   );
 
   readonly semantics = this.interruptible(

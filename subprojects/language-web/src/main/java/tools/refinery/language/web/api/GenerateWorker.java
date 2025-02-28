@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import tools.refinery.generator.*;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.web.api.dto.GenerateRequest;
+import tools.refinery.language.web.api.dto.GenerateStatus;
 import tools.refinery.language.web.api.dto.GenerateSuccessResult;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 import tools.refinery.language.web.api.sink.ResponseSink;
@@ -60,16 +61,20 @@ public class GenerateWorker extends ScheduledWorker<GenerateRequest> {
 
 	@Override
 	protected void run() throws IOException {
-		updateStatus("Initializing model generator");
+		updateStatusString("Initializing model generator");
 		var problem = loadProblem();
 		if (problem == null) {
 			return;
 		}
 		var generator = createModelGenerator(problem);
-		updateStatus("Generating model");
+		updateStatusString("Generating model");
 		generator.generate();
-		updateStatus("Saving generated model");
+		updateStatusString("Saving generated model");
 		saveModel(generator);
+	}
+
+	private void updateStatusString(String status) {
+		updateStatus(new GenerateStatus(status));
 	}
 
 	private @Nullable Problem loadProblem() throws IOException {
