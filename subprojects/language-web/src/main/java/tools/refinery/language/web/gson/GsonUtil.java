@@ -39,7 +39,7 @@ public class GsonUtil {
 					.registerSubtype(RefineryResponse.Timeout.class, "timeout")
 					.registerSubtype(RefineryResponse.Cancelled.class, "cancelled")
 					.registerSubtype(RefineryResponse.RequestError.class, "requestError")
-					.registerSubtype(RefineryResponse.ServerError.class, "internalError")
+					.registerSubtype(RefineryResponse.ServerError.class, "serverError")
 					.registerSubtype(RefineryResponse.InvalidProblem.class, "invalidProblem")
 					.registerSubtype(RefineryResponse.Unsatisfiable.class, "unsatisfiable")
 					.registerSubtype(RefineryResponse.Success.class, "success")
