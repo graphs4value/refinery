@@ -6,7 +6,13 @@
 package tools.refinery.generator;
 
 public class UnsatisfiableProblemException extends RuntimeException {
+	public static final String DEFAULT_MESSAGE = "Model generation problem is unsatisfiable";
+
 	public UnsatisfiableProblemException() {
-		super("Model generation problem was unsatisfiable");
+		this(DEFAULT_MESSAGE);
+	}
+
+	public UnsatisfiableProblemException(String message) {
+		super(message);
 	}
 }

@@ -10,6 +10,7 @@ const path = require('node:path');
 // Allow the Codium ESLint plugin to find `tsconfig.json` from the repository root.
 const project = [
   path.join(__dirname, 'tsconfig.json'),
+  path.join(__dirname, 'subprojects/client-js/tsconfig.json'),
   path.join(__dirname, 'subprojects/docs/tsconfig.json'),
   path.join(__dirname, 'subprojects/frontend/tsconfig.json'),
   path.join(__dirname, 'subprojects/frontend/tsconfig.node.json'),
@@ -50,7 +51,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
   ],
   parserOptions: {
-    project,
+    projectService: true,
     sourceType: 'module',
   },
   parser: '@typescript-eslint/parser',
@@ -74,6 +75,7 @@ module.exports = {
   ignorePatterns: [
     'build/**/*',
     'subprojects/*/build/**/*',
+    'subprojects/*/dist/**/*',
     'subprojects/docs/.docusaurus/**/*',
     'subprojects/docs/.yarn/**/*',
     'subprojects/frontend/dev-dist/**/*',
@@ -157,6 +159,8 @@ module.exports = {
         'subprojects/*/config/*.cjs',
         'prettier.config.cjs',
         'subprojects/*/vite.config.ts',
+        'subprojects/*/vitest.config.ts',
+        'subprojects/*/vitest.workspace.ts',
       ],
       env: {
         browser: false,

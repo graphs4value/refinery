@@ -1,0 +1,61 @@
+{
+  "//": [
+    "SPDX-FileCopyrightText: 2021-2025 The Refinery Authors <https://refinery.tools/>",
+    "",
+    "SPDX-License-Identifier: EPL-2.0"
+  ],
+  "name": "@refinery/client",
+  "version": "0.1.5-SNAPSHOT",
+  "description": "API client library for Refinery",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "MODE=production vite build",
+    "typecheck": "yarn run g:tsc -p subprojects/client-js/tsconfig.json",
+    "test": "PLAYWRIGHT_BROWSERS_PATH=../../.playwright vitest",
+    "test:run": "yarn run test --run --coverage",
+    "test:run:ci": "CI=true yarn run test:run",
+    "lint": "yarn run g:lint subprojects/client-js",
+    "lint:fix": "yarn run lint --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphs4value/refinery.git"
+  },
+  "author": "The Refinery Authors <https://refinery.tools/>",
+  "license": "EPL-2.0",
+  "bugs": {
+    "url": "https://github.com/graphs4value/refinery/issues"
+  },
+  "homepage": "https://refinery.tools",
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.5",
+    "@vitest/browser": "3.0.7",
+    "@vitest/coverage-istanbul": "^3.0.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "nanoid": "^5.1.2",
+    "playwright": "~1.49.1",
+    "typescript": "5.7.3",
+    "vite": "^6.2.0",
+    "vite-plugin-dts": "^4.5.0",
+    "vitest": "3.0.7"
+  }
+}

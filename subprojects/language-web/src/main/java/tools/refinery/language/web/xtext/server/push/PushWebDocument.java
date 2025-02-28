@@ -13,7 +13,6 @@ import org.eclipse.xtext.web.server.model.DocumentSynchronizer;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.language.web.generator.ModelGenerationManager;
 import tools.refinery.language.web.xtext.server.ResponseHandlerException;
 
 import java.util.ArrayList;
@@ -24,8 +23,6 @@ public class PushWebDocument extends XtextWebDocument {
 	private static final Logger LOG = LoggerFactory.getLogger(PushWebDocument.class);
 
 	private final List<PrecomputationListener> precomputationListeners = new ArrayList<>();
-
-	private final ModelGenerationManager modelGenerationManager = new ModelGenerationManager();
 
 	private final DocumentSynchronizer synchronizer;
 
@@ -43,10 +40,6 @@ public class PushWebDocument extends XtextWebDocument {
 
 	public void setConcretize(boolean concretize) {
 		this.concretize.set(concretize);
-	}
-
-	public ModelGenerationManager getModelGenerationManager() {
-		return modelGenerationManager;
 	}
 
 	public void addPrecomputationListener(PrecomputationListener listener) {
@@ -99,12 +92,7 @@ public class PushWebDocument extends XtextWebDocument {
 		}
 	}
 
-	public void cancelModelGeneration() {
-		modelGenerationManager.cancel();
-	}
-
 	public void dispose() {
 		synchronizer.setCanceled(true);
-		modelGenerationManager.dispose();
 	}
 }

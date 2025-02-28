@@ -40,7 +40,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 
 	public ModelSemantics createSemantics(Problem problem) {
 		var semantics = tryCreateSemantics(problem);
-		semantics.getInitializationResult().throwIfRejected();
+		semantics.throwIfInitializationFailed();
 		return semantics;
 	}
 
@@ -56,14 +56,10 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
 		initializer.configureStoreBuilder(storeBuilder);
-		var store = storeBuilder.build();
-		var problemTrace = initializer.getProblemTrace();
-		var modelSeed = initializer.getModelSeed();
 		if (concretize) {
-			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider(),
-					getMetadataCreatorProvider(), isKeepNonExistingObjects());
+			return new ConcreteModelSemantics(createConcreteFacadeArgs(initializer, storeBuilder));
 		}
-		return new ModelSemanticsImpl(problemTrace, store, modelSeed, getMetadataCreatorProvider());
+		return new ModelSemanticsImpl(createFacadeArgs(initializer, storeBuilder));
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {

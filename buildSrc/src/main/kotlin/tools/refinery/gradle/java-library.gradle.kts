@@ -5,7 +5,15 @@
  */
 package tools.refinery.gradle
 
+import org.gradle.accessors.dm.LibrariesForLibs
+
 plugins {
 	id("tools.refinery.gradle.internal.java-basic-library")
 	id("tools.refinery.gradle.java-conventions")
+}
+
+val libs = the<LibrariesForLibs>()
+
+dependencies {
+	testRuntimeOnly(libs.slf4j.simple)
 }

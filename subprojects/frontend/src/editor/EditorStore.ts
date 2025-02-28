@@ -38,10 +38,7 @@ import {
 } from '../utils/fileIO';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
-import type {
-  SemanticsModelResult,
-  GeneratedModelSemanticsResult,
-} from '../xtext/xtextServiceResults';
+import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
 import GeneratedModelStore from './GeneratedModelStore';
@@ -417,9 +414,9 @@ export default class EditorStore {
     this.propagationRejected = propagationRejected;
   }
 
-  setSemantics(semantics: SemanticsModelResult) {
+  setSemantics(semantics: SemanticsModelResult, source?: string) {
     this.semanticsUpToDate = true;
-    this.graph.setSemantics(semantics);
+    this.graph.setSemantics(semantics, source);
   }
 
   dispose(): void {
@@ -429,9 +426,7 @@ export default class EditorStore {
   }
 
   startModelGeneration(randomSeed?: number): void {
-    this.client
-      ?.startModelGeneration(randomSeed)
-      ?.catch((error) => log.error('Could not start model generation', error));
+    this.client?.startModelGeneration(randomSeed);
   }
 
   addGeneratedModel(uuid: string, randomSeed: number): void {
@@ -440,9 +435,7 @@ export default class EditorStore {
   }
 
   cancelModelGeneration(): void {
-    this.client
-      ?.cancelModelGeneration()
-      ?.catch((error) => log.error('Could not start model generation', error));
+    this.client?.cancelModelGeneration();
   }
 
   selectGeneratedModel(uuid: string | undefined): void {
@@ -507,9 +500,10 @@ export default class EditorStore {
 
   setGeneratedModelSemantics(
     uuid: string,
-    semantics: GeneratedModelSemanticsResult,
+    semantics: SemanticsModelResult,
+    source?: string,
   ): void {
-    this.generatedModels.get(uuid)?.setSemantics(semantics);
+    this.generatedModels.get(uuid)?.setSemantics(semantics, source);
   }
 
   get generating(): boolean {

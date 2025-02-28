@@ -32,7 +32,7 @@ public class CycleDetectingMapper<T, R> {
 	public R map(T input) {
 		if (inProgress.contains(input)) {
 			var path = inProgress.stream().map(getName).collect(Collectors.joining(SEPARATOR));
-			throw new IllegalArgumentException("Circular reference %s%s%s detected".formatted(path, SEPARATOR,
+			throw new CircularReferenceException("Circular reference %s%s%s detected".formatted(path, SEPARATOR,
 					getName.apply(input)));
 		}
 		// We can't use computeIfAbsent here, because translating referenced queries calls this method in a reentrant

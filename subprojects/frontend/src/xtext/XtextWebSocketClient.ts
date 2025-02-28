@@ -13,7 +13,9 @@ import CancelledError from '../utils/CancelledError';
 import PendingTask from '../utils/PendingTask';
 import getLogger from '../utils/getLogger';
 
-import fetchBackendConfig from './fetchBackendConfig';
+import fetchBackendConfig, {
+  type BackendConfigWithDefaults,
+} from './fetchBackendConfig';
 import webSocketMachine from './webSocketMachine';
 import {
   type XtextWebPushService,
@@ -22,7 +24,7 @@ import {
 } from './xtextMessages';
 import { PongResult } from './xtextServiceResults';
 
-const XTEXT_SUBPROTOCOL_V1 = 'tools.refinery.language.web.xtext.v1';
+const XTEXT_SUBPROTOCOL_V2 = 'tools.refinery.language.web.xtext.v2';
 
 // Use a large enough timeout so that a request can complete successfully
 // even if the browser has throttled the background tab.
@@ -40,6 +42,8 @@ export type PushHandler = (
   service: XtextWebPushService,
   data: unknown,
 ) => void;
+
+export type ConfigHandler = (config: BackendConfigWithDefaults) => void;
 
 export default class XtextWebSocketClient {
   private readonly stateAtom = createAtom('state');
@@ -73,7 +77,7 @@ export default class XtextWebSocketClient {
     const {
       webSocket: { protocol },
     } = this;
-    if (protocol === XTEXT_SUBPROTOCOL_V1) {
+    if (protocol === XTEXT_SUBPROTOCOL_V2) {
       this.interpreter.send('OPENED');
     } else {
       this.interpreter.send({
@@ -143,6 +147,7 @@ export default class XtextWebSocketClient {
     private readonly onReconnect: ReconnectHandler,
     private readonly onDisconnect: DisconnectHandler,
     private readonly onPush: PushHandler,
+    private readonly onConfig: ConfigHandler,
   ) {
     makeAutoObservable<
       XtextWebSocketClient,
@@ -288,11 +293,9 @@ export default class XtextWebSocketClient {
     log.debug('Creating WebSocket');
 
     (async () => {
-      let { webSocketURL } = await fetchBackendConfig();
-      if (webSocketURL === undefined) {
-        webSocketURL = `${window.origin.replace(/^http/, 'ws')}/xtext-service`;
-      }
-      this.openWebSocketWithURL(webSocketURL);
+      const config = await fetchBackendConfig();
+      this.onConfig(config);
+      this.openWebSocketWithURL(config.webSocketURL);
     })().catch((error) => {
       log.error('Error while initializing connection', error);
       const message = error instanceof Error ? error.message : String(error);
@@ -304,7 +307,7 @@ export default class XtextWebSocketClient {
   }
 
   private openWebSocketWithURL(webSocketURL: string): void {
-    this.webSocket = new WebSocket(webSocketURL, XTEXT_SUBPROTOCOL_V1);
+    this.webSocket = new WebSocket(webSocketURL, XTEXT_SUBPROTOCOL_V2);
     this.webSocket.addEventListener('open', this.openListener);
     this.webSocket.addEventListener('close', this.closeListener);
     this.webSocket.addEventListener('error', this.errorListener);

@@ -68,6 +68,12 @@ jobs:
           path: |
            .yarn/cache
           key: ${{ matrix.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+           .playwright
+          key: ${{ matrix.os }}-playwright-${{ hashFiles('yarn.lock') }}
       - name: Gradle build
         run: |
           ./gradlew build -Pci --info --stacktrace --max-workers 4 --no-daemon

@@ -15,7 +15,8 @@ plugins {
 val libs = the<LibrariesForLibs>()
 
 dependencies {
-	runtimeOnly(libs.slf4j.simple)
+	runtimeOnly(libs.logback.core)
+	runtimeOnly(libs.logback.classic)
 	implementation(libs.slf4j.log4j)
 	implementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 }

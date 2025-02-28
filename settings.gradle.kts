@@ -9,6 +9,7 @@ rootProject.name = "refinery"
 include(
 		"bom",
 		"bom-dependencies",
+		"client-js",
 		"docs",
 		"frontend",
 		"generator",

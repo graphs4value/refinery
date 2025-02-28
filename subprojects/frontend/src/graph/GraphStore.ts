@@ -234,8 +234,13 @@ export default class GraphStore {
     this.editorStore.toggleShowComputed();
   }
 
-  setSemantics(semantics: ModelResultWithSource): void {
-    this.semantics = semantics;
+  setSemantics(semantics: SemanticsModelResult, source?: string): void {
+    this.semantics = source
+      ? {
+          ...semantics,
+          source,
+        }
+      : semantics;
     this.relationMetadata.clear();
     this.semantics.relations.forEach((metadata) => {
       this.relationMetadata.set(metadata.name, metadata);

@@ -25,7 +25,7 @@ public class TracedException extends RuntimeException {
 	}
 
 	public TracedException(EObject sourceElement, Throwable cause) {
-		super(cause);
+		super(cause == null ? null : cause.getMessage(), cause);
 		this.sourceElement = sourceElement;
 	}
 
@@ -37,7 +37,7 @@ public class TracedException extends RuntimeException {
 	public String getMessage() {
 		var message = super.getMessage();
 		if (message == null) {
-			return "Internal error";
+			return "Failed to translate problem to logic";
 		}
 		return message;
 	}

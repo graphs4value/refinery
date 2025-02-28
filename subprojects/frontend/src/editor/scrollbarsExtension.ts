@@ -116,14 +116,18 @@ class ScrollbarsPlugin implements PluginValue {
       this.rightTrack.releasePointerCapture(event.pointerId);
       this.scrollingRight = undefined;
     });
-    this.rightTrack.addEventListener('wheel', (event) => {
-      const { pixelX, pixelY } = normalizeWheel(event);
-      this.scrollDOM.scrollBy({
-        left: pixelX,
-        top: pixelY,
-        behavior: 'instant',
-      });
-    });
+    this.rightTrack.addEventListener(
+      'wheel',
+      (event) => {
+        const { pixelX, pixelY } = normalizeWheel(event);
+        this.scrollDOM.scrollBy({
+          left: pixelX,
+          top: pixelY,
+          behavior: 'instant',
+        });
+      },
+      { passive: true },
+    );
     this.annotationsDOM = document.createElement('div');
     this.annotationsDOM.classList.add('cm-track-annotations');
     this.rightTrack.appendChild(this.annotationsDOM);
@@ -169,15 +173,19 @@ class ScrollbarsPlugin implements PluginValue {
       this.bottomTrack.releasePointerCapture(event.pointerId);
       this.scrollingBottom = undefined;
     });
-    this.bottomTrack.addEventListener('wheel', (event) => {
-      const { pixelX, pixelY } = normalizeWheel(event);
-      this.scrollDOM.scrollBy({
-        // Swap scroll axes on the bottom scrollbar to allow scrolling with a single-wheel mouse.
-        left: pixelY,
-        top: pixelX,
-        behavior: 'instant',
-      });
-    });
+    this.bottomTrack.addEventListener(
+      'wheel',
+      (event) => {
+        const { pixelX, pixelY } = normalizeWheel(event);
+        this.scrollDOM.scrollBy({
+          // Swap scroll axes on the bottom scrollbar to allow scrolling with a single-wheel mouse.
+          left: pixelY,
+          top: pixelX,
+          behavior: 'instant',
+        });
+      },
+      { passive: true },
+    );
     this.editorDOM.appendChild(this.bottomTrack);
     this.topShadow = document.createElement('div');
     this.topShadow.classList.add('cm-shadow', 'cm-top-shadow');

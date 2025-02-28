@@ -8,7 +8,10 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["vite/client", "vite-plugin-pwa/client"]
+    "types": ["vite/client", "vite-plugin-pwa/client"],
+    "paths": {
+      "@refinery/client": ["../client-js/src/index.ts"]
+    }
   },
   "include": [
     "src",
@@ -20,6 +23,7 @@
   ],
   "references": [
     { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.shared.json" }
+    { "path": "./tsconfig.shared.json" },
+    { "path": "../client-js/tsconfig.json" },
   ]
 }

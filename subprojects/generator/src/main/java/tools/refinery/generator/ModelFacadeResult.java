@@ -18,8 +18,6 @@ public sealed interface ModelFacadeResult {
 		return isPropagationRejected() || isConcretizationRejected();
 	}
 
-	void throwIfRejected();
-
 	final class Success implements ModelFacadeResult {
 		private Success() {
 		}
@@ -33,20 +31,10 @@ public sealed interface ModelFacadeResult {
 		public boolean isConcretizationRejected() {
 			return false;
 		}
-
-		@Override
-		public void throwIfRejected() {
-			// Nothing to throw.
-		}
 	}
 
 	sealed interface Rejected extends ModelFacadeResult {
 		String formatMessage();
-
-		@Override
-		default void throwIfRejected() {
-			throw new IllegalStateException(formatMessage());
-		}
 
 		Object reason();
 	}
