@@ -10,7 +10,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["vite/client", "vite-plugin-pwa/client"],
     "paths": {
-      "@refinery/client": ["../client-js/src/index.ts"]
+      "@tools.refinery/client": ["../client-js/src/index.ts"]
     }
   },
   "include": [

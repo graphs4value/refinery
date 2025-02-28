@@ -6,7 +6,10 @@
 
 /* eslint-disable @typescript-eslint/no-redeclare -- Declare types with their companion objects */
 
-import { ConcretizationSuccessResult, RefineryResult } from '@refinery/client';
+import {
+  ConcretizationSuccessResult,
+  RefineryResult,
+} from '@tools.refinery/client';
 import { z } from 'zod';
 
 export const PongResult = z.object({
@@ -138,7 +141,7 @@ export {
   JsonOutput as SemanticsModelResult,
   NodeMetadata,
   RelationMetadata,
-} from '@refinery/client';
+} from '@tools.refinery/client';
 
 export const SemanticsResult = z.union([
   RefineryResult.Error,

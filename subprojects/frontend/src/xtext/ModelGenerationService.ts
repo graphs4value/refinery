@@ -5,7 +5,7 @@
  */
 
 import type { Transaction } from '@codemirror/state';
-import { Refinery, RefineryError } from '@refinery/client';
+import { Refinery, RefineryError } from '@tools.refinery/client';
 import { nanoid } from 'nanoid';
 
 import type EditorStore from '../editor/EditorStore';

@@ -74,7 +74,7 @@ const viteConfig: ViteConfig = {
   },
   resolve: {
     alias: {
-      '@refinery/client': path.join(
+      '@tools.refinery/client': path.join(
         thisDir,
         '../client-js/',
         isDevelopment ? 'src/index.ts' : 'dist/index.mjs',

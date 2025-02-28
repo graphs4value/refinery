@@ -4,7 +4,7 @@
     "",
     "SPDX-License-Identifier: EPL-2.0"
   ],
-  "name": "@refinery/frontend",
+  "name": "@tools.refinery/frontend",
   "version": "0.0.0",
   "description": "Web frontend for Refinery",
   "type": "module",
@@ -53,8 +53,8 @@
     "@mui/material": "^6.4.6",
     "@mui/system": "^6.4.6",
     "@mui/x-data-grid": "^7.27.1",
-    "@refinery/client": "workspace:*",
     "@replit/codemirror-indentation-markers": "^6.5.3",
+    "@tools.refinery/client": "workspace:*",
     "ansi-styles": "^6.2.1",
     "clsx": "^2.1.1",
     "csstype": "^3.1.3",

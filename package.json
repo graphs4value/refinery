@@ -4,7 +4,7 @@
     "",
     "SPDX-License-Identifier: EPL-2.0"
   ],
-  "name": "@refinery/root",
+  "name": "@tools.refinery/root",
   "version": "0.0.0",
   "private": true,
   "repository": {
@@ -23,9 +23,9 @@
     "subprojects/frontend"
   ],
   "scripts": {
-    "client": "yarn workspace @refinery/client",
-    "docs": "yarn workspace @refinery/docs",
-    "frontend": "yarn workspace @refinery/frontend",
+    "client": "yarn workspace @tools.refinery/client",
+    "docs": "yarn workspace @tools.refinery/docs",
+    "frontend": "yarn workspace @tools.refinery/frontend",
     "typecheck": "yarn run g:tsc -p tsconfig.json",
     "lint": "yarn run g:lint",
     "lint:fix": "yarn run lint --fix",

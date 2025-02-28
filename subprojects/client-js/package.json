@@ -4,7 +4,7 @@
     "",
     "SPDX-License-Identifier: EPL-2.0"
   ],
-  "name": "@refinery/client",
+  "name": "@tools.refinery/client",
   "version": "0.1.5-SNAPSHOT",
   "description": "API client library for Refinery",
   "type": "module",
@@ -21,6 +21,9 @@
   "files": [
     "/dist"
   ],
+  "engines": {
+    "node": ">=21"
+  },
   "scripts": {
     "build": "MODE=production vite build",
     "typecheck": "yarn run g:tsc -p subprojects/client-js/tsconfig.json",
