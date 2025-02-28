@@ -145,6 +145,7 @@ export abstract class GenericRefinery {
     endpoint: string,
     payload: unknown,
     options: RefineryInit,
+    accept: string,
   ): Promise<Response> {
     return this.options.fetch(`${this.options.baseURL}/${endpoint}`, {
       credentials: this.options.defaultCredentials,
@@ -155,6 +156,7 @@ export abstract class GenericRefinery {
         ...this.options.defaultHeaders,
         ...options.headers,
         'Content-Type': 'application/json',
+        Accept: accept,
       },
     });
   }
@@ -172,7 +174,12 @@ export abstract class GenericRefinery {
       const parsedRequest = requestType.parse(request) as z.output<T>;
       let json: unknown;
       try {
-        const response = await this.fetch(endpoint, parsedRequest, init);
+        const response = await this.fetch(
+          endpoint,
+          parsedRequest,
+          init,
+          'application/json',
+        );
         json = await response.json();
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -231,12 +238,13 @@ export abstract class GenericRefinery {
           }
         }
         const fetchRequest = await that.fetch(
-          `${endpoint}/stream`,
+          endpoint,
           parsedRequest,
           {
             ...init,
             signal: abortController.signal,
           },
+          'text/event-stream',
         );
         let last: RefineryResult.Success<U> | undefined;
         for await (const element of parseSSE(fetchRequest, abortController)) {

@@ -40,7 +40,6 @@ public class ConcretizeApi {
 	}
 
 	@POST
-	@Path("/stream")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.SERVER_SENT_EVENTS)
 	public void generate(@Valid SemanticsRequest request, @Context SseEventSink eventSink, @Context Sse sse)

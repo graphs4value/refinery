@@ -28,17 +28,14 @@ app.post('/oneShotSuccess', (req, res) => {
   } satisfies RefineryResult.Success<Pong>);
 });
 
-app.post(
-  ['/oneShotFailure', '/streamingFailureAtStart/stream'],
-  (_req, res) => {
-    res.status(400).json({
-      result: 'unsatisfiable',
-      message: 'Test request error',
-    } satisfies RefineryResult.Unsatisfiable);
-  },
-);
+app.post(['/oneShotFailure', '/streamingFailureAtStart'], (_req, res) => {
+  res.status(400).json({
+    result: 'unsatisfiable',
+    message: 'Test request error',
+  } satisfies RefineryResult.Unsatisfiable);
+});
 
-app.post('/streamingSuccess/stream', async (req, res) => {
+app.post('/streamingSuccess', async (req, res) => {
   const { ping } = Ping.parse(req.body);
   res.on('close', () => {
     res.end();
@@ -70,7 +67,7 @@ app.post('/streamingSuccess/stream', async (req, res) => {
   );
 });
 
-app.post('/streamingFailureAtEnd/stream', async (_req, res) => {
+app.post('/streamingFailureAtEnd', async (_req, res) => {
   res.on('close', () => {
     res.end();
   });
@@ -101,7 +98,7 @@ app.post('/streamingFailureAtEnd/stream', async (_req, res) => {
   );
 });
 
-app.post('/withoutStatus/stream', async (req, res) => {
+app.post('/withoutStatus', async (req, res) => {
   const { ping } = Ping.parse(req.body);
   res.on('close', () => {
     res.end();
@@ -124,7 +121,7 @@ app.post('/withoutStatus/stream', async (req, res) => {
 const ongoingPings = new Set<string>();
 
 app.post(
-  '/streamingAbort/stream',
+  '/streamingAbort',
   (req, res) =>
     new Promise<void>((resolve, reject) => {
       const { ping } = Ping.parse(req.body);
