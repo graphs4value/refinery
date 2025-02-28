@@ -21,7 +21,6 @@ import tools.refinery.language.web.xtext.server.ThreadPoolExecutorServiceProvide
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
 
 public class SemanticsWorker extends ScheduledWorker<SemanticsRequest> {
 	@Inject
@@ -58,13 +57,6 @@ public class SemanticsWorker extends ScheduledWorker<SemanticsRequest> {
 
 	@Override
 	protected void run() throws IOException {
-		var request = getRequest();
-		if (!request.getFormat().getJson().isEnabled()) {
-			var message = "Model semantics only supports JSON output";
-			setResponse(new RefineryResponse.RequestError(message, List.of(
-					new RefineryResponse.RequestError.Detail("$.format.json.enabled", message))));
-			return;
-		}
 		timeoutManager.markSemanticsAsLoaded();
 		var problem = loadProblem();
 		if (problem == null) {
@@ -91,7 +83,9 @@ public class SemanticsWorker extends ScheduledWorker<SemanticsRequest> {
 	private void saveModel(ModelSemantics semantics) {
 		checkCancelled();
 		var issues = outputSerializer.getIssues(semantics);
-		var json = outputSerializer.savePartialInterpretation(semantics);
+		var request = getRequest();
+		boolean jsonEnabled = request.getFormat().getJson().isEnabled();
+		var json = jsonEnabled ? outputSerializer.savePartialInterpretation(semantics) : null;
 		setResponse(new RefineryResponse.Success(new SemanticsSuccessResult(issues, json)));
 	}
 }
