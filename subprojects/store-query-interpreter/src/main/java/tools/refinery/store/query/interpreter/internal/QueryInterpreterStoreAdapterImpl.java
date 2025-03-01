@@ -6,45 +6,34 @@
 package tools.refinery.store.query.interpreter.internal;
 
 import tools.refinery.interpreter.CancellationToken;
-import tools.refinery.interpreter.api.IQuerySpecification;
 import tools.refinery.interpreter.api.InterpreterEngineOptions;
 import tools.refinery.interpreter.matchers.context.IInputKey;
-import tools.refinery.store.model.Model;
-import tools.refinery.store.model.ModelStore;
 import tools.refinery.logic.dnf.AnyQuery;
 import tools.refinery.logic.dnf.Query;
+import tools.refinery.store.model.Model;
+import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterStoreAdapter;
-import tools.refinery.store.query.interpreter.internal.matcher.RawPatternMatcher;
 import tools.refinery.store.query.view.AnySymbolView;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
 public class QueryInterpreterStoreAdapterImpl implements QueryInterpreterStoreAdapter {
 	private final ModelStore store;
 	private final InterpreterEngineOptions engineOptions;
 	private final Map<AnySymbolView, IInputKey> inputKeys;
-	private final Map<AnyQuery, AnyQuery> canonicalQueryMap;
-	private final Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications;
-	private final Set<AnyQuery> vacuousQueries;
-	private final Set<AnyQuery> allQueries;
+	private final ValidatedQueries validatedQueries;
 	private final CancellationToken cancellationToken;
 
 	QueryInterpreterStoreAdapterImpl(ModelStore store, InterpreterEngineOptions engineOptions,
 									 Map<AnySymbolView, IInputKey> inputKeys,
-									 Map<AnyQuery, AnyQuery> canonicalQueryMap,
-									 Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> querySpecifications,
-									 Set<AnyQuery> vacuousQueries, CancellationToken cancellationToken) {
+									 ValidatedQueries validatedQueries,
+									 CancellationToken cancellationToken) {
 		this.store = store;
 		this.engineOptions = engineOptions;
 		this.inputKeys = inputKeys;
-		this.canonicalQueryMap = canonicalQueryMap;
-		this.querySpecifications = querySpecifications;
-		this.vacuousQueries = vacuousQueries;
+		this.validatedQueries = validatedQueries;
 		this.cancellationToken = cancellationToken;
-		var mutableAllQueries = new LinkedHashSet<AnyQuery>(querySpecifications.size() + vacuousQueries.size());
-		mutableAllQueries.addAll(querySpecifications.keySet());
-		mutableAllQueries.addAll(vacuousQueries);
-		this.allQueries = Collections.unmodifiableSet(mutableAllQueries);
 	}
 
 	@Override
@@ -62,7 +51,7 @@ public class QueryInterpreterStoreAdapterImpl implements QueryInterpreterStoreAd
 
 	@Override
 	public Collection<AnyQuery> getQueries() {
-		return allQueries;
+		return validatedQueries.getAllQueries();
 	}
 
 	public CancellationToken getCancellationToken() {
@@ -73,19 +62,15 @@ public class QueryInterpreterStoreAdapterImpl implements QueryInterpreterStoreAd
 	public <T> Query<T> getCanonicalQuery(Query<T> query) {
 		// We know that canonical forms of queries do not change output types.
 		@SuppressWarnings("unchecked")
-		var canonicalQuery = (Query<T>) canonicalQueryMap.get(query);
+		var canonicalQuery = (Query<T>) validatedQueries.getCanonicalQueryMap().get(query);
 		if (canonicalQuery == null) {
 			throw new IllegalArgumentException("Unknown query: " + query);
 		}
 		return canonicalQuery;
 	}
 
-	Map<AnyQuery, IQuerySpecification<RawPatternMatcher>> getQuerySpecifications() {
-		return querySpecifications;
-	}
-
-	Set<AnyQuery> getVacuousQueries() {
-		return vacuousQueries;
+	ValidatedQueries getValidatedQueries() {
+		return validatedQueries;
 	}
 
 	@Override

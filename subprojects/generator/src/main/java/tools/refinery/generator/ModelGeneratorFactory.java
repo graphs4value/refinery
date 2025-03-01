@@ -8,6 +8,7 @@ package tools.refinery.generator;
 import tools.refinery.generator.impl.CancellableCancellationToken;
 import tools.refinery.generator.impl.ModelGeneratorImpl;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
@@ -15,6 +16,7 @@ import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialNeighborhoodCalculator;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.statecoding.neighborhood.NeighborhoodCalculator;
@@ -58,7 +60,11 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 
 	public ModelGenerator tryCreateGenerator(Problem problem) {
 		var initializer = createModelInitializer();
-		initializer.readProblem(problem);
+		try {
+			initializer.readProblem(problem);
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e);
+		}
 		checkCancelled();
 		var cancellationToken = new CancellableCancellationToken(getCancellationToken());
 		var storeBuilder = ModelStore.builder()
@@ -70,7 +76,13 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder);
+		try {
+			initializer.configureStoreBuilder(storeBuilder);
+		} catch (TranslationException e) {
+			throw getDiagnostics().wrapTranslationException(e, initializer.getProblemTrace());
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e);
+		}
 		return new ModelGeneratorImpl(createConcreteFacadeArgs(initializer, storeBuilder), cancellationToken);
 	}
 

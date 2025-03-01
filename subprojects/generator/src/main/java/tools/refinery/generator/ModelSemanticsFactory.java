@@ -8,11 +8,13 @@ package tools.refinery.generator;
 import tools.refinery.generator.impl.ConcreteModelSemantics;
 import tools.refinery.generator.impl.ModelSemanticsImpl;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.translator.TranslationException;
 
 import java.util.Collection;
 import java.util.Set;
@@ -46,7 +48,11 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 
 	public ModelSemantics tryCreateSemantics(Problem problem) {
 		var initializer = createModelInitializer();
-		initializer.readProblem(problem);
+		try {
+			initializer.readProblem(problem);
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e);
+		}
 		checkCancelled();
 		var storeBuilder = ModelStore.builder()
 				.cancellationToken(getCancellationToken())
@@ -55,7 +61,13 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 						.throwOnFatalRejection(false))
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder);
+		try {
+			initializer.configureStoreBuilder(storeBuilder);
+		} catch (TranslationException e) {
+			throw getDiagnostics().wrapTranslationException(e, initializer.getProblemTrace());
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e);
+		}
 		if (concretize) {
 			return new ConcreteModelSemantics(createConcreteFacadeArgs(initializer, storeBuilder));
 		}

@@ -47,7 +47,7 @@ export default class SemanticsService {
         if (result.issues.length === 0) {
           this.store.setSemanticsError(result.message, true);
         } else {
-          this.store.setSemanticsError(undefined, true);
+          this.store.setSemanticsError(undefined, false);
         }
       } else {
         this.validationService.setSemanticsIssues([]);

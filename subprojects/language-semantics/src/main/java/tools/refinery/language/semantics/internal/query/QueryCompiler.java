@@ -44,27 +44,31 @@ public class QueryCompiler {
 	}
 
 	public RelationalQuery toQuery(String name, PredicateDefinition predicateDefinition) {
-		var problemParameters = predicateDefinition.getParameters();
-		int arity = problemParameters.size();
-		var parameters = new NodeVariable[arity];
-		var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
-		var commonLiterals = new ArrayList<Literal>();
-		for (int i = 0; i < arity; i++) {
-			var problemParameter = problemParameters.get(i);
-			var parameter = Variable.of(problemParameter.getName());
-			parameters[i] = parameter;
-			parameterMap.put(problemParameter, parameter);
-			var parameterType = problemParameter.getParameterType();
-			if (parameterType != null) {
-				var partialType = getPartialRelation(parameterType);
-				commonLiterals.add(partialType.call(parameter));
+		try {
+			var problemParameters = predicateDefinition.getParameters();
+			int arity = problemParameters.size();
+			var parameters = new NodeVariable[arity];
+			var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
+			var commonLiterals = new ArrayList<Literal>();
+			for (int i = 0; i < arity; i++) {
+				var problemParameter = problemParameters.get(i);
+				var parameter = Variable.of(problemParameter.getName());
+				parameters[i] = parameter;
+				parameterMap.put(problemParameter, parameter);
+				var parameterType = problemParameter.getParameterType();
+				if (parameterType != null) {
+					var partialType = getPartialRelation(parameterType);
+					commonLiterals.add(partialType.call(parameter));
+				}
 			}
+			var builder = Query.builder(name).parameters(parameters);
+			for (var body : predicateDefinition.getBodies()) {
+				buildConjunction(body, parameterMap, commonLiterals, builder);
+			}
+			return builder.build();
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(predicateDefinition, e);
 		}
-		var builder = Query.builder(name).parameters(parameters);
-		for (var body : predicateDefinition.getBodies()) {
-			buildConjunction(body, parameterMap, commonLiterals, builder);
-		}
-		return builder.build();
 	}
 
 	void buildConjunction(

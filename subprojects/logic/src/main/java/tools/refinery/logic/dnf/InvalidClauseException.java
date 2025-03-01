@@ -25,7 +25,7 @@ public class InvalidClauseException extends InvalidQueryException {
 	}
 
 	public InvalidClauseException(int clauseIndex, Throwable cause) {
-		super(cause);
+		super(cause == null ? null : cause.getMessage(), cause);
 		this.clauseIndex = clauseIndex;
 	}
 
