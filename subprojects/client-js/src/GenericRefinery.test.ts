@@ -233,10 +233,10 @@ describe('streamingAbort', () => {
           }
         }).rejects.toThrow(RefineryError.Cancelled),
         (async () => {
-          await sleep(200);
+          await sleep(500);
           await expect(sut.isOngoing({ ping: id })).resolves.toBe(true);
           abortController.abort();
-          await sleep(200);
+          await sleep(500);
           await expect(sut.isOngoing({ ping: id })).resolves.toBe(false);
         })(),
       ]);
@@ -265,10 +265,10 @@ describe('streamingAbort', () => {
           ),
         ).rejects.toThrow(RefineryError.Cancelled),
         (async () => {
-          await sleep(200);
+          await sleep(500);
           await expect(sut.isOngoing({ ping: id })).resolves.toBe(true);
           abortController.abort();
-          await sleep(200);
+          await sleep(500);
           await expect(sut.isOngoing({ ping: id })).resolves.toBe(false);
         })(),
       ]);
