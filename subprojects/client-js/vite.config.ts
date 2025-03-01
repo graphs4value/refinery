@@ -42,7 +42,7 @@ export default defineConfig({
     alias: {
       // Make sure Rollup treats our entry points as part of the project,
       // and doesn't inline them as exteral dependencies.
-      '@refinery/client': path.join(thisDir, 'src'),
+      '@tools.refinery/client': path.join(thisDir, 'src'),
     },
   },
   build: {
