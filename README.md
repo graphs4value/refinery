@@ -1,5 +1,5 @@
 <!--
-  SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
+  SPDX-FileCopyrightText: 2021-2025 The Refinery Authors <https://refinery.tools/>
 
   SPDX-License-Identifier: EPL-2.0
 -->
@@ -56,7 +56,7 @@ J. Object Technol. **19**(3): 3:1-22 (2020) [[doi](https://doi.org/10.5381/jot.2
 
 ## License
 
-Copyright (c) 2021-2024 [The Refinery Authors](CONTRIBUTORS.md)
+Copyright (c) 2021-2025 [The Refinery Authors](CONTRIBUTORS.md)
 
 Refinery is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
 
