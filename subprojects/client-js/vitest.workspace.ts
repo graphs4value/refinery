@@ -30,6 +30,9 @@ export default defineWorkspace([
       globalSetup: ['src/__fixtures__/mockServer.ts'],
       browser: {
         enabled: true,
+        // Firefox has a limit on HTTP 1.1 requests to the same origin,
+        // so avoid any paralellism to prevent deadlocks due to our mock server.
+        fileParallelism: false,
         headless: true,
         provider: 'playwright',
         instances: [

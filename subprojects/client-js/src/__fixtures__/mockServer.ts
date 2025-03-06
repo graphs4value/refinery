@@ -148,10 +148,14 @@ app.post(
 
 app.post('/isOngoing', (req, res) => {
   const { ping } = Ping.parse(req.body);
-  res.status(200).json({
-    result: 'success',
-    value: ongoingPings.has(ping),
-  } satisfies RefineryResult.Success<boolean>);
+  // Yield the thread to other parallel requests to avoid deadlocks
+  // due to limited number of parallel HTTP/1.1 requests to the same origin.
+  setImmediate(() => {
+    res.status(200).json({
+      result: 'success',
+      value: ongoingPings.has(ping),
+    } satisfies RefineryResult.Success<boolean>);
+  });
 });
 
 export default async function setup(context: TestProject) {

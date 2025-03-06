@@ -214,6 +214,17 @@ function sleep(duration: number): Promise<void> {
   });
 }
 
+async function waitForOngoing(id: string, expected: boolean): Promise<void> {
+  let i = 0;
+  let ongoing = await sut.isOngoing({ ping: id });
+  while (i < 10 && ongoing !== expected) {
+    await sleep(100);
+    i += 1;
+    ongoing = await sut.isOngoing({ ping: id });
+  }
+  expect(ongoing).toBe(expected);
+}
+
 describe('streamingAbort', () => {
   test('asyncIterable', async () => {
     const id = nanoid();
@@ -233,11 +244,9 @@ describe('streamingAbort', () => {
           }
         }).rejects.toThrow(RefineryError.Cancelled),
         (async () => {
-          await sleep(500);
-          await expect(sut.isOngoing({ ping: id })).resolves.toBe(true);
+          await waitForOngoing(id, true);
           abortController.abort();
-          await sleep(500);
-          await expect(sut.isOngoing({ ping: id })).resolves.toBe(false);
+          await waitForOngoing(id, false);
         })(),
       ]);
     } finally {
@@ -265,11 +274,9 @@ describe('streamingAbort', () => {
           ),
         ).rejects.toThrow(RefineryError.Cancelled),
         (async () => {
-          await sleep(500);
-          await expect(sut.isOngoing({ ping: id })).resolves.toBe(true);
+          await waitForOngoing(id, true);
           abortController.abort();
-          await sleep(500);
-          await expect(sut.isOngoing({ ping: id })).resolves.toBe(false);
+          await waitForOngoing(id, false);
         })(),
       ]);
     } finally {
