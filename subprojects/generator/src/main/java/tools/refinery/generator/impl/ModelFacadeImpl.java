@@ -52,9 +52,9 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 		try {
 			propagatedModel = store.getAdapter(ReasoningStoreAdapter.class).tryCreateInitialModel(args.modelSeed());
 		} catch (TranslationException e) {
-			throw diagnostics.wrapTranslationException(e,problemTrace);
+			throw diagnostics.wrapTranslationException(e, problemTrace);
 		} catch (TracedException e) {
-			throw diagnostics.wrapTracedException(e);
+			throw diagnostics.wrapTracedException(e, problemTrace);
 		} catch (PropagationRejectedException e) {
 			throw diagnostics.wrapPropagationRejectedException(e, problemTrace);
 		}

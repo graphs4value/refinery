@@ -63,7 +63,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 		try {
 			initializer.readProblem(problem);
 		} catch (TracedException e) {
-			throw getDiagnostics().wrapTracedException(e);
+			throw getDiagnostics().wrapTracedException(e, problem);
 		}
 		checkCancelled();
 		var cancellationToken = new CancellableCancellationToken(getCancellationToken());
@@ -81,7 +81,7 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 		} catch (TranslationException e) {
 			throw getDiagnostics().wrapTranslationException(e, initializer.getProblemTrace());
 		} catch (TracedException e) {
-			throw getDiagnostics().wrapTracedException(e);
+			throw getDiagnostics().wrapTracedException(e, problem);
 		}
 		return new ModelGeneratorImpl(createConcreteFacadeArgs(initializer, storeBuilder), cancellationToken);
 	}

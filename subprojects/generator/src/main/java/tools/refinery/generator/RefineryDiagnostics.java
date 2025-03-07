@@ -42,16 +42,20 @@ public class RefineryDiagnostics {
 	public InvalidProblemException wrapTranslationException(TranslationException e, ProblemTrace trace) {
 		var wrappedByTrace = trace.wrapException(e);
 		if (wrappedByTrace instanceof TracedException tracedException) {
-			return wrapTracedException(tracedException);
+			return wrapTracedException(tracedException, trace);
 		}
 		var problem = trace.getProblem();
 		var problemUri = problem.eResource().getURI();
 		return createInvalidProblemException(problemUri, List.of(), e.getMessage(), e);
 	}
 
-	public InvalidProblemException wrapTracedException(TracedException e) {
+	public InvalidProblemException wrapTracedException(TracedException e, ProblemTrace trace) {
+		return wrapTracedException(e, trace.getProblem());
+	}
+
+	public InvalidProblemException wrapTracedException(TracedException e, Problem problem) {
 		var sourceElement = e.getSourceElement();
-		var problemUri = sourceElement.eResource().getURI();
+		var problemUri = problem.eResource().getURI();
 		return createInvalidProblemException(problemUri, sourceElement, e);
 	}
 

@@ -88,7 +88,7 @@ public abstract sealed class ModelFacadeFactory<T extends ModelFacadeFactory<T>>
 		} catch (TranslationException e) {
 			throw diagnostics.wrapTranslationException(e, trace);
 		} catch (TracedException e) {
-			throw diagnostics.wrapTracedException(e);
+			throw diagnostics.wrapTracedException(e, trace);
 		}
 		return new ModelFacadeImpl.Args(trace, store, initializer.getModelSeed(), metadataCreatorProvider,
 				diagnostics);

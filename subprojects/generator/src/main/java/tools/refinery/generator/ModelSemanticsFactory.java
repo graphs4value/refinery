@@ -51,7 +51,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 		try {
 			initializer.readProblem(problem);
 		} catch (TracedException e) {
-			throw getDiagnostics().wrapTracedException(e);
+			throw getDiagnostics().wrapTracedException(e, problem);
 		}
 		checkCancelled();
 		var storeBuilder = ModelStore.builder()
@@ -66,7 +66,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 		} catch (TranslationException e) {
 			throw getDiagnostics().wrapTranslationException(e, initializer.getProblemTrace());
 		} catch (TracedException e) {
-			throw getDiagnostics().wrapTracedException(e);
+			throw getDiagnostics().wrapTracedException(e, problem);
 		}
 		if (concretize) {
 			return new ConcreteModelSemantics(createConcreteFacadeArgs(initializer, storeBuilder));
