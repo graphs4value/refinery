@@ -60,5 +60,4 @@ async function compressFiles() {
   await Promise.all(promises);
 }
 
-// @ts-expect-error We can use top-level await here, because this file is only run by Node.js.
 await compressFiles();

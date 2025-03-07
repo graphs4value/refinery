@@ -31,8 +31,9 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
     // Project-specific configuration below.
-    "module": "es2022",
+    "module": "ES2022",
     "moduleResolution": "node",
+    "target": "ES2022",
     "incremental": true,
     "declaration": true,
     "emitDeclarationOnly": true,
