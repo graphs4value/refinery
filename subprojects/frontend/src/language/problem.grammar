@@ -91,7 +91,10 @@ FeatureDeclaration {
   // Prefer parsing `contains` as a contextual keyword.
   (
     FeatureDeclarationHeadWithKind[@dynamicPrecedence=1] {
-      ReferenceKind !feature ~featureHead
+      (kw<"refers"> | ckw<"contains">) !feature ~featureHead
+    } |
+    FeatureDeclarationHeadWithContainerKind[@dynamicPrecedence=2] {
+      ckw<"container"> !feature ~featureHead
     } |
     FeatureDeclarationHeadWithoutKind {
       ~featureHead
@@ -180,10 +183,6 @@ AssertionArgument { NodeName | StarArgument }
 AssertionActionArgument { VariableName | StarArgument }
 
 Constant { Real | String | StarMult | LogicValue }
-
-ReferenceKind {
-  kw<"refers"> | ckw<"contains"> | kw<"container"> | kw<"partial">
-}
 
 LogicValue {
   kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">

@@ -63,7 +63,6 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNKNOWN_EXPRESSION_ISSUE = ISSUE_PREFIX + "UNKNOWN_EXPRESSION";
 	public static final String INVALID_ASSIGNMENT_ISSUE = ISSUE_PREFIX + "INVALID_ASSIGNMENT";
 	public static final String TYPE_ERROR = ISSUE_PREFIX + "TYPE_ERROR";
-	public static final String UNUSED_PARTIAL_RELATION_ISSUE = ISSUE_PREFIX + "UNUSED_PARTIAL_RELATION";
 	public static final String UNUSED_PARAMETER_ISSUE = ISSUE_PREFIX + "UNUSED_PARAMETER";
 
 	@Inject
@@ -373,6 +372,31 @@ public class ProblemValidator extends AbstractProblemValidator {
 							.formatted(referenceDeclaration.getName(), opposite.getName()),
 					referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__OPPOSITE, 0,
 					INVALID_OPPOSITE_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkContainmentReferenceType(ReferenceDeclaration referenceDeclaration) {
+		if (referenceDeclaration.getKind() != ReferenceKind.CONTAINMENT) {
+			return;
+		}
+		var relation = referenceDeclaration.getReferenceType();
+		if (relation == null) {
+			return;
+		}
+		var builtinSymbols = importAdapterProvider.getBuiltinSymbols(referenceDeclaration);
+		if (builtinSymbols.node().equals(relation) || builtinSymbols.container().equals(relation)) {
+			var message = ("The containment reference '%s' makes all '%s' instances require a container object, " +
+					"which is impossible to satisfy.").formatted(referenceDeclaration.getName(), relation.getName());
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE,
+					0, INVALID_REFERENCE_TYPE_ISSUE);
+		}
+		if (builtinSymbols.contained().equals(relation)) {
+			var message = ("The reference type of the containment reference '%s' depends on which other containment " +
+					"references mark classes as '%s' in the partial model.")
+					.formatted(referenceDeclaration.getName(), relation.getName());
+			acceptWarning(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE,
+					0, INVALID_REFERENCE_TYPE_ISSUE);
 		}
 	}
 
