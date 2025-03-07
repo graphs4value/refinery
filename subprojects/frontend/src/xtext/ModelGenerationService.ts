@@ -81,8 +81,8 @@ export default class ModelGenerationService {
         return;
       }
       this.store.setGeneratedModelSemantics(uuid, json, source);
-    })().catch((error) => {
-      if (error instanceof RefineryError.Cancelled) {
+    })().catch((err: unknown) => {
+      if (err instanceof RefineryError.Cancelled) {
         log.warn('Model generation cancelled');
         if (this.abortController !== undefined) {
           // We only need to signal cancellation if it is not initiated by the user.
@@ -91,10 +91,10 @@ export default class ModelGenerationService {
         }
         return;
       }
-      log.error('Error while generating model', error);
+      log.error({ err }, 'Error while generating model');
       this.store.setGeneratedModelError(
         uuid,
-        error instanceof Error ? error.message : 'Unknown error',
+        err instanceof Error ? err.message : 'Unknown error',
       );
     });
   }

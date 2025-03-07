@@ -120,18 +120,16 @@ export default class XtextClient {
     const { resourceName, xtextStateId } = this.updateService;
     if (resource !== resourceName) {
       log.error(
-        'Unknown resource name: expected:',
+        'Unknown resource name: expected: %s got: %s',
         resourceName,
-        'got:',
         resource,
       );
       return;
     }
     if (stateId !== xtextStateId) {
       log.error(
-        'Unexpected xtext state id: expected:',
+        'Unexpected xtext state id: expected: %s got: %s',
         xtextStateId,
-        'got:',
         stateId,
       );
       // The current push message might be stale (referring to a previous state),
@@ -166,8 +164,8 @@ export default class XtextClient {
   }
 
   goToDefinition(pos?: number): void {
-    this.occurrencesService.goToDefinition(pos).catch((e) => {
-      log.error('Error while fetching occurrences', e);
+    this.occurrencesService.goToDefinition(pos).catch((err: unknown) => {
+      log.error({ err }, 'Error while fetching occurrences');
     });
   }
 
@@ -180,14 +178,14 @@ export default class XtextClient {
   }
 
   formatText(): void {
-    this.updateService.formatText().catch((e) => {
-      log.error('Error while formatting text', e);
+    this.updateService.formatText().catch((err: unknown) => {
+      log.error({ err }, 'Error while formatting text');
     });
   }
 
   updateConcretize(): void {
-    this.updateService.updateConcretize().catch((e) => {
-      log.error('Error while setting concretize flag on server', e);
+    this.updateService.updateConcretize().catch((err: unknown) => {
+      log.error({ err }, 'Error while setting concretize flag on server');
     });
   }
 

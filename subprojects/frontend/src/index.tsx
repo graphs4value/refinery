@@ -10,6 +10,7 @@ import { type Root, createRoot } from 'react-dom/client';
 
 import App from './App';
 import RootStore from './RootStore';
+import './utils/logger';
 
 // Make sure `styled` ends up in the entry chunk.
 // https://github.com/mui/material-ui/issues/32727#issuecomment-1659945548

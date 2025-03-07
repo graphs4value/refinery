@@ -141,8 +141,8 @@ export default class EditorStore {
         });
         this.client.start();
       });
-    })().catch((error) => {
-      log.error('Failed to load XtextClient', error);
+    })().catch((err: unknown) => {
+      log.error({ err }, 'Failed to load XtextClient');
     });
     const visibilityMap = new Map(Object.entries(initialVisibility ?? {}));
     this.graph = new GraphStore(this, undefined, visibilityMap);
@@ -195,7 +195,7 @@ export default class EditorStore {
   }
 
   setDarkMode(darkMode: boolean): void {
-    log.debug('Update editor dark mode', darkMode);
+    log.debug('Update editor dark mode: %s', darkMode);
     this.dispatch({
       effects: [
         StateEffect.appendConfig.of([EditorView.darkTheme.of(darkMode)]),
@@ -219,10 +219,8 @@ export default class EditorStore {
         view.update([transaction]);
         if (view.state !== this.state) {
           log.error(
-            'Failed to synchronize editor state - store state:',
-            this.state,
-            'view state:',
-            view.state,
+            { viewState: view.state, storeState: this.state },
+            'Failed to synchronize editor state',
           );
         }
       },
@@ -265,7 +263,7 @@ export default class EditorStore {
   }
 
   private dispatchTransactionWithoutView(tr: Transaction): void {
-    log.trace('Editor transaction', tr);
+    log.trace({ tr }, 'Editor transaction');
     this.state = tr.state;
     this.client?.onTransaction(tr);
     if (tr.docChanged) {
@@ -370,7 +368,7 @@ export default class EditorStore {
   }
 
   undo(): void {
-    log.debug('Undo', this.doStateCommand(undo));
+    log.debug('Undo: %s', this.doStateCommand(undo));
   }
 
   /**
@@ -381,17 +379,17 @@ export default class EditorStore {
   }
 
   redo(): void {
-    log.debug('Redo', this.doStateCommand(redo));
+    log.debug('Redo: %s', this.doStateCommand(redo));
   }
 
   toggleLineNumbers(): void {
     this.showLineNumbers = !this.showLineNumbers;
-    log.debug('Show line numbers', this.showLineNumbers);
+    log.debug('Show line numbers: %s', this.showLineNumbers);
   }
 
   toggleColorIdentifiers(): void {
     this.colorIdentifiers = !this.colorIdentifiers;
-    log.debug('Color identifiers', this.colorIdentifiers);
+    log.debug('Color identifiers: %s', this.colorIdentifiers);
   }
 
   get hasSelection(): boolean {
@@ -536,7 +534,7 @@ export default class EditorStore {
   openFile(): boolean {
     openTextFile(FILE_PICKER_OPTIONS)
       .then((result) => this.fileOpened(result))
-      .catch((error) => log.error('Failed to open file', error));
+      .catch((err: unknown) => log.error({ err }, 'Failed to open file'));
     return true;
   }
 
@@ -545,7 +543,7 @@ export default class EditorStore {
   }
 
   private setFile({ name, handle }: OpenResult): void {
-    log.info('Opened file', name);
+    log.info('Opened file: %s', name);
     this.fileName = name;
     this.fileHandle = handle;
   }
@@ -581,7 +579,7 @@ export default class EditorStore {
     }
     saveTextFile(this.fileHandle, this.state.sliceDoc())
       .then(() => this.clearUnsavedChanges())
-      .catch((error) => log.error('Failed to save file', error));
+      .catch((err: unknown) => log.error({ err }, 'Failed to save file'));
     return true;
   }
 
@@ -591,7 +589,7 @@ export default class EditorStore {
     });
     saveBlob(blob, this.fileName ?? 'graph.problem', FILE_PICKER_OPTIONS)
       .then((result) => this.fileSavedAs(result))
-      .catch((error) => log.error('Failed to save file', error));
+      .catch((err: unknown) => log.error({ err }, 'Failed to save file'));
     return true;
   }
 

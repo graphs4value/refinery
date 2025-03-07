@@ -70,7 +70,7 @@ export default class PanelStore {
     if (this.state === newState) {
       return false;
     }
-    log.debug('Show', this.panelClass, 'panel', newState);
+    log.debug('Show %s panel: %s', this.panelClass, newState);
     if (newState) {
       this.doOpen();
     } else {
@@ -102,13 +102,13 @@ export default class PanelStore {
       view.dom.querySelector<HTMLElement>(`.${this.panelClass}.cm-panel`) ??
       undefined;
     if (this.element === undefined) {
-      log.error('Failed to add panel', this.panelClass, 'to DOM');
+      log.error('Failed to add panel %s to DOM', this.panelClass);
       return;
     }
     this.element.id = this.id;
     const closeButton = this.element.querySelector('button[name="close"]');
     if (closeButton !== null) {
-      log.debug('Addig close button callback to', this.panelClass, 'panel');
+      log.debug('Addig close button callback to %s panel', this.panelClass);
       // We must remove the event listener from the button that dispatches a transaction
       // without going through `EditorStore`. This listened is added by CodeMirror,
       // and we can only remove it by cloning the DOM node: https://stackoverflow.com/a/9251864

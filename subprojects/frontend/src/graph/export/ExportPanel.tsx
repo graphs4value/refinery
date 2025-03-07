@@ -130,8 +130,8 @@ function ExportPanel({
           onClick={() => {
             exportDiagram(svgContainer, graph, exportSettingsStore, 'download')
               .then(close)
-              .catch((error) => {
-                log.error('Failed to download diagram', error);
+              .catch((err: unknown) => {
+                log.error({ err }, 'Failed to download diagram');
               });
           }}
         >
@@ -150,8 +150,8 @@ function ExportPanel({
                 shouldEdit ? 'edit' : 'copy',
               )
                 .then(close)
-                .catch((error) => {
-                  log.error('Failed to copy diagram', error);
+                .catch((err: unknown) => {
+                  log.error({ err }, 'Failed to copy diagram');
                 });
             }}
           >

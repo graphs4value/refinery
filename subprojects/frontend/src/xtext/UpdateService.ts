@@ -72,15 +72,15 @@ export default class UpdateService {
 
   onReconnect(): void {
     this.tracker.invalidateStateId();
-    this.updateFullTextOrThrow().catch((error) => {
+    this.updateFullTextOrThrow().catch((err: unknown) => {
       // Let E_TIMEOUT errors propagate, since if the first update times out,
       // we can't use the connection.
-      if (error instanceof CancelledError) {
+      if (err instanceof CancelledError) {
         // Content assist will perform a full-text update anyways.
         log.debug('Full text update cancelled');
         return;
       }
-      log.error('Unexpected error during initial update', error);
+      log.error({ err }, 'Unexpected error during initial update');
     });
   }
 
@@ -99,12 +99,12 @@ export default class UpdateService {
       return;
     }
     if (!this.tracker.lockedForUpdate) {
-      this.updateOrThrow().catch((error) => {
-        if (error instanceof CancelledError || error instanceof TimeoutError) {
+      this.updateOrThrow().catch((err: unknown) => {
+        if (err instanceof CancelledError || err instanceof TimeoutError) {
           log.debug('Idle update cancelled');
           return;
         }
-        log.error('Unexpected error during scheduled update', error);
+        log.error({ err }, 'Unexpected error during scheduled update');
       });
     }
     this.idleUpdateLater();
@@ -135,7 +135,7 @@ export default class UpdateService {
     if (delta === undefined) {
       return;
     }
-    log.trace('Editor delta', delta);
+    log.trace({ delta }, 'Editor delta');
     this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
@@ -196,7 +196,7 @@ export default class UpdateService {
       deltaText: '',
     };
     const { concretize } = this.store;
-    log.trace('Editor delta', delta, 'with concretize', concretize);
+    log.trace({ delta }, 'Editor delta with concretize: %s', concretize);
     this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
@@ -271,7 +271,7 @@ export default class UpdateService {
     if (delta === undefined) {
       return undefined;
     }
-    log.trace('Editor delta for content assist', delta);
+    log.trace({ delta }, 'Editor delta for content assist');
     const fetchUpdateResult = await this.webSocketClient.send({
       ...params,
       resource: this.resourceName,
@@ -328,7 +328,7 @@ export default class UpdateService {
       from = 0;
       to = this.store.state.doc.length;
     }
-    log.debug('Formatting from', from, 'to', to);
+    log.debug('Formatting from %d to %d', from, to);
     const result = await this.webSocketClient.send({
       resource: this.resourceName,
       serviceType: 'format',

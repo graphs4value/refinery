@@ -213,7 +213,7 @@ export default class ContentAssistService {
         options.push(completion);
       }
     });
-    log.debug('Fetched', options.length, 'completions from server');
+    log.debug('Fetched %s completions from server', options.length);
     this.lastCompletion = {
       ...range,
       options,
@@ -261,12 +261,12 @@ export default class ContentAssistService {
         lastFrom,
         lastTo,
       );
-    } catch (error) {
-      if (error instanceof RangeError) {
-        log.debug('Invalidating cache due to invalid range', error);
+    } catch (err) {
+      if (err instanceof RangeError) {
+        log.debug({ err }, 'Invalidating cache due to invalid range');
         return true;
       }
-      throw error;
+      throw err;
     }
     let invalidate = false;
     transaction.changes.iterChangedRanges((fromA, toA) => {

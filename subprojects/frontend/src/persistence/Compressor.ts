@@ -67,8 +67,8 @@ export default class Compressor {
 
   constructor(private readonly onDecompressed: DecompressCallback) {
     this.worker.onerror = (error) => LOG.error('Worker error', error);
-    this.worker.onmessageerror = (error) =>
-      LOG.error('Worker message error', error);
+    this.worker.onmessageerror = (err: unknown) =>
+      LOG.error({ err }, 'Worker message error');
     this.worker.onmessage = (event) => {
       try {
         const message = CompressorResponse.parse(event.data);
@@ -83,14 +83,20 @@ export default class Compressor {
             break;
           case 'error':
             this.compressionEnded();
-            LOG.error('Error processing compressor request', message.message);
+            LOG.error(
+              { message: message.message },
+              'Error processing compressor request',
+            );
             break;
           default:
-            LOG.error('Unknown response from compressor worker', event.data);
+            LOG.error(
+              { data: event.data as unknown },
+              'Unknown response from compressor worker',
+            );
             break;
         }
-      } catch (error) {
-        LOG.error('Error processing worker message', event, error);
+      } catch (err) {
+        LOG.error({ err }, 'Error processing worker message');
       }
     };
     window.addEventListener('hashchange', this.hashChangeHandler);
@@ -138,8 +144,8 @@ export default class Compressor {
     let payload: V2Payload;
     try {
       payload = V2Payload.parse(JSON.parse(text));
-    } catch (e) {
-      LOG.error('Failed to parse URI fragment payload', e);
+    } catch (err) {
+      LOG.error({ err }, 'Failed to parse URI fragment payload');
       return;
     }
     this.onDecompressed(payload.t, payload.v);

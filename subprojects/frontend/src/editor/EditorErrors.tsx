@@ -24,7 +24,7 @@ export interface State {
 export default class EditorErrors implements State {
   private readonly disposer: IReactionDisposer;
 
-  private timer: number | undefined;
+  private timer: NodeJS.Timeout | undefined;
 
   analyzing = false;
 

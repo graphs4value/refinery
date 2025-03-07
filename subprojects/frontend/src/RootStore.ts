@@ -68,8 +68,8 @@ export default class RootStore {
           this.setInitialValue(this.initialValue, this.initialVisibility);
         }
       });
-    })().catch((error) => {
-      log.error('Failed to load EditorStore', error);
+    })().catch((err: unknown) => {
+      log.error({ err }, 'Failed to load EditorStore');
     });
     this.compressor.decompressInitial();
   }

@@ -97,7 +97,9 @@ function DotGraphVisualizer({
           renderer.tweenPaths(false);
         }
         let newViewBox = { width: 0, height: 0 };
-        renderer.onerror(LOG.error.bind(LOG));
+        renderer.onerror((err: unknown) =>
+          LOG.error({ err }, 'Graphviz error'),
+        );
         renderer.on(
           'postProcessSVG',
           // @ts-expect-error Custom `d3-graphviz` hook not covered by typings.

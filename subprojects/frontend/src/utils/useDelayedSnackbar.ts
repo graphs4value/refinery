@@ -27,7 +27,7 @@ export default function useDelayedSnackbar(
       delay = defaultDelay,
     ) => {
       let key: SnackbarKey | undefined;
-      let timeout: number | undefined = setTimeout(() => {
+      let timeout: NodeJS.Timeout | undefined = setTimeout(() => {
         timeout = undefined;
         key = enqueueSnackbar(message, options);
       }, delay);

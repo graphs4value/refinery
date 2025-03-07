@@ -53,8 +53,8 @@ function toggleWithViewTransition(
     .finally(() => {
       document.body.classList.remove('notransition');
     })
-    .catch((error) => {
-      logger.error('Transition failed when toggling dark mode', error);
+    .catch((err: unknown) => {
+      logger.error({ err }, 'Transition failed when toggling dark mode');
     });
 }
 

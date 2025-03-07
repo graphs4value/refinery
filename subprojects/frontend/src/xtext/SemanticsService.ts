@@ -24,8 +24,8 @@ export default class SemanticsService {
     let result: SemanticsResult;
     try {
       result = SemanticsResult.parse(push);
-    } catch (e) {
-      log.error('Failed to parse semantics result', e);
+    } catch (err) {
+      log.error({ err }, 'Failed to parse semantics result');
       runInAction(() => {
         this.store.setSemanticsError('Invalid response from server', true);
         this.store.analysisCompleted();

@@ -16,7 +16,7 @@ export default class PendingTask<T> {
 
   private resolved = false;
 
-  private timeout: number | undefined;
+  private timeout: NodeJS.Timeout | undefined;
 
   constructor(
     resolveCallback: (value: T) => void,

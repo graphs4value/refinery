@@ -38,8 +38,8 @@ export default class PWAStore {
           log.debug('Registered service worker');
           this.setRegistration(registration);
         },
-        onRegisterError(error) {
-          log.error('Failed to register service worker', error);
+        onRegisterError(err: unknown) {
+          log.error({ err }, 'Failed to register service worker');
         },
       });
       setInterval(() => this.checkForUpdates(), UPDATE_INTERVAL);
@@ -65,8 +65,8 @@ export default class PWAStore {
   }
 
   private update(reloadPage?: boolean): void {
-    this.updateSW(reloadPage).catch((error) => {
-      log.error('Error while reloading page with updates', error);
+    this.updateSW(reloadPage).catch((err: unknown) => {
+      log.error({ err }, 'Error while reloading page with updates');
       this.signalError();
     });
   }
@@ -76,8 +76,8 @@ export default class PWAStore {
     // In development mode, the service worker deactives itself,
     // so we must watch out for a deactivated service worker before updating.
     if (this.registration?.active) {
-      this.registration.update().catch((error) => {
-        log.error('Error while updating service worker', error);
+      this.registration.update().catch((err: unknown) => {
+        log.error({ err }, 'Error while updating service worker');
         this.signalError();
       });
     }
