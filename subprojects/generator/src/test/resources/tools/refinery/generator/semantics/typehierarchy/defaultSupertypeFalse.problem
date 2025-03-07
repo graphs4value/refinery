@@ -1,0 +1,42 @@
+% SPDX-FileCopyrightText: 2025 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class A.
+
+class B extends A.
+
+default !A(*).
+
+% TEST: ::new objects
+
+% EXPECT:
+A(A::new).
+!B(A::new).
+A(B::new).
+B(B::new).
+
+% TEST: create supertype instance overriding default
+
+A(a).
+
+% EXPECT EXACTLY:
+A(a).
+?B(a).
+
+% TEST WITH ERRORS: create subtype instance
+
+B(b).
+
+% EXPECT:
+A(b): error.
+B(b): error.
+
+% TEST: create subtype instance overriding default
+
+A(b).
+B(b).
+
+% EXPECT:
+A(b).
+B(b).
