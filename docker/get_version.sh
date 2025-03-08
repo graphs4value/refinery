@@ -6,4 +6,4 @@
 
 set -euo pipefail
 
-grep '^version=' ../gradle.properties | cut -d'=' -f2
+grep "^$1=" ../gradle.properties | cut -d'=' -f2
