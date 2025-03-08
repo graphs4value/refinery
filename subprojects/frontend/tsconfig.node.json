@@ -10,7 +10,7 @@
     "lib": ["ES2022"],
     "types": ["node"],
     "emitDeclarationOnly": true,
-    "outDir": "build/typescript"
+    "outDir": "build/typescript/node"
   },
   "include": [
     ".eslintrc.cjs",

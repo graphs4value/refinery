@@ -18,11 +18,13 @@
   },
   "homepage": "https://refinery.tools",
   "workspaces": [
+    "subprojects/chat",
     "subprojects/client-js",
     "subprojects/docs",
     "subprojects/frontend"
   ],
   "scripts": {
+    "chat": "yarn workspace @tools.refinery/chat",
     "client": "yarn workspace @tools.refinery/client",
     "docs": "yarn workspace @tools.refinery/docs",
     "frontend": "yarn workspace @tools.refinery/frontend",

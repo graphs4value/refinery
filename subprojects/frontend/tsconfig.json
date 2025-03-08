@@ -9,6 +9,8 @@
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["vite/client", "vite-plugin-pwa/client"],
+    "emitDeclarationOnly": true,
+    "outDir": "build/typescript/browser",
     "paths": {
       "@tools.refinery/client": ["../client-js/src/index.ts"]
     }
