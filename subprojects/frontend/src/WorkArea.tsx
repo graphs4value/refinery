@@ -11,7 +11,7 @@ import ModelWorkArea from './ModelWorkArea';
 import { useRootStore } from './RootStoreProvider';
 import EditorPane from './editor/EditorPane';
 
-export default observer(function WorkArea(): JSX.Element {
+export default observer(function WorkArea(): React.ReactElement {
   const { themeStore, editorStore } = useRootStore();
   const lintPanelOpen = editorStore?.lintPanel.state ?? false;
 

@@ -41,13 +41,13 @@ function DotGraphVisualizer({
   animateThreshold?: number;
   setSvgContainer?: (container: HTMLElement | undefined) => void;
   simplify?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const transitionTimeOrDefault = transitionTime ?? 250;
   const animateThresholdOrDefault = animateThreshold ?? 100;
-  const disposerRef = useRef<IReactionDisposer | undefined>();
+  const disposerRef = useRef<IReactionDisposer | undefined>(undefined);
   const graphvizRef = useRef<
     Graphviz<BaseType, unknown, null, undefined> | undefined
-  >();
+  >(undefined);
   const [animate, setAnimate] = useState(true);
   const [concretize, setConcretize] = useState(false);
   const prefersReducedMotion = useMediaQuery(

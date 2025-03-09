@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2025 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -10,7 +10,8 @@ import backendConfigVitePlugin, {
   type BackendConfig,
 } from './backendConfigVitePlugin';
 
-export const API_ENDPOINT = 'xtext-service';
+export const API_ENDPOINT = 'api';
+export const XTEXT_ENDPOINT = 'xtext-service';
 
 export interface DevModeOptions {
   mode: string;
@@ -61,6 +62,7 @@ export default function detectDevModeOptions(): DevModeOptions {
   // Make sure we always use IPv4 to connect to the backend,
   // because it doesn't listen on IPv6.
   const api = detectListenOptions('API', '127.0.0.1', 1312);
+  const apiURL = listenURL(api);
   const publicAddress = detectListenOptions('PUBLIC', listen.host, listen.port);
 
   if (listen.secure) {
@@ -69,7 +71,8 @@ export default function detectDevModeOptions(): DevModeOptions {
   }
 
   const backendConfig: BackendConfig = {
-    webSocketURL: `${listenURL(publicAddress, 'ws')}/${API_ENDPOINT}`,
+    apiBase: `${listenURL(publicAddress)}/${API_ENDPOINT}/v1`,
+    webSocketURL: `${listenURL(publicAddress, 'ws')}/${XTEXT_ENDPOINT}`,
   };
 
   return {
@@ -89,7 +92,11 @@ export default function detectDevModeOptions(): DevModeOptions {
       },
       proxy: {
         [`/${API_ENDPOINT}`]: {
-          target: listenURL(api),
+          target: apiURL,
+          secure: api.secure,
+        },
+        [`/${XTEXT_ENDPOINT}`]: {
+          target: apiURL,
           ws: true,
           secure: api.secure,
         },

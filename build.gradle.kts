@@ -19,9 +19,8 @@ val frontendFiles: FileCollection = files(
 	"package.json",
 	"tsconfig.json",
 	"tsconfig.base.json",
-	"eslintrc.cjs",
+	".eslintrc.cjs",
 	"prettier.config.cjs",
-	"vite.config.ts",
 ) + fileTree("scripts") {
 	include("**/*.cjs")
 }
@@ -55,6 +54,14 @@ tasks {
 		args.set("run lint:fix")
 		group = "verification"
 		description = "Fix TypeScript lint errors and warnings."
+	}
+
+	register<RunYarnTaskType>("installBrowsers") {
+		dependsOn(installFrontend)
+		inputs.files(frontendFiles)
+		outputs.dir(".playwright")
+        args.set(if (project.hasProperty("ci")) "run browsers:install:ci" else "run browsers:install")
+        description = "Install browser testing dependencies."
 	}
 
 	check {

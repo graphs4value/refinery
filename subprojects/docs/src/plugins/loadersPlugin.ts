@@ -1,12 +1,13 @@
 /*
  * Copyright (c) 2016, Jeremy Stucki
  * Copyright (c) Facebook, Inc. and its affiliates.
- * Copyright (c) 2024 The Refinery Authors
+ * Copyright (c) 2024-2025 The Refinery Authors
  *
  * SPDX-License-Identifier: BSD-3-Clause AND MIT AND EPL-2.0
  */
 
 import type { Plugin } from '@docusaurus/types';
+import { getFileLoaderUtils } from '@docusaurus/utils';
 // @ts-expect-error No typings available for `responsive-loader`.
 import sharp from 'responsive-loader/sharp';
 
@@ -14,78 +15,62 @@ export default function loadersPlugin(): Plugin {
   return {
     name: 'refinery-loaders-plugin',
     configureWebpack(config, isServer) {
-      let svgoDisabled = false;
       const rules = [...(config.module?.rules ?? [])];
-      rules.forEach((rule) => {
-        // Compare with
-        // https://github.com/facebook/docusaurus/blob/73016d4936164ba38d4b86ec2aa8c168b5904a21/packages/docusaurus-utils/src/webpackUtils.ts#L128-L166
-        if (
-          typeof rule !== 'object' ||
-          rule === null ||
-          !('test' in rule) ||
-          !(rule.test instanceof RegExp) ||
-          !rule.test.test('.svg') ||
-          !('oneOf' in rule)
-        ) {
-          return;
-        }
-        const {
-          oneOf: [svgLoader],
-        } = rule;
-        if (
-          typeof svgLoader !== 'object' ||
-          svgLoader === null ||
-          !('use' in svgLoader) ||
-          typeof svgLoader.use !== 'object' ||
-          svgLoader.use === null ||
-          !(0 in svgLoader.use)
-        ) {
-          return;
-        }
-        // Skip SVGR when importing SVG files with ?url.
-        svgLoader.resourceQuery = { not: /[?&]url$/ };
-        const {
-          use: [loader],
-        } = svgLoader;
-        if (
-          typeof loader !== 'object' ||
-          loader === null ||
-          !('options' in loader)
-        ) {
-          return;
-        }
-
-        loader.options = {
-          ...(typeof loader.options === 'object' ? loader.options : {}),
-          svgo: true,
-          svgoConfig: {
-            plugins: [
-              {
-                name: 'preset-default',
-                params: {
-                  overrides: {
-                    removeTitle: false,
-                    removeViewBox: false,
-                    // Disable SVGO, because it interferes styling figures exported from Refinery with CSS.
-                    inlineStyles: false,
-                    cleanupIds: false,
-                  },
-                },
-              },
-            ],
-          },
-        };
-        svgoDisabled = true;
-      });
-      if (!svgoDisabled) {
-        throw new Error('Failed to disable SVGO.');
-      }
+      const utils = getFileLoaderUtils(isServer);
       return {
         mergeStrategy: {
           'module.rules': 'replace',
         },
         module: {
           rules: [
+            // Configuration based on
+            // https://github.com/facebook/docusaurus/blob/df6f53a2f55bbb3c14ea813924615d8164c80ae1/packages/docusaurus-plugin-svgr/src/svgrLoader.ts
+            // but we re-create it here to disable options that inerfere with styling figures and add an exception for ?url.
+            {
+              test: /\.svg$/i,
+              oneOf: [
+                {
+                  issuer: {
+                    // We don't want to use SVGR loader for non-React source code
+                    // ie we don't want to use SVGR for CSS files...
+                    and: [/\.(?:tsx?|jsx?|mdx?)$/i],
+                  },
+                  resourceQuery: {
+                    // Skip SVGR when importing SVG files with ?url.
+                    not: /[?&]url$/i,
+                  },
+                  use: [
+                    {
+                      loader: '@svgr/webpack',
+                      options: {
+                        prettier: false,
+                        svgo: true,
+                        svgoConfig: {
+                          plugins: [
+                            {
+                              name: 'preset-default',
+                              params: {
+                                overrides: {
+                                  removeTitle: false,
+                                  removeViewBox: false,
+                                  // Disable SVGO, because it interferes styling figures exported from Refinery with CSS.
+                                  inlineStyles: false,
+                                  cleanupIds: false,
+                                },
+                              },
+                            },
+                          ],
+                        },
+                        titleProp: true,
+                      },
+                    },
+                  ],
+                },
+                {
+                  use: [utils.loaders.url({ folder: 'images' })],
+                },
+              ],
+            },
             // Configuration based on
             // https://github.com/dazuaz/responsive-loader/blob/ef2c806fcd36f06f6be8a0b97e09f40c3d86d3ac/README.md
             {

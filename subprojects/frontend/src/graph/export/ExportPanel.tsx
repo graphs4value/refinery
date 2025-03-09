@@ -5,9 +5,11 @@
  */
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import CodeIcon from '@mui/icons-material/Code';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ContrastIcon from '@mui/icons-material/Contrast';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -16,15 +18,15 @@ import ShapeLineIcon from '@mui/icons-material/ShapeLine';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { type SelectProps } from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useRootStore } from '../../RootStoreProvider';
 import getLogger from '../../utils/getLogger';
@@ -34,22 +36,6 @@ import SlideInPanel from '../SlideInPanel';
 import exportDiagram from './exportDiagram';
 
 const log = getLogger('graph.ExportPanel');
-
-const SwitchButtonGroup = styled(ToggleButtonGroup, {
-  name: 'ExportPanel-SwitchButtonGroup',
-})(({ theme }) => ({
-  marginTop: theme.spacing(2),
-  marginInline: theme.spacing(2),
-  minWidth: '260px',
-  '.MuiToggleButton-root': {
-    width: '100%',
-    fontSize: '1rem',
-    lineHeight: '1.5',
-  },
-  '& svg': {
-    margin: '0 6px 0 0',
-  },
-}));
 
 const AutoThemeMessage = styled(Typography, {
   name: 'ExportPanel-AutoThemeMessage',
@@ -72,6 +58,46 @@ const marks = [100, 200, 300, 400].map((value) => ({
   ),
 }));
 
+function RoundedSelect<Value = unknown>(
+  props: Omit<SelectProps<Value>, 'size' | 'sx' | 'variant' | 'MenuProps'>,
+): React.ReactElement {
+  return (
+    <Select
+      {...props}
+      variant="outlined"
+      size="small"
+      sx={(theme) => ({
+        flexBasis: 0,
+        flexGrow: 1,
+        borderRadius: '50rem',
+        '.MuiOutlinedInput-input': {
+          ...theme.typography.button,
+          // Add `!important` to avoid jumping around when the `Select` is inserted into the DOM.
+          display: 'flex !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          '& svg': {
+            margin: '0 6px 0 0 !important',
+          },
+        },
+      })}
+      MenuProps={{
+        sx: (theme) => ({
+          display: 'block',
+          '.MuiMenuItem-root': {
+            ...theme.typography.button,
+            display: 'flex',
+            alignItems: 'center',
+            '& svg': {
+              margin: '0 6px 0 0',
+            },
+          },
+        }),
+      }}
+    />
+  );
+}
+
 function ExportPanel({
   graph,
   svgContainer,
@@ -80,8 +106,9 @@ function ExportPanel({
   graph: GraphStore;
   svgContainer: HTMLElement | undefined;
   dialog: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const { exportSettingsStore } = useRootStore();
+  const [shiftDown, setShiftDown] = useState(false);
 
   const icon = useCallback(
     (show: boolean) =>
@@ -89,15 +116,17 @@ function ExportPanel({
     [dialog],
   );
 
-  const { format } = exportSettingsStore;
+  const { canCopy, format, plainText } = exportSettingsStore;
   const emptyGraph = graph.semantics.nodes.length === 0;
+  const disabled = emptyGraph || (plainText && !graph.hasSource);
+  const shouldEdit = plainText && shiftDown && !disabled;
   const buttons = useCallback(
     (close: () => void) => (
       <>
         <Button
           color="inherit"
           startIcon={<SaveAltIcon />}
-          disabled={emptyGraph}
+          disabled={disabled}
           onClick={() => {
             exportDiagram(svgContainer, graph, exportSettingsStore, 'download')
               .then(close)
@@ -108,25 +137,38 @@ function ExportPanel({
         >
           Download
         </Button>
-        {'write' in navigator.clipboard && format === 'png' && (
+        {('write' in navigator.clipboard || plainText) && canCopy && (
           <Button
             color="inherit"
-            startIcon={<ContentCopyIcon />}
-            disabled={emptyGraph}
+            startIcon={shouldEdit ? <EditIcon /> : <ContentCopyIcon />}
+            disabled={disabled}
             onClick={() => {
-              exportDiagram(svgContainer, graph, exportSettingsStore, 'copy')
+              exportDiagram(
+                svgContainer,
+                graph,
+                exportSettingsStore,
+                shouldEdit ? 'edit' : 'copy',
+              )
                 .then(close)
                 .catch((error) => {
                   log.error('Failed to copy diagram', error);
                 });
             }}
           >
-            Copy
+            {shouldEdit ? 'Edit' : 'Copy'}
           </Button>
         )}
       </>
     ),
-    [svgContainer, graph, exportSettingsStore, format, emptyGraph],
+    [
+      svgContainer,
+      graph,
+      exportSettingsStore,
+      plainText,
+      canCopy,
+      disabled,
+      shouldEdit,
+    ],
   );
 
   return (
@@ -135,57 +177,75 @@ function ExportPanel({
       dialog={dialog}
       title="Export diagram"
       icon={icon}
-      iconLabel={`Export image\u2026`}
+      iconLabel="Export"
       buttons={buttons}
+      onKeyDown={({ key }) => {
+        if (key === 'Shift') {
+          setShiftDown(true);
+        }
+      }}
+      onKeyUp={({ key }) => {
+        if (key === 'Shift') {
+          setShiftDown(false);
+        }
+      }}
+      onMouseMove={({ shiftKey }) => {
+        if (shiftKey !== shiftDown) {
+          setShiftDown(shiftKey);
+        }
+      }}
     >
-      <SwitchButtonGroup size="small" className="rounded">
-        <ToggleButton
-          value="svg"
-          selected={exportSettingsStore.format === 'svg'}
-          onClick={() => exportSettingsStore.setFormat('svg')}
+      <Stack
+        direction="row"
+        sx={(theme) => ({
+          marginTop: theme.spacing(2),
+          marginInline: theme.spacing(2),
+          minWidth: '260px',
+          gap: theme.spacing(2),
+        })}
+      >
+        <RoundedSelect
+          aria-label="Format"
+          value={format}
+          onChange={(event) =>
+            exportSettingsStore.setFormat(event.target.value)
+          }
         >
-          <ShapeLineIcon fontSize="small" /> SVG
-        </ToggleButton>
-        <ToggleButton
-          value="pdf"
-          selected={exportSettingsStore.format === 'pdf'}
-          onClick={() => exportSettingsStore.setFormat('pdf')}
-        >
-          <InsertDriveFileOutlinedIcon fontSize="small" /> PDF
-        </ToggleButton>
-        <ToggleButton
-          value="png"
-          selected={exportSettingsStore.format === 'png'}
-          onClick={() => exportSettingsStore.setFormat('png')}
-        >
-          <ImageIcon fontSize="small" /> PNG
-        </ToggleButton>
-      </SwitchButtonGroup>
-      <SwitchButtonGroup size="small" className="rounded">
-        <ToggleButton
-          value="light"
-          selected={exportSettingsStore.theme === 'light'}
-          onClick={() => exportSettingsStore.setTheme('light')}
-        >
-          <LightModeIcon fontSize="small" /> Light
-        </ToggleButton>
-        <ToggleButton
-          value="dark"
-          selected={exportSettingsStore.theme === 'dark'}
-          onClick={() => exportSettingsStore.setTheme('dark')}
-        >
-          <DarkModeIcon fontSize="small" /> Dark
-        </ToggleButton>
-        {exportSettingsStore.canSetDynamicTheme && (
-          <ToggleButton
-            value="dynamic"
-            selected={exportSettingsStore.theme === 'dynamic'}
-            onClick={() => exportSettingsStore.setTheme('dynamic')}
+          <MenuItem value="svg">
+            <ShapeLineIcon fontSize="small" /> SVG
+          </MenuItem>
+          <MenuItem value="pdf">
+            <InsertDriveFileOutlinedIcon fontSize="small" /> PDF
+          </MenuItem>
+          <MenuItem value="png">
+            <ImageIcon fontSize="small" /> PNG
+          </MenuItem>
+          <MenuItem value="refinery">
+            <CodeIcon fontSize="small" /> Refinery
+          </MenuItem>
+        </RoundedSelect>
+        {exportSettingsStore.canSetTheme && (
+          <RoundedSelect
+            aria-label="Theme"
+            value={exportSettingsStore.theme}
+            onChange={(event) =>
+              exportSettingsStore.setTheme(event.target.value)
+            }
           >
-            <ContrastIcon fontSize="small" /> Auto
-          </ToggleButton>
+            <MenuItem value="light">
+              <LightModeIcon fontSize="small" /> Light
+            </MenuItem>
+            <MenuItem value="dark">
+              <DarkModeIcon fontSize="small" /> Dark
+            </MenuItem>
+            {exportSettingsStore.canSetDynamicTheme && (
+              <MenuItem value="dynamic">
+                <ContrastIcon fontSize="small" /> Auto
+              </MenuItem>
+            )}
+          </RoundedSelect>
         )}
-      </SwitchButtonGroup>
+      </Stack>
       {exportSettingsStore.canChangeTransparency && (
         <FormControlLabel
           control={

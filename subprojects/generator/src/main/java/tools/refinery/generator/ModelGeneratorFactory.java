@@ -8,6 +8,7 @@ package tools.refinery.generator;
 import tools.refinery.generator.impl.CancellableCancellationToken;
 import tools.refinery.generator.impl.ModelGeneratorImpl;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
@@ -15,6 +16,7 @@ import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialNeighborhoodCalculator;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.statecoding.StateCodeCalculatorFactory;
 import tools.refinery.store.statecoding.StateCoderAdapter;
 import tools.refinery.store.statecoding.neighborhood.NeighborhoodCalculator;
@@ -56,9 +58,13 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 		return this;
 	}
 
-	public ModelGenerator createGenerator(Problem problem) {
+	public ModelGenerator tryCreateGenerator(Problem problem) {
 		var initializer = createModelInitializer();
-		initializer.readProblem(problem);
+		try {
+			initializer.readProblem(problem);
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e, problem);
+		}
 		checkCancelled();
 		var cancellationToken = new CancellableCancellationToken(getCancellationToken());
 		var storeBuilder = ModelStore.builder()
@@ -70,12 +76,19 @@ public final class ModelGeneratorFactory extends ModelFacadeFactory<ModelGenerat
 				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder);
-		var store = storeBuilder.build();
-		var generator = new ModelGeneratorImpl(initializer.getProblemTrace(), store, initializer.getModelSeed(),
-				getSolutionSerializerProvider(), getMetadataCreatorProvider(), cancellationToken,
-				isKeepNonExistingObjects());
-		generator.getInitializationResult().throwIfRejected();
+		try {
+			initializer.configureStoreBuilder(storeBuilder);
+		} catch (TranslationException e) {
+			throw getDiagnostics().wrapTranslationException(e, initializer.getProblemTrace());
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e, problem);
+		}
+		return new ModelGeneratorImpl(createConcreteFacadeArgs(initializer, storeBuilder), cancellationToken);
+	}
+
+	public ModelGenerator createGenerator(Problem problem) {
+		var generator = tryCreateGenerator(problem);
+		generator.throwIfInitializationFailed();
 		return generator;
 	}
 

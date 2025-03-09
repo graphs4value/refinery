@@ -58,7 +58,7 @@ export default function TableToolbar({
   graph,
 }: {
   graph: GraphStore;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <GridToolbarContainer
       sx={{

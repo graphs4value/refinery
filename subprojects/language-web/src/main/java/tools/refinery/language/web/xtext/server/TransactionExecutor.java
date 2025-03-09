@@ -146,7 +146,6 @@ public class TransactionExecutor implements IDisposable, PrecomputationListener 
 	/**
 	 * Get the injector to satisfy the request in the {@code serviceContext}.
 	 *
-	 *
 	 * @param context the Xtext service context of the request
 	 * @return the injector for the Xtext language in the request
 	 * @throws UnknownLanguageException if the Xtext language cannot be determined

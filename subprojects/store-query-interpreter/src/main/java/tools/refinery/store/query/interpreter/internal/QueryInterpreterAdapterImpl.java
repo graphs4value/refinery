@@ -5,26 +5,16 @@
  */
 package tools.refinery.store.query.interpreter.internal;
 
-import tools.refinery.store.model.Model;
-import tools.refinery.store.model.ModelListener;
-import tools.refinery.logic.dnf.AnyQuery;
-import tools.refinery.logic.dnf.FunctionalQuery;
-import tools.refinery.logic.dnf.Query;
-import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.store.query.resultset.AnyResultSet;
-import tools.refinery.store.query.resultset.EmptyResultSet;
-import tools.refinery.store.query.resultset.ResultSet;
-import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
-import tools.refinery.store.query.interpreter.internal.matcher.InterpretedFunctionalMatcher;
-import tools.refinery.store.query.interpreter.internal.matcher.RawPatternMatcher;
-import tools.refinery.store.query.interpreter.internal.matcher.InterpretedRelationalMatcher;
 import tools.refinery.interpreter.CancellationToken;
 import tools.refinery.interpreter.api.AdvancedInterpreterEngine;
-import tools.refinery.interpreter.api.GenericQueryGroup;
-import tools.refinery.interpreter.api.IQuerySpecification;
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.store.model.Model;
+import tools.refinery.store.model.ModelListener;
+import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
+import tools.refinery.store.query.resultset.AnyResultSet;
+import tools.refinery.store.query.resultset.ResultSet;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class QueryInterpreterAdapterImpl implements QueryInterpreterAdapter, ModelListener {
@@ -40,36 +30,8 @@ public class QueryInterpreterAdapterImpl implements QueryInterpreterAdapter, Mod
 		var scope = new RelationalScope(this);
 		queryEngine = AdvancedInterpreterEngine.createUnmanagedEngine(scope,
 				storeAdapter.getEngineOptions());
-
-		var querySpecifications = storeAdapter.getQuerySpecifications();
-		GenericQueryGroup.of(
-				Collections.<IQuerySpecification<?>>unmodifiableCollection(querySpecifications.values()).stream()
-		).prepare(queryEngine);
-		queryEngine.flushChanges();
-		var vacuousQueries = storeAdapter.getVacuousQueries();
-		resultSets = new LinkedHashMap<>(querySpecifications.size() + vacuousQueries.size());
-		for (var entry : querySpecifications.entrySet()) {
-			var rawPatternMatcher = queryEngine.getMatcher(entry.getValue());
-			var query = entry.getKey();
-			resultSets.put(query, createResultSet((Query<?>) query, rawPatternMatcher));
-		}
-		for (var vacuousQuery : vacuousQueries) {
-			resultSets.put(vacuousQuery, new EmptyResultSet<>(this, (Query<?>) vacuousQuery));
-		}
-
+		resultSets = storeAdapter.getValidatedQueries().instantiate(this, queryEngine);
 		model.addListener(this);
-	}
-
-	private <T> ResultSet<T> createResultSet(Query<T> query, RawPatternMatcher matcher) {
-		if (query instanceof RelationalQuery relationalQuery) {
-			@SuppressWarnings("unchecked")
-			var resultSet = (ResultSet<T>) new InterpretedRelationalMatcher(this, relationalQuery, matcher);
-			return resultSet;
-		} else if (query instanceof FunctionalQuery<T> functionalQuery) {
-			return new InterpretedFunctionalMatcher<>(this, functionalQuery, matcher);
-		} else {
-			throw new IllegalArgumentException("Unknown query: " + query);
-		}
 	}
 
 	@Override

@@ -39,7 +39,7 @@ export default observer(function SearchToolbar({
 }: {
   searchPanelStore: SearchPanelStore;
   width: number | undefined;
-}): JSX.Element {
+}): React.ReactElement {
   const {
     id: panelId,
     query: { search, valid, caseSensitive, literal, regexp, replace },

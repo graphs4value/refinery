@@ -20,7 +20,7 @@ const GenerateButton = observer(function GenerateButton({
 }: {
   editorStore: EditorStore | undefined;
   hideWarnings?: boolean | undefined;
-}): JSX.Element {
+}): React.ReactElement {
   if (editorStore === undefined) {
     return (
       <AnimatedButton color="inherit" disabled>

@@ -7,6 +7,8 @@ package tools.refinery.store.query.interpreter.internal;
 
 import org.eclipse.emf.ecore.EPackage;
 import tools.refinery.interpreter.rete.recipes.RecipesPackage;
+import tools.refinery.logic.InvalidQueryException;
+import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.logic.dnf.AnyQuery;
@@ -119,6 +121,7 @@ public class QueryInterpreterBuilderImpl extends AbstractModelAdapterBuilder<Que
 		var canonicalQueryMap = new HashMap<AnyQuery, AnyQuery>();
 		var querySpecifications = new LinkedHashMap<AnyQuery, IQuerySpecification<RawPatternMatcher>>();
 		var vacuousQueries = new LinkedHashSet<AnyQuery>();
+		var alwaysTrueQueries = new LinkedHashSet<RelationalQuery>();
 		for (var query : queries) {
 			var canonicalQuery = rewriter.rewrite(query);
 			canonicalQueryMap.put(query, canonicalQuery);
@@ -130,16 +133,22 @@ public class QueryInterpreterBuilderImpl extends AbstractModelAdapterBuilder<Que
 				querySpecifications.put(canonicalQuery, pQuery.build());
 			}
 			case ALWAYS_FALSE -> vacuousQueries.add(canonicalQuery);
-			case ALWAYS_TRUE -> throw new IllegalArgumentException(
-					"Query %s is relationally unsafe (it matches every tuple)".formatted(query.name()));
-			default -> throw new IllegalArgumentException("Unknown reduction: " + reduction);
+			case ALWAYS_TRUE -> {
+				if (query.arity() != 0 || !(query instanceof RelationalQuery relationalQuery)) {
+					throw new InvalidQueryException("Query %s is relationally unsafe (it matches every tuple)"
+							.formatted(query.name()));
+				}
+				alwaysTrueQueries.add(relationalQuery);
+			}
+			default -> throw new InvalidQueryException("Unknown reduction: " + reduction);
 			}
 		}
 
 		validateSymbols(store);
+		var validatedQueries = new ValidatedQueries(canonicalQueryMap, querySpecifications, vacuousQueries,
+				alwaysTrueQueries);
 		return new QueryInterpreterStoreAdapterImpl(store, buildEngineOptions(), dnf2PQuery.getSymbolViews(),
-				Collections.unmodifiableMap(canonicalQueryMap), Collections.unmodifiableMap(querySpecifications),
-				Collections.unmodifiableSet(vacuousQueries), store::checkCancelled);
+				validatedQueries, store::checkCancelled);
 	}
 
 	private InterpreterEngineOptions buildEngineOptions() {

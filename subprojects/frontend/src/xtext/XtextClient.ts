@@ -25,6 +25,7 @@ import SemanticsService from './SemanticsService';
 import UpdateService from './UpdateService';
 import ValidationService from './ValidationService';
 import XtextWebSocketClient from './XtextWebSocketClient';
+import type { BackendConfigWithDefaults } from './fetchBackendConfig';
 import type { XtextWebPushService } from './xtextMessages';
 
 const log = getLogger('xtext.XtextClient');
@@ -59,6 +60,7 @@ export default class XtextClient {
       () => this.onReconnect(),
       () => this.onDisconnect(),
       this.onPush.bind(this),
+      this.onConfig.bind(this),
     );
     this.updateService = new UpdateService(
       store,
@@ -74,10 +76,7 @@ export default class XtextClient {
     this.occurrencesService = new OccurrencesService(store, this.updateService);
     this.hoverService = new HoverService(store, this.updateService);
     this.semanticsService = new SemanticsService(store, this.validationService);
-    this.modelGenerationService = new ModelGenerationService(
-      store,
-      this.updateService,
-    );
+    this.modelGenerationService = new ModelGenerationService(store);
     this.keepAliveDisposer = reaction(
       () => store.generating,
       (generating) => this.webSocketClient.setKeepAlive(generating),
@@ -128,7 +127,7 @@ export default class XtextClient {
       );
       return;
     }
-    if (stateId !== xtextStateId && service !== 'modelGeneration') {
+    if (stateId !== xtextStateId) {
       log.error(
         'Unexpected xtext state id: expected:',
         xtextStateId,
@@ -149,12 +148,13 @@ export default class XtextClient {
       case 'semantics':
         this.semanticsService.onPush(push);
         return;
-      case 'modelGeneration':
-        this.modelGenerationService.onPush(push);
-        return;
       default:
         throw new Error('Unknown service');
     }
+  }
+
+  private onConfig(config: BackendConfigWithDefaults): void {
+    this.modelGenerationService.onConfig(config);
   }
 
   contentAssist(context: CompletionContext): Promise<CompletionResult> {
@@ -171,12 +171,12 @@ export default class XtextClient {
     });
   }
 
-  startModelGeneration(randomSeed?: number): Promise<void> {
-    return this.modelGenerationService.start(randomSeed);
+  startModelGeneration(randomSeed?: number): void {
+    this.modelGenerationService.start(randomSeed);
   }
 
-  cancelModelGeneration(): Promise<void> {
-    return this.modelGenerationService.cancel();
+  cancelModelGeneration(): void {
+    this.modelGenerationService.cancel();
   }
 
   formatText(): void {

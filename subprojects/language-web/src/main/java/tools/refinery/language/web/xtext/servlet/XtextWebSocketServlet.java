@@ -17,7 +17,7 @@ import java.io.Serial;
 import java.time.Duration;
 import java.util.Set;
 
-public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implements JettyWebSocketCreator {
+public class XtextWebSocketServlet extends JettyWebSocketServlet implements JettyWebSocketCreator {
 	@Serial
 	private static final long serialVersionUID = -3772740838165122685L;
 
@@ -26,7 +26,7 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 	public static final String ALLOWED_ORIGINS_INIT_PARAM =
 			"tools.refinery.language.web.xtext.XtextWebSocketServlet.allowedOrigin";
 
-	public static final String XTEXT_SUBPROTOCOL_V1 = "tools.refinery.language.web.xtext.v1";
+	public static final String XTEXT_SUBPROTOCOL_V2 = "tools.refinery.language.web.xtext.v2";
 
 	/**
 	 * Maximum message size should be large enough to upload a full model file.
@@ -72,8 +72,8 @@ public abstract class XtextWebSocketServlet extends JettyWebSocketServlet implem
 				return null;
 			}
 		}
-		if (req.getSubProtocols().contains(XTEXT_SUBPROTOCOL_V1)) {
-			resp.setAcceptedSubProtocol(XTEXT_SUBPROTOCOL_V1);
+		if (req.getSubProtocols().contains(XTEXT_SUBPROTOCOL_V2)) {
+			resp.setAcceptedSubProtocol(XTEXT_SUBPROTOCOL_V2);
 		} else {
 			log.error("None of the subprotocols {} offered by {} are supported", req.getSubProtocols(),
 					req.getRemoteSocketAddress());

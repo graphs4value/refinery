@@ -48,7 +48,7 @@ function NoRowsOverlay({
   graph: { selectedSymbol },
 }: {
   graph: GraphStore;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <Stack
       height="100%"
@@ -72,7 +72,7 @@ function NoResultsOverlay({
   graph: { selectedSymbol },
 }: {
   graph: GraphStore;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <Stack height="100%" alignItems="center" justifyContent="center">
       {selectedSymbol === undefined ? (
@@ -93,7 +93,7 @@ function TableArea({
 }: {
   graph: GraphStore;
   touchesTop: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const { concretize, selectedSymbol, showComputed, semantics, dimView } =
     graph;
   const { nodes, partialInterpretation } = semantics;

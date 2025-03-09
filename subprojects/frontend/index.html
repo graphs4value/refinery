@@ -21,6 +21,55 @@
       @import '@fontsource-variable/open-sans/wdth-italic.css';
       @import '@fontsource-variable/jetbrains-mono/wght.css';
       @import '@fontsource-variable/jetbrains-mono/wght-italic.css';
+
+      @property --origin-x {
+        syntax: '<length-percentage>';
+        inherits: true;
+        initial-value: 50%;
+      }
+
+      @property --origin-y {
+        syntax: '<length-percentage>';
+        inherits: true;
+        initial-value: 50%;
+      }
+
+      @property --max-radius {
+        syntax: '<length-percentage>';
+        inherits: true;
+        initial-value: 100%;
+      }
+
+      @keyframes circle-in {
+        from {
+          clip-path: circle(12px at var(--origin-x) var(--origin-y));
+        }
+        to {
+          clip-path: circle(var(--max-radius) at var(--origin-x) var(--origin-y));
+        }
+      }
+
+      :root {
+        --origin-x: 100%;
+        --origin-y: 0%;
+        --max-radius: 100%;
+      }
+
+      ::view-transition-old(root) {
+        animation: none;
+        mix-blend-mode: normal;
+      }
+
+      ::view-transition-new(root) {
+        animation: 300ms cubic-bezier(0.4, 0, 1, 1) both circle-in;
+        mix-blend-mode: normal;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        ::view-transition-new(root) {
+          animation: none;
+        }
+      }
     </style>
   </head>
   <body>

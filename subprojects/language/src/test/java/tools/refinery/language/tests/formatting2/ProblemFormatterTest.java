@@ -296,7 +296,8 @@ class ProblemFormatterTest {
 
 				#pred Example(@optional string a, @optional int b).
 
-				atom @Example foo, @Example() @Example("foo", 3) @Example(b = 2, a = "bar") bar.
+				atom @Example foo,
+					@Example() @Example("foo", 3) @Example(b = 2, a = "bar") bar.
 				""");
 	}
 

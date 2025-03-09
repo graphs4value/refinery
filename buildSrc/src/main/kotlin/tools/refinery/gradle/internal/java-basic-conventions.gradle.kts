@@ -33,7 +33,6 @@ dependencies {
 	testCompileOnly(libs.jetbrainsAnnotations)
 	testImplementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 	testRuntimeOnly(libs.junit.launcher)
-	testRuntimeOnly(libs.slf4j.simple)
 	testImplementation(libs.slf4j.log4j)
 }
 

@@ -14,7 +14,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import { CONFIG_ENDPOINT } from './config/backendConfigVitePlugin';
 import detectDevModeOptions, {
-  API_ENDPOINT,
+  XTEXT_ENDPOINT,
 } from './config/detectDevModeOptions';
 import fetchPackageMetadata from './config/fetchPackageMetadata';
 import graphvizUMDVitePlugin from './config/graphvizUMDVitePlugin';
@@ -55,7 +55,7 @@ const viteConfig: ViteConfig = {
       workbox: {
         globPatterns: ['**/*.{css,html,js}', ...fontsGlob],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
-        navigateFallbackDenylist: [new RegExp(`^\\/${API_ENDPOINT}$`)],
+        navigateFallbackDenylist: [new RegExp(`^\\/${XTEXT_ENDPOINT}$`)],
         runtimeCaching: [
           {
             urlPattern: CONFIG_ENDPOINT,
@@ -71,6 +71,15 @@ const viteConfig: ViteConfig = {
   base: '',
   define: {
     __DEV__: JSON.stringify(isDevelopment), // For MobX
+  },
+  resolve: {
+    alias: {
+      '@tools.refinery/client': path.join(
+        thisDir,
+        '../client-js/',
+        isDevelopment ? 'src/index.ts' : 'dist/index.mjs',
+      ),
+    },
   },
   build: {
     assetsDir: '.',

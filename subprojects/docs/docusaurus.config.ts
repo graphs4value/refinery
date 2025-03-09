@@ -191,6 +191,10 @@ export default async function createConfigAsync() {
                 label: 'License',
                 to: '/license',
               },
+              {
+                label: 'Status',
+                href: 'https://refinery.onlineornot.com/',
+              },
             ],
           },
           {

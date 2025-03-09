@@ -5,7 +5,8 @@
  */
 package tools.refinery.language.web.config;
 
-import com.google.gson.Gson;
+import com.google.gson.FormattingStyle;
+import com.google.gson.GsonBuilder;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -20,6 +21,8 @@ import java.io.IOException;
 public class BackendConfigServlet extends HttpServlet {
 	private static final Logger LOG = LoggerFactory.getLogger(BackendConfigServlet.class);
 
+	public static final String API_BASE_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
+			".apiBase";
 	public static final String WEBSOCKET_URL_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
 			".webSocketUrl";
 
@@ -28,9 +31,10 @@ public class BackendConfigServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+		var apiBase = config.getInitParameter(API_BASE_INIT_PARAM);
 		var webSocketUrl = config.getInitParameter(WEBSOCKET_URL_INIT_PARAM);
-		var backendConfig = new BackendConfig(webSocketUrl);
-		var gson = new Gson();
+		var backendConfig = new BackendConfig(apiBase, webSocketUrl);
+		var gson = new GsonBuilder().setFormattingStyle(FormattingStyle.COMPACT).create();
 		serializedConfig = gson.toJson(backendConfig);
 	}
 
@@ -38,8 +42,7 @@ public class BackendConfigServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		resp.setStatus(HttpStatus.OK_200);
 		resp.setContentType("application/json");
-		try {
-			var writer = resp.getWriter();
+		try (var writer = resp.getWriter()) {
 			writer.write(serializedConfig);
 			writer.flush();
 		} catch (IOException e) {

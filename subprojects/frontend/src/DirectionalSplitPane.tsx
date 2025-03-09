@@ -22,7 +22,7 @@ export default function DirectionalSplitPane({
   secondary: React.ReactNode | ((horizontal: boolean) => React.ReactNode);
   primaryOnly?: boolean;
   secondaryOnly?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const theme = useTheme();
   const stackRef = useRef<HTMLDivElement | null>(null);
   const { ref: resizeRef, width, height } = useResizeDetector();

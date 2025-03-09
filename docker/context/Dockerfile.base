@@ -33,7 +33,7 @@ RUN apt-get update && \
 FROM --platform=$BUILDPLATFORM jlink-$TARGETARCH-on-$BUILDARCH AS jlink
 RUN jlink --no-header-files --no-man-pages \
     --module-path=/crossjdk/jmods --strip-debug --add-modules \
-    java.base,java.logging,java.xml,jdk.zipfs \
+    java.base,java.logging,java.management,java.naming,java.xml,jdk.zipfs \
     --output /jlink
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal AS base

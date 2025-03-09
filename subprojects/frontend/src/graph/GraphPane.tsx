@@ -17,7 +17,7 @@ export default function GraphPane({
   graph,
 }: {
   graph: GraphStore;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <Stack
       direction="column"

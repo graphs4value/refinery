@@ -18,7 +18,6 @@ import org.eclipse.xtext.web.server.model.PrecomputedServiceRegistry;
 import org.eclipse.xtext.web.server.model.UpdateDocumentService;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.eclipse.xtext.web.server.model.XtextWebDocumentAccess;
-import tools.refinery.language.web.generator.ModelGenerationService;
 import tools.refinery.language.web.semantics.SemanticsService;
 import tools.refinery.language.web.xtext.server.SubscribingServiceContext;
 
@@ -32,9 +31,6 @@ public class PushServiceDispatcher extends XtextServiceDispatcher {
 
 	@Inject
 	private SemanticsService semanticsService;
-
-	@Inject
-	private ModelGenerationService modelGenerationService;
 
 	@Override
 	@Inject
@@ -51,41 +47,6 @@ public class PushServiceDispatcher extends XtextServiceDispatcher {
 			pushWebDocument.addPrecomputationListener(subscribingContext.subscriber());
 		}
 		return document;
-	}
-
-	@Override
-	protected ServiceDescriptor createServiceDescriptor(String serviceType, IServiceContext context) {
-		if (ModelGenerationService.SERVICE_NAME.equals(serviceType)) {
-			return getModelGenerationService(context);
-		}
-		return super.createServiceDescriptor(serviceType, context);
-	}
-
-	protected ServiceDescriptor getModelGenerationService(IServiceContext context) throws InvalidRequestException {
-		var document = (PushWebDocumentAccess) getDocumentAccess(context);
-		// Using legacy Guava methods because of the Xtext dependency.
-		@SuppressWarnings({"Guava", "squid:S4738"})
-		boolean start = getBoolean(context, "start", Optional.of(false));
-		@SuppressWarnings({"Guava", "squid:S4738"})
-		boolean cancel = getBoolean(context, "cancel", Optional.of(false));
-		if (!start && !cancel) {
-			throw new InvalidRequestException("Either start of cancel must be specified");
-		}
-		@SuppressWarnings({"squid:S4738"})
-		int randomSeed = start ? getInt(context, "randomSeed", Optional.absent()) : 0;
-		var descriptor = new ServiceDescriptor();
-		descriptor.setService(() -> {
-			try {
-				if (start) {
-					return modelGenerationService.generateModel(document, randomSeed);
-				} else {
-					return modelGenerationService.cancelModelGeneration(document);
-				}
-			} catch (RuntimeException e) {
-				return handleError(descriptor, e);
-			}
-		});
-		return descriptor;
 	}
 
 	/**

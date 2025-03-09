@@ -22,7 +22,7 @@ export default function ZoomButtons({
   changeZoom: ChangeZoomCallback;
   fitZoom: boolean;
   setFitZoom: SetFitZoomCallback;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <Stack
       direction="column"

@@ -22,7 +22,7 @@ public record PropagationRejectedResult(Object reason, String message, boolean f
 
 	@Override
 	public void throwIfRejected() {
-		throw new IllegalStateException(formatMessage());
+		throw new PropagationRejectedException(reason, formatMessage());
 	}
 
 	public String formatMessage() {

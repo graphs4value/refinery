@@ -1,0 +1,19 @@
+% Copyright (c) 2025 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class A {
+    contains contained[] foo
+}
+
+class B {
+    contains C[] bar
+}
+
+class C.
+
+% EXPECT EXACTLY:
+!foo(A::new, A::new).
+!foo(A::new, B::new).
+?foo(A::new, C::new).
+?bar(B::new, C::new).

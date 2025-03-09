@@ -6,6 +6,10 @@
 
 /* eslint-disable @typescript-eslint/no-redeclare -- Declare types with their companion objects */
 
+import {
+  ConcretizationSuccessResult,
+  RefineryResult,
+} from '@tools.refinery/client';
 import { z } from 'zod';
 
 export const PongResult = z.object({
@@ -133,82 +137,15 @@ export const FormattingResult = DocumentStateResult.extend({
 
 export type FormattingResult = z.infer<typeof FormattingResult>;
 
-export const ModelGenerationStartedResult = z.object({
-  uuid: z.string().min(1),
-});
+export {
+  JsonOutput as SemanticsModelResult,
+  NodeMetadata,
+  RelationMetadata,
+} from '@tools.refinery/client';
 
-export type ModelGenerationStartedResult = z.infer<
-  typeof ModelGenerationStartedResult
->;
-
-export const NodeMetadata = z.object({
-  name: z.string(),
-  simpleName: z.string(),
-  color: z.string().optional(),
-  kind: z.enum(['default', 'atom', 'multi']),
-});
-
-export type NodeMetadata = z.infer<typeof NodeMetadata>;
-
-export const RelationMetadata = z.object({
-  name: z.string(),
-  simpleName: z.string(),
-  arity: z.number().nonnegative(),
-  parameterNames: z.string().array().optional(),
-  detail: z.union([
-    z.object({
-      type: z.literal('class'),
-      isAbstract: z.boolean(),
-      color: z.string().optional(),
-    }),
-    z.object({ type: z.literal('computed'), of: z.string() }),
-    z.object({ type: z.literal('reference'), isContainment: z.boolean() }),
-    z.object({
-      type: z.literal('opposite'),
-      of: z.string(),
-      isContainer: z.boolean(),
-    }),
-    z.object({
-      type: z.literal('pred'),
-      kind: z.enum(['defined', 'base', 'error', 'shadow']),
-    }),
-  ]),
-});
-
-export type RelationMetadata = z.infer<typeof RelationMetadata>;
-
-export const SemanticsModelResult = z.object({
-  nodes: NodeMetadata.array(),
-  relations: RelationMetadata.array(),
-  partialInterpretation: z.record(
-    z.string(),
-    z.union([z.number(), z.string()]).array().array(),
-  ),
-});
-
-export type SemanticsModelResult = z.infer<typeof SemanticsModelResult>;
-
-export const SemanticsResult = z.object({
-  model: SemanticsModelResult.optional(),
-  error: z.string().min(1).optional(),
-  propagationRejected: z.boolean().optional(),
-  issues: Issue.array().optional(),
-});
-
-export type SemanticsResult = z.infer<typeof SemanticsResult>;
-
-export const ModelGenerationResult = z.union([
-  z.object({
-    uuid: z.string().min(1),
-    status: z.string(),
-  }),
-  z.object({
-    uuid: z.string().min(1),
-    error: z.string(),
-  }),
-  SemanticsModelResult.extend({
-    uuid: z.string().min(1),
-  }),
+export const SemanticsResult = z.union([
+  RefineryResult.Error,
+  RefineryResult.Success(ConcretizationSuccessResult),
 ]);
 
-export type ModelGenerationResult = z.infer<typeof ModelGenerationResult>;
+export type SemanticsResult = z.infer<typeof SemanticsResult>;

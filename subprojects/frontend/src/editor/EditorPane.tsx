@@ -20,7 +20,7 @@ import EditorArea from './EditorArea';
 import EditorButtons from './EditorButtons';
 import SearchPanelPortal from './SearchPanelPortal';
 
-function EditorLoading(): JSX.Element {
+function EditorLoading(): React.ReactElement {
   const [skeletonSizes] = useState(() =>
     new Array(10).fill(0).map(() => Math.random() * 60 + 10),
   );
@@ -37,7 +37,7 @@ function EditorLoading(): JSX.Element {
   );
 }
 
-export default observer(function EditorPane(): JSX.Element {
+export default observer(function EditorPane(): React.ReactElement {
   const { editorStore } = useRootStore();
   const { width, ref } = useResizeDetector();
 

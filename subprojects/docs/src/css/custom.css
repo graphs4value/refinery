@@ -141,9 +141,7 @@ code {
 }
 
 [data-theme="dark"] .dropdown__menu {
-  background-color: var(--ifm-background-surface-color);
-  /* Apply material-ui style elevation with MUI `getOverlayAlpha(4)`. */
-  background-image: linear-gradient(rgba(255, 255, 255, 0.051), rgba(255, 255, 255, 0.051));
+  background-color: #363b43;
 }
 
 .footer {

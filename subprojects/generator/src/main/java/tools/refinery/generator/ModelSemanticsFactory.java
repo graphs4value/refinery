@@ -8,11 +8,13 @@ package tools.refinery.generator;
 import tools.refinery.generator.impl.ConcreteModelSemantics;
 import tools.refinery.generator.impl.ModelSemanticsImpl;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.translator.TranslationException;
 
 import java.util.Collection;
 import java.util.Set;
@@ -40,13 +42,17 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 
 	public ModelSemantics createSemantics(Problem problem) {
 		var semantics = tryCreateSemantics(problem);
-		semantics.getInitializationResult().throwIfRejected();
+		semantics.throwIfInitializationFailed();
 		return semantics;
 	}
 
 	public ModelSemantics tryCreateSemantics(Problem problem) {
 		var initializer = createModelInitializer();
-		initializer.readProblem(problem);
+		try {
+			initializer.readProblem(problem);
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e, problem);
+		}
 		checkCancelled();
 		var storeBuilder = ModelStore.builder()
 				.cancellationToken(getCancellationToken())
@@ -55,15 +61,17 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 						.throwOnFatalRejection(false))
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
-		initializer.configureStoreBuilder(storeBuilder);
-		var store = storeBuilder.build();
-		var problemTrace = initializer.getProblemTrace();
-		var modelSeed = initializer.getModelSeed();
-		if (concretize) {
-			return new ConcreteModelSemantics(problemTrace, store, modelSeed, getSolutionSerializerProvider(),
-					getMetadataCreatorProvider(), isKeepNonExistingObjects());
+		try {
+			initializer.configureStoreBuilder(storeBuilder);
+		} catch (TranslationException e) {
+			throw getDiagnostics().wrapTranslationException(e, initializer.getProblemTrace());
+		} catch (TracedException e) {
+			throw getDiagnostics().wrapTracedException(e, problem);
 		}
-		return new ModelSemanticsImpl(problemTrace, store, modelSeed, getMetadataCreatorProvider());
+		if (concretize) {
+			return new ConcreteModelSemantics(createConcreteFacadeArgs(initializer, storeBuilder));
+		}
+		return new ModelSemanticsImpl(createFacadeArgs(initializer, storeBuilder));
 	}
 
 	private Collection<Concreteness> getRequiredInterpretations() {

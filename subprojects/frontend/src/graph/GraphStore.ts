@@ -15,6 +15,9 @@ import type {
 
 export type Visibility = 'all' | 'must' | 'none';
 
+// Supertype of `ModelSemanticsResult` and `GeneratedModelSemanticsResult`.
+export type ModelResultWithSource = SemanticsModelResult & { source?: string };
+
 function hideBuiltIn(
   metadata: RelationMetadata,
   visibility: Visibility,
@@ -74,7 +77,7 @@ function getComputedName(relationName: string) {
 const TYPE_HASH_HEX_PREFFIX = '_';
 
 export default class GraphStore {
-  semantics: SemanticsModelResult = {
+  semantics: ModelResultWithSource = {
     nodes: [],
     relations: [],
     partialInterpretation: {},
@@ -93,7 +96,7 @@ export default class GraphStore {
   private typeHashesMap = new Map<string, number>();
 
   constructor(
-    private readonly editorStore: EditorStore,
+    public readonly editorStore: EditorStore,
     private readonly generatedModelName?: string,
     visibility?: Map<string, Visibility>,
   ) {
@@ -110,6 +113,25 @@ export default class GraphStore {
 
   get generated(): boolean {
     return this.generatedModelName !== undefined;
+  }
+
+  get hasSource(): boolean {
+    return (
+      !!this.semantics.source ||
+      // We currently don't serialize the source code for concretized models on the server.
+      (!this.generated && !this.editorStore.concretize)
+    );
+  }
+
+  get source(): string {
+    const { source } = this.semantics;
+    if (source) {
+      return source;
+    }
+    if (!this.generated) {
+      return this.editorStore.state.sliceDoc();
+    }
+    return '';
   }
 
   getVisibility(relation: string): Visibility {
@@ -212,8 +234,13 @@ export default class GraphStore {
     this.editorStore.toggleShowComputed();
   }
 
-  setSemantics(semantics: SemanticsModelResult) {
-    this.semantics = semantics;
+  setSemantics(semantics: SemanticsModelResult, source?: string): void {
+    this.semantics = source
+      ? {
+          ...semantics,
+          source,
+        }
+      : semantics;
     this.relationMetadata.clear();
     this.semantics.relations.forEach((metadata) => {
       this.relationMetadata.set(metadata.name, metadata);

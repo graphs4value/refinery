@@ -176,7 +176,10 @@ public class MetamodelBuilder {
 					.formatted(opposite, targetMultiplicity, linkType));
 		}
 		containerTypes.add(sourceType);
-		containedTypes.add(targetType);
+		// Avoid creating a cyclic inheritance hierarchy.
+		if (!ContainmentHierarchyTranslator.CONTAINED_SYMBOL.equals(targetType)) {
+			containedTypes.add(targetType);
+		}
 		containmentHierarchy.put(linkType, new ContainmentInfo(sourceType, info.multiplicity(), targetType,
                 info.concretizationSettings().decide(), info.supersets(),
 				info.opposite() == null ? new LinkedHashSet<>() : referenceInfoMap.get(opposite).supersets()));

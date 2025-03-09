@@ -20,7 +20,6 @@ jobs:
         os:
           - ubuntu-24.04
           - ubuntu-22.04
-          - ubuntu-20.04
           - windows-2022
           - macos-13 # Intel
           - macos-14 # ARM
@@ -28,7 +27,7 @@ jobs:
     steps:
       - name: Check for Sonar secret
         id: check-secret
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -69,6 +68,12 @@ jobs:
           path: |
            .yarn/cache
           key: ${{ matrix.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+           .playwright
+          key: ${{ matrix.os }}-playwright-${{ hashFiles('yarn.lock') }}
       - name: Gradle build
         run: |
           ./gradlew build -Pci --info --stacktrace --max-workers 4 --no-daemon
@@ -80,7 +85,7 @@ jobs:
         run: |
           ./gradlew sonar -Pci --info --stacktrace --max-workers 4 --no-daemon
       - name: Upload application artifacts
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: distributions
@@ -88,7 +93,7 @@ jobs:
           compression-level: 0
           retention-days: 5  # No need to preserve for long, since they are uploaded to GHCR
       - name: Build signed Maven repository
-        if: ${{ matrix.os == 'ubuntu-20.04' && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
         env:
           PGP_KEY: ${{ secrets.PGP_KEY }}
           PGP_KEY_ID: ${{ secrets.PGP_KEY_ID }}
@@ -96,15 +101,15 @@ jobs:
         run: |
           ./gradlew mavenRepository -Pci -PforceSign --info --stacktrace --max-workers 4 --no-daemon
       - name: Build unsigned Maven repository
-        if: ${{ matrix.os == 'ubuntu-20.04' && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
+        if: ${{ matrix.os == 'ubuntu-22.04' && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
         run: |
           ./gradlew mavenRepository -Pci --info --stacktrace --max-workers 4 --no-daemon
       - name: Merge Maven repository with site
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           mv build/repo subprojects/docs/build/docusaurus/maven
       - name: Upload GithHub Pages artifact
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: subprojects/docs/build/docusaurus/
@@ -113,12 +118,12 @@ jobs:
     name: REUSE Compliance Check
     permissions:
       contents: read
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@3ae3c6bdf1257ab19397fab11fd3312144692083
+        uses: fsfe/reuse-action@bb774aa972c2a89ff34781233d275075cbddf542
         with:
           args: --include-meson-subprojects lint
   publish-site:
@@ -128,7 +133,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     environment:
       name: github-pages
       url: ${{steps.deployment.outputs.page_url}}
@@ -142,14 +147,14 @@ jobs:
     permissions:
       packages: write
       contents: read
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf
         with:
           platforms: arm64
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5
         with:
           platforms: linux/amd64,linux/arm64
       - name: Checkout code
@@ -169,7 +174,7 @@ jobs:
           ./bake.sh false --set '*.cache-from=gha' --set '*.cache-to=type=gha,mode=max'
       - name: Log in to GitHub Container registry
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
-        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -180,6 +185,6 @@ jobs:
         run: |
           ./bake.sh true --set '*.cache-from=gha' --set '*.cache-to=type=gha,mode=max'
       - name: Delete application artifacts
-        uses: geekyeggo/delete-artifact@24928e75e6e6590170563b8ddae9fac674508aa1
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b
         with:
           name: distributions

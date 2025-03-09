@@ -6,9 +6,13 @@
 
 import { makeAutoObservable } from 'mobx';
 
-export type ExportFormat = 'svg' | 'pdf' | 'png';
-export type StaticTheme = 'light' | 'dark';
-export type ExportTheme = StaticTheme | 'dynamic';
+const validFormats = ['svg', 'pdf', 'png', 'refinery'] as const;
+const validStaticThemes = ['light', 'dark'] as const;
+const validThemes = [...validStaticThemes, 'dynamic'] as const;
+
+export type ExportFormat = (typeof validFormats)[number];
+export type StaticTheme = (typeof validStaticThemes)[number];
+export type ExportTheme = (typeof validThemes)[number];
 
 export default class ExportSettingsStore {
   format: ExportFormat = 'svg';
@@ -29,14 +33,18 @@ export default class ExportSettingsStore {
     makeAutoObservable(this);
   }
 
-  setFormat(format: ExportFormat): void {
-    this.format = format;
+  setFormat(format: string): void {
+    if ((validFormats as readonly string[]).includes(format)) {
+      this.format = format as ExportFormat;
+    }
   }
 
-  setTheme(theme: ExportTheme): void {
-    this._theme = theme;
-    if (theme !== 'dynamic') {
-      this.staticTheme = theme;
+  setTheme(theme: string): void {
+    if ((validThemes as readonly string[]).includes(theme)) {
+      this._theme = theme as ExportTheme;
+      if (theme !== 'dynamic') {
+        this.staticTheme = theme as StaticTheme;
+      }
     }
   }
 
@@ -74,12 +82,16 @@ export default class ExportSettingsStore {
     this.embedSVGFonts = embedFonts;
   }
 
+  get canSetTheme(): boolean {
+    return !this.plainText;
+  }
+
   get canSetDynamicTheme(): boolean {
     return this.format === 'svg';
   }
 
   get canChangeTransparency(): boolean {
-    return this.theme !== 'dynamic';
+    return !this.plainText && this.theme !== 'dynamic';
   }
 
   get canEmbedFonts(): boolean {
@@ -91,5 +103,13 @@ export default class ExportSettingsStore {
 
   get canScale(): boolean {
     return this.format === 'png';
+  }
+
+  get canCopy(): boolean {
+    return this.format === 'png' || this.plainText;
+  }
+
+  get plainText(): boolean {
+    return this.format === 'refinery';
   }
 }

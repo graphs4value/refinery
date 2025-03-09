@@ -70,7 +70,14 @@ public class DocumentationCommentParser {
 			return doParseDocumentation(eObject);
 		}
 		var cache = resourceScopeCache.get(CACHE_KEY, resource, HashMap<EObject, ParsedDocumentation>::new);
-		return cache.computeIfAbsent(eObject, this::doParseDocumentation);
+		// We can't use {@code computeIfAbsent} here, because we have to support reentrant calls to this method.
+		@SuppressWarnings("squid:S3824")
+		var parsedDocumentation = cache.get(eObject);
+		if (parsedDocumentation == null) {
+			parsedDocumentation = doParseDocumentation(eObject);
+			cache.put(eObject, parsedDocumentation);
+		}
+		return parsedDocumentation;
 	}
 
 	private ParsedDocumentation doParseDocumentation(EObject eObject) {

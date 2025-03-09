@@ -30,9 +30,7 @@ import SlideInPanel from './SlideInPanel';
 
 const VisibilityDialogScroll = styled('div', {
   name: 'VisibilityDialog-Scroll',
-  shouldForwardProp: (propName) => propName !== 'dialog',
-})<{ dialog: boolean }>(({ theme, dialog }) => {
-  const overlayOpacity = dialog ? 0.16 : 0.09;
+})(({ theme }) => {
   return {
     contain: 'content',
     display: 'flex',
@@ -55,16 +53,10 @@ const VisibilityDialogScroll = styled('div', {
       position: 'sticky',
       top: 0,
       zIndex: 999,
-      backgroundColor: theme.palette.background.paper,
-      ...(theme.palette.mode === 'dark'
-        ? {
-            // In dark mode, MUI Paper gets a lighter overlay.
-            backgroundImage: `linear-gradient(
-                rgba(255, 255, 255, ${overlayOpacity}),
-                rgba(255, 255, 255, ${overlayOpacity})
-              )`,
-          }
-        : {}),
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? theme.palette.outer.elevated
+          : theme.palette.background.paper,
       '& tr': {
         height: '44px',
       },
@@ -151,9 +143,9 @@ function VisibilityPanel({
 }: {
   graph: GraphStore;
   dialog: boolean;
-}): JSX.Element {
-  const builtinRows: JSX.Element[] = [];
-  const rows: JSX.Element[] = [];
+}): React.ReactElement {
+  const builtinRows: React.ReactElement[] = [];
+  const rows: React.ReactElement[] = [];
   graph.relationMetadata.forEach((metadata, name) => {
     if (!isVisibilityAllowed(metadata, 'must')) {
       return;
@@ -259,7 +251,7 @@ function VisibilityPanel({
         }
         label="Object scopes"
       />
-      <VisibilityDialogScroll dialog={dialog}>
+      <VisibilityDialogScroll>
         {hasRows ? (
           <table cellSpacing={0}>
             <thead>

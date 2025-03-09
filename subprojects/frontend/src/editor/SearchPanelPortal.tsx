@@ -16,7 +16,7 @@ export default observer(function SearchPanelPortal({
 }: {
   editorStore: EditorStore;
   width: number | undefined;
-}): JSX.Element | null {
+}): React.ReactNode {
   const { element: searchPanelContainer } = searchPanelStore;
 
   if (searchPanelContainer === undefined) {

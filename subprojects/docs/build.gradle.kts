@@ -5,7 +5,7 @@
  */
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
-import tools.refinery.gradle.JavaLibraryPlugin
+import tools.refinery.gradle.internal.JavaBasicLibraryPlugin
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
@@ -38,7 +38,7 @@ repositories {
 dependencies {
 	gradle.projectsEvaluated {
 		for (subproject in rootProject.subprojects) {
-			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
+			if (subproject.plugins.hasPlugin(JavaBasicLibraryPlugin::class)) {
 				javadocs(project(subproject.path, "javadocElements"))
 				val releasedProjectVersion = if (subproject.group.toString() == interpreterGroup)
 					releasedInterpreterVersion else releasedVersion

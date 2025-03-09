@@ -17,6 +17,7 @@
     "config/*.ts",
     "config/*.cjs",
     "prettier.config.cjs",
+    "scripts/*.mjs",
     "types/node",
     "vite.config.ts"
   ],

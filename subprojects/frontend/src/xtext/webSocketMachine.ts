@@ -9,7 +9,7 @@ import { actions, assign, createMachine } from 'xstate';
 
 const { raise } = actions;
 
-const ERROR_WAIT_TIMES = ['200', '1s', '5s', '30s'].map(ms);
+const ERROR_WAIT_TIMES = (['200', '1s', '5s', '30s'] as const).map(ms);
 
 export interface WebSocketContext {
   errors: string[];

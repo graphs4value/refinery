@@ -11,8 +11,6 @@ import org.eclipse.xtext.web.server.model.XtextWebDocumentAccess;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.language.web.generator.ModelGenerationService;
-import tools.refinery.language.web.semantics.SemanticsService;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -31,6 +29,9 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutorServiceProvider.class);
 	private static final String DOCUMENT_LOCK_EXECUTOR;
 	private static final AtomicInteger POOL_ID = new AtomicInteger(1);
+	public static final String SEMANTICS_EXECUTOR = "semantics";
+	public static final String MODEL_GENERATION_EXECUTOR = "modelGeneration";
+	public static final String MODEL_GENERATION_TIMEOUT_EXECUTOR = "modelGenerationTimeout";
 
 	private final Map<String, ScheduledExecutorService> scheduledInstanceCache =
 			Collections.synchronizedMap(new HashMap<>());
@@ -108,9 +109,9 @@ public class ThreadPoolExecutorServiceProvider extends ExecutorServiceProvider {
 	}
 
 	private int getSize(String key) {
-		if (SemanticsService.SEMANTICS_EXECUTOR.equals(key)) {
+		if (SEMANTICS_EXECUTOR.equals(key)) {
 			return semanticsExecutorThreadCount;
-		} else if (ModelGenerationService.MODEL_GENERATION_EXECUTOR.equals(key)) {
+		} else if (MODEL_GENERATION_EXECUTOR.equals(key)) {
 			return generatorExecutorThreadCount;
 		} else if (DOCUMENT_LOCK_EXECUTOR.equals(key)) {
 			return lockExecutorThreadCount;

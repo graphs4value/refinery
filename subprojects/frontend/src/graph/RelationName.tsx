@@ -61,7 +61,7 @@ function RelationName({
 }: {
   metadata: RelationMetadata;
   abbreviate?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   const { name, simpleName } = metadata;
   if (abbreviate) {
     return <FormattedName metadata={metadata}>{simpleName}</FormattedName>;

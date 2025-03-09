@@ -11,6 +11,7 @@ import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
+import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
@@ -84,7 +85,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.SET))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build();
-		assertThrows(IllegalStateException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
+		assertThrows(PropagationRejectedException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -102,7 +103,7 @@ class MultiObjectTest {
 				.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder.reducedValue(CardinalityIntervals.ONE))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build();
-		assertThrows(IllegalStateException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
+		assertThrows(PropagationRejectedException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -113,7 +114,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.atLeast(20)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build();
-		assertThrows(IllegalStateException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
+		assertThrows(PropagationRejectedException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -124,7 +125,7 @@ class MultiObjectTest {
 						.put(Tuple.of(0), CardinalityIntervals.atMost(1)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build();
-		assertThrows(IllegalStateException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
+		assertThrows(PropagationRejectedException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -162,7 +163,7 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.exactly(11)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build();
-		assertThrows(IllegalStateException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
+		assertThrows(PropagationRejectedException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test
@@ -174,7 +175,7 @@ class MultiObjectTest {
 						.put(Tuple.of(1), CardinalityIntervals.atMost(2)))
 				.seed(person, builder -> builder.reducedValue(TruthValue.TRUE))
 				.build();
-		assertThrows(IllegalStateException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
+		assertThrows(PropagationRejectedException.class, () -> reasoningStoreAdapter.createInitialModel(seed));
 	}
 
 	@Test

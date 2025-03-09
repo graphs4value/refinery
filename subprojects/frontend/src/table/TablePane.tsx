@@ -18,7 +18,7 @@ export default function TablePane({
 }: {
   graph: GraphStore;
   touchesTop: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <Stack direction="column" height="100%" overflow="auto" alignItems="center">
       <Suspense fallback={<Loading />}>

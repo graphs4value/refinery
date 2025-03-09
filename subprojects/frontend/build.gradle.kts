@@ -65,6 +65,7 @@ tasks {
 	}
 
 	assembleFrontend {
+		dependsOn(rootProject.project("refinery-client-js").tasks.named("assembleFrontend"))
 		dependsOn(generateXStateTypes)
 		inputs.files(assembleFiles)
 		outputs.dir(productionResources)
@@ -72,6 +73,7 @@ tasks {
 
 	val typeCheckFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
+		dependsOn(rootProject.project("refinery-client-js").tasks.named("typeCheckFrontend"))
 		dependsOn(generateXStateTypes)
 		inputs.files(lintingFiles)
 		outputs.dir(layout.buildDirectory.dir("typescript"))

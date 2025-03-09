@@ -18,7 +18,7 @@ import type { RelationMetadata } from '../xtext/xtextServiceResults';
 
 const placeholderText = `Select symbol to view\u2026`;
 
-function SymbolSelector({ graph }: { graph: GraphStore }): JSX.Element {
+function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
   const {
     selectedSymbol,
     semantics: { relations },

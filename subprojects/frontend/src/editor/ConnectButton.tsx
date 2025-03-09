@@ -32,7 +32,7 @@ export default observer(function ConnectButton({
   editorStore,
 }: {
   editorStore: EditorStore | undefined;
-}): JSX.Element {
+}): React.ReactElement {
   if (
     editorStore !== undefined &&
     (editorStore.opening || editorStore.opened)
@@ -63,7 +63,7 @@ export default observer(function ConnectButton({
   }
 
   let title: string;
-  let disconnectedIcon: JSX.Element;
+  let disconnectedIcon: React.ReactElement;
   if (editorStore === undefined) {
     title = 'Connecting';
     disconnectedIcon = <SyncIcon fontSize="small" />;

@@ -548,6 +548,9 @@ public class ModelInitializer {
 		for (var subType : typeInfo.getDirectSubtypes()) {
 			partialRelationInfoMap.get(subType).assertions().mergeValue(tuple, TruthValue.FALSE);
 		}
+		for (var superType : typeInfo.getAllSupertypes()) {
+			partialRelationInfoMap.get(superType).assertions().mergeValue(tuple, TruthValue.TRUE);
+		}
 	}
 
 	private void mergeValue(Relation relation, Tuple key, TruthValue value) {

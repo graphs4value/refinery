@@ -52,7 +52,7 @@ const SlideInDialogRoot = styled('div', {
       justifyContent: 'flex-end',
       ...(dialog
         ? {
-            marginTop: theme.spacing(1),
+            marginTop: theme.spacing(2),
             borderTop: `1px solid ${theme.palette.divider}`,
           }
         : {}),
@@ -72,7 +72,7 @@ export default function SlideInDialog({
   title: string;
   buttons: React.ReactNode | ((close: () => void) => React.ReactNode);
   children?: React.ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   const titleId = useId();
 
   return (
