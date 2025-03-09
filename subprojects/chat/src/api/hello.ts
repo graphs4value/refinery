@@ -5,8 +5,21 @@
  */
 
 import type { RequestHandler } from 'express';
+import { zodResponseFormat } from 'openai/helpers/zod';
+import { z } from 'zod';
 
 import example from './example';
+
+const RenameResult = z.object({
+  domain: z.string(),
+  rename: z
+    .object({
+      oldName: z.string(),
+      newName: z.string(),
+    })
+    .array(),
+  description: z.string(),
+});
 
 const hello: RequestHandler = async (req, res, next) => {
   const { seed } = req.body as { seed: number };
@@ -30,7 +43,8 @@ const hello: RequestHandler = async (req, res, next) => {
 
   const stream = req.openai.beta.chat.completions.stream(
     {
-      model: 'google/gemini-2.0-flash-001',
+      // model: 'google/gemini-2.0-flash-001',
+      model: 'openai/gpt-4o-mini',
       messages: [
         {
           role: 'user',
@@ -44,18 +58,25 @@ The instance model was generated using a logical procedure that ensures consiste
 Answer with a JSON object with the following structure:
 
 * The key ${'`"domain"`'} is string, which is a name of a domain where an instance model such as the one provided could be useful.
-* The key ${'`"rename"`'} is a JSON object, where each key is a name on a node in the instance model, and the value is a new name for that node that is more relevant and plausible in the ${'`"domain"`'} you selected.
+* The key ${'`"rename"`'} is an array of object, where each object has an ${'`"oldName"`'} string, which is the name of a node in the instance model that is being renamed, and a ${'`"newName"`'} string, which is the new name for the node.
+  Make sure that you rename all nodes in the instace model exactly once, and that the new names are realistic and plausible in the context of the ${'`"domain"`'}.
 * The key ${'`"description"`'} is a string, which is a brief description of the purpose of the instance model and its potential use in the ${'`"domain"`'}.
-  Make sure you use all the domain-specific node names from the ${'`"rename"`'} map in your explanation.
+  Make sure you use all the domain-specific ${'`"newName"`'}node names from the ${'`"rename"`'} map in your explanation, and sorround then with square brackets ${'`[like so]`'} whenever they appear.
+  Do not use square brackets for any other purpose.
+
+Start by coming up with an appropriate ${'`"domain"`'}.
+Then determine the ${'`"rename"`'} array by renaming nodes in the instance model to names that are plausible and meaningful in the ${'`"domain"`'}.
+Finally, write a ${'`"description"`'} that explains how the instance model works in the ${'`"domain"`'}.
 `,
         },
       ],
+      response_format: zodResponseFormat(RenameResult, 'rename_result'),
     },
     { signal: req.signal },
   );
 
   const final = await stream.finalChatCompletion();
-  await res.writeSuccess(final.choices[0]?.message.content);
+  await res.writeSuccess(final.choices[0]?.message.parsed);
 };
 
 export default hello;
