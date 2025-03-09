@@ -8,6 +8,9 @@ import express from 'express';
 import pino from 'pino';
 import { pinoHttp } from 'pino-http';
 
+import api from './api';
+import { sseErrorHandler } from './middlewares';
+
 const mode = process.env['MODE'] ?? 'production';
 const log = pino({ level: mode === 'production' ? 'info' : 'debug' });
 
@@ -28,16 +31,17 @@ const app = express();
 app.use(
   pinoHttp({
     logger: log,
-    customLogLevel: (_req, _res, error) =>
-      error === undefined ? 'debug' : 'error',
+    customLogLevel: (_req, res, error) =>
+      res.statusCode < 500 && error === undefined ? 'debug' : 'error',
   }),
 );
 
 app.use(express.json({ limit: '1mb' }));
 
-app.post('/hello', (req, res) => {
-  res.json({ message: 'Hello, World!', request: req.body as unknown });
-});
+app.use('/chat/v1', api);
+
+// Install the error handler for all requests, even non-SSE ones.
+app.use(sseErrorHandler);
 
 const server = app.listen(port, host);
 
