@@ -23,6 +23,7 @@ import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.model.problem.ProblemFactory;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.ScopeDeclaration;
 import tools.refinery.language.naming.NamingUtil;
@@ -164,8 +165,16 @@ public class ProblemLoader {
 		if (!errors.isEmpty()) {
 			throw new InvalidProblemException(resource.getURI(), errors);
 		}
-		if (resource.getContents().isEmpty() || !(resource.getContents().getFirst() instanceof Problem problem)) {
-			throw new IllegalArgumentException("Model generation problem not found in resource " + resource.getURI());
+		if (resource.getContents().isEmpty()) {
+			// If the resource is completely empty, create return an empty problem to avoid downstream consumers
+			// having to handle this corner case.
+			var newProblem = ProblemFactory.eINSTANCE.createProblem();
+			resource.getContents().add(newProblem);
+			return newProblem;
+		}
+		if (!(resource.getContents().getFirst() instanceof Problem problem)) {
+			throw new IllegalArgumentException("Resource %s is not a model generation problem"
+					.formatted(resource.getURI()));
 		}
 		return problem;
 	}
