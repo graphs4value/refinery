@@ -16,7 +16,7 @@ export default async function fetchBackendConfig(): Promise<BackendConfigWithDef
   const rawConfig = (await response.json()) as unknown;
   const parsedConfig = BackendConfig.parse(rawConfig);
   return {
-    apiBase: parsedConfig.apiBase ?? `${window.origin}/api/v1/`,
+    apiBase: parsedConfig.apiBase ?? `${window.origin}/api/v1`,
     webSocketURL:
       parsedConfig.webSocketURL ??
       `${window.origin.replace(/^http/, 'ws')}/xtext-service`,
