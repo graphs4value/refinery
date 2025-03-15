@@ -286,3 +286,9 @@ describe('streamingAbort', () => {
     }
   });
 });
+
+test('trailingSlashTest', async () => {
+  sut = new SUT({ baseURL: `${inject('baseURL')}/` });
+  const { pong } = await sut.oneShotSuccess({ ping: 'Hello World!' });
+  expect(pong).toBe('Hello World!');
+});

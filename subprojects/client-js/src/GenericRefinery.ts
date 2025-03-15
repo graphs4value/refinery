@@ -129,6 +129,10 @@ async function streamToPromise<T, U>(
   return last.value;
 }
 
+function removeTrailingSlash(url: string): string {
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
 export abstract class GenericRefinery {
   private readonly options: Options;
 
@@ -137,6 +141,7 @@ export abstract class GenericRefinery {
       defaultHeaders: {},
       defaultCredentials: 'omit',
       ...options,
+      baseURL: removeTrailingSlash(options.baseURL),
       fetch: (options.fetch ?? globalThis.fetch).bind(globalThis),
     };
   }
