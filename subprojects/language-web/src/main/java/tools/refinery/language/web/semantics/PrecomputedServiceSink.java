@@ -50,13 +50,19 @@ class PrecomputedServiceSink implements ResponseSink {
 		} catch (InterruptedException e) {
 			LOG.debug("Worker interrupted", e);
 			Thread.currentThread().interrupt();
-			response = new RefineryResponse.Cancelled("Computation interrupted by server");
+			setInterruptedResponse();
 		} catch (CancellationException e) {
-			response = new RefineryResponse.Cancelled("Computation interrupted by server");
+			setInterruptedResponse();
 		}
 		if (isCancelled()) {
 			return null;
 		}
 		return response;
+	}
+
+	private void setInterruptedResponse() {
+		if (response == null) {
+			response = new RefineryResponse.Cancelled("Computation interrupted by server");
+		}
 	}
 }

@@ -89,6 +89,9 @@ public abstract class ScheduledWorker<T> {
 					lock.lock();
 					try {
 						timedOut = true;
+						// Make sure to set the timeout response before cancelling the worker,
+						// so it doesn't send an operation cancelled response instead.
+						setResponse(RefineryResponse.Timeout.of());
 						if (future != null) {
 							future.cancel(true);
 							future = null;
@@ -97,7 +100,6 @@ public abstract class ScheduledWorker<T> {
 					} finally {
 						lock.unlock();
 					}
-					setResponse(RefineryResponse.Timeout.of());
 				} catch (RuntimeException e) {
 					LOG.error("Error sending timeout response", e);
 				}
@@ -107,8 +109,7 @@ public abstract class ScheduledWorker<T> {
 					runWithExceptionMapping();
 				} catch (RuntimeException e) {
 					// Catch all exceptions here, because we might not get joined to the webserver thread in an
-					// asynchronous
-					// API call.
+					// asynchronous API call.
 					LOG.error("Unhandled exception during model generation", e);
 				}
 			});
@@ -129,9 +130,7 @@ public abstract class ScheduledWorker<T> {
 				timeoutFuture.cancel(true);
 				timeoutFuture = null;
 			}
-			if (!responseSet) {
-				setResponse(new RefineryResponse.Cancelled("Cancelled by server"));
-			}
+			setResponse(new RefineryResponse.Cancelled("Cancelled by server"));
 		} finally {
 			lock.unlock();
 		}
