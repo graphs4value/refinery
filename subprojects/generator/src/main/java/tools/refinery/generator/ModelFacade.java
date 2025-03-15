@@ -21,7 +21,7 @@ import tools.refinery.store.reasoning.representation.PartialSymbol;
 import java.util.List;
 import java.util.Optional;
 
-public interface ModelFacade {
+public interface ModelFacade extends AutoCloseable {
 	ProblemTrace getProblemTrace();
 
 	ModelStore getModelStore();
@@ -51,4 +51,7 @@ public interface ModelFacade {
 	Problem serialize();
 
 	Optional<Problem> trySerialize();
+
+	@Override
+	void close();
 }

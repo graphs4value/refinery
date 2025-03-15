@@ -15,8 +15,6 @@ public class DummyRandomCriterion implements Criterion {
 
 	@SuppressWarnings("squid:S2245")
 	private static final Random random = new Random(9856654);
-	public DummyRandomCriterion() {
-	}
 
 	@Override
 	public CriterionCalculator createCalculator(Model model) {

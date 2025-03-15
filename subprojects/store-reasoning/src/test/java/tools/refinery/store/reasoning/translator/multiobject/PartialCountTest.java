@@ -5,7 +5,10 @@
  */
 package tools.refinery.store.reasoning.translator.multiobject;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.logic.dnf.Query;
@@ -36,6 +39,20 @@ import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 class PartialCountTest {
 	private static final PartialRelation person = new PartialRelation("Person", 1);
 	private static final PartialRelation friend = new PartialRelation("friend", 2);
+
+	private Model model;
+
+	@BeforeEach
+	void beforeEach() {
+		model = null;
+	}
+
+	@AfterEach
+	void afterEach() {
+		if (model != null) {
+			model.close();
+		}
+	}
 
 	@Test
 	void lowerBoundZeroTest() {
@@ -300,7 +317,7 @@ class PartialCountTest {
 		assertThat(resultSet.get(Tuple.of(3)), is(UpperCardinalities.ZERO));
 	}
 
-	private static <T> ResultSet<T> getResultSet(Query<T> query, ModelSeed modelSeed) {
+	private <T> ResultSet<T> getResultSet(Query<T> query, ModelSeed modelSeed) {
 		var personStorage = Symbol.of("Person", 1, TruthValue.class, TruthValue.FALSE);
 		var friendStorage = Symbol.of("friend", 2, TruthValue.class, TruthValue.FALSE);
 
@@ -315,7 +332,7 @@ class PartialCountTest {
 						.symbol(friendStorage))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+		model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
 		return model.getAdapter(ModelQueryAdapter.class).getResultSet(query);
 	}
 }

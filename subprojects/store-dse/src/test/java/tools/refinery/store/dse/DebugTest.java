@@ -78,22 +78,22 @@ class DebugTest {
 						.exclude(new DummyRandomCriterion()))
 				.build();
 
-		var model = store.createEmptyModel();
-		var dseAdapter = model.getAdapter(ModificationAdapter.class);
-//		dseAdapter.setRandom(1);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		try (var model = store.createEmptyModel()) {
+			var dseAdapter = model.getAdapter(ModificationAdapter.class);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 
-		var modelElementInterpretation = model.getInterpretation(classModel);
-		var classElementInterpretation = model.getInterpretation(classElement);
-		var modelElement = dseAdapter.createObject();
-		modelElementInterpretation.put(modelElement, true);
-		classElementInterpretation.put(modelElement, true);
-		var initialVersion = model.commit();
-		queryEngine.flushChanges();
+			var modelElementInterpretation = model.getInterpretation(classModel);
+			var classElementInterpretation = model.getInterpretation(classElement);
+			var modelElement = dseAdapter.createObject();
+			modelElementInterpretation.put(modelElement, true);
+			classElementInterpretation.put(modelElement, true);
+			var initialVersion = model.commit();
+			queryEngine.flushChanges();
 
-		var bestFirst = new BestFirstStoreManager(store, 50);
-		bestFirst.startExploration(initialVersion);
-		var resultStore = bestFirst.getSolutionStore();
-		System.out.println("states size: " + resultStore.getSolutions().size());
+			var bestFirst = new BestFirstStoreManager(store, 50);
+			bestFirst.startExploration(initialVersion);
+			var resultStore = bestFirst.getSolutionStore();
+			System.out.println("states size: " + resultStore.getSolutions().size());
+		}
 	}
 }

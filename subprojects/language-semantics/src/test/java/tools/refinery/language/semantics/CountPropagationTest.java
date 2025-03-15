@@ -6,9 +6,12 @@
 package tools.refinery.language.semantics;
 
 import org.junit.jupiter.api.Test;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -19,8 +22,6 @@ import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchy;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
-import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -67,13 +68,16 @@ class CountPropagationTest {
 						.put(Tuple.of(3), TruthValue.TRUE))
 				.build();
 
-		var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var initialState = initialModel.commit();
+		Version initialState;
+		try (var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			initialState = initialModel.commit();
+		}
 
-		var model = store.createModelForState(initialState);
-		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
-		var propagationAdapter = model.getAdapter(PropagationAdapter.class);
-		reasoningAdapter.split(0);
-		assertThat(propagationAdapter.propagate(), is(PropagationResult.UNCHANGED));
+		try (var model = store.createModelForState(initialState)) {
+			var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+			var propagationAdapter = model.getAdapter(PropagationAdapter.class);
+			reasoningAdapter.split(0);
+			assertThat(propagationAdapter.propagate(), is(PropagationResult.UNCHANGED));
+		}
 	}
 }

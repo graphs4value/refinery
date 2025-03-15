@@ -104,17 +104,22 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 	@Override
 	public PropagatedModel tryCreateInitialModel(ModelSeed modelSeed) {
 		var model = store.createEmptyModel();
-		model.getInterpretation(ReasoningAdapterImpl.NODE_COUNT_SYMBOL).put(Tuple.of(), modelSeed.getNodeCount());
-		for (var initializer : initializers) {
-			initializer.initialize(model, modelSeed);
+		try {
+			model.getInterpretation(ReasoningAdapterImpl.NODE_COUNT_SYMBOL).put(Tuple.of(), modelSeed.getNodeCount());
+			for (var initializer : initializers) {
+				initializer.initialize(model, modelSeed);
+			}
+			var reasoningAdapter = ((ReasoningAdapterImpl) model.getAdapter(ReasoningAdapter.class));
+			reasoningAdapter.afterInitialize(modelSeed);
+			var propagationResult = model.tryGetAdapter(PropagationAdapter.class)
+					.map(PropagationAdapter::propagate)
+					.orElse(PropagationResult.UNCHANGED);
+			model.getAdapter(ModelQueryAdapter.class).flushChanges();
+			return new PropagatedModel(model, propagationResult);
+		} catch (RuntimeException e) {
+			model.close();
+			throw e;
 		}
-		var reasoningAdapter = ((ReasoningAdapterImpl) model.getAdapter(ReasoningAdapter.class));
-		reasoningAdapter.afterInitialize(modelSeed);
-		var propagationResult = model.tryGetAdapter(PropagationAdapter.class)
-				.map(PropagationAdapter::propagate)
-				.orElse(PropagationResult.UNCHANGED);
-		model.getAdapter(ModelQueryAdapter.class).flushChanges();
-		return new PropagatedModel(model, propagationResult);
 	}
 
 	@Override

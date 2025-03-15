@@ -43,38 +43,39 @@ class LeftJoinTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var ageInterpretation = model.getInterpretation(age);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		ageInterpretation.put(Tuple.of(2), 24);
+			ageInterpretation.put(Tuple.of(2), 24);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(18),
-				Tuple.of(1), Optional.of(18),
-				Tuple.of(2), Optional.of(24),
-				Tuple.of(3), Optional.empty()
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(18),
+					Tuple.of(1), Optional.of(18),
+					Tuple.of(2), Optional.of(24),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
 
-		personInterpretation.put(Tuple.of(0), false);
+			personInterpretation.put(Tuple.of(0), false);
 
-		ageInterpretation.put(Tuple.of(1), 20);
-		ageInterpretation.put(Tuple.of(2), null);
+			ageInterpretation.put(Tuple.of(1), 20);
+			ageInterpretation.put(Tuple.of(2), null);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.empty(),
-				Tuple.of(1), Optional.of(20),
-				Tuple.of(2), Optional.of(18),
-				Tuple.of(3), Optional.empty()
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.empty(),
+					Tuple.of(1), Optional.of(20),
+					Tuple.of(2), Optional.of(18),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
+		}
 	}
 
 	@Test
@@ -93,37 +94,38 @@ class LeftJoinTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var ageInterpretation = model.getInterpretation(age);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		ageInterpretation.put(Tuple.of(2), 24);
+			ageInterpretation.put(Tuple.of(2), 24);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), queryResultSet);
 
-		personInterpretation.put(Tuple.of(0), false);
+			personInterpretation.put(Tuple.of(0), false);
 
-		ageInterpretation.put(Tuple.of(1), 20);
-		ageInterpretation.put(Tuple.of(2), null);
+			ageInterpretation.put(Tuple.of(1), 20);
+			ageInterpretation.put(Tuple.of(2), null);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), false,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), false,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), queryResultSet);
+		}
 	}
 }

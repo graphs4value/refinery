@@ -79,19 +79,20 @@ class ContainmentHierarchyTranslatorTest {
 						.put(Tuple.of(0, 2), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var interpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(Concreteness.PARTIAL,
-				entry);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var interpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(
+					Concreteness.PARTIAL, entry);
 
-		assertThat(interpretation.get(Tuple.of(0, 0)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
-		assertThat(interpretation.get(Tuple.of(0, 2)), is(TruthValue.TRUE));
-		assertThat(interpretation.get(Tuple.of(1, 0)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(1, 1)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(1, 2)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(2, 0)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(2, 1)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(2, 2)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(0, 0)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
+			assertThat(interpretation.get(Tuple.of(0, 2)), is(TruthValue.TRUE));
+			assertThat(interpretation.get(Tuple.of(1, 0)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(1, 1)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(1, 2)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(2, 0)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(2, 1)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(2, 2)), is(TruthValue.FALSE));
+		}
 	}
 
 	@Test
@@ -113,18 +114,19 @@ class ContainmentHierarchyTranslatorTest {
 						.put(Tuple.of(2, 0), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var interpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(Concreteness.PARTIAL,
-				entry);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var interpretation = model.getAdapter(ReasoningAdapter.class).getPartialInterpretation(
+					Concreteness.PARTIAL, entry);
 
-		assertThat(interpretation.get(Tuple.of(0, 0)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(0, 1)), is(TruthValue.ERROR));
-		assertThat(interpretation.get(Tuple.of(0, 2)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(1, 0)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(1, 1)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(1, 2)), is(TruthValue.ERROR));
-		assertThat(interpretation.get(Tuple.of(2, 0)), is(TruthValue.ERROR));
-		assertThat(interpretation.get(Tuple.of(2, 1)), is(TruthValue.FALSE));
-		assertThat(interpretation.get(Tuple.of(2, 2)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(0, 0)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(0, 1)), is(TruthValue.ERROR));
+			assertThat(interpretation.get(Tuple.of(0, 2)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(1, 0)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(1, 1)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(1, 2)), is(TruthValue.ERROR));
+			assertThat(interpretation.get(Tuple.of(2, 0)), is(TruthValue.ERROR));
+			assertThat(interpretation.get(Tuple.of(2, 1)), is(TruthValue.FALSE));
+			assertThat(interpretation.get(Tuple.of(2, 2)), is(TruthValue.FALSE));
+		}
 	}
 }

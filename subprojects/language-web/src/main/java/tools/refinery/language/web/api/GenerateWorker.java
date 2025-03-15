@@ -66,11 +66,12 @@ public class GenerateWorker extends ScheduledWorker<GenerateRequest> {
 		if (problem == null) {
 			return;
 		}
-		var generator = createModelGenerator(problem);
-		updateStatusString("Generating model");
-		generator.generate();
-		updateStatusString("Saving generated model");
-		saveModel(generator);
+		try (var generator = createModelGenerator(problem)) {
+			updateStatusString("Generating model");
+			generator.generate();
+			updateStatusString("Saving generated model");
+			saveModel(generator);
+		}
 	}
 
 	private void updateStatusString(String status) {

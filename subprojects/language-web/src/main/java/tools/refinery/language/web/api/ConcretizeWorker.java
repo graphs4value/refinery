@@ -61,8 +61,9 @@ public class ConcretizeWorker extends ScheduledWorker<SemanticsRequest> {
 		if (problem == null) {
 			return;
 		}
-		var semantics = createSemantics(problem);
-		saveModel(semantics);
+		try (var semantics = createSemantics(problem)) {
+			saveModel(semantics);
+		}
 	}
 
 	private @Nullable Problem loadProblem() throws IOException {

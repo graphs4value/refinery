@@ -57,18 +57,19 @@ class SolutionSerializerTest {
 		var initializer = initializerProvider.get();
 		var modelSeed = initializer.createModel(problem, storeBuilder);
 		var store = storeBuilder.build();
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var initialVersion = model.commit();
-		var bestFirst = new BestFirstStoreManager(store, 1);
-		bestFirst.startExploration(initialVersion, 0);
-		model.restore(bestFirst.getSolutionStore().getSolutions().getFirst().version());
-		var serializer = serializerProvider.get();
-		serializer.setPreserveNewNodes(preserveNewNodes);
-		var solution = serializer.serializeSolution(initializer.getProblemTrace(), model);
 		String actualOutput;
-		try (var outputStream = new ByteArrayOutputStream()) {
-			solution.eResource().save(outputStream, Map.of());
-			actualOutput = outputStream.toString();
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var initialVersion = model.commit();
+			var bestFirst = new BestFirstStoreManager(store, 1);
+			bestFirst.startExploration(initialVersion, 0);
+			model.restore(bestFirst.getSolutionStore().getSolutions().getFirst().version());
+			var serializer = serializerProvider.get();
+			serializer.setPreserveNewNodes(preserveNewNodes);
+			var solution = serializer.serializeSolution(initializer.getProblemTrace(), model);
+			try (var outputStream = new ByteArrayOutputStream()) {
+				solution.eResource().save(outputStream, Map.of());
+				actualOutput = outputStream.toString();
+			}
 		}
 		var normalizedResult = actualOutput.replace("\r\n", "\n");
 		var normalizedExpected = (prefix + "\n" + expectedOutput).replace("\r\n", "\n");

@@ -26,7 +26,7 @@ class OrderedResultSetTest {
 	@Test
 	void relationalFlushTest() {
 		var query = Query.of("Relation", (builder, p1, p2) -> builder.clause(
-				 friendView.call(p1, p2)
+				friendView.call(p1, p2)
 		));
 
 		var store = ModelStore.builder()
@@ -35,30 +35,31 @@ class OrderedResultSetTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 2), true);
-		friendInterpretation.put(Tuple.of(1, 1), true);
-		queryEngine.flushChanges();
-
-		try (var orderedResultSet = new OrderedResultSet<>(resultSet)) {
-			assertThat(orderedResultSet.size(), is(3));
-			assertThat(orderedResultSet.getKey(0), is(Tuple.of(0, 1)));
-			assertThat(orderedResultSet.getKey(1), is(Tuple.of(1, 1)));
-			assertThat(orderedResultSet.getKey(2), is(Tuple.of(1, 2)));
-
-			friendInterpretation.put(Tuple.of(1, 2), false);
-			friendInterpretation.put(Tuple.of(0, 2), true);
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 2), true);
+			friendInterpretation.put(Tuple.of(1, 1), true);
 			queryEngine.flushChanges();
 
-			assertThat(orderedResultSet.size(), is(3));
-			assertThat(orderedResultSet.getKey(0), is(Tuple.of(0, 1)));
-			assertThat(orderedResultSet.getKey(1), is(Tuple.of(0, 2)));
-			assertThat(orderedResultSet.getKey(2), is(Tuple.of(1, 1)));
+			try (var orderedResultSet = new OrderedResultSet<>(resultSet)) {
+				assertThat(orderedResultSet.size(), is(3));
+				assertThat(orderedResultSet.getKey(0), is(Tuple.of(0, 1)));
+				assertThat(orderedResultSet.getKey(1), is(Tuple.of(1, 1)));
+				assertThat(orderedResultSet.getKey(2), is(Tuple.of(1, 2)));
+
+				friendInterpretation.put(Tuple.of(1, 2), false);
+				friendInterpretation.put(Tuple.of(0, 2), true);
+				queryEngine.flushChanges();
+
+				assertThat(orderedResultSet.size(), is(3));
+				assertThat(orderedResultSet.getKey(0), is(Tuple.of(0, 1)));
+				assertThat(orderedResultSet.getKey(1), is(Tuple.of(0, 2)));
+				assertThat(orderedResultSet.getKey(2), is(Tuple.of(1, 1)));
+			}
 		}
 	}
 
@@ -75,43 +76,44 @@ class OrderedResultSetTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 2), true);
-		friendInterpretation.put(Tuple.of(1, 1), true);
-		queryEngine.flushChanges();
-
-		try (var orderedResultSet = new OrderedResultSet<>(resultSet)) {
-			assertThat(orderedResultSet.size(), is(2));
-			assertThat(orderedResultSet.getKey(0), is(Tuple.of(0)));
-			assertThat(orderedResultSet.getKey(1), is(Tuple.of(1)));
-
-			friendInterpretation.put(Tuple.of(0, 1), false);
-			friendInterpretation.put(Tuple.of(2, 1), true);
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 2), true);
+			friendInterpretation.put(Tuple.of(1, 1), true);
 			queryEngine.flushChanges();
 
-			assertThat(orderedResultSet.size(), is(2));
-			assertThat(orderedResultSet.getKey(0), is(Tuple.of(1)));
-			assertThat(orderedResultSet.getKey(1), is(Tuple.of(2)));
+			try (var orderedResultSet = new OrderedResultSet<>(resultSet)) {
+				assertThat(orderedResultSet.size(), is(2));
+				assertThat(orderedResultSet.getKey(0), is(Tuple.of(0)));
+				assertThat(orderedResultSet.getKey(1), is(Tuple.of(1)));
 
-			friendInterpretation.put(Tuple.of(1, 1), false);
-			queryEngine.flushChanges();
+				friendInterpretation.put(Tuple.of(0, 1), false);
+				friendInterpretation.put(Tuple.of(2, 1), true);
+				queryEngine.flushChanges();
 
-			assertThat(orderedResultSet.size(), is(2));
-			assertThat(orderedResultSet.getKey(0), is(Tuple.of(1)));
-			assertThat(orderedResultSet.getKey(1), is(Tuple.of(2)));
+				assertThat(orderedResultSet.size(), is(2));
+				assertThat(orderedResultSet.getKey(0), is(Tuple.of(1)));
+				assertThat(orderedResultSet.getKey(1), is(Tuple.of(2)));
 
-			friendInterpretation.put(Tuple.of(1, 2), false);
-			friendInterpretation.put(Tuple.of(1, 0), true);
-			queryEngine.flushChanges();
+				friendInterpretation.put(Tuple.of(1, 1), false);
+				queryEngine.flushChanges();
 
-			assertThat(orderedResultSet.size(), is(2));
-			assertThat(orderedResultSet.getKey(0), is(Tuple.of(1)));
-			assertThat(orderedResultSet.getKey(1), is(Tuple.of(2)));
+				assertThat(orderedResultSet.size(), is(2));
+				assertThat(orderedResultSet.getKey(0), is(Tuple.of(1)));
+				assertThat(orderedResultSet.getKey(1), is(Tuple.of(2)));
+
+				friendInterpretation.put(Tuple.of(1, 2), false);
+				friendInterpretation.put(Tuple.of(1, 0), true);
+				queryEngine.flushChanges();
+
+				assertThat(orderedResultSet.size(), is(2));
+				assertThat(orderedResultSet.getKey(0), is(Tuple.of(1)));
+				assertThat(orderedResultSet.getKey(1), is(Tuple.of(2)));
+			}
 		}
 	}
 }

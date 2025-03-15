@@ -43,81 +43,83 @@ class AggregatorBatchingTest {
 
 	@Test
 	void batchTest() {
-		var model = createModel();
-		var personInterpretation = model.getInterpretation(person);
-		var valuesInterpretation = model.getInterpretation(values);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = createModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var valuesInterpretation = model.getInterpretation(values);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		assertThat(extractCount, is(1));
+			assertThat(extractCount, is(1));
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		valuesInterpretation.put(Tuple.of(0, 0), 1);
-		valuesInterpretation.put(Tuple.of(0, 1), 2);
-		valuesInterpretation.put(Tuple.of(0, 2), 3);
-		valuesInterpretation.put(Tuple.of(1, 0), 1);
-		valuesInterpretation.put(Tuple.of(1, 1), -1);
+			valuesInterpretation.put(Tuple.of(0, 0), 1);
+			valuesInterpretation.put(Tuple.of(0, 1), 2);
+			valuesInterpretation.put(Tuple.of(0, 2), 3);
+			valuesInterpretation.put(Tuple.of(1, 0), 1);
+			valuesInterpretation.put(Tuple.of(1, 1), -1);
 
-		queryEngine.flushChanges();
+			queryEngine.flushChanges();
 
-		assertThat(extractCount, is(5));
+			assertThat(extractCount, is(5));
 
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(6),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.empty()
-		), resultSet);
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(6),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.empty()
+			), resultSet);
+		}
 	}
 
 	@Test
 	void separateTest() {
-		var model = createModel();
-		var personInterpretation = model.getInterpretation(person);
-		var valuesInterpretation = model.getInterpretation(values);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = createModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var valuesInterpretation = model.getInterpretation(values);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		assertThat(extractCount, is(1));
+			assertThat(extractCount, is(1));
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		queryEngine.flushChanges();
-		assertThat(extractCount, is(3));
+			queryEngine.flushChanges();
+			assertThat(extractCount, is(3));
 
-		valuesInterpretation.put(Tuple.of(0, 0), 1);
-		valuesInterpretation.put(Tuple.of(1, 0), 1);
+			valuesInterpretation.put(Tuple.of(0, 0), 1);
+			valuesInterpretation.put(Tuple.of(1, 0), 1);
 
-		queryEngine.flushChanges();
-		assertThat(extractCount, is(5));
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(1),
-				Tuple.of(1), Optional.of(1),
-				Tuple.of(2), Optional.empty()
-		), resultSet);
+			queryEngine.flushChanges();
+			assertThat(extractCount, is(5));
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(1),
+					Tuple.of(1), Optional.of(1),
+					Tuple.of(2), Optional.empty()
+			), resultSet);
 
-		valuesInterpretation.put(Tuple.of(0, 1), 2);
-		valuesInterpretation.put(Tuple.of(1, 1), -1);
+			valuesInterpretation.put(Tuple.of(0, 1), 2);
+			valuesInterpretation.put(Tuple.of(1, 1), -1);
 
-		queryEngine.flushChanges();
-		assertThat(extractCount, is(9));
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(3),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.empty()
-		), resultSet);
+			queryEngine.flushChanges();
+			assertThat(extractCount, is(9));
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(3),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.empty()
+			), resultSet);
 
-		valuesInterpretation.put(Tuple.of(0, 2), 3);
+			valuesInterpretation.put(Tuple.of(0, 2), 3);
 
-		queryEngine.flushChanges();
-		assertThat(extractCount, is(11));
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(6),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.empty()
-		), resultSet);
+			queryEngine.flushChanges();
+			assertThat(extractCount, is(11));
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(6),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.empty()
+			), resultSet);
+		}
 	}
 
 	private Model createModel() {

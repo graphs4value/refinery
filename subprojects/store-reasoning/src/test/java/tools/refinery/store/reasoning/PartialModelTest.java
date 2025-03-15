@@ -82,27 +82,27 @@ class PartialModelTest {
 						.put(Tuple.of(0, 1), TruthValue.TRUE)
 						.put(Tuple.of(1, 2), TruthValue.FALSE))
 				.build();
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var queryAdapter = model.getAdapter(ModelQueryAdapter.class);
+			var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+			var friendInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, friend);
+			var friendRefiner = reasoningAdapter.getRefiner(friend);
 
-		var queryAdapter = model.getAdapter(ModelQueryAdapter.class);
-		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
-		var friendInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, friend);
-		var friendRefiner = reasoningAdapter.getRefiner(friend);
+			assertThat(friendInterpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
+			assertThat(friendInterpretation.get(Tuple.of(1, 0)), is(TruthValue.UNKNOWN));
+			assertThat(friendInterpretation.get(Tuple.of(3, 0)), is(TruthValue.FALSE));
 
-		assertThat(friendInterpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
-		assertThat(friendInterpretation.get(Tuple.of(1, 0)), is(TruthValue.UNKNOWN));
-		assertThat(friendInterpretation.get(Tuple.of(3, 0)), is(TruthValue.FALSE));
+			assertThat(friendRefiner.merge(Tuple.of(0, 1), TruthValue.FALSE), is(true));
+			assertThat(friendRefiner.merge(Tuple.of(1, 0), TruthValue.TRUE), is(true));
+			var splitResult = reasoningAdapter.split(1);
+			assertThat(splitResult, not(nullValue()));
+			var newPerson = splitResult.get(0);
+			queryAdapter.flushChanges();
 
-		assertThat(friendRefiner.merge(Tuple.of(0, 1), TruthValue.FALSE), is(true));
-		assertThat(friendRefiner.merge(Tuple.of(1, 0), TruthValue.TRUE), is(true));
-		var splitResult = reasoningAdapter.split(1);
-		assertThat(splitResult, not(nullValue()));
-		var newPerson = splitResult.get(0);
-		queryAdapter.flushChanges();
-
-		assertThat(friendInterpretation.get(Tuple.of(0, 1)), is(TruthValue.ERROR));
-		assertThat(friendInterpretation.get(Tuple.of(1, 0)), is(TruthValue.TRUE));
-		assertThat(friendInterpretation.get(Tuple.of(0, newPerson)), is(TruthValue.ERROR));
-		assertThat(friendInterpretation.get(Tuple.of(newPerson, 0)), is(TruthValue.TRUE));
+			assertThat(friendInterpretation.get(Tuple.of(0, 1)), is(TruthValue.ERROR));
+			assertThat(friendInterpretation.get(Tuple.of(1, 0)), is(TruthValue.TRUE));
+			assertThat(friendInterpretation.get(Tuple.of(0, newPerson)), is(TruthValue.ERROR));
+			assertThat(friendInterpretation.get(Tuple.of(newPerson, 0)), is(TruthValue.TRUE));
+		}
 	}
 }

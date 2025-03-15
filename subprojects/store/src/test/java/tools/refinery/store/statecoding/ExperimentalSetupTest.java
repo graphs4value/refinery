@@ -48,7 +48,7 @@ class ExperimentalSetupTest {
 		}
 	}
 
-	static int MAX = 100000;
+	static final int MAX = 100000;
 
 	public static ExperimentalSetupResult generate(int size, boolean permuteTypes) {
 		Symbol<Boolean> person = new Symbol<>("Person", 1, Boolean.class, false);
@@ -63,64 +63,65 @@ class ExperimentalSetupTest {
 		Set<Version> versions = new HashSet<>();
 		MutableIntObjectMap<List<Version>> codes = IntObjectMaps.mutable.empty();
 
-		var empty = store.createEmptyModel();
-		if (!permuteTypes) {
-			for (int i = 0; i < size; i++) {
-				empty.getInterpretation(person).put(Tuple.of(i), true);
+		try (var empty = store.createEmptyModel()) {
+			if (!permuteTypes) {
+				for (int i = 0; i < size; i++) {
+					empty.getInterpretation(person).put(Tuple.of(i), true);
+				}
 			}
-		}
 
-		var emptyVersion = empty.commit();
-		versions.add(emptyVersion);
-		var emptyCode = empty.getAdapter(StateCoderAdapter.class).calculateModelCode();
-		List<Version> emptyList = new ArrayList<>();
-		emptyList.add(emptyVersion);
-		codes.put(emptyCode, emptyList);
+			var emptyVersion = empty.commit();
+			versions.add(emptyVersion);
+			var emptyCode = empty.getAdapter(StateCoderAdapter.class).calculateModelCode();
+			List<Version> emptyList = new ArrayList<>();
+			emptyList.add(emptyVersion);
+			codes.put(emptyCode, emptyList);
 
-		var storeAdapter = store.getAdapter(StateCoderStoreAdapter.class);
-		var result = new ExperimentalSetupResult();
+			var storeAdapter = store.getAdapter(StateCoderStoreAdapter.class);
+			var result = new ExperimentalSetupResult();
 
-		int steps = 0;
+			int steps = 0;
 
-		if (permuteTypes) {
-			for (int i = 0; i < size; i++) {
-				var previousVersions = new HashSet<>(versions);
-				for (var version : previousVersions) {
-					var model = store.createModelForState(version);
-					model.getInterpretation(person).put(Tuple.of(i), true);
+			if (permuteTypes) {
+				for (int i = 0; i < size; i++) {
+					var previousVersions = new HashSet<>(versions);
+					for (var version : previousVersions) {
+						var model = store.createModelForState(version);
+						model.getInterpretation(person).put(Tuple.of(i), true);
 
-					saveAsNewVersion(versions, codes, storeAdapter, result, model);
+						saveAsNewVersion(versions, codes, storeAdapter, result, model);
 
-					logProgress(steps++);
-					if (steps > MAX) {
-						result.versions = versions.size();
-						return result;
+						logProgress(steps++);
+						if (steps > MAX) {
+							result.versions = versions.size();
+							return result;
+						}
 					}
 				}
 			}
-		}
 
-		for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				var previousVersions = new HashSet<>(versions);
-				for (var version : previousVersions) {
+			for (int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					var previousVersions = new HashSet<>(versions);
+					for (var version : previousVersions) {
 
-					var model = store.createModelForState(version);
-					model.getInterpretation(friend).put(Tuple.of(i, j), true);
+						var model = store.createModelForState(version);
+						model.getInterpretation(friend).put(Tuple.of(i, j), true);
 
-					saveAsNewVersion(versions, codes, storeAdapter, result, model);
+						saveAsNewVersion(versions, codes, storeAdapter, result, model);
 
-					logProgress(steps++);
-					if (steps > MAX) {
-						result.versions = versions.size();
-						return result;
+						logProgress(steps++);
+						if (steps > MAX) {
+							result.versions = versions.size();
+							return result;
+						}
 					}
 				}
 			}
-		}
 
-		result.versions = versions.size();
-		return result;
+			result.versions = versions.size();
+			return result;
+		}
 	}
 
 	private static void saveAsNewVersion(Set<Version> versions, MutableIntObjectMap<List<Version>> codes,
@@ -131,7 +132,7 @@ class ExperimentalSetupTest {
 		var stateCode = model.getAdapter(StateCoderAdapter.class).calculateStateCode();
 		int code = stateCode.modelCode();
 		if (codes.containsKey(code)) {
-			Version similar = codes.get(code).get(0);
+			Version similar = codes.get(code).getFirst();
 
 			var outcome = storeAdapter.checkEquivalence(version1, similar);
 			if (outcome == StateEquivalenceChecker.EquivalenceResult.DIFFERENT) {
@@ -156,7 +157,7 @@ class ExperimentalSetupTest {
 		}
 	}
 
-	static final double limit = 0.01;
+	static final double LIMIT = 0.01;
 
 	@Test
 	void test0() {
@@ -168,7 +169,7 @@ class ExperimentalSetupTest {
 	void testForSmallUntypedModels(int size) {
 		var res = generate(size, false);
 		System.out.println(res);
-		assertTrue(res.failureRatio() < limit);
+		assertTrue(res.failureRatio() < LIMIT);
 	}
 
 	@ParameterizedTest
@@ -176,7 +177,7 @@ class ExperimentalSetupTest {
 	void testForSmallTypedModels(int size) {
 		var res = generate(size, true);
 		System.out.println(res);
-		assertTrue(res.failureRatio() < limit);
+		assertTrue(res.failureRatio() < LIMIT);
 	}
 
 	@Test
@@ -185,7 +186,7 @@ class ExperimentalSetupTest {
 	void testForLargeTypedModels() {
 		var res = generate(10, true);
 		System.out.println(res);
-		assertTrue(res.failureRatio() < limit);
+		assertTrue(res.failureRatio() < LIMIT);
 	}
 
 	@Test
@@ -194,6 +195,6 @@ class ExperimentalSetupTest {
 	void testForLargeUntypedModels() {
 		var res = generate(10, false);
 		System.out.println(res);
-		assertTrue(res.failureRatio() < limit);
+		assertTrue(res.failureRatio() < LIMIT);
 	}
 }

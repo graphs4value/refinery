@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.Model;
@@ -64,6 +65,13 @@ class TypeHierarchyPartialModelTest {
 				.build();
 		model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
 	}
+
+	@AfterEach
+	void afterEach() {
+		if (model != null) {
+			model.close();
+		}
+    }
 
 	@Test
 	void initialModelTest() {

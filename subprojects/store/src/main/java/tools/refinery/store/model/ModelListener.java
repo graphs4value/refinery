@@ -19,4 +19,7 @@ public interface ModelListener {
 
 	default void afterRestore() {
 	}
+
+	default void beforeClose() {
+	}
 }

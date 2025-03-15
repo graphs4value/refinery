@@ -50,28 +50,29 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var symbolInterpretation = model.getInterpretation(symbol);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var symbolInterpretation = model.getInterpretation(symbol);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
-		symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
-		symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
+			symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
+			symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), true,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), true,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -97,29 +98,30 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
+		try (var model = store.createEmptyModel()) {
 
-		var personInterpretation = model.getInterpretation(person);
-		var symbolInterpretation = model.getInterpretation(symbol);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+			var personInterpretation = model.getInterpretation(person);
+			var symbolInterpretation = model.getInterpretation(symbol);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
-		symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
-		symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
+			symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
+			symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), true,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), true,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -136,29 +138,30 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var symbolInterpretation = model.getInterpretation(symbol);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var symbolInterpretation = model.getInterpretation(symbol);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
-		symbolInterpretation.put(Tuple.of(0, 0, 2, 2), true);
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
-		symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
-		symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 2, 2), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
+			symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
+			symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(2),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.of(0),
-				Tuple.of(3), Optional.empty()
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(2),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.of(0),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -183,35 +186,36 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var symbolInterpretation = model.getInterpretation(symbol);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var symbolInterpretation = model.getInterpretation(symbol);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
-		symbolInterpretation.put(Tuple.of(0, 0, 2, 2), true);
-		symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
-		symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
-		symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 1), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 2, 2), true);
+			symbolInterpretation.put(Tuple.of(0, 0, 1, 2), true);
+			symbolInterpretation.put(Tuple.of(1, 1, 0, 1), true);
+			symbolInterpretation.put(Tuple.of(1, 2, 1, 1), true);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(2),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.of(0),
-				Tuple.of(3), Optional.empty()
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(2),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.of(0),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
 	void inputKeyAggregationTest(QueryEvaluationHint hint) {
 		var query = Query.of("Diagonal", Integer.class, (builder, p1, output) -> builder
-				.clause((p2) -> List.of(
+				.clause(p2 -> List.of(
 						personView.call(p1),
 						output.assign(intSymbolView.aggregate(INT_SUM, p1, p1, p2, p2))
 				)));
@@ -223,29 +227,30 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var intSymbolInterpretation = model.getInterpretation(intSymbol);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var intSymbolInterpretation = model.getInterpretation(intSymbol);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		intSymbolInterpretation.put(Tuple.of(0, 0, 1, 1), 1);
-		intSymbolInterpretation.put(Tuple.of(0, 0, 2, 2), 2);
-		intSymbolInterpretation.put(Tuple.of(0, 0, 1, 2), 10);
-		intSymbolInterpretation.put(Tuple.of(1, 1, 0, 1), 11);
-		intSymbolInterpretation.put(Tuple.of(1, 2, 1, 1), 12);
+			intSymbolInterpretation.put(Tuple.of(0, 0, 1, 1), 1);
+			intSymbolInterpretation.put(Tuple.of(0, 0, 2, 2), 2);
+			intSymbolInterpretation.put(Tuple.of(0, 0, 1, 2), 10);
+			intSymbolInterpretation.put(Tuple.of(1, 1, 0, 1), 11);
+			intSymbolInterpretation.put(Tuple.of(1, 2, 1, 1), 12);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(3),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.of(0),
-				Tuple.of(3), Optional.empty()
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(3),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.of(0),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -281,29 +286,30 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var intSymbolInterpretation = model.getInterpretation(intSymbol);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var intSymbolInterpretation = model.getInterpretation(intSymbol);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		intSymbolInterpretation.put(Tuple.of(0, 0, 1, 1), 1);
-		intSymbolInterpretation.put(Tuple.of(0, 0, 2, 2), 2);
-		intSymbolInterpretation.put(Tuple.of(0, 0, 1, 2), 10);
-		intSymbolInterpretation.put(Tuple.of(1, 1, 0, 1), 11);
-		intSymbolInterpretation.put(Tuple.of(1, 2, 1, 1), 12);
+			intSymbolInterpretation.put(Tuple.of(0, 0, 1, 1), 1);
+			intSymbolInterpretation.put(Tuple.of(0, 0, 2, 2), 2);
+			intSymbolInterpretation.put(Tuple.of(0, 0, 1, 2), 10);
+			intSymbolInterpretation.put(Tuple.of(1, 1, 0, 1), 11);
+			intSymbolInterpretation.put(Tuple.of(1, 2, 1, 1), 12);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(
-				Tuple.of(0), Optional.of(3),
-				Tuple.of(1), Optional.of(0),
-				Tuple.of(2), Optional.of(0),
-				Tuple.of(3), Optional.empty()
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(3),
+					Tuple.of(1), Optional.of(0),
+					Tuple.of(2), Optional.of(0),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -320,27 +326,28 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 0), true);
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 2), true);
+			friendInterpretation.put(Tuple.of(0, 0), true);
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 2), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), false,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), false,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), queryResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -366,26 +373,27 @@ class DiagonalQueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 0), true);
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 2), true);
+			friendInterpretation.put(Tuple.of(0, 0), true);
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 2), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), false,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), false,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), queryResultSet);
+		}
 	}
 }

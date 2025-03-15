@@ -42,34 +42,43 @@ public class ModelStoreImpl implements ModelStore {
 	@Override
 	public ModelImpl createEmptyModel() {
 		var model = createModelWithoutInterpretations(null);
-		var interpretations = new LinkedHashMap<AnySymbol, VersionedInterpretation<?>>(stores.size());
-		for (var entry : this.stores.entrySet()) {
-			var symbol = entry.getKey();
-			interpretations.put(symbol, VersionedInterpretation.of(model, symbol, entry.getValue()));
+		try {
+			var interpretations = LinkedHashMap.<AnySymbol, VersionedInterpretation<?>>newLinkedHashMap(stores.size());
+			for (var entry : this.stores.entrySet()) {
+				var symbol = entry.getKey();
+				interpretations.put(symbol, VersionedInterpretation.of(model, symbol, entry.getValue()));
+			}
+			model.setInterpretations(interpretations);
+			adaptModel(model);
+		} catch (RuntimeException e) {
+			model.close();
+			throw e;
 		}
-		model.setInterpretations(interpretations);
-		adaptModel(model);
 		return model;
 	}
 
 	@Override
 	public synchronized ModelImpl createModelForState(Version state) {
 		var model = createModelWithoutInterpretations(state);
-		var interpretations = new LinkedHashMap<AnySymbol, VersionedInterpretation<?>>(stores.size());
+		try {
+			var interpretations = LinkedHashMap.<AnySymbol, VersionedInterpretation<?>>newLinkedHashMap(stores.size());
+			int i = 0;
+			for (var entry : this.stores.entrySet()) {
+				var symbol = entry.getKey();
+				interpretations.put(symbol,
+						VersionedInterpretation.of(
+								model,
+								symbol,
+								entry.getValue(),
+								ModelVersion.getInternalVersion(state, i++)));
+			}
 
-		int i=0;
-		for (var entry : this.stores.entrySet()) {
-			var symbol = entry.getKey();
-			interpretations.put(symbol,
-					VersionedInterpretation.of(
-							model,
-							symbol,
-							entry.getValue(),
-							ModelVersion.getInternalVersion(state,i++)));
+			model.setInterpretations(interpretations);
+			adaptModel(model);
+		} catch (RuntimeException e) {
+			model.close();
+			throw e;
 		}
-
-		model.setInterpretations(interpretations);
-		adaptModel(model);
 		return model;
 	}
 

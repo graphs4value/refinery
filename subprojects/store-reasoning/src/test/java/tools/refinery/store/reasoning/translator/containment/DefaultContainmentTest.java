@@ -81,15 +81,16 @@ class DefaultContainmentTest {
 						.put(Tuple.of(1, 2), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
-		var r1Interpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, r1);
-		var r2Interpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, r2);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+			var r1Interpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, r1);
+			var r2Interpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, r2);
 
-		assertThat(r1Interpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
-		assertThat(r1Interpretation.get(Tuple.of(1, 2)), is(TruthValue.FALSE));
-		assertThat(r2Interpretation.get(Tuple.of(0, 1)), is(TruthValue.FALSE));
-		assertThat(r2Interpretation.get(Tuple.of(1, 2)), is(TruthValue.TRUE));
+			assertThat(r1Interpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
+			assertThat(r1Interpretation.get(Tuple.of(1, 2)), is(TruthValue.FALSE));
+			assertThat(r2Interpretation.get(Tuple.of(0, 1)), is(TruthValue.FALSE));
+			assertThat(r2Interpretation.get(Tuple.of(1, 2)), is(TruthValue.TRUE));
+		}
 	}
 
 	private @NotNull LinkedHashMap<PartialRelation, ContainmentInfo> getContainmentHierarchy(boolean reverse) {

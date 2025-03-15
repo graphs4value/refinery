@@ -80,8 +80,9 @@ public class BestFirstStoreManager {
 	}
 
 	public void startExploration(Version initial, long randomSeed) {
-		BestFirstExplorer bestFirstExplorer = new BestFirstExplorer(this, modelStore.createModelForState(initial),
-				randomSeed);
-		bestFirstExplorer.explore();
+		try (var model = modelStore.createModelForState(initial)) {
+			BestFirstExplorer bestFirstExplorer = new BestFirstExplorer(this, model, randomSeed);
+			bestFirstExplorer.explore();
+		}
 	}
 }

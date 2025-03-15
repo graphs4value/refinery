@@ -42,58 +42,59 @@ class QueryTransactionTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), false,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), false,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), false,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertTrue(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), false,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertTrue(queryEngine.hasPendingChanges());
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
 
-		personInterpretation.put(Tuple.of(1), false);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(1), false);
+			personInterpretation.put(Tuple.of(2), true);
 
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertTrue(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertTrue(queryEngine.hasPendingChanges());
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), false,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), false,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
+		}
 	}
 
 	@Test
@@ -101,44 +102,46 @@ class QueryTransactionTest {
 		var store = ModelStore.builder()
 				.symbols(person)
 				.with(QueryInterpreterAdapter.builder()
-					.defaultHint(new QueryEvaluationHint(null, QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
-					.queries(predicate))
+						.defaultHint(new QueryEvaluationHint(null,
+								QueryEvaluationHint.BackendRequirement.DEFAULT_SEARCH))
+						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), false,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), false,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
 
-		personInterpretation.put(Tuple.of(1), false);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(1), false);
+			personInterpretation.put(Tuple.of(2), true);
 
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), false,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), false,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
+		}
 	}
 
 	@Test
@@ -151,59 +154,60 @@ class QueryTransactionTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var assetInterpretation = model.getInterpretation(asset);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var assetInterpretation = model.getInterpretation(asset);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		assertFalse(queryEngine.hasPendingChanges());
+			assertFalse(queryEngine.hasPendingChanges());
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		assetInterpretation.put(Tuple.of(1), true);
-		assetInterpretation.put(Tuple.of(2), true);
+			assetInterpretation.put(Tuple.of(1), true);
+			assetInterpretation.put(Tuple.of(2), true);
 
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), false,
-				Tuple.of(2), false,
-				Tuple.of(3), false,
-				Tuple.of(4), false
-		), predicateResultSet);
-		assertTrue(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), false,
+					Tuple.of(2), false,
+					Tuple.of(3), false,
+					Tuple.of(4), false
+			), predicateResultSet);
+			assertTrue(queryEngine.hasPendingChanges());
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false,
-				Tuple.of(4), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false,
+					Tuple.of(4), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
 
-		assetInterpretation.put(Tuple.of(3), true);
-		assertFalse(queryEngine.hasPendingChanges());
+			assetInterpretation.put(Tuple.of(3), true);
+			assertFalse(queryEngine.hasPendingChanges());
 
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false,
-				Tuple.of(4), false
-		), predicateResultSet);
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false,
+					Tuple.of(4), false
+			), predicateResultSet);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false,
-				Tuple.of(4), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false,
+					Tuple.of(4), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
+		}
 	}
 
 	@Test
@@ -219,28 +223,29 @@ class QueryTransactionTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var ageInterpretation = model.getInterpretation(age);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(0), true);
 
-		ageInterpretation.put(Tuple.of(0), 24);
+			ageInterpretation.put(Tuple.of(0), 24);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(Tuple.of(0), 24), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(Tuple.of(0), 24), queryResultSet);
 
-		ageInterpretation.put(Tuple.of(0), 25);
+			ageInterpretation.put(Tuple.of(0), 25);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(Tuple.of(0), 25), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(Tuple.of(0), 25), queryResultSet);
 
-		ageInterpretation.put(Tuple.of(0), null);
+			ageInterpretation.put(Tuple.of(0), null);
 
-		queryEngine.flushChanges();
-		assertNullableResults(Map.of(Tuple.of(0), Optional.empty()), queryResultSet);
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(Tuple.of(0), Optional.empty()), queryResultSet);
+		}
 	}
 
 	@Test
@@ -258,28 +263,29 @@ class QueryTransactionTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var ageInterpretation = model.getInterpretation(age);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(0), true);
 
-		ageInterpretation.put(Tuple.of(0), 24);
+			ageInterpretation.put(Tuple.of(0), 24);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(Tuple.of(0), true), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(Tuple.of(0), true), queryResultSet);
 
-		ageInterpretation.put(Tuple.of(0), 25);
+			ageInterpretation.put(Tuple.of(0), 25);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(Tuple.of(0), true), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(Tuple.of(0), true), queryResultSet);
 
-		ageInterpretation.put(Tuple.of(0), 17);
+			ageInterpretation.put(Tuple.of(0), 17);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(Tuple.of(0), false), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(Tuple.of(0), false), queryResultSet);
+		}
 	}
 
 	@Test
@@ -290,44 +296,45 @@ class QueryTransactionTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
 
-		var state1 = model.commit();
+			var state1 = model.commit();
 
-		personInterpretation.put(Tuple.of(1), false);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(1), false);
+			personInterpretation.put(Tuple.of(2), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), false,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), false,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), predicateResultSet);
 
-		model.restore(state1);
+			model.restore(state1);
 
-		assertFalse(queryEngine.hasPendingChanges());
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+		}
 	}
 
 	@Test
@@ -338,33 +345,34 @@ class QueryTransactionTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		assertResults(Map.of(), predicateResultSet);
-		assertTrue(queryEngine.hasPendingChanges());
+			assertResults(Map.of(), predicateResultSet);
+			assertTrue(queryEngine.hasPendingChanges());
 
-		var state1 = model.commit();
+			var state1 = model.commit();
 
-		personInterpretation.put(Tuple.of(1), false);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(1), false);
+			personInterpretation.put(Tuple.of(2), true);
 
-		assertResults(Map.of(), predicateResultSet);
-		assertTrue(queryEngine.hasPendingChanges());
+			assertResults(Map.of(), predicateResultSet);
+			assertTrue(queryEngine.hasPendingChanges());
 
-		model.restore(state1);
+			model.restore(state1);
 
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
-		assertFalse(queryEngine.hasPendingChanges());
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+			assertFalse(queryEngine.hasPendingChanges());
+		}
 	}
 }

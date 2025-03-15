@@ -66,16 +66,17 @@ class PredicateScopeTest {
 				.seed(next, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.seed(prev, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.build();
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var initialVersion = model.commit();
-		var bestFistSearch = new BestFirstStoreManager(store, 1);
-		bestFistSearch.startExploration(initialVersion, randomSeed);
-		model.restore(bestFistSearch.getSolutionStore().getSolutions().get(0).version());
-		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
-		var firstInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, first);
-		assertSize(firstInterpretation, 1);
-		var lastInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, last);
-		assertSize(lastInterpretation, 1);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var initialVersion = model.commit();
+			var bestFistSearch = new BestFirstStoreManager(store, 1);
+			bestFistSearch.startExploration(initialVersion, randomSeed);
+			model.restore(bestFistSearch.getSolutionStore().getSolutions().getFirst().version());
+			var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+			var firstInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, first);
+			assertSize(firstInterpretation, 1);
+			var lastInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, last);
+			assertSize(lastInterpretation, 1);
+		}
 	}
 
 	@Test
@@ -99,14 +100,15 @@ class PredicateScopeTest {
 						.put(Tuple.of(6, 1), TruthValue.TRUE))
 				.seed(prev, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.build();
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
-		var firstInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, first);
-		assertSize(firstInterpretation, 3);
-		var lastInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, last);
-		assertSize(lastInterpretation, 3);
-		var designSpaceAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
-		assertThat(designSpaceAdapter.checkAccept(), is(false));
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+			var firstInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, first);
+			assertSize(firstInterpretation, 3);
+			var lastInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, last);
+			assertSize(lastInterpretation, 3);
+			var designSpaceAdapter = model.getAdapter(DesignSpaceExplorationAdapter.class);
+			assertThat(designSpaceAdapter.checkAccept(), is(false));
+		}
 	}
 
 	private ModelStore createStore() {

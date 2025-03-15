@@ -46,9 +46,9 @@ public class ConcretizeCommand implements Command {
 	@Override
 	public int run() throws IOException {
 		var problem = loader.loadProblem(inputPath);
-		var semantics = semanticsFactory.concretize(true)
-				.createSemantics(problem);
-		serializer.saveModel(semantics, outputPath);
+		try (var semantics = semanticsFactory.concretize(true).createSemantics(problem)) {
+			serializer.saveModel(semantics, outputPath);
+		}
 		return RefineryCli.EXIT_SUCCESS;
 	}
 }

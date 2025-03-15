@@ -14,6 +14,7 @@ import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
+import tools.refinery.store.map.Version;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -82,7 +83,6 @@ class ModelGenerationTest {
 						.withOutputPath("test_output")
 						.withFormat(FileFormat.DOT)
 						.withFormat(FileFormat.SVG)
-//						.saveStates()
 						.saveDesignSpace())
 				.with(PropagationAdapter.builder())
 				.with(StateCoderAdapter.builder())
@@ -93,15 +93,16 @@ class ModelGenerationTest {
 
 		var store = storeBuilder.build();
 
-		var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
+		try (var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
 
-		var initialVersion = initialModel.commit();
+			var initialVersion = initialModel.commit();
 
-		var bestFirst = new BestFirstStoreManager(store, 1);
-		bestFirst.startExploration(initialVersion);
-		var resultStore = bestFirst.getSolutionStore();
-		System.out.println("states size: " + resultStore.getSolutions().size());
-//		initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
+			var bestFirst = new BestFirstStoreManager(store, 1);
+			bestFirst.startExploration(initialVersion);
+			var resultStore = bestFirst.getSolutionStore();
+			System.out.println("states size: " + resultStore.getSolutions().size());
+//			initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
+		}
 	}
 
 	@Test
@@ -227,32 +228,34 @@ class ModelGenerationTest {
 
 		var store = storeBuilder.build();
 
-		var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-
-		var initialVersion = initialModel.commit();
+		Version initialVersion;
+		try (var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			initialVersion = initialModel.commit();
+		}
 
 		var bestFirst = new BestFirstStoreManager(store, 1);
 		bestFirst.startExploration(initialVersion);
 		var resultStore = bestFirst.getSolutionStore();
 		System.out.println("states size: " + resultStore.getSolutions().size());
 
-		var model = store.createModelForState(resultStore.getSolutions().get(0).version());
-		var interpretation = model.getAdapter(ReasoningAdapter.class)
-				.getPartialInterpretation(Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL);
-		var cursor = interpretation.getAll();
-		int max = -1;
-		var types = new LinkedHashMap<PartialRelation, Integer>();
-		var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
-		while (cursor.move()) {
-			max = Math.max(max, cursor.getKey().get(0));
-			var type = typeInterpretation.get(cursor.getKey());
-			if (type != null) {
-				types.compute(type.candidateType(), (ignoredKey, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+		try (var model = store.createModelForState(resultStore.getSolutions().getFirst().version())) {
+			var interpretation = model.getAdapter(ReasoningAdapter.class)
+					.getPartialInterpretation(Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL);
+			var cursor = interpretation.getAll();
+			int max = -1;
+			var types = new LinkedHashMap<PartialRelation, Integer>();
+			var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
+			while (cursor.move()) {
+				max = Math.max(max, cursor.getKey().get(0));
+				var type = typeInterpretation.get(cursor.getKey());
+				if (type != null) {
+					types.compute(type.candidateType(), (ignoredKey, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+				}
 			}
+			System.out.println("Model size: " + (max + 1));
+			System.out.println(types);
+//			initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
 		}
-		System.out.println("Model size: " + (max + 1));
-		System.out.println(types);
-//		initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
 	}
 
 	@Test
@@ -294,32 +297,34 @@ class ModelGenerationTest {
 
 		var store = storeBuilder.build();
 
-		var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed);
-
-		var initialVersion = initialModel.commit();
+		Version initialVersion;
+		try (var initialModel = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(modelSeed)) {
+			initialVersion = initialModel.commit();
+		}
 
 		var bestFirst = new BestFirstStoreManager(store, 1);
 		bestFirst.startExploration(initialVersion);
 		var resultStore = bestFirst.getSolutionStore();
 		System.out.println("states size: " + resultStore.getSolutions().size());
 
-		var model = store.createModelForState(resultStore.getSolutions().get(0).version());
-		var interpretation = model.getAdapter(ReasoningAdapter.class)
-				.getPartialInterpretation(Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL);
-		var cursor = interpretation.getAll();
-		int max = -1;
-		var types = new LinkedHashMap<PartialRelation, Integer>();
-		var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
-		while (cursor.move()) {
-			max = Math.max(max, cursor.getKey().get(0));
-			var type = typeInterpretation.get(cursor.getKey());
-			if (type != null) {
-				types.compute(type.candidateType(), (ignoredKey, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+		try (var model = store.createModelForState(resultStore.getSolutions().getFirst().version())) {
+			var interpretation = model.getAdapter(ReasoningAdapter.class)
+					.getPartialInterpretation(Concreteness.CANDIDATE, ReasoningAdapter.EXISTS_SYMBOL);
+			var cursor = interpretation.getAll();
+			int max = -1;
+			var types = new LinkedHashMap<PartialRelation, Integer>();
+			var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
+			while (cursor.move()) {
+				max = Math.max(max, cursor.getKey().get(0));
+				var type = typeInterpretation.get(cursor.getKey());
+				if (type != null) {
+					types.compute(type.candidateType(), (ignoredKey, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+				}
 			}
+			System.out.println("Model size: " + (max + 1));
+			System.out.println(types);
+//			initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
 		}
-		System.out.println("Model size: " + (max + 1));
-		System.out.println(types);
-//		initialModel.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
 	}
 
 	public static void main(String[] args) {

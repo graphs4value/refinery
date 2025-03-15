@@ -50,24 +50,25 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var assetInterpretation = model.getInterpretation(asset);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var assetInterpretation = model.getInterpretation(asset);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		assetInterpretation.put(Tuple.of(1), true);
-		assetInterpretation.put(Tuple.of(2), true);
+			assetInterpretation.put(Tuple.of(1), true);
+			assetInterpretation.put(Tuple.of(2), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -85,28 +86,29 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 3), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 3), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), true,
-				Tuple.of(1, 0), true,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 1), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), true,
+					Tuple.of(1, 0), true,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 1), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -124,27 +126,28 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), false,
-				Tuple.of(1, 0), true,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 1), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), false,
+					Tuple.of(1, 0), true,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 1), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -162,28 +165,29 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(3, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(3, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), true,
-				Tuple.of(1), true,
-				Tuple.of(2), false,
-				Tuple.of(3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), true,
+					Tuple.of(1), true,
+					Tuple.of(2), false,
+					Tuple.of(3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -208,32 +212,33 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var animalInterpretation = model.getInterpretation(animal);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var animalInterpretation = model.getInterpretation(animal);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		animalInterpretation.put(Tuple.of(2), true);
-		animalInterpretation.put(Tuple.of(3), true);
+			animalInterpretation.put(Tuple.of(2), true);
+			animalInterpretation.put(Tuple.of(3), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(2, 3), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(3, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(2, 3), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(3, 0), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), true,
-				Tuple.of(0, 2), false,
-				Tuple.of(2, 3), true,
-				Tuple.of(3, 0), false,
-				Tuple.of(3, 2), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), true,
+					Tuple.of(0, 2), false,
+					Tuple.of(2, 3), true,
+					Tuple.of(3, 0), false,
+					Tuple.of(3, 2), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -251,23 +256,24 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 0), true,
-				Tuple.of(1, 1), true,
-				Tuple.of(2, 2), true,
-				Tuple.of(0, 1), false,
-				Tuple.of(3, 3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 0), true,
+					Tuple.of(1, 1), true,
+					Tuple.of(2, 2), true,
+					Tuple.of(0, 1), false,
+					Tuple.of(3, 3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -287,25 +293,26 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1, 2), true,
-				Tuple.of(1, 0, 2), true,
-				Tuple.of(0, 0, 2), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1, 2), true,
+					Tuple.of(1, 0, 2), true,
+					Tuple.of(0, 0, 2), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -328,27 +335,28 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), true,
-				Tuple.of(1, 0), true,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 1), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), true,
+					Tuple.of(1, 0), true,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 1), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -375,27 +383,28 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), true,
-				Tuple.of(1, 0), true,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 1), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), true,
+					Tuple.of(1, 0), true,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 1), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -413,33 +422,34 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 0), true,
-				Tuple.of(0, 2), true,
-				Tuple.of(1, 1), true,
-				Tuple.of(2, 0), true,
-				Tuple.of(2, 1), true,
-				Tuple.of(2, 2), true,
-				Tuple.of(0, 1), false,
-				Tuple.of(1, 0), false,
-				Tuple.of(1, 2), false,
-				Tuple.of(0, 3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 0), true,
+					Tuple.of(0, 2), true,
+					Tuple.of(1, 1), true,
+					Tuple.of(2, 0), true,
+					Tuple.of(2, 1), true,
+					Tuple.of(2, 2), true,
+					Tuple.of(0, 1), false,
+					Tuple.of(1, 0), false,
+					Tuple.of(1, 2), false,
+					Tuple.of(0, 3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -462,33 +472,34 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 0), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 0), true,
-				Tuple.of(0, 2), true,
-				Tuple.of(1, 1), true,
-				Tuple.of(2, 0), true,
-				Tuple.of(2, 1), true,
-				Tuple.of(2, 2), true,
-				Tuple.of(0, 1), false,
-				Tuple.of(1, 0), false,
-				Tuple.of(1, 2), false,
-				Tuple.of(0, 3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 0), true,
+					Tuple.of(0, 2), true,
+					Tuple.of(1, 1), true,
+					Tuple.of(2, 0), true,
+					Tuple.of(2, 1), true,
+					Tuple.of(2, 2), true,
+					Tuple.of(0, 1), false,
+					Tuple.of(1, 0), false,
+					Tuple.of(1, 2), false,
+					Tuple.of(0, 3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -505,26 +516,27 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), true,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), true,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -546,26 +558,27 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), true,
-				Tuple.of(2), true,
-				Tuple.of(3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), true,
+					Tuple.of(2), true,
+					Tuple.of(3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -583,32 +596,33 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 0), false,
-				Tuple.of(0, 1), true,
-				Tuple.of(0, 2), true,
-				Tuple.of(1, 0), false,
-				Tuple.of(1, 1), false,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 0), false,
-				Tuple.of(2, 1), false,
-				Tuple.of(2, 2), false,
-				Tuple.of(2, 3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 0), false,
+					Tuple.of(0, 1), true,
+					Tuple.of(0, 2), true,
+					Tuple.of(1, 0), false,
+					Tuple.of(1, 1), false,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 0), false,
+					Tuple.of(2, 1), false,
+					Tuple.of(2, 2), false,
+					Tuple.of(2, 3), false
+			), predicateResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -631,32 +645,33 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
-		friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(0, 1), TruthValue.TRUE);
+			friendInterpretation.put(Tuple.of(1, 2), TruthValue.TRUE);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 0), false,
-				Tuple.of(0, 1), true,
-				Tuple.of(0, 2), true,
-				Tuple.of(1, 0), false,
-				Tuple.of(1, 1), false,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 0), false,
-				Tuple.of(2, 1), false,
-				Tuple.of(2, 2), false,
-				Tuple.of(2, 3), false
-		), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 0), false,
+					Tuple.of(0, 1), true,
+					Tuple.of(0, 2), true,
+					Tuple.of(1, 0), false,
+					Tuple.of(1, 1), false,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 0), false,
+					Tuple.of(2, 1), false,
+					Tuple.of(2, 2), false,
+					Tuple.of(2, 3), false
+			), predicateResultSet);
+		}
 	}
 
 	@Test
@@ -676,23 +691,24 @@ class QueryTest {
 						.queries(dangerQuery))
 				.build();
 
-		var model = store.createEmptyModel();
-		var distanceInterpretation = model.getInterpretation(distance);
-		distanceInterpretation.put(Tuple.of(0, 1), 1);
-		distanceInterpretation.put(Tuple.of(1, 0), 1);
-		distanceInterpretation.put(Tuple.of(0, 2), 1);
-		distanceInterpretation.put(Tuple.of(2, 0), 1);
-		distanceInterpretation.put(Tuple.of(1, 2), 3);
-		distanceInterpretation.put(Tuple.of(2, 1), 3);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var dangerResultSet = queryEngine.getResultSet(dangerQuery);
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), false,
-				Tuple.of(0, 2), false,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 1), true
-		), dangerResultSet);
+		try (var model = store.createEmptyModel()) {
+			var distanceInterpretation = model.getInterpretation(distance);
+			distanceInterpretation.put(Tuple.of(0, 1), 1);
+			distanceInterpretation.put(Tuple.of(1, 0), 1);
+			distanceInterpretation.put(Tuple.of(0, 2), 1);
+			distanceInterpretation.put(Tuple.of(2, 0), 1);
+			distanceInterpretation.put(Tuple.of(1, 2), 3);
+			distanceInterpretation.put(Tuple.of(2, 1), 3);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var dangerResultSet = queryEngine.getResultSet(dangerQuery);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), false,
+					Tuple.of(0, 2), false,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 1), true
+			), dangerResultSet);
+		}
 	}
 
 	@Test
@@ -712,23 +728,24 @@ class QueryTest {
 						.queries(dangerQuery))
 				.build();
 
-		var model = store.createEmptyModel();
-		var distanceInterpretation = model.getInterpretation(distance);
-		distanceInterpretation.put(Tuple.of(0, 1), 1.0);
-		distanceInterpretation.put(Tuple.of(1, 0), 1.0);
-		distanceInterpretation.put(Tuple.of(0, 2), 1.0);
-		distanceInterpretation.put(Tuple.of(2, 0), 1.0);
-		distanceInterpretation.put(Tuple.of(1, 2), 3.0);
-		distanceInterpretation.put(Tuple.of(2, 1), 3.0);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var dangerResultSet = queryEngine.getResultSet(dangerQuery);
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0, 1), false,
-				Tuple.of(0, 2), false,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 1), true
-		), dangerResultSet);
+		try (var model = store.createEmptyModel()) {
+			var distanceInterpretation = model.getInterpretation(distance);
+			distanceInterpretation.put(Tuple.of(0, 1), 1.0);
+			distanceInterpretation.put(Tuple.of(1, 0), 1.0);
+			distanceInterpretation.put(Tuple.of(0, 2), 1.0);
+			distanceInterpretation.put(Tuple.of(2, 0), 1.0);
+			distanceInterpretation.put(Tuple.of(1, 2), 3.0);
+			distanceInterpretation.put(Tuple.of(2, 1), 3.0);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var dangerResultSet = queryEngine.getResultSet(dangerQuery);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0, 1), false,
+					Tuple.of(0, 2), false,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 1), true
+			), dangerResultSet);
+		}
 	}
 
 	@QueryEngineTest
@@ -749,24 +766,25 @@ class QueryTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var ageInterpretation = model.getInterpretation(age);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var queryResultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var ageInterpretation = model.getInterpretation(age);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
 
-		ageInterpretation.put(Tuple.of(0), 12);
-		ageInterpretation.put(Tuple.of(1), 24);
+			ageInterpretation.put(Tuple.of(0), 12);
+			ageInterpretation.put(Tuple.of(1), 24);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(
-				Tuple.of(0), false,
-				Tuple.of(1), true,
-				Tuple.of(2), false
-		), queryResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(
+					Tuple.of(0), false,
+					Tuple.of(1), true,
+					Tuple.of(2), false
+			), queryResultSet);
+		}
 	}
 
 	@Test
@@ -779,16 +797,17 @@ class QueryTest {
 						.queries(predicate))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var predicateResultSet = queryEngine.getResultSet(predicate);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var predicateResultSet = queryEngine.getResultSet(predicate);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
 
-		queryEngine.flushChanges();
-		assertResults(Map.of(), predicateResultSet);
+			queryEngine.flushChanges();
+			assertResults(Map.of(), predicateResultSet);
+		}
 	}
 }

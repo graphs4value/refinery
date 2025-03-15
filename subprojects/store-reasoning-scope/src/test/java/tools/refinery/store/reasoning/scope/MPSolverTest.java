@@ -23,61 +23,73 @@ class MPSolverTest {
 	@Test
 	void updateProblemTest() {
 		var solver = MPSolver.createSolver("GLOP");
-		var x = solver.makeNumVar(0, Double.POSITIVE_INFINITY, "x");
-		var y = solver.makeNumVar(0, 1, "y");
-		var constraint = solver.makeConstraint(5, 5);
-		constraint.setCoefficient(x, 1);
-		constraint.setCoefficient(y, 1);
-		var objective = solver.objective();
+		try {
+			var x = solver.makeNumVar(0, Double.POSITIVE_INFINITY, "x");
+			var y = solver.makeNumVar(0, 1, "y");
+			var constraint = solver.makeConstraint(5, 5);
+			constraint.setCoefficient(x, 1);
+			constraint.setCoefficient(y, 1);
+			var objective = solver.objective();
 
-		objective.setCoefficient(x, 1);
-		objective.setMinimization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(4, 0.01));
+			objective.setCoefficient(x, 1);
+			objective.setMinimization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(4, 0.01));
 
-		objective.setMaximization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(5, 0.01));
+			objective.setMaximization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(5, 0.01));
 
-		objective.setCoefficient(x, 0);
-		objective.setCoefficient(y, 1);
-		objective.setMinimization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(0, 0.01));
+			objective.setCoefficient(x, 0);
+			objective.setCoefficient(y, 1);
+			objective.setMinimization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(0, 0.01));
 
-		objective.setMaximization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(1, 0.01));
+			objective.setMaximization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(1, 0.01));
+		} finally {
+			solver.delete();
+		}
 	}
 
 	@Test
 	void unboundedIsInfeasibleTest() {
 		var solver = MPSolver.createSolver("GLOP");
-		var x = solver.makeNumVar(0, Double.POSITIVE_INFINITY, "x");
-		var objective = solver.objective();
-		objective.setCoefficient(x, 1);
+		try {
+			var x = solver.makeNumVar(0, Double.POSITIVE_INFINITY, "x");
+			var objective = solver.objective();
+			objective.setCoefficient(x, 1);
 
-		objective.setMinimization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(0, 0.01));
+			objective.setMinimization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(0, 0.01));
 
-		objective.setMaximization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.INFEASIBLE));
+			objective.setMaximization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.INFEASIBLE));
+		} finally {
+			solver.delete();
+		}
 	}
 
 	@Test
 	void constantTest() {
 		var solver = MPSolver.createSolver("GLOP");
-		var x = solver.makeNumVar(1, 1, "x");
-		var objective = solver.objective();
-		objective.setCoefficient(x, 1);
+		try {
+			var x = solver.makeNumVar(1, 1, "x");
+			var objective = solver.objective();
+			objective.setCoefficient(x, 1);
 
-		objective.setMinimization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(1, 0.01));
+			objective.setMinimization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(1, 0.01));
 
-		objective.setMaximization();
-		assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
-		assertThat(objective.value(), closeTo(1, 0.01));
+			objective.setMaximization();
+			assertThat(solver.solve(), is(MPSolver.ResultStatus.OPTIMAL));
+			assertThat(objective.value(), closeTo(1, 0.01));
+		} finally {
+			solver.delete();
+		}
 	}
 }

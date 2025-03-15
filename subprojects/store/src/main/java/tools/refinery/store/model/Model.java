@@ -13,8 +13,9 @@ import tools.refinery.store.representation.Symbol;
 
 import java.util.Optional;
 
-public interface Model extends Versioned {
+public interface Model extends Versioned, AutoCloseable {
 	Version NO_STATE_ID = null;
+
 	ModelStore getStore();
 
 	Version getState();
@@ -38,4 +39,7 @@ public interface Model extends Versioned {
 	void removeListener(ModelListener listener);
 
 	void checkCancelled();
+
+	@Override
+	void close();
 }

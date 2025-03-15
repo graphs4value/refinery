@@ -12,7 +12,6 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.model.*;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.util.CancellationToken;
 
 import java.util.*;
@@ -62,7 +61,7 @@ public class ModelImpl implements Model {
 
 	@Override
 	public ModelDiffCursor getDiffCursor(Version to) {
-		var diffCursors = new HashMap<AnySymbol, DiffCursor<Tuple, ?>>(interpretations.size());
+		var diffCursors = HashMap.<AnySymbol, DiffCursor<?, ?>>newHashMap(interpretations.size());
 		for (var entry : interpretations.entrySet()) {
 			diffCursors.put(entry.getKey(), entry.getValue().getDiffCursor(to));
 		}
@@ -167,6 +166,7 @@ public class ModelImpl implements Model {
 					"pending action");
 			case COMMIT -> "commit";
 			case RESTORE -> "restore to %s".formatted(restoringToState);
+			case CLOSE -> "close";
 		};
 		return new IllegalStateException("Cannot %s due to pending %s".formatted(currentActionName, pendingActionName));
 	}
@@ -198,5 +198,17 @@ public class ModelImpl implements Model {
 	@Override
 	public void checkCancelled() {
 		cancellationToken.checkCancelled();
+	}
+
+	@Override
+	public void close() {
+		if (hasPendingAction()) {
+			throw pendingActionError("close");
+		}
+		pendingAction = ModelAction.CLOSE;
+		for (int i = listeners.size() - 1; i >= 0; i--) {
+			listeners.get(i).beforeClose();
+		}
+		// Never restore {@code pendingAction}, since the closed model can't be used again.
 	}
 }

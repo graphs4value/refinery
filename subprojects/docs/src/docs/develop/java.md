@@ -193,14 +193,15 @@ public class ExampleMain {
 
             scope Filesystem = 1, File = 20.
             """);
-        var generator = StandaloneRefinery.getGeneratorFactory().createGenerator(problem);
-        generator.generate();
-        var trace = generator.getProblemTrace();
-        var childrenRelation = trace.getPartialRelation("Directory::children");
-        var childrenInterpretation = generator.getPartialInterpretation(childrenRelation);
-        var cursor = childrenInterpretation.getAll();
-        while (cursor.move()) {
-            System.out.printf("%s: %s%n", cursor.getKey(), cursor.getValue());
+        try (var generator = StandaloneRefinery.getGeneratorFactory().createGenerator(problem)) {
+            generator.generate();
+            var trace = generator.getProblemTrace();
+            var childrenRelation = trace.getPartialRelation("Directory::children");
+            var childrenInterpretation = generator.getPartialInterpretation(childrenRelation);
+            var cursor = childrenInterpretation.getAll();
+            while (cursor.move()) {
+                System.out.printf("%s: %s%n", cursor.getKey(), cursor.getValue());
+            }
         }
     }
 }
@@ -331,9 +332,10 @@ class ExampleTest {
 
             scope Filesystem = 1, File = 20.
             """);
-        var generator = generatorFactory.createGenerator(problem);
-        var result = generator.tryGenerate();
-        assertThat(result, is(GeneratorResult.SUCCESS));
+        try (var generator = generatorFactory.createGenerator(problem)) {
+            var result = generator.tryGenerate();
+            assertThat(result, is(GeneratorResult.SUCCESS));
+        }
     }
 }
 ```

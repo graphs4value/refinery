@@ -42,11 +42,11 @@ public class CheckCommand implements Command {
 	@Override
 	public int run() throws IOException {
 		var problem = loader.loadProblem(inputPath);
-		var semantics = semanticsFactory.concretize(concretize)
-				.createSemantics(problem);
-		var result = semantics.checkConsistency();
-		printMessage(result.formatMessage());
-		return result.isConsistent() ? RefineryCli.EXIT_SUCCESS : RefineryCli.EXIT_FAILURE;
+		try (var semantics = semanticsFactory.concretize(concretize).createSemantics(problem)) {
+			var result = semantics.checkConsistency();
+			printMessage(result.formatMessage());
+			return result.isConsistent() ? RefineryCli.EXIT_SUCCESS : RefineryCli.EXIT_FAILURE;
+		}
 	}
 
 	// Deliberately print command result to the standard output.

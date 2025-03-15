@@ -81,4 +81,9 @@ public class QueryInterpreterAdapterImpl implements QueryInterpreterAdapter, Mod
 	public void afterRestore() {
 		flushChanges();
 	}
+
+	@Override
+	public void beforeClose() {
+		queryEngine.dispose();
+	}
 }

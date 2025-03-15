@@ -93,23 +93,24 @@ class MetamodelTest {
 				.seed(enrolledStudents, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.build();
 
-		var model = createModel(metamodel, seed);
-		var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = createModel(metamodel, seed)) {
+			var reasoningAdapter = model.getAdapter(ReasoningAdapter.class);
 
-		var coursesInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, courses);
-		assertThat(coursesInterpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
-		assertThat(coursesInterpretation.get(Tuple.of(0, 2)), is(TruthValue.UNKNOWN));
-		assertThat(coursesInterpretation.get(Tuple.of(0, 3)), is(TruthValue.FALSE));
+			var coursesInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, courses);
+			assertThat(coursesInterpretation.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
+			assertThat(coursesInterpretation.get(Tuple.of(0, 2)), is(TruthValue.UNKNOWN));
+			assertThat(coursesInterpretation.get(Tuple.of(0, 3)), is(TruthValue.FALSE));
 
-		var invalidLecturerCountInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL,
-				invalidLecturerCount);
-		assertThat(invalidLecturerCountInterpretation.get(Tuple.of(1)), is(TruthValue.FALSE));
-		assertThat(invalidLecturerCountInterpretation.get(Tuple.of(2)), is(TruthValue.ERROR));
+			var invalidLecturerCountInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL,
+					invalidLecturerCount);
+			assertThat(invalidLecturerCountInterpretation.get(Tuple.of(1)), is(TruthValue.FALSE));
+			assertThat(invalidLecturerCountInterpretation.get(Tuple.of(2)), is(TruthValue.ERROR));
 
-		var enrolledStudentsInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL,
-				enrolledStudents);
-		assertThat(enrolledStudentsInterpretation.get(Tuple.of(1, 3)), is(TruthValue.FALSE));
-		assertThat(enrolledStudentsInterpretation.get(Tuple.of(1, 4)), is(TruthValue.UNKNOWN));
+			var enrolledStudentsInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL,
+					enrolledStudents);
+			assertThat(enrolledStudentsInterpretation.get(Tuple.of(1, 3)), is(TruthValue.FALSE));
+			assertThat(enrolledStudentsInterpretation.get(Tuple.of(1, 4)), is(TruthValue.UNKNOWN));
+		}
 	}
 
 	@Test
@@ -145,14 +146,15 @@ class MetamodelTest {
 						.put(Tuple.of(2, 3), TruthValue.TRUE))
 				.build();
 
-		var model = createModel(metamodel, seed);
-		var coursesInterpretation = model.getAdapter(ReasoningAdapter.class)
-				.getPartialInterpretation(Concreteness.PARTIAL, courses);
+		try (var model = createModel(metamodel, seed)) {
+			var coursesInterpretation = model.getAdapter(ReasoningAdapter.class)
+					.getPartialInterpretation(Concreteness.PARTIAL, courses);
 
-		assertThat(coursesInterpretation.get(Tuple.of(0, 1)), is(TruthValue.UNKNOWN));
-		assertThat(coursesInterpretation.get(Tuple.of(0, 3)), is(TruthValue.FALSE));
-		assertThat(coursesInterpretation.get(Tuple.of(2, 1)), is(TruthValue.UNKNOWN));
-		assertThat(coursesInterpretation.get(Tuple.of(2, 3)), is(TruthValue.TRUE));
+			assertThat(coursesInterpretation.get(Tuple.of(0, 1)), is(TruthValue.UNKNOWN));
+			assertThat(coursesInterpretation.get(Tuple.of(0, 3)), is(TruthValue.FALSE));
+			assertThat(coursesInterpretation.get(Tuple.of(2, 1)), is(TruthValue.UNKNOWN));
+			assertThat(coursesInterpretation.get(Tuple.of(2, 3)), is(TruthValue.TRUE));
+		}
 	}
 
 	private static Model createModel(Metamodel metamodel, ModelSeed seed) {

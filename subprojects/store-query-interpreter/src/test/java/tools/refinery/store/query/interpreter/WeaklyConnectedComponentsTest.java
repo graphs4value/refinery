@@ -41,26 +41,27 @@ class WeaklyConnectedComponentsTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 0), true);
-		friendInterpretation.put(Tuple.of(2, 3), true);
-		queryEngine.flushChanges();
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 0), true);
+			friendInterpretation.put(Tuple.of(2, 3), true);
+			queryEngine.flushChanges();
 
-		assertResults(Map.of(
-				Tuple.of(0, 0), true,
-				Tuple.of(0, 1), true,
-				Tuple.of(1, 0), true,
-				Tuple.of(1, 1), true,
-				Tuple.of(2, 2), true,
-				Tuple.of(2, 3), true,
-				Tuple.of(3, 2), true,
-				Tuple.of(3, 3), true
-		), resultSet);
+			assertResults(Map.of(
+					Tuple.of(0, 0), true,
+					Tuple.of(0, 1), true,
+					Tuple.of(1, 0), true,
+					Tuple.of(1, 1), true,
+					Tuple.of(2, 2), true,
+					Tuple.of(2, 3), true,
+					Tuple.of(3, 2), true,
+					Tuple.of(3, 3), true
+			), resultSet);
+		}
 	}
 
 	@Test
@@ -77,32 +78,33 @@ class WeaklyConnectedComponentsTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 0), true);
-		friendInterpretation.put(Tuple.of(2, 3), true);
-		queryEngine.flushChanges();
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 0), true);
+			friendInterpretation.put(Tuple.of(2, 3), true);
+			queryEngine.flushChanges();
 
-		friendInterpretation.put(Tuple.of(2, 3), false);
-		friendInterpretation.put(Tuple.of(1, 0), false);
-		friendInterpretation.put(Tuple.of(1, 2), true);
-		queryEngine.flushChanges();
+			friendInterpretation.put(Tuple.of(2, 3), false);
+			friendInterpretation.put(Tuple.of(1, 0), false);
+			friendInterpretation.put(Tuple.of(1, 2), true);
+			queryEngine.flushChanges();
 
-		assertResults(Map.of(
-				Tuple.of(0, 0), true,
-				Tuple.of(0, 1), true,
-				Tuple.of(0, 2), true,
-				Tuple.of(1, 0), true,
-				Tuple.of(1, 1), true,
-				Tuple.of(1, 2), true,
-				Tuple.of(2, 0), true,
-				Tuple.of(2, 1), true,
-				Tuple.of(2, 2), true
-		), resultSet);
+			assertResults(Map.of(
+					Tuple.of(0, 0), true,
+					Tuple.of(0, 1), true,
+					Tuple.of(0, 2), true,
+					Tuple.of(1, 0), true,
+					Tuple.of(1, 1), true,
+					Tuple.of(1, 2), true,
+					Tuple.of(2, 0), true,
+					Tuple.of(2, 1), true,
+					Tuple.of(2, 2), true
+			), resultSet);
+		}
 	}
 
 	@Test
@@ -122,24 +124,25 @@ class WeaklyConnectedComponentsTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-		personInterpretation.put(Tuple.of(3), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(3), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 0), true);
-		friendInterpretation.put(Tuple.of(2, 3), true);
-		queryEngine.flushChanges();
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 0), true);
+			friendInterpretation.put(Tuple.of(2, 3), true);
+			queryEngine.flushChanges();
 
-		assertThat(resultSet.size(), is(2));
-		assertThat(resultSet.get(Tuple.of(2)), is(true));
+			assertThat(resultSet.size(), is(2));
+			assertThat(resultSet.get(Tuple.of(2)), is(true));
+		}
 	}
 
 	@Test
@@ -148,11 +151,11 @@ class WeaklyConnectedComponentsTest {
 		var personView = new KeyOnlyView<>(person);
 
 		var subQuery = Query.of("SubQuery", (builder, p1, p2) -> builder
-				.clause(
-						personView.call(p1),
-						personView.call(p2),
-						friendView.call(p1, p2)
-				))
+						.clause(
+								personView.call(p1),
+								personView.call(p2),
+								friendView.call(p1, p2)
+						))
 				.getDnf();
 		var query = Query.of("SymbolViewRepresentative", (builder, p1) -> builder
 				.clause(
@@ -166,23 +169,24 @@ class WeaklyConnectedComponentsTest {
 						.queries(query))
 				.build();
 
-		var model = store.createEmptyModel();
-		var personInterpretation = model.getInterpretation(person);
-		var friendInterpretation = model.getInterpretation(friend);
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var resultSet = queryEngine.getResultSet(query);
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var friendInterpretation = model.getInterpretation(friend);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var resultSet = queryEngine.getResultSet(query);
 
-		personInterpretation.put(Tuple.of(0), true);
-		personInterpretation.put(Tuple.of(1), true);
-		personInterpretation.put(Tuple.of(2), true);
-		personInterpretation.put(Tuple.of(3), true);
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
+			personInterpretation.put(Tuple.of(3), true);
 
-		friendInterpretation.put(Tuple.of(0, 1), true);
-		friendInterpretation.put(Tuple.of(1, 0), true);
-		friendInterpretation.put(Tuple.of(2, 3), true);
-		queryEngine.flushChanges();
+			friendInterpretation.put(Tuple.of(0, 1), true);
+			friendInterpretation.put(Tuple.of(1, 0), true);
+			friendInterpretation.put(Tuple.of(2, 3), true);
+			queryEngine.flushChanges();
 
-		assertThat(resultSet.size(), is(2));
-		assertThat(resultSet.get(Tuple.of(2)), is(true));
+			assertThat(resultSet.size(), is(2));
+			assertThat(resultSet.get(Tuple.of(2)), is(true));
+		}
 	}
 }

@@ -134,78 +134,79 @@ class CRAExamplesTest {
 						.exclude(new DummyCriterion(false)))
 				.build();
 
-		var model = store.createEmptyModel();
-		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+		try (var model = store.createEmptyModel()) {
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
 
-		var nameInterpretation = model.getInterpretation(name);
-		var methodInterpretation = model.getInterpretation(method);
-		var attributeInterpretation = model.getInterpretation(attribute);
-		var dataDependencyInterpretation = model.getInterpretation(dataDependency);
-		var functionalDependencyInterpretation = model.getInterpretation(functionalDependency);
+			var nameInterpretation = model.getInterpretation(name);
+			var methodInterpretation = model.getInterpretation(method);
+			var attributeInterpretation = model.getInterpretation(attribute);
+			var dataDependencyInterpretation = model.getInterpretation(dataDependency);
+			var functionalDependencyInterpretation = model.getInterpretation(functionalDependency);
 
-		var modificationAdapter = model.getAdapter(ModificationAdapter.class);
+			var modificationAdapter = model.getAdapter(ModificationAdapter.class);
 
-		var method1 = modificationAdapter.createObject();
-		var method1Id = method1.get(0);
-		var method2 = modificationAdapter.createObject();
-		var method2Id = method2.get(0);
-		var method3 = modificationAdapter.createObject();
-		var method3Id = method3.get(0);
-		var method4 = modificationAdapter.createObject();
-		var method4Id = method4.get(0);
-		var attribute1 = modificationAdapter.createObject();
-		var attribute1Id = attribute1.get(0);
-		var attribute2 = modificationAdapter.createObject();
-		var attribute2Id = attribute2.get(0);
-		var attribute3 = modificationAdapter.createObject();
-		var attribute3Id = attribute3.get(0);
-		var attribute4 = modificationAdapter.createObject();
-		var attribute4Id = attribute4.get(0);
-		var attribute5 = modificationAdapter.createObject();
-		var attribute5Id = attribute5.get(0);
+			var method1 = modificationAdapter.createObject();
+			var method1Id = method1.get(0);
+			var method2 = modificationAdapter.createObject();
+			var method2Id = method2.get(0);
+			var method3 = modificationAdapter.createObject();
+			var method3Id = method3.get(0);
+			var method4 = modificationAdapter.createObject();
+			var method4Id = method4.get(0);
+			var attribute1 = modificationAdapter.createObject();
+			var attribute1Id = attribute1.get(0);
+			var attribute2 = modificationAdapter.createObject();
+			var attribute2Id = attribute2.get(0);
+			var attribute3 = modificationAdapter.createObject();
+			var attribute3Id = attribute3.get(0);
+			var attribute4 = modificationAdapter.createObject();
+			var attribute4Id = attribute4.get(0);
+			var attribute5 = modificationAdapter.createObject();
+			var attribute5Id = attribute5.get(0);
 
-		nameInterpretation.put(method1, "M1");
-		nameInterpretation.put(method2, "M2");
-		nameInterpretation.put(method3, "M3");
-		nameInterpretation.put(method4, "M4");
-		nameInterpretation.put(attribute1, "A1");
-		nameInterpretation.put(attribute2, "A2");
-		nameInterpretation.put(attribute3, "A3");
-		nameInterpretation.put(attribute4, "A4");
-		nameInterpretation.put(attribute5, "A5");
+			nameInterpretation.put(method1, "M1");
+			nameInterpretation.put(method2, "M2");
+			nameInterpretation.put(method3, "M3");
+			nameInterpretation.put(method4, "M4");
+			nameInterpretation.put(attribute1, "A1");
+			nameInterpretation.put(attribute2, "A2");
+			nameInterpretation.put(attribute3, "A3");
+			nameInterpretation.put(attribute4, "A4");
+			nameInterpretation.put(attribute5, "A5");
 
-		methodInterpretation.put(method1, true);
-		methodInterpretation.put(method2, true);
-		methodInterpretation.put(method3, true);
-		methodInterpretation.put(method4, true);
-		attributeInterpretation.put(attribute1, true);
-		attributeInterpretation.put(attribute2, true);
-		attributeInterpretation.put(attribute3, true);
-		attributeInterpretation.put(attribute4, true);
-		attributeInterpretation.put(attribute5, true);
+			methodInterpretation.put(method1, true);
+			methodInterpretation.put(method2, true);
+			methodInterpretation.put(method3, true);
+			methodInterpretation.put(method4, true);
+			attributeInterpretation.put(attribute1, true);
+			attributeInterpretation.put(attribute2, true);
+			attributeInterpretation.put(attribute3, true);
+			attributeInterpretation.put(attribute4, true);
+			attributeInterpretation.put(attribute5, true);
 
-		dataDependencyInterpretation.put(Tuple.of(method1Id, attribute1Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method2Id, attribute2Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method3Id, attribute3Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method4Id, attribute3Id), true);
-		dataDependencyInterpretation.put(Tuple.of(method4Id, attribute5Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method1Id, attribute1Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method2Id, attribute2Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method3Id, attribute3Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method4Id, attribute3Id), true);
+			dataDependencyInterpretation.put(Tuple.of(method4Id, attribute5Id), true);
 
-		functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute4Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method2Id, attribute1Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute1Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
-		functionalDependencyInterpretation.put(Tuple.of(method4Id, attribute2Id), true);
+			functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute3Id), true);
+			functionalDependencyInterpretation.put(Tuple.of(method1Id, attribute4Id), true);
+			functionalDependencyInterpretation.put(Tuple.of(method2Id, attribute1Id), true);
+			functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute1Id), true);
+			functionalDependencyInterpretation.put(Tuple.of(method3Id, attribute4Id), true);
+			functionalDependencyInterpretation.put(Tuple.of(method4Id, attribute2Id), true);
 
-		var initialVersion = model.commit();
-		queryEngine.flushChanges();
+			var initialVersion = model.commit();
+			queryEngine.flushChanges();
 
-		var bestFirst = new BestFirstStoreManager(store, 50);
-		bestFirst.startExploration(initialVersion);
-		var resultStore = bestFirst.getSolutionStore();
-		System.out.println("states size: " + resultStore.getSolutions().size());
-		model.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
+			var bestFirst = new BestFirstStoreManager(store, 50);
+			bestFirst.startExploration(initialVersion);
+			var resultStore = bestFirst.getSolutionStore();
+			System.out.println("states size: " + resultStore.getSolutions().size());
+			model.getAdapter(ModelVisualizerAdapter.class).visualize(bestFirst.getVisualizationStore());
+		}
 	}
 }

@@ -17,12 +17,13 @@ public record SemanticsTestCase(String name, boolean allowErrors, Problem proble
 								List<SemanticsExpectation> expectations) {
 	public void execute(ModelSemanticsFactory semanticsFactory) {
 		semanticsFactory.withCandidateInterpretations(needsCandidateInterpretations());
-		var semantics = semanticsFactory.createSemantics(problem);
-		if (!allowErrors) {
-			checkNoErrors(semantics);
-		}
-		for (var expectation : expectations) {
-			expectation.execute(semantics);
+		try (var semantics = semanticsFactory.createSemantics(problem)) {
+			if (!allowErrors) {
+				checkNoErrors(semantics);
+			}
+			for (var expectation : expectations) {
+				expectation.execute(semantics);
+			}
 		}
 	}
 

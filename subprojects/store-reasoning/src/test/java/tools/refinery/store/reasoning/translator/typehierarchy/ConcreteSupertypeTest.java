@@ -49,11 +49,14 @@ class ConcreteSupertypeTest {
 						.put(Tuple.of(0), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed)) {
+			var adapter = model.getAdapter(ReasoningAdapter.class);
 
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)), is(TruthValue.TRUE));
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)), is(TruthValue.TRUE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
+					is(TruthValue.TRUE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
+					is(TruthValue.TRUE));
+		}
 	}
 
 	@Test
@@ -65,12 +68,14 @@ class ConcreteSupertypeTest {
 						.put(Tuple.of(0), TruthValue.FALSE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed)) {
+			var adapter = model.getAdapter(ReasoningAdapter.class);
 
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
-				is(TruthValue.UNKNOWN));
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)), is(TruthValue.FALSE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
+					is(TruthValue.UNKNOWN));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
+					is(TruthValue.FALSE));
+		}
 	}
 
 	@Test
@@ -82,12 +87,14 @@ class ConcreteSupertypeTest {
 				.seed(c2, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed)) {
+			var adapter = model.getAdapter(ReasoningAdapter.class);
 
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)), is(TruthValue.TRUE));
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
-				is(TruthValue.UNKNOWN));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
+					is(TruthValue.TRUE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
+					is(TruthValue.UNKNOWN));
+		}
 	}
 
 	@Test
@@ -99,11 +106,14 @@ class ConcreteSupertypeTest {
 				.seed(c2, builder -> builder.reducedValue(TruthValue.UNKNOWN))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed)) {
+			var adapter = model.getAdapter(ReasoningAdapter.class);
 
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)), is(TruthValue.FALSE));
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)), is(TruthValue.FALSE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
+					is(TruthValue.FALSE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
+					is(TruthValue.FALSE));
+		}
 	}
 
 	@Test
@@ -117,11 +127,14 @@ class ConcreteSupertypeTest {
 						.put(Tuple.of(0), TruthValue.FALSE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed)) {
+			var adapter = model.getAdapter(ReasoningAdapter.class);
 
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)), is(TruthValue.TRUE));
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)), is(TruthValue.FALSE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
+					is(TruthValue.TRUE));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
+					is(TruthValue.FALSE));
+		}
 	}
 
 
@@ -136,10 +149,13 @@ class ConcreteSupertypeTest {
 						.put(Tuple.of(0), TruthValue.TRUE))
 				.build();
 
-		var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed);
-		var adapter = model.getAdapter(ReasoningAdapter.class);
+		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(seed)) {
+			var adapter = model.getAdapter(ReasoningAdapter.class);
 
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)), is(TruthValue.ERROR));
-		assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)), is(TruthValue.ERROR));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c1).get(Tuple.of(0)),
+					is(TruthValue.ERROR));
+			assertThat(adapter.getPartialInterpretation(Concreteness.PARTIAL, c2).get(Tuple.of(0)),
+					is(TruthValue.ERROR));
+		}
 	}
 }

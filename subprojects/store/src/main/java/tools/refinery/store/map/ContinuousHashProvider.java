@@ -29,15 +29,15 @@ public interface ContinuousHashProvider<K> {
 	 * Provides a hash code for a object {@code key} with a given {@code index}. It
 	 * has the following contracts:
 	 * <ul>
-	 * <li>If {@link #equals}{@code (key1,key2)}, then
+	 * <li>If {@code equals(key1, key2)}, then
 	 * {@code getHash(key1, index) == getHash(key2, index)} for all values of
 	 * {@code index}.</li>
 	 * <li>If {@code getHash(key1,index) == getHash(key2, index)} for all values of
-	 * {@code index}, then {@link #equals}{@code (key1, key2)}</li>
+	 * {@code index}, then {@code equals(key1, key2)}</li>
 	 * <li>In current implementation, we use only the least significant
 	 * {@link #EFFECTIVE_BITS}
 	 * </ul>
-	 * Check {@link #equals} for further details.
+	 * Check {@link Object#equals(Object)} for further details.
 	 *
 	 * @param key   The target data object.
 	 * @param index The depth of the hash code. Needs to be non-negative.

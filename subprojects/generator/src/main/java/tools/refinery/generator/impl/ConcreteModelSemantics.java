@@ -14,6 +14,7 @@ import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
+import tools.refinery.store.model.Model;
 
 import java.util.Optional;
 
@@ -23,11 +24,11 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 	}
 
 	@Override
-	protected ModelFacadeResult afterPropagation(ModelFacadeResult createInitialModelResult) {
+	protected ModelFacadeResult afterPropagation(Model model, ModelFacadeResult createInitialModelResult) {
 		if (createInitialModelResult.isRejected()) {
 			return createInitialModelResult;
 		}
-		var propagationAdapter = getModel().getAdapter(PropagationAdapter.class);
+		var propagationAdapter = model.getAdapter(PropagationAdapter.class);
 		PropagationResult concretizationResult;
 		try {
 			if (propagationAdapter.concretizationRequested()) {

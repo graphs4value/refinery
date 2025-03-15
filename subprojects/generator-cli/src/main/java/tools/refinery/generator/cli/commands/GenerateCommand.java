@@ -79,18 +79,19 @@ public class GenerateCommand implements Command {
 		}
 		var problem = loader.loadProblem(inputPath, scopes, overrideScopes);
 		generatorFactory.partialInterpretationBasedNeighborhoods(count >= 2);
-		var generator = generatorFactory.createGenerator(problem);
-		generator.setRandomSeed(randomSeed);
-		generator.setMaxNumberOfSolutions(count);
-		generator.generate();
-		if (count == 1) {
-			serializer.saveModel(generator, outputPath);
-		} else {
-			int solutionCount = generator.getSolutionCount();
-			for (int i = 0; i < solutionCount; i++) {
-				generator.loadSolution(i);
-				var pathWithIndex = CliUtils.getFileNameWithIndex(outputPath, i + 1);
-				serializer.saveModel(generator, pathWithIndex, false);
+		try (var generator = generatorFactory.createGenerator(problem)) {
+			generator.setRandomSeed(randomSeed);
+			generator.setMaxNumberOfSolutions(count);
+			generator.generate();
+			if (count == 1) {
+				serializer.saveModel(generator, outputPath);
+			} else {
+				int solutionCount = generator.getSolutionCount();
+				for (int i = 0; i < solutionCount; i++) {
+					generator.loadSolution(i);
+					var pathWithIndex = CliUtils.getFileNameWithIndex(outputPath, i + 1);
+					serializer.saveModel(generator, pathWithIndex, false);
+				}
 			}
 		}
 		return RefineryCli.EXIT_SUCCESS;
