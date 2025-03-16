@@ -51,7 +51,7 @@
     "@swc/core": "^1.11.9",
     "clsx": "^2.1.1",
     "java-properties": "^1.0.2",
-    "lightningcss": "^1.29.2",
+    "lightningcss": "^1.29.3",
     "mdast-util-mdx": "^3.0.0",
     "prism-react-renderer": "^2.4.1",
     "react": "^19.0.0",
