@@ -5,7 +5,7 @@
     "SPDX-License-Identifier: EPL-2.0"
   ],
   "name": "@tools.refinery/client",
-  "version": "0.1.6",
+  "version": "0.1.7-snapshot",
   "description": "API client library for Refinery",
   "type": "module",
   "sideEffects": false,
