@@ -6,11 +6,12 @@
 package tools.refinery.store.query.interpreter.internal.pquery;
 
 import tools.refinery.interpreter.matchers.psystem.IValueProvider;
+import tools.refinery.logic.dnf.DnfClause;
 import tools.refinery.logic.term.Term;
 
 class CheckEvaluator extends TermEvaluator<Boolean> {
-	public CheckEvaluator(Term<Boolean> term) {
-		super(term);
+	public CheckEvaluator(Term<Boolean> term, DnfClause clause) {
+		super(term, clause);
 	}
 
 	@Override

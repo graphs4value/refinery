@@ -22,8 +22,8 @@ import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.logic.tests.QueryMatchers.structurallyEqualTo;
 
 class InputParameterResolverTest {
-	private final static Constraint personView = new FakeKeyOnlyView("Person", 1);
-	private final static Constraint friendView = new FakeKeyOnlyView("friend", 2);
+	private static final Constraint personView = new FakeKeyOnlyView("Person", 1);
+	private static final Constraint friendView = new FakeKeyOnlyView("friend", 2);
 
 	private InputParameterResolver sut;
 

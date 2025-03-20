@@ -6,7 +6,6 @@
 package tools.refinery.logic.term.real;
 
 import tools.refinery.logic.term.UnaryTerm;
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class IntToRealTerm extends UnaryTerm<Double, Integer> {
@@ -15,8 +14,8 @@ public class IntToRealTerm extends UnaryTerm<Double, Integer> {
 	}
 
 	@Override
-	protected Term<Double> doSubstitute(Substitution substitution, Term<Integer> substitutedBody) {
-		return new IntToRealTerm(substitutedBody);
+	protected Term<Double> constructWithBody(Term<Integer> newBody) {
+		return new IntToRealTerm(newBody);
 	}
 
 	@Override

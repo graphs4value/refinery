@@ -5,22 +5,17 @@
  */
 package tools.refinery.store.reasoning.translator.proxy;
 
-import tools.refinery.logic.literal.AbstractCallLiteral;
-import tools.refinery.logic.literal.Literal;
-import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.Constraint;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
-import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
+import tools.refinery.store.reasoning.interpretation.TargetRewriter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.Modality;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 
-import java.util.List;
-import java.util.Set;
-
-public class PartialRelationTranslatorProxy implements ModelStoreConfiguration, PartialRelationRewriter {
+public class PartialRelationTranslatorProxy extends TargetRewriter implements ModelStoreConfiguration {
 	private final PartialRelation partialRelation;
 	private final PartialRelation targetRelation;
 	private final boolean mutable;
@@ -45,8 +40,7 @@ public class PartialRelationTranslatorProxy implements ModelStoreConfiguration, 
 	}
 
 	@Override
-	public List<Literal> rewriteLiteral(Set<Variable> positiveVariables, AbstractCallLiteral literal,
-										Modality modality, Concreteness concreteness) {
-		return List.of(literal.withTarget(ModalConstraint.of(modality, concreteness, targetRelation)));
+	protected Constraint getTarget(Modality modality, Concreteness concreteness) {
+		return ModalConstraint.of(modality, concreteness, targetRelation);
 	}
 }

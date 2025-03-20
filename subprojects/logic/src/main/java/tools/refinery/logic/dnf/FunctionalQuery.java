@@ -6,11 +6,7 @@
 package tools.refinery.logic.dnf;
 
 import tools.refinery.logic.InvalidQueryException;
-import tools.refinery.logic.literal.CallPolarity;
-import tools.refinery.logic.term.Aggregator;
-import tools.refinery.logic.term.AssignedValue;
-import tools.refinery.logic.term.NodeVariable;
-import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,48 +61,27 @@ public final class FunctionalQuery<T> extends Query<T> {
 		return (FunctionalQuery<T>) super.withDnf(newDnf);
 	}
 
-	public AssignedValue<T> call(List<NodeVariable> arguments) {
-		return targetVariable -> {
-			var argumentsWithTarget = new ArrayList<Variable>(arguments.size() + 1);
-			argumentsWithTarget.addAll(arguments);
-			argumentsWithTarget.add(targetVariable);
-			return getDnf().call(CallPolarity.POSITIVE, argumentsWithTarget);
-		};
+	public <R> Term<R> aggregate(Aggregator<R, T> aggregator, List<NodeVariable> arguments) {
+		var placeholderVariable = Variable.of(type);
+		var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
+		argumentsWithPlaceholder.addAll(arguments);
+		argumentsWithPlaceholder.add(placeholderVariable);
+		return getDnf().aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder);
 	}
 
-	public AssignedValue<T> call(NodeVariable... arguments) {
-		return call(List.of(arguments));
-	}
-
-	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, List<NodeVariable> arguments) {
-		return targetVariable -> {
-			var placeholderVariable = Variable.of(type);
-			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
-			argumentsWithPlaceholder.addAll(arguments);
-			argumentsWithPlaceholder.add(placeholderVariable);
-			return getDnf()
-					.aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder)
-					.toLiteral(targetVariable);
-		};
-	}
-
-	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
+	public <R> Term<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
 		return aggregate(aggregator, List.of(arguments));
 	}
 
-	public AssignedValue<T> leftJoin(T defaultValue, List<NodeVariable> arguments) {
-		return targetVariable -> {
-			var placeholderVariable = Variable.of(type);
-			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
-			argumentsWithPlaceholder.addAll(arguments);
-			argumentsWithPlaceholder.add(placeholderVariable);
-			return getDnf()
-					.leftJoinBy(placeholderVariable, defaultValue, argumentsWithPlaceholder)
-					.toLiteral(targetVariable);
-		};
+	public Term<T> leftJoin(T defaultValue, List<NodeVariable> arguments) {
+		var placeholderVariable = Variable.of(type);
+		var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
+		argumentsWithPlaceholder.addAll(arguments);
+		argumentsWithPlaceholder.add(placeholderVariable);
+		return new LeftJoinTerm<>(placeholderVariable, defaultValue, getDnf(), argumentsWithPlaceholder);
 	}
 
-	public AssignedValue<T> leftJoin(T defaultValue, NodeVariable... arguments) {
+	public Term<T> leftJoin(T defaultValue, NodeVariable... arguments) {
 		return leftJoin(defaultValue, List.of(arguments));
 	}
 

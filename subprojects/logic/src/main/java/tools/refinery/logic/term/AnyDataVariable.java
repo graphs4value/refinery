@@ -43,7 +43,7 @@ public abstract sealed class AnyDataVariable extends Variable implements AnyTerm
 	}
 
 	@Override
-	public Set<AnyDataVariable> getInputVariables() {
+	public Set<Variable> getVariables() {
 		return Set.of(this);
 	}
 

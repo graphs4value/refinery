@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.int_;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class IntAddTerm extends IntBinaryTerm {
@@ -14,9 +13,9 @@ public class IntAddTerm extends IntBinaryTerm {
 	}
 
 	@Override
-	public Term<Integer> doSubstitute(Substitution substitution, Term<Integer> substitutedLeft,
-									  Term<Integer> substitutedRight) {
-		return new IntAddTerm(substitutedLeft, substitutedRight);
+    protected Term<Integer> constructWithSubTerms(Term<Integer> newLeft,
+                                                  Term<Integer> newRight) {
+		return new IntAddTerm(newLeft, newRight);
 	}
 
 	@Override

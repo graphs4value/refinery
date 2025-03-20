@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.bool;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class BoolXorTerm extends BoolBinaryTerm {
@@ -14,9 +13,9 @@ public class BoolXorTerm extends BoolBinaryTerm {
 	}
 
 	@Override
-	public Term<Boolean> doSubstitute(Substitution substitution, Term<Boolean> substitutedLeft,
-									  Term<Boolean> substitutedRight) {
-		return new BoolXorTerm(substitutedLeft, substitutedRight);
+    protected Term<Boolean> constructWithSubTerms(Term<Boolean> newLeft,
+                                                  Term<Boolean> newRight) {
+		return new BoolXorTerm(newLeft, newRight);
 	}
 
 	@Override

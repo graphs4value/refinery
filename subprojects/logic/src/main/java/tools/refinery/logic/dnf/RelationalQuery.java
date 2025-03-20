@@ -8,8 +8,8 @@ package tools.refinery.logic.dnf;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.literal.CallLiteral;
 import tools.refinery.logic.literal.CallPolarity;
-import tools.refinery.logic.term.AssignedValue;
 import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Term;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,11 +67,11 @@ public final class RelationalQuery extends Query<Boolean> {
 		return getDnf().callTransitive(left, right);
 	}
 
-	public AssignedValue<Integer> count(List<NodeVariable> arguments) {
+	public Term<Integer> count(List<NodeVariable> arguments) {
 		return getDnf().count(Collections.unmodifiableList(arguments));
 	}
 
-	public AssignedValue<Integer> count(NodeVariable... arguments) {
+	public Term<Integer> count(NodeVariable... arguments) {
 		return getDnf().count(arguments);
 	}
 }

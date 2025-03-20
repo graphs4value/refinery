@@ -9,8 +9,10 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
+import tools.refinery.logic.literal.AssignLiteral;
 import tools.refinery.logic.literal.EquivalenceLiteral;
 import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.valuation.Valuation;
 
@@ -56,6 +58,12 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 	}
 
 	@Override
+	public Term<T> rewriteSubTerms(TermRewriter termRewriter) {
+		// No sub-terms to rewrite.
+		return this;
+	}
+
+	@Override
 	public Term<T> substitute(Substitution substitution) {
 		return substitution.getTypeSafeSubstitute(this);
 	}
@@ -75,8 +83,8 @@ public final class DataVariable<T> extends AnyDataVariable implements Term<T> {
 		return Objects.hash(type, sequenceNumber);
 	}
 
-	public Literal assign(AssignedValue<T> value) {
-		return value.toLiteral(this);
+	public Literal assign(Term<T> value) {
+		return new AssignLiteral<>(this, value);
 	}
 
 	@Override

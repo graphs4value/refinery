@@ -26,32 +26,27 @@ public record FakeFunctionView<T>(String name, int keyArity, Class<T> valueType)
 		return List.of(parameters);
 	}
 
-	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, List<NodeVariable> arguments) {
-		return targetVariable -> {
-			var placeholderVariable = Variable.of(valueType);
-			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
-			argumentsWithPlaceholder.addAll(arguments);
-			argumentsWithPlaceholder.add(placeholderVariable);
-			return aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder).toLiteral(targetVariable);
-		};
+	public <R> Term<R> aggregate(Aggregator<R, T> aggregator, List<NodeVariable> arguments) {
+		var placeholderVariable = Variable.of(valueType);
+		var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
+		argumentsWithPlaceholder.addAll(arguments);
+		argumentsWithPlaceholder.add(placeholderVariable);
+		return aggregateBy(placeholderVariable, aggregator, argumentsWithPlaceholder);
 	}
 
-	public <R> AssignedValue<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
+	public <R> Term<R> aggregate(Aggregator<R, T> aggregator, NodeVariable... arguments) {
 		return aggregate(aggregator, List.of(arguments));
 	}
 
-	public AssignedValue<T> leftJoin(T defaultValue, List<NodeVariable> arguments) {
-		return targetVariable -> {
-			var placeholderVariable = Variable.of(valueType);
-			var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
-			argumentsWithPlaceholder.addAll(arguments);
-			argumentsWithPlaceholder.add(placeholderVariable);
-			return leftJoinBy(placeholderVariable, defaultValue, argumentsWithPlaceholder).toLiteral(targetVariable);
-		};
+	public Term<T> leftJoin(T defaultValue, List<NodeVariable> arguments) {
+		var placeholderVariable = Variable.of(valueType);
+		var argumentsWithPlaceholder = new ArrayList<Variable>(arguments.size() + 1);
+		argumentsWithPlaceholder.addAll(arguments);
+		argumentsWithPlaceholder.add(placeholderVariable);
+		return leftJoinBy(placeholderVariable, defaultValue, argumentsWithPlaceholder);
 	}
 
-	public AssignedValue<T> leftJoin(T defaultValue, NodeVariable... arguments) {
+	public Term<T> leftJoin(T defaultValue, NodeVariable... arguments) {
 		return leftJoin(defaultValue, List.of(arguments));
-
 	}
 }

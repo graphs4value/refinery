@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.comparable;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class NotEqTerm<T> extends ComparisonTerm<T> {
@@ -19,8 +18,8 @@ public class NotEqTerm<T> extends ComparisonTerm<T> {
 	}
 
 	@Override
-	public Term<Boolean> doSubstitute(Substitution substitution, Term<T> substitutedLeft, Term<T> substitutedRight) {
-		return new NotEqTerm<>(getArgumentType(), substitutedLeft, substitutedRight);
+    protected Term<Boolean> constructWithSubTerms(Term<T> newLeft, Term<T> newRight) {
+		return new NotEqTerm<>(getArgumentType(), newLeft, newRight);
 	}
 
 	@Override

@@ -13,13 +13,12 @@ import tools.refinery.logic.term.DataVariable;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
 // {@link Object#equals(Object)} is implemented by {@link AbstractLiteral}.
 @SuppressWarnings("squid:S2160")
-public class AssignLiteral<T> extends AbstractLiteral {
+public class AssignLiteral<T> extends AbstractLiteral implements TermLiteral<T> {
 	private final DataVariable<T> variable;
 	private final Term<T> term;
 
@@ -28,7 +27,7 @@ public class AssignLiteral<T> extends AbstractLiteral {
 			throw new InvalidQueryException("Term %s must be of type %s, got %s instead".formatted(
 					term, variable.getType().getName(), term.getType().getName()));
 		}
-		var inputVariables = term.getInputVariables();
+		var inputVariables = term.getVariables();
 		if (inputVariables.contains(variable)) {
 			throw new InvalidQueryException("Result variable %s must not appear in the term %s".formatted(
 					variable, term));
@@ -41,8 +40,17 @@ public class AssignLiteral<T> extends AbstractLiteral {
 		return variable;
 	}
 
+	@Override
 	public Term<T> getTerm() {
 		return term;
+	}
+
+	@Override
+	public AssignLiteral<T> withTerm(Term<T> term) {
+		if (this.term == term) {
+			return this;
+		}
+		return new AssignLiteral<>(variable, term);
 	}
 
 	@Override
@@ -52,12 +60,12 @@ public class AssignLiteral<T> extends AbstractLiteral {
 
 	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Collections.unmodifiableSet(term.getInputVariables());
+		return term.getInputVariables(positiveVariablesInClause);
 	}
 
 	@Override
 	public Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
-		return Set.of();
+		return term.getPrivateVariables(positiveVariablesInClause);
 	}
 
 	@Override

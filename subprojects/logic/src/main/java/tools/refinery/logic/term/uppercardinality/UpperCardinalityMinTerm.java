@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.uppercardinality;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class UpperCardinalityMinTerm extends UpperCardinalityBinaryTerm {
@@ -19,8 +18,8 @@ public class UpperCardinalityMinTerm extends UpperCardinalityBinaryTerm {
 	}
 
 	@Override
-	public Term<UpperCardinality> doSubstitute(Substitution substitution, Term<UpperCardinality> substitutedLeft, Term<UpperCardinality> substitutedRight) {
-		return new UpperCardinalityMinTerm(substitutedLeft, substitutedRight);
+    protected Term<UpperCardinality> constructWithSubTerms(Term<UpperCardinality> newLeft, Term<UpperCardinality> newRight) {
+		return new UpperCardinalityMinTerm(newLeft, newRight);
 	}
 
 	@Override

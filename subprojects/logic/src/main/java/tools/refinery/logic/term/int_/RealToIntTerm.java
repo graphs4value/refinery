@@ -7,7 +7,6 @@ package tools.refinery.logic.term.int_;
 
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.UnaryTerm;
-import tools.refinery.logic.substitution.Substitution;
 
 public class RealToIntTerm extends UnaryTerm<Integer, Double> {
 	protected RealToIntTerm(Term<Double> body) {
@@ -20,8 +19,8 @@ public class RealToIntTerm extends UnaryTerm<Integer, Double> {
 	}
 
 	@Override
-	protected Term<Integer> doSubstitute(Substitution substitution, Term<Double> substitutedBody) {
-		return new RealToIntTerm(substitutedBody);
+	protected Term<Integer> constructWithBody(Term<Double> newBody) {
+		return new RealToIntTerm(newBody);
 	}
 
 	@Override

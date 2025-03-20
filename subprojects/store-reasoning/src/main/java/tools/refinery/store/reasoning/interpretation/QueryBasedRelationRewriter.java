@@ -5,17 +5,12 @@
  */
 package tools.refinery.store.reasoning.interpretation;
 
+import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.logic.literal.AbstractCallLiteral;
-import tools.refinery.logic.literal.Literal;
-import tools.refinery.logic.term.Variable;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.Modality;
 
-import java.util.List;
-import java.util.Set;
-
-public class QueryBasedRelationRewriter implements PartialRelationRewriter {
+public class QueryBasedRelationRewriter extends TargetRewriter {
 	private final RelationalQuery may;
 	private final RelationalQuery must;
 	private final RelationalQuery candidateMay;
@@ -46,8 +41,7 @@ public class QueryBasedRelationRewriter implements PartialRelationRewriter {
 	}
 
 	@Override
-	public List<Literal> rewriteLiteral(Set<Variable> positiveVariables, AbstractCallLiteral literal,
-										Modality modality, Concreteness concreteness) {
+	protected Constraint getTarget(Modality modality, Concreteness concreteness) {
 		var query = switch (concreteness) {
 			case PARTIAL -> switch (modality) {
 				case MAY -> may;
@@ -58,6 +52,6 @@ public class QueryBasedRelationRewriter implements PartialRelationRewriter {
 				case MUST -> candidateMust;
 			};
 		};
-		return List.of(literal.withTarget(query.getDnf()));
+		return query.getDnf();
 	}
 }

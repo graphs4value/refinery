@@ -7,6 +7,7 @@ package tools.refinery.logic.term;
 
 import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.equality.LiteralHashCodeHelper;
+import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.substitution.Substitution;
 
 import java.util.Set;
@@ -14,11 +15,21 @@ import java.util.Set;
 public sealed interface AnyTerm permits AnyDataVariable, Term {
 	Class<?> getType();
 
+	AnyTerm rewriteSubTerms(TermRewriter termRewriter);
+
 	AnyTerm substitute(Substitution substitution);
 
 	boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other);
 
 	int hashCodeWithSubstitution(LiteralHashCodeHelper helper);
 
-	Set<AnyDataVariable> getInputVariables();
+	Set<Variable> getVariables();
+
+	default Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return getVariables();
+	}
+
+	default Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
+		return Set.of();
+	}
 }

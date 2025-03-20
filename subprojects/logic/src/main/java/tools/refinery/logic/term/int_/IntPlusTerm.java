@@ -5,7 +5,6 @@
  */
 package tools.refinery.logic.term.int_;
 
-import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.Term;
 
 public class IntPlusTerm extends IntUnaryTerm {
@@ -14,8 +13,8 @@ public class IntPlusTerm extends IntUnaryTerm {
 	}
 
 	@Override
-	protected Term<Integer> doSubstitute(Substitution substitution, Term<Integer> substitutedBody) {
-		return new IntPlusTerm(substitutedBody);
+	protected Term<Integer> constructWithBody(Term<Integer> newBody) {
+		return new IntPlusTerm(newBody);
 	}
 
 	@Override
