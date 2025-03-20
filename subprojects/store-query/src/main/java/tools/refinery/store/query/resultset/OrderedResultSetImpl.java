@@ -8,12 +8,13 @@ package tools.refinery.store.query.resultset;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.logic.dnf.Query;
+import tools.refinery.store.query.OrderedResultSet;
 import tools.refinery.store.query.utils.OrderStatisticTree;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
 
-public class OrderedResultSet<T> implements AutoCloseable, ResultSet<T> {
+public class OrderedResultSetImpl<T> implements OrderedResultSet<T> {
 	private final ResultSet<T> resultSet;
 	private final OrderStatisticTree<Tuple> tree = new OrderStatisticTree<>();
 	private final ResultSetListener<T> listener = (key, fromValue, toValue) -> {
@@ -25,7 +26,7 @@ public class OrderedResultSet<T> implements AutoCloseable, ResultSet<T> {
 		}
 	};
 
-	public OrderedResultSet(ResultSet<T> resultSet) {
+	public OrderedResultSetImpl(ResultSet<T> resultSet) {
 		this.resultSet = resultSet;
 		resultSet.addListener(listener);
 		var cursor = resultSet.getAll();
@@ -54,6 +55,7 @@ public class OrderedResultSet<T> implements AutoCloseable, ResultSet<T> {
 		return resultSet.get(parameters);
 	}
 
+	@Override
 	public Tuple getKey(int index) {
 		return tree.get(index);
 	}

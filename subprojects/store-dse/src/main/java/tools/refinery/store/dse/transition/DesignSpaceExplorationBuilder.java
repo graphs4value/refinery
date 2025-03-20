@@ -15,7 +15,11 @@ import java.util.List;
 // Builder pattern with methods returning {@code this} for convenience.
 @SuppressWarnings("UnusedReturnValue")
 public interface DesignSpaceExplorationBuilder extends ModelAdapterBuilder {
-	DesignSpaceExplorationBuilder transformation(Rule transformationRuleDefinition);
+	DesignSpaceExplorationBuilder transformation(DecisionRule decisionRule);
+
+	default DesignSpaceExplorationBuilder transformation(Rule transformationRuleDefinition) {
+		return this.transformation(new DecisionRule(transformationRuleDefinition));
+	}
 
 	default DesignSpaceExplorationBuilder transformations(Rule... transformationRuleDefinitions) {
 		return transformations(List.of(transformationRuleDefinitions));

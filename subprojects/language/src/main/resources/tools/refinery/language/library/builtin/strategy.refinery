@@ -70,3 +70,5 @@ import builtin::annotations.
  *             Default value: `true`.
  */
 #pred decide(@optional boolean auto).
+
+#pred priority(int value).

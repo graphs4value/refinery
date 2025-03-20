@@ -6,6 +6,7 @@
 package tools.refinery.store.dse.transition.internal;
 
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
+import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criterion;
@@ -21,14 +22,14 @@ public class DesignSpaceExplorationBuilderImpl
 		extends AbstractModelAdapterBuilder<DesignSpaceExplorationStoreAdapterImpl>
 		implements DesignSpaceExplorationBuilder {
 
-	LinkedHashSet<Rule> transformationRuleDefinitions = new LinkedHashSet<>();
+	LinkedHashSet<DecisionRule> decisionRules = new LinkedHashSet<>();
 	LinkedHashSet<Criterion> accepts = new LinkedHashSet<>();
 	LinkedHashSet<Criterion> excludes = new LinkedHashSet<>();
 	LinkedHashSet<Objective> objectives = new LinkedHashSet<>();
 
 	@Override
-	public DesignSpaceExplorationBuilder transformation(Rule transformationRuleDefinition) {
-		transformationRuleDefinitions.add(transformationRuleDefinition);
+	public DesignSpaceExplorationBuilder transformation(DecisionRule decisionRule) {
+		decisionRules.add(decisionRule);
 		return this;
 	}
 
@@ -54,7 +55,7 @@ public class DesignSpaceExplorationBuilderImpl
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		var queryEngine = storeBuilder.getAdapter(ModelQueryBuilder.class);
-		transformationRuleDefinitions.forEach(x -> queryEngine.query(x.getPrecondition()));
+		decisionRules.forEach(x -> queryEngine.query(x.rule().getPrecondition()));
 		accepts.forEach(x -> x.configure(storeBuilder));
 		excludes.forEach(x -> x.configure(storeBuilder));
 		objectives.forEach(x -> x.configure(storeBuilder));
@@ -64,12 +65,12 @@ public class DesignSpaceExplorationBuilderImpl
 
 	@Override
 	protected DesignSpaceExplorationStoreAdapterImpl doBuild(ModelStore store) {
-		List<Rule> transformationRuleDefinitionsList = List.copyOf(transformationRuleDefinitions);
+		List<DecisionRule> decisionRuleList = List.copyOf(decisionRules);
 		List<Criterion> acceptsList = List.copyOf(accepts);
 		List<Criterion> excludesList = List.copyOf(excludes);
 		List<Objective> objectivesList = List.copyOf(objectives);
 
-		return new DesignSpaceExplorationStoreAdapterImpl(store, transformationRuleDefinitionsList, acceptsList,
+		return new DesignSpaceExplorationStoreAdapterImpl(store, decisionRuleList, acceptsList,
 				excludesList, objectivesList);
 	}
 }

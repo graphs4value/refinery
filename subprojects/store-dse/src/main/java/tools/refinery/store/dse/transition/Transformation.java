@@ -8,25 +8,30 @@ package tools.refinery.store.dse.transition;
 import tools.refinery.store.dse.transition.actions.BoundAction;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.resultset.OrderedResultSet;
+import tools.refinery.store.query.OrderedResultSet;
+import tools.refinery.store.query.resultset.OrderedResultSetImpl;
+import tools.refinery.store.query.resultset.PriorityAgenda;
+import tools.refinery.store.query.resultset.PriorityResultSet;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.tuple.Tuple;
 
 public class Transformation {
-	private final Rule definition;
+	private final DecisionRule decisionRule;
 	private final OrderedResultSet<Boolean> activations;
 	private final BoundAction action;
 
-	public Transformation(Model model, Rule definition) {
-		this.definition = definition;
+	public Transformation(Model model, PriorityAgenda agenda, DecisionRule decisionRule) {
+		this.decisionRule = decisionRule;
+		var definition = decisionRule.rule();
 		var precondition = definition.getPrecondition();
 		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		activations = new OrderedResultSet<>(queryEngine.getResultSet(precondition));
+		var orderedResultSet = new OrderedResultSetImpl<>(queryEngine.getResultSet(precondition));
+		activations = new PriorityResultSet<>(orderedResultSet, decisionRule.priority(), agenda);
 		action = definition.createAction(model);
 	}
 
-	public Rule getDefinition() {
-		return definition;
+	public DecisionRule getDefinition() {
+		return decisionRule;
 	}
 
 	public ResultSet<Boolean> getAllActivationsAsResultSet() {

@@ -5,31 +5,32 @@
  */
 package tools.refinery.store.dse.transition.internal;
 
+import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationStoreAdapter;
 import tools.refinery.store.dse.transition.Transformation;
-import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.objectives.Criterion;
 import tools.refinery.store.dse.transition.objectives.CriterionCalculator;
 import tools.refinery.store.dse.transition.objectives.Objective;
 import tools.refinery.store.dse.transition.objectives.ObjectiveCalculator;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
+import tools.refinery.store.query.resultset.PriorityAgenda;
 
 import java.util.List;
 
 public class DesignSpaceExplorationStoreAdapterImpl implements DesignSpaceExplorationStoreAdapter {
 	protected final ModelStore store;
 
-	protected final List<Rule> ruleDefinitions;
+	protected final List<DecisionRule> decisionRules;
 	protected final List<Criterion> accepts;
 	protected final List<Criterion> excludes;
 	protected final List<Objective> objectives;
 
 	public DesignSpaceExplorationStoreAdapterImpl(
-			ModelStore store, List<Rule> ruleDefinitions, List<Criterion> accepts, List<Criterion> excludes,
+			ModelStore store, List<DecisionRule> decisionRules, List<Criterion> accepts, List<Criterion> excludes,
 			List<Objective> objectives) {
 		this.store = store;
-		this.ruleDefinitions = ruleDefinitions;
+		this.decisionRules = decisionRules;
 		this.accepts = accepts;
 		this.excludes = excludes;
 		this.objectives = objectives;
@@ -42,8 +43,9 @@ public class DesignSpaceExplorationStoreAdapterImpl implements DesignSpaceExplor
 
 	@Override
 	public DesignSpaceExplorationAdapterImpl createModelAdapter(Model model) {
-		final List<Transformation> t = this.ruleDefinitions.stream()
-				.map(x -> new Transformation(model, x))
+		var agenda = new PriorityAgenda();
+		final List<Transformation> t = this.decisionRules.stream()
+				.map(x -> new Transformation(model, agenda, x))
 				.toList();
 		final List<CriterionCalculator> a = this.accepts.stream().map(x -> x.createCalculator(model)).toList();
 		final List<CriterionCalculator> e = this.excludes.stream().map(x -> x.createCalculator(model)).toList();
@@ -53,8 +55,8 @@ public class DesignSpaceExplorationStoreAdapterImpl implements DesignSpaceExplor
 	}
 
 	@Override
-	public List<Rule> getTransformations() {
-		return ruleDefinitions;
+	public List<DecisionRule> getTransformations() {
+		return decisionRules;
 	}
 
 	@Override

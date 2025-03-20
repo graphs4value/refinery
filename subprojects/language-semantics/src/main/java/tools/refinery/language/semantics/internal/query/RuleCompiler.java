@@ -20,6 +20,7 @@ import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
@@ -51,7 +52,13 @@ public class RuleCompiler {
 		this.queryCompiler = queryCompiler;
 	}
 
-	public Rule toDecisionRule(String name, RuleDefinition ruleDefinition) {
+	public DecisionRule toDecisionRule(String name, RuleDefinition ruleDefinition) {
+		var rule = toDecisionRuleInternal(name, ruleDefinition);
+		int priority = builtinAnnotationContext.getPriority(ruleDefinition);
+		return new DecisionRule(rule, priority);
+	}
+
+	private Rule toDecisionRuleInternal(String name, RuleDefinition ruleDefinition) {
 		var consequents = ruleDefinition.getConsequents();
 		if (consequents.isEmpty()) {
 			return toRule(name, ruleDefinition);

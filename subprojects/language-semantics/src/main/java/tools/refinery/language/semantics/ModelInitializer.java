@@ -805,7 +805,7 @@ public class ModelInitializer {
 			switch (ruleDefinition.getKind()) {
 			case DECISION -> {
 				var rule = ruleCompiler.toDecisionRule(name, ruleDefinition);
-				problemTrace.putRuleDefinition(ruleDefinition, rule);
+				problemTrace.putRuleDefinition(ruleDefinition, rule.rule());
 				storeBuilder.tryGetAdapter(DesignSpaceExplorationBuilder.class)
 						.ifPresent(dseBuilder -> dseBuilder.transformation(rule));
 			}
