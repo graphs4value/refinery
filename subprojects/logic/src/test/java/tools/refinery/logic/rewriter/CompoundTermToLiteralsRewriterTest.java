@@ -9,9 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Query;
-import tools.refinery.logic.literal.AggregationLiteral;
-import tools.refinery.logic.literal.CountLiteral;
-import tools.refinery.logic.literal.LeftJoinLiteral;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.int_.IntTerms;
 import tools.refinery.logic.tests.FakeFunctionView;
@@ -49,7 +46,7 @@ class CompoundTermToLiteralsRewriterTest {
 		var expected = Query.of("Expected", Integer.class, (builder, p1, output) -> builder
 				.clause(Integer.class, v1 -> List.of(
 						personView.call(p1),
-						new LeftJoinLiteral<>(output, v1, 0, ageView, List.of(p1, v1))
+						output.assign(ageView.leftJoinBy(v1, 0, p1, v1))
 				)));
 
 		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));
@@ -68,7 +65,7 @@ class CompoundTermToLiteralsRewriterTest {
 		var expected = Query.of("Expected", Integer.class, (builder, p1, output) -> builder
 				.clause(Integer.class, Integer.class, (v1, v2) -> List.of(
 						personView.call(p1),
-						new LeftJoinLiteral<>(v2, v1, 0, ageView, List.of(p1, v1)),
+						v2.assign(ageView.leftJoinBy(v1, 0, p1, v1)),
 						output.assign(IntTerms.mul(IntTerms.constant(2), v2))
 				)));
 
@@ -91,8 +88,8 @@ class CompoundTermToLiteralsRewriterTest {
 				.clause(Integer.class, Integer.class, Integer.class, Integer.class, (v1, v2, v3, v4) -> List.of(
 						personView.call(p1),
 						personView.call(p2),
-						new LeftJoinLiteral<>(v3, v1, 0, ageView, List.of(p1, v1)),
-						new LeftJoinLiteral<>(v4, v2, 18, ageView, List.of(p2, v2)),
+						v3.assign(ageView.leftJoinBy(v1, 0, p1, v1)),
+						v4.assign(ageView.leftJoinBy(v2, 18, p2, v2)),
 						output.assign(IntTerms.add(v3, v4))
 				)));
 
@@ -112,7 +109,7 @@ class CompoundTermToLiteralsRewriterTest {
 		var expected = Query.of("Expected", (builder, p1) -> builder
 				.clause(Boolean.class, Boolean.class, (v1, v2) -> List.of(
 						personView.call(p1),
-						new LeftJoinLiteral<>(v2, v1, false, adultView, List.of(p1, v1)),
+						v2.assign(adultView.leftJoinBy(v1, false, p1, v1)),
 						check(v2)
 				)));
 
@@ -137,7 +134,7 @@ class CompoundTermToLiteralsRewriterTest {
 		var expectedSubQuery = Query.of("SubQuery", Integer.class, (builder, p1, output) -> builder
 				.clause(Integer.class, Integer.class, (v1, v2) -> List.of(
 						personView.call(p1),
-						new LeftJoinLiteral<>(v2, v1, 0, ageView, List.of(p1, v1)),
+						v2.assign(ageView.leftJoinBy(v1, 0, p1, v1)),
 						output.assign(IntTerms.mul(IntTerms.constant(2), v2))
 				)));
 		var expected = Query.of("Expected", Integer.class, (builder, p1, p2, output) -> builder
@@ -167,13 +164,13 @@ class CompoundTermToLiteralsRewriterTest {
 		var expectedSubQuery = Query.of("SubQuery", Integer.class, (builder, p1, output) -> builder
 				.clause(Integer.class, Integer.class, (v1, v2) -> List.of(
 						personView.call(p1),
-						new LeftJoinLiteral<>(v2, v1, 0, ageView, List.of(p1, v1)),
+						v2.assign(ageView.leftJoinBy(v1, 0, p1, v1)),
 						output.assign(IntTerms.mul(IntTerms.constant(2), v2))
 				)));
 		var expected = Query.of("Expected", Integer.class, (builder, p1, p2, output) -> builder
 				.clause(Integer.class, Integer.class, (v1, v2) -> List.of(
 						friendView.call(p1, p2),
-						new LeftJoinLiteral<>(v2, v1, 36, expectedSubQuery.getDnf(), List.of(p2, v1)),
+						v2.assign(expectedSubQuery.leftJoin(36, p2)),
 						output.assign(IntTerms.div(v2, IntTerms.constant(2)))
 				)));
 
@@ -181,44 +178,35 @@ class CompoundTermToLiteralsRewriterTest {
 	}
 
 	@Test
-	void countTermTest() {
-		var query = Query.of("Actual", Integer.class, (builder, p1, output) -> builder
+	void singleLiteralTest() {
+		var query = Query.of("Actual", Integer.class, (builder, output) -> builder
 				.clause(
-						personView.call(p1),
-						output.assign(friendView.count(p1, Variable.of()))
+						output.assign(personView.count(Variable.of()))
 				));
 
 		var actual = sut.rewrite(query);
 
-		var expected = Query.of("Expected", Integer.class, (builder, p1, output) -> builder
+		var expected = Query.of("Expected", Integer.class, (builder, output) -> builder
 				.clause(
-						personView.call(p1),
-						new CountLiteral(output, friendView, List.of(p1, Variable.of()))
+						output.assign(personView.count(Variable.of()))
 				));
 
 		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));
 	}
 
 	@Test
-	void aggregationTermTest() {
-		var subQuery = Query.of("SubQuery", Integer.class, (builder, p1, p2, output) -> builder
+	void singleLiteralCompoundExpressionTest() {
+		var query = Query.of("Actual", Integer.class, (builder, output) -> builder
 				.clause(
-						friendView.call(p1, p2),
-						ageView.call(p2, output)
-				));
-		var query = Query.of("Actual", Integer.class, (builder, p1, output) -> builder
-				.clause(
-						personView.call(p1),
-						output.assign(subQuery.aggregate(IntTerms.INT_SUM, p1, Variable.of()))
+						output.assign(IntTerms.mul(personView.count(Variable.of()), IntTerms.constant(2)))
 				));
 
 		var actual = sut.rewrite(query);
 
-		var expected = Query.of("Expected", Integer.class, (builder, p1, output) -> builder
+		var expected = Query.of("Expected", Integer.class, (builder, output) -> builder
 				.clause(Integer.class, v1 -> List.of(
-						personView.call(p1),
-						new AggregationLiteral<>(output, IntTerms.INT_SUM, v1, subQuery.getDnf(),
-								List.of(p1, Variable.of(), v1))
+						v1.assign(personView.count(Variable.of())),
+						output.assign(IntTerms.mul(v1, IntTerms.constant(2)))
 				)));
 
 		assertThat(actual.getDnf(), structurallyEqualTo(expected.getDnf()));

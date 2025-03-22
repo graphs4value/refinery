@@ -15,6 +15,10 @@ public non-sealed interface Term<T> extends AnyTerm {
 
 	T evaluate(Valuation valuation);
 
+	default Term<T> reduce() {
+		return this;
+	}
+
 	@Override
 	Term<T> rewriteSubTerms(TermRewriter termRewriter);
 

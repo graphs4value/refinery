@@ -29,6 +29,7 @@ public class CompoundTermToLiteralsRewriter extends AbstractRecursiveRewriter {
 	private class ClauseRewriter {
 		private int temporaryCount = 0;
 		private final Deque<Literal> workList = new ArrayDeque<>();
+		private boolean keepOriginal = true;
 		private final List<Literal> outputLiterals = new ArrayList<>();
 		private final List<Literal> rewrittenLiterals = new ArrayList<>();
 
@@ -57,7 +58,7 @@ public class CompoundTermToLiteralsRewriter extends AbstractRecursiveRewriter {
 			} else if (literal instanceof CheckLiteral checkLiteral) {
 				processCheckLiteral(checkLiteral);
 			}
-			if (outputLiterals.isEmpty()) {
+			if (outputLiterals.isEmpty() && keepOriginal) {
 				rewrittenLiterals.add(literal);
 			} else {
 				int size = outputLiterals.size();
@@ -65,18 +66,34 @@ public class CompoundTermToLiteralsRewriter extends AbstractRecursiveRewriter {
 					workList.addFirst(outputLiterals.get(i));
 				}
 				outputLiterals.clear();
+				keepOriginal = true;
 			}
 		}
 
 		private <T> void processAssignLiteral(AssignLiteral<T> assignLiteral) {
 			var targetVariable = assignLiteral.getVariable();
 			var term = assignLiteral.getTerm();
-			var rewrittenTerm = rewriteTerm(term, () -> targetVariable);
-			if (term != rewrittenTerm) {
-				if (!Objects.equals(targetVariable, rewrittenTerm)) {
-					workList.addFirst(new AssignLiteral<>(targetVariable, rewrittenTerm));
+			if (term instanceof AbstractCallTerm<T> callTerm) {
+				// Rewrite the target of the call term if it appears at the top level.
+				var target = callTerm.getTarget();
+				if (target instanceof Dnf dnf) {
+					var newTarget = CompoundTermToLiteralsRewriter.this.rewrite(dnf);
+					if (newTarget != target) {
+						// We don't need to process this literal again, so we just add it to the result list.
+						rewrittenLiterals.add(assignLiteral.withTerm(callTerm.withTarget(newTarget)));
+						keepOriginal = false;
+						return;
+					}
 				}
-				return;
+			} else {
+				// Extract call terms in the compound term into dedicated assignment literals.
+				var rewrittenTerm = rewriteTerm(term, () -> targetVariable);
+				if (term != rewrittenTerm) {
+					if (!Objects.equals(targetVariable, rewrittenTerm)) {
+						workList.addFirst(new AssignLiteral<>(targetVariable, rewrittenTerm));
+					}
+					return;
+				}
 			}
 			checkNoOutputLiterals(assignLiteral);
 		}
@@ -110,39 +127,12 @@ public class CompoundTermToLiteralsRewriter extends AbstractRecursiveRewriter {
 		}
 
 		private <T> Term<T> rewriteTerm(Term<T> term, Supplier<DataVariable<T>> variableSupplier) {
-			return switch (term) {
-				case LeftJoinTerm<T> leftJoinTerm -> rewriteLeftJoinTerm(leftJoinTerm, variableSupplier);
-				case CountTerm countTerm -> rewriteCountTerm(countTerm, variableSupplier);
-				case AggregationTerm<T, ?> aggregationTerm -> rewriteAggregationTerm(aggregationTerm,
-						variableSupplier);
-				default -> term.rewriteSubTerms(this::rewriteTerm);
-			};
-		}
-
-		private <T> DataVariable<T> rewriteLeftJoinTerm(LeftJoinTerm<T> leftJoinTerm,
-														Supplier<DataVariable<T>> variableSupplier) {
-			var temporaryVariable = variableSupplier.get();
-			outputLiterals.add(new LeftJoinLiteral<>(temporaryVariable, leftJoinTerm.getPlaceholderVariable(),
-					leftJoinTerm.getDefaultValue(), leftJoinTerm.getTarget(), leftJoinTerm.getArguments()));
-			return temporaryVariable;
-		}
-
-		private <T> DataVariable<T> rewriteCountTerm(CountTerm countTerm, Supplier<DataVariable<T>> variableSupplier) {
-			var temporaryVariable = variableSupplier.get();
-			// The only choice for {@code T} in {@link CountTerm} is {@link Integer}.
-			@SuppressWarnings("unchecked")
-			var temporaryIntegerVariable = (DataVariable<Integer>) temporaryVariable;
-			outputLiterals.add(new CountLiteral(temporaryIntegerVariable, countTerm.getTarget(),
-					countTerm.getArguments()));
-			return temporaryVariable;
-		}
-
-		private <R, T> DataVariable<R> rewriteAggregationTerm(AggregationTerm<R, T> aggregationTerm,
-															  Supplier<DataVariable<R>> variableSupplier) {
-			var temporaryVariable = variableSupplier.get();
-			outputLiterals.add(new AggregationLiteral<>(temporaryVariable, aggregationTerm.getAggregator(),
-					aggregationTerm.getInputVariable(), aggregationTerm.getTarget(), aggregationTerm.getArguments()));
-			return temporaryVariable;
+			if (term instanceof AbstractCallTerm<T> callTerm) {
+				var temporaryVariable = variableSupplier.get();
+				outputLiterals.add(new AssignLiteral<>(temporaryVariable, callTerm));
+				return temporaryVariable;
+			}
+			return term.rewriteSubTerms(this::rewriteTerm);
 		}
 	}
 }

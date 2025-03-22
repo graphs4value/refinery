@@ -20,11 +20,12 @@ import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.DnfUtils;
 import tools.refinery.logic.literal.AbstractCallLiteral;
+import tools.refinery.logic.term.AbstractCallTerm;
 import tools.refinery.logic.term.ParameterDirection;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.util.CycleDetectingMapper;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.SymbolView;
-import tools.refinery.logic.util.CycleDetectingMapper;
 
 import java.util.*;
 import java.util.function.ToIntFunction;
@@ -48,7 +49,14 @@ class QueryWrapperFactory {
 	}
 
 	public WrappedCall maybeWrapConstraint(AbstractCallLiteral callLiteral) {
-		var arguments = callLiteral.getArguments();
+		return maybeWrapConstraint(callLiteral.getTarget(), callLiteral.getArguments());
+	}
+
+	public WrappedCall maybeWrapConstraint(AbstractCallTerm<?> callTerm) {
+		return maybeWrapConstraint(callTerm.getTarget(), callTerm.getArguments());
+	}
+
+	private WrappedCall maybeWrapConstraint(Constraint constraint, List<Variable> arguments) {
 		int arity = arguments.size();
 		var remappedParameters = new int[arity];
 		var unboundVariableIndices = new HashMap<Variable, Integer>();
@@ -58,7 +66,7 @@ class QueryWrapperFactory {
 			// Unify all variables to avoid Refinery Interpreter bugs, even if they're bound in the containing clause.
 			remappedParameters[i] = unboundVariableIndices.computeIfAbsent(variable, appendVariable::applyAsInt);
 		}
-		var pattern = maybeWrapConstraint(callLiteral.getTarget(), remappedParameters);
+		var pattern = maybeWrapConstraint(constraint, remappedParameters);
 		return new WrappedCall(pattern, appendVariable.getRemappedArguments());
 	}
 
@@ -126,13 +134,13 @@ class QueryWrapperFactory {
 	}
 
 	private void addPositiveConstraint(Constraint constraint, PBody body, Tuple argumentTuple) {
-		if (constraint instanceof SymbolView<?> view) {
-			new TypeConstraint(body, argumentTuple, getInputKey(view));
-		} else if (constraint instanceof Dnf dnf) {
+		switch (constraint) {
+		case SymbolView<?> view -> new TypeConstraint(body, argumentTuple, getInputKey(view));
+		case Dnf dnf -> {
 			var calledPQuery = dnf2PQuery.translate(dnf);
 			new PositivePatternCall(body, argumentTuple, calledPQuery);
-		} else {
-			throw new IllegalArgumentException("Unknown Constraint: " + constraint);
+		}
+		default -> throw new IllegalArgumentException("Unknown Constraint: " + constraint);
 		}
 	}
 

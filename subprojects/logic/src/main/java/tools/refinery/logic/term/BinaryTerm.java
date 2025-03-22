@@ -34,8 +34,8 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 		}
 		this.leftType = leftType;
 		this.rightType = rightType;
-		this.left = left;
-		this.right = right;
+		this.left = left.reduce();
+		this.right = right.reduce();
 	}
 
 	public Class<T1> getLeftType() {
@@ -68,6 +68,14 @@ public abstract class BinaryTerm<R, T1, T2> extends AbstractTerm<R> {
 	}
 
 	protected abstract R doEvaluate(T1 leftValue, T2 rightValue);
+
+	@Override
+	public Term<R> reduce() {
+		if (left instanceof ConstantTerm<T1> constantLeft && right instanceof ConstantTerm<T2> constantRight) {
+			return new ConstantTerm<>(getType(), doEvaluate(constantLeft.getValue(), constantRight.getValue()));
+		}
+		return this;
+	}
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {

@@ -33,7 +33,7 @@ public class AssignLiteral<T> extends AbstractLiteral implements TermLiteral<T> 
 					variable, term));
 		}
 		this.variable = variable;
-		this.term = term;
+		this.term = term.reduce();
 	}
 
 	public DataVariable<T> getVariable() {

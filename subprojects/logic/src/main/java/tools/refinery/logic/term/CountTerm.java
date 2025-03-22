@@ -6,7 +6,9 @@
 package tools.refinery.logic.term;
 
 import tools.refinery.logic.Constraint;
+import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.substitution.Substitution;
+import tools.refinery.logic.term.int_.IntTerms;
 
 import java.util.List;
 
@@ -23,6 +25,20 @@ public class CountTerm extends AbstractCallTerm<Integer> {
 	@Override
 	public Term<Integer> withArguments(Constraint newTarget, List<Variable> newArguments) {
 		return new CountTerm(newTarget, newArguments);
+	}
+
+	@Override
+	public Term<Integer> reduce() {
+		return switch (getTarget().getReduction()) {
+			case NOT_REDUCIBLE -> this;
+			case ALWAYS_FALSE -> IntTerms.constant(0);
+			case ALWAYS_TRUE -> {
+				if (getArguments().isEmpty()) {
+					yield IntTerms.constant(1);
+				}
+				throw new InvalidQueryException("Trying to count an infinite set");
+			}
+		};
 	}
 
 	@Override

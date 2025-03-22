@@ -28,7 +28,7 @@ public class CheckLiteral extends AbstractLiteral implements CanNegate<CheckLite
 			throw new InvalidQueryException("Term %s must be of type %s, got %s instead".formatted(
 					term, Boolean.class.getName(), term.getType().getName()));
 		}
-		this.term = term;
+		this.term = term.reduce();
 	}
 
 	@Override

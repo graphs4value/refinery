@@ -28,7 +28,7 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 					bodyType.getName(), body.getType().getName()));
 		}
 		this.bodyType = bodyType;
-		this.body = body;
+		this.body = body.reduce();
 	}
 
 	public Class<T> getBodyType() {
@@ -46,6 +46,14 @@ public abstract class UnaryTerm<R, T> extends AbstractTerm<R> {
 	}
 
 	protected abstract R doEvaluate(T bodyValue);
+
+	@Override
+	public Term<R> reduce() {
+		if (body instanceof ConstantTerm<T> constantBody) {
+			return new ConstantTerm<>(getType(), doEvaluate(constantBody.getValue()));
+		}
+		return this;
+	}
 
 	@Override
 	public boolean equalsWithSubstitution(LiteralEqualityHelper helper, AnyTerm other) {

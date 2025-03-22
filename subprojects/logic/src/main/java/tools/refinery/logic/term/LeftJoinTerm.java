@@ -53,6 +53,15 @@ public class LeftJoinTerm<T> extends AbstractCallTerm<T> {
 	}
 
 	@Override
+	public Term<T> reduce() {
+		return switch (getTarget().getReduction()) {
+			case NOT_REDUCIBLE -> this;
+			case ALWAYS_FALSE -> new ConstantTerm<>(getType(), defaultValue);
+			case ALWAYS_TRUE -> throw new InvalidQueryException("Trying to left join an infinite set");
+		};
+	}
+
+	@Override
 	public Term<T> withArguments(Constraint newTarget, List<Variable> newArguments) {
 		return new LeftJoinTerm<>(placeholderVariable, defaultValue, newTarget, newArguments);
 	}

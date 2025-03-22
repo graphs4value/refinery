@@ -56,6 +56,15 @@ public class AggregationTerm<R, T> extends AbstractCallTerm<R> {
 	}
 
 	@Override
+	public Term<R> reduce() {
+		return switch (getTarget().getReduction()) {
+			case NOT_REDUCIBLE -> this;
+			case ALWAYS_FALSE -> new ConstantTerm<>(getType(), aggregator.getEmptyResult());
+			case ALWAYS_TRUE -> throw new InvalidQueryException("Trying to aggregate an infinite set");
+		};
+	}
+
+	@Override
 	public Set<Variable> getInputVariables(Set<? extends Variable> positiveVariablesInClause) {
 		if (positiveVariablesInClause.contains(inputVariable)) {
 			throw new InvalidQueryException("Aggregation variable %s must not be bound".formatted(inputVariable));
