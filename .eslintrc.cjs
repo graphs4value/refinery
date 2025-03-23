@@ -63,6 +63,7 @@ module.exports = {
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
+        noWarnOnMultipleProjects: true,
         project,
       },
     },
