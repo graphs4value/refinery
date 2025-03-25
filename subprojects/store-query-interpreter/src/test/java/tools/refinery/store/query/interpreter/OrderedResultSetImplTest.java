@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.logic.dnf.Query;
-import tools.refinery.store.query.resultset.OrderedResultSet;
+import tools.refinery.store.query.resultset.OrderedResultSetImpl;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.query.view.KeyOnlyView;
@@ -19,7 +19,7 @@ import tools.refinery.store.tuple.Tuple;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-class OrderedResultSetTest {
+class OrderedResultSetImplTest {
 	private static final Symbol<Boolean> friend = Symbol.of("friend", 2);
 	private static final AnySymbolView friendView = new KeyOnlyView<>(friend);
 
@@ -45,7 +45,7 @@ class OrderedResultSetTest {
 			friendInterpretation.put(Tuple.of(1, 1), true);
 			queryEngine.flushChanges();
 
-			try (var orderedResultSet = new OrderedResultSet<>(resultSet)) {
+			try (var orderedResultSet = new OrderedResultSetImpl<>(resultSet)) {
 				assertThat(orderedResultSet.size(), is(3));
 				assertThat(orderedResultSet.getKey(0), is(Tuple.of(0, 1)));
 				assertThat(orderedResultSet.getKey(1), is(Tuple.of(1, 1)));
@@ -86,7 +86,7 @@ class OrderedResultSetTest {
 			friendInterpretation.put(Tuple.of(1, 1), true);
 			queryEngine.flushChanges();
 
-			try (var orderedResultSet = new OrderedResultSet<>(resultSet)) {
+			try (var orderedResultSet = new OrderedResultSetImpl<>(resultSet)) {
 				assertThat(orderedResultSet.size(), is(2));
 				assertThat(orderedResultSet.getKey(0), is(Tuple.of(0)));
 				assertThat(orderedResultSet.getKey(1), is(Tuple.of(1)));

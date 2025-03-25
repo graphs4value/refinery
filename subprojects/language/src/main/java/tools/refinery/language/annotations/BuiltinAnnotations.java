@@ -10,6 +10,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.List;
@@ -28,6 +29,9 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 	public static final QualifiedName DECIDE = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append(
 			"decide");
 	public static final String DECIDE_AUTO = CONCRETIZE_AUTO;
+	public static final QualifiedName PRIORITY = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append(
+			"priority");
+	public static final String PRIORITY_VALUE = "value";
 
 	private static final List<QualifiedName> BINDING_MODES = List.of(FOCUS, LONE, MULTI);
 
@@ -125,6 +129,20 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 		if (value == defaultValue) {
 			warning("Automatic decision for '%s' is already %s."
 					.formatted(relation.getName(), value ? "enabled" : "disabled"), annotation);
+		}
+	}
+
+	@ValidateAnnotation("PRIORITY")
+	private void validatePriority(Annotation annotation) {
+		if (!(annotation.getAnnotatedElement() instanceof RuleDefinition ruleDefinition) ||
+				!RuleKind.DECISION.equals(ruleDefinition.getKind())) {
+			error("@priority can only be applied to decision rules.", annotation);
+			return;
+		}
+		var value = annotation.getInteger(PRIORITY_VALUE).orElse(BuiltinAnnotationContext.DEFAULT_PRIORITY);
+		if (value == BuiltinAnnotationContext.DEFAULT_PRIORITY) {
+			warning("Priority for '%s' is already at its default value (%d)."
+					.formatted(ruleDefinition.getName(), BuiltinAnnotationContext.DEFAULT_PRIORITY), annotation);
 		}
 	}
 }

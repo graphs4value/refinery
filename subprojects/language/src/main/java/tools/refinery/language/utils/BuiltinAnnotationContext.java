@@ -10,8 +10,11 @@ import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.annotations.BuiltinAnnotations;
 import tools.refinery.language.model.problem.Parameter;
 import tools.refinery.language.model.problem.Relation;
+import tools.refinery.language.model.problem.RuleDefinition;
 
 public class BuiltinAnnotationContext {
+	public static final int DEFAULT_PRIORITY = 0;
+
 	@Inject
 	private AnnotationContext annotationContext;
 
@@ -42,5 +45,13 @@ public class BuiltinAnnotationContext {
 					}
 					return ProblemUtil.isDecideByDefault(relation);
 				}));
+	}
+
+	public int getPriority(RuleDefinition ruleDefinition) {
+		var annotations = annotationContext.annotationsFor(ruleDefinition);
+		var priority = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
+		return priority.map(annotation -> annotation.getInteger(BuiltinAnnotations.PRIORITY_VALUE)
+						.orElse(DEFAULT_PRIORITY))
+				.orElse(DEFAULT_PRIORITY);
 	}
 }
