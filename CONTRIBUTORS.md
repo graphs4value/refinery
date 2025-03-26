@@ -18,6 +18,8 @@ Other contributors (in alphabetical order):
 * Marussy, Kristóf &lt;marussy@mit.bme.hu&gt;
 * Nemes, Lili &lt;lili.nemes@outlook.com&gt;
 * Semeráth, Oszkár &lt;semerath@mit.bme.hu&gt;
+* Tamási, Máté &lt;
+  matetamasi@protonmail.com&gt;
 
 ## Support
 
