@@ -1,4 +1,4 @@
-% SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+% SPDX-FileCopyrightText: 2024-2025 The Refinery Authors <https://refinery.tools/>
 %
 % SPDX-License-Identifier: EPL-2.0
 
@@ -71,4 +71,18 @@ import builtin::annotations.
  */
 #pred decide(@optional boolean auto).
 
+/**
+ * Sets the priority of a decision rule.
+ *
+ * A decision rule is only enabled if no decision with strictly higher priority
+ * has a precondition that holds in the partial model. In other words, higher
+ * priority rules disable lower priority rules.
+ *
+ * Automatically created decision rules always have `@priority(0)`, but you can
+ * set `@decide(false)` to disable them outright. Custom decision rules with
+ * priority larger than or equal to 1 disable automatically generated decision
+ * rules only if their precondition holds in the partial model.
+ *
+ * @param value The priority to set.
+ */
 #pred priority(int value).
