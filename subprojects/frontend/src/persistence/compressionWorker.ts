@@ -57,10 +57,7 @@ let zstd: Zstd | undefined;
 
 globalThis.onmessage = (event) => {
   (async () => {
-    if (zstd === undefined) {
-      // Since we don't have types for the deep import, we have to cast here.
-      zstd = await Zstd.load();
-    }
+    zstd ??= await Zstd.load();
     // Since the render thread will only send us valid messages,
     // we can save a bit of bundle size by using a cast instead of `parse`
     // to avoid having to include `zod` in the worker.

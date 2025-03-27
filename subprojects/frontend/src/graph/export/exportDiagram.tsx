@@ -351,9 +351,7 @@ async function serializePDF(
   svg: SVGSVGElement,
   settings: ExportSettingsStore,
 ): Promise<Blob> {
-  if (serializePDFCached === undefined) {
-    serializePDFCached = (await import('./serializePDF')).default;
-  }
+  serializePDFCached ??= (await import('./serializePDF')).default;
   return serializePDFCached(svg, settings.embedFonts);
 }
 
