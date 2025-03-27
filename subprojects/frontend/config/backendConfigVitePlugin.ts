@@ -6,8 +6,7 @@
 
 import type { PluginOption } from 'vite';
 
-import type BackendConfig from '../src/xtext/BackendConfig';
-import { ENDPOINT } from '../src/xtext/BackendConfig';
+import BackendConfig, { ENDPOINT } from '../src/xtext/BackendConfig';
 
 export default function backendConfigVitePlugin(
   backendConfig: BackendConfig,

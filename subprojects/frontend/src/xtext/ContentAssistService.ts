@@ -15,8 +15,7 @@ import escapeStringRegexp from 'escape-string-regexp';
 import getLogger from '../utils/getLogger';
 
 import type UpdateService from './UpdateService';
-import type { FoundToken } from './findToken';
-import findToken from './findToken';
+import findToken, { type FoundToken } from './findToken';
 import type { ContentAssistEntry } from './xtextServiceResults';
 
 const PROPOSALS_LIMIT = 1000;

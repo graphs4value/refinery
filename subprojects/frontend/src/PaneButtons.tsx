@@ -14,6 +14,7 @@ import { observer } from 'mobx-react-lite';
 
 import Tooltip from './Tooltip';
 import type ThemeStore from './theme/ThemeStore';
+// eslint-disable-next-line no-duplicate-imports -- Needed due to default type import.
 import type { SelectedPane } from './theme/ThemeStore';
 
 const PaneButtonGroup = styled(ToggleButtonGroup, {

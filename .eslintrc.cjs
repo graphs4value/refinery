@@ -128,6 +128,11 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     // `defaultProps` are deprecated in React 18.
     'react/require-default-props': 'off',
+    // `@mui/icons-material` resolves all icons to the same `.d.ts` file,
+    // which makes the `eslint-plugin-import` version of this rule emit a warning.
+    // See https://github.com/import-js/eslint-plugin-import/issues/1479#issuecomment-2408001379
+    'import/no-duplicates': 'off',
+    'no-duplicate-imports': 'warn',
   },
   overrides: [
     {
