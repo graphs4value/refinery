@@ -6,12 +6,10 @@
 package tools.refinery.store.query.interpreter;
 
 import org.junit.jupiter.api.Test;
-
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
-import tools.refinery.store.query.resultset.OrderedResultSetImpl;
 import tools.refinery.store.query.resultset.PriorityAgenda;
 import tools.refinery.store.query.resultset.PriorityResultSet;
 import tools.refinery.store.query.view.AnySymbolView;
@@ -19,8 +17,8 @@ import tools.refinery.store.query.view.KeyOnlyView;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
@@ -56,11 +54,8 @@ class PriorityResultSetTest {
 			enemyInterpretation.put(Tuple.of(0, 2), true);
 			queryEngine.flushChanges();
 
-			try (var orderedResultSet1 = new OrderedResultSetImpl<>(resultSet1)) {
-				try (var orderedResultSet2 = new OrderedResultSetImpl<>(resultSet2)) {
-					var highPriorityResultSet = new PriorityResultSet<>(orderedResultSet1, 1, agenda);
-					var lowPriorityResultSet = new PriorityResultSet<>(orderedResultSet2, 0, agenda);
-
+			try (var highPriorityResultSet = PriorityResultSet.of(resultSet1, 1, agenda)) {
+				try (var lowPriorityResultSet = PriorityResultSet.of(resultSet2, 0, agenda)) {
 					assertThat(agenda.getHighestPriority(), is(1));
 
 					assertThat(highPriorityResultSet.size(), is(1));
@@ -135,11 +130,8 @@ class PriorityResultSetTest {
 			enemyInterpretation.put(Tuple.of(0, 2), true);
 			queryEngine.flushChanges();
 
-			try (var orderedResultSet1 = new OrderedResultSetImpl<>(resultSet1)) {
-				try (var orderedResultSet2 = new OrderedResultSetImpl<>(resultSet2)) {
-					var highPriorityResultSet = new PriorityResultSet<>(orderedResultSet1, 1, agenda);
-					var lowPriorityResultSet = new PriorityResultSet<>(orderedResultSet2, 0, agenda);
-
+			try (var highPriorityResultSet = PriorityResultSet.of(resultSet1, 1, agenda)) {
+				try (var lowPriorityResultSet = PriorityResultSet.of(resultSet2, 0, agenda)) {
 					assertThat(agenda.getHighestPriority(), is(1));
 
 					assertThat(highPriorityResultSet.size(), is(1));

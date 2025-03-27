@@ -20,7 +20,7 @@ public class PriorityResultSet<T> implements OrderedResultSet<T> {
 	private final PriorityAgenda agenda;
 	private final ResultSetListener<T> listener;
 
-	public PriorityResultSet(OrderedResultSet<T> resultSet, int priority, PriorityAgenda agenda) {
+	private PriorityResultSet(OrderedResultSet<T> resultSet, int priority, PriorityAgenda agenda) {
 		this.resultSet = resultSet;
 		this.priority = priority;
 		this.agenda = agenda;
@@ -93,8 +93,21 @@ public class PriorityResultSet<T> implements OrderedResultSet<T> {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		resultSet.removeListener(listener);
 		resultSet.close();
+	}
+
+	public static <T> PriorityResultSet<T> of(ResultSet<T> resultSet, int priority, PriorityAgenda agenda) {
+		if (resultSet instanceof OrderedResultSet<T> orderedResultSet) {
+			return new PriorityResultSet<>(orderedResultSet, priority, agenda);
+		}
+		var orderedResultSet = new OrderedResultSetImpl<>(resultSet);
+		try {
+			return new PriorityResultSet<>(orderedResultSet, priority, agenda);
+		} catch (RuntimeException e) {
+			orderedResultSet.close();
+			throw e;
+		}
 	}
 }

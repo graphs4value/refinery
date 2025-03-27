@@ -9,7 +9,6 @@ import tools.refinery.store.dse.transition.actions.BoundAction;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.OrderedResultSet;
-import tools.refinery.store.query.resultset.OrderedResultSetImpl;
 import tools.refinery.store.query.resultset.PriorityAgenda;
 import tools.refinery.store.query.resultset.PriorityResultSet;
 import tools.refinery.store.query.resultset.ResultSet;
@@ -25,9 +24,9 @@ public class Transformation {
 		var definition = decisionRule.rule();
 		var precondition = definition.getPrecondition();
 		var queryEngine = model.getAdapter(ModelQueryAdapter.class);
-		var orderedResultSet = new OrderedResultSetImpl<>(queryEngine.getResultSet(precondition));
-		activations = new PriorityResultSet<>(orderedResultSet, decisionRule.priority(), agenda);
 		action = definition.createAction(model);
+		var resultSet = queryEngine.getResultSet(precondition);
+		activations = PriorityResultSet.of(resultSet, decisionRule.priority(), agenda);
 	}
 
 	public DecisionRule getDefinition() {

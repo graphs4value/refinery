@@ -10,4 +10,7 @@ import tools.refinery.store.tuple.Tuple;
 
 public interface OrderedResultSet<T> extends AutoCloseable, ResultSet<T> {
 	Tuple getKey(int index);
+
+	@Override
+	void close();
 }
