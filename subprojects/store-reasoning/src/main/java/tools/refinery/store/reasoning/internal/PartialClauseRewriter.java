@@ -62,6 +62,7 @@ class PartialClauseRewriter {
 				rewriteCountCandidateLowerBound(countCandidateLowerBoundLiteral);
 		case CountCandidateUpperBoundLiteral countCandidateUpperBoundLiteral ->
 				rewriteCountCandidateUpperBound(countCandidateUpperBoundLiteral);
+		case ConcreteFunctionCall concreteFunctionCall -> rewriteConcreteFunctionCall(concreteFunctionCall);
 		default -> {
 			var target = callLiteral.getTarget();
 			switch (target) {
@@ -80,6 +81,10 @@ class PartialClauseRewriter {
 			}
 		}
 		}
+	}
+
+	private void rewriteConcreteFunctionCall(ConcreteFunctionCall concreteFunctionCall) {
+
 	}
 
 	private <T> void rewriteTermLiteral(TermLiteral<T> termLiteral) {

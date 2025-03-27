@@ -7,8 +7,10 @@ package tools.refinery.store.reasoning.internal;
 
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.rewriter.AbstractRecursiveRewriter;
+import tools.refinery.store.reasoning.interpretation.PartialFunctionRewriter;
 import tools.refinery.store.reasoning.interpretation.PartialRelationRewriter;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.HashMap;
@@ -38,6 +40,10 @@ class PartialQueryRewriter extends AbstractRecursiveRewriter {
 		if (relationRewriterMap.put(partialRelation, interpreter) != null) {
 			throw new IllegalArgumentException("Duplicate partial relation: " + partialRelation);
 		}
+	}
+
+	public void addFunctionRewriter(PartialFunction partialFunction, PartialFunctionRewriter interpreter) {
+
 	}
 
 	@Override
