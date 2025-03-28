@@ -39,7 +39,7 @@ public class BestFirstStoreManager {
 
 		objectiveStore = new ObjectivePriorityQueueImpl(storeAdapter.getObjectives());
 		Consumer<VersionWithObjectiveValue> whenAllActivationsVisited = x -> objectiveStore.remove(x);
-		activationStore = new ActivationStoreImpl(storeAdapter.getTransformations().size(), whenAllActivationsVisited);
+		activationStore = new ActivationStoreImpl(storeAdapter.getTransformations(), whenAllActivationsVisited);
 		solutionStore = new SolutionStoreImpl(maxNumberOfSolutions);
 		equivalenceClassStore = new FastEquivalenceClassStore(modelStore.getAdapter(StateCoderStoreAdapter.class)) {
 			@Override

@@ -86,3 +86,24 @@ import builtin::annotations.
  * @param value The priority to set.
  */
 #pred priority(int value).
+
+/**
+ * Sets the weight function of a decision rule.
+ *
+ * If a decision rule has `n` unvisited activations (precondition matches), its
+ * weight will be set to `c * n^k`, i.e., each activation has a probability of
+ * being selected for firing proportional to `c * n^(k - 1)`, where `c` is the
+ * value of the `coefficient` argument and `k` is the value of the `exponent`
+ * argument.
+ *
+ * To use this annotation, at least one of `coefficient` and `exponent` must be
+ * specified.
+ *
+ * @param coefficient The scaling factor `c` of the weight. Must be positive.
+ *
+ *                    Default value: `1.0`.
+ * @param exponent    The exponent `k` of the weight. Must be non-negative.
+ *
+ *                    Default value: `1.0`.
+ */
+#pred weight(@optional real coefficient, @optional real exponent).

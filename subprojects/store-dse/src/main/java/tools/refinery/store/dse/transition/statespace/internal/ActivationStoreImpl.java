@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.dse.transition.statespace.internal;
 
+import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 import tools.refinery.store.dse.transition.statespace.ActivationStore;
 
@@ -12,13 +13,13 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class ActivationStoreImpl implements ActivationStore {
-	final int numberOfTransformations;
-	final Consumer<VersionWithObjectiveValue> actionWhenAllActivationVisited;
-	final Map<VersionWithObjectiveValue, List<ActivationStoreEntry>> versionToActivations;
+	private final List<DecisionRule> transformations;
+	private final Consumer<VersionWithObjectiveValue> actionWhenAllActivationVisited;
+	private final Map<VersionWithObjectiveValue, List<ActivationStoreEntry>> versionToActivations;
 
-	public ActivationStoreImpl(final int numberOfTransformations,
+	public ActivationStoreImpl(List<DecisionRule> transformations,
 							   Consumer<VersionWithObjectiveValue> actionWhenAllActivationVisited) {
-		this.numberOfTransformations = numberOfTransformations;
+		this.transformations = transformations;
 		this.actionWhenAllActivationVisited = actionWhenAllActivationVisited;
 		versionToActivations = new HashMap<>();
 	}
@@ -109,8 +110,9 @@ public class ActivationStoreImpl implements ActivationStore {
 		int numberOfAllUnvisitedActivations = 0;
 		for (int i = 0; i < weights.length; i++) {
 			var entry = entries.get(i);
+			var decisionRule = transformations.get(i);
 			int unvisited = entry.getNumberOfUnvisitedActivations();
-			double weight = unvisited == 0 ? 0 : unvisited; //(Math.log(unvisited) + 1.0);
+			double weight = decisionRule.getWeight(unvisited);
 			weights[i] = weight;
 			totalWeight += weight;
 			numberOfAllUnvisitedActivations += unvisited;

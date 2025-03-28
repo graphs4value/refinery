@@ -13,8 +13,6 @@ import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.RuleDefinition;
 
 public class BuiltinAnnotationContext {
-	public static final int DEFAULT_PRIORITY = 0;
-
 	@Inject
 	private AnnotationContext annotationContext;
 
@@ -47,11 +45,22 @@ public class BuiltinAnnotationContext {
 				}));
 	}
 
-	public int getPriority(RuleDefinition ruleDefinition) {
+	public DecisionSettings getDecisionSettings(RuleDefinition ruleDefinition) {
 		var annotations = annotationContext.annotationsFor(ruleDefinition);
-		var priority = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
-		return priority.map(annotation -> annotation.getInteger(BuiltinAnnotations.PRIORITY_VALUE)
-						.orElse(DEFAULT_PRIORITY))
-				.orElse(DEFAULT_PRIORITY);
+		var priorityAnnotation = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
+		int priority = priorityAnnotation.map(annotation -> annotation.getInteger(BuiltinAnnotations.PRIORITY_VALUE)
+						.orElse(DecisionSettings.DEFAULT_PRIORITY))
+				.orElse(DecisionSettings.DEFAULT_PRIORITY);
+		var weighAnnotation = annotations.getAnnotation(BuiltinAnnotations.WEIGHT);
+		if (weighAnnotation.isEmpty()) {
+			return new DecisionSettings(priority);
+		}
+		double coefficient = weighAnnotation.get()
+				.getDouble(BuiltinAnnotations.WEIGHT_COEFFICIENT)
+				.orElse(DecisionSettings.DEFAULT_COEFFICIENT);
+		double exponent = weighAnnotation.get()
+				.getDouble(BuiltinAnnotations.WEIGHT_EXPONENT)
+				.orElse(DecisionSettings.DEFAULT_EXPONENT);
+		return new DecisionSettings(priority, coefficient, exponent);
 	}
 }

@@ -6,13 +6,19 @@
 package tools.refinery.store.dse.transition.statespace;
 
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
-import tools.refinery.store.map.Version;
 
 import java.util.Random;
 
 public interface ActivationStore {
-	record VisitResult(boolean successfulVisit, boolean mayHaveMore, int transformation, int activation) { }
+	record VisitResult(boolean successfulVisit, boolean mayHaveMore, int transformation, int activation) {
+	}
+
+	// The return value of this method is only useful for exploration strategies that want to synchronise multiple
+	// workers and avoid situtation when another worker has already visited the same version.
+	@SuppressWarnings("UnusedReturnValue")
 	VisitResult markNewAsVisited(VersionWithObjectiveValue to, int[] emptyEntrySizes);
+
 	boolean hasUnmarkedActivation(VersionWithObjectiveValue version);
+
 	VisitResult getRandomAndMarkAsVisited(VersionWithObjectiveValue version, Random random);
 }

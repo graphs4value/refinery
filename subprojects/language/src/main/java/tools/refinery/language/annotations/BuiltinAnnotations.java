@@ -10,7 +10,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.utils.BuiltinAnnotationContext;
+import tools.refinery.language.utils.DecisionSettings;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.List;
@@ -32,6 +32,10 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 	public static final QualifiedName PRIORITY = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append(
 			"priority");
 	public static final String PRIORITY_VALUE = "value";
+	public static final QualifiedName WEIGHT = BuiltinLibrary.BUILTIN_STRATEGY_LIBRARY_NAME.append(
+			"weight");
+	public static final String WEIGHT_COEFFICIENT = "coefficient";
+	public static final String WEIGHT_EXPONENT = "exponent";
 
 	private static final List<QualifiedName> BINDING_MODES = List.of(FOCUS, LONE, MULTI);
 
@@ -133,16 +137,42 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 	}
 
 	@ValidateAnnotation("PRIORITY")
-	private void validatePriority(Annotation annotation) {
+	@ValidateAnnotation("WEIGHT")
+	private void validateDecisionRuleAnnotation(Annotation annotation) {
 		if (!(annotation.getAnnotatedElement() instanceof RuleDefinition ruleDefinition) ||
 				!RuleKind.DECISION.equals(ruleDefinition.getKind())) {
-			error("@priority can only be applied to decision rules.", annotation);
+			var message = "@%s can only be applied to decision rules."
+					.formatted(annotation.getAnnotation().getDeclaration().getName());
+			error(message, annotation);
+		}
+	}
+
+	@ValidateAnnotation("PRIORITY")
+	private void validatePriority(Annotation annotation) {
+		var value = annotation.getInteger(PRIORITY_VALUE).orElse(DecisionSettings.DEFAULT_PRIORITY);
+		if (value == DecisionSettings.DEFAULT_PRIORITY) {
+			var message = "Priority is already at its default value (%d)."
+					.formatted(DecisionSettings.DEFAULT_PRIORITY);
+			warning(message, annotation);
+		}
+	}
+
+	@ValidateAnnotation("WEIGHT")
+	private void validateWeight(Annotation annotation) {
+		var coefficient = annotation.getDouble(WEIGHT_COEFFICIENT);
+		var exponent = annotation.getDouble(WEIGHT_EXPONENT);
+		if (coefficient.isEmpty() && exponent.isEmpty()) {
+			var message = "Must set either weight %s or %s.".formatted(WEIGHT_COEFFICIENT, WEIGHT_EXPONENT);
+			error(message, annotation);
 			return;
 		}
-		var value = annotation.getInteger(PRIORITY_VALUE).orElse(BuiltinAnnotationContext.DEFAULT_PRIORITY);
-		if (value == BuiltinAnnotationContext.DEFAULT_PRIORITY) {
-			warning("Priority for '%s' is already at its default value (%d)."
-					.formatted(ruleDefinition.getName(), BuiltinAnnotationContext.DEFAULT_PRIORITY), annotation);
+		if (coefficient.orElse(DecisionSettings.DEFAULT_COEFFICIENT) <= 0) {
+			var message = "Weight coefficient must be positive.";
+            error(message, annotation);
+		}
+		if (exponent.orElse(DecisionSettings.DEFAULT_EXPONENT) < 0) {
+			var message = "Weight exponent must be non-negative.";
+			error(message, annotation);
 		}
 	}
 }
