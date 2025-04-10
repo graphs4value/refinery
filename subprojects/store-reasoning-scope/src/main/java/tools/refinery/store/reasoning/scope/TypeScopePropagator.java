@@ -88,6 +88,10 @@ abstract class TypeScopePropagator {
 		adapter.markAsChanged();
 	}
 
+	public void delete() {
+		constraint.delete();
+	}
+
 	abstract static class Factory {
 		public abstract TypeScopePropagator createPropagator(BoundScopePropagator adapter);
 
