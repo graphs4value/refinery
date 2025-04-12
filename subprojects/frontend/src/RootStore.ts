@@ -14,18 +14,19 @@ import {
 
 import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
-import ExportSettingsScotre from './graph/export/ExportSettingsStore';
+import ExportSettingsStore from './graph/export/ExportSettingsStore';
 import Compressor from './persistence/Compressor';
+import { Visibility } from './persistence/compressionMessages';
 import ThemeStore from './theme/ThemeStore';
 
 const log = getLogger('RootStore');
 
 export default class RootStore {
-  private readonly compressor = new Compressor((text) =>
-    this.setInitialValue(text),
-  );
+  private readonly compressor = new Compressor(this.setInitialValue.bind(this));
 
   private initialValue: string | undefined;
+
+  private initialVisibility: Record<string, Visibility> | undefined;
 
   private editorStoreClass: typeof EditorStore | undefined;
 
@@ -35,7 +36,7 @@ export default class RootStore {
 
   readonly themeStore: ThemeStore;
 
-  readonly exportSettingsStore: ExportSettingsScotre;
+  readonly exportSettingsStore: ExportSettingsStore;
 
   disposed = false;
 
@@ -44,7 +45,7 @@ export default class RootStore {
   constructor() {
     this.pwaStore = new PWAStore();
     this.themeStore = new ThemeStore();
-    this.exportSettingsStore = new ExportSettingsScotre();
+    this.exportSettingsStore = new ExportSettingsStore();
     makeAutoObservable<
       RootStore,
       'compressor' | 'editorStoreClass' | 'titleReaction'
@@ -64,7 +65,7 @@ export default class RootStore {
         }
         this.editorStoreClass = EditorStore;
         if (this.initialValue !== undefined) {
-          this.setInitialValue(this.initialValue);
+          this.setInitialValue(this.initialValue, this.initialVisibility);
         }
       });
     })().catch((error) => {
@@ -73,14 +74,19 @@ export default class RootStore {
     this.compressor.decompressInitial();
   }
 
-  private setInitialValue(initialValue: string): void {
+  private setInitialValue(
+    initialValue: string,
+    visibility: Record<string, Visibility> | undefined,
+  ): void {
     this.initialValue = initialValue;
+    this.initialVisibility = visibility;
     if (this.editorStoreClass !== undefined) {
       const EditorStore = this.editorStoreClass;
       const editorStore = new EditorStore(
         this.initialValue,
+        this.initialVisibility,
         this.pwaStore,
-        (text) => this.compressor.compress(text),
+        this.compressor.compress.bind(this.compressor),
       );
       this.editorStore = editorStore;
       this.titleReaction?.();

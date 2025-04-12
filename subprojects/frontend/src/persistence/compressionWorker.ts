@@ -70,6 +70,7 @@ globalThis.onmessage = (event) => {
       globalThis.postMessage({
         response: 'compressed',
         compressedText,
+        version: message.version,
       } satisfies CompressResponse);
     } else if (message.request === 'decompress') {
       const decodedBuffer = await base64Decode(message.compressedText);
@@ -79,6 +80,7 @@ globalThis.onmessage = (event) => {
       globalThis.postMessage({
         response: 'decompressed',
         text,
+        version: message.version,
       } satisfies DecompressResponse);
     } else {
       throw new Error(`Unknown request: ${JSON.stringify(event.data)}`);

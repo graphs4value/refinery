@@ -22,11 +22,17 @@ import {
   type EditorState,
 } from '@codemirror/state';
 import { type Command, EditorView, type Tooltip } from '@codemirror/view';
-import { makeAutoObservable, observable, runInAction } from 'mobx';
+import {
+  IReactionDisposer,
+  makeAutoObservable,
+  observable,
+  reaction,
+  runInAction,
+} from 'mobx';
 import { nanoid } from 'nanoid';
 
 import type PWAStore from '../PWAStore';
-import GraphStore from '../graph/GraphStore';
+import GraphStore, { type Visibility } from '../graph/GraphStore';
 import {
   REFINERY_CONTENT_TYPE,
   FILE_TYPE_OPTIONS,
@@ -111,10 +117,13 @@ export default class EditorStore {
 
   showComputed = false;
 
+  private visibilityMapReaction: IReactionDisposer;
+
   constructor(
     initialValue: string,
+    initialVisibility: Record<string, Visibility> | undefined,
     pwaStore: PWAStore,
-    onUpdate: (text: string) => void,
+    onUpdate: (text: string, visibility: Record<string, Visibility>) => void,
   ) {
     this.id = nanoid();
     this.state = createEditorState(initialValue, this);
@@ -127,13 +136,22 @@ export default class EditorStore {
         if (this.disposed) {
           return;
         }
-        this.client = new LazyXtextClient(this, pwaStore, onUpdate);
+        this.client = new LazyXtextClient(this, pwaStore, (text) => {
+          onUpdate(text, this.graph.visibilityObject);
+        });
         this.client.start();
       });
     })().catch((error) => {
       log.error('Failed to load XtextClient', error);
     });
-    this.graph = new GraphStore(this);
+    const visibilityMap = new Map(Object.entries(initialVisibility ?? {}));
+    this.graph = new GraphStore(this, undefined, visibilityMap);
+    this.visibilityMapReaction = reaction(
+      () => this.graph.visibilityObject,
+      (visibilityMap) => {
+        onUpdate(this.state.sliceDoc(), visibilityMap);
+      },
+    );
     makeAutoObservable<EditorStore, 'client'>(this, {
       id: false,
       state: observable.ref,
@@ -420,6 +438,7 @@ export default class EditorStore {
   }
 
   dispose(): void {
+    this.visibilityMapReaction();
     this.client?.dispose();
     this.delayedErrors.dispose();
     this.disposed = true;

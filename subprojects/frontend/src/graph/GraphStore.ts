@@ -7,13 +7,14 @@
 import { makeAutoObservable, observable } from 'mobx';
 
 import type EditorStore from '../editor/EditorStore';
+import type { Visibility } from '../persistence/compressionMessages';
 import isBuiltIn from '../utils/isBuiltIn';
 import type {
   RelationMetadata,
   SemanticsModelResult,
 } from '../xtext/xtextServiceResults';
 
-export type Visibility = 'all' | 'must' | 'none';
+export type { Visibility } from '../persistence/compressionMessages';
 
 // Supertype of `ModelSemanticsResult` and `GeneratedModelSemanticsResult`.
 export type ModelResultWithSource = SemanticsModelResult & { source?: string };
@@ -200,6 +201,10 @@ export default class GraphStore {
 
   resetFilter(): void {
     this.visibility.clear();
+  }
+
+  get visibilityObject(): Record<string, Visibility> {
+    return Object.fromEntries(this.visibility);
   }
 
   getName({ name, simpleName }: { name: string; simpleName: string }): string {
