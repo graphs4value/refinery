@@ -7,6 +7,7 @@
 import { createAtom, makeAutoObservable, observable } from 'mobx';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
+import sjson from 'secure-json-parse';
 import { interpret } from 'xstate';
 
 import CancelledError from '../utils/CancelledError';
@@ -108,7 +109,10 @@ export default class XtextWebSocketClient {
     }
     let json: unknown;
     try {
-      json = JSON.parse(data);
+      json = sjson.parse(data, undefined, {
+        constructorAction: 'error',
+        protoAction: 'error',
+      });
     } catch (error) {
       log.error('JSON parse error', error);
       this.interpreter.send({ type: 'ERROR', message: 'Malformed message' });

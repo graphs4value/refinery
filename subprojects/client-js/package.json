@@ -63,6 +63,7 @@
     "zod": "^3.24.2"
   },
   "dependencies": {
-    "@testing-library/dom": "^10.4.0"
+    "@testing-library/dom": "^10.4.0",
+    "secure-json-parse": "^4.0.0"
   }
 }

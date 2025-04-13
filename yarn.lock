@@ -4909,6 +4909,7 @@ __metadata:
     express: "npm:^5.1.0"
     nanoid: "npm:^5.1.5"
     playwright: "npm:^1.51.1"
+    secure-json-parse: "npm:^4.0.0"
     typescript: "npm:5.8.3"
     vite: "npm:^6.2.6"
     vite-plugin-dts: "npm:^4.5.3"
@@ -5048,6 +5049,7 @@ __metadata:
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     react-resize-detector: "npm:^12.0.2"
+    secure-json-parse: "npm:^4.0.0"
     svg2pdf.js: "npm:^2.5.0"
     typescript: "npm:5.8.3"
     vite: "npm:^6.2.6"
@@ -17647,6 +17649,13 @@ __metadata:
     extend-shallow: "npm:^2.0.1"
     kind-of: "npm:^6.0.0"
   checksum: 10c0/8007f91780adc5aaa781a848eaae50b0f680bbf4043b90cf8a96778195b8fab690c87fe7a989e02394ce69890e330811ec8dab22397d384673ce59f7d750641d
+  languageName: node
+  linkType: hard
+
+"secure-json-parse@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "secure-json-parse@npm:4.0.0"
+  checksum: 10c0/1a298cf00e1de91e833cee5eb406d6e77fb2f7eca9bef3902047d49e7f5d3e6c21b5de61ff73466c831e716430bfe87d732a6e645a7dabb5f1e8a8e4d3e15eb4
   languageName: node
   linkType: hard
 

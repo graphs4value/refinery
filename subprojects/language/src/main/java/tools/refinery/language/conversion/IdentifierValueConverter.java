@@ -29,6 +29,8 @@ public class IdentifierValueConverter implements IValueConverter<String> {
 		quotedIdValueConverter.setRule(grammarAccess.getQUOTED_IDRule());
 		keywords = new LinkedHashSet<>(GrammarUtil.getAllKeywords(grammarAccess.getGrammar()));
 		keywords.removeAll(identifierTokenProvider.getIdentifierKeywords());
+		// Prevent prototype pollution in JSON output.
+		keywords.add("__proto__");
 	}
 
 	@Override

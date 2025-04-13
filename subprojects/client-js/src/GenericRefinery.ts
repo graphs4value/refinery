@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import sjson from 'secure-json-parse';
 import z from 'zod';
 
 import * as RefineryError from './RefineryError';
@@ -61,7 +62,10 @@ function* parseEvent(rawEvent: string): Iterable<unknown> {
   }
   // Ignore all events without a data payload.
   if (data !== undefined) {
-    yield JSON.parse(data);
+    yield sjson.parse(data, undefined, {
+      constructorAction: 'error',
+      protoAction: 'error',
+    });
   }
 }
 
