@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { Visibility } from '@tools.refinery/client';
 import { z } from 'zod';
 
 /* eslint-disable @typescript-eslint/no-redeclare -- Declare types with their companion objects */
@@ -62,10 +63,6 @@ export const CompressorResponse = z.union([
 ]);
 
 export type CompressorResponse = z.infer<typeof CompressorResponse>;
-
-export const Visibility = z.enum(['all', 'must', 'none']);
-
-export type Visibility = z.infer<typeof Visibility>;
 
 export const V2Payload = z.object({
   t: z.string(),

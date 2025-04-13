@@ -51,7 +51,8 @@ function createTypeHashStyles(
       fontWeight: theme.typography.fontWeightEditorTypeHash,
     };
     result[
-      `.refinery-completion-documentation .cm-completionIcon-typeHash-${i} + .cm-completionLabel`
+      `.refinery-completion-documentation .cm-completionIcon-typeHash-${i} + .cm-completionLabel,
+      .refinery-tooltip-typeHash-${i}`
     ] = {
       color: `${darkTheme.palette.highlight.typeHash[i]?.text} !important`,
       fontWeight: darkTheme.typography.fontWeightEditorTypeHash,

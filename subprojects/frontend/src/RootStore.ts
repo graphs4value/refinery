@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { Visibility } from '@tools.refinery/client';
 import { getLogger } from 'loglevel';
 import {
   IReactionDisposer,
@@ -16,7 +17,6 @@ import PWAStore from './PWAStore';
 import type EditorStore from './editor/EditorStore';
 import ExportSettingsStore from './graph/export/ExportSettingsStore';
 import Compressor from './persistence/Compressor';
-import { Visibility } from './persistence/compressionMessages';
 import ThemeStore from './theme/ThemeStore';
 
 const log = getLogger('RootStore');

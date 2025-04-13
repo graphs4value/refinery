@@ -19,6 +19,7 @@ import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -51,6 +52,9 @@ public class MetadataCreator {
 
 	@Inject
 	private Provider<NodeMetadataFactory> nodeMetadataFactoryProvider;
+
+	@Inject
+	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	private ProblemTrace problemTrace;
 	private boolean preserveNewNodes;
@@ -131,7 +135,8 @@ public class MetadataCreator {
 		var arity = partialRelation.arity();
 		var parameterNames = getParameterNames(relation);
 		var detail = getRelationDetail(relation, partialRelation);
-		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail);
+		var visibility = builtinAnnotationContext.getVisibility(relation);
+		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail, visibility);
 	}
 
 	@Nullable

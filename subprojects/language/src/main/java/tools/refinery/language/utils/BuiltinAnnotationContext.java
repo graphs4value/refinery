@@ -6,12 +6,20 @@
 package tools.refinery.language.utils;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import org.eclipse.emf.ecore.EObject;
 import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.annotations.BuiltinAnnotations;
+import tools.refinery.language.documentation.DocumentationCommentParser;
+import tools.refinery.language.documentation.TypeHashProvider;
+import tools.refinery.language.model.problem.ClassDeclaration;
 import tools.refinery.language.model.problem.Parameter;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.RuleDefinition;
 
+import java.util.Optional;
+
+@Singleton
 public class BuiltinAnnotationContext {
 	@Inject
 	private AnnotationContext annotationContext;
@@ -62,5 +70,42 @@ public class BuiltinAnnotationContext {
 				.getDouble(BuiltinAnnotations.WEIGHT_EXPONENT)
 				.orElse(DecisionSettings.DEFAULT_EXPONENT);
 		return new DecisionSettings(priority, coefficient, exponent);
+	}
+
+	public String getColor(EObject eObject) {
+		if (!(eObject instanceof ClassDeclaration)) {
+			return null;
+		}
+		return annotationContext.annotationsFor(eObject)
+				.getAnnotation(BuiltinAnnotations.COLOR)
+				.flatMap(annotation -> {
+					var colorId = annotation.getInteger(BuiltinAnnotations.COLOR_COLOR_ID);
+					if (colorId.isPresent()) {
+						int value = colorId.getAsInt();
+						if (value >= 0 && value < TypeHashProvider.COLOR_COUNT) {
+							return Optional.of(Integer.toString(value, 10));
+						}
+						return Optional.empty();
+					}
+					return annotation.getString(BuiltinAnnotations.COLOR_HEX)
+							.filter(DocumentationCommentParser::isValidHex)
+							.map(DocumentationCommentParser::sanitizeHex);
+				})
+				.orElse(null);
+	}
+
+	public Visibility getVisibility(Relation relation) {
+		var annotations = annotationContext.annotationsFor(relation);
+		var hideAnnotation = annotations.getAnnotation(BuiltinAnnotations.HIDE);
+		if (hideAnnotation.isPresent()) {
+			return Visibility.NONE;
+		}
+		return annotations.getAnnotation(BuiltinAnnotations.SHOW)
+				.map(annotation -> {
+					var hideUnknown = annotation.getBoolean(BuiltinAnnotations.SHOW_HIDE_UNKNOWN)
+							.orElse(false);
+					return Boolean.TRUE.equals(hideUnknown) ? Visibility.MUST : Visibility.ALL;
+				})
+				.orElse(null);
 	}
 }

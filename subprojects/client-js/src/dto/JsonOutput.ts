@@ -15,6 +15,10 @@ export const NodeMetadata = z.object({
 
 export type NodeMetadata = z.infer<typeof NodeMetadata>;
 
+export const Visibility = z.enum(['all', 'must', 'none']);
+
+export type Visibility = z.infer<typeof Visibility>;
+
 export const RelationMetadata = z.object({
   name: z.string(),
   simpleName: z.string(),
@@ -38,6 +42,7 @@ export const RelationMetadata = z.object({
       kind: z.enum(['defined', 'base', 'error', 'shadow']),
     }),
   ]),
+  visibility: Visibility.optional(),
 });
 
 export type RelationMetadata = z.infer<typeof RelationMetadata>;

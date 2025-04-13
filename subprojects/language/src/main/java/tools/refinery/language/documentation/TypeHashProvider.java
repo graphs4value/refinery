@@ -7,6 +7,8 @@ package tools.refinery.language.documentation;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -19,6 +21,7 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportCollector;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
@@ -26,7 +29,7 @@ import java.util.*;
 @Singleton
 public class TypeHashProvider {
 	private static final String CACHE_KEY = "tools.refinery.language.documentation.TypeHashProvider";
-	private static final int COLOR_COUNT = 10;
+	public static final int COLOR_COUNT = 10;
 
 	@Inject
 	private IResourceScopeCache resourceScopeCache;
@@ -45,6 +48,9 @@ public class TypeHashProvider {
 
 	@Inject
 	private GlobalResourceDescriptionProvider globalResourceDescriptionProvider;
+
+	@Inject
+	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	public String getTypeHash(Relation relation) {
 		if (!(relation instanceof ClassDeclaration || relation instanceof EnumDeclaration) ||
@@ -73,7 +79,7 @@ public class TypeHashProvider {
 				if (ProblemResourceDescriptionStrategy.COLOR_RELATION_TRUE.equals(
 						description.getUserData(ProblemResourceDescriptionStrategy.COLOR_RELATION))) {
 					var qualifiedNameString = qualifiedNameConverter.toString(description.getQualifiedName());
-					var presetColor = getPresetColor(description);
+					var presetColor = getPresetColor(problem, description);
 					if (presetColor != null) {
 						map.put(qualifiedNameString, presetColor);
 					}
@@ -136,7 +142,17 @@ public class TypeHashProvider {
 		return resourceDescriptions;
 	}
 
-	private String getPresetColor(IEObjectDescription description) {
-		return description.getUserData(DocumentationCommentParser.COLOR_TAG);
+	private String getPresetColor(EObject context, IEObjectDescription description) {
+		var documentationTag = description.getUserData(DocumentationCommentParser.COLOR_TAG);
+		if (documentationTag != null) {
+			return documentationTag;
+		}
+		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(description.getEClass())) {
+			var resolved = EcoreUtil.resolve(description.getEObjectOrProxy(), context);
+			if (!resolved.eIsProxy()) {
+				return builtinAnnotationContext.getColor(resolved);
+			}
+		}
+		return null;
 	}
 }

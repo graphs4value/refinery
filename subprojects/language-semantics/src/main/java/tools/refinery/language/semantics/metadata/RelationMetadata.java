@@ -6,9 +6,10 @@
 package tools.refinery.language.semantics.metadata;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.language.utils.Visibility;
 
 import java.util.List;
 
 public record RelationMetadata(String name, String simpleName, int arity, @Nullable List<String> parameterNames,
-							   RelationDetail detail) implements Metadata {
+							   RelationDetail detail, @Nullable Visibility visibility) implements Metadata {
 }

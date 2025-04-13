@@ -38,8 +38,9 @@ public class DocumentationCommentParser {
 	private static final Pattern SPLIT_PATTERN = Pattern.compile("(?m)^\\s*@(?:param|color)");
 	private static final Pattern PARAM_PATTERN = Pattern.compile(
 			"^@param\\s+(" + NamingUtil.IDENTIFIER_REGEX_STRING + ")");
-	private static final Pattern COLOR_PATTERN = Pattern.compile(
-			"^@color\\s+(\\d|#[\\da-fA-F]{6}|#[\\da-fA-F]{3})");
+	private static final String HEX_PATTERN_STRING = "#[\\da-fA-F]{6}|#[\\da-fA-F]{3}";
+	private static final Pattern HEX_PATTERN = Pattern.compile("^(" + HEX_PATTERN_STRING + ")$");
+	private static final Pattern COLOR_PATTERN = Pattern.compile("^@color\\s+(\\d|" + HEX_PATTERN_STRING + ")");
 
 	@Inject
 	private IResourceScopeCache resourceScopeCache;
@@ -124,7 +125,7 @@ public class DocumentationCommentParser {
 				// Use a {@code _} instead of a {@code #} to signify hex codes, because the type hashes have to be
 				// valid CSS class names.
 				color = colorMatch.group(1).toLowerCase(Locale.ROOT);
-				parsedMap.put(COLOR_TAG, color.replace("#", "_"));
+				parsedMap.put(COLOR_TAG, sanitizeHex(color));
 			}
 			var paramMatch = PARAM_PATTERN.matcher(split);
 			if (paramMatch.find()) {
@@ -148,6 +149,14 @@ public class DocumentationCommentParser {
 		}
 		return new ParsedDocumentation(Collections.unmodifiableMap(parsedMap),
 				Collections.unmodifiableMap(parameters));
+	}
+
+	public static boolean isValidHex(String color) {
+		return HEX_PATTERN.matcher(color).matches();
+	}
+
+	public static String sanitizeHex(String color) {
+		return color.replace("#", "_");
 	}
 
 	private Deque<String> splitDocumentation(String documentation) {

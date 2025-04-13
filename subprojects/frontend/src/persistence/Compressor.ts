@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { Visibility } from '@tools.refinery/client';
+
 import getLogger from '../utils/getLogger';
 
 import {
@@ -12,7 +14,6 @@ import {
   type CompressorVersion,
   type DecompressRequest,
   V2Payload,
-  type Visibility,
 } from './compressionMessages';
 import CompressionWorker from './compressionWorker?worker';
 import initialValue from './initialValue';

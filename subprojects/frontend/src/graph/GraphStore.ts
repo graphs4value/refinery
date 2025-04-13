@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import type { Visibility } from '@tools.refinery/client';
 import { makeAutoObservable, observable } from 'mobx';
 
 import type EditorStore from '../editor/EditorStore';
-import type { Visibility } from '../persistence/compressionMessages';
 import isBuiltIn from '../utils/isBuiltIn';
 import type {
   RelationMetadata,
   SemanticsModelResult,
 } from '../xtext/xtextServiceResults';
 
-export type { Visibility } from '../persistence/compressionMessages';
+export type { Visibility } from '@tools.refinery/client';
 
 // Supertype of `ModelSemanticsResult` and `GeneratedModelSemanticsResult`.
 export type ModelResultWithSource = SemanticsModelResult & { source?: string };
@@ -31,6 +31,9 @@ export function getDefaultVisibility(
 ): Visibility {
   if (metadata === undefined || metadata.arity <= 0 || metadata.arity > 2) {
     return 'none';
+  }
+  if (metadata.visibility) {
+    return metadata.visibility;
   }
   const { detail } = metadata;
   switch (detail.type) {

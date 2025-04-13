@@ -1,0 +1,91 @@
+% SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::annotations.
+
+/**
+ * Makes a unary (type) or binary (edge) relation visible in the graph view.
+ *
+ * Only one of `@show` and `@hide` may be specified for a relation at once.
+ *
+ * Use `@show` to show all logic values and `@show(true)` to show only `true`
+ * and `error` logic values.
+ *
+ * @param hideUnknown Hides `unknown` logic values.
+ *
+ *                    Default value: `false`.
+ */
+#pred show(@optional boolean hideUnknown).
+
+/**
+ * Makes a unary (type) or binary (edge) relation hidden in the graph view.
+ *
+ * Only one of `@show` and `@hide` may be specified for a relation at once.
+ */
+#pred hide().
+
+/**
+ * Sets the highlight color of a class.
+ *
+ * You must set exactly one of `colorId` (to use a built-in color) or `hex`
+ * (to use a HTML color).
+ *
+ * The name of the class is highlighted with this color in the code view of
+ * Refinery, while instances of this class are highlighted with this color in
+ * the graph view.
+ *
+ * @param colorId The ID of the color to use (optional).
+ *
+ *                <table>
+ *                  <thead>
+ *                    <tr>
+ *                      <th>ID</th>
+ *                      <th style="padding-right: 0.5rem;">Color name</th>
+ *                      <th>ID</th>
+ *                      <th>Color name</th>
+ *                    </tr>
+ *                  </thead>
+ *                  <tbody>
+ *                    <tr>
+ *                      <td>0</td>
+ *                      <td class="refinery-tooltip-typeHash-0">yellow</td>
+ *                      <td>5</td>
+ *                      <td class="refinery-tooltip-typeHash-5">light yellow</td>
+ *                    </tr>
+ *                    <tr>
+ *                      <td>1</td>
+ *                      <td class="refinery-tooltip-typeHash-1">red</td>
+ *                      <td>6</td>
+ *                      <td class="refinery-tooltip-typeHash-6">light red</td>
+ *                    </tr>
+ *                    <tr>
+ *                      <td>2</td>
+ *                      <td class="refinery-tooltip-typeHash-2">green</td>
+ *                      <td>7</td>
+ *                      <td class="refinery-tooltip-typeHash-7">light green</td>
+ *                    </tr>
+ *                    <tr>
+ *                      <td>3</td>
+ *                      <td class="refinery-tooltip-typeHash-3">purple</td>
+ *                      <td>8</td>
+ *                      <td class="refinery-tooltip-typeHash-8">light purple</td>
+ *                    </tr>
+ *                    <tr>
+ *                      <td>4</td>
+ *                      <td class="refinery-tooltip-typeHash-4">blue</td>
+ *                      <td>9</td>
+ *                      <td class="refinery-tooltip-typeHash-9">light blue</td>
+ *                    </tr>
+ *                  </tbody>
+ *                </table>
+ *
+ * @param hex     The HTML hex code of the color to use (optional).
+ *
+ *                Either 3-character (`#fff`) or 6-character (`#ffffff`) hex
+ *                codes are accepted.
+ *
+ *                The actual color on the user interface may differ from the
+ *                specified one due to settings like dark mode.
+ */
+#pred color(@optional int colorId, @optional string hex).

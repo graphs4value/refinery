@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder;
 import tools.refinery.language.semantics.metadata.NodeKind;
 import tools.refinery.language.semantics.metadata.PredicateDetailKind;
 import tools.refinery.language.semantics.metadata.RelationDetail;
+import tools.refinery.language.utils.Visibility;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 import tools.refinery.language.web.xtext.servlet.LowercaseTypeAdapter;
 import tools.refinery.language.web.xtext.servlet.RuntimeTypeAdapterFactory;
@@ -44,6 +45,7 @@ public class GsonUtil {
 					.registerSubtype(RefineryResponse.Unsatisfiable.class, "unsatisfiable")
 					.registerSubtype(RefineryResponse.Success.class, "success")
 					.registerSubtype(RefineryResponse.Status.class, "status"))
+			.registerTypeAdapter(Visibility.class, new LowercaseTypeAdapter<>(Visibility.class))
 			.create();
 
 	private GsonUtil() {
