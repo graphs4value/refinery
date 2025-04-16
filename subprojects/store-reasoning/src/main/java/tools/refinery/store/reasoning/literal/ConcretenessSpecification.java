@@ -5,6 +5,8 @@
  */
 package tools.refinery.store.reasoning.literal;
 
+import tools.refinery.logic.InvalidQueryException;
+
 import java.util.Locale;
 
 public enum ConcretenessSpecification {
@@ -18,7 +20,7 @@ public enum ConcretenessSpecification {
 
 	public Concreteness toConcreteness() {
 		return switch (this) {
-			case UNSPECIFIED -> throw new IllegalStateException("Unspecified concreteness");
+			case UNSPECIFIED -> throw new InvalidQueryException("Unspecified concreteness");
 			case PARTIAL -> Concreteness.PARTIAL;
 			case CANDIDATE -> Concreteness.CANDIDATE;
 		};

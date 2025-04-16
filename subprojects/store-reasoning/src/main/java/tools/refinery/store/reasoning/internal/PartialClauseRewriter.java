@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.internal;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.DnfBuilder;
@@ -62,7 +63,6 @@ class PartialClauseRewriter {
 				rewriteCountCandidateLowerBound(countCandidateLowerBoundLiteral);
 		case CountCandidateUpperBoundLiteral countCandidateUpperBoundLiteral ->
 				rewriteCountCandidateUpperBound(countCandidateUpperBoundLiteral);
-		case ConcreteFunctionCall concreteFunctionCall -> rewriteConcreteFunctionCall(concreteFunctionCall);
 		default -> {
 			var target = callLiteral.getTarget();
 			switch (target) {
@@ -83,10 +83,6 @@ class PartialClauseRewriter {
 		}
 	}
 
-	private void rewriteConcreteFunctionCall(ConcreteFunctionCall concreteFunctionCall) {
-
-	}
-
 	private <T> void rewriteTermLiteral(TermLiteral<T> termLiteral) {
 		var term = termLiteral.getTerm();
 		var rewrittenTerm = rewriteTerm(term);
@@ -100,9 +96,21 @@ class PartialClauseRewriter {
 
 	private <T> Term<T> rewriteTerm(Term<T> term) {
 		var termWithProcessedSubTerms = term.rewriteSubTerms(this::rewriteTerm);
-		if (!(termWithProcessedSubTerms instanceof AbstractCallTerm<T> callTerm)) {
-			return termWithProcessedSubTerms;
-		}
+		return switch (termWithProcessedSubTerms) {
+			case AbstractCallTerm<T> abstractCallTerm -> rewriteCallTerm(abstractCallTerm);
+			case PartialFunctionCallTerm<?, ?> partialFunctionCallTerm -> {
+				// Rewriting doesn't change the type of a term, but we can't express the generic bound
+				// {@code PartialFunctionCallTerm<T extends AbstractValue<T, C>, C>} in Java, so we have to cast
+				// explicitly.
+				@SuppressWarnings("unchecked")
+				var result = (Term<T>) rewritePartialFunctionCallTerm(partialFunctionCallTerm);
+				yield result;
+			}
+			default -> termWithProcessedSubTerms;
+		};
+	}
+
+	private <T> Term<T> rewriteCallTerm(AbstractCallTerm<T> callTerm) {
 		var target = callTerm.getTarget();
 		return switch (target) {
 			case Dnf dnf -> callTerm.withTarget(rewriter.rewrite(dnf));
@@ -117,14 +125,23 @@ class PartialClauseRewriter {
 					}
 					case PartialRelation partialRelation -> {
 						var relationRewriter = rewriter.getRelationRewriter(partialRelation);
-						yield relationRewriter.rewriteTerm(callTerm, modality, concreteness);
+						var term = relationRewriter.rewriteTerm(callTerm, modality, concreteness);
+						yield rewriteTerm(term);
 					}
 					default -> throw new IllegalArgumentException("Cannot interpret modal constraint: " +
 							modalConstraint);
 				};
 			}
-			default -> term;
+			default -> callTerm;
 		};
+	}
+
+	private <A extends AbstractValue<A, C>, C> Term<A> rewritePartialFunctionCallTerm(
+			PartialFunctionCallTerm<A, C> partialFunctionCallTerm) {
+		var functionRewriter = rewriter.getFunctionRewriter(partialFunctionCallTerm.getPartialFunction());
+		var concreteness = partialFunctionCallTerm.getConcreteness().toConcreteness();
+		var term = functionRewriter.rewritePartialFunctionCall(concreteness, partialFunctionCallTerm.getArguments());
+		return rewriteTerm(term);
 	}
 
 	private void rewriteCountLowerBound(CountLowerBoundLiteral literal) {

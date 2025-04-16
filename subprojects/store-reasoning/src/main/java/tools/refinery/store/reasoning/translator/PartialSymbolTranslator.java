@@ -27,7 +27,7 @@ import java.util.List;
 
 @SuppressWarnings("UnusedReturnValue")
 public abstract sealed class PartialSymbolTranslator<A extends AbstractValue<A, C>, C>
-		implements AnyPartialSymbolTranslator permits PartialRelationTranslator {
+		implements AnyPartialSymbolTranslator permits PartialFunctionTranslator, PartialRelationTranslator {
 	private final PartialSymbol<A, C> partialSymbol;
 	private boolean configured = false;
 	protected PartialInterpretationRefiner.Factory<A, C> interpretationRefiner;

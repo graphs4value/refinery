@@ -7,13 +7,32 @@ package tools.refinery.store.reasoning.representation;
 
 import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Term;
+import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
+import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
+
+import java.util.List;
 
 public record PartialFunction<A extends AbstractValue<A, C>, C>(
 		String name, int arity, AbstractDomain<A, C> abstractDomain) implements AnyPartialFunction,
 		PartialSymbol<A, C> {
 	@Override
 	public A defaultValue() {
-		return null;
+		return abstractDomain().error();
+	}
+
+	public Term<A> call(NodeVariable... arguments) {
+		return call(ConcretenessSpecification.UNSPECIFIED, List.of(arguments));
+	}
+
+	public Term<A> call(Concreteness concreteness, NodeVariable... arguments) {
+		return call(concreteness.toSpecification(), List.of(arguments));
+	}
+
+	public Term<A> call(ConcretenessSpecification concreteness, List<NodeVariable> arguments) {
+		return new PartialFunctionCallTerm<>(concreteness, this, arguments);
 	}
 
 	@Override

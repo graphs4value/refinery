@@ -104,4 +104,11 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 			case ERROR -> ERROR;
 		};
 	}
+
+	public static TruthValue of(boolean may, boolean must) {
+		if (may) {
+			return must ? TRUE : UNKNOWN;
+		}
+		return must ? ERROR : FALSE;
+	}
 }

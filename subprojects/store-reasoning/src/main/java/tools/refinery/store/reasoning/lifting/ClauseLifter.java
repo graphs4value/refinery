@@ -9,13 +9,10 @@ import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.DnfClause;
 import tools.refinery.logic.literal.*;
-import tools.refinery.logic.term.NodeVariable;
-import tools.refinery.logic.term.ParameterDirection;
-import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.ModalConstraint;
-import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,21 +59,19 @@ class ClauseLifter {
 	}
 
 	private Literal liftLiteral(Literal literal) {
-		if (literal instanceof CallLiteral callLiteral) {
-			return liftCallLiteral(callLiteral);
-		} else if (literal instanceof EquivalenceLiteral equivalenceLiteral) {
-			return liftEquivalenceLiteral(equivalenceLiteral);
-		} else if (literal instanceof ConstantLiteral ||
-				literal instanceof AssignLiteral<?> ||
-				literal instanceof CheckLiteral) {
-			return literal;
-		} else if (literal instanceof AbstractCountLiteral<?>) {
-			throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(literal));
-		} else if (literal instanceof RepresentativeElectionLiteral) {
-			throw new IllegalArgumentException("SCC literal %s cannot be lifted".formatted(literal));
-		} else {
-			throw new IllegalArgumentException("Unknown literal to lift: " + literal);
-		}
+		return switch (literal) {
+			case CallLiteral callLiteral -> liftCallLiteral(callLiteral);
+			case EquivalenceLiteral equivalenceLiteral -> liftEquivalenceLiteral(equivalenceLiteral);
+			case ConstantLiteral constantLiteral -> constantLiteral;
+			case PartialCheckLiteral partialCheckLiteral -> liftPartialCheckLiteral(partialCheckLiteral);
+			case TermLiteral<?> termLiteral -> liftTermLiteral(termLiteral);
+			case AbstractCountLiteral<?> countLiteral ->
+					throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(countLiteral));
+			case RepresentativeElectionLiteral representativeLiteral ->
+					throw new IllegalArgumentException("SCC literal %s cannot be lifted"
+							.formatted(representativeLiteral));
+			default -> throw new IllegalArgumentException("Unknown literal to lift: " + literal);
+		};
 	}
 
 	private Literal liftCallLiteral(CallLiteral callLiteral) {
@@ -176,5 +171,30 @@ class ClauseLifter {
 		}
 		return ModalConstraint.of(modality.negate(), concreteness, ReasoningAdapter.EQUALS_SYMBOL)
 				.call(CallPolarity.NEGATIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
+	}
+
+	private CheckLiteral liftPartialCheckLiteral(PartialCheckLiteral partialCheckLiteral) {
+		var term = rewriteTerm(partialCheckLiteral.getTerm());
+		var liftedTerm = switch (modality) {
+			case MAY -> TruthValueTerms.may(term);
+			case MUST -> TruthValueTerms.must(term);
+		};
+		return new CheckLiteral(liftedTerm);
+	}
+
+	private <T> TermLiteral<T> liftTermLiteral(TermLiteral<T> termLiteral) {
+		var liftedTerm = rewriteTerm(termLiteral.getTerm());
+		return termLiteral.withTerm(liftedTerm);
+	}
+
+	private <T> Term<T> rewriteTerm(Term<T> term) {
+		var rewrittenTerm = term.rewriteSubTerms(this::rewriteTerm);
+		if (rewrittenTerm instanceof PartialFunctionCallTerm<?, ?> partialFunctionCallTerm) {
+			// Here, the {@code A} generic argument can only be {@code T}.
+			@SuppressWarnings("unchecked")
+			var newTerm = (Term<T>) partialFunctionCallTerm.orElseConcreteness(concreteness);
+			return newTerm;
+		}
+		return rewrittenTerm;
 	}
 }

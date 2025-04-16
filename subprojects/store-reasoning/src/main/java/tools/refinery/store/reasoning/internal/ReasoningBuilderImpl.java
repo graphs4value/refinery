@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.internal;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.FunctionalQuery;
 import tools.refinery.logic.dnf.Query;
@@ -28,7 +29,9 @@ import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.translator.AnyPartialSymbolTranslator;
+import tools.refinery.store.reasoning.translator.PartialFunctionTranslator;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.PartialSymbolTranslator;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.statecoding.StateCoderBuilder;
@@ -115,12 +118,7 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 				.ifPresent(stateCoderBuilder -> stateCoderBuilder.exclude(ReasoningAdapterImpl.NODE_COUNT_SYMBOL));
 		for (var translator : translators.values()) {
 			translator.configure(storeBuilder);
-			if (translator instanceof PartialRelationTranslator relationConfiguration) {
-				doConfigure(storeBuilder, relationConfiguration);
-			} else {
-				throw new IllegalArgumentException("Unknown partial symbol translator %s for partial symbol %s"
-						.formatted(translator, translator.getPartialSymbol()));
-			}
+			doConfigure(storeBuilder, (PartialSymbolTranslator<?, ?>) translator);
 		}
 		storeBuilder.symbols(registeredStorageRefiners.keySet());
 		var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
@@ -131,15 +129,25 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 		}
 	}
 
-	private void doConfigure(ModelStoreBuilder storeBuilder, PartialRelationTranslator relationConfiguration) {
-		var partialRelation = relationConfiguration.getPartialRelation();
-		queryRewriter.addRelationRewriter(partialRelation, relationConfiguration.getRewriter());
-		var interpretationFactory = relationConfiguration.getInterpretationFactory();
+	private <A extends AbstractValue<A, C>, C> void doConfigure(
+			ModelStoreBuilder storeBuilder, PartialSymbolTranslator<A, C> translator) {
+		var partialSymbol = translator.getPartialSymbol();
+		var interpretationFactory = translator.getInterpretationFactory();
 		interpretationFactory.configure(storeBuilder, requiredInterpretations);
-		symbolInterpreters.put(partialRelation, interpretationFactory);
-		var refiner = relationConfiguration.getInterpretationRefiner();
+		symbolInterpreters.put(partialSymbol, interpretationFactory);
+		var refiner = translator.getInterpretationRefiner();
 		if (refiner != null) {
-			symbolRefiners.put(partialRelation, refiner);
+			symbolRefiners.put(partialSymbol, refiner);
+		}
+		switch (translator) {
+		case PartialRelationTranslator partialRelationTranslator -> {
+			var partialRelation = partialRelationTranslator.getPartialRelation();
+			queryRewriter.addRelationRewriter(partialRelation, partialRelationTranslator.getRewriter());
+		}
+		case PartialFunctionTranslator<A, C> partialFunctionTranslator -> {
+			var partialFunction = partialFunctionTranslator.getPartialFunction();
+			queryRewriter.addFunctionRewriter(partialFunction, partialFunctionTranslator.getRewriter());
+		}
 		}
 	}
 
