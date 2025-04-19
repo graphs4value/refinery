@@ -49,18 +49,18 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.14.1",
     "@vitest/browser": "^3.1.1",
     "@vitest/coverage-istanbul": "^3.1.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "nanoid": "^5.1.5",
-    "playwright": "^1.51.1",
+    "playwright": "^1.52.0",
     "typescript": "5.8.3",
-    "vite": "^6.2.6",
+    "vite": "^6.3.2",
     "vite-plugin-dts": "^4.5.3",
     "vitest": "^3.1.1",
-    "zod": "^3.24.2"
+    "zod": "^3.24.3"
   },
   "dependencies": {
     "@testing-library/dom": "^10.4.0",

@@ -42,6 +42,7 @@ function createImport(componentName: string, url: string): MdxjsEsm {
                 local: { type: 'Identifier', name: componentName },
               },
             ],
+            attributes: [],
             source: {
               type: 'Literal',
               value: url,

@@ -102,6 +102,7 @@ function createImportNode(): MdxjsEsm {
                 local: { type: 'Identifier', name: 'Tabs' },
               },
             ],
+            attributes: [],
             source: {
               type: 'Literal',
               value: '@theme/Tabs',
@@ -116,6 +117,7 @@ function createImportNode(): MdxjsEsm {
                 local: { type: 'Identifier', name: 'TabItem' },
               },
             ],
+            attributes: [],
             source: {
               type: 'Literal',
               value: '@theme/TabItem',
