@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021-2024 The Refinery Authors
+# SPDX-FileCopyrightText: 2021-2025 The Refinery Authors
 #
 # SPDX-License-Identifier: EPL-2.0
 
@@ -188,3 +188,23 @@ jobs:
         uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b
         with:
           name: distributions
+  deploy:
+    name: Deploy to server
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
+    needs: docker-build
+    permissions: {}
+    runs-on: ubuntu-22.04
+    environment:
+      name: production
+      url: https://refinery.services
+    steps:
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy to server
+        env:
+          KNOWN_HOSTS: ${{ vars.KNOWN_HOSTS }}
+        run: |
+          echo "${KNOWN_HOSTS}" >> ~/.ssh/known_hosts
+          ssh refinery@refinery.services /var/lib/refinery/deploy.sh
