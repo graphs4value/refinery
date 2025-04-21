@@ -179,6 +179,7 @@ function TableArea({
             graph,
           },
         }}
+        showToolbar
         initialState={{ density: 'compact' }}
         rowSelection={false}
         columns={columns}
