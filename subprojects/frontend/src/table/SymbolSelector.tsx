@@ -16,7 +16,7 @@ import RelationName from '../graph/RelationName';
 import isBuiltIn from '../utils/isBuiltIn';
 import type { RelationMetadata } from '../xtext/xtextServiceResults';
 
-const placeholderText = `Select symbol to view\u2026`;
+const placeholderText = 'Select symbol to view';
 
 function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
   const {
