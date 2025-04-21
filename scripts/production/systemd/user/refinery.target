@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: EPL-2.0
+
+[Unit]
+Description=Starts and stops all services related to Refinery
+RequiresMountsFor=%t/containers
+
+[Install]
+WantedBy=default.target

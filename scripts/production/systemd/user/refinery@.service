@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: EPL-2.0
+
+[Unit]
+Description=Java web server for Refinery
+RequiresMountsFor=%t/containers
+PartOf=refinery.target
+
+[Service]
+Slice=refinery.slice
+KillMode=mixed
+Restart=always
+ExecStop=/usr/bin/podman rm --force --ignore --cidfile=%t/%N.cid
+ExecStopPost=-/usr/bin/podman rm --force --ignore --cidfile=%t/%N.cid
+Delegate=yes
+Type=notify
+NotifyAccess=all
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman run \
+        --cidfile=%t/%N.cid \
+        --rm \
+        --env-file=%h/%p.env \
+        --env=REFINERY_LISTEN_PORT=%i \
+        --publish=%i:%i \
+        --memory=2048m \
+        --memory-reservation=1792m \
+        --detach \
+        --replace \
+        --name=systemd-%p-%i \
+        --sdnotify=conmon \
+        --health-cmd="curl -f --max-time 1 http://localhost:%i/health || exit 1" \
+        --health-interval=30s \
+        --health-on-failure=kill \
+        --health-retries=3 \
+        --health-timeout=1s \
+        --health-startup-cmd="curl -f --max-time 1 http://localhost:%i/health || exit 1" \
+        --health-startup-interval=5s \
+        --health-startup-timeout=1s \
+        ghcr.io/graphs4value/refinery:latest
+
+[Install]
+WantedBy=refinery.target

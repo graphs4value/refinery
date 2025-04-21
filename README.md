@@ -26,7 +26,7 @@ docker run --rm -it -p 8888:8888 ghcr.io/graphs4value/refinery
 
 Once Docker pulls and starts the container, you can navigate to [http://localhost:8888](http://localhost:8888) to open the model generation interface and start editing.
 
-For more information, see [our webpage](https://refinery.tools/learn/docker/). Alternatively, you can [build Java applications with Refinery](https://refinery.tools/develop/java/) or [set up a local development environment](https://refinery.tools/develop/contributing/) to compile and run Refinery from source.
+For more information, see [our webpage](https://refinery.tools/learn/docker/). Alternatively, you can [build Java applications with Refinery](https://refinery.tools/develop/java/) or [set up a local development environment](https://refinery.tools/develop/contributing/) to compile and run Refinery from source. This repository also contains [some example scripts](./scripts/production/README.md) for a production deployment.
 
 ## Related publications
 
@@ -60,5 +60,5 @@ Copyright (c) 2021-2025 [The Refinery Authors](CONTRIBUTORS.md)
 
 Refinery is available under the [Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/).
 
-Refinery complies with the [REUSE Specification – Version 3.2](https://reuse.software/) to provide copyright and licensing information to each file, including files available under other licenses.
+Refinery complies with the [REUSE Specification – Version 3.3](https://reuse.software/) to provide copyright and licensing information to each file, including files available under other licenses.
 For more information, see the comments headers in each file and the license texts in the [LICENSES](LICENSES/) directory.

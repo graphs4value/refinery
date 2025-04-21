@@ -33,6 +33,8 @@ A [command-line interface (CLI)](cli) version of Refinery is also available as a
 
 Alternatively, you can follow the [instructions to set up a local development environment](/develop/contributing) and compile and run Refinery from source.
 
+Our repository also contains [some example scripts](https://github.com/graphs4value/refinery/blob/main/scripts/production/README.md) for a production deployment.
+
 ## Environmental variables
 
 The Docker container supports the following environmental variables to customize its behavior.
