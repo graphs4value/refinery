@@ -396,6 +396,34 @@ class SolutionSerializerTest {
 				?quux(foo1, bar2).
 				?quux(foo1, bar3).
 				!query(foo1, bar2).
+				"""), Arguments.of("""
+				class Filesystem {
+					contains Dir[1] root
+				}
+
+				abstract class FSObject {
+					container Dir parent opposite contents
+				}
+
+				class Dir extends FSObject {
+					contains FSObject[] contents opposite parent
+				}
+
+				class File extends FSObject.
+				""", """
+				Filesystem(git).
+				root(git, project).
+				contents(project, test).
+				Dir(test).
+				?exists(test).
+				""", false, """
+				declare git, project.
+				!exists(Filesystem::new).
+				!exists(Dir::new).
+				!exists(File::new).
+				Filesystem(git).
+				Dir(project).
+				root(git, project).
 				"""));
 	}
 }

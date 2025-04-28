@@ -248,6 +248,10 @@ public class SolutionSerializer {
 			var originalNode = pair.getOne();
 			int nodeId = pair.getTwo();
 			var newNode = findNode(originalNode);
+			if (newNode == null) {
+				// If a node doesn't exists in the solution, do not add it to the nodes map.
+				continue;
+			}
 			// Since all implicit nodes that do not exist has already been removed in serializeSolution,
 			// we only need to add !exists assertions to ::new nodes and explicitly declared nodes that do not exist.
 			if (ProblemUtil.isMultiNode(originalNode) || (ProblemUtil.isDeclaredNode(originalNode) && !isExistingNode(nodeId))) {
