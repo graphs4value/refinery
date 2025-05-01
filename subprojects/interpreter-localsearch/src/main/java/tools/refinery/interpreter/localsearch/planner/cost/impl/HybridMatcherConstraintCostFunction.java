@@ -8,28 +8,28 @@
  *******************************************************************************/
 package tools.refinery.interpreter.localsearch.planner.cost.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import tools.refinery.interpreter.localsearch.planner.cost.IConstraintEvaluationContext;
 import tools.refinery.interpreter.matchers.backend.IQueryResultProvider;
 import tools.refinery.interpreter.matchers.psystem.PConstraint;
 import tools.refinery.interpreter.matchers.psystem.PVariable;
 import tools.refinery.interpreter.matchers.psystem.basicenumerables.ConstantValue;
 import tools.refinery.interpreter.matchers.psystem.basicenumerables.PositivePatternCall;
-import tools.refinery.interpreter.matchers.tuple.TupleMask;
 import tools.refinery.interpreter.matchers.tuple.Tuple;
+import tools.refinery.interpreter.matchers.tuple.TupleMask;
 import tools.refinery.interpreter.matchers.tuple.Tuples;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This cost function is intended to be used on hybrid configuration, with the strict restriction than any
  * non-flattened positive pattern call is executed with Rete engine. This implementation provides the exact number
  * of matches by invoking the result provider for the called pattern.
  *
- * @deprecated {@link StatisticsBasedConstraintCostFunction} should use {@link IQueryResultProvider#estimateCardinality(TupleMask, org.eclipse.viatra.query.runtime.matchers.util.Accuracy)}
+ * @deprecated {@link StatisticsBasedConstraintCostFunction} should use {@link IQueryResultProvider#estimateCardinality(TupleMask, tools.refinery.interpreter.matchers.util.Accuracy)}
  */
 @Deprecated
 public class HybridMatcherConstraintCostFunction extends IndexerBasedConstraintCostFunction {

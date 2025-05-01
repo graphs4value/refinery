@@ -1,16 +1,16 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
-Bundle-SymbolicName: viatra-runtime-rete-recipes;singleton:=true
-Automatic-Module-Name: viatra-runtime-rete-recipes
+Bundle-SymbolicName: refinery-interpreter-rete-recipes;singleton:=true
+Automatic-Module-Name: refinery-interpreter-rete-recipes
 Bundle-Version: 1.0.0.qualifier
-Bundle-ClassPath: viatra-runtime-rete-recipes.jar
+Bundle-ClassPath: refinery-interpreter-rete-recipes.jar
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: org.eclipse.viatra.query.runtime.rete.recipes,
- org.eclipse.viatra.query.runtime.rete.recipes.impl,
- org.eclipse.viatra.query.runtime.rete.recipes.util
+Export-Package: tools.refinery.interpreter.rete.recipes,
+ tools.refinery.interpreter.rete.recipes.impl,
+ tools.refinery.interpreter.rete.recipes.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.xtext.xbase.lib,

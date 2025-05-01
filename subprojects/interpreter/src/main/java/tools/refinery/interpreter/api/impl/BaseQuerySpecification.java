@@ -9,20 +9,20 @@
 
 package tools.refinery.interpreter.api.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import tools.refinery.interpreter.api.IPatternMatch;
+import tools.refinery.interpreter.api.IQuerySpecification;
+import tools.refinery.interpreter.api.InterpreterEngine;
+import tools.refinery.interpreter.api.InterpreterMatcher;
 import tools.refinery.interpreter.exception.InterpreterException;
 import tools.refinery.interpreter.matchers.psystem.annotations.PAnnotation;
 import tools.refinery.interpreter.matchers.psystem.queries.PParameter;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
 import tools.refinery.interpreter.matchers.psystem.queries.PVisibility;
 import tools.refinery.interpreter.matchers.psystem.queries.QueryInitializationException;
-import tools.refinery.interpreter.api.IPatternMatch;
-import tools.refinery.interpreter.api.IQuerySpecification;
-import tools.refinery.interpreter.api.InterpreterEngine;
-import tools.refinery.interpreter.api.InterpreterMatcher;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Base implementation of IQuerySpecification.
@@ -53,9 +53,8 @@ public abstract class BaseQuerySpecification<Matcher extends InterpreterMatcher<
     protected abstract Matcher instantiate(InterpreterEngine engine);
 
     /**
-     * For backward compatibility of code generated with previous versions of viatra query, this method has a default
-     * implementation returning null, indicating that a matcher can only be created using the old method, which ignores
-     * the hints provided by the user.
+     * This method has a default implementation returning null, indicating that a matcher can only be created using
+	 * the old method, which ignores the hints provided by the user.
      *
      * @since 1.4
      */

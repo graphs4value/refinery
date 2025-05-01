@@ -149,9 +149,7 @@ public abstract class AdvancedInterpreterEngine extends InterpreterEngine {
      *
      * <p>
      * <b>Caution: </b> This is a low-level callback that is invoked when the pattern matcher is not necessarily in a
-     * consistent state yet. Importantly, no model modification permitted during the callback. Most users should use the
-     * databinding support ({@link org.eclipse.viatra.addon.databinding.runtime.api.ViatraObservables ViatraObservables}) or the event-driven API
-     * ({@link org.eclipse.viatra.transformation.evm.api.EventDrivenVM EventDrivenVM}) instead.
+     * consistent state yet. Importantly, no model modification permitted during the callback.
      *
      * <p>
      * Performance note: expected to be much more efficient than polling at {@link #addCallbackAfterUpdates(Runnable)},

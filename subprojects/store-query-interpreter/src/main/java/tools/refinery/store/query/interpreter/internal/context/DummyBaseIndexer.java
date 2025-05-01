@@ -14,7 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 
 /**
- * Copied from <code>tools.refinery.viatra.runtime.tabular.TabularEngineContext</code>
+ * Copied from
+ * <a href="https://github.com/eclipse-viatra/org.eclipse.viatra/blob/1c149b3b67d8e5d9e96dfccd4cfd77f4a3d0a2ee/query/plugins/org.eclipse.viatra.query.runtime/src/org/eclipse/viatra/query/runtime/tabular/TabularEngineContext.java">TabularEngineContext</a>
  */
 public class DummyBaseIndexer implements IBaseIndex {
 	DummyBaseIndexer() {

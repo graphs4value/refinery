@@ -16,7 +16,8 @@ import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
  *
  * @author Bergmann Gabor
  * @since 0.9
- * @noimplement This interface is not intended to be implemented by clients, except in the tools.refinery.viatra.runtime plugin.
+ * @noimplement This interface is not intended to be implemented by clients, except in the
+ * tools.refinery.interpreter.runtime plugin.
  */
 public interface IQueryBackendHintProvider {
 

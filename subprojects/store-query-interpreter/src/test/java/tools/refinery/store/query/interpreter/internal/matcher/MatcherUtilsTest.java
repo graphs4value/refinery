@@ -19,59 +19,59 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MatcherUtilsTest {
 	@Test
 	void toInterpreter0Test() {
-		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of());
-		assertThat(viatraTuple.getSize(), is(0));
-		assertThat(viatraTuple, instanceOf(FlatTuple0.class));
+		var interpreterTuple = MatcherUtils.toInterpreterTuple(Tuple.of());
+		assertThat(interpreterTuple.getSize(), is(0));
+		assertThat(interpreterTuple, instanceOf(FlatTuple0.class));
 	}
 
 	@Test
 	void toInterpreter1Test() {
-		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2));
-		assertThat(viatraTuple.getSize(), is(1));
-		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
-		assertThat(viatraTuple, instanceOf(FlatTuple1.class));
+		var interpreterTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2));
+		assertThat(interpreterTuple.getSize(), is(1));
+		assertThat(interpreterTuple.get(0), is(Tuple.of(2)));
+		assertThat(interpreterTuple, instanceOf(FlatTuple1.class));
 	}
 
 	@Test
 	void toInterpreter2Test() {
-		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3));
-		assertThat(viatraTuple.getSize(), is(2));
-		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
-		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
-		assertThat(viatraTuple, instanceOf(FlatTuple2.class));
+		var interpreterTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3));
+		assertThat(interpreterTuple.getSize(), is(2));
+		assertThat(interpreterTuple.get(0), is(Tuple.of(2)));
+		assertThat(interpreterTuple.get(1), is(Tuple.of(3)));
+		assertThat(interpreterTuple, instanceOf(FlatTuple2.class));
 	}
 
 	@Test
 	void toInterpreter3Test() {
-		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5));
-		assertThat(viatraTuple.getSize(), is(3));
-		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
-		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
-		assertThat(viatraTuple.get(2), is(Tuple.of(5)));
-		assertThat(viatraTuple, instanceOf(FlatTuple3.class));
+		var interpreterTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5));
+		assertThat(interpreterTuple.getSize(), is(3));
+		assertThat(interpreterTuple.get(0), is(Tuple.of(2)));
+		assertThat(interpreterTuple.get(1), is(Tuple.of(3)));
+		assertThat(interpreterTuple.get(2), is(Tuple.of(5)));
+		assertThat(interpreterTuple, instanceOf(FlatTuple3.class));
 	}
 
 	@Test
 	void toInterpreter4Test() {
-		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5, 8));
-		assertThat(viatraTuple.getSize(), is(4));
-		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
-		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
-		assertThat(viatraTuple.get(2), is(Tuple.of(5)));
-		assertThat(viatraTuple.get(3), is(Tuple.of(8)));
-		assertThat(viatraTuple, instanceOf(FlatTuple4.class));
+		var interpreterTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5, 8));
+		assertThat(interpreterTuple.getSize(), is(4));
+		assertThat(interpreterTuple.get(0), is(Tuple.of(2)));
+		assertThat(interpreterTuple.get(1), is(Tuple.of(3)));
+		assertThat(interpreterTuple.get(2), is(Tuple.of(5)));
+		assertThat(interpreterTuple.get(3), is(Tuple.of(8)));
+		assertThat(interpreterTuple, instanceOf(FlatTuple4.class));
 	}
 
 	@Test
 	void toInterpreter5Test() {
-		var viatraTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5, 8, 13));
-		assertThat(viatraTuple.getSize(), is(5));
-		assertThat(viatraTuple.get(0), is(Tuple.of(2)));
-		assertThat(viatraTuple.get(1), is(Tuple.of(3)));
-		assertThat(viatraTuple.get(2), is(Tuple.of(5)));
-		assertThat(viatraTuple.get(3), is(Tuple.of(8)));
-		assertThat(viatraTuple.get(4), is(Tuple.of(13)));
-		assertThat(viatraTuple, instanceOf(FlatTuple.class));
+		var interpreterTuple = MatcherUtils.toInterpreterTuple(Tuple.of(2, 3, 5, 8, 13));
+		assertThat(interpreterTuple.getSize(), is(5));
+		assertThat(interpreterTuple.get(0), is(Tuple.of(2)));
+		assertThat(interpreterTuple.get(1), is(Tuple.of(3)));
+		assertThat(interpreterTuple.get(2), is(Tuple.of(5)));
+		assertThat(interpreterTuple.get(3), is(Tuple.of(8)));
+		assertThat(interpreterTuple.get(4), is(Tuple.of(13)));
+		assertThat(interpreterTuple, instanceOf(FlatTuple.class));
 	}
 
 	@Test
@@ -135,8 +135,8 @@ class MatcherUtilsTest {
 
 	@Test
 	void toRefineryInvalidValueTest() {
-		var viatraTuple = Tuples.flatTupleOf(Tuple.of(2), -98);
-		assertThrows(IllegalArgumentException.class, () -> MatcherUtils.toRefineryTuple(viatraTuple));
+		var interpreterTuple = Tuples.flatTupleOf(Tuple.of(2), -98);
+		assertThrows(IllegalArgumentException.class, () -> MatcherUtils.toRefineryTuple(interpreterTuple));
 	}
 
 	@Test
@@ -201,14 +201,14 @@ class MatcherUtilsTest {
 
 	@Test
 	void keyToRefineryTooShortTest() {
-		var viatraTuple = Tuples.flatTupleOf();
-		assertThrows(IllegalArgumentException.class, () -> MatcherUtils.keyToRefineryTuple(viatraTuple));
+		var interpreterTuple = Tuples.flatTupleOf();
+		assertThrows(IllegalArgumentException.class, () -> MatcherUtils.keyToRefineryTuple(interpreterTuple));
 	}
 
 	@Test
 	void keyToRefineryInvalidValueTest() {
-		var viatraTuple = Tuples.flatTupleOf(Tuple.of(2), -98, -99);
-		assertThrows(IllegalArgumentException.class, () -> MatcherUtils.keyToRefineryTuple(viatraTuple));
+		var interpreterTuple = Tuples.flatTupleOf(Tuple.of(2), -98, -99);
+		assertThrows(IllegalArgumentException.class, () -> MatcherUtils.keyToRefineryTuple(interpreterTuple));
 	}
 
 	@Test
@@ -233,7 +233,7 @@ class MatcherUtilsTest {
 
 	@Test
 	void getSingleValueMultipleTest() {
-		var viatraTuples = List.of(Tuples.flatTupleOf(Tuple.of(2), -98), Tuples.flatTupleOf(Tuple.of(2), -99));
-		assertThrows(IllegalStateException.class, () -> MatcherUtils.getSingleValue(viatraTuples));
+		var interpreterTuples = List.of(Tuples.flatTupleOf(Tuple.of(2), -98), Tuples.flatTupleOf(Tuple.of(2), -99));
+		assertThrows(IllegalStateException.class, () -> MatcherUtils.getSingleValue(interpreterTuples));
 	}
 }

@@ -38,50 +38,50 @@ final class MatcherUtils {
 		};
 	}
 
-	public static Tuple toRefineryTuple(ITuple viatraTuple) {
-		int arity = viatraTuple.getSize();
+	public static Tuple toRefineryTuple(ITuple interpreterTuple) {
+		int arity = interpreterTuple.getSize();
 		if (arity == 1) {
-			return getWrapper(viatraTuple, 0);
+			return getWrapper(interpreterTuple, 0);
 		}
-		return prefixToRefineryTuple(viatraTuple, viatraTuple.getSize());
+		return prefixToRefineryTuple(interpreterTuple, interpreterTuple.getSize());
 	}
 
-	public static Tuple keyToRefineryTuple(ITuple viatraTuple) {
-		return prefixToRefineryTuple(viatraTuple, viatraTuple.getSize() - 1);
+	public static Tuple keyToRefineryTuple(ITuple interpreterTuple) {
+		return prefixToRefineryTuple(interpreterTuple, interpreterTuple.getSize() - 1);
 	}
 
-	private static Tuple prefixToRefineryTuple(ITuple viatraTuple, int targetArity) {
+	private static Tuple prefixToRefineryTuple(ITuple interpreterTuple, int targetArity) {
 		if (targetArity < 0) {
 			throw new IllegalArgumentException("Requested negative prefix %d of %s"
-					.formatted(targetArity, viatraTuple));
+					.formatted(targetArity, interpreterTuple));
 		}
 		return switch (targetArity) {
 			case 0 -> Tuple.of();
-			case 1 -> Tuple.of(unwrap(viatraTuple, 0));
-			case 2 -> Tuple.of(unwrap(viatraTuple, 0), unwrap(viatraTuple, 1));
-			case 3 -> Tuple.of(unwrap(viatraTuple, 0), unwrap(viatraTuple, 1), unwrap(viatraTuple, 2));
-			case 4 -> Tuple.of(unwrap(viatraTuple, 0), unwrap(viatraTuple, 1), unwrap(viatraTuple, 2),
-					unwrap(viatraTuple, 3));
+			case 1 -> Tuple.of(unwrap(interpreterTuple, 0));
+			case 2 -> Tuple.of(unwrap(interpreterTuple, 0), unwrap(interpreterTuple, 1));
+			case 3 -> Tuple.of(unwrap(interpreterTuple, 0), unwrap(interpreterTuple, 1), unwrap(interpreterTuple, 2));
+			case 4 -> Tuple.of(unwrap(interpreterTuple, 0), unwrap(interpreterTuple, 1), unwrap(interpreterTuple, 2),
+					unwrap(interpreterTuple, 3));
 			default -> {
 				var entries = new int[targetArity];
 				for (int i = 0; i < targetArity; i++) {
-					entries[i] = unwrap(viatraTuple, i);
+					entries[i] = unwrap(interpreterTuple, i);
 				}
 				yield Tuple.of(entries);
 			}
 		};
 	}
 
-	private static Tuple1 getWrapper(ITuple viatraTuple, int index) {
-		if (!((viatraTuple.get(index)) instanceof Tuple1 wrappedObjectId)) {
+	private static Tuple1 getWrapper(ITuple interpreterTuple, int index) {
+		if (!((interpreterTuple.get(index)) instanceof Tuple1 wrappedObjectId)) {
 			throw new IllegalArgumentException("Element %d of tuple %s is not an object id"
-					.formatted(index, viatraTuple));
+					.formatted(index, interpreterTuple));
 		}
 		return wrappedObjectId;
 	}
 
-	private static int unwrap(ITuple viatraTuple, int index) {
-		return getWrapper(viatraTuple, index).value0();
+	private static int unwrap(ITuple interpreterTuple, int index) {
+		return getWrapper(interpreterTuple, index).value0();
 	}
 
 	public static <T> T getValue(ITuple match) {
@@ -91,11 +91,11 @@ final class MatcherUtils {
 		return result;
 	}
 
-	public static <T> T getSingleValue(@Nullable Iterable<? extends ITuple> viatraTuples) {
-		if (viatraTuples == null) {
+	public static <T> T getSingleValue(@Nullable Iterable<? extends ITuple> interpreterTuples) {
+		if (interpreterTuples == null) {
 			return null;
 		}
-		return getSingleValue(viatraTuples.iterator());
+		return getSingleValue(interpreterTuples.iterator());
 	}
 
 	public static <T> T getSingleValue(Iterator<? extends ITuple> iterator) {

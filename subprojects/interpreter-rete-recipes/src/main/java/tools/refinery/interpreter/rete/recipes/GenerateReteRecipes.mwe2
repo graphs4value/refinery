@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-module tools.refinery.viatra.runtime.rete.recipes.GenerateReteRecipes
+module tools.refinery.interpreter.runtime.rete.recipes.GenerateReteRecipes
 
 Workflow {
 	bean = org.eclipse.emf.mwe.utils.StandaloneSetup {
