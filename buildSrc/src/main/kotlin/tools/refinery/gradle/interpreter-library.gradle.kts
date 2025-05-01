@@ -13,9 +13,6 @@ plugins {
 	id("tools.refinery.gradle.sonarqube")
 }
 
-property("tools.refinery.interpreter.group")?.let { group = it }
-property("tools.refinery.interpreter.version")?.let { version = it }
-
 val libs = the<LibrariesForLibs>()
 
 dependencies {

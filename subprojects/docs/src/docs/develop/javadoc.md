@@ -35,7 +35,7 @@ The _Refinery Interpreter_ is modified version of [VIATRA&trade;](https://eclips
 
 :::
 
-* [`tools.refinery.interpreter:refinery-interpreter:@@@tools.refinery.interpreter.version@@@`](pathname://refinery-interpreter/)
-* [`tools.refinery.interpreter:refinery-interpreter-localsearch:@@@tools.refinery.interpreter.version@@@`](pathname://refinery-interpreter-localsearch/)
-* [`tools.refinery.interpreter:refinery-interpreter-rete:@@@tools.refinery.interpreter.version@@@`](pathname://refinery-interpreter-rete/)
-* [`tools.refinery.interpreter:refinery-interpreter-rete-recipes:@@@tools.refinery.interpreter.version@@@`](pathname://refinery-interpreter-rete-recipes/)
+* [`tools.refinery:refinery-interpreter:@@@version@@@`](pathname://refinery-interpreter/)
+* [`tools.refinery:refinery-interpreter-localsearch:@@@version@@@`](pathname://refinery-interpreter-localsearch/)
+* [`tools.refinery:refinery-interpreter-rete:@@@version@@@`](pathname://refinery-interpreter-rete/)
+* [`tools.refinery:refinery-interpreter-rete-recipes:@@@version@@@`](pathname://refinery-interpreter-rete-recipes/)

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2024-2025 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,14 +17,11 @@ mavenArtifact {
 }
 
 val refineryVersion = "refinery"
-val interpreterVersion = "refinery-interpreter"
-val interpreterGroup = property("tools.refinery.interpreter.group").toString()
 val shadowVersion = "shadow"
 
 catalog.versionCatalog {
 	from(files("../../gradle/libs.versions.toml"))
 	version(refineryVersion, project.version.toString())
-	version(interpreterVersion, property("tools.refinery.interpreter.version").toString())
 	library("bom", group.toString(), "refinery-bom").versionRef(refineryVersion)
 	library("bom-dependencies", group.toString(), "refinery-bom-dependencies").versionRef(refineryVersion)
 
@@ -43,8 +40,7 @@ gradle.projectsEvaluated {
 			if (subproject.plugins.hasPlugin(JavaLibraryPlugin::class)) {
 				val alias = subproject.name.removePrefix("refinery-")
 				val group = subproject.group.toString()
-				val versionRef = if (interpreterGroup == group) interpreterVersion else refineryVersion
-				library(alias, group, subproject.name).versionRef(versionRef)
+				library(alias, group, subproject.name).versionRef(refineryVersion)
 			}
 		}
 	}
