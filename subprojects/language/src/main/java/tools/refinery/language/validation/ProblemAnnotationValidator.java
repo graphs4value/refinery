@@ -70,7 +70,7 @@ public class ProblemAnnotationValidator extends AbstractProblemValidator {
 			}
 			if (!hasError) {
 				var validator = adapter.getAnnotationValidator();
-				validator.validate(typing, annotationContext, getMessageAcceptor());
+				validator.validate(typing, getMessageAcceptor());
 			}
 		}
 	}

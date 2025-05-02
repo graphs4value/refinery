@@ -8,6 +8,8 @@ package tools.refinery.language.scoping.imports;
 import com.google.common.base.Splitter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
@@ -33,9 +35,9 @@ import java.util.*;
 
 public class ImportAdapter extends AdapterImpl {
 	private static final Logger LOG = Logger.getLogger(ImportAdapter.class);
-	private static final List<RefineryLibrary> DEFAULT_LIBRARIES;
-	private static final List<TermInterpreter> DEFAULT_TERM_INTERPRETERS;
-	private static final List<AnnotationValidator> DEFAULT_ANNOTATION_VALIDATORS;
+	private static final List<Class<? extends RefineryLibrary>> DEFAULT_LIBRARIES;
+	private static final List<Class<? extends TermInterpreter>> DEFAULT_TERM_INTERPRETERS;
+	private static final List<Class<? extends AnnotationValidator>> DEFAULT_ANNOTATION_VALIDATORS;
 	private static final List<Path> DEFAULT_PATHS;
 
 	static {
@@ -53,29 +55,29 @@ public class ImportAdapter extends AdapterImpl {
 		}
 	}
 
-	private static <T> List<T> loadServices(Class<T> serviceClass) {
+	private static <T> List<Class<? extends T>> loadServices(Class<T> serviceClass) {
 		return ServiceLoader.load(serviceClass).stream()
-				.<T>mapMulti((provider, consumer) -> {
-					T service = null;
+				.<Class<? extends T>>mapMulti((provider, consumer) -> {
+					Class<? extends T> implementationClass = null;
 					try {
-						service = provider.get();
+						implementationClass = provider.type();
 					} catch (ServiceConfigurationError e) {
 						LOG.error("Error loading service: " + serviceClass.getName(), e);
 					}
-					if (service != null) {
-						consumer.accept(service);
+					if (implementationClass != null) {
+						consumer.accept(implementationClass);
 					}
 				})
 				.toList();
 	}
 
 	private ResourceSet resourceSet;
-	private final List<RefineryLibrary> libraries = new ArrayList<>(DEFAULT_LIBRARIES);
-	private final List<TermInterpreter> termInterpreters = new ArrayList<>(DEFAULT_TERM_INTERPRETERS);
-	private final List<AnnotationValidator> annotationValidators = new ArrayList<>(DEFAULT_ANNOTATION_VALIDATORS);
-	private final RefineryLibrary compositeLibrary = new CompositeLibrary(libraries);
-	private final TermInterpreter termInterpreter = new CompositeTermInterpreter(termInterpreters);
-	private final AnnotationValidator annotationValidator = new CompositeAnnotationValidator(annotationValidators);
+	private final List<RefineryLibrary> libraries;
+	private final List<TermInterpreter> termInterpreters;
+	private final List<AnnotationValidator> annotationValidators;
+	private final RefineryLibrary compositeLibrary;
+	private final TermInterpreter termInterpreter;
+	private final AnnotationValidator annotationValidator;
 	private final List<Path> libraryPaths = new ArrayList<>(DEFAULT_PATHS);
 	private final Cache<QualifiedName, QualifiedName> failedResolutions =
 			CacheBuilder.newBuilder().maximumSize(100).build();
@@ -83,6 +85,32 @@ public class ImportAdapter extends AdapterImpl {
 	private final Map<URI, QualifiedName> uriToQualifiedNameMap = new LinkedHashMap<>();
 	private Problem builtinProblem;
 	private BuiltinSymbols builtinSymbols;
+
+	@Inject
+	public ImportAdapter(Injector injector) {
+		libraries = instantiate(injector, DEFAULT_LIBRARIES);
+		compositeLibrary = new CompositeLibrary(libraries);
+		termInterpreters = instantiate(injector, DEFAULT_TERM_INTERPRETERS);
+		termInterpreter = new CompositeTermInterpreter(termInterpreters);
+		annotationValidators = instantiate(injector, DEFAULT_ANNOTATION_VALIDATORS);
+		annotationValidator = new CompositeAnnotationValidator(annotationValidators);
+	}
+
+	private <T> List<T> instantiate(Injector injector, List<Class<? extends T>> implementationClasses) {
+		var instances = new ArrayList<T>(implementationClasses.size());
+		for (var implementationClass : implementationClasses) {
+			T instance = null;
+			try {
+				instance = injector.getInstance(implementationClass);
+			} catch (RuntimeException e) {
+				LOG.error("Error loading service: " + implementationClass.getName(), e);
+			}
+			if (instance != null) {
+				instances.add(instance);
+			}
+		}
+		return instances;
+	}
 
 	void setResourceSet(ResourceSet resourceSet) {
 		this.resourceSet = resourceSet;

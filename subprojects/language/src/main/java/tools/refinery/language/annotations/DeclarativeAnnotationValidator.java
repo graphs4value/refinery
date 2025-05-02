@@ -5,6 +5,7 @@
  */
 package tools.refinery.language.annotations;
 
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -29,9 +30,11 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 
 	private static final int STATIC_FINAL_MODIFIERS = Modifier.STATIC | Modifier.FINAL;
 
+	@Inject
+	private AnnotationContext context;
+
 	private final Map<QualifiedName, MethodHandle> validateMethods = new LinkedHashMap<>();
-	private final ThreadLocal<AnnotationContext> context = new ThreadLocal<>();
-	private final ThreadLocal<ValidationMessageAcceptor> acceptor = new ThreadLocal<>();
+	private ValidationMessageAcceptor acceptor;
 
 	protected DeclarativeAnnotationValidator() {
 		var lookup = lookup();
@@ -160,16 +163,14 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 	}
 
 	@Override
-	public void validate(Annotation annotation, AnnotationContext context, ValidationMessageAcceptor acceptor) {
-		if (this.context.get() != null || this.acceptor.get() != null) {
-			throw new IllegalStateException("Reentrant calls to validate() are not supported.");
+	public void validate(Annotation annotation, ValidationMessageAcceptor acceptor) {
+		if (this.acceptor != null) {
+			throw new IllegalStateException(
+					"Reentrant calls to DeclarativeAnnotationValidator#validate are not supported.");
 		}
 		var handle = validateMethods.get(annotation.getAnnotationName());
 		if (handle != null) {
-			// Since the annotations validators act as singletons loaded by {@link java.util.ServiceLoader}, we must
-			// ensure thread safety by using {@code ThreadLocal} variables.
-			this.context.set(context);
-			this.acceptor.set(acceptor);
+			this.acceptor = acceptor;
 			try {
 				handle.invokeExact(annotation);
 			} catch (Error e) {
@@ -184,26 +185,17 @@ public abstract class DeclarativeAnnotationValidator implements AnnotationValida
 				acceptor.acceptError(message, annotation.getAnnotation(), null, INSIGNIFICANT_INDEX,
 						ProblemAnnotationValidator.VALIDATOR_FAILED_ISSUE);
 			} finally {
-				this.context.remove();
-				this.acceptor.remove();
+				this.acceptor = null;
 			}
 		}
 	}
 
 	public AnnotationContext getContext() {
-		var currentContext = context.get();
-		if (currentContext == null) {
-			throw new IllegalStateException("annotationsFor() called outside of validate().");
-		}
-		return currentContext;
+		return context;
 	}
 
 	public ValidationMessageAcceptor getMessageAcceptor() {
-		var currentAcceptor = acceptor.get();
-		if (currentAcceptor == null) {
-			throw new IllegalStateException("getMessageAcceptor() called outside of validate().");
-		}
-		return currentAcceptor;
+		return acceptor;
 	}
 
 	@NotNull

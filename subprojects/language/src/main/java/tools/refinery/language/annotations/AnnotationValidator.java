@@ -8,5 +8,5 @@ package tools.refinery.language.annotations;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 
 public interface AnnotationValidator {
-	void validate(Annotation annotation, AnnotationContext context, ValidationMessageAcceptor acceptor);
+	void validate(Annotation annotation, ValidationMessageAcceptor acceptor);
 }

@@ -7,7 +7,6 @@ package tools.refinery.language.annotations.internal;
 
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import tools.refinery.language.annotations.Annotation;
-import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.annotations.AnnotationValidator;
 
 import java.util.List;
@@ -20,9 +19,9 @@ public class CompositeAnnotationValidator implements AnnotationValidator {
 	}
 
 	@Override
-	public void validate(Annotation annotation, AnnotationContext context, ValidationMessageAcceptor acceptor) {
+	public void validate(Annotation annotation, ValidationMessageAcceptor acceptor) {
 		for (var validator : validators) {
-			validator.validate(annotation, context, acceptor);
+			validator.validate(annotation, acceptor);
 		}
 	}
 }
