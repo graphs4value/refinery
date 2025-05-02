@@ -78,6 +78,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 	private ImportAdapterProvider importAdapterProvider;
 
 	@Inject
+	private ClassHierarchyCollector classHierarchyCollector;
+
+	@Inject
 	private SignatureProvider signatureProvider;
 
 	@Inject
@@ -439,13 +442,26 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkSupertypes(ClassDeclaration classDeclaration) {
+		var builtinSymbols = importAdapterProvider.getBuiltinSymbols(classDeclaration);
 		var supertypes = classDeclaration.getSuperTypes();
 		int supertypeCount = supertypes.size();
 		for (int i = 0; i < supertypeCount; i++) {
 			var supertype = supertypes.get(i);
-			if (!supertype.eIsProxy() && !(supertype instanceof ClassDeclaration)) {
-				var message = "Supertype '%s' of '%s' is not a class."
+			if (supertype.eIsProxy()) {
+				continue;
+			}
+			String message = null;
+			if (!(supertype instanceof ClassDeclaration supertypeDeclaration)) {
+				message = "Supertype '%s' of '%s' is not a class."
 						.formatted(supertype.getName(), classDeclaration.getName());
+			} else if (builtinSymbols.contained().equals(supertype) || builtinSymbols.container().equals(supertype)) {
+				message = "The built-in symbol '%s' cannot be used as a supertype of '%s'."
+						.formatted(supertype.getName(), classDeclaration.getName());
+			} else if (classHierarchyCollector.getSuperTypes(supertypeDeclaration).contains(classDeclaration)) {
+				message = "Circular inheritance detected between '%s' and '%s'."
+						.formatted(classDeclaration.getName(), supertype.getName());
+			}
+			if (message != null) {
 				acceptError(message, classDeclaration, ProblemPackage.Literals.CLASS_DECLARATION__SUPER_TYPES, i,
 						INVALID_SUPERTYPE_ISSUE);
 			}
