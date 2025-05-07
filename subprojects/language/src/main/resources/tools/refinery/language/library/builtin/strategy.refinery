@@ -61,6 +61,11 @@ import builtin::annotations.
  * Set `@decide(false)` to disable automatically created decision rules without
  * disabling concretization.
  *
+ * Disabling automatically created decision rules for a class will also prevent
+ * the focusing of multi-objects that are instances of the class. This setting
+ * will be inherited by (directly or indirectly) extending classes and will
+ * prevent re-enabling automatically created decision rules.
+ *
  * Set `@decide(true)` along with `@concretize(false)` to disable automatic
  * concretization without disabling automatically created decision rules.
  *
@@ -75,6 +80,7 @@ import builtin::annotations.
  * Sets the priority of a decision rule.
  *
  * A decision rule is only enabled if no decision with strictly higher priority
+ * (i.e., one with `value` set to a _larger_ integer)
  * has a precondition that holds in the partial model. In other words, higher
  * priority rules disable lower priority rules.
  *
