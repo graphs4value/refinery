@@ -230,9 +230,6 @@ public final class ProblemUtil {
 	}
 
 	public static boolean canDisableDecision(Relation relation) {
-		if (relation instanceof ClassDeclaration) {
-			return false;
-		}
 		return isDecideByDefault(relation);
 	}
 }

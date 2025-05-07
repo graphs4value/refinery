@@ -52,6 +52,14 @@ public final class TypeAnalysisResult {
 		return isAbstractType() && directSubtypes.isEmpty();
 	}
 
+	public boolean canSetTypeWithDecision() {
+		return !isAbstractType() && extendedTypeInfo.isDecide();
+	}
+
+	public boolean isAllowFocusing() {
+		return extendedTypeInfo.isAllowFocusing();
+	}
+
 	public InferredType asInferredType() {
 		return inferredType;
 	}

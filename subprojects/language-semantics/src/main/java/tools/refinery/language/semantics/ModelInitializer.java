@@ -364,7 +364,7 @@ public class ModelInitializer {
 		}
 		try {
 			metamodelBuilder.type(getPartialRelation(classDeclaration), classDeclaration.isAbstract(),
-					partialSuperTypes);
+					builtinAnnotationContext.isClassDeclarationDecide(classDeclaration), partialSuperTypes);
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
 		}
@@ -692,7 +692,7 @@ public class ModelInitializer {
 		var defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
 		var concretizationSettings = getConcretizationSettings(predicateDefinition);
 		var translator = new BasePredicateTranslator(partialRelation, parameterTypes, supersets, defaultValue,
-                concretizationSettings);
+				concretizationSettings);
 		storeBuilder.with(translator);
 	}
 

@@ -72,6 +72,13 @@ public class TypeHierarchy {
 		throw new IllegalArgumentException("Unknown type: " + type);
 	}
 
+	public List<PartialRelation> getDisallowFocusingTypes() {
+		return extendedTypeInfoMap.values().stream()
+				.filter(extendedTypeInfo -> !extendedTypeInfo.isAllowFocusing())
+				.map(ExtendedTypeInfo::getType)
+				.toList();
+	}
+
 	private void computeAllSupertypes() {
 		boolean changed;
 		do {
@@ -170,6 +177,8 @@ public class TypeHierarchy {
 			throw new AssertionError("Expected trivial supertype %s to have at most 1 direct subtype"
 					.formatted(trivialType));
 		}
+		var replacementTypeInfo = extendedTypeInfoMap.get(replacement);
+		replacementTypeInfo.updateDecide(extendedTypeInfo.isDecide());
 		for (var supertype : extendedTypeInfo.getAllSupertypes()) {
 			var extendedSupertypeInfo = extendedTypeInfoMap.get(supertype);
 			if (!extendedSupertypeInfo.getAllSubtypes().remove(trivialType)) {
@@ -220,9 +229,9 @@ public class TypeHierarchy {
 				extendedDirectSubtypeInfo.getUnsortedDirectSupertypes().add(extendedTypeInfo.getType());
 			}
 		}
-		// Build a <i>inverse</i> topological order ({@code extends} edges always points to earlier nodes in the order,
-		// breaking ties according to the original order ({@link ExtendedTypeInfo#index}) to form a 'stable' sort.
-		// See, e.g., https://stackoverflow.com/a/11236027.
+		// Build an <i>inverse</i> topological order ({@code extends} edges always points to earlier nodes in the
+        // order, breaking ties according to the original order ({@link ExtendedTypeInfo#index}) to form a 'stable'
+		// sort. See, e.g., https://stackoverflow.com/a/11236027.
 		var priorityQueue = new PriorityQueue<ExtendedTypeInfo>();
 		for (var extendedTypeInfo : extendedTypeInfoMap.values()) {
 			if (extendedTypeInfo.getUnsortedDirectSupertypes().isEmpty()) {
@@ -240,6 +249,7 @@ public class TypeHierarchy {
 					throw new AssertionError("Expected %s to be a direct supertype of %s"
 							.formatted(extendedTypeInfo.getType(), directSubtype));
 				}
+				extendedDirectSubtypeInfo.updateAllowFocusing(extendedTypeInfo.isAllowFocusing());
 				if (unsortedDirectSupertypes.isEmpty()) {
 					priorityQueue.add(extendedDirectSubtypeInfo);
 				}

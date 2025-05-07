@@ -23,8 +23,10 @@ public class MetamodelTranslator implements ModelStoreConfiguration {
 
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
-		storeBuilder.with(new TypeHierarchyTranslator(metamodel.typeHierarchy()));
-		storeBuilder.with(new ContainmentHierarchyTranslator(metamodel.containmentHierarchy()));
+		var typeHierarchy = metamodel.typeHierarchy();
+		storeBuilder.with(new TypeHierarchyTranslator(typeHierarchy));
+		storeBuilder.with(new ContainmentHierarchyTranslator(metamodel.containmentHierarchy(),
+				typeHierarchy.getDisallowFocusingTypes()));
 		storeBuilder.with(new ContainerTypeInferenceTranslator(metamodel.typeHierarchy(),
 				metamodel.containmentHierarchy()));
 		for (var entry : metamodel.directedCrossReferences().entrySet()) {

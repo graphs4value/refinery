@@ -19,6 +19,7 @@ import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.view.AnySymbolView;
@@ -44,8 +45,7 @@ import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.logic.term.int_.IntTerms.constant;
 import static tools.refinery.logic.term.int_.IntTerms.less;
 import static tools.refinery.store.reasoning.ReasoningAdapter.EXISTS_SYMBOL;
-import static tools.refinery.store.reasoning.actions.PartialActionLiterals.add;
-import static tools.refinery.store.reasoning.actions.PartialActionLiterals.focus;
+import static tools.refinery.store.reasoning.actions.PartialActionLiterals.*;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 
 public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
@@ -59,16 +59,30 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 			InferredContainment.UNKNOWN);
 	private final AnySymbolView mustAnyContainmentLinkView = new MustAnyContainmentLinkView(containsStorage);
 	private final AnySymbolView forbiddenContainsView = new ForbiddenContainsView(containsStorage);
+	private final RelationalQuery focusingDisallowed;
 	private final RelationalQuery containsMayNewTargetHelper;
 	private final RelationalQuery containsWithoutLink;
 	private final RelationalQuery weakComponents;
 	private final RelationalQuery strongComponents;
 	private final Map<PartialRelation, ContainmentInfo> containmentInfoMap;
+	private final List<PartialRelation> focusingDisallowedTypes;
 
 	public ContainmentHierarchyTranslator(Map<PartialRelation, ContainmentInfo> containmentInfoMap) {
+		this(containmentInfoMap, List.of());
+	}
+
+	public ContainmentHierarchyTranslator(Map<PartialRelation, ContainmentInfo> containmentInfoMap,
+										  List<PartialRelation> focusingDisallowedTypes) {
 		this.containmentInfoMap = containmentInfoMap;
+		this.focusingDisallowedTypes = focusingDisallowedTypes;
 
 		var name = CONTAINS_SYMBOL.name();
+
+		focusingDisallowed = Query.of(name + "#focusingDisallowed", (builder, multi) -> {
+			for (var type : focusingDisallowedTypes) {
+				builder.clause(must(type.call(multi)));
+			}
+		});
 
 		containsMayNewTargetHelper = Query.of(name + "#mayNewTargetHelper", (builder, child) -> builder
 				.clause(Integer.class, existingContainers -> List.of(
@@ -212,6 +226,14 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 				.roundingMode(RoundingMode.PREFER_FALSE)
 				.refiner(ContainmentLinkRefiner.of(linkType, containsStorage, info));
 		if (info.decide()) {
+			translateDecisions(linkType, translator);
+		}
+		storeBuilder.with(translator);
+	}
+
+	private void translateDecisions(PartialRelation linkType, PartialRelationTranslator translator) {
+		if (focusingDisallowedTypes.isEmpty()) {
+			// No need to separate focusing and non-focusing cases.
 			translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
 					.clause(
 							may(linkType.call(source, target)),
@@ -222,8 +244,34 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 							focus(target, focusedTarget),
 							add(linkType, source, focusedTarget)
 					))));
+			return;
 		}
-		storeBuilder.with(translator);
+		translator.decision(Rule.of(linkType.name(), (builder, source, target) -> builder
+				.clause(
+						may(linkType.call(source, target)),
+						not(candidateMust(linkType.call(source, target))),
+						not(MultiObjectTranslator.MULTI_VIEW.call(source)),
+						not(MultiObjectTranslator.MULTI_VIEW.call(target))
+				)
+				.action(add(linkType, source, target))));
+		translator.decision(Rule.of(linkType.name() + "#focus", (builder, source, target) -> {
+			builder.clause(
+					may(linkType.call(source, target)),
+					not(candidateMust(linkType.call(source, target))),
+					not(MultiObjectTranslator.MULTI_VIEW.call(source)),
+					MultiObjectTranslator.MULTI_VIEW.call(target),
+					not(focusingDisallowed.call(target))
+			);
+			// When focusing, we must state that we are allowed to focus the target node.
+			var actionLiterals = new ArrayList<ActionLiteral>(focusingDisallowedTypes.size() + 2);
+			var focusedTarget = Variable.of();
+			actionLiterals.add(focus(target, focusedTarget));
+			actionLiterals.add(add(linkType, source, focusedTarget));
+			for (var type : focusingDisallowedTypes) {
+				actionLiterals.add(remove(type, focusedTarget));
+			}
+			builder.action(actionLiterals);
+		}));
 	}
 
 	private void translateInvalidMultiplicity(ModelStoreBuilder storeBuilder, PartialRelation linkType,
@@ -259,19 +307,27 @@ public class ContainmentHierarchyTranslator implements ModelStoreConfiguration {
 			return;
 		}
 		var dseBuilder = dseBuilderOption.get();
-		dseBuilder.transformation(Rule.of("NOT_CONTAINED", (builder, multi) -> builder
-				.clause(
-						MultiObjectTranslator.MULTI_VIEW.call(multi),
-						not(may(CONTAINED_SYMBOL.call(multi)))
-				)
-				.clause(container -> List.of(
-						MultiObjectTranslator.MULTI_VIEW.call(multi),
-						mustAnyContainmentLinkView.call(container, multi),
-						not(MultiObjectTranslator.MULTI_VIEW.call(container))
-				))
-				.action(
-						focus(multi, Variable.of())
-				)));
+		dseBuilder.transformation(Rule.of("NOT_CONTAINED", (builder, multi) -> {
+			builder.clause(
+					MultiObjectTranslator.MULTI_VIEW.call(multi),
+					not(may(CONTAINED_SYMBOL.call(multi))),
+					not(focusingDisallowed.call(multi))
+			);
+			builder.clause(container -> List.of(
+					MultiObjectTranslator.MULTI_VIEW.call(multi),
+					mustAnyContainmentLinkView.call(container, multi),
+					not(MultiObjectTranslator.MULTI_VIEW.call(container)),
+					not(focusingDisallowed.call(multi))
+			));
+			// When focusing, we must state that we are allowed to focus the containment root node.
+			var actionLiterals = new ArrayList<ActionLiteral>(focusingDisallowedTypes.size() + 1);
+			var focusedMulti = Variable.of();
+			actionLiterals.add(focus(multi, focusedMulti));
+			for (var type : focusingDisallowedTypes) {
+				actionLiterals.add(remove(type, focusedMulti));
+			}
+			builder.action(actionLiterals);
+		}));
 	}
 
 	private void configureSingleContainerPropagator(PropagationBuilder propagationBuilder) {

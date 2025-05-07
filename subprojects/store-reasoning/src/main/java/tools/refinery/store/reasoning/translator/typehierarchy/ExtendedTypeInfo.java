@@ -22,12 +22,16 @@ final class ExtendedTypeInfo implements Comparable<ExtendedTypeInfo> {
 	private final Set<PartialRelation> concreteSubtypesAndSelf = new LinkedHashSet<>();
 	private Set<PartialRelation> directSubtypes;
 	private final Set<PartialRelation> unsortedDirectSupertypes = new HashSet<>();
+	private boolean decide;
+	private boolean allowFocusing;
 
 	public ExtendedTypeInfo(int index, PartialRelation type, TypeInfo typeInfo) {
 		this.index = index;
 		this.type = type;
 		this.typeInfo = typeInfo;
 		this.allSupertypes = new LinkedHashSet<>(typeInfo.supertypes());
+		decide = typeInfo.decide();
+		allowFocusing = decide;
 	}
 
 	public PartialRelation getType() {
@@ -71,6 +75,27 @@ final class ExtendedTypeInfo implements Comparable<ExtendedTypeInfo> {
 	public void setDirectSubtypes(Set<PartialRelation> directSubtypes) {
 		this.directSubtypes = directSubtypes;
 	}
+
+	public boolean isDecide() {
+		return decide;
+	}
+
+	public void updateDecide(boolean eliminatedSupertypeDecide) {
+		if (!eliminatedSupertypeDecide) {
+			decide = false;
+		}
+		updateAllowFocusing(eliminatedSupertypeDecide);
+	}
+
+	public boolean isAllowFocusing() {
+		return allowFocusing;
+	}
+
+	public void updateAllowFocusing(boolean directSupertypeAllowFocusing) {
+        if (!directSupertypeAllowFocusing) {
+            allowFocusing = false;
+        }
+    }
 
 	public boolean allowsAllConcreteTypes(Set<PartialRelation> concreteTypes) {
 		for (var concreteType : concreteTypes) {

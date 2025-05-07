@@ -41,6 +41,11 @@ public class TypeHierarchyBuilder {
 		return type(partialRelation, new TypeInfo(supertypes, abstractType));
 	}
 
+	public TypeHierarchyBuilder type(PartialRelation partialRelation, boolean abstractType, boolean decide,
+									 Collection<PartialRelation> supertypes) {
+		return type(partialRelation, new TypeInfo(supertypes, abstractType, decide));
+	}
+
 	public TypeHierarchyBuilder type(PartialRelation partialRelation, PartialRelation... supertypes) {
 		return type(partialRelation, List.of(supertypes));
 	}

@@ -84,7 +84,7 @@ public class TypeHierarchyTranslator implements ModelStoreConfiguration {
 				.candidate(candidate)
 				.refiner(InferredTypeRefiner.of(TYPE_SYMBOL, result));
 
-		if (!result.isAbstractType()) {
+		if (result.canSetTypeWithDecision()) {
 			var decision = Rule.of(type.name(), (builder, instance) -> builder
 					.clause(
 							may(type.call(instance)),

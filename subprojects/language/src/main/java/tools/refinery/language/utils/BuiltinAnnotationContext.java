@@ -39,6 +39,9 @@ public class BuiltinAnnotationContext {
 	}
 
 	public ConcretizationSettings getConcretizationSettings(Relation relation) {
+		if (relation instanceof ClassDeclaration) {
+			throw new IllegalArgumentException("Use isClassDeclarationDecide() instead");
+		}
 		var annotations = annotationContext.annotationsFor(relation);
 		var concretize = annotations.getAnnotation(BuiltinAnnotations.CONCRETIZE)
 				.flatMap(annotation -> annotation.getBoolean(BuiltinAnnotations.CONCRETIZE_AUTO));
@@ -51,6 +54,13 @@ public class BuiltinAnnotationContext {
 					}
 					return ProblemUtil.isDecideByDefault(relation);
 				}));
+	}
+
+	public boolean isClassDeclarationDecide(ClassDeclaration classDeclaration) {
+		var annotations = annotationContext.annotationsFor(classDeclaration);
+		return annotations.getAnnotation(BuiltinAnnotations.DECIDE)
+				.flatMap(annotation -> annotation.getBoolean(BuiltinAnnotations.DECIDE_AUTO))
+				.orElse(true);
 	}
 
 	public DecisionSettings getDecisionSettings(RuleDefinition ruleDefinition) {

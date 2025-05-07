@@ -51,6 +51,12 @@ public class MetamodelBuilder {
 		return this;
 	}
 
+	public MetamodelBuilder type(PartialRelation partialRelation, boolean abstractType, boolean decide,
+								 Collection<PartialRelation> supertypes) {
+		typeHierarchyBuilder.type(partialRelation, abstractType, decide, supertypes);
+		return this;
+	}
+
 	public MetamodelBuilder type(PartialRelation partialRelation, PartialRelation... supertypes) {
 		typeHierarchyBuilder.type(partialRelation, supertypes);
 		return this;
