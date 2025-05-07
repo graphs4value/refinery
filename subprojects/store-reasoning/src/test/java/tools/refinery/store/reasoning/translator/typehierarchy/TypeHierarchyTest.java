@@ -5,16 +5,19 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -142,8 +145,8 @@ class TypeHierarchyTest {
 
 		var expected = new InferredType(Set.of(c3), Set.of(c1, c2, c3), c3);
 		assertAll(
-				() -> assertThat(tester.getInferredType(c3), Matchers.is(expected)),
-				() -> assertThat(c3Result.merge(sut.getUnknownType(), TruthValue.TRUE), Matchers.is(expected))
+				() -> assertThat(tester.getInferredType(c3), is(expected)),
+				() -> assertThat(c3Result.merge(sut.getUnknownType(), TruthValue.TRUE), is(expected))
 		);
 	}
 
@@ -167,7 +170,7 @@ class TypeHierarchyTest {
 		var a1Result = tester.getPreservedType(a1);
 
 		assertThat(c1Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-				Matchers.is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c2)));
+				is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c2)));
 	}
 
 	@Test
@@ -190,7 +193,7 @@ class TypeHierarchyTest {
 		var a1Result = tester.getPreservedType(a1);
 
 		assertThat(c1Result.merge(a1Result.asInferredType(), TruthValue.FALSE),
-				Matchers.is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c3)));
+				is(new InferredType(Set.of(a1), Set.of(c2, c3, c4), c3)));
 	}
 
 	@Test
@@ -219,6 +222,102 @@ class TypeHierarchyTest {
 		assertAll(
 				() -> assertThat(sut.getEliminatedTypes(), hasEntry(a1, c1)),
 				() -> assertThat(sut.getEliminatedTypes(), hasEntry(a2, c1))
+		);
+	}
+
+	@ParameterizedTest(name = "isAbstract = {0}")
+	@ValueSource(booleans = {true, false})
+	void decideFalseTest(boolean isAbstract) {
+		var a1 = new PartialRelation("A1", 1);
+		var c1 = new PartialRelation("C1", 1);
+		var c2 = new PartialRelation("C2", 1);
+
+		var sut = TypeHierarchy.builder()
+				.type(a1, isAbstract, false, List.of())
+				.type(c1, a1)
+				.type(c2, a1)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
+		var a1Result = tester.getPreservedType(a1);
+		var c1Result = tester.getPreservedType(c1);
+		var c2Result = tester.getPreservedType(c2);
+
+		assertAll(
+				() -> assertThat(a1Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(a1Result.isAllowFocusing(), is(false)),
+				() -> assertThat(c1Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(c1Result.isAllowFocusing(), is(true)),
+				() -> assertThat(c2Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(c2Result.isAllowFocusing(), is(true))
+		);
+	}
+
+	@Test
+	void decideTrueTest() {
+		var a1 = new PartialRelation("A1", 1);
+		var c1 = new PartialRelation("C1", 1);
+		var c2 = new PartialRelation("C2", 1);
+
+		var sut = TypeHierarchy.builder()
+				.type(a1, true, true, List.of())
+				.type(c1, a1)
+				.type(c2, a1)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
+		var a1Result = tester.getPreservedType(a1);
+		var c1Result = tester.getPreservedType(c1);
+		var c2Result = tester.getPreservedType(c2);
+
+		assertAll(
+				() -> assertThat(a1Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(a1Result.isAllowFocusing(), is(true)),
+				() -> assertThat(c1Result.canSetTypeWithDecision(), is(true)),
+				() -> assertThat(c1Result.isAllowFocusing(), is(true)),
+				() -> assertThat(c2Result.canSetTypeWithDecision(), is(true)),
+				() -> assertThat(c2Result.isAllowFocusing(), is(true))
+		);
+	}
+
+	@Test
+	void eliminatedTypeDecideTest() {
+		var a1 = new PartialRelation("A1", 1);
+		var c1 = new PartialRelation("C1", 1);
+		var c2 = new PartialRelation("C2", 1);
+
+		var sut = TypeHierarchy.builder()
+				.type(a1, true, false, List.of())
+				.type(c1, a1)
+				.type(c2, c1)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
+		var c1Result = tester.getPreservedType(c1);
+		var c2Result = tester.getPreservedType(c2);
+
+		assertAll(
+				() -> assertThat(c1Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(c1Result.isAllowFocusing(), is(false)),
+				() -> assertThat(c2Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(c2Result.isAllowFocusing(), is(true))
+		);
+	}
+
+	@Test
+	void chainedEliminatedTypeDecideTest() {
+		var a1 = new PartialRelation("A1", 1);
+		var a2 = new PartialRelation("A2", 1);
+		var c1 = new PartialRelation("C1", 1);
+
+		var sut = TypeHierarchy.builder()
+				.type(a1, true, false, List.of())
+				.type(a2, true, a1)
+				.type(c1, a2)
+				.build();
+		var tester = new TypeHierarchyTester(sut);
+		var c1Result = tester.getPreservedType(c1);
+
+		assertAll(
+				() -> assertThat(c1Result.canSetTypeWithDecision(), is(false)),
+				() -> assertThat(c1Result.isAllowFocusing(), is(false))
 		);
 	}
 }

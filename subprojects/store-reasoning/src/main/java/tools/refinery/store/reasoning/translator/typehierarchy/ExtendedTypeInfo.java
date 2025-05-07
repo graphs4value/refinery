@@ -80,21 +80,21 @@ final class ExtendedTypeInfo implements Comparable<ExtendedTypeInfo> {
 		return decide;
 	}
 
-	public void updateDecide(boolean eliminatedSupertypeDecide) {
-		if (!eliminatedSupertypeDecide) {
+	public void updateDecide(boolean directSupertypeDecide) {
+		if (!directSupertypeDecide) {
 			decide = false;
 		}
-		updateAllowFocusing(eliminatedSupertypeDecide);
 	}
 
 	public boolean isAllowFocusing() {
 		return allowFocusing;
 	}
 
-	public void updateAllowFocusing(boolean directSupertypeAllowFocusing) {
-        if (!directSupertypeAllowFocusing) {
+	public void updateAllowFocusing(boolean eliminatedSupertypeAllowFocusing) {
+        if (!eliminatedSupertypeAllowFocusing) {
             allowFocusing = false;
         }
+		updateDecide(eliminatedSupertypeAllowFocusing);
     }
 
 	public boolean allowsAllConcreteTypes(Set<PartialRelation> concreteTypes) {

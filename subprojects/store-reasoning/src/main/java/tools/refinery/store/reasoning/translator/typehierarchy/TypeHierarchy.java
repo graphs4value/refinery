@@ -178,7 +178,7 @@ public class TypeHierarchy {
 					.formatted(trivialType));
 		}
 		var replacementTypeInfo = extendedTypeInfoMap.get(replacement);
-		replacementTypeInfo.updateDecide(extendedTypeInfo.isDecide());
+		replacementTypeInfo.updateAllowFocusing(extendedTypeInfo.isAllowFocusing());
 		for (var supertype : extendedTypeInfo.getAllSupertypes()) {
 			var extendedSupertypeInfo = extendedTypeInfoMap.get(supertype);
 			if (!extendedSupertypeInfo.getAllSubtypes().remove(trivialType)) {
@@ -249,7 +249,7 @@ public class TypeHierarchy {
 					throw new AssertionError("Expected %s to be a direct supertype of %s"
 							.formatted(extendedTypeInfo.getType(), directSubtype));
 				}
-				extendedDirectSubtypeInfo.updateAllowFocusing(extendedTypeInfo.isAllowFocusing());
+				extendedDirectSubtypeInfo.updateDecide(extendedTypeInfo.isDecide());
 				if (unsortedDirectSupertypes.isEmpty()) {
 					priorityQueue.add(extendedDirectSubtypeInfo);
 				}
