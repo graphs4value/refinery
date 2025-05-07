@@ -6,9 +6,11 @@
 package tools.refinery.language.tests.validation;
 
 import com.google.inject.Inject;
+import org.eclipse.emf.common.util.Diagnostic;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.refinery.language.annotations.DeclarativeAnnotationValidator;
 import tools.refinery.language.tests.InjectWithRefinery;
 import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.language.validation.ProblemValidator;
@@ -77,5 +79,97 @@ class SupertypeValidationTest {
 						hasProperty("message", containsString("between 'Quux' and 'Foo'"))
 				)
 		));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"""
+			@decide(false) class A.
+			""", """
+			class A.
+			@decide(false) class B extends A.
+			"""})
+	void validClassDecisionTest(String invalidText) {
+		var problem = parseHelper.parse("""
+				import builtin::strategy.
+
+				%s
+				""".formatted(invalidText));
+		var issues = problem.validate();
+		assertThat(issues, not(hasItem(
+				hasProperty("issueCode", is(DeclarativeAnnotationValidator.ANNOTATION_ISSUE))
+		)));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"""
+			@decide(false) class A.
+			@decide class B extends A.
+			""", """
+			@decide(false) class A.
+			@decide(true) class B extends A.
+			""", """
+			@decide(false) class A.
+			class B extends A.
+			@decide class C extends B.
+			""", """
+			@decide(false) class A.
+			class B.
+			@decide class C extends A, B.
+			""", """
+			@decide(false) class A extends B.
+			@decide class B extends A.
+			"""})
+	void invalidClassDecisionTest(String invalidText) {
+		var problem = parseHelper.parse("""
+				import builtin::strategy.
+
+				%s
+				""".formatted(invalidText));
+		var issues = problem.validate();
+		assertThat(issues, hasItem(allOf(
+				hasProperty("issueCode", is(DeclarativeAnnotationValidator.ANNOTATION_ISSUE)),
+				hasProperty("severity", is(Diagnostic.ERROR))
+		)));
+		assertThat(issues, not(hasItem(allOf(
+				hasProperty("issueCode", is(DeclarativeAnnotationValidator.ANNOTATION_ISSUE)),
+				hasProperty("severity", is(Diagnostic.WARNING))
+		))));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"""
+			@decide class A.
+			""", """
+			@decide(true) class A.
+			""", """
+			@decide(false) class A.
+			@decide(false) class B extends A.
+			""", """
+			@decide(false) class A.
+			class B extends A.
+			@decide(false) class C extends B.
+			""", """
+			@decide(false) class A.
+			class B.
+			@decide(false) class C extends A, B.
+			""", """
+			@decide(false) class A extends B.
+			@decide(false) class B extends A.
+			"""})
+	void warnClassDecisionTest(String invalidText) {
+		var problem = parseHelper.parse("""
+				import builtin::strategy.
+
+				%s
+				""".formatted(invalidText));
+		var issues = problem.validate();
+		assertThat(issues, hasItem(allOf(
+				hasProperty("issueCode", is(DeclarativeAnnotationValidator.ANNOTATION_ISSUE)),
+				hasProperty("severity", is(Diagnostic.WARNING))
+		)));
+		assertThat(issues, not(hasItem(allOf(
+				hasProperty("issueCode", is(DeclarativeAnnotationValidator.ANNOTATION_ISSUE)),
+				hasProperty("severity", is(Diagnostic.ERROR))
+		))));
 	}
 }

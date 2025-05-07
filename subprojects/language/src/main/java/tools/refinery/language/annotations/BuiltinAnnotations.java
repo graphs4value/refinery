@@ -5,6 +5,7 @@
  */
 package tools.refinery.language.annotations;
 
+import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -12,8 +13,10 @@ import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.DecisionSettings;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.language.validation.ClassHierarchyCollector;
 
 import java.util.List;
 
@@ -43,6 +46,12 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 
 	private static final List<QualifiedName> BINDING_MODES = List.of(FOCUS, LONE, MULTI);
 	private static final List<QualifiedName> VISIBILITIES = List.of(SHOW, HIDE);
+
+	@Inject
+	private BuiltinAnnotationContext builtinAnnotationContext;
+
+	@Inject
+	private ClassHierarchyCollector classHierarchyCollector;
 
 	@ValidateAnnotation("OPTIONAL")
 	private void validateOptional(Annotation annotation) {
@@ -107,8 +116,12 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 		}
 		if (value == ProblemUtil.isConcretizeByDefault(relation)) {
 			warning("Automatic concretization for '%s' is already %s."
-					.formatted(relation.getName(), value ? "enabled" : "disabled"), annotation);
+					.formatted(relation.getName(), flagToEnabledState(value)), annotation);
 		}
+	}
+
+	private static String flagToEnabledState(boolean value) {
+		return value ? "enabled" : "disabled";
 	}
 
 	@ValidateAnnotation("DECIDE")
@@ -127,6 +140,10 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 			error("Automatic decision can't be disabled for '%s'.".formatted(relation.getName()), annotation);
 			return;
 		}
+		if (relation instanceof ClassDeclaration classDeclaration) {
+			validateClassDeclarationDecide(annotation, classDeclaration);
+			return;
+		}
 		var concretize = annotationsFor(relation).getAnnotation(CONCRETIZE)
 				.flatMap(a -> a.getBoolean(CONCRETIZE_AUTO));
 		boolean defaultValue;
@@ -137,7 +154,44 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 		}
 		if (value == defaultValue) {
 			warning("Automatic decision for '%s' is already %s."
-					.formatted(relation.getName(), value ? "enabled" : "disabled"), annotation);
+					.formatted(relation.getName(), flagToEnabledState(value)), annotation);
+		}
+	}
+
+	private void validateClassDeclarationDecide(Annotation annotation, ClassDeclaration classDeclaration) {
+		var superTypes = classHierarchyCollector.getSuperTypes(classDeclaration);
+		boolean inheritedDecide = ProblemUtil.isDecideByDefault(classDeclaration);
+		ClassDeclaration inheritedFrom = null;
+		for (var superType : superTypes) {
+			if (!classDeclaration.equals(superType) && superType instanceof ClassDeclaration superClassDeclaration &&
+					!builtinAnnotationContext.isClassDeclarationDecide(superClassDeclaration)) {
+				inheritedDecide = false;
+				inheritedFrom = superClassDeclaration;
+				break;
+			}
+		}
+		boolean value = annotation.getBoolean(DECIDE_AUTO).orElse(true);
+		if (value == inheritedDecide) {
+			var messageBuilder = new StringBuilder()
+					.append("Automatic decision for '")
+					.append(classDeclaration.getName())
+					.append("' is already ")
+					.append(flagToEnabledState(value));
+			if (inheritedFrom != null) {
+				messageBuilder.append(", because it was inherited from '")
+						.append(inheritedFrom.getName())
+						.append("'");
+			}
+			messageBuilder.append(".");
+			warning(messageBuilder.toString(), annotation);
+			return;
+		}
+		if (value && inheritedFrom != null) {
+			// {@code inheritedDecide} is {@code false} here, because we already know that it differs from
+			// {@code decide}.
+			var message = "Automatic decision can't be enabled for '%s', because it was disabled for superclass '%s'."
+					.formatted(classDeclaration.getName(), inheritedFrom.getName());
+			error(message, annotation);
 		}
 	}
 
