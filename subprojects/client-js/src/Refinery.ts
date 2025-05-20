@@ -11,7 +11,7 @@ import { Issue, JsonOutput, OutputFormats, ProblemInput, Scope } from './dto';
 
 const SemanticsInput = z.object({
   input: ProblemInput,
-  outputFormats: OutputFormats,
+  format: OutputFormats,
 });
 
 export const SemanticsSuccessResult = z.object({
@@ -38,7 +38,7 @@ export class Refinery extends GenericRefinery {
     'generate',
     z.object({
       input: ProblemInput,
-      outputFormats: OutputFormats.default({}),
+      format: OutputFormats.default({}),
       scopes: Scope.array().optional(),
       randomSeed: z.number().default(1),
     }),

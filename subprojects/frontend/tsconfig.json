@@ -12,7 +12,8 @@
     "emitDeclarationOnly": true,
     "outDir": "build/typescript/browser",
     "paths": {
-      "@tools.refinery/client": ["../client-js/src/index.ts"]
+      "@tools.refinery/client": ["../client-js/src/index.ts"],
+      "@tools.refinery/client/chat": ["../client-js/src/chat/index.ts"]
     }
   },
   "include": [

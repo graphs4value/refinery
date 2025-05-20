@@ -16,6 +16,11 @@
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
+    },
+    "./chat": {
+      "types": "./dist/chat/index.d.ts",
+      "require": "./dist/chat.cjs",
+      "import": "./dist/chat.mjs"
     }
   },
   "files": [

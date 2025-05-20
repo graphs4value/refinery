@@ -58,7 +58,7 @@ export default class ModelGenerationService {
           input: {
             source: this.store.state.sliceDoc(),
           },
-          outputFormats: {
+          format: {
             json: {
               enabled: true,
               nonExistingObjects: 'discard',

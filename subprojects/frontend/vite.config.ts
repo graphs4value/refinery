@@ -79,6 +79,11 @@ const viteConfig: ViteConfig = {
         '../client-js/',
         isDevelopment ? 'src/index.ts' : 'dist/index.mjs',
       ),
+      '@tools.refinery/client/chat': path.join(
+        thisDir,
+        '../client-js/',
+        isDevelopment ? 'src/chat/index.ts' : 'dist/chat.mjs',
+      ),
     },
   },
   build: {

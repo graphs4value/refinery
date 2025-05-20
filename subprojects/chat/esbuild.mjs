@@ -37,7 +37,10 @@ const ctx = await esbuild.context({
     'process.env.MODE': modeString,
     'process.env.NODE_ENV': modeString,
   },
-  loader: { '.ts': 'ts' },
+  loader: {
+    '.md': 'text',
+    '.ts': 'ts',
+  },
   platform: 'node',
   sourcemap: !minify,
   minify,
