@@ -124,7 +124,7 @@ ${text}
     const openAIResult = await req.openai.beta.chat.completions
       .stream(
         {
-          model: 'openai/gpt-4o-mini',
+          model: 'google/gemini-2.5-flash-preview',
           messages,
           response_format: chatResponseFormat,
         },
