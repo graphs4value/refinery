@@ -12,6 +12,7 @@ import backendConfigVitePlugin, {
 
 export const API_ENDPOINT = 'api';
 export const XTEXT_ENDPOINT = 'xtext-service';
+export const CHAT_ENDPOINT = 'chat';
 
 export interface DevModeOptions {
   mode: string;
@@ -63,6 +64,8 @@ export default function detectDevModeOptions(): DevModeOptions {
   // because it doesn't listen on IPv6.
   const api = detectListenOptions('API', '127.0.0.1', 1312);
   const apiURL = listenURL(api);
+  const chat = detectListenOptions('CHAT', '127.0.0.1', 1314);
+  const chatURL = listenURL(chat);
   const publicAddress = detectListenOptions('PUBLIC', listen.host, listen.port);
 
   if (listen.secure) {
@@ -99,6 +102,10 @@ export default function detectDevModeOptions(): DevModeOptions {
           target: apiURL,
           ws: true,
           secure: api.secure,
+        },
+        [`/${CHAT_ENDPOINT}`]: {
+          target: chatURL,
+          secure: chat.secure,
         },
       },
       hmr: {

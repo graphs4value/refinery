@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CodeIcon from '@mui/icons-material/Code';
 import SchemaRoundedIcon from '@mui/icons-material/SchemaRounded';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -149,6 +150,15 @@ function PaneButtons({
         value="table"
         label="Table"
         icon={<TableChartIcon fontSize="small" />}
+        hideLabel={hideLabelOrDefault}
+      />
+      <PaneButton
+        themeStore={themeStore}
+        value="chat"
+        label="AI"
+        icon={
+          <AutoAwesomeIcon fontSize="small" sx={{ transform: 'scaleX(-1)' }} />
+        }
         hideLabel={hideLabelOrDefault}
       />
     </PaneButtonGroup>

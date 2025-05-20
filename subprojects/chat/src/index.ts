@@ -22,7 +22,7 @@ process.on('unhandledRejection', (err) =>
   log.error({ err }, 'Unhandled promise rejection'),
 );
 
-const host = process.env[`REFINERY_LISTEN_HOST`] ?? 'localhost';
+const host = process.env[`REFINERY_LISTEN_HOST`] ?? '127.0.0.1';
 const rawPort = process.env[`REFINERY_LISTEN_PORT`];
 const port = rawPort === undefined ? 1314 : parseInt(rawPort, 10);
 

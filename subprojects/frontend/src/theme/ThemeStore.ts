@@ -12,7 +12,7 @@ export enum ThemePreference {
   PreferDark,
 }
 
-export type SelectedPane = 'code' | 'graph' | 'table';
+export type SelectedPane = 'code' | 'graph' | 'table' | 'chat';
 
 export default class ThemeStore {
   preference = ThemePreference.System;
@@ -24,6 +24,8 @@ export default class ThemeStore {
   showGraph = true;
 
   showTable = false;
+
+  showChat = false;
 
   constructor() {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -70,6 +72,9 @@ export default class ThemeStore {
       case 'table':
         this.toggleTable();
         break;
+      case 'chat':
+        this.toggleChat();
+        break;
       default:
         throw new Error(`Unknown pane: ${String(pane)}`);
     }
@@ -83,6 +88,8 @@ export default class ThemeStore {
         return this.showGraph;
       case 'table':
         return this.showTable;
+      case 'chat':
+        return this.showChat;
       default:
         throw new Error(`Unknown pane: ${String(pane)}`);
     }
@@ -109,6 +116,10 @@ export default class ThemeStore {
     this.showTable = !this.showTable;
   }
 
+  toggleChat(): void {
+    this.showChat = !this.showChat;
+  }
+
   get selectedPane(): SelectedPane {
     if (this.showCode) {
       return 'code';
@@ -123,6 +134,10 @@ export default class ThemeStore {
   }
 
   setSelectedPane(pane: SelectedPane, keepCode = true): void {
+    if (pane === 'chat') {
+      this.showChat = true;
+      return;
+    }
     this.showCode = pane === 'code' || (keepCode && this.showCode);
     this.showGraph = pane === 'graph';
     this.showTable = pane === 'table';
