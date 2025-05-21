@@ -8,7 +8,6 @@
  *******************************************************************************/
 package tools.refinery.interpreter.rete.aggregation;
 
-import tools.refinery.interpreter.matchers.tuple.ITuple;
 import tools.refinery.interpreter.matchers.tuple.Tuple;
 import tools.refinery.interpreter.matchers.tuple.TupleMask;
 import tools.refinery.interpreter.matchers.tuple.Tuples;
@@ -32,6 +31,7 @@ public class LeftJoinNode extends StandardNode {
 	private final Object defaultValue;
 	private ProjectionIndexer projectionIndexer;
 	private TupleMask projectionMask;
+	private int omittedIndex;
 	private boolean leftInheritanceOutputMask;
 	private OuterIndexer outerIndexer = null;
 
@@ -51,6 +51,7 @@ public class LeftJoinNode extends StandardNode {
 	public void initializeWith(ProjectionIndexer projectionIndexer) {
 		this.projectionIndexer = projectionIndexer;
 		projectionMask = projectionIndexer.getMask();
+		omittedIndex = getOmittedIndex(projectionMask);
 		leftInheritanceOutputMask = isLeftInheritanceOutputMask(projectionMask);
 		projectionIndexer.attachListener(new DefaultIndexerListener(this) {
 			@Override
@@ -61,7 +62,7 @@ public class LeftJoinNode extends StandardNode {
 		});
 	}
 
-	private static boolean isLeftInheritanceOutputMask(TupleMask mask) {
+	private static int getOmittedIndex(TupleMask mask) {
 		int size = mask.getSize();
 		int sourceWidth = mask.getSourceWidth();
 		if (size != sourceWidth - 1) {
@@ -76,6 +77,16 @@ public class LeftJoinNode extends StandardNode {
 			}
 			repetitions[index] = repetition;
 		}
+		for (int i = 0; i < sourceWidth; i++) {
+			if (repetitions[i] == 0) {
+				return i;
+			}
+		}
+		throw new IllegalArgumentException("No index was omitted");
+	}
+
+	private static boolean isLeftInheritanceOutputMask(TupleMask mask) {
+		int size = mask.getSize();
 		for (int i = 0; i < size; i++) {
 			int index = mask.indices[i];
 			if (index != i) {
@@ -93,16 +104,17 @@ public class LeftJoinNode extends StandardNode {
 		}
 	}
 
-	protected Tuple getDefaultTuple(ITuple key) {
+	protected Tuple getDefaultTuple(Tuple key) {
 		if (leftInheritanceOutputMask) {
-			return Tuples.staticArityFlatTupleOf(key, defaultValue);
+			return Tuples.staticArityLeftInheritanceTupleOf(key, defaultValue);
 		}
 		var objects = new Object[projectionMask.sourceWidth];
 		int targetLength = projectionMask.indices.length;
 		for (int i = 0; i < targetLength; i++) {
 			int j = projectionMask.indices[i];
-			objects[j] = key.get(j);
+			objects[j] = key.get(i);
 		}
+		objects[omittedIndex] = defaultValue;
 		return Tuples.flatTupleOf(objects);
 	}
 
