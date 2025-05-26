@@ -49,7 +49,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
-    "@types/node": "^22.15.20",
+    "@types/node": "^22.15.21",
     "@vitest/browser": "^3.1.4",
     "@vitest/coverage-istanbul": "^3.1.4",
     "cors": "^2.8.5",
@@ -60,7 +60,7 @@
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.1.4",
-    "zod": "^3.25.7"
+    "zod": "^3.25.28"
   },
   "dependencies": {
     "@testing-library/dom": "^10.4.0",

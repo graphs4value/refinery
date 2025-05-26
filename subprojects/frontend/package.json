@@ -52,7 +52,7 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@mui/system": "^7.1.0",
-    "@mui/x-data-grid": "^8.3.1",
+    "@mui/x-data-grid": "^8.4.0",
     "@replit/codemirror-indentation-markers": "^6.5.3",
     "@tools.refinery/client": "workspace:*",
     "ansi-styles": "^6.2.1",
@@ -84,7 +84,7 @@
     "secure-json-parse": "^4.0.0",
     "svg2pdf.js": "^2.5.0",
     "xstate": "^4.38.3",
-    "zod": "^3.25.7"
+    "zod": "^3.25.28"
   },
   "devDependencies": {
     "@lezer/generator": "^1.7.3",
@@ -99,11 +99,11 @@
     "@types/markdown-it": "^14.1.2",
     "@types/micromatch": "^4.0.9",
     "@types/ms": "^2.1.0",
-    "@types/node": "^22.15.20",
+    "@types/node": "^22.15.21",
     "@types/pnpapi": "^0.0.5",
-    "@types/react": "^19.1.4",
+    "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
-    "@vitejs/plugin-react-swc": "^3.9.0",
+    "@vitejs/plugin-react-swc": "^3.10.0",
     "@xstate/cli": "^0.5.17",
     "fast-glob": "^3.3.3",
     "html-minifier-terser": "^7.2.0",
