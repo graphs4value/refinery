@@ -5,17 +5,14 @@
  */
 package tools.refinery.logic.term.real;
 
-import tools.refinery.logic.term.Aggregator;
-import tools.refinery.logic.term.ConstantTerm;
-import tools.refinery.logic.term.ExtremeValueAggregator;
-import tools.refinery.logic.term.Term;
-import tools.refinery.logic.term.comparable.*;
+import tools.refinery.logic.term.*;
 import tools.refinery.logic.term.comparable.*;
 
 import java.util.Comparator;
 
 public final class RealTerms {
-	public static final Aggregator<Double, Double> REAL_SUM = RealSumAggregator.INSTANCE;
+	public static final Aggregator<Double, Double> REAL_SUM = TreapAggregator.of(Double.class,
+			(count, value) -> count * value, 0.0, Double::sum);
 	public static final Aggregator<Double, Double> REAL_MIN = new ExtremeValueAggregator<>(Double.class,
 			Double.POSITIVE_INFINITY);
 	public static final Aggregator<Double, Double> REAL_MAX = new ExtremeValueAggregator<>(Double.class,
