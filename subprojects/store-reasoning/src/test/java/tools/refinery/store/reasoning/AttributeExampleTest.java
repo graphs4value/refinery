@@ -3,7 +3,9 @@ package tools.refinery.store.reasoning;
 import org.junit.jupiter.api.Test;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
-import tools.refinery.logic.term.intinterval.*;
+import tools.refinery.logic.term.intinterval.Bound;
+import tools.refinery.logic.term.intinterval.IntInterval;
+import tools.refinery.logic.term.intinterval.IntIntervalDomain;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.Rule;
@@ -15,6 +17,7 @@ import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
 import tools.refinery.store.reasoning.translator.attribute.AttributeTranslator;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
@@ -34,7 +37,7 @@ class AttributeExampleTest {
 	private final Symbol<TruthValue> personStorage = Symbol.of("Person", 1, TruthValue.class, TruthValue.UNKNOWN);
 	private final PartialRelation vehicle = new PartialRelation("Vehicle", 1);
 	private final Symbol<TruthValue> vehicleStorage = Symbol.of("Vehicle", 1, TruthValue.class, TruthValue.UNKNOWN);
-	private final PartialFunction<IntInterval, Integer> age = new PartialFunction<>("age", 1, new IntIntervalDomain());
+	private final PartialFunction<IntInterval, Integer> age = new PartialFunction<>("age", 1, IntIntervalDomain.INSTANCE);
 	private final PartialRelation adult = new PartialRelation("adult", 1);
 	private final PartialRelation canPlayBoardgames = new PartialRelation("canPlayBoardgames", 1);
 	private final PartialRelation younger = new PartialRelation("younger", 2);
@@ -82,7 +85,7 @@ class AttributeExampleTest {
 								not(must(person.call(p1)))
 						)))
 				)
-				.with(new AttributeTranslator<>(person, age))
+				.with(new AttributeTranslator<>(age, new AttributeInfo(person)))
 				.with(PartialRelationTranslator.of(adult)
 						.query(Query.of("adult", (builder, p1) -> builder
 								.clause(

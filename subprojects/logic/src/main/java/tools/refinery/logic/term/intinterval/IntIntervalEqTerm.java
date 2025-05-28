@@ -4,8 +4,8 @@ import tools.refinery.logic.term.BinaryTerm;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
-class IntIntervalEqTerm extends BinaryTerm<TruthValue, IntInterval, IntInterval> {
-	protected IntIntervalEqTerm(Term<IntInterval> left, Term<IntInterval> right) {
+public class IntIntervalEqTerm extends BinaryTerm<TruthValue, IntInterval, IntInterval> {
+	public IntIntervalEqTerm(Term<IntInterval> left, Term<IntInterval> right) {
 		super(TruthValue.class, IntInterval.class, IntInterval.class, left, right);
 	}
 

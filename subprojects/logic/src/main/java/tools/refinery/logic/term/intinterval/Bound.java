@@ -19,6 +19,10 @@ public sealed interface Bound {
 		return greaterThanOrEquals(other) ? this : other;
 	}
 
+	Bound add(Bound other);
+	Bound sub(Bound other);
+	Bound mul(Bound other);
+
 	enum Infinite implements Bound {
 		POSITIVE_INFINITY {
 			@Override
@@ -29,6 +33,21 @@ public sealed interface Bound {
 			@Override
 			public boolean equals(Bound other) {
 				return this == other;
+			}
+
+			@Override
+			public Bound add(Bound other) {
+				return POSITIVE_INFINITY;
+			}
+
+			@Override
+			public Bound sub(Bound other) {
+				return POSITIVE_INFINITY;
+			}
+
+			@Override
+			public Bound mul(Bound other) {
+				return POSITIVE_INFINITY;
 			}
 
 			@Override
@@ -45,6 +64,21 @@ public sealed interface Bound {
 			@Override
 			public boolean equals(Bound other) {
 				return this == other;
+			}
+
+			@Override
+			public Bound add(Bound other) {
+				return NEGATIVE_INFINITY;
+			}
+
+			@Override
+			public Bound sub(Bound other) {
+				return NEGATIVE_INFINITY;
+			}
+
+			@Override
+			public Bound mul(Bound other) {
+				return NEGATIVE_INFINITY;
 			}
 
 			@Override
@@ -80,6 +114,33 @@ public sealed interface Bound {
 		@Override
 		public boolean isFinite() {
 			return true;
+		}
+
+		@Override
+		public Bound add(Bound other) {
+			return switch (other) {
+				case Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
+				case Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
+				case Finite(int otherValue) -> new Finite(value+otherValue);
+			};
+		}
+
+		@Override
+		public Bound sub(Bound other) {
+			return switch (other) {
+				case Infinite.POSITIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
+				case Infinite.NEGATIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
+				case Finite(int otherValue) -> new Finite(value-otherValue);
+			};
+		}
+
+		@Override
+		public Bound mul(Bound other) {
+			return switch (other) {
+				case Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
+				case Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
+				case Finite(int otherValue) -> new Finite(value*otherValue);
+			};
 		}
 
 		@Override

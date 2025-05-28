@@ -5,7 +5,7 @@ import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public class IntIntervalGreaterEqTerm extends BinaryTerm<TruthValue, IntInterval, IntInterval> {
-	protected IntIntervalGreaterEqTerm(Term<IntInterval> left, Term<IntInterval> right) {
+	public IntIntervalGreaterEqTerm(Term<IntInterval> left, Term<IntInterval> right) {
 		super(TruthValue.class, IntInterval.class, IntInterval.class, left, right);
 	}
 

@@ -5,23 +5,23 @@
  */
 package tools.refinery.language.semantics.internal;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
+class DecisionTreeCursor<A extends AbstractValue<A, C>, C> implements Cursor<Tuple, A> {
 	static final int STATE_FINISH = Integer.MAX_VALUE;
 
 	private final int levels;
 
-	final DecisionTreeValue defaultValue;
+	final DecisionTreeValue<A, C> defaultValue;
 
 	final int nodeCount;
 
-	private final DecisionTreeNode root;
+	private final DecisionTreeNode<A, C> root;
 
 	final int[][] sortedChildren;
 
@@ -29,17 +29,17 @@ class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
 
 	final int[] rawTuple;
 
-	final Deque<DecisionTreeNode> path = new ArrayDeque<>();
+	final Deque<DecisionTreeNode<A, C>> path = new ArrayDeque<>();
 
 	private Tuple key;
 
-	DecisionTreeValue value = DecisionTreeValue.UNSET;
+	DecisionTreeValue<A, C> value = DecisionTreeValue.unset();
 
 	private boolean terminated;
 
-	public DecisionTreeCursor(int levels, TruthValue defaultValue, int nodeCount, DecisionTreeNode root) {
+	public DecisionTreeCursor(int levels, A defaultValue, int nodeCount, DecisionTreeNode<A, C> root) {
 		this.levels = levels;
-		this.defaultValue = DecisionTreeValue.fromTruthValue(defaultValue);
+		this.defaultValue = DecisionTreeValue.ofNullable(defaultValue);
 		this.nodeCount = nodeCount;
 		this.root = root;
 		sortedChildren = new int[levels][];
@@ -56,8 +56,8 @@ class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
 	}
 
 	@Override
-	public TruthValue getValue() {
-		return value.getTruthValue();
+	public A getValue() {
+		return value.orElseNull();
 	}
 
 	@Override
@@ -86,7 +86,7 @@ class DecisionTreeCursor implements Cursor<Tuple, TruthValue> {
 		}
 		if (!found) {
 			key = null;
-			value = DecisionTreeValue.UNSET;
+			value = DecisionTreeValue.unset();
 			terminated = true;
 			return false;
 		}

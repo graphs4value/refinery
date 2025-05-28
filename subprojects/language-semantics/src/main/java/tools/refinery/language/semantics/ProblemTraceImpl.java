@@ -16,7 +16,6 @@ import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
-import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 
@@ -36,8 +35,8 @@ class ProblemTraceImpl implements ProblemTrace {
 	private Metamodel metamodel;
 	private final MutableObjectIntMap<Node> mutableNodeTrace = ObjectIntMaps.mutable.empty();
 	private final ObjectIntMap<Node> nodeTrace = mutableNodeTrace.asUnmodifiable();
-	private final Map<Relation, PartialRelation> mutableRelationTrace = new LinkedHashMap<>();
-	private final Map<Relation, PartialRelation> relationTrace =
+	private final Map<Relation, AnyPartialSymbol> mutableRelationTrace = new LinkedHashMap<>();
+	private final Map<Relation, AnyPartialSymbol> relationTrace =
 			Collections.unmodifiableMap(mutableRelationTrace);
 	private final Map<AnyPartialSymbol, Relation> mutableInverseTrace = new HashMap<>();
 	private final Map<AnyPartialSymbol, Relation> inverseTrace = Collections.unmodifiableMap(mutableInverseTrace);
@@ -97,19 +96,19 @@ class ProblemTraceImpl implements ProblemTrace {
 	}
 
 	@Override
-	public Map<Relation, PartialRelation> getRelationTrace() {
+	public Map<Relation, AnyPartialSymbol> getRelationTrace() {
 		return relationTrace;
 	}
 
-	void putRelation(Relation relation, PartialRelation partialRelation) {
-		var oldPartialRelation = mutableRelationTrace.put(relation, partialRelation);
-		if (oldPartialRelation != null) {
-			throw new TracedException(relation, "Relation already mapped to partial relation: " + oldPartialRelation);
+	void putRelation(Relation relation, AnyPartialSymbol partialSymbol) {
+		var oldPartialSymbol = mutableRelationTrace.put(relation, partialSymbol);
+		if (oldPartialSymbol != null) {
+			throw new TracedException(relation, "Relation already mapped to partial symbol: " + oldPartialSymbol);
 		}
-		var oldRelation = mutableInverseTrace.put(partialRelation, relation);
+		var oldRelation = mutableInverseTrace.put(partialSymbol, relation);
 		if (oldRelation != null) {
-			throw new TracedException(oldRelation, "Partial relation %s was already mapped to relation"
-					.formatted(partialRelation));
+			throw new TracedException(oldRelation, "Partial symbol %s was already mapped to relation"
+					.formatted(partialSymbol));
 		}
 	}
 
@@ -182,25 +181,25 @@ class ProblemTraceImpl implements ProblemTrace {
 	}
 
 	@Override
-	public PartialRelation getPartialRelation(Relation relation) {
-		var partialRelation = mutableRelationTrace.get(relation);
-		if (partialRelation == null) {
+	public AnyPartialSymbol getPartialSymbol(Relation relation) {
+		var partialSymbol = mutableRelationTrace.get(relation);
+		if (partialSymbol == null) {
 			var qualifiedName = semanticsUtils.getNameWithoutRootPrefix(relation);
-			throw new TracedException(relation, "No partial relation for " + qualifiedName);
+			throw new TracedException(relation, "No partial symbol for " + qualifiedName);
 		}
-		return partialRelation;
+		return partialSymbol;
 	}
 
 	@Override
-	public PartialRelation getPartialRelation(QualifiedName qualifiedName) {
+	public AnyPartialSymbol getPartialSymbol(QualifiedName qualifiedName) {
 		var relationScope = scopeProvider.getScope(problem, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION);
-		return getPartialRelation(getElement(relationScope, qualifiedName, Relation.class));
+		return getPartialSymbol(getElement(relationScope, qualifiedName, Relation.class));
 	}
 
 	@Override
-	public PartialRelation getPartialRelation(String qualifiedName) {
+	public AnyPartialSymbol getPartialSymbol(String qualifiedName) {
 		var convertedName = qualifiedNameConverter.toQualifiedName(qualifiedName);
-		return getPartialRelation(convertedName);
+		return getPartialSymbol(convertedName);
 	}
 
 	private <T> T getElement(IScope scope, QualifiedName qualifiedName, Class<T> type) {

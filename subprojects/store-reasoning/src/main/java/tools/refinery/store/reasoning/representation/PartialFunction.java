@@ -23,14 +23,17 @@ public record PartialFunction<A extends AbstractValue<A, C>, C>(
 		return abstractDomain().error();
 	}
 
+	@Override
 	public Term<A> call(NodeVariable... arguments) {
 		return call(ConcretenessSpecification.UNSPECIFIED, List.of(arguments));
 	}
 
+	@Override
 	public Term<A> call(Concreteness concreteness, NodeVariable... arguments) {
 		return call(concreteness.toSpecification(), List.of(arguments));
 	}
 
+	@Override
 	public Term<A> call(ConcretenessSpecification concreteness, List<NodeVariable> arguments) {
 		return new PartialFunctionCallTerm<>(concreteness, this, arguments);
 	}

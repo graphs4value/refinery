@@ -530,7 +530,7 @@ public class TypedModule {
 			}
 		}
 		if (leftType instanceof DataExprType leftExprType && rightType instanceof DataExprType rightExprType) {
-			var result = interpreter.getBinaryOperationType(op, leftExprType, rightExprType);
+			var result = interpreter.getBinaryOperatorType(op, leftExprType, rightExprType);
 			if (result.isPresent()) {
 				return result.get();
 			}

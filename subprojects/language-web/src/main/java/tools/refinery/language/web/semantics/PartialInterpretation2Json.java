@@ -10,12 +10,16 @@ import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import tools.refinery.generator.ModelFacade;
+import tools.refinery.language.model.problem.DatatypeDeclaration;
+import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.representation.AnyPartialFunction;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
@@ -35,11 +39,18 @@ public class PartialInterpretation2Json {
 		var json = new JsonObject();
 		for (var entry : facade.getProblemTrace().getRelationTrace().entrySet()) {
 			var relation = entry.getKey();
-			var partialSymbol = entry.getValue();
-			var tuples = getTuplesJson(facade, partialSymbol);
-			var name = semanticsUtils.getNameWithoutRootPrefix(relation).orElse(partialSymbol.name());
-			json.add(name, tuples);
-			cancellationToken.checkCancelled();
+			if (relation instanceof ReferenceDeclaration referenceDeclaration &&
+					referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+				// implement this
+				cancellationToken.checkCancelled();
+			}
+			else{
+				var partialSymbol = entry.getValue().asPartialRelation();
+				var tuples = getTuplesJson(facade, partialSymbol);
+				var name = semanticsUtils.getNameWithoutRootPrefix(relation).orElse(partialSymbol.name());
+				json.add(name, tuples);
+				cancellationToken.checkCancelled();
+			}
 		}
 		json.add("builtin::count", getCountJson(model, facade.getConcreteness()));
 		return json;

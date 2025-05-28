@@ -12,6 +12,7 @@ import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.RuleDefinition;
 import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
@@ -32,7 +33,7 @@ public interface ProblemTrace {
 
 	int getNodeId(String qualifiedName);
 
-	Map<Relation, PartialRelation> getRelationTrace();
+	Map<Relation, AnyPartialSymbol> getRelationTrace();
 
 	Map<AnyPartialSymbol, Relation> getInverseRelationTrace();
 
@@ -44,9 +45,33 @@ public interface ProblemTrace {
 
 	RuntimeException wrapException(TranslationException translationException);
 
-	PartialRelation getPartialRelation(Relation relation);
+	AnyPartialSymbol getPartialSymbol(Relation relation);
 
-	PartialRelation getPartialRelation(QualifiedName qualifiedName);
+	AnyPartialSymbol getPartialSymbol(QualifiedName qualifiedName);
 
-	PartialRelation getPartialRelation(String qualifiedName);
+	AnyPartialSymbol getPartialSymbol(String qualifiedName);
+
+	default PartialRelation getPartialRelation(Relation relation) {
+		return getPartialSymbol(relation).asPartialRelation();
+	}
+
+	default PartialRelation getPartialRelation(QualifiedName qualifiedName) {
+		return getPartialSymbol(qualifiedName).asPartialRelation();
+	}
+
+	default PartialRelation getPartialRelation(String qualifiedName) {
+		return getPartialSymbol(qualifiedName).asPartialRelation();
+	}
+
+	default AnyPartialFunction getPartialFunction(Relation relation) {
+		return getPartialSymbol(relation).asPartialFunction();
+	}
+
+	default AnyPartialFunction getPartialFunction(QualifiedName qualifiedName) {
+		return getPartialSymbol(qualifiedName).asPartialFunction();
+	}
+
+	default AnyPartialFunction getPartialFunction(String qualifiedName) {
+		return getPartialSymbol(qualifiedName).asPartialFunction();
+	}
 }

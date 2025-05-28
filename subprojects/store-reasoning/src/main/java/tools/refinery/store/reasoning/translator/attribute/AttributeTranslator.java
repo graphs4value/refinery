@@ -24,10 +24,9 @@ public class AttributeTranslator<A extends AbstractValue<A, C>, C> implements Mo
 	private final PartialRelation partialRelation;
 	private final PartialFunction<A, C> partialFunction;
 
-	public AttributeTranslator(PartialRelation partialRelation, PartialFunction<A, C> partialFunction) {
-		this.partialRelation = partialRelation;
+	public AttributeTranslator(PartialFunction<A, C> partialFunction, AttributeInfo attributeInfo) {
 		this.partialFunction = partialFunction;
-
+		this.partialRelation = attributeInfo.owningType();
 	}
 
 	@Override

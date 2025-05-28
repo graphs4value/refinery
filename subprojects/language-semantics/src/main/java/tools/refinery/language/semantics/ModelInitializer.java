@@ -6,6 +6,8 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import tools.refinery.language.expressions.ExprToTerm;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
@@ -14,10 +16,14 @@ import tools.refinery.language.semantics.internal.MutableRelationCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.semantics.internal.query.QueryCompiler;
 import tools.refinery.language.semantics.internal.query.RuleCompiler;
+import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.dnf.InvalidClauseException;
+import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -28,12 +34,14 @@ import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.ConcretizationSettings;
 import tools.refinery.store.reasoning.translator.TranslationException;
+import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 import tools.refinery.store.reasoning.translator.metamodel.MetamodelBuilder;
@@ -73,10 +81,16 @@ public class ModelInitializer {
 	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	@Inject
+	private IQualifiedNameProvider qualifiedNameProvider;
+
+	@Inject
 	private QueryCompiler queryCompiler;
 
 	@Inject
 	private RuleCompiler ruleCompiler;
+
+	@Inject
+	private ExprToTerm exprToTerm;
 
 	private boolean keepNonExistingObjects;
 
@@ -95,6 +109,10 @@ public class ModelInitializer {
 	private final Map<Relation, RelationInfo> relationInfoMap = new LinkedHashMap<>();
 
 	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new HashMap<>();
+
+	private final Map<Relation, FunctionInfo<?, ?>> functionInfoMap = new LinkedHashMap<>();
+
+	private final Map<PartialFunction<?, ?>, FunctionInfo<?, ?>> partialFunctionInfoMap = new LinkedHashMap<>();
 
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
@@ -290,8 +308,9 @@ public class ModelInitializer {
 	private void collectClassDeclarationSymbols(ClassDeclaration classDeclaration) {
 		collectPartialRelation(classDeclaration, 1, null, TruthValue.UNKNOWN);
 		for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
-			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
-				throw new TracedException(referenceDeclaration, "Attributes are not yet supported");
+			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
+				collectAttribute(datatypeDeclaration, referenceDeclaration);
+				continue;
 			}
 			collectPartialRelation(referenceDeclaration, 2, null, TruthValue.UNKNOWN);
 			var invalidMultiplicityConstraint = referenceDeclaration.getInvalidMultiplicity();
@@ -329,6 +348,27 @@ public class ModelInitializer {
 			problemTrace.putRelation(relation, info.partialRelation());
 			return info;
 		});
+	}
+
+	private void collectAttribute(DatatypeDeclaration datatypeDeclaration, ReferenceDeclaration referenceDeclaration) {
+		if (builtinSymbols.intDatatype().equals(datatypeDeclaration)) {
+			DataExprType dataExprType =
+					new DataExprType(qualifiedNameProvider.getFullyQualifiedName(datatypeDeclaration));
+			var abstractDomain = importAdapterProvider.getTermInterpreter(referenceDeclaration).getDomain(dataExprType);
+			if (abstractDomain.isPresent()) {
+				var domain = (AbstractDomain<?, ?>) abstractDomain.get();
+				this.createFunctionInfo(domain, referenceDeclaration);
+			}
+		}
+	}
+
+	private <A extends AbstractValue<A, C>, C> void createFunctionInfo(AbstractDomain<A, C> domain,
+																	   ReferenceDeclaration referenceDeclaration) {
+		var partialFunction = new PartialFunction<>(referenceDeclaration.getName(), 1, domain);
+		var info = new FunctionInfo<>(partialFunction, domain, domain.unknown(), domain.unknown());
+		problemTrace.putRelation(referenceDeclaration, partialFunction);
+		partialFunctionInfoMap.put(partialFunction, info);
+		functionInfoMap.put(referenceDeclaration, info);
 	}
 
 	private String getName(Relation relation) {
@@ -375,21 +415,27 @@ public class ModelInitializer {
 
 	private void collectReferenceDeclarationMetamodel(ClassDeclaration classDeclaration,
 													  ReferenceDeclaration referenceDeclaration) {
-		var relation = getPartialRelation(referenceDeclaration);
 		var source = getPartialRelation(classDeclaration);
-		var target = getPartialRelation(referenceDeclaration.getReferenceType());
-		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
-		var concretizationSettings = getConcretizationSettings(referenceDeclaration);
-		var opposite = referenceDeclaration.getOpposite();
-		PartialRelation oppositeRelation = null;
-		if (opposite != null) {
-			oppositeRelation = getPartialRelation(opposite);
-		}
-		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
-		Set<PartialRelation> supersets = referenceDeclaration.getSuperSets().stream()
-				.map(this::getPartialRelation)
-				.collect(Collectors.toCollection(LinkedHashSet::new));
 		try {
+			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+				var partialFunction = problemTrace.getPartialFunction(referenceDeclaration);
+				collectAttributeDeclarationMetamodel((PartialFunction<?, ?>) partialFunction, source,
+						referenceDeclaration);
+				return;
+			}
+			var relation = getPartialRelation(referenceDeclaration);
+			var target = getPartialRelation(referenceDeclaration.getReferenceType());
+			boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
+			var concretizationSettings = getConcretizationSettings(referenceDeclaration);
+			var opposite = referenceDeclaration.getOpposite();
+			PartialRelation oppositeRelation = null;
+			if (opposite != null) {
+				oppositeRelation = getPartialRelation(opposite);
+			}
+			var multiplicity = getMultiplicityConstraint(referenceDeclaration);
+			Set<PartialRelation> supersets = referenceDeclaration.getSuperSets().stream()
+					.map(this::getPartialRelation)
+					.collect(Collectors.toCollection(LinkedHashSet::new));
 			var seed = relationInfoMap.get(referenceDeclaration).toSeed(nodeCount);
 			var defaultValue = seed.majorityValue();
 			if (defaultValue.must()) {
@@ -409,6 +455,17 @@ public class ModelInitializer {
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
 		}
+	}
+
+	private <A extends AbstractValue<A, C>, C> void collectAttributeDeclarationMetamodel(
+			PartialFunction<A, C> partialFunction, PartialRelation source, ReferenceDeclaration referenceDeclaration) {
+		metamodelBuilder.attribute(partialFunction, new AttributeInfo(source));
+		// The type of the FunctionInfo always matches the type of the PartialFunction,
+		// because we have created them at the same time.
+		@SuppressWarnings("unchecked")
+		var functionInfo = (FunctionInfo<A, C>) functionInfoMap.get(referenceDeclaration);
+		var seed = functionInfo.toSeed();
+		modelSeedBuilder.seed(partialFunction, seed);
 	}
 
 	private ConcretizationSettings getConcretizationSettings(Relation relation) {
@@ -511,9 +568,16 @@ public class ModelInitializer {
 	}
 
 	private void collectAssertion(Assertion assertion) {
+		var relation = assertion.getRelation();
+		// attribute value declaration
+		if (relation instanceof ReferenceDeclaration referenceDeclaration &&
+				referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+			var partialFunction = problemTrace.getPartialFunction(relation);
+			collectAttributeAssertion(assertion, (PartialFunction<?, ?>) partialFunction);
+			return;
+		}
 		var tuple = getTuple(assertion);
 		var value = SemanticsUtils.getTruthValue(assertion.getValue());
-		var relation = assertion.getRelation();
 		var info = getRelationInfo(relation);
 		var partialRelation = info.partialRelation();
 		if (partialRelation.arity() != tuple.getSize()) {
@@ -524,6 +588,33 @@ public class ModelInitializer {
 			info.defaultAssertions().mergeValue(tuple, value);
 		} else {
 			info.assertions().mergeValue(tuple, value);
+		}
+	}
+
+	private <A extends AbstractValue<A, C>, C> void collectAttributeAssertion(Assertion assertion,
+																			  PartialFunction<A, C> partialFunction) {
+		var value = assertion.getValue();
+		var tuple = getTuple(assertion);
+		var term = exprToTerm.toTerm(value);
+		if (term.isEmpty()) {
+			throw new TracedException(value, "Invalid assertion value expression");
+		}
+		var simplifiedTerm = term.get().asType(partialFunction.abstractDomain().abstractType()).reduce();
+		if (!(simplifiedTerm instanceof ConstantTerm<A> constantTerm)) {
+			throw new TracedException(value, "Assertion value must be constant");
+		}
+		var abstractValue = constantTerm.getValue();
+		// We know the only possible type of the PartialFunction.
+		@SuppressWarnings("unchecked")
+		var info = (FunctionInfo<A, C>) partialFunctionInfoMap.get(partialFunction);
+		if (partialFunction.arity() != tuple.getSize()) {
+			throw new TracedException(assertion, "Expected %d arguments for %s, got %d instead"
+					.formatted(partialFunction.arity(), partialFunction, tuple.getSize()));
+		}
+		if (assertion.isDefault()) {
+			info.defaultAssertions().mergeValue(tuple, abstractValue);
+		} else {
+			info.assertions().mergeValue(tuple, abstractValue);
 		}
 	}
 
@@ -783,6 +874,21 @@ public class ModelInitializer {
 				}
 				defaultAssertions.setAllMissing(TruthValue.FALSE);
 			}
+			return defaultAssertions;
+		}
+	}
+
+	private record FunctionInfo<A extends AbstractValue<A, C>, C>(PartialFunction<A, C> partialFunction,
+																  AbstractDomain<A, C> abstractDomain,
+																  MutableSeed<A> assertions,
+																  MutableSeed<A> defaultAssertions) {
+		public FunctionInfo(PartialFunction<A, C> partialFunction, AbstractDomain<A, C> abstractDomain, A value, A defaultValue) {
+			this(partialFunction, abstractDomain, MutableSeed.of(partialFunction.arity(), abstractDomain, value),
+					MutableSeed.of(partialFunction.arity(), abstractDomain, defaultValue));
+		}
+
+		public Seed<A> toSeed() {
+			defaultAssertions.overwriteValues(assertions);
 			return defaultAssertions;
 		}
 	}

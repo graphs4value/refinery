@@ -32,4 +32,15 @@ public sealed interface AnyTerm permits AnyDataVariable, Term {
 	default Set<Variable> getPrivateVariables(Set<? extends Variable> positiveVariablesInClause) {
 		return Set.of();
 	}
+
+	default <T> Term<T> asType(Class<T> type) {
+		if (!type.equals(getType())) {
+			throw new IllegalArgumentException("Tried to cast to %s but the term is of type %s."
+					.formatted(type.getName(), getType().getName()));
+		}
+		// We have just checked the type explicitly above.
+		@SuppressWarnings("unchecked")
+		var term = (Term<T>) this;
+		return term;
+	}
 }

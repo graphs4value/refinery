@@ -5,8 +5,10 @@
  */
 package tools.refinery.store.reasoning.translator.metamodel;
 
+import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.TranslationException;
+import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.containment.ContainmentInfo;
 import tools.refinery.store.reasoning.translator.crossreference.DirectedCrossReferenceInfo;
@@ -27,6 +29,7 @@ public class MetamodelBuilder {
 	private final Map<PartialRelation, DirectedCrossReferenceInfo> directedCrossReferences = new LinkedHashMap<>();
 	private final Map<PartialRelation, UndirectedCrossReferenceInfo> undirectedCrossReferences = new LinkedHashMap<>();
 	private final Map<PartialRelation, PartialRelation> oppositeReferences = new LinkedHashMap<>();
+	private final Map<AnyPartialFunction, AttributeInfo> attributes = new LinkedHashMap<>();
 
 	MetamodelBuilder() {
 		typeHierarchyBuilder.type(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, true);
@@ -107,11 +110,41 @@ public class MetamodelBuilder {
 		return references(map.entrySet());
 	}
 
+	public MetamodelBuilder attribute(AnyPartialFunction attributeType, AttributeInfo info) {
+		if (attributeType.arity() != 1) {
+			throw new TranslationException(attributeType,
+					"Only attributes of arity 1 are supported, got %s with %d instead".formatted(
+							attributeType, attributeType.arity()));
+		}
+		var putResult = attributes.put(attributeType, info);
+		if (putResult != null && !putResult.equals(info)) {
+			throw new TranslationException(attributeType,
+					"Duplicate attribute info for partial function: " + attributeType);
+		}
+		return this;
+	}
+
+	public MetamodelBuilder attributes(Collection<Map.Entry<AnyPartialFunction, AttributeInfo>> entries) {
+		for (var entry : entries) {
+			attribute(entry.getKey(), entry.getValue());
+		}
+		return this;
+	}
+
+	public MetamodelBuilder attributes(Map<AnyPartialFunction, AttributeInfo> map) {
+		return attributes(map.entrySet());
+	}
+
 	public Metamodel build() {
 		for (var entry : referenceInfoMap.entrySet()) {
 			var linkType = entry.getKey();
 			var info = entry.getValue();
 			processReferenceInfo(linkType, info);
+		}
+		for (var entry : attributes.entrySet()) {
+			var attributeType = entry.getKey();
+			var info = entry.getValue();
+			processAttributeInfo(attributeType, info);
 		}
 		typeHierarchyBuilder.setContainerTypes(containerTypes);
 		typeHierarchyBuilder.setContainedTypes(containedTypes);
@@ -119,7 +152,8 @@ public class MetamodelBuilder {
 		return new Metamodel(typeHierarchy, Collections.unmodifiableMap(containmentHierarchy),
 				Collections.unmodifiableMap(directedCrossReferences),
 				Collections.unmodifiableMap(undirectedCrossReferences),
-				Collections.unmodifiableMap(oppositeReferences));
+				Collections.unmodifiableMap(oppositeReferences),
+				Collections.unmodifiableMap(attributes));
 	}
 
 	private void processReferenceInfo(PartialRelation linkType, ReferenceInfo info) {
@@ -218,6 +252,14 @@ public class MetamodelBuilder {
 		if (!info.concretizationSettings().equals(oppositeInfo.concretizationSettings())) {
 			throw new TranslationException(opposite, "Concretization settings of opposites %s and %s don't match"
 					.formatted(opposite, linkType));
+		}
+	}
+
+	private void processAttributeInfo(AnyPartialFunction attributeType, AttributeInfo info) {
+		var owningType = info.owningType();
+		if (typeHierarchyBuilder.isInvalidType(owningType)) {
+			throw new TranslationException(attributeType, "Owning type %s of %s is not in type hierarchy"
+					.formatted(owningType, attributeType));
 		}
 	}
 }

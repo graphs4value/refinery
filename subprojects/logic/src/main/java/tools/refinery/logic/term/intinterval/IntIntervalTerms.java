@@ -33,7 +33,23 @@ public final class IntIntervalTerms {
 		return new IntIntervalEqTerm(left, right);
 	}
 
+	public static Term<IntInterval> add(Term<IntInterval> left, Term<IntInterval> right) {
+		return new IntIntervalAddTerm(left,right);
+	}
+
+	public static Term<IntInterval> sub(Term<IntInterval> left, Term<IntInterval> right) {
+		return new IntIntervalSubTerm(left,right);
+	}
+
+	public static Term<IntInterval> mul(Term<IntInterval> left, Term<IntInterval> right) {
+		return new IntIntervalMulTerm(left,right);
+	}
+
 	public static Term<IntInterval> constant(IntInterval value) {
 		return new ConstantTerm<>(IntInterval.class, value);
+	}
+
+	public static Term<IntInterval> intInterval(Term<IntInterval> left, Term<IntInterval> right){
+		return new IntIntervalTerm(left,right);
 	}
 }

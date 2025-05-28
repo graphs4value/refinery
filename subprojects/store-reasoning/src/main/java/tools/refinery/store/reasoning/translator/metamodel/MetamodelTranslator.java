@@ -7,6 +7,8 @@ package tools.refinery.store.reasoning.translator.metamodel;
 
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
+import tools.refinery.store.reasoning.representation.PartialFunction;
+import tools.refinery.store.reasoning.translator.attribute.AttributeTranslator;
 import tools.refinery.store.reasoning.translator.containment.ContainerTypeInferenceTranslator;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.crossreference.DirectedCrossReferenceTranslator;
@@ -37,6 +39,9 @@ public class MetamodelTranslator implements ModelStoreConfiguration {
 		}
 		for (var entry : metamodel.oppositeReferences().entrySet()) {
 			storeBuilder.with(new OppositeRelationTranslator(entry.getKey(), entry.getValue()));
+		}
+		for (var entry : metamodel.attributes().entrySet()) {
+			storeBuilder.with(new AttributeTranslator<>((PartialFunction<?, ?>) entry.getKey(), entry.getValue()));
 		}
 	}
 }

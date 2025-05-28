@@ -5,17 +5,20 @@
  */
 package tools.refinery.language.semantics.internal;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.Cursors;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
-class NullaryMutableSeed implements MutableSeed<TruthValue> {
-	private DecisionTreeValue value;
+import java.util.Objects;
 
-	public NullaryMutableSeed(TruthValue reducedValue) {
+class NullaryMutableSeed<A extends AbstractValue<A, C>, C> implements MutableSeed<A> {
+	private final Class<A> valueType;
+	private DecisionTreeValue<A, C> value;
 
-		value = DecisionTreeValue.fromTruthValue(reducedValue);
+	public NullaryMutableSeed(Class<A> valueType, A reducedValue) {
+		this.valueType = valueType;
+		value = DecisionTreeValue.ofNullable(reducedValue);
 	}
 
 	@Override
@@ -24,17 +27,17 @@ class NullaryMutableSeed implements MutableSeed<TruthValue> {
 	}
 
 	@Override
-	public Class<TruthValue> valueType() {
-		return TruthValue.class;
+	public Class<A> valueType() {
+		return valueType;
 	}
 
 	@Override
-	public TruthValue majorityValue() {
-		return value.getTruthValue();
+	public A majorityValue() {
+		return value.orElseNull();
 	}
 
 	@Override
-	public TruthValue get(Tuple key) {
+	public A get(Tuple key) {
 		validateKey(key);
 		return majorityValue();
 	}
@@ -46,38 +49,41 @@ class NullaryMutableSeed implements MutableSeed<TruthValue> {
 	}
 
 	@Override
-	public Cursor<Tuple, TruthValue> getCursor(TruthValue defaultValue, int nodeCount) {
-		if (value == DecisionTreeValue.UNSET || value.getTruthValue() == defaultValue) {
+	public Cursor<Tuple, A> getCursor(A defaultValue, int nodeCount) {
+		if (value.isUnset() || Objects.equals(value.orElseNull(), defaultValue)) {
 			return Cursors.empty();
 		}
-		return Cursors.singleton(Tuple.of(), value.getTruthValue());
+		return Cursors.singleton(Tuple.of(), value.orElseNull());
 	}
 
 	@Override
-	public void mergeValue(Tuple tuple, TruthValue value) {
-		this.value = DecisionTreeValue.fromTruthValue(this.value.merge(value));
+	public void mergeValue(Tuple tuple, A value) {
+		this.value = DecisionTreeValue.ofNullable(this.value.merge(value));
 	}
 
 	@Override
-	public void setIfMissing(Tuple tuple, TruthValue value) {
+	public void setIfMissing(Tuple tuple, A value) {
 		validateKey(tuple);
 		setAllMissing(value);
 	}
 
 	@Override
-	public void setAllMissing(TruthValue value) {
-		if (this.value == DecisionTreeValue.UNSET) {
-			this.value = DecisionTreeValue.fromTruthValue(value);
+	public void setAllMissing(A value) {
+		if (this.value.isUnset()) {
+			this.value = DecisionTreeValue.ofNullable(value);
 		}
 	}
 
 	@Override
-	public void overwriteValues(MutableSeed<TruthValue> other) {
-		if (!(other instanceof NullaryMutableSeed nullaryMutableSeed)) {
+	public void overwriteValues(MutableSeed<A> other) {
+		if (!(other instanceof NullaryMutableSeed<?, ?> nullaryMutableSeed)) {
 			throw new IllegalArgumentException("Incompatible overwrite: " + other);
 		}
-		if (nullaryMutableSeed.value != DecisionTreeValue.UNSET) {
-			value = nullaryMutableSeed.value;
+		if (nullaryMutableSeed.value.isUnset()) {
+			// This is safe, because A uniquely determines C.
+			@SuppressWarnings("unchecked")
+			var typedValue = (DecisionTreeValue<A, C>) nullaryMutableSeed.value;
+			value = typedValue;
 		}
 	}
 }

@@ -29,4 +29,8 @@ public interface AbstractValue<A extends AbstractValue<A, C>, C> {
 	default boolean isRefinementOf(A other) {
 		return equals(meet(other));
 	}
+
+	default boolean isOverlapping(A other) {
+		return !meet(other).isError();
+	}
 }

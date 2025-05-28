@@ -6,19 +6,19 @@
 package tools.refinery.language.semantics.internal;
 
 import org.eclipse.collections.api.LazyIntIterable;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 
-abstract class DecisionTreeNode {
-	public DecisionTreeValue getReducedValue() {
+abstract class DecisionTreeNode<A extends AbstractValue<A, C>, C> {
+	public DecisionTreeValue<A, C> getReducedValue() {
 		return getChildKeys().isEmpty() ? getOtherwiseReducedValue() : null;
 	}
 
-	public abstract DecisionTreeValue getValue(int level, Tuple tuple);
+	public abstract DecisionTreeValue<A, C> getValue(int level, Tuple tuple);
 
-	public abstract DecisionTreeNode deepCopy();
+	public abstract DecisionTreeNode<A, C> deepCopy();
 
-	public void mergeValue(int level, Tuple tuple, TruthValue value) {
+	public void mergeValue(int level, Tuple tuple, A value) {
 		int nextLevel = level - 1;
 		var key = tuple.get(level);
 		if (key < 0) {
@@ -28,17 +28,17 @@ abstract class DecisionTreeNode {
 		}
 	}
 
-	protected abstract void mergeAllValues(int nextLevel, Tuple tuple, TruthValue value);
+	protected abstract void mergeAllValues(int nextLevel, Tuple tuple, A value);
 
-	protected abstract void mergeSingleValue(int key, int nextLevel, Tuple tuple, TruthValue value);
+	protected abstract void mergeSingleValue(int key, int nextLevel, Tuple tuple, A value);
 
-	public DecisionTreeNode withMergedValue(int level, Tuple tuple, TruthValue value) {
+	public DecisionTreeNode<A, C> withMergedValue(int level, Tuple tuple, A value) {
 		var copy = deepCopy();
 		copy.mergeValue(level, tuple, value);
 		return copy;
 	}
 
-	public void setIfMissing(int level, Tuple tuple, TruthValue value) {
+	public void setIfMissing(int level, Tuple tuple, A value) {
 		var key = tuple.get(level);
 		if (key < 0) {
 			throw new IllegalArgumentException("Not allowed set a missing wildcard");
@@ -46,25 +46,25 @@ abstract class DecisionTreeNode {
 		doSetIfMissing(key, level - 1, tuple, value);
 	}
 
-	protected abstract void doSetIfMissing(int key, int nextLevel, Tuple tuple, TruthValue value);
+	protected abstract void doSetIfMissing(int key, int nextLevel, Tuple tuple, A value);
 
-	public DecisionTreeNode withValueSetIfMissing(int level, Tuple tuple, TruthValue value) {
+	public DecisionTreeNode<A, C> withValueSetIfMissing(int level, Tuple tuple, A value) {
 		var copy = deepCopy();
 		copy.setIfMissing(level, tuple, value);
 		return copy;
 	}
 
-	public abstract void setAllMissing(TruthValue value);
+	public abstract void setAllMissing(A value);
 
-	public abstract void overwriteValues(DecisionTreeNode values);
+	public abstract void overwriteValues(DecisionTreeNode<A, C> values);
 
-	public DecisionTreeNode withOverwrittenValues(DecisionTreeNode values) {
+	public DecisionTreeNode<A, C> withOverwrittenValues(DecisionTreeNode<A, C> values) {
 		var copy = deepCopy();
 		copy.overwriteValues(values);
 		return copy;
 	}
 
-	public boolean moveNext(int level, DecisionTreeCursor cursor) {
+	public boolean moveNext(int level, DecisionTreeCursor<A, C> cursor) {
 		var currentState = cursor.iterationState[level];
 		boolean found;
 		if (currentState == DecisionTreeCursor.STATE_FINISH) {
@@ -96,14 +96,14 @@ abstract class DecisionTreeNode {
 		return found;
 	}
 
-	protected abstract DecisionTreeValue getOtherwiseReducedValue();
+	protected abstract DecisionTreeValue<A, C> getOtherwiseReducedValue();
 
 	protected abstract LazyIntIterable getChildKeys();
 
-	public abstract DecisionTreeValue getMajorityValue();
+	public abstract DecisionTreeValue<A, C> getMajorityValue();
 
-	protected abstract boolean moveNextSparse(int level, DecisionTreeCursor cursor, int startIndex,
+	protected abstract boolean moveNextSparse(int level, DecisionTreeCursor<A, C> cursor, int startIndex,
 											  int[] sortedChildren);
 
-	protected abstract boolean moveNextDense(int level, DecisionTreeCursor cursor, int startIndex);
+	protected abstract boolean moveNextDense(int level, DecisionTreeCursor<A, C> cursor, int startIndex);
 }

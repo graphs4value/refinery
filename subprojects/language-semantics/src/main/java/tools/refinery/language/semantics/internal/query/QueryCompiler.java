@@ -6,12 +6,16 @@
 package tools.refinery.language.semantics.internal.query;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.FixedType;
+import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ReferenceCounter;
 import tools.refinery.logic.Constraint;
@@ -24,8 +28,11 @@ import tools.refinery.logic.literal.CallPolarity;
 import tools.refinery.logic.literal.ConstantLiteral;
 import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.PartialCheckLiteral;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.*;
@@ -36,6 +43,15 @@ public class QueryCompiler {
 
 	@Inject
 	private ReferenceCounter referenceCounter;
+
+	@Inject
+	private ProblemTypeAnalyzer problemTypeAnalyzer;
+
+	@Inject
+	private Provider<QueryBasedExprToTerm> exprToTermProvider;
+
+	@Inject
+	private QueryBasedExprToTerm queryBasedExprToTerm;
 
 	private ProblemTrace problemTrace;
 
@@ -76,7 +92,9 @@ public class QueryCompiler {
 			List<Literal> commonLiterals, AbstractQueryBuilder<?> builder) {
 		try {
 			var localScope = extendScope(parameterMap, body.getImplicitVariables());
+			// expression (E)list
 			var problemLiterals = body.getLiterals();
+			// literal list
 			var literals = new ArrayList<>(commonLiterals);
 			for (var problemLiteral : problemLiterals) {
 				toLiteralsTraced(problemLiteral, localScope, literals);
@@ -152,17 +170,36 @@ public class QueryCompiler {
 			literals.add(createNegationLiteral(innerModality, constraint, argumentList));
 		}
 		case ComparisonExpr comparisonExpr -> {
-			var argumentList = toArgumentList(comparisonExpr,
-					List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
-			boolean positive = switch (comparisonExpr.getOp()) {
-				case NODE_EQ -> true;
-				case NODE_NOT_EQ -> false;
-				default -> throw new TracedException(
-						comparisonExpr, "Unsupported operator");
-			};
-			literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
+			FixedType rightType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getRight());
+			FixedType leftType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getLeft());
+			if (!(rightType instanceof DataExprType) && !(leftType instanceof DataExprType)) {
+				var argumentList = toArgumentList(comparisonExpr,
+						List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
+				boolean positive = switch (comparisonExpr.getOp()) {
+					case NODE_EQ -> true;
+					case NODE_NOT_EQ -> false;
+					default -> throw new TracedException(
+							comparisonExpr, "Unsupported operator");
+				};
+				literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
+			}
 		}
-		default -> throw new TracedException(extractedOuter.body(), "Unsupported literal");
+		default -> {
+		}
+		}
+		var exprToTerm = exprToTermProvider.get();
+		exprToTerm.setLiterals(literals);
+		exprToTerm.setQueryCompiler(this);
+		exprToTerm.setLocalScope(localScope);
+		exprToTerm.setProblemTrace(problemTrace);
+		var optTerm = exprToTerm.toTerm(expr);
+		if (optTerm.isPresent()) {
+			// could be an arithmetic operation?
+			@SuppressWarnings("unchecked")
+			var term = (Term<TruthValue>) optTerm.get();
+			literals.add(new PartialCheckLiteral(term));
+		} else {
+			throw new TracedException(expr, "Cannot interpret expression as Term/Literal");
 		}
 	}
 
@@ -207,12 +244,12 @@ public class QueryCompiler {
 		return createNegationLiteral(outerModality.negate(), ReasoningAdapter.EQUALS_SYMBOL, argumentList);
 	}
 
-	private ArgumentList toArgumentList(
+	ArgumentList toArgumentList(
 			Expr atom, List<Expr> expressions,
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
-		var arguments = new ArrayList<Variable>(expressions.size());
-		var filteredArguments = LinkedHashSet.<Variable>newLinkedHashSet(expressions.size());
+		var arguments = new ArrayList<NodeVariable>(expressions.size());
+		var filteredArguments = LinkedHashSet.<NodeVariable>newLinkedHashSet(expressions.size());
 		boolean needsQuantification = false;
 		var referenceCounts = ReferenceCounter.computeReferenceCounts(atom);
 		for (var expr : expressions) {
@@ -233,7 +270,7 @@ public class QueryCompiler {
 					arguments.add(Variable.of(problemVariable.getName()));
 					needsQuantification = true;
 				} else {
-					var variable = localScope.get(problemVariable);
+					var variable = localScope.get(problemVariable).asNodeVariable();
 					if (variable == null) {
 						throw new TracedException(variableOrNode, "Unknown variable: " + problemVariable.getName());
 					}
@@ -265,7 +302,7 @@ public class QueryCompiler {
 		return crossReferencesInAtom == crossReferencesInModel;
 	}
 
-	private record ArgumentList(List<Variable> arguments, Set<Variable> filteredArguments,
+	record ArgumentList(List<NodeVariable> arguments, Set<NodeVariable> filteredArguments,
 								boolean needsQuantification) {
 	}
 }

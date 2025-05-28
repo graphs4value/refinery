@@ -7,6 +7,9 @@ import tools.refinery.logic.AbstractDomain;
 public class IntIntervalDomain implements AbstractDomain<IntInterval, Integer> {
 	public static final IntIntervalDomain INSTANCE = new IntIntervalDomain();
 
+	private IntIntervalDomain() {
+	}
+
 	@Override
 	public Class<IntInterval> abstractType() {
 		return IntInterval.class;

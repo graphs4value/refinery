@@ -162,7 +162,7 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 			if (ProblemUtil.isShadow(relation)) {
 				continue;
 			}
-			var partialRelation = entry.getValue();
+			var partialRelation = entry.getValue().asPartialRelation();
 			// Filter for non-existing errors even if they are retained by getPartialInterpretation.
 			var interpretation = FilteredInterpretation.of(getPartialInterpretation(partialRelation),
 					existsInterpretation);

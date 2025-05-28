@@ -5,46 +5,94 @@
  */
 package tools.refinery.language.semantics.internal;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
-public enum DecisionTreeValue {
-	UNSET(null),
-	TRUE(TruthValue.TRUE),
-	FALSE(TruthValue.FALSE),
-	UNKNOWN(TruthValue.UNKNOWN),
-	ERROR(TruthValue.ERROR);
+public sealed interface DecisionTreeValue<A extends AbstractValue<A, C>, C> {
+	DecisionTreeValue<?, ?> UNSET = new Unset<TruthValue, Boolean>();
 
-	final TruthValue truthValue;
+	boolean isUnset();
 
-	DecisionTreeValue(TruthValue truthValue) {
-		this.truthValue = truthValue;
+	@Nullable A orElseNull();
+
+	A merge(@Nullable A other);
+
+	DecisionTreeValue<A, C> overwrite(DecisionTreeValue<A, C> other);
+
+	A orElse(A other);
+
+	static <A extends AbstractValue<A, C>, C> DecisionTreeValue<A, C> unset() {
+		// This is safe, because {@code Unset} doesn't hold any reference to an A or C instance.
+		@SuppressWarnings("unchecked")
+		var typedUnset = (DecisionTreeValue<A, C>) UNSET;
+		return typedUnset;
 	}
 
-	public TruthValue getTruthValue() {
-		return truthValue;
+	static <A extends AbstractValue<A, C>, C> DecisionTreeValue<A, C> ofNullable(@Nullable A value) {
+		return value == null ? unset() : new Some<>(value);
 	}
 
-	public TruthValue merge(TruthValue other) {
-		return truthValue == null ? other : truthValue.meet(other);
-	}
-
-	public DecisionTreeValue overwrite(DecisionTreeValue other) {
-		return other == UNSET ? this : other;
-	}
-
-	public TruthValue getTruthValueOrElse(TruthValue other) {
-		return this == UNSET ? other : truthValue;
-	}
-
-	public static DecisionTreeValue fromTruthValue(TruthValue truthValue) {
-		if (truthValue == null) {
-			return DecisionTreeValue.UNSET;
+	record Some<A extends AbstractValue<A, C>, C>(@NotNull A value) implements DecisionTreeValue<A, C> {
+		public Some {
+			// We add a runtime check for the static analysis annotation.
+			//noinspection ConstantValue
+			if (value == null) {
+				throw new IllegalArgumentException("value must not be null");
+			}
 		}
-		return switch (truthValue) {
-			case TRUE -> TRUE;
-			case FALSE -> FALSE;
-			case UNKNOWN -> UNKNOWN;
-			case ERROR -> ERROR;
-		};
+
+		@Override
+		public boolean isUnset() {
+			return false;
+		}
+
+		@Override
+		public @NotNull A orElseNull() {
+			return value;
+		}
+
+		@Override
+		public A merge(@Nullable A other) {
+			return other == null ? value : value.meet(other);
+		}
+
+		@Override
+		public DecisionTreeValue<A, C> overwrite(DecisionTreeValue<A, C> other) {
+			return other.isUnset() ? this : other;
+		}
+
+		@Override
+		public A orElse(A other) {
+			return value;
+		}
+	}
+
+	final class Unset<A extends AbstractValue<A, C>, C> implements DecisionTreeValue<A, C> {
+		@Override
+		public boolean isUnset() {
+			return true;
+		}
+
+		@Override
+		public @Nullable A orElseNull() {
+			return null;
+		}
+
+		@Override
+		public A merge(@Nullable A other) {
+			return other;
+		}
+
+		@Override
+		public DecisionTreeValue<A, C> overwrite(DecisionTreeValue<A, C> other) {
+			return other;
+		}
+
+		@Override
+		public A orElse(A other) {
+			return other;
+		}
 	}
 }

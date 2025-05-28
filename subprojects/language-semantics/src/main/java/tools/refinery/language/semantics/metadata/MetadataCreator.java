@@ -24,6 +24,7 @@ import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.ArrayList;
@@ -121,20 +122,28 @@ public class MetadataCreator {
 		for (var entry : relationTrace.entrySet()) {
 			var relation = entry.getKey();
 			var partialRelation = entry.getValue();
-			var metadata = getRelationMetadata(relation, partialRelation);
-			relations.add(metadata);
+			System.out.println(relation);
+			if (relation instanceof ReferenceDeclaration referenceDeclaration &&
+					referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+				// it is an attribute (most likely)
+
+			}
+			else{
+				var metadata = getRelationMetadata(relation, partialRelation.asPartialRelation());
+				relations.add(metadata);
+			}
 		}
 		return Collections.unmodifiableList(relations);
 	}
 
-	private RelationMetadata getRelationMetadata(Relation relation, PartialRelation partialRelation) {
+	private RelationMetadata getRelationMetadata(Relation relation, AnyPartialSymbol partialSymbol) {
 		var qualifiedName = getQualifiedName(relation);
 		var qualifiedNameString = qualifiedNameConverter.toString(qualifiedName);
 		var simpleName = getSimpleName(relation, qualifiedName, relationScope);
 		var simpleNameString = qualifiedNameConverter.toString(simpleName);
-		var arity = partialRelation.arity();
+		var arity = partialSymbol.arity();
 		var parameterNames = getParameterNames(relation);
-		var detail = getRelationDetail(relation, partialRelation);
+		var detail = getRelationDetail(relation, partialSymbol);
 		var visibility = builtinAnnotationContext.getVisibility(relation);
 		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail, visibility);
 	}
@@ -159,10 +168,10 @@ public class MetadataCreator {
 				.toList();
 	}
 
-	private RelationDetail getRelationDetail(Relation relation, PartialRelation partialRelation) {
+	private RelationDetail getRelationDetail(Relation relation, AnyPartialSymbol partialSymbol) {
 		return switch (relation) {
 			case ClassDeclaration classDeclaration -> getClassDetail(classDeclaration);
-			case ReferenceDeclaration ignored -> getReferenceDetail(partialRelation);
+			case ReferenceDeclaration ignored -> getReferenceDetail(partialSymbol);
 			case EnumDeclaration enumDeclaration -> getEnumDetail(enumDeclaration);
 			case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
 			default -> throw new TracedException(relation, "Unknown relation");
@@ -174,15 +183,23 @@ public class MetadataCreator {
 		return new RelationDetail.Class(classDeclaration.isAbstract(), typeHash);
 	}
 
-	private RelationDetail getReferenceDetail(PartialRelation partialRelation) {
+	private RelationDetail getReferenceDetail(AnyPartialSymbol partialSymbol) {
 		var metamodel = problemTrace.getMetamodel();
-		var opposite = metamodel.oppositeReferences().get(partialRelation);
-		if (opposite == null) {
-			boolean isContainment = metamodel.containmentHierarchy().containsKey(partialRelation);
-			return new RelationDetail.Reference(isContainment);
-		} else {
-			boolean isContainer = metamodel.containmentHierarchy().containsKey(opposite);
-			return new RelationDetail.Opposite(opposite.name(), isContainer);
+		if (partialSymbol instanceof PartialRelation) {
+			var opposite = metamodel.oppositeReferences().get(partialSymbol);
+			if (opposite == null) {
+				boolean isContainment = metamodel.containmentHierarchy().containsKey(partialSymbol);
+				return new RelationDetail.Reference(isContainment);
+			} else {
+				boolean isContainer = metamodel.containmentHierarchy().containsKey(opposite);
+				return new RelationDetail.Opposite(opposite.name(), isContainer);
+			}
+		}
+		else
+		{
+			// hmm there is no attribute yet, could implement one...
+			var typeHash = typeHashProvider.getTypeHash(problemTrace.getRelation(partialSymbol));
+			return new RelationDetail.Class(false,typeHash);
 		}
 	}
 

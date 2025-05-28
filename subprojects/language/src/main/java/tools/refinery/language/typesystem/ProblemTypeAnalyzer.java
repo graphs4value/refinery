@@ -8,7 +8,9 @@ package tools.refinery.language.typesystem;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.util.IResourceScopeCache;
+import tools.refinery.language.model.problem.Expr;
 import tools.refinery.language.model.problem.Problem;
 
 @Singleton
@@ -28,5 +30,14 @@ public class ProblemTypeAnalyzer {
 			typedModule.setProblem(problem);
 			return typedModule;
 		});
+	}
+
+	public FixedType getExpressionType(Expr expr) {
+		var problem = EcoreUtil2.getContainerOfType(expr, Problem.class);
+		if (problem == null) {
+			return ExprType.INVALID;
+		}
+		var typedModule = getOrComputeTypes(problem);
+		return typedModule.getExpressionType(expr).getActualType();
 	}
 }

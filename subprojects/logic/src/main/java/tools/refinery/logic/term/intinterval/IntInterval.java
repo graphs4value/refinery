@@ -84,6 +84,26 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 
 	@Override
 	public String toString() {
-		return "(%s, %s)".formatted(lowerBound, upperBound);
+		return "(%s, %s)".formatted(lowerBound(), upperBound());
+	}
+
+	public IntInterval add(IntInterval other){
+		return new IntInterval(lowerBound().add(other.lowerBound()),upperBound().add(other.upperBound()));
+	}
+
+	public IntInterval sub(IntInterval other){
+		return new IntInterval(lowerBound().sub(other.upperBound()),
+				upperBound().sub(other.lowerBound()));
+	}
+
+	public IntInterval mul(IntInterval other){
+		return new IntInterval(lowerBound().mul(other.lowerBound())
+				.min(lowerBound().mul(other.upperBound()))
+				.min(upperBound().mul(other.lowerBound()))
+				.min(upperBound().mul(other.upperBound())),
+				lowerBound().mul(other.lowerBound())
+				.max(lowerBound().mul(other.upperBound()))
+				.max(upperBound().mul(other.lowerBound()))
+				.max(upperBound().mul(other.upperBound())));
 	}
 }
