@@ -21,6 +21,8 @@ import { z } from 'zod';
 
 import system from './system.md';
 
+const model = process.env['OPENAI_MODEL'] ?? 'google/gemini-2.5-flash-preview';
+
 const ChatResponse = z.object({
   explanation: z.string(),
   assertions: z.string(),
@@ -133,7 +135,7 @@ ${text}
     const openAIResult = await req.openai.beta.chat.completions
       .stream(
         {
-          model: 'google/gemini-2.5-flash-preview',
+          model,
           messages,
           response_format: chatResponseFormat,
         },
