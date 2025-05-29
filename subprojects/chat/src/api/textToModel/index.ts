@@ -6,6 +6,7 @@
 
 import {
   type ConcretizationSuccessResult,
+  type Issue,
   RefineryError,
 } from '@tools.refinery/client';
 import {
@@ -27,13 +28,14 @@ const ChatResponse = z.object({
 
 const chatResponseFormat = zodResponseFormat(ChatResponse, 'chat_response');
 
-function invalidProblemToChatMessage(
-  err: RefineryError.InvalidProblem,
+function convertIssues(
+  xtextIssues: Issue[],
   prefixLines: number,
-): string {
+  filter: (issue: Issue) => boolean,
+): string[] {
   const issues: string[] = [];
-  for (const issue of err.issues) {
-    if (issue.severity !== 'error') {
+  for (const issue of xtextIssues) {
+    if (!filter(issue)) {
       continue;
     }
     if (issue.line < prefixLines) {
@@ -46,9 +48,16 @@ function invalidProblemToChatMessage(
       );
     }
   }
+  return issues;
+}
+
+function invalidProblemToChatMessage(
+  err: RefineryError.InvalidProblem,
+  prefixLines: number,
+): string {
   return `Refinery has returned the following syntax errors:
 
-${issues.join('\n')}
+${convertIssues(err.issues, prefixLines, ({ severity }) => severity === 'error').join('\n')}
 
 Please check your assertions and fix the errors.`;
 }
@@ -60,7 +69,7 @@ function concretizationResultToChatMessage(
     throw new Error('Concretization result does not contain JSON');
   }
   const { json } = result;
-  const issues: string[] = [];
+  const issues: string[] = convertIssues(result.issues, 0, () => true);
 
   for (const relationMetadata of json.relations) {
     const tuples = json.partialInterpretation[relationMetadata.name] ?? [];
@@ -79,7 +88,7 @@ function concretizationResultToChatMessage(
           return nodeMetadata?.simpleName ?? String(id);
         })
         .join(', ');
-      issues.push(`${relationMetadata.simpleName}(${args}).`);
+      issues.push(`${relationMetadata.simpleName}(${args}): error.`);
     }
   }
 
@@ -160,6 +169,7 @@ ${text}
             json: {
               ...(format.json ?? {}),
               enabled: true,
+              nonExistingObjects: 'discard',
             },
           },
         },
@@ -197,7 +207,7 @@ ${text}
       } satisfies TextToModelResult);
       break;
     }
-    res.log.debug({ errorMessage }, 'Semantics errors');
+    res.log.debug({ errorMessage }, 'Semantic errors');
     messages.push({
       role: 'user',
       content: errorMessage,
