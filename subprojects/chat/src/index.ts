@@ -40,6 +40,10 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use('/chat/v1', api);
 
+app.get('/health', (_req, res) => {
+  res.json({ status: 'up' });
+});
+
 // Install the error handler for all requests, even non-SSE ones.
 app.use(sseErrorHandler);
 

@@ -10,13 +10,15 @@ XDG_RUNTIME_DIR=/run/user/$(id -u)
 export XDG_RUNTIME_DIR
 cd /var/lib/refinery
 
-echo "::: Pulling new Docker image"
+echo "::: Pulling new Docker images"
 podman pull ghcr.io/graphs4value/refinery:latest
+podman pull ghcr.io/graphs4value/refinery-chat:latest
 
 deploy_on_port() {
-    port="$1"
-    echo "::: Restarting service on port ${port}"
-    systemctl --user restart "refinery@${port}.service"
+    service="$1"
+    port="$2"
+    echo "::: Restarting ${service} on port ${port}"
+    systemctl --user restart "${service}@${port}.service"
     echo "::: Checking deployment on port ${port}"
     service_status=$(curl --fail \
         --silent \
@@ -33,8 +35,10 @@ deploy_on_port() {
     fi
 }
 
-deploy_on_port 8887
-deploy_on_port 8888
+deploy_on_port refinery 8887
+deploy_on_port refinery 8887
+deploy_on_port refinery-chat 8889
+deploy_on_port refinery-chat 8890
 
 echo "::: Pruning unused Docker images"
 podman image prune --all --force

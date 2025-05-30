@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+# SPDX-FileCopyrightText: 2024-2025 The Refinery Authors <https://refinery.tools/>
 #
 # SPDX-License-Identifier: EPL-2.0
 
 [Unit]
-Description=Java web server for Refinery
+Description=Node.js web server for Refinery
 RequiresMountsFor=%t/containers
 PartOf=refinery.target
 
@@ -23,11 +23,12 @@ ExecStart=/usr/bin/podman run \
         --env-file=%h/%p.env \
         --env=REFINERY_LISTEN_PORT=%i \
         --publish=%i:%i \
-        --memory=2048m \
-        --memory-reservation=1792m \
+        --memory=1024m \
+        --memory-reservation=512m \
         --detach \
         --replace \
         --name=systemd-%p-%i \
+        --network=pasta:--tcp-ns,443:443 \
         --sdnotify=conmon \
         --health-cmd="curl -f --max-time 1 http://127.0.0.1:%i/health || exit 1" \
         --health-interval=30s \
@@ -37,7 +38,7 @@ ExecStart=/usr/bin/podman run \
         --health-startup-cmd="curl -f --max-time 1 http://127.0.0.1:%i/health || exit 1" \
         --health-startup-interval=5s \
         --health-startup-timeout=1s \
-        ghcr.io/graphs4value/refinery:latest
+        ghcr.io/graphs4value/refinery-chat:latest
 
 [Install]
 WantedBy=refinery.target
