@@ -132,7 +132,7 @@ ${text}
   ];
 
   for (let i = 0; i < 5; i += 1) {
-    const openAIResult = await req.openai.beta.chat.completions
+    const openAIResult = await req.openai.chat.completions
       .stream(
         {
           model,
