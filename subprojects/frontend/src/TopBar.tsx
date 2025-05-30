@@ -123,7 +123,7 @@ const ButtonStack = styled(Stack)({
 });
 
 export default observer(function TopBar(): React.ReactElement {
-  const { editorStore, themeStore } = useRootStore();
+  const { editorStore, themeStore, hasChat } = useRootStore();
   const overlayVisible = useWindowControlsOverlayVisible();
   const { breakpoints } = useTheme();
   const medium = useMediaQuery(breakpoints.up('sm'));
@@ -171,7 +171,7 @@ export default observer(function TopBar(): React.ReactElement {
         )}
         <Stack direction="row" alignItems="center" flexGrow={1} marginLeft={1}>
           {medium && !large && (
-            <PaneButtons themeStore={themeStore} hideLabel />
+            <PaneButtons themeStore={themeStore} hasChat={hasChat} hideLabel />
           )}
         </Stack>
         {large && (
@@ -186,7 +186,7 @@ export default observer(function TopBar(): React.ReactElement {
               transform: 'translateX(-50%)',
             }}
           >
-            <PaneButtons themeStore={themeStore} />
+            <PaneButtons themeStore={themeStore} hasChat={hasChat} />
           </Stack>
         )}
         <Stack direction="row" marginLeft={1} gap={1} alignItems="center">

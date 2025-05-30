@@ -12,6 +12,7 @@ import backendConfigVitePlugin, {
 
 export const API_ENDPOINT = 'api';
 export const XTEXT_ENDPOINT = 'xtext-service';
+export const CHAT_ENDPOINT = 'chat';
 
 export interface DevModeOptions {
   mode: string;
@@ -63,7 +64,10 @@ export default function detectDevModeOptions(): DevModeOptions {
   // because it doesn't listen on IPv6.
   const api = detectListenOptions('API', '127.0.0.1', 1312);
   const apiURL = listenURL(api);
+  const chat = detectListenOptions('CHAT', '127.0.0.1', 1314);
+  const chatURL = listenURL(chat);
   const publicAddress = detectListenOptions('PUBLIC', listen.host, listen.port);
+  const publicURL = listenURL(publicAddress);
 
   if (listen.secure) {
     // Since nodejs 20, we'd need to pass in HTTPS options manually.
@@ -71,8 +75,9 @@ export default function detectDevModeOptions(): DevModeOptions {
   }
 
   const backendConfig: BackendConfig = {
-    apiBase: `${listenURL(publicAddress)}/${API_ENDPOINT}/v1`,
+    apiBase: `${publicURL}/${API_ENDPOINT}/v1`,
     webSocketURL: `${listenURL(publicAddress, 'ws')}/${XTEXT_ENDPOINT}`,
+    chatURL: `${publicURL}/${CHAT_ENDPOINT}/v1`,
   };
 
   return {
@@ -99,6 +104,10 @@ export default function detectDevModeOptions(): DevModeOptions {
           target: apiURL,
           ws: true,
           secure: api.secure,
+        },
+        [`/${CHAT_ENDPOINT}`]: {
+          target: chatURL,
+          secure: chat.secure,
         },
       },
       hmr: {

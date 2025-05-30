@@ -21,10 +21,10 @@ import java.io.IOException;
 public class BackendConfigServlet extends HttpServlet {
 	private static final Logger LOG = LoggerFactory.getLogger(BackendConfigServlet.class);
 
-	public static final String API_BASE_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
-			".apiBase";
-	public static final String WEBSOCKET_URL_INIT_PARAM = "tools.refinery.language.web.config.BackendConfigServlet" +
-			".webSocketUrl";
+	private static final String INIT_PARAM_PREFIX = "tools.refinery.language.web.config.BackendConfigServlet.";
+	public static final String API_BASE_INIT_PARAM = INIT_PARAM_PREFIX + "apiBase";
+	public static final String WEBSOCKET_URL_INIT_PARAM = INIT_PARAM_PREFIX + "webSocketUrl";
+	public static final String CHAT_BASE_INIT_PARAM = INIT_PARAM_PREFIX + "chatBase";
 
 	private String serializedConfig;
 
@@ -33,7 +33,8 @@ public class BackendConfigServlet extends HttpServlet {
 		super.init(config);
 		var apiBase = config.getInitParameter(API_BASE_INIT_PARAM);
 		var webSocketUrl = config.getInitParameter(WEBSOCKET_URL_INIT_PARAM);
-		var backendConfig = new BackendConfig(apiBase, webSocketUrl);
+		var chatUrl = config.getInitParameter(CHAT_BASE_INIT_PARAM);
+		var backendConfig = new BackendConfig(apiBase, webSocketUrl, chatUrl);
 		var gson = new GsonBuilder().setFormattingStyle(FormattingStyle.COMPACT).create();
 		serializedConfig = gson.toJson(backendConfig);
 	}

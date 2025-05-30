@@ -12,6 +12,7 @@
     "outDir": "build/typescript",
     "paths": {
       "@tools.refinery/client": ["./src/index.ts"],
+      "@tools.refinery/client/chat": ["./src/chat/index.ts"],
     }
   },
   "include": [

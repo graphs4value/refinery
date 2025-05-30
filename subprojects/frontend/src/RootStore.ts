@@ -18,6 +18,9 @@ import type EditorStore from './editor/EditorStore';
 import ExportSettingsStore from './graph/export/ExportSettingsStore';
 import Compressor from './persistence/Compressor';
 import ThemeStore from './theme/ThemeStore';
+import fetchBackendConfig, {
+  type BackendConfigWithDefaults,
+} from './xtext/fetchBackendConfig';
 
 const log = getLogger('RootStore');
 
@@ -29,6 +32,8 @@ export default class RootStore {
   private initialVisibility: Record<string, Visibility> | undefined;
 
   private editorStoreClass: typeof EditorStore | undefined;
+
+  backendConfig: BackendConfigWithDefaults | undefined;
 
   editorStore: EditorStore | undefined;
 
@@ -58,11 +63,15 @@ export default class RootStore {
       titleReaction: false,
     });
     (async () => {
-      const { default: EditorStore } = await import('./editor/EditorStore');
+      const [backendConfig, { default: EditorStore }] = await Promise.all([
+        fetchBackendConfig(),
+        import('./editor/EditorStore'),
+      ]);
       runInAction(() => {
         if (this.disposed) {
           return;
         }
+        this.backendConfig = backendConfig;
         this.editorStoreClass = EditorStore;
         if (this.initialValue !== undefined) {
           this.setInitialValue(this.initialValue, this.initialVisibility);
@@ -80,12 +89,16 @@ export default class RootStore {
   ): void {
     this.initialValue = initialValue;
     this.initialVisibility = visibility;
-    if (this.editorStoreClass !== undefined) {
+    if (
+      this.backendConfig !== undefined &&
+      this.editorStoreClass !== undefined
+    ) {
       const EditorStore = this.editorStoreClass;
       const editorStore = new EditorStore(
         this.initialValue,
         this.initialVisibility,
         this.pwaStore,
+        this.backendConfig,
         this.compressor.compress.bind(this.compressor),
       );
       this.editorStore = editorStore;
@@ -103,6 +116,10 @@ export default class RootStore {
         }
       });
     }
+  }
+
+  get hasChat(): boolean {
+    return this.backendConfig?.chatURL !== undefined;
   }
 
   dispose(): void {

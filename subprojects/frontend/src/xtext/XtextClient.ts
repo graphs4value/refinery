@@ -54,13 +54,14 @@ export default class XtextClient {
   constructor(
     private readonly store: EditorStore,
     private readonly pwaStore: PWAStore,
+    backendConfig: BackendConfigWithDefaults,
     onUpdate: (text: string) => void,
   ) {
     this.webSocketClient = new XtextWebSocketClient(
+      backendConfig,
       () => this.onReconnect(),
       () => this.onDisconnect(),
       this.onPush.bind(this),
-      this.onConfig.bind(this),
     );
     this.updateService = new UpdateService(
       store,
@@ -76,7 +77,10 @@ export default class XtextClient {
     this.occurrencesService = new OccurrencesService(store, this.updateService);
     this.hoverService = new HoverService(store, this.updateService);
     this.semanticsService = new SemanticsService(store, this.validationService);
-    this.modelGenerationService = new ModelGenerationService(store);
+    this.modelGenerationService = new ModelGenerationService(
+      store,
+      backendConfig,
+    );
     this.keepAliveDisposer = reaction(
       () => store.generating,
       (generating) => this.webSocketClient.setKeepAlive(generating),
@@ -149,10 +153,6 @@ export default class XtextClient {
       default:
         throw new Error('Unknown service');
     }
-  }
-
-  private onConfig(config: BackendConfigWithDefaults): void {
-    this.modelGenerationService.onConfig(config);
   }
 
   contentAssist(context: CompletionContext): Promise<CompletionResult> {

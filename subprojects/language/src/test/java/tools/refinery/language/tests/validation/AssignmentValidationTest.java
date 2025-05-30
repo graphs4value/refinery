@@ -30,7 +30,7 @@ class AssignmentValidationTest {
 			""", """
 			pred foo(node a) <-> a is 5.
 			""", """
-			node(n).
+			atom n.
 			pred foo(node a) <-> n is 5.
 			""", """
 			enum E { A, B }

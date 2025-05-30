@@ -29,12 +29,12 @@ ExecStart=/usr/bin/podman run \
         --replace \
         --name=systemd-%p-%i \
         --sdnotify=conmon \
-        --health-cmd="curl -f --max-time 1 http://localhost:%i/health || exit 1" \
+        --health-cmd="curl -f --max-time 1 http://127.0.0.1:%i/health || exit 1" \
         --health-interval=30s \
         --health-on-failure=kill \
         --health-retries=3 \
         --health-timeout=1s \
-        --health-startup-cmd="curl -f --max-time 1 http://localhost:%i/health || exit 1" \
+        --health-startup-cmd="curl -f --max-time 1 http://127.0.0.1:%i/health || exit 1" \
         --health-startup-interval=5s \
         --health-startup-timeout=1s \
         ghcr.io/graphs4value/refinery:latest

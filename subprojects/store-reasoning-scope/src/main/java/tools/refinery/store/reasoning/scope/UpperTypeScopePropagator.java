@@ -44,7 +44,7 @@ class UpperTypeScopePropagator extends TypeScopePropagator {
 
 	@Override
 	public String getName() {
-		return "upper type scope bound for '%s'".formatted(getType().name());
+		return "upper type scope bound for '%s' (<= %d)".formatted(getType().name(), upperBound);
 	}
 
 	static class Factory extends TypeScopePropagator.Factory {

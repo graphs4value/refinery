@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CodeIcon from '@mui/icons-material/Code';
 import SchemaRoundedIcon from '@mui/icons-material/SchemaRounded';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -119,9 +120,11 @@ const PaneButton = observer(function PaneButton({
 
 function PaneButtons({
   themeStore,
+  hasChat,
   hideLabel,
 }: {
   themeStore: ThemeStore;
+  hasChat: boolean;
   hideLabel?: boolean;
 }): React.ReactElement {
   const hideLabelOrDefault = hideLabel ?? false;
@@ -151,6 +154,20 @@ function PaneButtons({
         icon={<TableChartIcon fontSize="small" />}
         hideLabel={hideLabelOrDefault}
       />
+      {hasChat && (
+        <PaneButton
+          themeStore={themeStore}
+          value="chat"
+          label="AI"
+          icon={
+            <AutoAwesomeIcon
+              fontSize="small"
+              sx={{ transform: 'scaleX(-1)' }}
+            />
+          }
+          hideLabel={hideLabelOrDefault}
+        />
+      )}
     </PaneButtonGroup>
   );
 }

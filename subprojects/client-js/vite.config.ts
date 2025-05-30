@@ -49,6 +49,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: 'src/index.ts',
+        chat: 'src/chat/index.ts',
       },
       formats: ['es', 'cjs'],
       fileName(format, entryName) {

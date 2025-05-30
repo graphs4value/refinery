@@ -14,9 +14,7 @@ import CancelledError from '../utils/CancelledError';
 import PendingTask from '../utils/PendingTask';
 import getLogger from '../utils/getLogger';
 
-import fetchBackendConfig, {
-  type BackendConfigWithDefaults,
-} from './fetchBackendConfig';
+import type { BackendConfigWithDefaults } from './fetchBackendConfig';
 import webSocketMachine from './webSocketMachine';
 import {
   type XtextWebPushService,
@@ -43,8 +41,6 @@ export type PushHandler = (
   service: XtextWebPushService,
   data: unknown,
 ) => void;
-
-export type ConfigHandler = (config: BackendConfigWithDefaults) => void;
 
 export default class XtextWebSocketClient {
   private readonly stateAtom = createAtom('state');
@@ -151,10 +147,10 @@ export default class XtextWebSocketClient {
   };
 
   constructor(
+    private readonly backendConfig: BackendConfigWithDefaults,
     private readonly onReconnect: ReconnectHandler,
     private readonly onDisconnect: DisconnectHandler,
     private readonly onPush: PushHandler,
-    private readonly onConfig: ConfigHandler,
   ) {
     makeAutoObservable<
       XtextWebSocketClient,
@@ -303,22 +299,10 @@ export default class XtextWebSocketClient {
 
     log.debug('Creating WebSocket');
 
-    (async () => {
-      const config = await fetchBackendConfig();
-      this.onConfig(config);
-      this.openWebSocketWithURL(config.webSocketURL);
-    })().catch((error) => {
-      log.error('Error while initializing connection', error);
-      const message = error instanceof Error ? error.message : String(error);
-      this.interpreter.send({
-        type: 'ERROR',
-        message,
-      });
-    });
-  }
-
-  private openWebSocketWithURL(webSocketURL: string): void {
-    this.webSocket = new WebSocket(webSocketURL, XTEXT_SUBPROTOCOL_V2);
+    this.webSocket = new WebSocket(
+      this.backendConfig.webSocketURL,
+      XTEXT_SUBPROTOCOL_V2,
+    );
     this.webSocket.addEventListener('open', this.openListener);
     this.webSocket.addEventListener('close', this.closeListener);
     this.webSocket.addEventListener('error', this.errorListener);

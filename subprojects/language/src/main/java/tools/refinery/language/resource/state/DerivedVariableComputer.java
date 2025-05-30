@@ -28,17 +28,18 @@ public class DerivedVariableComputer {
 	@Named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE)
 	private IScopeProvider scopeProvider;
 
-	public void installDerivedVariables(Problem problem, Set<String> nodeNames) {
+	public void installDerivedVariables(Problem problem) {
 		for (Statement statement : problem.getStatements()) {
 			if (statement instanceof ParametricDefinition definition) {
-				installDerivedParametricDefinitionState(definition, nodeNames);
+				installDerivedParametricDefinitionState(definition);
 			}
 		}
 	}
 
-	protected void installDerivedParametricDefinitionState(ParametricDefinition definition, Set<String> nodeNames) {
-		Set<String> knownVariables = new HashSet<>(nodeNames);
-		for (Parameter parameter : definition.getParameters()) {
+	protected void installDerivedParametricDefinitionState(ParametricDefinition definition) {
+		var parameters = definition.getParameters();
+		Set<String> knownVariables = HashSet.newHashSet(parameters.size());
+		for (Parameter parameter : parameters) {
 			String name = parameter.getName();
 			if (name != null) {
 				knownVariables.add(name);

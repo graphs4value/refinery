@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
+# SPDX-FileCopyrightText: 2023-2025 The Refinery Authors <https://refinery.tools/>
 #
 # SPDX-License-Identifier: EPL-2.0
 
 set -euo pipefail
 
-refinery_version="$(./get_version.sh)"
+refinery_version="$(./get_version.sh "version")"
 cli_distribution_name="refinery-generator-cli-${refinery_version}"
 web_distribution_name="refinery-language-web-${refinery_version}"
 
@@ -64,3 +64,7 @@ prepare_application cli generator-cli
 prepare_application web language-web
 
 rm -rf {cli,web}_dist
+
+# Prepare bundle for chat application.
+mkdir context/extracted/chat
+cp ../subprojects/chat/build/esbuild/production/index.mjs context/extracted/chat

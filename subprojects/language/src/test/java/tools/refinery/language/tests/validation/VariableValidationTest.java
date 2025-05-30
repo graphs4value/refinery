@@ -9,14 +9,10 @@ import com.google.inject.Inject;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import tools.refinery.language.tests.InjectWithRefinery;
 import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.language.validation.ProblemValidator;
-
-import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -54,34 +50,25 @@ class VariableValidationTest {
 				hasProperty("issueCode", is(ProblemValidator.SINGLETON_VARIABLE_ISSUE)))));
 	}
 
-	@ParameterizedTest
-	@MethodSource
-	void shouldBeAtomNodeTest(String declaration) {
+	@Test
+	void shouldBeAtomNodeTest() {
 		var problem = parseHelper.parse("""
+				class shouldBeAtom.
+
 				pred foo(a, b).
 
-				pred bar(a) <-> foo(a, shouldBeAtom).
-
-				%s
-				""".formatted(declaration));
+				pred bar(a) <-> foo(a, shouldBeAtom::new).
+				""");
 		var issues = problem.validate();
 		assertThat(issues, hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
 				hasProperty("issueCode", is(ProblemValidator.NODE_CONSTANT_ISSUE)),
-				hasProperty("message", containsString("shouldBeAtom"))
+				hasProperty("message", containsString("new"))
 		)));
 	}
 
-	public static Stream<Arguments> shouldBeAtomNodeTest() {
-		return Stream.of(
-				Arguments.of("node(shouldBeAtom)."),
-				Arguments.of("declare shouldBeAtom."),
-				Arguments.of("multi shouldBeAtom.")
-		);
-	}
-
 	@ParameterizedTest
-	@MethodSource("shouldBeAtomNodeTest")
+	@ValueSource(strings = {"node(shouldBeAtom).", "declare shouldBeAtom.", "multi shouldBeAtom."})
 	void shouldBeAtomNodeRuleTest(String declaration) {
 		var problem = parseHelper.parse("""
 				pred foo(a, b).

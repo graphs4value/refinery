@@ -165,6 +165,7 @@ module.exports = {
         'subprojects/*/config/*.ts',
         'subprojects/*/config/*.cjs',
         'prettier.config.cjs',
+        'subprojects/*/esbuild.mjs',
         'subprojects/*/vite.config.ts',
         'subprojects/*/vitest.config.ts',
         'subprojects/*/vitest.workspace.ts',

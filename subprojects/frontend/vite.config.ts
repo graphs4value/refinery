@@ -14,6 +14,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import { CONFIG_ENDPOINT } from './config/backendConfigVitePlugin';
 import detectDevModeOptions, {
+  API_ENDPOINT,
+  CHAT_ENDPOINT,
   XTEXT_ENDPOINT,
 } from './config/detectDevModeOptions';
 import fetchPackageMetadata from './config/fetchPackageMetadata';
@@ -55,7 +57,11 @@ const viteConfig: ViteConfig = {
       workbox: {
         globPatterns: ['**/*.{css,html,js}', ...fontsGlob],
         dontCacheBustURLsMatching: /\.(?:css|js|woff2?)$/,
-        navigateFallbackDenylist: [new RegExp(`^\\/${XTEXT_ENDPOINT}$`)],
+        navigateFallbackDenylist: [
+          new RegExp(`^\\/${API_ENDPOINT}$`),
+          new RegExp(`^\\/${XTEXT_ENDPOINT}$`),
+          new RegExp(`^\\/${CHAT_ENDPOINT}$`),
+        ],
         runtimeCaching: [
           {
             urlPattern: CONFIG_ENDPOINT,
@@ -74,6 +80,11 @@ const viteConfig: ViteConfig = {
   },
   resolve: {
     alias: {
+      '@tools.refinery/client/chat': path.join(
+        thisDir,
+        '../client-js/',
+        isDevelopment ? 'src/chat/index.ts' : 'dist/chat.mjs',
+      ),
       '@tools.refinery/client': path.join(
         thisDir,
         '../client-js/',
