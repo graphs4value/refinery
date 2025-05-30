@@ -28,6 +28,8 @@ const port = rawPort === undefined ? 1314 : parseInt(rawPort, 10);
 
 const app = express();
 
+app.disable('x-powered-by');
+
 app.use(
   pinoHttp({
     logger: log,
