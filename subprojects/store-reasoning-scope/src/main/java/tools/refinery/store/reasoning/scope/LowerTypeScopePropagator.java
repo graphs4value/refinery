@@ -46,7 +46,7 @@ class LowerTypeScopePropagator extends TypeScopePropagator {
 
 	@Override
 	public String getName() {
-		return "lower type scope bound for '%s'".formatted(getType().name());
+		return "lower type scope bound for '%s' (>= %d)".formatted(getType().name(), lowerBound);
 	}
 
 	static class Factory extends TypeScopePropagator.Factory {
