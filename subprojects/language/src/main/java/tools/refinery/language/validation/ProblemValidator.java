@@ -190,10 +190,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (variableOrNode instanceof Node node && !ProblemUtil.isAtomNode(node)) {
 			var name = node.getName();
 			var annotation = EcoreUtil2.getContainerOfType(expr, Annotation.class);
-			var location = annotation == null ? "predicates" : "annotations";
-			var message = ("Trying to reference the node '%s' in a predicate. " +
-					"Rename this node if you want to use '%s' as a variable name, or " +
-					"mark '%s' as an atom with the declaration 'atom %s.'").formatted(location, name, name, name);
+			var location = annotation == null ? "predicate" : "annotation";
+			var message = ("Only atoms can be referenced in a %s. " +
+					"Mark '%s' as an atom with the declaration 'atom %s.'").formatted(location, name, name);
 			error(message, expr, ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__ELEMENT, INSIGNIFICANT_INDEX,
 					NODE_CONSTANT_ISSUE);
 		}

@@ -15,6 +15,7 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
+import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 
 import java.util.*;
 
@@ -106,13 +107,18 @@ public class ImplicitVariableScope {
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
-		if (qualifiedName.getSegmentCount() != 1 || scope.getSingleElement(qualifiedName) != null) {
+		if (qualifiedName.getSegmentCount() != 1) {
 			return false;
 		}
 		var variableName = qualifiedName.getFirstSegment();
 		if (NamingUtil.isSingletonVariableName(crossRefString)) {
 			createSingletonVariable(variableOrNodeExpr, variableName);
 			return true;
+		}
+		var element = scope.getSingleElement(qualifiedName);
+		if (element != null && ProblemResourceDescriptionStrategy.ATOM_TRUE.equals(
+				element.getUserData(ProblemResourceDescriptionStrategy.ATOM))) {
+			return false;
 		}
 		if (!knownVariables.contains(variableName)) {
 			createVariable(variableName);

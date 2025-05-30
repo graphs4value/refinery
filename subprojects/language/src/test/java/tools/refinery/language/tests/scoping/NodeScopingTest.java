@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.refinery.language.model.problem.ImplicitVariable;
 import tools.refinery.language.tests.InjectWithRefinery;
 import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.language.tests.utils.WrappedProblem;
@@ -52,16 +53,19 @@ class NodeScopingTest {
 		assertThat(problem.assertion(1).arg(1).node(), equalTo(problem.node("b")));
 	}
 
-	@Test
-	void implicitNodeInPredicateTest() {
+	@ParameterizedTest
+	@ValueSource(strings = {"", "declare b.", "multi b."})
+	void implicitNodeInPredicateTest(String declaration) {
 		var problem = parse("""
+				%s
 				pred predicate(node a) <-> node(b).
 				predicate(b).
-				""");
+				""".formatted(declaration));
 		assertThat(problem.getResourceErrors(), empty());
-		assertThat(problem.nodeNames(), hasItems("b"));
-		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).node(), equalTo(problem.node("b")));
-		assertThat(problem.assertion(0).arg(0).node(), equalTo(problem.node("b")));
+		// Variables should take priority over references to non-atom nodes.
+		assertThat(problem.pred("predicate").conj(0).lit(0).arg(0).variableOrNode(), allOf(
+				instanceOf(ImplicitVariable.class),
+				not(equalTo(problem.assertion(0).arg(0).node()))));
 	}
 
 	@Test

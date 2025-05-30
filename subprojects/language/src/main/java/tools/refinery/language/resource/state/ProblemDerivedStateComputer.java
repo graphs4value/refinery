@@ -64,8 +64,8 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		if (preLinkingPhase) {
 			return;
 		}
-		Set<String> nodeNames = installDerivedNodes(problem);
-		derivedVariableComputer.installDerivedVariables(problem, nodeNames);
+		installDerivedNodes(problem);
+		derivedVariableComputer.installDerivedVariables(problem);
 	}
 
 	protected void installDerivedDeclarationState(Problem problem, Adapter adapter) {
@@ -142,7 +142,7 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		}
 	}
 
-	protected Set<String> installDerivedNodes(Problem problem) {
+	protected void installDerivedNodes(Problem problem) {
 		var collector = nodeNameCollectorProvider.get();
 		collector.collectNodeNames(problem);
 		Set<String> nodeNames = collector.getNodeNames();
@@ -151,7 +151,6 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			var graphNode = createNode(nodeName);
 			graphNodes.add(graphNode);
 		}
-		return nodeNames;
 	}
 
 	protected Node createNode(String name) {
