@@ -67,6 +67,7 @@ export default function detectDevModeOptions(): DevModeOptions {
   const chat = detectListenOptions('CHAT', '127.0.0.1', 1314);
   const chatURL = listenURL(chat);
   const publicAddress = detectListenOptions('PUBLIC', listen.host, listen.port);
+  const publicURL = listenURL(publicAddress);
 
   if (listen.secure) {
     // Since nodejs 20, we'd need to pass in HTTPS options manually.
@@ -74,8 +75,9 @@ export default function detectDevModeOptions(): DevModeOptions {
   }
 
   const backendConfig: BackendConfig = {
-    apiBase: `${listenURL(publicAddress)}/${API_ENDPOINT}/v1`,
+    apiBase: `${publicURL}/${API_ENDPOINT}/v1`,
     webSocketURL: `${listenURL(publicAddress, 'ws')}/${XTEXT_ENDPOINT}`,
+    chatURL: `${publicURL}/${CHAT_ENDPOINT}/v1`,
   };
 
   return {

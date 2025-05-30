@@ -44,6 +44,7 @@ import {
 } from '../utils/fileIO';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
+import type { BackendConfigWithDefaults } from '../xtext/fetchBackendConfig';
 import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
@@ -123,6 +124,7 @@ export default class EditorStore {
     initialValue: string,
     initialVisibility: Record<string, Visibility> | undefined,
     pwaStore: PWAStore,
+    public readonly backendConfig: BackendConfigWithDefaults,
     onUpdate: (text: string, visibility: Record<string, Visibility>) => void,
   ) {
     this.id = nanoid();
@@ -136,9 +138,14 @@ export default class EditorStore {
         if (this.disposed) {
           return;
         }
-        this.client = new LazyXtextClient(this, pwaStore, (text) => {
-          onUpdate(text, this.graph.visibilityObject);
-        });
+        this.client = new LazyXtextClient(
+          this,
+          pwaStore,
+          backendConfig,
+          (text) => {
+            onUpdate(text, this.graph.visibilityObject);
+          },
+        );
         this.client.start();
       });
     })().catch((err: unknown) => {

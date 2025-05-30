@@ -13,9 +13,13 @@ public class BackendConfig {
 	@SerializedName("webSocketURL")
 	private String webSocketUrl;
 
-	public BackendConfig(String apiBase, String webSocketUrl) {
+	@SerializedName("chatURL")
+	private String chatUrl;
+
+	public BackendConfig(String apiBase, String webSocketUrl, String chatUrl) {
 		this.apiBase = apiBase;
 		this.webSocketUrl = webSocketUrl;
+		this.chatUrl = chatUrl;
 	}
 
 	public String getWebSocketUrl() {
@@ -32,5 +36,13 @@ public class BackendConfig {
 
 	public void setApiBase(String apiBase) {
 		this.apiBase = apiBase;
+	}
+
+	public String getChatUrl() {
+		return chatUrl;
+	}
+
+	public void setChatUrl(String chatUrl) {
+		this.chatUrl = chatUrl;
 	}
 }

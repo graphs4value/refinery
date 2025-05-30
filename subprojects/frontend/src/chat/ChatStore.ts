@@ -25,29 +25,47 @@ export default class ChatStore {
 
   running = false;
 
+  editorStore: EditorStore | undefined;
+
   private abortController: AbortController | undefined;
 
-  private readonly client: RefineryChat;
+  private client: RefineryChat | undefined;
 
   constructor() {
-    this.client = new RefineryChat({
-      baseURL: `${window.origin}/chat/v1`,
-    });
     makeAutoObservable<ChatStore, 'abortController' | 'client'>(this, {
       abortController: false,
       client: false,
     });
   }
 
+  setEditorStore(editorStore: EditorStore | undefined) {
+    this.editorStore = editorStore;
+    const baseURL = editorStore?.backendConfig.chatURL;
+    if (baseURL === undefined) {
+      this.client = undefined;
+      return;
+    }
+    this.client = new RefineryChat({ baseURL });
+  }
+
   setMessage(value: string) {
     this.message = value;
   }
 
-  canGenerate(editorStore: EditorStore): boolean {
-    return !this.running && this.message !== '' && editorStore.errorCount === 0;
+  get canGenerate(): boolean {
+    return (
+      this.editorStore !== undefined &&
+      this.client !== undefined &&
+      !this.running &&
+      this.message !== '' &&
+      this.editorStore.errorCount === 0
+    );
   }
 
-  generate(editorStore: EditorStore) {
+  generate() {
+    if (this.editorStore === undefined) {
+      return;
+    }
     this.pushLog({
       role: 'user',
       content: this.message,
@@ -56,9 +74,12 @@ export default class ChatStore {
     this.abortController = new AbortController();
     const signal = this.abortController.signal;
     (async () => {
+      if (this.editorStore === undefined || this.client === undefined) {
+        return;
+      }
       const result = await this.client.textToModel(
         {
-          metamodel: { source: editorStore.state.sliceDoc() },
+          metamodel: { source: this.editorStore.state.sliceDoc() },
           text: this.message,
           format: {
             source: { enabled: true },
@@ -79,15 +100,15 @@ export default class ChatStore {
         content: 'Successfully generated model',
       });
       const uuid = nanoid();
-      editorStore.addGeneratedModel(uuid, 0);
+      this.editorStore.addGeneratedModel(uuid, 0);
       if (result.json !== undefined) {
-        editorStore.setGeneratedModelSemantics(
+        this.editorStore.setGeneratedModelSemantics(
           uuid,
           result.json,
           result.source,
         );
       } else {
-        editorStore.setGeneratedModelError(uuid, 'No JSON in AI response');
+        this.editorStore.setGeneratedModelError(uuid, 'No JSON in AI response');
       }
     })()
       .catch((error) => {

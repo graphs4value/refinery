@@ -67,14 +67,14 @@ public class ServerLauncher {
 	private final Server server;
 
 	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String apiBase,
-                          String webSocketUrl) {
+                          String webSocketUrl, String chatBase) {
 		server = new Server(bindAddress);
 		((QueuedThreadPool) server.getThreadPool()).setName("jetty");
 		var handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
 		handler.setContextPath("/");
 		addProblemServlet(handler, allowedOrigins);
 		addApiServlet(handler);
-		addBackendConfigServlet(handler, apiBase, webSocketUrl);
+		addBackendConfigServlet(handler, apiBase, webSocketUrl, chatBase);
 		addHealthCheckServlet(handler);
 		var baseResource = getBaseResource();
 		if (baseResource != null) {
@@ -134,10 +134,12 @@ public class ServerLauncher {
 		handler.addServlet(apiServletHolder, "/api/*");
 	}
 
-	private void addBackendConfigServlet(ServletContextHandler handler, String apiBase, String webSocketUrl) {
+	private void addBackendConfigServlet(ServletContextHandler handler, String apiBase, String webSocketUrl,
+										 String chatBase) {
 		var backendConfigServletHolder = new ServletHolder(BackendConfigServlet.class);
 		backendConfigServletHolder.setInitParameter(BackendConfigServlet.API_BASE_INIT_PARAM, apiBase);
 		backendConfigServletHolder.setInitParameter(BackendConfigServlet.WEBSOCKET_URL_INIT_PARAM, webSocketUrl);
+		backendConfigServletHolder.setInitParameter(BackendConfigServlet.CHAT_BASE_INIT_PARAM, chatBase);
 		handler.addServlet(backendConfigServletHolder, "/config.json");
 	}
 
@@ -207,7 +209,8 @@ public class ServerLauncher {
 			var allowedOrigins = getAllowedOrigins();
 			var apiBase = getApiBase();
 			var webSocketUrl = getWebSocketUrl();
-			var serverLauncher = new ServerLauncher(bindAddress, allowedOrigins, apiBase, webSocketUrl);
+			var chatBase = getChatBase();
+			var serverLauncher = new ServerLauncher(bindAddress, allowedOrigins, apiBase, webSocketUrl, chatBase);
 			serverLauncher.start();
 		} catch (Exception exception) {
 			LOG.error("Fatal server error", exception);
@@ -289,7 +292,7 @@ public class ServerLauncher {
 		}
 		int port = getPublicPort();
 		var scheme = port == HTTPS_DEFAULT_PORT ? "https" : "http";
-		return java.lang.String.format("%s://%s:%d/api/v1", scheme, publicHost, port);
+		return String.format("%s://%s:%d/api/v1", scheme, publicHost, port);
 	}
 
 	private static String getWebSocketUrl() {
@@ -304,5 +307,9 @@ public class ServerLauncher {
 		int port = getPublicPort();
 		var scheme = port == HTTPS_DEFAULT_PORT ? "wss" : "ws";
 		return java.lang.String.format("%s://%s:%d/xtext-service", scheme, publicHost, port);
+	}
+
+	private static String getChatBase() {
+		return System.getenv("REFINERY_CHAT_BASE");
 	}
 }

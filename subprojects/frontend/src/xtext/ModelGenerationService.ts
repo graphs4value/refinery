@@ -18,11 +18,16 @@ const log = getLogger('xtext.ModelGenerationService');
 const INITIAL_RANDOM_SEED = 1;
 
 export default class ModelGenerationService {
+  private readonly client: Refinery | undefined;
   private nextRandomSeed = INITIAL_RANDOM_SEED;
   private abortController: AbortController | undefined;
-  private client: Refinery | undefined;
 
-  constructor(private readonly store: EditorStore) {}
+  constructor(
+    private readonly store: EditorStore,
+    { apiBase }: BackendConfigWithDefaults,
+  ) {
+    this.client = new Refinery({ baseURL: apiBase });
+  }
 
   onTransaction(transaction: Transaction): void {
     if (transaction.docChanged) {
@@ -33,11 +38,6 @@ export default class ModelGenerationService {
   onDisconnect(): void {
     this.store.modelGenerationCancelled();
     this.resetRandomSeed();
-    this.client = undefined;
-  }
-
-  onConfig({ apiBase }: BackendConfigWithDefaults): void {
-    this.client = new Refinery({ baseURL: apiBase });
   }
 
   start(randomSeed?: number): void {

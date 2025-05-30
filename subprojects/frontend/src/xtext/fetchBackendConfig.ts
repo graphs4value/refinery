@@ -6,8 +6,9 @@
 
 import BackendConfig, { ENDPOINT } from './BackendConfig';
 
-export type BackendConfigWithDefaults = {
-  [P in keyof BackendConfig]-?: NonNullable<BackendConfig[P]>;
+export type BackendConfigWithDefaults = BackendConfig & {
+  apiBase: NonNullable<BackendConfig['apiBase']>;
+  webSocketURL: NonNullable<BackendConfig['webSocketURL']>;
 };
 
 export default async function fetchBackendConfig(): Promise<BackendConfigWithDefaults> {
@@ -16,6 +17,7 @@ export default async function fetchBackendConfig(): Promise<BackendConfigWithDef
   const rawConfig = (await response.json()) as unknown;
   const parsedConfig = BackendConfig.parse(rawConfig);
   return {
+    ...parsedConfig,
     apiBase: parsedConfig.apiBase ?? `${window.origin}/api/v1`,
     webSocketURL:
       parsedConfig.webSocketURL ??

@@ -120,9 +120,11 @@ const PaneButton = observer(function PaneButton({
 
 function PaneButtons({
   themeStore,
+  hasChat,
   hideLabel,
 }: {
   themeStore: ThemeStore;
+  hasChat: boolean;
   hideLabel?: boolean;
 }): React.ReactElement {
   const hideLabelOrDefault = hideLabel ?? false;
@@ -152,15 +154,20 @@ function PaneButtons({
         icon={<TableChartIcon fontSize="small" />}
         hideLabel={hideLabelOrDefault}
       />
-      <PaneButton
-        themeStore={themeStore}
-        value="chat"
-        label="AI"
-        icon={
-          <AutoAwesomeIcon fontSize="small" sx={{ transform: 'scaleX(-1)' }} />
-        }
-        hideLabel={hideLabelOrDefault}
-      />
+      {hasChat && (
+        <PaneButton
+          themeStore={themeStore}
+          value="chat"
+          label="AI"
+          icon={
+            <AutoAwesomeIcon
+              fontSize="small"
+              sx={{ transform: 'scaleX(-1)' }}
+            />
+          }
+          hideLabel={hideLabelOrDefault}
+        />
+      )}
     </PaneButtonGroup>
   );
 }

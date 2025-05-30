@@ -95,6 +95,10 @@ function ChatArea({
 }): React.ReactElement {
   const chatStore = useLocalObservable(() => new ChatStore());
 
+  useEffect(() => {
+    chatStore.setEditorStore(editorStore);
+  }, [chatStore, editorStore]);
+
   if (editorStore === undefined) {
     return <Loading />;
   }
@@ -132,8 +136,8 @@ function ChatArea({
         ) : (
           <Tooltip title="Send message">
             <IconButton
-              onClick={() => chatStore.generate(editorStore)}
-              disabled={!chatStore.canGenerate(editorStore)}
+              onClick={() => chatStore.generate()}
+              disabled={!chatStore.canGenerate}
             >
               <SendIcon />
             </IconButton>
