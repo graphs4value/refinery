@@ -7,24 +7,21 @@ package tools.refinery.logic.valuation;
 
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.substitution.Substitution;
-import tools.refinery.logic.term.AnyDataVariable;
 import tools.refinery.logic.term.DataVariable;
+import tools.refinery.logic.term.NodeVariable;
 
 import java.util.Map;
-import java.util.Set;
 
 public interface Valuation {
 	<T> T getValue(DataVariable<T> variable);
+
+	Integer getNodeId(NodeVariable nodeVariable);
 
 	default Valuation substitute(@Nullable Substitution substitution) {
 		if (substitution == null) {
 			return this;
 		}
 		return new SubstitutedValuation(this, substitution);
-	}
-
-	default Valuation restrict(Set<? extends AnyDataVariable> allowedVariables) {
-		return new RestrictedValuation(this, Set.copyOf(allowedVariables));
 	}
 
 	static ValuationBuilder builder() {

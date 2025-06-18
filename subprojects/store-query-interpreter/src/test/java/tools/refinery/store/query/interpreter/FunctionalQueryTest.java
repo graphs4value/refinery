@@ -6,6 +6,7 @@
 package tools.refinery.store.query.interpreter;
 
 import tools.refinery.interpreter.matchers.backend.QueryEvaluationHint;
+import tools.refinery.logic.term.NodeIdTerm;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.ModelQueryAdapter;
@@ -570,6 +571,40 @@ class FunctionalQueryTest {
 					Tuple.of(0), Optional.of(25),
 					Tuple.of(1), Optional.of(32),
 					Tuple.of(2), Optional.of(36),
+					Tuple.of(3), Optional.empty()
+			), queryResultSet);
+		}
+	}
+
+	@QueryEngineTest
+	void nodeIdTermTest(QueryEvaluationHint hint) {
+		var query = Query.of("Query", Integer.class, (builder, p1, output) -> builder
+				.clause(
+						personView.call(p1),
+						output.assign(mul(constant(2), new NodeIdTerm(p1)))
+				));
+
+		var store = ModelStore.builder()
+				.symbols(person)
+				.with(QueryInterpreterAdapter.builder()
+						.defaultHint(hint)
+						.queries(query))
+				.build();
+
+		try (var model = store.createEmptyModel()) {
+			var personInterpretation = model.getInterpretation(person);
+			var queryEngine = model.getAdapter(ModelQueryAdapter.class);
+			var queryResultSet = queryEngine.getResultSet(query);
+
+			personInterpretation.put(Tuple.of(0), true);
+			personInterpretation.put(Tuple.of(1), true);
+			personInterpretation.put(Tuple.of(2), true);
+
+			queryEngine.flushChanges();
+			assertNullableResults(Map.of(
+					Tuple.of(0), Optional.of(0),
+					Tuple.of(1), Optional.of(2),
+					Tuple.of(2), Optional.of(4),
 					Tuple.of(3), Optional.empty()
 			), queryResultSet);
 		}
