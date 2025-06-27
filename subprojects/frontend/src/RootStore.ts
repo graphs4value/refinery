@@ -83,13 +83,16 @@ export default class RootStore {
     this.compressor.decompressInitial();
   }
 
-  private setInitialValue(
+  setInitialValue(
     initialValue: string,
     visibility: Record<string, Visibility> | undefined,
   ): void {
-    this.initialValue = initialValue;
-    this.initialVisibility = visibility;
+    runInAction(() => {
+      this.initialValue = initialValue;
+      this.initialVisibility = visibility;
+    });
     if (
+      this.initialValue !== undefined &&
       this.backendConfig !== undefined &&
       this.editorStoreClass !== undefined
     ) {

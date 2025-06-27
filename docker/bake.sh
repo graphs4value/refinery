@@ -12,7 +12,7 @@ export REFINERY_VERSION
 NODE_VERSION="$(./get_version.sh "frontend.nodeVersion")"
 export NODE_VERSION
 
-export ALPINE_VERSION="3.20"
+export ALPINE_VERSION="3.21"
 
 export REFINERY_PUSH="${1-false}"
 
