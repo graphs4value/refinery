@@ -8,12 +8,12 @@
  *******************************************************************************/
 package tools.refinery.interpreter.matchers.psystem.queries;
 
+import tools.refinery.interpreter.matchers.psystem.PBody;
+
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import tools.refinery.interpreter.matchers.psystem.PBody;
 
 /**
  *
@@ -88,6 +88,18 @@ public class PDisjunction {
         }
         return foundQueries;
     }
+
+	/**
+	 * Determines whether the query transitively refers to itself.
+	 * Note that even if false is returned,
+	 *  the query may refer to another query that is recursive, but not mutually recursive with this query.
+	 *
+	 * @return true if the query transitively calls itself.
+	 * @since 2.10
+	 */
+	public boolean isRecursive() {
+		return getAllReferredQueries().contains(this.getQuery());
+	}
 
     /**
      * Decides whether a disjunction is mutable. A disjunction is mutable if all its contained bodies are mutable.

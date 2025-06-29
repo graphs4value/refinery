@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Internal representation of a query / graph pattern (using a constraint system formalism),
  * to be interpreted by a query evaluator ({@link IQueryBackend}).
- * End-users of Refinery Intepreter should access a query as an IQuerySpecification instead.
+ * End-users of Refinery Interpreter should access a query as an IQuerySpecification instead.
  *
  * <p>
  * PQuerys are definitions of queries usable inside pattern descriptions. Such description always has (a non-null) name. The query
@@ -87,6 +87,17 @@ public interface PQuery extends PQueryHeader, PTraceable {
      * @return a non-null, but possibly empty list of query definitions
      */
     Set<PQuery> getAllReferredQueries();
+
+	/**
+	 * Determines whether the query transitively refers to itself. Add commentMore actions
+	 * Note that even if false is returned,
+	 *  the query may refer to another query that is recursive, but not mutually recursive with this query.
+	 *
+	 * @return true if the query transitively calls itself.
+	 *
+	 *  @since 2.10
+	 */
+	public boolean isRecursive();
 
     /**
      * Returns the initialization status of the definition

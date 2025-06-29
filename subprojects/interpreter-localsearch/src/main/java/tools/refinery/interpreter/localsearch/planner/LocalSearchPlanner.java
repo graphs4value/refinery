@@ -23,6 +23,7 @@ import tools.refinery.interpreter.matchers.psystem.basicdeferred.ExportedParamet
 import tools.refinery.interpreter.matchers.psystem.queries.PParameter;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
 import tools.refinery.interpreter.matchers.psystem.rewriters.*;
+import tools.refinery.interpreter.matchers.util.Preconditions;
 
 import java.util.*;
 
@@ -96,7 +97,14 @@ public class LocalSearchPlanner implements ILocalSearchPlanner {
      */
     @Override
     public Collection<SearchPlanForBody> plan(PQuery querySpec, Set<PParameter> boundParameters) {
-        // 1. Preparation
+		// 0. Precondition check
+		Preconditions.checkState(
+				!querySpec.isRecursive(),
+				"Recursive queries are not supported (consider using the incremental backend instead), can't produce plan for query \"%s\"",
+				querySpec.getFullyQualifiedName()
+		);
+
+		// 1. Preparation
         preprocessor.setTraceCollector(configuration.getTraceCollector());
         Set<PBody> normalizedBodies = preprocessor.rewrite(querySpec.getDisjunctBodies()).getBodies();
 

@@ -8,21 +8,9 @@
  *******************************************************************************/
 package tools.refinery.interpreter.matchers.psystem.rewriters;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import tools.refinery.interpreter.matchers.psystem.basicenumerables.PositivePatternCall;
 import tools.refinery.interpreter.matchers.psystem.PBody;
 import tools.refinery.interpreter.matchers.psystem.PConstraint;
+import tools.refinery.interpreter.matchers.psystem.basicenumerables.PositivePatternCall;
 import tools.refinery.interpreter.matchers.psystem.queries.PDisjunction;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery;
 import tools.refinery.interpreter.matchers.psystem.queries.PQuery.PQueryStatus;
@@ -30,6 +18,8 @@ import tools.refinery.interpreter.matchers.psystem.rewriters.IConstraintFilter.A
 import tools.refinery.interpreter.matchers.psystem.rewriters.IConstraintFilter.ExportedParameterFilter;
 import tools.refinery.interpreter.matchers.util.Preconditions;
 import tools.refinery.interpreter.matchers.util.Sets;
+
+import java.util.*;
 
 /**
  * This rewriter class holds the query flattening logic
@@ -116,8 +106,17 @@ public class PQueryFlattener extends PDisjunctionRewriter {
                     if (constraint instanceof PositivePatternCall) {
                         PositivePatternCall positivePatternCall = (PositivePatternCall) constraint;
                         if (flattenCallPredicate.shouldFlatten(positivePatternCall)) {
-                            // If the above preconditions meet, the call should be flattened
-                            PDisjunction calledDisjunction = positivePatternCall.getReferredQuery().getDisjunctBodies();
+							PQuery referredQuery = positivePatternCall.getReferredQuery();
+							// Check for recursion - cannot flatten recursive queries
+							if (referredQuery.isRecursive()) {
+								throw new RewriterException(
+										"Recursive queries are not supported (consider using the incremental backend instead), can't flatten query \"{1}\" due to recursion at \"{2}\"",
+										new String[] { rootDisjunction.getQuery().getFullyQualifiedName(), referredQuery.getFullyQualifiedName() },
+										"Unsupported recursion in referred query", rootDisjunction.getQuery());
+							}
+
+							// If the above preconditions meet, the call should be flattened
+							PDisjunction calledDisjunction = referredQuery.getDisjunctBodies();
                             stack.push(calledDisjunction);
                             list.add(calledDisjunction);
                         }
@@ -190,8 +189,6 @@ public class PQueryFlattener extends PDisjunctionRewriter {
      *
      * @param pBody
      *            the body to flatten
-     * @param flattenedDisjunctions
-     *            the
      * @param flattenedCalls
      * @return
      */
