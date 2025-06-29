@@ -150,24 +150,26 @@ public class QueryCompiler {
 			case FALSE -> literals.add(BooleanLiteral.FALSE);
 			default -> throw new TracedException(logicConstant, "Unsupported literal");
 			}
+			return;
 		}
 		case Atom atom -> {
 			var constraint = getConstraint(atom);
 			var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
 			literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
 					argumentList.arguments()));
+			return;
 		}
 		case NegationExpr negationExpr -> {
 			var body = negationExpr.getBody();
 			var extractedInner = ExtractedModalExpr.of(body);
-			if (!(extractedInner.body() instanceof Atom atom)) {
-				throw new TracedException(extractedInner.body(), "Cannot negate literal");
+			if (extractedInner.body() instanceof Atom atom) {
+				var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
+				var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
+				var innerModality = extractedInner.modality().merge(outerModality.negate());
+				var constraint = getConstraint(atom);
+				literals.add(createNegationLiteral(innerModality, constraint, argumentList));
+				return;
 			}
-			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-			var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
-			var innerModality = extractedInner.modality().merge(outerModality.negate());
-			var constraint = getConstraint(atom);
-			literals.add(createNegationLiteral(innerModality, constraint, argumentList));
 		}
 		case ComparisonExpr comparisonExpr -> {
 			FixedType rightType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getRight());
@@ -182,6 +184,7 @@ public class QueryCompiler {
 							comparisonExpr, "Unsupported operator");
 				};
 				literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
+				return;
 			}
 		}
 		default -> {
