@@ -178,8 +178,8 @@ public class QueryCompiler {
 				var argumentList = toArgumentList(comparisonExpr,
 						List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
 				boolean positive = switch (comparisonExpr.getOp()) {
-					case NODE_EQ -> true;
-					case NODE_NOT_EQ -> false;
+					case EQ -> true;
+					case NOT_EQ -> false;
 					default -> throw new TracedException(
 							comparisonExpr, "Unsupported operator");
 				};

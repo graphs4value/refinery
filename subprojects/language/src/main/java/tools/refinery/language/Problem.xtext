@@ -159,12 +159,16 @@ BooleanExpr returns Expr:
 	op=BooleanBinaryOp right=ComparisonExpr)*;
 
 enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="===" | NOT_EQ="!==" |
-	IN="in" | NODE_EQ="==" | NODE_NOT_EQ="!=";
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=";
+
+enum LatticeComparisonOp returns LatticeBinaryOp:
+	EQ="===" | NOT_EQ="!==" | SUBSET="<:" | SUPERSET=":>";
 
 ComparisonExpr returns Expr:
 	LatticeExpr ({ComparisonExpr.left=current}
-	op=ComparisonOp right=LatticeExpr)*;
+	op=ComparisonOp right=LatticeExpr |
+	{LatticeBinaryExpr.left=current}
+	op=LatticeComparisonOp right=LatticeExpr)*;
 
 enum LatticeBinaryOp:
 	MEET="/\\" | JOIN="\\/";

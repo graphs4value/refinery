@@ -7,6 +7,7 @@ package tools.refinery.language.expressions;
 
 import tools.refinery.language.model.problem.BinaryOp;
 import tools.refinery.language.model.problem.ComparisonOp;
+import tools.refinery.language.model.problem.LatticeBinaryOp;
 import tools.refinery.language.model.problem.UnaryOp;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
@@ -26,19 +27,30 @@ public interface TermInterpreter {
 
 	Optional<AnyTerm> createRange(DataExprType type, AnyTerm left, AnyTerm right);
 
-	Optional<AnyTerm> createBinaryOperator(BinaryOp op, DataExprType type, AnyTerm left, AnyTerm right);
+	Optional<AnyTerm> createUnaryOperator(UnaryOp op, DataExprType type, AnyTerm body);
+
+	Optional<AnyTerm> createBinaryOperator(BinaryOp op, DataExprType leftType, DataExprType rightType, AnyTerm left,
+										   AnyTerm right);
 
 	Optional<DataExprType> getUnaryOperationType(UnaryOp op, DataExprType type);
 
-	boolean isComparisonSupported(DataExprType type);
+	boolean isComparable(DataExprType type);
 
 	Optional<Term<TruthValue>> createComparison(ComparisonOp op, DataExprType type, AnyTerm left, AnyTerm right);
 
-	boolean isRangeSupported(DataExprType type);
+	Optional<AnyTerm> createLatticeOperator(LatticeBinaryOp op, DataExprType type, AnyTerm left, AnyTerm right);
 
 	Optional<DataExprType> getBinaryOperatorType(BinaryOp op, DataExprType leftType, DataExprType rightType);
 
 	boolean isCastSupported(DataExprType fromType, DataExprType toType);
 
 	Optional<DataExprType> getAggregationType(AggregatorName aggregator, DataExprType type);
+
+	Optional<AnyTerm> createUnknown(DataExprType type);
+
+	Optional<AnyTerm> createError(DataExprType type);
+
+	Optional<AnyTerm> createNegativeInfinity(DataExprType type);
+
+	Optional<AnyTerm> createPositiveInfinity(DataExprType type);
 }

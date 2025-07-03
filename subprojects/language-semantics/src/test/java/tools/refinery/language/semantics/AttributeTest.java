@@ -151,7 +151,7 @@ public class AttributeTest {
 				  	Human(Alice).
 				  	Pig(Piglet).
 
-				  	pred child(Human h) <-> age(h) in 0..17.
+				  	pred child(Human h) <-> age(h) >= 0 && age(h) <= 17.
 				""");
 		assertThat(parsedProblem.getResourceErrors(), empty());
 		var problem = parsedProblem.problem();
@@ -190,7 +190,7 @@ public class AttributeTest {
 				  	Human(Alice).
 				  	Pig(Piglet).
 
-				  	pred child(Human h) <-> age(h) <= 18-1.
+				  	pred child(Human h) <-> age(h) <= 18 - 1.
 				""");
 		assertThat(parsedProblem.getResourceErrors(), empty());
 		var problem = parsedProblem.problem();
@@ -231,7 +231,7 @@ public class AttributeTest {
 
 				  	age(Alice): 2 * 9.
 
-				  	pred child(Human h) <-> age(h) in 0..17.
+				  	pred child(Human h) <-> age(h) >= 0 && age(h) <= 17.
 				""");
 		assertThat(parsedProblem.getResourceErrors(), empty());
 		var problem = parsedProblem.problem();

@@ -42,7 +42,7 @@ const parserWithMetadata = parser.configure({
       'shadow propagation decision concretization': t.modifier,
       'true false unknown error': t.keyword,
       'candidate may must': t.operatorKeyword,
-      'count in is': t.operatorKeyword,
+      'count is': t.operatorKeyword,
       NotOp: t.operator,
       UnknownOp: t.operator,
       OrOp: t.separator,

@@ -7,6 +7,7 @@ import tools.refinery.logic.term.intinterval.Bound;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.intinterval.IntIntervalDomain;
 import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStore;
@@ -37,7 +38,8 @@ class AttributeExampleTest {
 	private final Symbol<TruthValue> personStorage = Symbol.of("Person", 1, TruthValue.class, TruthValue.UNKNOWN);
 	private final PartialRelation vehicle = new PartialRelation("Vehicle", 1);
 	private final Symbol<TruthValue> vehicleStorage = Symbol.of("Vehicle", 1, TruthValue.class, TruthValue.UNKNOWN);
-	private final PartialFunction<IntInterval, Integer> age = new PartialFunction<>("age", 1, IntIntervalDomain.INSTANCE);
+	private final PartialFunction<IntInterval, Integer> age = new PartialFunction<>("age", 1,
+			IntIntervalDomain.INSTANCE);
 	private final PartialRelation adult = new PartialRelation("adult", 1);
 	private final PartialRelation canPlayBoardgames = new PartialRelation("canPlayBoardgames", 1);
 	private final PartialRelation younger = new PartialRelation("younger", 2);
@@ -98,12 +100,15 @@ class AttributeExampleTest {
 						.query(Query.of("canPlayBoardgames", (builder, p1) -> builder
 								.clause(
 										person.call(p1),
-										partialCheck(in(age.call(p1), constant(IntInterval.of(6,99))))
+										partialCheck(TruthValueTerms.and(
+												greaterEq(age.call(p1), constant(IntInterval.of(6))),
+												lessEq(age.call(p1), constant(IntInterval.of(99)))
+										))
 								)
 						))
 				)
 				.with(PartialRelationTranslator.of(younger)
-						.query(Query.of("younger", (builder, p1,p2) -> builder
+						.query(Query.of("younger", (builder, p1, p2) -> builder
 								.clause(
 										person.call(p1),
 										person.call(p2),
@@ -126,7 +131,7 @@ class AttributeExampleTest {
 						.put(Tuple.of(3), TruthValue.TRUE)
 						.put(Tuple.of(4), TruthValue.TRUE)
 						.put(Tuple.of(5), TruthValue.TRUE)
-						.put(Tuple.of(6),TruthValue.TRUE)
+						.put(Tuple.of(6), TruthValue.TRUE)
 						.put(Tuple.of(7), TruthValue.TRUE)
 						.put(Tuple.of(8), TruthValue.TRUE)
 				)
@@ -139,9 +144,10 @@ class AttributeExampleTest {
 						.put(Tuple.of(1), IntInterval.of(32))
 						.put(Tuple.of(4), IntInterval.of(16))
 						.put(Tuple.of(8), IntInterval.of(5))
-						.put(Tuple.of(5), IntInterval.of(5,10))
-						.put(Tuple.of(6), IntInterval.of(6,Bound.Infinite.POSITIVE_INFINITY))
-						.put(Tuple.of(7), IntInterval.of(Bound.Infinite.NEGATIVE_INFINITY, Bound.Infinite.POSITIVE_INFINITY))
+						.put(Tuple.of(5), IntInterval.of(5, 10))
+						.put(Tuple.of(6), IntInterval.of(6, Bound.Infinite.POSITIVE_INFINITY))
+						.put(Tuple.of(7), IntInterval.of(Bound.Infinite.NEGATIVE_INFINITY,
+								Bound.Infinite.POSITIVE_INFINITY))
 				)
 				.build())) {
 
@@ -151,8 +157,9 @@ class AttributeExampleTest {
 		var vehicleInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, vehicle);
 		var adultInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, adult);
 		var youngerInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, younger);
-		var canPlayBoardgamesInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, canPlayBoardgames);
-		var ageInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL,age);
+		var canPlayBoardgamesInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL,
+				canPlayBoardgames);
+		var ageInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.PARTIAL, age);
 
 		assertThat(personInterpretation.get(Tuple.of(0)), is(TruthValue.UNKNOWN));
 		assertThat(personInterpretation.get(Tuple.of(1)), is(TruthValue.TRUE));
@@ -179,17 +186,17 @@ class AttributeExampleTest {
 		assertThat(adultInterpretation.get(Tuple.of(2)), is(TruthValue.FALSE));
 		assertThat(adultInterpretation.get(Tuple.of(3)), is(TruthValue.ERROR));
 
-		assertThat(youngerInterpretation.get(Tuple.of(1,0)), is(TruthValue.UNKNOWN));
-		assertThat(youngerInterpretation.get(Tuple.of(1,3)), is(TruthValue.ERROR));
-		assertThat(youngerInterpretation.get(Tuple.of(1,2)), is(TruthValue.FALSE));
-		assertThat(youngerInterpretation.get(Tuple.of(1,4)), is(TruthValue.FALSE));
-		assertThat(youngerInterpretation.get(Tuple.of(4,1)), is(TruthValue.TRUE));
-		assertThat(youngerInterpretation.get(Tuple.of(6,5)), is(TruthValue.UNKNOWN));
+		assertThat(youngerInterpretation.get(Tuple.of(1, 0)), is(TruthValue.UNKNOWN));
+		assertThat(youngerInterpretation.get(Tuple.of(1, 3)), is(TruthValue.ERROR));
+		assertThat(youngerInterpretation.get(Tuple.of(1, 2)), is(TruthValue.FALSE));
+		assertThat(youngerInterpretation.get(Tuple.of(1, 4)), is(TruthValue.FALSE));
+		assertThat(youngerInterpretation.get(Tuple.of(4, 1)), is(TruthValue.TRUE));
+		assertThat(youngerInterpretation.get(Tuple.of(6, 5)), is(TruthValue.UNKNOWN));
 
 		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(0)), is(TruthValue.UNKNOWN));
 		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(1)), is(TruthValue.TRUE));
 		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(2)), is(TruthValue.FALSE));
-		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(3)), is(TruthValue.FALSE));
+		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(3)), is(TruthValue.ERROR));
 		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(4)), is(TruthValue.TRUE));
 		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(5)), is(TruthValue.UNKNOWN));
 		assertThat(canPlayBoardgamesInterpretation.get(Tuple.of(6)), is(TruthValue.UNKNOWN));

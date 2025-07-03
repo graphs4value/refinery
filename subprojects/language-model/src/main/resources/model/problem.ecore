@@ -154,9 +154,6 @@
     <eLiterals name="GREATER_EQ" value="3"/>
     <eLiterals name="EQ" value="4"/>
     <eLiterals name="NOT_EQ" value="5"/>
-    <eLiterals name="IN" value="6"/>
-    <eLiterals name="NODE_EQ" value="9"/>
-    <eLiterals name="NODE_NOT_EQ" value="10"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
     <eLiterals name="DEFAULT" value="1"/>
@@ -261,6 +258,10 @@
   <eClassifiers xsi:type="ecore:EEnum" name="LatticeBinaryOp">
     <eLiterals name="MEET"/>
     <eLiterals name="JOIN" value="1"/>
+    <eLiterals name="EQ" value="2"/>
+    <eLiterals name="NOT_EQ" value="3"/>
+    <eLiterals name="SUBSET" value="5"/>
+    <eLiterals name="SUPERSET" value="6"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CastExpr" eSuperTypes="#//Expr">
     <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//Expr" containment="true"/>

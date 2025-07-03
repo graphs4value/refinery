@@ -122,11 +122,9 @@ public class MetadataCreator {
 		for (var entry : relationTrace.entrySet()) {
 			var relation = entry.getKey();
 			var partialRelation = entry.getValue();
-			System.out.println(relation);
 			if (relation instanceof ReferenceDeclaration referenceDeclaration &&
 					referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
-				// it is an attribute (most likely)
-
+				// TODO Handle attributes
 			}
 			else{
 				var metadata = getRelationMetadata(relation, partialRelation.asPartialRelation());

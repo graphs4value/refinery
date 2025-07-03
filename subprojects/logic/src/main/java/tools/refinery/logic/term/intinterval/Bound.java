@@ -1,13 +1,13 @@
 package tools.refinery.logic.term.intinterval;
 
+import org.jetbrains.annotations.NotNull;
+
 public sealed interface Bound {
 	boolean lessThanOrEquals(Bound other);
 
 	default boolean greaterThanOrEquals(Bound other) {
 		return other.lessThanOrEquals(this);
 	}
-
-	boolean equals(Bound other);
 
 	boolean isFinite();
 
@@ -19,9 +19,15 @@ public sealed interface Bound {
 		return greaterThanOrEquals(other) ? this : other;
 	}
 
-	Bound add(Bound other);
-	Bound sub(Bound other);
+	Bound minus();
+
+	Bound add(Bound other, Infinite errorTowards);
+
+	Bound sub(Bound other, Infinite errorTowards);
+
 	Bound mul(Bound other);
+
+	int signum();
 
 	enum Infinite implements Bound {
 		POSITIVE_INFINITY {
@@ -31,23 +37,32 @@ public sealed interface Bound {
 			}
 
 			@Override
-			public boolean equals(Bound other) {
-				return this == other;
+			public Bound minus() {
+				return NEGATIVE_INFINITY;
 			}
 
 			@Override
-			public Bound add(Bound other) {
-				return POSITIVE_INFINITY;
+			public Bound add(Bound other, Infinite errorTowards) {
+				return other == NEGATIVE_INFINITY ? errorTowards : POSITIVE_INFINITY;
 			}
 
 			@Override
-			public Bound sub(Bound other) {
-				return POSITIVE_INFINITY;
+			public Bound sub(Bound other, Infinite errorTowards) {
+				return other == POSITIVE_INFINITY ? errorTowards : POSITIVE_INFINITY;
 			}
 
 			@Override
 			public Bound mul(Bound other) {
-				return POSITIVE_INFINITY;
+				var signum = other.signum();
+				if (signum == 0) {
+					return Finite.ZERO;
+				}
+				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+			}
+
+			@Override
+			public int signum() {
+				return 1;
 			}
 
 			@Override
@@ -55,6 +70,7 @@ public sealed interface Bound {
 				return "∞";
 			}
 		},
+
 		NEGATIVE_INFINITY {
 			@Override
 			public boolean lessThanOrEquals(Bound other) {
@@ -62,23 +78,32 @@ public sealed interface Bound {
 			}
 
 			@Override
-			public boolean equals(Bound other) {
-				return this == other;
-			}
-
-			@Override
-			public Bound add(Bound other) {
+			public Bound minus() {
 				return NEGATIVE_INFINITY;
 			}
 
 			@Override
-			public Bound sub(Bound other) {
-				return NEGATIVE_INFINITY;
+			public Bound add(Bound other, Infinite errorTowards) {
+				return other == POSITIVE_INFINITY ? errorTowards : NEGATIVE_INFINITY;
+			}
+
+			@Override
+			public Bound sub(Bound other, Infinite errorTowards) {
+				return other == NEGATIVE_INFINITY ? errorTowards : NEGATIVE_INFINITY;
 			}
 
 			@Override
 			public Bound mul(Bound other) {
-				return NEGATIVE_INFINITY;
+				var signum = other.signum();
+				if (signum == 0) {
+					return Finite.ZERO;
+				}
+				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
+			}
+
+			@Override
+			public int signum() {
+				return -1;
 			}
 
 			@Override
@@ -94,6 +119,8 @@ public sealed interface Bound {
 	}
 
 	record Finite(int value) implements Bound {
+		public static final Finite ZERO = new Finite(0);
+
 		@Override
 		public boolean lessThanOrEquals(Bound other) {
 			return switch (other) {
@@ -104,47 +131,72 @@ public sealed interface Bound {
 		}
 
 		@Override
-		public boolean equals(Bound other) {
-			return switch (other) {
-				case Infinite.POSITIVE_INFINITY, Infinite.NEGATIVE_INFINITY -> false;
-				case Finite(int otherValue) -> value == otherValue;
-			};
-		}
-
-		@Override
 		public boolean isFinite() {
 			return true;
 		}
 
 		@Override
-		public Bound add(Bound other) {
+		public Bound minus() {
+			return new Finite(-value);
+		}
+
+		@Override
+		public Bound add(Bound other, Infinite errorTowards) {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
 				case Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
-				case Finite(int otherValue) -> new Finite(value+otherValue);
+				case Finite(int otherValue) -> {
+					int sum = value + otherValue;
+					int sign = Integer.signum(value);
+					int otherSign = Integer.signum(otherValue);
+					if (sign == otherSign && sign != Integer.signum(sum)) {
+						yield sign > 0 ? Infinite.POSITIVE_INFINITY : Infinite.NEGATIVE_INFINITY;
+					}
+					yield new Finite(sum);
+				}
 			};
 		}
 
 		@Override
-		public Bound sub(Bound other) {
+		public Bound sub(Bound other, Infinite errorTowards) {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
 				case Infinite.NEGATIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
-				case Finite(int otherValue) -> new Finite(value-otherValue);
+				case Finite(int otherValue) -> {
+					int diff = value - otherValue;
+					int sign = Integer.signum(value);
+					int otherSign = Integer.signum(otherValue);
+					if (sign != otherSign && sign != Integer.signum(diff)) {
+						yield sign > 0 ? Infinite.POSITIVE_INFINITY : Infinite.NEGATIVE_INFINITY;
+					}
+					yield new Finite(diff);
+				}
 			};
 		}
 
 		@Override
 		public Bound mul(Bound other) {
 			return switch (other) {
-				case Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
-				case Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
-				case Finite(int otherValue) -> new Finite(value*otherValue);
+				case Infinite ignored -> other.mul(this);
+				case Finite(int otherValue) -> {
+					long longResult = (long) value * (long) otherValue;
+					int result = (int) longResult;
+					if ((long) result != longResult) {
+						yield Integer.signum(value) * Integer.signum(otherValue) > 0 ? Infinite.POSITIVE_INFINITY :
+								Infinite.NEGATIVE_INFINITY;
+					}
+					yield new Finite(result);
+				}
 			};
 		}
 
 		@Override
-		public String toString() {
+		public int signum() {
+			return Integer.signum(value);
+		}
+
+		@Override
+		public @NotNull String toString() {
 			return String.valueOf(value);
 		}
 	}

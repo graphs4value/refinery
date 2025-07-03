@@ -13,8 +13,8 @@ import tools.refinery.logic.substitution.Substitution;
 import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.operators.NotTerm;
 import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.logic.term.truthvalue.TruthValueNotTerm;
 import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
 import java.util.Objects;
@@ -68,7 +68,7 @@ public class PartialCheckLiteral extends AbstractLiteral implements CanNegate<Pa
 
 	@Override
 	public PartialCheckLiteral negate() {
-		if (term instanceof TruthValueNotTerm notTerm) {
+		if (term instanceof NotTerm<TruthValue> notTerm) {
 			return new PartialCheckLiteral(notTerm.getBody());
 		}
 		return new PartialCheckLiteral(TruthValueTerms.not(term));

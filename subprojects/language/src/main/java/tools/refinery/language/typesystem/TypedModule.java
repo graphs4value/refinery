@@ -431,18 +431,21 @@ public class TypedModule {
 	private ExprType computeExpressionType(ComparisonExpr expr) {
 		var left = expr.getLeft();
 		var right = expr.getRight();
+		if (left == null || right == null) {
+			return ExprType.INVALID;
+		}
 		var op = expr.getOp();
-		if (op == ComparisonOp.NODE_EQ || op == ComparisonOp.NODE_NOT_EQ) {
-			// Avoid short-circuiting to let us type check both arguments.
-			boolean leftOk = expectType(left, ExprType.NODE);
-			boolean rightOk = expectType(right, ExprType.NODE);
-			return leftOk && rightOk ? ExprType.LITERAL : ExprType.INVALID;
+		if (op == ComparisonOp.EQ || op == ComparisonOp.NOT_EQ) {
+			var leftType = getExpressionType(left);
+			if (ExprType.NODE.equals(leftType) && expectType(right, ExprType.NODE)) {
+				return ExprType.LITERAL;
+			}
 		}
 		if (!(getCommonDataType(expr) instanceof DataExprType commonType)) {
 			return ExprType.INVALID;
 		}
 		// Data equality and inequality are always supported for data types.
-		if (op != ComparisonOp.EQ && op != ComparisonOp.NOT_EQ && !interpreter.isComparisonSupported(commonType)) {
+		if (op != ComparisonOp.EQ && op != ComparisonOp.NOT_EQ && !interpreter.isComparable(commonType)) {
 			var message = "Data type %s does not support comparison.".formatted(commonType);
 			error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 			return ExprType.INVALID;
@@ -471,7 +474,7 @@ public class TypedModule {
 		if (!(getCommonDataType(expr) instanceof DataExprType commonType)) {
 			return ExprType.INVALID;
 		}
-		if (!interpreter.isRangeSupported(commonType)) {
+		if (!interpreter.isComparable(commonType)) {
 			var message = "Data type %s does not support ranges.".formatted(commonType);
 			error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 			return ExprType.INVALID;

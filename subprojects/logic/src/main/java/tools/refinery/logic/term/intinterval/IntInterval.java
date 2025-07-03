@@ -2,14 +2,22 @@ package tools.refinery.logic.term.intinterval;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.ComparableAbstractValue;
+import tools.refinery.logic.term.operators.*;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
-		implements AbstractValue<IntInterval, Integer> {
+		implements ComparableAbstractValue<IntInterval, Integer>, Plus<IntInterval>, Minus<IntInterval>,
+		Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval> {
+	public static final IntInterval ZERO = new IntInterval(Bound.Finite.ZERO, Bound.Finite.ZERO);
 	public static final IntInterval UNKNOWN = new IntInterval(Bound.Infinite.NEGATIVE_INFINITY,
 			Bound.Infinite.POSITIVE_INFINITY);
 	public static final IntInterval ERROR = new IntInterval(Bound.Infinite.POSITIVE_INFINITY,
 			Bound.Infinite.NEGATIVE_INFINITY);
+	public static final IntInterval NEGATIVE_INFINITY = new IntInterval(Bound.Infinite.NEGATIVE_INFINITY,
+			Bound.Infinite.NEGATIVE_INFINITY);
+	public static final IntInterval POSITIVE_INFINITY = new IntInterval(Bound.Infinite.POSITIVE_INFINITY,
+			Bound.Infinite.POSITIVE_INFINITY);
 
 	@Override
 	public @Nullable Integer getConcrete() {
@@ -49,12 +57,12 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 
 	@Override
 	public IntInterval join(IntInterval other) {
-		return new IntInterval(lowerBound.min(other.lowerBound),upperBound.max(other.upperBound));
+		return new IntInterval(lowerBound.min(other.lowerBound), upperBound.max(other.upperBound));
 	}
 
 	@Override
 	public IntInterval meet(IntInterval other) {
-		return new IntInterval(lowerBound.max(other.lowerBound),upperBound.min(other.upperBound));
+		return new IntInterval(lowerBound.max(other.lowerBound), upperBound.min(other.upperBound));
 	}
 
 	public static IntInterval of(int value) {
@@ -83,27 +91,103 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 	}
 
 	@Override
-	public String toString() {
-		return "(%s, %s)".formatted(lowerBound(), upperBound());
+	public @NotNull String toString() {
+		return "(%s..%s)".formatted(lowerBound(), upperBound());
 	}
 
-	public IntInterval add(IntInterval other){
-		return new IntInterval(lowerBound().add(other.lowerBound()),upperBound().add(other.upperBound()));
+	@Override
+	public IntInterval plus() {
+		return this;
 	}
 
-	public IntInterval sub(IntInterval other){
-		return new IntInterval(lowerBound().sub(other.upperBound()),
-				upperBound().sub(other.lowerBound()));
+	@Override
+	public IntInterval minus() {
+		return of(upperBound().minus(), lowerBound().minus());
 	}
 
-	public IntInterval mul(IntInterval other){
-		return new IntInterval(lowerBound().mul(other.lowerBound())
-				.min(lowerBound().mul(other.upperBound()))
-				.min(upperBound().mul(other.lowerBound()))
-				.min(upperBound().mul(other.upperBound())),
-				lowerBound().mul(other.lowerBound())
-				.max(lowerBound().mul(other.upperBound()))
-				.max(upperBound().mul(other.lowerBound()))
-				.max(upperBound().mul(other.upperBound())));
+	@Override
+	public IntInterval add(IntInterval other) {
+		return of(lowerBound().add(other.lowerBound(), Bound.Infinite.POSITIVE_INFINITY),
+				upperBound().add(other.upperBound(), Bound.Infinite.NEGATIVE_INFINITY));
+	}
+
+	@Override
+	public IntInterval sub(IntInterval other) {
+		return of(lowerBound().sub(other.upperBound(), Bound.Infinite.POSITIVE_INFINITY),
+				upperBound().sub(other.lowerBound(), Bound.Infinite.NEGATIVE_INFINITY));
+	}
+
+	private boolean isZero() {
+		return Bound.Finite.ZERO.equals(lowerBound) && Bound.Finite.ZERO.equals(upperBound);
+	}
+
+	@Override
+	public IntInterval mul(IntInterval other) {
+		if (isZero() || other.isZero()) {
+			return ZERO;
+		}
+		var lowerBound = lowerBound();
+		var upperBound = upperBound();
+		var otherLowerBound = other.lowerBound();
+		var otherUpperBound = other.upperBound();
+		if (lowerBound.signum() >= 0) {
+			if (otherLowerBound.signum() >= 0) {
+				return of(lowerBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
+			}
+			if (otherUpperBound.signum() <= 0) {
+				return of(upperBound.mul(otherLowerBound), lowerBound.mul(otherUpperBound));
+			}
+			return of(upperBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
+		}
+		if (upperBound.signum() <= 0) {
+			if (otherLowerBound.signum() >= 0) {
+				return of(lowerBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
+			}
+			if (otherUpperBound.signum() <= 0) {
+				return of(upperBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
+			}
+			return of(lowerBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
+		}
+		if (otherLowerBound.signum() >= 0) {
+			return of(lowerBound.mul(otherUpperBound), upperBound.mul(otherUpperBound));
+		}
+		if (otherUpperBound.signum() <= 0) {
+			return of(upperBound.mul(otherLowerBound), lowerBound.mul(otherLowerBound));
+		}
+		var newLowerBound = upperBound.mul(otherLowerBound).min(lowerBound.mul(otherUpperBound));
+		var newUpperBound = lowerBound.mul(otherLowerBound).max(upperBound.mul(otherUpperBound));
+		return of(newLowerBound, newUpperBound);
+	}
+
+	@Override
+	public TruthValue checkEquals(IntInterval other) {
+		return checkLessEq(other).and(other.checkLessEq(this));
+	}
+
+	@Override
+	public TruthValue checkLess(IntInterval other) {
+		return other.checkLessEq(this).not();
+	}
+
+	@Override
+	public TruthValue checkLessEq(IntInterval other) {
+		var may = lowerBound().lessThanOrEquals(other.upperBound());
+		var must = upperBound().lessThanOrEquals(other.lowerBound());
+		return TruthValue.of(may, must);
+	}
+
+	@Override
+	public IntInterval upToIncluding(IntInterval other) {
+		return IntInterval.of(lowerBound(), other.upperBound());
+	}
+
+	@Override
+	public IntInterval min(IntInterval other) {
+		return of(lowerBound().min(other.lowerBound()), upperBound().min(other.upperBound()));
+	}
+
+	@Override
+	public IntInterval max(IntInterval other) {
+		return of(lowerBound().max(other.lowerBound()), upperBound().max(other.upperBound()));
 	}
 }

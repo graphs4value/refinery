@@ -7,6 +7,7 @@ package tools.refinery.language.expressions;
 
 import tools.refinery.language.model.problem.BinaryOp;
 import tools.refinery.language.model.problem.ComparisonOp;
+import tools.refinery.language.model.problem.LatticeBinaryOp;
 import tools.refinery.language.model.problem.UnaryOp;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
@@ -70,9 +71,21 @@ public class CompositeTermInterpreter implements TermInterpreter {
 	}
 
 	@Override
-	public Optional<AnyTerm> createBinaryOperator(BinaryOp op, DataExprType type, AnyTerm left, AnyTerm right) {
+	public Optional<AnyTerm> createUnaryOperator(UnaryOp op, DataExprType type, AnyTerm body) {
 		for (var interpreter : interpreters) {
-			var result = interpreter.createBinaryOperator(op, type, left, right);
+			var result = interpreter.createUnaryOperator(op, type, body);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createBinaryOperator(BinaryOp op, DataExprType leftType, DataExprType rightType,
+												  AnyTerm left, AnyTerm right) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createBinaryOperator(op, leftType, rightType, left, right);
 			if (result.isPresent()) {
 				return result;
 			}
@@ -92,9 +105,9 @@ public class CompositeTermInterpreter implements TermInterpreter {
 	}
 
 	@Override
-	public boolean isComparisonSupported(DataExprType type) {
+	public boolean isComparable(DataExprType type) {
 		for (var interpreter : interpreters) {
-			var result = interpreter.isComparisonSupported(type);
+			var result = interpreter.isComparable(type);
 			if (result) {
 				return true;
 			}
@@ -115,14 +128,15 @@ public class CompositeTermInterpreter implements TermInterpreter {
 	}
 
 	@Override
-	public boolean isRangeSupported(DataExprType type) {
+	public Optional<AnyTerm> createLatticeOperator(LatticeBinaryOp op, DataExprType type, AnyTerm left,
+												   AnyTerm right) {
 		for (var interpreter : interpreters) {
-			var result = interpreter.isRangeSupported(type);
-			if (result) {
-				return true;
+			var result = interpreter.createLatticeOperator(op, type, left, right);
+			if (result.isPresent()) {
+				return result;
 			}
 		}
-		return false;
+		return Optional.empty();
 	}
 
 	@Override
@@ -151,6 +165,50 @@ public class CompositeTermInterpreter implements TermInterpreter {
 	public Optional<DataExprType> getAggregationType(AggregatorName aggregator, DataExprType type) {
 		for (var interpreter : interpreters) {
 			var result = interpreter.getAggregationType(aggregator, type);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createUnknown(DataExprType type) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createUnknown(type);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createError(DataExprType type) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createError(type);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createNegativeInfinity(DataExprType type) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createNegativeInfinity(type);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createPositiveInfinity(DataExprType type) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createPositiveInfinity(type);
 			if (result.isPresent()) {
 				return result;
 			}

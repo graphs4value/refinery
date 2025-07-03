@@ -1,10 +1,10 @@
 package tools.refinery.logic.term.intinterval;
 
-import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.ComparableAbstractDomain;
 
 // Singleton pattern, because there is only one domain for integer intervals.
 @SuppressWarnings("squid:S6548")
-public class IntIntervalDomain implements AbstractDomain<IntInterval, Integer> {
+public class IntIntervalDomain implements ComparableAbstractDomain<IntInterval, Integer> {
 	public static final IntIntervalDomain INSTANCE = new IntIntervalDomain();
 
 	private IntIntervalDomain() {
@@ -33,5 +33,15 @@ public class IntIntervalDomain implements AbstractDomain<IntInterval, Integer> {
 	@Override
 	public IntInterval toAbstract(Integer concreteValue) {
 		return IntInterval.of(concreteValue);
+	}
+
+	@Override
+	public IntInterval negativeInfinity() {
+		return IntInterval.NEGATIVE_INFINITY;
+	}
+
+	@Override
+	public IntInterval positiveInfinity() {
+		return IntInterval.POSITIVE_INFINITY;
 	}
 }

@@ -188,7 +188,7 @@ LogicValue {
   kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
 }
 
-ComparisonOp { SymbolicComparisonOp | kw<"in"> }
+ComparisonOp { SymbolicComparisonOp }
 
 ScopeElement { RelationName ("=" | "+=") Multiplicity }
 
