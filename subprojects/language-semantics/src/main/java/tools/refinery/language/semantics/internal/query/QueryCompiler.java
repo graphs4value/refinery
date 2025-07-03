@@ -10,6 +10,7 @@ import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
@@ -23,12 +24,8 @@ import tools.refinery.logic.dnf.AbstractQueryBuilder;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.logic.literal.BooleanLiteral;
-import tools.refinery.logic.literal.CallPolarity;
-import tools.refinery.logic.literal.ConstantLiteral;
-import tools.refinery.logic.literal.Literal;
-import tools.refinery.logic.term.NodeVariable;
-import tools.refinery.logic.term.Term;
+import tools.refinery.logic.literal.*;
+import tools.refinery.logic.term.*;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -52,6 +49,9 @@ public class QueryCompiler {
 
 	@Inject
 	private QueryBasedExprToTerm queryBasedExprToTerm;
+
+	@Inject
+	private ImportAdapterProvider importAdapterProvider;
 
 	private ProblemTrace problemTrace;
 
@@ -123,7 +123,15 @@ public class QueryCompiler {
 		var localScope = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(localScopeSize);
 		localScope.putAll(existing);
 		for (var newVariable : newVariables) {
-			localScope.put(newVariable, Variable.of(newVariable.getName()));
+			var variableType = problemTypeAnalyzer.getVariableType(newVariable);
+			if (variableType instanceof DataExprType dataVariableType) {
+				var abstractDomain = importAdapterProvider.getTermInterpreter(newVariable)
+						.getDomain(dataVariableType)
+						.orElseThrow(() -> new TracedException(newVariable, "Unknown variable type"));
+				localScope.put(newVariable, Variable.of(newVariable.getName(), abstractDomain.abstractType()));
+			} else {
+				localScope.put(newVariable, Variable.of(newVariable.getName()));
+			}
 		}
 		return localScope;
 	}
@@ -187,23 +195,41 @@ public class QueryCompiler {
 				return;
 			}
 		}
+		case AssignmentExpr assignmentExpr -> {
+			if (!(assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) ||
+					!(variableOrNodeExpr.getVariableOrNode() instanceof
+							tools.refinery.language.model.problem.Variable problemVariable)) {
+				throw new TracedException(assignmentExpr, "Left side of an assignment must be variable.");
+			}
+			if (!(localScope.get(problemVariable) instanceof DataVariable<?> variable)) {
+				throw new TracedException(assignmentExpr, "Left side of an assignment must be a data variable.");
+			}
+			var term = interpretTerm(assignmentExpr.getRight(), localScope, literals);
+			// Well-typed assignments always match the type of the variable and the term.
+			@SuppressWarnings({"rawtypes", "unchecked"})
+			var literal = new AssignLiteral(variable, (Term) term);
+			literals.add(literal);
+			return;
+		}
 		default -> {
 		}
 		}
+		// Well-typed top-level terms are always Booleans.
+		@SuppressWarnings("unchecked")
+		var term = (Term<TruthValue>) interpretTerm(expr, localScope, literals);
+		literals.add(new PartialCheckLiteral(term));
+	}
+
+	private AnyTerm interpretTerm(
+			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
+			List<Literal> literals) {
 		var exprToTerm = exprToTermProvider.get();
 		exprToTerm.setLiterals(literals);
 		exprToTerm.setQueryCompiler(this);
 		exprToTerm.setLocalScope(localScope);
 		exprToTerm.setProblemTrace(problemTrace);
-		var optTerm = exprToTerm.toTerm(expr);
-		if (optTerm.isPresent()) {
-			// could be an arithmetic operation?
-			@SuppressWarnings("unchecked")
-			var term = (Term<TruthValue>) optTerm.get();
-			literals.add(new PartialCheckLiteral(term));
-		} else {
-			throw new TracedException(expr, "Cannot interpret expression as Term/Literal");
-		}
+		return exprToTerm.toTerm(expr)
+				.orElseThrow(() -> new TracedException(expr, "Cannot interpret expression."));
 	}
 
 	private Constraint getConstraint(Atom atom) {

@@ -12,6 +12,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.model.problem.Expr;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.language.model.problem.Variable;
 
 @Singleton
 public class ProblemTypeAnalyzer {
@@ -39,5 +40,14 @@ public class ProblemTypeAnalyzer {
 		}
 		var typedModule = getOrComputeTypes(problem);
 		return typedModule.getExpressionType(expr).getActualType();
+	}
+
+	public FixedType getVariableType(Variable variable) {
+		var problem = EcoreUtil2.getContainerOfType(variable, Problem.class);
+		if (problem == null) {
+			return ExprType.INVALID;
+		}
+		var typedModule = getOrComputeTypes(problem);
+		return typedModule.getVariableType(variable).getActualType();
 	}
 }

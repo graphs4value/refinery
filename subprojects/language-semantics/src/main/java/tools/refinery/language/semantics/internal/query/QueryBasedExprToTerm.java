@@ -8,8 +8,10 @@ package tools.refinery.language.semantics.internal.query;
 import tools.refinery.language.expressions.ExprToTerm;
 import tools.refinery.language.model.problem.Atom;
 import tools.refinery.language.model.problem.Expr;
+import tools.refinery.language.model.problem.VariableOrNodeExpr;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.AnyDataVariable;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
@@ -44,12 +46,23 @@ class QueryBasedExprToTerm extends ExprToTerm {
 	}
 
 	public Optional<AnyTerm> toTerm(Expr expr) {
-		if (expr instanceof Atom atom) {
-			var argumentList = queryCompiler.toArgumentList(atom, atom.getArguments(), localScope, literals);
-			var partialFunction = problemTrace.getPartialFunction(atom.getRelation());
-			return Optional.of(partialFunction.call(ConcretenessSpecification.UNSPECIFIED, argumentList.arguments()));
-		} else {
-			return super.toTerm(expr);
-		}
+		return switch (expr) {
+			case Atom atom -> {
+				var argumentList = queryCompiler.toArgumentList(atom, atom.getArguments(), localScope, literals);
+				var partialFunction = problemTrace.getPartialFunction(atom.getRelation());
+				yield Optional.of(partialFunction.call(ConcretenessSpecification.UNSPECIFIED,
+						argumentList.arguments()));
+			}
+			case VariableOrNodeExpr variableOrNodeExpr -> {
+				if (variableOrNodeExpr.getVariableOrNode() instanceof
+						tools.refinery.language.model.problem.Variable problemVariable &&
+						localScope.get(problemVariable) instanceof AnyDataVariable variable) {
+					yield Optional.of(variable);
+				} else {
+					yield Optional.empty();
+				}
+			}
+			case null, default -> super.toTerm(expr);
+		};
 	}
 }
