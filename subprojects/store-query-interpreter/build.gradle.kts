@@ -20,6 +20,7 @@ dependencies {
 	api(project(":refinery-store-query"))
 	implementation(libs.ecore)
 	implementation(libs.slf4j.log4j)
+	testImplementation(testFixtures(project(":refinery-logic")))
 }
 
 tasks {
