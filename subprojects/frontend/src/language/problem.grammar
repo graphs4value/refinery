@@ -208,7 +208,7 @@ RuleName { QualifiedName }
 
 AtomNodeName { QualifiedName }
 
-VariableName[@dynamicPrecedence=10] { QualifiedName ~name }
+VariableName[@dynamicPrecedence=5] { QualifiedName ~name }
 
 NodeName { QualifiedName }
 
