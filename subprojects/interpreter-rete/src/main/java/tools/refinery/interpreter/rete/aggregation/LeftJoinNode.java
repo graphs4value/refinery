@@ -54,7 +54,7 @@ public class LeftJoinNode extends StandardNode {
 			@Override
 			public void notifyIndexerUpdate(Direction direction, Tuple updateElement, Tuple signature, boolean change,
 											Timestamp timestamp) {
-				update(direction, updateElement, signature, change, timestamp);
+				update(direction, updateElement, signature, change);
 			}
 		});
 	}
@@ -93,11 +93,10 @@ public class LeftJoinNode extends StandardNode {
 		return true;
 	}
 
-	protected void update(Direction direction, Tuple updateElement, Tuple signature, boolean change,
-						  Timestamp timestamp) {
-		propagateUpdate(direction, updateElement, timestamp);
+	protected void update(Direction direction, Tuple updateElement, Tuple signature, boolean change) {
+		propagateUpdate(direction, updateElement, Timestamp.ZERO);
 		if (outerIndexer != null) {
-			outerIndexer.update(direction, updateElement, signature, change, timestamp);
+			outerIndexer.update(direction, updateElement, signature, change);
 		}
 	}
 
@@ -165,21 +164,20 @@ public class LeftJoinNode extends StandardNode {
 			return collection;
 		}
 
-		public void update(Direction direction, Tuple updateElement, Tuple signature, boolean change,
-						   Timestamp timestamp) {
+		public void update(Direction direction, Tuple updateElement, Tuple signature, boolean change) {
 			if (!change) {
-				propagate(direction, updateElement, signature, false, timestamp);
+				propagate(direction, updateElement, signature, false, Timestamp.ZERO);
 				return;
 			}
 			var defaultTuple = getDefaultTuple(signature);
 			if (direction == Direction.INSERT) {
-				swap(defaultTuple, updateElement, signature, timestamp);
+				swap(defaultTuple, updateElement, signature);
 			} else {
-				swap(updateElement, defaultTuple, signature, timestamp);
+				swap(updateElement, defaultTuple, signature);
 			}
 		}
 
-		private void swap(Tuple oldValue, Tuple newValue, Tuple signature, Timestamp timestamp) {
+		private void swap(Tuple oldValue, Tuple newValue, Tuple signature) {
 			if (updateValue != null) {
 				throw new IllegalStateException("Reentrant updates of LeftJoinNode are not supported.");
 			}
@@ -189,12 +187,12 @@ public class LeftJoinNode extends StandardNode {
 			updatingSignature = signature;
 			updateValue = List.of(oldValue, newValue);
 			try {
-				propagate(Direction.INSERT, newValue, signature, false, timestamp);
+				propagate(Direction.INSERT, newValue, signature, false, Timestamp.ZERO);
 			} finally {
 				updatingSignature = null;
 				updateValue = null;
 			}
-			propagate(Direction.DELETE, oldValue, signature, false, timestamp);
+			propagate(Direction.DELETE, oldValue, signature, false, Timestamp.ZERO);
 		}
 
 		@Override

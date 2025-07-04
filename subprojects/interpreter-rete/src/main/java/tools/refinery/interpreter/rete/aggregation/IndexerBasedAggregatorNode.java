@@ -9,12 +9,6 @@
 
 package tools.refinery.interpreter.rete.aggregation;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import tools.refinery.interpreter.rete.traceability.TraceInfo;
 import tools.refinery.interpreter.matchers.tuple.Tuple;
 import tools.refinery.interpreter.matchers.tuple.TupleMask;
 import tools.refinery.interpreter.matchers.tuple.Tuples;
@@ -29,6 +23,13 @@ import tools.refinery.interpreter.rete.network.Node;
 import tools.refinery.interpreter.rete.network.ReteContainer;
 import tools.refinery.interpreter.rete.network.StandardNode;
 import tools.refinery.interpreter.rete.network.communication.Timestamp;
+import tools.refinery.interpreter.rete.traceability.TraceInfo;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A special node depending on a projection indexer to aggregate tuple groups with the same projection. Only propagates
@@ -197,6 +198,8 @@ public abstract class IndexerBasedAggregatorNode extends StandardNode implements
      * @author Gabor Bergmann
      */
     class AggregatorOuterIndexer extends StandardIndexer {
+		private Tuple updatingSignature;
+		private Collection<Tuple> updateValue;
 
         public AggregatorOuterIndexer() {
             super(me.reteContainer, TupleMask.omit(sourceWidth, sourceWidth + 1));
@@ -205,11 +208,27 @@ public abstract class IndexerBasedAggregatorNode extends StandardNode implements
 
         @Override
         public Collection<Tuple> get(Tuple signature) {
+			if (signature.equals(updatingSignature)) {
+				return updateValue;
+			}
             return Collections.singleton(packResult(signature, getAggregate(signature)));
         }
 
         public void propagate(Tuple signature, Tuple oldTuple, Tuple newTuple) {
-            propagate(Direction.INSERT, newTuple, signature, false, Timestamp.ZERO);
+			if (updateValue != null) {
+				throw new IllegalStateException("Reentrant updates of IndexerBasedAggregatorNode are not supported.");
+			}
+			if (oldTuple.equals(newTuple)) {
+				return;
+			}
+			updatingSignature = signature;
+			updateValue = List.of(oldTuple, newTuple);
+			try {
+				propagate(Direction.INSERT, newTuple, signature, false, Timestamp.ZERO);
+			} finally {
+				updatingSignature = null;
+				updateValue = null;
+			}
             propagate(Direction.DELETE, oldTuple, signature, false, Timestamp.ZERO);
         }
 
