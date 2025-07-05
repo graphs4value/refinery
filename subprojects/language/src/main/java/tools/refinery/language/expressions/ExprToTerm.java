@@ -30,6 +30,7 @@ public class ExprToTerm {
 			case ArithmeticBinaryExpr arithmeticBinaryExpr -> createBinaryOperator(arithmeticBinaryExpr);
 			case ComparisonExpr comparisonExpr -> createComparison(comparisonExpr);
 			case RangeExpr rangeExpr -> createRange(rangeExpr);
+			case LatticeBinaryExpr latticeBinaryExpr -> createLatticeBinaryOperator(latticeBinaryExpr);
 			case LogicConstant logicConstant -> createLogicConstant(logicConstant);
 			case IntConstant intConstant -> createIntConstant(intConstant);
 			case null, default -> Optional.empty();
@@ -102,6 +103,18 @@ public class ExprToTerm {
 		return maybeLeftTerm.flatMap(leftTerm ->
 				maybeRightTerm.flatMap(rightTerm ->
 						termInterpreter.createRange(leftType, leftTerm, rightTerm)));
+	}
+
+	private Optional<AnyTerm> createLatticeBinaryOperator(LatticeBinaryExpr expr) {
+		var left = expr.getLeft();
+		var right = expr.getRight();
+		if (!(typeAnalyzer.getExpressionType(left) instanceof DataExprType type)) {
+			return Optional.empty();
+		}
+		var termInterpreter = importAdapterProvider.getTermInterpreter(expr);
+		return toTerm(left).flatMap(leftTerm ->
+				toTerm(right).flatMap(rightTerm -> termInterpreter.createLatticeOperator(
+						expr.getOp(), type, leftTerm, rightTerm)));
 	}
 
 	private Optional<AnyTerm> createLogicConstant(LogicConstant expr) {

@@ -663,6 +663,27 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
+	public void checkModalExpr(ModalExpr modalExpr) {
+		if (!ProblemUtil.mayReferToShadow(modalExpr)) {
+			var message = "Modal operators are only allowed in a shadow context.";
+			acceptError(message, modalExpr, null, 0, SHADOW_RELATION_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkLatticeExpr(LatticeBinaryExpr latticeExpr) {
+		var op = latticeExpr.getOp();
+		if (op == LatticeBinaryOp.MEET || op == LatticeBinaryOp.JOIN) {
+			// Meet and join operators don't violate monotonicity, so they are allowed in all contexts.
+			return;
+		}
+		if (!ProblemUtil.mayReferToShadow(latticeExpr)) {
+			var message = "Abstract domain operators are only allowed in a shadow context.";
+			acceptError(message, latticeExpr, null, 0, SHADOW_RELATION_ISSUE);
+		}
+	}
+
+	@Check
 	public void checkRuleDefinition(RuleDefinition ruleDefinition) {
 		if (ruleDefinition.getConsequents().size() != 1) {
 			acceptError("Rules must have exactly one consequent.", ruleDefinition,

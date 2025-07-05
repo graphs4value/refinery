@@ -77,7 +77,7 @@ public class TypedModule {
 	private void checkTypes(PredicateDefinition predicateDefinition) {
 		for (var conjunction : predicateDefinition.getBodies()) {
 			for (var literal : conjunction.getLiterals()) {
-				coerceIntoLiteral(literal, predicateDefinition.getKind() == PredicateKind.SHADOW);
+				coerceIntoLiteral(literal);
 			}
 		}
 	}
@@ -85,7 +85,7 @@ public class TypedModule {
 	private void checkTypes(RuleDefinition ruleDefinition) {
 		for (var conjunction : ruleDefinition.getPreconditions()) {
 			for (var literal : conjunction.getLiterals()) {
-				coerceIntoLiteral(literal, true);
+				coerceIntoLiteral(literal);
 			}
 		}
 		for (var consequent : ruleDefinition.getConsequents()) {
@@ -346,9 +346,6 @@ public class TypedModule {
 			// Negation of literals yields another (non-enumerable) literal.
 			return ExprType.LITERAL;
 		}
-		if (actualType == ExprType.MODAL_LITERAL) {
-			return ExprType.MODAL_LITERAL;
-		}
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
@@ -395,7 +392,7 @@ public class TypedModule {
 
 	@NotNull
 	private ExprType computeExpressionType(CountExpr countExpr) {
-		return coerceIntoLiteral(countExpr.getBody(), false) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
+		return coerceIntoLiteral(countExpr.getBody()) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
 	}
 
 	@NotNull
@@ -405,7 +402,7 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		// Avoid short-circuiting to let us type check both the value and the condition.
-		boolean ok = coerceIntoLiteral(expr.getCondition(), false);
+		boolean ok = coerceIntoLiteral(expr.getCondition());
 		var value = expr.getValue();
 		var actualType = getExpressionType(value);
 		if (actualType == ExprType.INVALID) {
@@ -455,8 +452,13 @@ public class TypedModule {
 
 	@NotNull
 	private ExprType computeExpressionType(LatticeBinaryExpr expr) {
-		// Lattice operations are always supported for data types.
-		return getCommonDataType(expr);
+		if (!(getCommonDataType(expr) instanceof DataExprType commonType)) {
+			return ExprType.INVALID;
+		}
+		return switch (expr.getOp()) {
+			case EQ, NOT_EQ, SUBSET, SUPERSET -> BuiltinTermInterpreter.BOOLEAN_TYPE;
+			case JOIN, MEET -> commonType;
+		};
 	}
 
 	@NotNull
@@ -577,7 +579,7 @@ public class TypedModule {
 		}
 		var actualType = getExpressionType(body);
 		if (actualType == ExprType.LITERAL || BuiltinTermInterpreter.BOOLEAN_TYPE.equals(actualType)) {
-			return ExprType.MODAL_LITERAL;
+			return actualType;
 		}
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
@@ -622,12 +624,12 @@ public class TypedModule {
 		}
 	}
 
-	private boolean coerceIntoLiteral(Expr expr, boolean allowModal) {
+	private boolean coerceIntoLiteral(Expr expr) {
 		if (expr == null) {
 			return false;
 		}
 		var actualType = getExpressionType(expr);
-		if (actualType == ExprType.LITERAL || (allowModal && actualType == ExprType.MODAL_LITERAL)) {
+		if (actualType == ExprType.LITERAL) {
 			return true;
 		}
 		return expectType(expr, actualType, BuiltinTermInterpreter.BOOLEAN_TYPE);
