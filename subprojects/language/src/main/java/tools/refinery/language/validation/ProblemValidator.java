@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.FixedType;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
@@ -644,16 +645,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkAtom(Atom atom) {
-		int argumentCount = atom.getArguments().size();
-		if (atom.isTransitiveClosure() && argumentCount != 2) {
-			var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
-					.formatted(argumentCount);
-			acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
-					INVALID_TRANSITIVE_CLOSURE_ISSUE);
-		}
 		var target = atom.getRelation();
 		if (target == null || target.eIsProxy()) {
 			return;
+		}
+		int argumentCount = atom.getArguments().size();
+		if (atom.isTransitiveClosure()) {
+			var resultType = signatureProvider.getSignature(target).resultType();
+			if (!FixedType.LITERAL.equals(resultType)) {
+				var message = "Transitive closure needs a predicate, got %s function instead."
+						.formatted(resultType);
+				acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
+						INVALID_TRANSITIVE_CLOSURE_ISSUE);
+			} else if (argumentCount != 2) {
+				var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
+						.formatted(argumentCount);
+				acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
+						INVALID_TRANSITIVE_CLOSURE_ISSUE);
+			}
 		}
 		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
 		if (ProblemUtil.isShadow(target) && !ProblemUtil.mayReferToShadow(atom)) {
