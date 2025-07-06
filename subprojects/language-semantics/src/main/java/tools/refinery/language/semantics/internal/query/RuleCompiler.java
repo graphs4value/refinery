@@ -133,7 +133,7 @@ public class RuleCompiler {
 				var rule = Rule.builder(actionName)
 						.parameters(parameters)
 						.clause(new ModalConstraint(ModalitySpecification.MUST, concreteness, precondition.getDnf())
-								.call(CallPolarity.POSITIVE, Collections.unmodifiableList(parameters)))
+								.call(CallPolarity.POSITIVE, parameters))
 						.action(actionLiterals)
 						.build();
 				rules.add(rule);

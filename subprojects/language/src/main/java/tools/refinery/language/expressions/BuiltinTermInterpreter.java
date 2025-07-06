@@ -10,6 +10,7 @@ import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.logic.term.intinterval.IntIntervalDomain;
+import tools.refinery.logic.term.string.StringDomain;
 import tools.refinery.logic.term.truthvalue.TruthValueDomain;
 
 public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
@@ -30,5 +31,7 @@ public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 
 		addDomain(INT_TYPE, IntIntervalDomain.INSTANCE);
 		addAggregator(SUM_AGGREGATOR, INT_TYPE, INT_TYPE);
+
+		addDomain(STRING_TYPE, StringDomain.INSTANCE);
 	}
 }

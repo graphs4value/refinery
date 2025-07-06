@@ -55,7 +55,6 @@ class QueryBasedExprToTerm extends ExprToTerm {
 		};
 	}
 
-
 	private Optional<AnyTerm> createPartialFunctionCall(Atom atom) {
 		return createPartialFunctionCall(atom, ConcretenessSpecification.UNSPECIFIED);
 	}

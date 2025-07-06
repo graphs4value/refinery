@@ -13,6 +13,8 @@ import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.intinterval.IntIntervalTerms;
+import tools.refinery.logic.term.string.StringTerms;
+import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
@@ -36,6 +38,7 @@ public class ExprToTerm {
 			case ModalExpr modalExpr -> createModalOperator(modalExpr);
 			case LogicConstant logicConstant -> createLogicConstant(logicConstant);
 			case IntConstant intConstant -> createIntConstant(intConstant);
+			case StringConstant stringConstant -> createStringConstant(stringConstant);
 			case null, default -> Optional.empty();
 		};
 	}
@@ -155,5 +158,9 @@ public class ExprToTerm {
 
 	private static Optional<AnyTerm> createIntConstant(IntConstant expr) {
 		return Optional.of(IntIntervalTerms.constant(IntInterval.of(expr.getIntValue())));
+	}
+
+	private static Optional<AnyTerm> createStringConstant(StringConstant expr) {
+		return Optional.of(StringTerms.constant(StringValue.of(expr.getStringValue())));
 	}
 }
