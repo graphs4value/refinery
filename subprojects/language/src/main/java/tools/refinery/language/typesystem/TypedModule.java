@@ -578,15 +578,20 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		var actualType = getExpressionType(body);
+		if (expr.getModality() == Modality.UNSPECIFIED) {
+			// Change the concreteness of a partial function call without applying a modality.
+			return actualType;
+		}
 		if (actualType == ExprType.LITERAL || BuiltinTermInterpreter.BOOLEAN_TYPE.equals(actualType)) {
+			// Only literals and booleans may have a modality applied.
 			return actualType;
 		}
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
-		if (actualType instanceof MutableType) {
-			error(OPERAND_TYPE_ERROR_MESSAGE, body, null, 0, ProblemValidator.TYPE_ERROR);
-			return ExprType.INVALID;
+		if (actualType instanceof MutableType mutableType) {
+			mutableType.setActualType(BuiltinTermInterpreter.BOOLEAN_TYPE);
+			return BuiltinTermInterpreter.BOOLEAN_TYPE;
 		}
 		var message = "Data type %s does not support modal operators.".formatted(actualType);
 		error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);

@@ -13,6 +13,8 @@ import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.intinterval.IntIntervalTerms;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
 import java.util.Optional;
 
@@ -31,6 +33,7 @@ public class ExprToTerm {
 			case ComparisonExpr comparisonExpr -> createComparison(comparisonExpr);
 			case RangeExpr rangeExpr -> createRange(rangeExpr);
 			case LatticeBinaryExpr latticeBinaryExpr -> createLatticeBinaryOperator(latticeBinaryExpr);
+			case ModalExpr modalExpr -> createModalOperator(modalExpr);
 			case LogicConstant logicConstant -> createLogicConstant(logicConstant);
 			case IntConstant intConstant -> createIntConstant(intConstant);
 			case null, default -> Optional.empty();
@@ -115,6 +118,25 @@ public class ExprToTerm {
 		return toTerm(left).flatMap(leftTerm ->
 				toTerm(right).flatMap(rightTerm -> termInterpreter.createLatticeOperator(
 						expr.getOp(), type, leftTerm, rightTerm)));
+	}
+
+	private Optional<AnyTerm> createModalOperator(ModalExpr expr) {
+		if (expr.getConcreteness() != Concreteness.UNSPECIFIED) {
+			return Optional.empty();
+		}
+		return toTerm(expr.getBody()).map(bodyTerm -> wrapModality(bodyTerm, expr.getModality()));
+	}
+
+	protected static AnyTerm wrapModality(AnyTerm bodyTerm, Modality modality) {
+		if (modality == Modality.UNSPECIFIED) {
+			return bodyTerm;
+		}
+		var typedBodyTerm = bodyTerm.asType(TruthValue.class);
+		return switch (modality) {
+			case MAY -> TruthValueTerms.asTruthValue(TruthValueTerms.may(typedBodyTerm));
+			case MUST -> TruthValueTerms.asTruthValue(TruthValueTerms.must(typedBodyTerm));
+			default -> throw new IllegalArgumentException("Unsupported modality: " + modality);
+		};
 	}
 
 	private Optional<AnyTerm> createLogicConstant(LogicConstant expr) {

@@ -5,10 +5,9 @@
  */
 package tools.refinery.language.semantics.internal.query;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.expressions.ExprToTerm;
-import tools.refinery.language.model.problem.Atom;
-import tools.refinery.language.model.problem.Expr;
-import tools.refinery.language.model.problem.VariableOrNodeExpr;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.AnyDataVariable;
@@ -47,22 +46,49 @@ class QueryBasedExprToTerm extends ExprToTerm {
 
 	public Optional<AnyTerm> toTerm(Expr expr) {
 		return switch (expr) {
-			case Atom atom -> {
-				var argumentList = queryCompiler.toArgumentList(atom, atom.getArguments(), localScope, literals);
-				var partialFunction = problemTrace.getPartialFunction(atom.getRelation());
-				yield Optional.of(partialFunction.call(ConcretenessSpecification.UNSPECIFIED,
-						argumentList.arguments()));
-			}
-			case VariableOrNodeExpr variableOrNodeExpr -> {
-				if (variableOrNodeExpr.getVariableOrNode() instanceof
-						tools.refinery.language.model.problem.Variable problemVariable &&
-						localScope.get(problemVariable) instanceof AnyDataVariable variable) {
-					yield Optional.of(variable);
-				} else {
-					yield Optional.empty();
-				}
-			}
+			case Atom atom -> createPartialFunctionCall(atom);
+			case VariableOrNodeExpr variableOrNodeExpr -> createVariableReference(variableOrNodeExpr);
+			case ModalExpr modalExpr -> createModalOperator(modalExpr);
 			case null, default -> super.toTerm(expr);
 		};
+	}
+
+
+	private Optional<AnyTerm> createPartialFunctionCall(Atom atom) {
+		return createPartialFunctionCall(atom, ConcretenessSpecification.UNSPECIFIED);
+	}
+
+	private Optional<AnyTerm> createPartialFunctionCall(Atom atom, ConcretenessSpecification concreteness) {
+		var argumentList = queryCompiler.toArgumentList(atom, atom.getArguments(), localScope, literals);
+		var partialFunction = problemTrace.getPartialFunction(atom.getRelation());
+		return Optional.of(partialFunction.call(concreteness, argumentList.arguments()));
+	}
+
+	private @NotNull Optional<AnyTerm> createVariableReference(VariableOrNodeExpr variableOrNodeExpr) {
+		if (variableOrNodeExpr.getVariableOrNode() instanceof
+				tools.refinery.language.model.problem.Variable problemVariable &&
+				localScope.get(problemVariable) instanceof AnyDataVariable variable) {
+			return Optional.of(variable);
+		} else {
+			return Optional.empty();
+		}
+	}
+
+	private Optional<AnyTerm> createModalOperator(ModalExpr expr) {
+		var concreteness = expr.getConcreteness();
+		if (concreteness == Concreteness.UNSPECIFIED) {
+			return super.toTerm(expr);
+		}
+		if (!(expr.getBody() instanceof Atom atom)) {
+			// Concreteness specifications must be applied to partial function calls directly.
+			return Optional.empty();
+		}
+		var concretenessSpecification = switch (concreteness) {
+			case PARTIAL -> ConcretenessSpecification.PARTIAL;
+            case CANDIDATE -> ConcretenessSpecification.CANDIDATE;
+            default -> throw new IllegalArgumentException("Unsupported concreteness: " + concreteness);
+		};
+		return createPartialFunctionCall(atom, concretenessSpecification)
+				.map(callTerm -> wrapModality(callTerm, expr.getModality()));
 	}
 }
