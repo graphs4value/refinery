@@ -13,6 +13,8 @@ import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.term.AnyDataVariable;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 
 import java.util.List;
@@ -79,16 +81,22 @@ class QueryBasedExprToTerm extends ExprToTerm {
 		if (concreteness == Concreteness.UNSPECIFIED) {
 			return super.toTerm(expr);
 		}
-		if (!(expr.getBody() instanceof Atom atom)) {
+		var concretenessSpecification = switch (concreteness) {
+			case PARTIAL -> ConcretenessSpecification.PARTIAL;
+			case CANDIDATE -> ConcretenessSpecification.CANDIDATE;
+			default -> throw new IllegalArgumentException("Unsupported concreteness: " + concreteness);
+		};
+		Optional<AnyTerm> result;
+		var body = expr.getBody();
+		if (body instanceof Atom atom) {
+			result = createPartialFunctionCall(atom, concretenessSpecification);
+		} else if (body instanceof NegationExpr negationExpr && negationExpr.getBody() instanceof Atom atom) {
+			result = createPartialFunctionCall(atom, concretenessSpecification)
+					.map(callTerm -> TruthValueTerms.not(callTerm.asType(TruthValue.class)));
+		} else {
 			// Concreteness specifications must be applied to partial function calls directly.
 			return Optional.empty();
 		}
-		var concretenessSpecification = switch (concreteness) {
-			case PARTIAL -> ConcretenessSpecification.PARTIAL;
-            case CANDIDATE -> ConcretenessSpecification.CANDIDATE;
-            default -> throw new IllegalArgumentException("Unsupported concreteness: " + concreteness);
-		};
-		return createPartialFunctionCall(atom, concretenessSpecification)
-				.map(callTerm -> wrapModality(callTerm, expr.getModality()));
+		return result.map(callTerm -> wrapModality(callTerm, expr.getModality()));
 	}
 }

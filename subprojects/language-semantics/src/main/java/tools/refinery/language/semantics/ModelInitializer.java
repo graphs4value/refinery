@@ -351,15 +351,13 @@ public class ModelInitializer {
 	}
 
 	private void collectAttribute(DatatypeDeclaration datatypeDeclaration, ReferenceDeclaration referenceDeclaration) {
-		if (builtinSymbols.intDatatype().equals(datatypeDeclaration)) {
-			DataExprType dataExprType =
-					new DataExprType(qualifiedNameProvider.getFullyQualifiedName(datatypeDeclaration));
-			var abstractDomain = importAdapterProvider.getTermInterpreter(referenceDeclaration).getDomain(dataExprType);
-			if (abstractDomain.isPresent()) {
-				var domain = (AbstractDomain<?, ?>) abstractDomain.get();
-				this.createFunctionInfo(domain, referenceDeclaration);
-			}
-		}
+		var dataExprType = new DataExprType(qualifiedNameProvider.getFullyQualifiedName(datatypeDeclaration));
+		var abstractDomain = importAdapterProvider.getTermInterpreter(referenceDeclaration)
+				.getDomain(dataExprType)
+				.orElseThrow(() -> new TracedException(referenceDeclaration,
+						"No abstract domain for datatype '%s'.".formatted(datatypeDeclaration.getName())));
+		var domain = (AbstractDomain<?, ?>) abstractDomain;
+		this.createFunctionInfo(domain, referenceDeclaration);
 	}
 
 	private <A extends AbstractValue<A, C>, C> void createFunctionInfo(AbstractDomain<A, C> domain,

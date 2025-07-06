@@ -30,6 +30,7 @@ import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.PartialCheckLiteral;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.*;
@@ -109,6 +110,10 @@ public class QueryCompiler {
 		return problemTrace.getNodeId(node);
 	}
 
+	AnyPartialSymbol getPartialSymbol(Relation relation) {
+		return problemTrace.getPartialSymbol(relation);
+	}
+
 	PartialRelation getPartialRelation(Relation relation) {
 		return problemTrace.getPartialRelation(relation);
 	}
@@ -162,10 +167,12 @@ public class QueryCompiler {
 		}
 		case Atom atom -> {
 			var constraint = getConstraint(atom);
-			var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
-			literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
-					argumentList.arguments()));
-			return;
+			if (constraint != null) {
+				var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
+				literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
+						argumentList.arguments()));
+				return;
+			}
 		}
 		case NegationExpr negationExpr -> {
 			var body = negationExpr.getBody();
@@ -175,8 +182,10 @@ public class QueryCompiler {
 				var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
 				var innerModality = extractedInner.modality().merge(outerModality.negate());
 				var constraint = getConstraint(atom);
-				literals.add(createNegationLiteral(innerModality, constraint, argumentList));
-				return;
+				if (constraint != null) {
+					literals.add(createNegationLiteral(innerModality, constraint, argumentList));
+					return;
+				}
 			}
 		}
 		case ComparisonExpr comparisonExpr -> {
@@ -234,8 +243,11 @@ public class QueryCompiler {
 
 	private Constraint getConstraint(Atom atom) {
 		var relation = atom.getRelation();
-		var target = getPartialRelation(relation);
-		return atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
+		var target = getPartialSymbol(relation);
+		if (!(target instanceof PartialRelation partialRelation)) {
+			return null;
+		}
+		return atom.isTransitiveClosure() ? getTransitiveWrapper(partialRelation) : partialRelation;
 	}
 
 	private Constraint getTransitiveWrapper(Constraint target) {
