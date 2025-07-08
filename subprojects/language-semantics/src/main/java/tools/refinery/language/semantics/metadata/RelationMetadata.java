@@ -11,5 +11,6 @@ import tools.refinery.language.utils.Visibility;
 import java.util.List;
 
 public record RelationMetadata(String name, String simpleName, int arity, @Nullable List<String> parameterNames,
-							   RelationDetail detail, @Nullable Visibility visibility) implements Metadata {
+							   RelationDetail detail, @Nullable Visibility visibility, @Nullable String dataType)
+		implements Metadata {
 }

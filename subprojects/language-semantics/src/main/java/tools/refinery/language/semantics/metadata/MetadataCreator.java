@@ -19,6 +19,8 @@ import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
@@ -38,6 +40,8 @@ public class MetadataCreator {
 	private static final List<String> REFERENCE_PARAMETER_NAMES = List.of(
 			DocumentationCommentParser.REFERENCE_SOURCE_PARAMETER_NAME,
 			DocumentationCommentParser.REFERENCE_TARGET_PARAMETER_NAME);
+	private static final List<String> ATTRIBUTE_PARAMETER_NAMES = List.of(
+			DocumentationCommentParser.ATTRIBUTE_PARAMETER_NAME);
 
 	@Inject
 	private IScopeProvider scopeProvider;
@@ -47,6 +51,9 @@ public class MetadataCreator {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	@Inject
 	private TypeHashProvider typeHashProvider;
@@ -122,14 +129,8 @@ public class MetadataCreator {
 		for (var entry : relationTrace.entrySet()) {
 			var relation = entry.getKey();
 			var partialRelation = entry.getValue();
-			if (relation instanceof ReferenceDeclaration referenceDeclaration &&
-					referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
-				// TODO Handle attributes
-			}
-			else{
-				var metadata = getRelationMetadata(relation, partialRelation.asPartialRelation());
-				relations.add(metadata);
-			}
+			var metadata = getRelationMetadata(relation, partialRelation);
+			relations.add(metadata);
 		}
 		return Collections.unmodifiableList(relations);
 	}
@@ -143,7 +144,11 @@ public class MetadataCreator {
 		var parameterNames = getParameterNames(relation);
 		var detail = getRelationDetail(relation, partialSymbol);
 		var visibility = builtinAnnotationContext.getVisibility(relation);
-		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail, visibility);
+		var resultType = signatureProvider.getSignature(relation).resultType();
+		var dataType = resultType instanceof DataExprType(QualifiedName name) ? qualifiedNameConverter.toString(name) :
+				null;
+		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail, visibility,
+				dataType);
 	}
 
 	@Nullable
@@ -151,7 +156,8 @@ public class MetadataCreator {
 		return switch (relation) {
 			case ClassDeclaration ignored -> CLASS_PARAMETER_NAMES;
 			case EnumDeclaration ignored -> ENUM_PARAMETER_NAMES;
-			case ReferenceDeclaration ignored -> REFERENCE_PARAMETER_NAMES;
+			case ReferenceDeclaration referenceDeclaration -> ProblemUtil.isAttribute(referenceDeclaration) ?
+					ATTRIBUTE_PARAMETER_NAMES : REFERENCE_PARAMETER_NAMES;
 			case PredicateDefinition predicateDefinition -> getPredicateParameterNames(predicateDefinition);
 			default -> null;
 		};
@@ -192,12 +198,8 @@ public class MetadataCreator {
 				boolean isContainer = metamodel.containmentHierarchy().containsKey(opposite);
 				return new RelationDetail.Opposite(opposite.name(), isContainer);
 			}
-		}
-		else
-		{
-			// hmm there is no attribute yet, could implement one...
-			var typeHash = typeHashProvider.getTypeHash(problemTrace.getRelation(partialSymbol));
-			return new RelationDetail.Class(false,typeHash);
+		} else {
+			return new RelationDetail.Attribute();
 		}
 	}
 

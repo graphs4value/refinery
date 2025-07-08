@@ -114,7 +114,7 @@ public class BuiltinAnnotationContext {
 				.map(annotation -> {
 					var hideUnknown = annotation.getBoolean(BuiltinAnnotations.SHOW_HIDE_UNKNOWN)
 							.orElse(false);
-					return Boolean.TRUE.equals(hideUnknown) ? Visibility.MUST : Visibility.ALL;
+					return hideUnknown ? Visibility.MUST : Visibility.ALL;
 				})
 				.orElse(null);
 	}

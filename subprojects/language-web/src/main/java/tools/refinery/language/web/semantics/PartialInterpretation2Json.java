@@ -10,17 +10,15 @@ import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import tools.refinery.generator.ModelFacade;
-import tools.refinery.language.model.problem.DatatypeDeclaration;
-import tools.refinery.language.model.problem.ReferenceDeclaration;
 import tools.refinery.language.semantics.SemanticsUtils;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.Model;
+import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.representation.AnyPartialFunction;
-import tools.refinery.store.reasoning.representation.PartialFunction;
-import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.util.CancellationToken;
@@ -31,6 +29,9 @@ import java.util.function.UnaryOperator;
 
 @Singleton
 public class PartialInterpretation2Json {
+	private static final String UNKNOWN_STRING = "unknown";
+	private static final String ERROR_STRING = "error";
+
 	@Inject
 	private SemanticsUtils semanticsUtils;
 
@@ -39,35 +40,34 @@ public class PartialInterpretation2Json {
 		var json = new JsonObject();
 		for (var entry : facade.getProblemTrace().getRelationTrace().entrySet()) {
 			var relation = entry.getKey();
-			if (relation instanceof ReferenceDeclaration referenceDeclaration &&
-					referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
-				// implement this
-				cancellationToken.checkCancelled();
-			}
-			else{
-				var partialSymbol = entry.getValue().asPartialRelation();
-				var tuples = getTuplesJson(facade, partialSymbol);
-				var name = semanticsUtils.getNameWithoutRootPrefix(relation).orElse(partialSymbol.name());
-				json.add(name, tuples);
-				cancellationToken.checkCancelled();
-			}
+			var partialSymbol = entry.getValue();
+			var tuples = getTuplesJson(facade, partialSymbol);
+			var name = semanticsUtils.getNameWithoutRootPrefix(relation).orElse(partialSymbol.name());
+			json.add(name, tuples);
+			cancellationToken.checkCancelled();
 		}
 		json.add("builtin::count", getCountJson(model, facade.getConcreteness()));
 		return json;
 	}
 
-	private static JsonArray getTuplesJson(ModelFacade facade, PartialRelation partialSymbol) {
+	private static JsonArray getTuplesJson(ModelFacade facade, AnyPartialSymbol partialSymbol) {
 		var interpretation = facade.getPartialInterpretation(partialSymbol);
+		return getTuplesJson((PartialInterpretation<?, ?>) interpretation);
+	}
+
+	private static <A extends AbstractValue<A, C>, C> JsonArray getTuplesJson(
+			PartialInterpretation<A, C> interpretation) {
 		var cursor = interpretation.getAll();
 		return getTuplesJson(cursor);
 	}
 
-	private static JsonArray getTuplesJson(Cursor<Tuple, ?> cursor) {
+	private static <A extends AbstractValue<A, C>, C> JsonArray getTuplesJson(Cursor<Tuple, A> cursor) {
 		return getTuplesJson(cursor, Function.identity());
 	}
 
-	private static <T, R> JsonArray getTuplesJson(Cursor<Tuple, T> cursor, Function<T, R> transform) {
-		var map = new TreeMap<Tuple, Object>();
+	private static <A extends AbstractValue<A, C>, C> JsonArray getTuplesJson(
+			Cursor<Tuple, A> cursor, Function<A, A> transform) {
+		var map = new TreeMap<Tuple, A>();
 		while (cursor.move()) {
 			map.put(cursor.getKey(), transform.apply(cursor.getValue()));
 		}
@@ -78,13 +78,26 @@ public class PartialInterpretation2Json {
 		return tuples;
 	}
 
-	private static JsonArray toArray(Tuple tuple, Object value) {
+	// We deliberately use {@code ==} to check for the equality of interned strings.
+	@SuppressWarnings("StringEquality")
+	private static <A extends AbstractValue<A, C>, C> JsonArray toArray(Tuple tuple, A value) {
 		int arity = tuple.getSize();
 		var json = new JsonArray(arity + 1);
 		for (int i = 0; i < arity; i++) {
 			json.add(tuple.get(i));
 		}
-		json.add(value.toString());
+		var stringValue = value.toString();
+		if (stringValue == UNKNOWN_STRING || stringValue == ERROR_STRING || value.isConcrete()) {
+			json.add(stringValue);
+		} else if (value.isError()) {
+			var jsonObject = new JsonObject();
+			jsonObject.addProperty(ERROR_STRING, stringValue);
+			json.add(jsonObject);
+		} else {
+			var jsonObject = new JsonObject();
+			jsonObject.addProperty(UNKNOWN_STRING, stringValue);
+			json.add(jsonObject);
+		}
 		return json;
 	}
 

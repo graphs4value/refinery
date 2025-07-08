@@ -77,14 +77,17 @@ function concretizationResultToChatMessage(
     const tuples = json.partialInterpretation[relationMetadata.name] ?? [];
     for (const tuple of tuples) {
       const value = tuple[tuple.length - 1];
-      if (value !== 'ERROR') {
+      if (
+        value !== 'error' &&
+        !(typeof value === 'object' && 'error' in value)
+      ) {
         continue;
       }
       const args = tuple
         .slice(0, -1)
         .map((id) => {
           if (typeof id !== 'number') {
-            return String(id);
+            throw new Error('Invalid node ID');
           }
           const nodeMetadata = json.nodes[id];
           return nodeMetadata?.simpleName ?? String(id);

@@ -56,6 +56,11 @@ public final class AbstractDomainTerms {
 		return new AbstractDomainMeetTerm<>(abstractDomain, left, right);
 	}
 
+	public static <A extends AbstractValue<A, C>, C> Term<Boolean> isDefault(AbstractDomain<A, C> abstractDomain,
+																			 Term<A> body) {
+		return new IsDefaultTerm<>(abstractDomain, body);
+	}
+
 	public static <A extends AbstractValue<A, C>, C> Term<Boolean> isError(AbstractDomain<A, C> abstractDomain,
 																		   Term<A> body) {
 		return new IsErrorTerm<>(abstractDomain, body);

@@ -16,7 +16,7 @@ import tools.refinery.language.semantics.internal.MutableRelationCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.semantics.internal.query.QueryCompiler;
 import tools.refinery.language.semantics.internal.query.RuleCompiler;
-import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
@@ -82,6 +82,9 @@ public class ModelInitializer {
 
 	@Inject
 	private IQualifiedNameProvider qualifiedNameProvider;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	@Inject
 	private QueryCompiler queryCompiler;
@@ -351,7 +354,7 @@ public class ModelInitializer {
 	}
 
 	private void collectAttribute(DatatypeDeclaration datatypeDeclaration, ReferenceDeclaration referenceDeclaration) {
-		var dataExprType = new DataExprType(qualifiedNameProvider.getFullyQualifiedName(datatypeDeclaration));
+		var dataExprType = signatureProvider.getDataType(datatypeDeclaration);
 		var abstractDomain = importAdapterProvider.getTermInterpreter(referenceDeclaration)
 				.getDomain(dataExprType)
 				.orElseThrow(() -> new TracedException(referenceDeclaration,

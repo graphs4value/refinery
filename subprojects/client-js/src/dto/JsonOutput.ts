@@ -24,7 +24,7 @@ export const RelationMetadata = z.object({
   simpleName: z.string(),
   arity: z.number().nonnegative(),
   parameterNames: z.string().array().optional(),
-  detail: z.union([
+  detail: z.discriminatedUnion('type', [
     z.object({
       type: z.literal('class'),
       isAbstract: z.boolean(),
@@ -32,6 +32,7 @@ export const RelationMetadata = z.object({
     }),
     z.object({ type: z.literal('computed'), of: z.string() }),
     z.object({ type: z.literal('reference'), isContainment: z.boolean() }),
+    z.object({ type: z.literal('attribute') }),
     z.object({
       type: z.literal('opposite'),
       of: z.string(),
@@ -43,17 +44,26 @@ export const RelationMetadata = z.object({
     }),
   ]),
   visibility: Visibility.optional(),
+  dataType: z.string().optional(),
 });
 
 export type RelationMetadata = z.infer<typeof RelationMetadata>;
 
+export const Tuple = z
+  .union([
+    z.number(),
+    z.string(),
+    z.object({ unknown: z.string() }),
+    z.object({ error: z.string() }),
+  ])
+  .array();
+
+export type Tuple = z.infer<typeof Tuple>;
+
 export const JsonOutput = z.object({
   nodes: NodeMetadata.array(),
   relations: RelationMetadata.array(),
-  partialInterpretation: z.record(
-    z.string(),
-    z.union([z.number(), z.string()]).array().array(),
-  ),
+  partialInterpretation: z.record(z.string(), Tuple.array()),
 });
 
 export type JsonOutput = z.infer<typeof JsonOutput>;

@@ -144,8 +144,8 @@ export {
 } from '@tools.refinery/client';
 
 export const SemanticsResult = z.union([
-  RefineryResult.Error,
   RefineryResult.Success(ConcretizationSuccessResult),
+  RefineryResult.Error,
 ]);
 
 export type SemanticsResult = z.infer<typeof SemanticsResult>;

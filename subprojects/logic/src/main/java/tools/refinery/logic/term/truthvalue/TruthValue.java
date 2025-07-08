@@ -32,6 +32,11 @@ public enum TruthValue implements ComparableAbstractValue<TruthValue, Boolean>, 
 		return name;
 	}
 
+	@Override
+	public String toString() {
+		return getName();
+	}
+
 	public static TruthValue of(boolean value) {
 		return value ? TRUE : FALSE;
 	}

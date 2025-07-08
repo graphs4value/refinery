@@ -29,9 +29,10 @@ public class DocumentationCommentParser {
 	private static final String PREFIX = "tools.refinery.language.documentation.DocumentationCommentParser.";
 	private static final String CACHE_KEY = PREFIX  + "CACHE_KEY";
 	public static final String CLASS_PARAMETER_NAME = "node";
-	public static final String ENUM_PARAMETER_NAME = "node";
+	public static final String ENUM_PARAMETER_NAME = CLASS_PARAMETER_NAME;
 	public static final String REFERENCE_SOURCE_PARAMETER_NAME = "source";
 	public static final String REFERENCE_TARGET_PARAMETER_NAME = "target";
+	public static final String ATTRIBUTE_PARAMETER_NAME = CLASS_PARAMETER_NAME;
 	public static final String COLOR_TAG = PREFIX + "COLOR_TAG";
 	public static final String DOCUMENTATION = PREFIX + "DOCUMENTATION";
 

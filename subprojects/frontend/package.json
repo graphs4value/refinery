@@ -83,6 +83,7 @@
     "react-resize-detector": "^12.1.0",
     "secure-json-parse": "^4.0.0",
     "svg2pdf.js": "^2.5.0",
+    "vite-plugin-svgr": "^4.3.0",
     "xstate": "^4.38.3",
     "zod": "^3.25.67"
   },

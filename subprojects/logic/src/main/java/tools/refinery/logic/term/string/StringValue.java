@@ -159,7 +159,7 @@ public sealed interface StringValue extends AbstractValue<StringValue, String>, 
 
 		@Override
 		public StringValue meet(StringValue other) {
-			return isRefinementOf(other) ? this : UNKNOWN;
+			return isRefinementOf(other) ? this : ERROR;
 		}
 
 		@Override

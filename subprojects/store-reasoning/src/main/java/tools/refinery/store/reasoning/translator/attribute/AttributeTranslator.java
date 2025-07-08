@@ -22,6 +22,7 @@ import tools.refinery.store.reasoning.translator.PartialFunctionTranslator;
 import tools.refinery.store.representation.Symbol;
 
 import static tools.refinery.logic.literal.Literals.check;
+import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.actions.PartialActionLiterals.remove;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 
@@ -55,7 +56,7 @@ public class AttributeTranslator<A extends AbstractValue<A, C>, C> implements Mo
 				Query.of(partialFunction.name() + "#candidate", partialFunction.abstractDomain().abstractType(),
 						(builder, p1, output) -> builder.clause(
 								candidateMay(partialRelation.call(p1)),
-								output.assign(functionView.leftJoin(partialFunction.abstractDomain().unknown(),p1))
+								output.assign(functionView.leftJoin(partialFunction.abstractDomain().unknown(), p1))
 						))
 		);
 
@@ -83,6 +84,7 @@ public class AttributeTranslator<A extends AbstractValue<A, C>, C> implements Mo
 			propagationBuilder.rule(Rule.of(partialFunction.name() + "#notDefinedAt", (builder, p1) -> builder
 					.clause(
 							may(partialRelation.call(p1)),
+							not(must(partialRelation.call(p1))),
 							check(AbstractDomainTerms.isError(partialFunction.abstractDomain(),
 									partialFunction.call(Concreteness.PARTIAL, p1)))
 					)
@@ -94,6 +96,7 @@ public class AttributeTranslator<A extends AbstractValue<A, C>, C> implements Mo
 					(builder, p1) -> builder
 							.clause(
 									candidateMay(partialRelation.call(p1)),
+									not(candidateMust(partialRelation.call(p1))),
 									check(AbstractDomainTerms.isError(partialFunction.abstractDomain(),
 											partialFunction.call(Concreteness.CANDIDATE, p1)))
 							)

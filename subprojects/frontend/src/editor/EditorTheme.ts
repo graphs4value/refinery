@@ -7,6 +7,7 @@
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
+import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import {
   alpha,
@@ -22,7 +23,6 @@ import typeHashTextColor from '../utils/typeHashTextColor';
 
 import fieldSVG from './icons/symbol-field.svg?raw';
 import keywordSVG from './icons/symbol-keyword.svg?raw';
-import methodSVG from './icons/symbol-method.svg?raw';
 import miscSVG from './icons/symbol-misc.svg?raw';
 import namespaceSVG from './icons/symbol-namespace.svg?raw';
 import structureSVG from './icons/symbol-structure.svg?raw';
@@ -640,7 +640,7 @@ export default styled('div', {
     ...completionIconStyle('module', namespaceSVG),
     ...completionIconStyle('node', fieldSVG),
     ...completionIconStyle('operator', keywordSVG),
-    ...completionIconStyle('relation', methodSVG),
+    ...completionIconStyle('relation', labelOutlinedSVG),
     ...completionIconStyle('variable', variableSVG),
     '.cm-tooltip.cm-completionInfo': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as

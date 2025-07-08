@@ -232,4 +232,8 @@ public final class ProblemUtil {
 	public static boolean canDisableDecision(Relation relation) {
 		return isDecideByDefault(relation);
 	}
+
+	public static boolean isAttribute(ReferenceDeclaration referenceDeclaration) {
+		return referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration;
+	}
 }

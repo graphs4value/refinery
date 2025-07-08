@@ -39,6 +39,7 @@ export function getDefaultVisibility(
   switch (detail.type) {
     case 'class':
     case 'reference':
+    case 'attribute':
     case 'opposite':
       return hideBuiltIn(metadata, 'all');
     case 'pred':

@@ -132,7 +132,7 @@ export function createGraphTheme({
           // so we still use RGBA whenever possible.
           fill: alpha(theme.palette.text.primary, shadowAlapha),
         },
-    '.node-exists-UNKNOWN .node-outline': {
+    '.node-exists-unknown .node-outline': {
       strokeDasharray: '5 2',
     },
     ...createTypeHashStyles(theme, colorNodes, hexTypeHashes),
@@ -151,25 +151,25 @@ export function createGraphTheme({
         fill: theme.palette.text.primary,
       },
     },
-    ...createEdgeColor('UNKNOWN', theme.palette.text.secondary, 'none'),
-    ...createEdgeColor('ERROR', errorColor.main),
-    '.icon-TRUE': {
+    ...createEdgeColor('unknown', theme.palette.text.secondary, 'none'),
+    ...createEdgeColor('error', errorColor.main),
+    '.icon-true': {
       fill: theme.palette.text.primary,
     },
-    '.icon-UNKNOWN': {
+    '.icon-unknown': {
       fill: theme.palette.text.secondary,
     },
-    '.icon-ERROR': {
+    '.icon-error': {
       fill: errorColor.main,
     },
-    'text.label-UNKNOWN': {
+    'text.label-unknown': {
       fill: theme.palette.text.secondary,
     },
-    'text.label-ERROR': {
+    'text.label-error': {
       fill: errorColor.main,
     },
-    '.node-exists-FALSE': {
-      'text:not(.label-ERROR)': {
+    '.node-exists-false': {
+      'text:not(.label-error)': {
         fill: theme.palette.text.secondary,
       },
       '.node-outline': {
@@ -179,11 +179,11 @@ export function createGraphTheme({
       '.node-header': {
         fill: `${theme.palette.background.default} !important`,
       },
-      '.icon-TRUE': {
+      '.icon-true': {
         fill: theme.palette.text.secondary,
       },
     },
-    '.node-exists-ERROR': {
+    '.node-exists-error': {
       '.node-outline': {
         stroke: errorColor.main,
       },
@@ -213,7 +213,7 @@ export default styled('div', {
       'text, .edge-arrow, .icon, .node-shadow.node-bg': {
         display: 'none !important',
       },
-      '.edge-line, .node-exists-UNKNOWN .node-outline, .node-exists-FALSE .node-outline':
+      '.edge-line, .node-exists-unknown .node-outline, .node-exists-false .node-outline':
         {
           strokeDasharray: 'none !important',
         },

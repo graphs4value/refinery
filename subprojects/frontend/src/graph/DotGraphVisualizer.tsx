@@ -75,9 +75,11 @@ function DotGraphVisualizer({
           undefined
         >;
         renderer.keyMode('id');
-        ['TRUE', 'UNKNOWN', 'ERROR'].forEach((icon) =>
-          renderer.addImage(`#${icon}`, 16, 16),
-        );
+        ['true', 'unknown', 'error'].forEach((icon) => {
+          renderer.addImage(`#${icon}`, 16, 16);
+          renderer.addImage(`#attribute-${icon}`, 16, 16);
+          renderer.addImage(`#string-${icon}`, 16, 16);
+        });
         renderer.zoom(false);
         renderer.tweenPrecision('5%');
         renderer.tweenShapes(false);

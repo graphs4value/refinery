@@ -150,13 +150,14 @@ function VisibilityPanel({
       return;
     }
     const visibility = graph.getVisibility(name);
+    const trueValue = metadata.dataType === undefined ? 'true' : 'concrete';
     const row = (
       <tr key={metadata.name}>
         <td>
-          <Tooltip title="Show true and error values" placement="top">
+          <Tooltip title={`Show ${trueValue} and error values`} placement="top">
             <Checkbox
               checked={visibility !== 'none'}
-              aria-label={`Show true and error values of ${metadata.simpleName}`}
+              aria-label={`Show ${trueValue} and error values of ${metadata.simpleName}`}
               onClick={() =>
                 graph.setVisibility(
                   name,

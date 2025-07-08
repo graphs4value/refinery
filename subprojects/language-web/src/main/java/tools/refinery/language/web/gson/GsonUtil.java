@@ -31,6 +31,7 @@ public class GsonUtil {
 					.registerSubtype(RelationDetail.Class.class, "class")
 					.registerSubtype(RelationDetail.Computed.class, "computed")
 					.registerSubtype(RelationDetail.Reference.class, "reference")
+					.registerSubtype(RelationDetail.Attribute.class, "attribute")
 					.registerSubtype(RelationDetail.Opposite.class, "opposite")
 					.registerSubtype(RelationDetail.Predicate.class, "pred"))
 			.registerTypeAdapter(NodeKind.class, new LowercaseTypeAdapter<>(NodeKind.class))

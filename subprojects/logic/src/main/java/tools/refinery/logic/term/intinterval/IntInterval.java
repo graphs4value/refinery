@@ -97,7 +97,30 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 
 	@Override
 	public @NotNull String toString() {
-		return "(%s..%s)".formatted(lowerBound(), upperBound());
+		if (lowerBound.equals(upperBound)) {
+			return lowerBound().toString();
+		}
+		if (Bound.Infinite.NEGATIVE_INFINITY.equals(lowerBound) &&
+				Bound.Infinite.POSITIVE_INFINITY.equals(upperBound)) {
+			return "unknown";
+		}
+		if (Bound.Infinite.POSITIVE_INFINITY.equals(lowerBound) &&
+				Bound.Infinite.NEGATIVE_INFINITY.equals(upperBound)) {
+			return "error";
+		}
+		var builder = new StringBuilder();
+		if (Bound.Infinite.NEGATIVE_INFINITY.equals(lowerBound)) {
+			builder.append("*");
+		} else {
+			builder.append(lowerBound);
+		}
+		builder.append("..");
+		if (Bound.Infinite.POSITIVE_INFINITY.equals(upperBound)) {
+			builder.append("*");
+		} else {
+			builder.append(upperBound);
+		}
+		return builder.toString();
 	}
 
 	@Override

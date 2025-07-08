@@ -71,7 +71,7 @@ function clipCompartmentBackground(node: SVGGElement) {
   const isEmpty = node.classList.contains('node-empty');
   // Make sure that empty nodes are fully filled.
   const height = modifyAttribute(compartment, 'height', isEmpty ? 10 : 5);
-  if (node.classList.contains('node-equalsSelf-UNKNOWN')) {
+  if (node.classList.contains('node-equalsSelf-unknown')) {
     addShadow(node, container, 6);
   }
   container.id = `${node.id},container`;
@@ -169,9 +169,13 @@ function replaceImages(node: SVGGElement) {
     use.setAttribute('y', String(yOffset));
     use.setAttribute('width', sizeString);
     use.setAttribute('height', sizeString);
-    const iconName = `icon-${href.replace('#', '')}`;
+    let iconName = `icon-${href.replace('#', '')}`;
+    const iconClass = iconName.replace('attribute-', '');
+    if (iconName.endsWith('-error')) {
+      iconName = 'icon-error';
+    }
     use.setAttribute('href', `#refinery-${iconName}`);
-    use.classList.add('icon', iconName);
+    use.classList.add('icon', iconClass);
     const sibling = image.nextElementSibling;
     // Since dot doesn't respect the `id` attribute on table cells with a single image,
     // compute the ID based on the ID of the next element (the label).

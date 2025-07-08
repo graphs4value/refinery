@@ -58,7 +58,7 @@ export const Unsatisfiable = z.object({
 
 export type Unsatisfiable = z.infer<typeof Unsatisfiable>;
 
-const ErrorResult = z.union([
+const ErrorResult = z.discriminatedUnion('result', [
   Timeout,
   Cancelled,
   RequestError,

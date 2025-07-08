@@ -8,7 +8,11 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["vite/client", "vite-plugin-pwa/client"],
+    "types": [
+      "vite/client",
+      "vite-plugin-pwa/client",
+      "vite-plugin-svgr/client",
+    ],
     "emitDeclarationOnly": true,
     "outDir": "build/typescript/browser",
     "paths": {
