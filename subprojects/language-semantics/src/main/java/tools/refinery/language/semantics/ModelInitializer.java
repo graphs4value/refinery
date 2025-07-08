@@ -460,13 +460,13 @@ public class ModelInitializer {
 
 	private <A extends AbstractValue<A, C>, C> void collectAttributeDeclarationMetamodel(
 			PartialFunction<A, C> partialFunction, PartialRelation source, ReferenceDeclaration referenceDeclaration) {
-		metamodelBuilder.attribute(partialFunction, new AttributeInfo(source));
 		// The type of the FunctionInfo always matches the type of the PartialFunction,
 		// because we have created them at the same time.
 		@SuppressWarnings("unchecked")
 		var functionInfo = (FunctionInfo<A, C>) functionInfoMap.get(referenceDeclaration);
 		var seed = functionInfo.toSeed();
 		modelSeedBuilder.seed(partialFunction, seed);
+		metamodelBuilder.attribute(partialFunction, new AttributeInfo(source, seed.majorityValue()));
 	}
 
 	private ConcretizationSettings getConcretizationSettings(Relation relation) {

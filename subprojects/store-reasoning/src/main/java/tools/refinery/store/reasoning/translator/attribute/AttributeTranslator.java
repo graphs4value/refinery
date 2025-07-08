@@ -29,54 +29,55 @@ import static tools.refinery.store.reasoning.literal.PartialLiterals.*;
 public class AttributeTranslator<A extends AbstractValue<A, C>, C> implements ModelStoreConfiguration {
 	private final PartialRelation partialRelation;
 	private final PartialFunction<A, C> partialFunction;
+	private final A defaultValue;
 
 	public AttributeTranslator(PartialFunction<A, C> partialFunction, AttributeInfo attributeInfo) {
 		this.partialFunction = partialFunction;
 		this.partialRelation = attributeInfo.owningType();
+		if (attributeInfo.defaultValue() == null) {
+			defaultValue = partialFunction.abstractDomain().unknown();
+		} else {
+			defaultValue = partialFunction.abstractDomain().abstractType().cast(attributeInfo.defaultValue());
+		}
 	}
 
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
 		PartialFunctionTranslator<A, C> translator = PartialFunctionTranslator.of(partialFunction);
-		Symbol<A> symbol = new Symbol<>(partialFunction.name(), 1, partialFunction.abstractDomain().abstractType(),
-				partialFunction.abstractDomain().unknown());
+		var abstractType = partialFunction.abstractDomain().abstractType();
+		Symbol<A> symbol = new Symbol<>(partialFunction.name(), 1, abstractType,
+				defaultValue);
 		translator.symbol(symbol);
 
 		var functionView = new FunctionView<>(symbol);
 
-		translator.partial(
-				Query.of(partialFunction.name() + "#partial", partialFunction.abstractDomain().abstractType(),
-						(builder, p1, output) -> builder.clause(
-								may(partialRelation.call(p1)),
-								output.assign(functionView.leftJoin(partialFunction.abstractDomain().unknown(), p1))
-						))
-		);
+		translator.partial(Query.of(partialFunction.name() + "#partial", abstractType,
+				(builder, p1, output) -> builder.clause(
+						may(partialRelation.call(p1)),
+						output.assign(functionView.leftJoin(defaultValue, p1))
+				)));
 
-		translator.candidate(
-				Query.of(partialFunction.name() + "#candidate", partialFunction.abstractDomain().abstractType(),
-						(builder, p1, output) -> builder.clause(
-								candidateMay(partialRelation.call(p1)),
-								output.assign(functionView.leftJoin(partialFunction.abstractDomain().unknown(), p1))
-						))
-		);
+		translator.candidate(Query.of(partialFunction.name() + "#candidate", abstractType,
+				(builder, p1, output) -> builder.clause(
+						candidateMay(partialRelation.call(p1)),
+						output.assign(functionView.leftJoin(defaultValue, p1))
+				)));
 
-		translator.accept(Criteria.whenNoMatch(
-				Query.of(partialFunction.name() + "#accept", (builder, p1) -> builder.clause(
+		translator.accept(Criteria.whenNoMatch(Query.of(partialFunction.name() + "#accept",
+				(builder, p1) -> builder.clause(
 						candidateMust(partialRelation.call(p1)),
 						candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(p1)),
 						check(AbstractDomainTerms.isError(partialFunction.abstractDomain(),
 								partialFunction.call(Concreteness.CANDIDATE, p1)))
-				))
-		));
+				))));
 
-		translator.exclude(Criteria.whenHasMatch(
-				Query.of(partialFunction.name() + "#exclude", (builder, p1) -> builder.clause(
+		translator.exclude(Criteria.whenHasMatch(Query.of(partialFunction.name() + "#exclude",
+				(builder, p1) -> builder.clause(
 						must(partialRelation.call(p1)),
 						must(ReasoningAdapter.EXISTS_SYMBOL.call(p1)),
 						check(AbstractDomainTerms.isError(partialFunction.abstractDomain(),
 								partialFunction.call(Concreteness.PARTIAL, p1)))
-				))
-		));
+				))));
 
 		storeBuilder.with(translator);
 
