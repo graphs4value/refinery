@@ -9,7 +9,6 @@ import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.dnf.FunctionalQuery;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.map.FilteredCursor;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
@@ -76,21 +75,7 @@ public class QueryBasedFunctionInterpretationFactory<A extends AbstractValue<A, 
 
 		@Override
 		public Cursor<Tuple, A> getAll() {
-			return new FilteredResultSetCursor<>(resultSet.getAll(), errorValue);
-		}
-	}
-
-	private static class FilteredResultSetCursor<A> extends FilteredCursor<Tuple, A> {
-		private final A errorValue;
-
-		public FilteredResultSetCursor(Cursor<Tuple, A> wrappedCursor, A errorValue) {
-			super(wrappedCursor);
-			this.errorValue = errorValue;
-		}
-
-		@Override
-		protected boolean keep() {
-			return !errorValue.equals(getValue());
+			return resultSet.getAll();
 		}
 	}
 }
