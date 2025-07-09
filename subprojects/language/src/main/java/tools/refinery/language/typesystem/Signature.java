@@ -8,4 +8,7 @@ package tools.refinery.language.typesystem;
 import java.util.List;
 
 public record Signature(List<FixedType> parameterTypes, FixedType resultType) {
+	public int arity() {
+		return parameterTypes.size();
+	}
 }

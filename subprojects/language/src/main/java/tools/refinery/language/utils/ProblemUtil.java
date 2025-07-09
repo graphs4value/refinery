@@ -14,6 +14,7 @@ import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
 	public static final String MODULE_EXTENSION = "refinery";
+	public static final int UNKNOWN_STATIC_ARITY = -1;
 
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
@@ -88,6 +89,8 @@ public final class ProblemUtil {
 		return node.eContainingFeature() == ProblemPackage.Literals.NODE_DECLARATION__NODES;
 	}
 
+	// This method only makes sense written positively even if we always invert it in conditions.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean isInvalidMultiplicityConstraint(Relation relation) {
 		return relation.eContainingFeature() == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY;
 	}
@@ -191,7 +194,7 @@ public final class ProblemUtil {
 			case ClassDeclaration ignoredClassDeclaration -> 1;
 			case EnumDeclaration ignoredEnumDeclaration -> 1;
 			case DatatypeDeclaration ignoredDatatypeDeclaration -> 1;
-			case ReferenceDeclaration ignoredReferenceDeclaration -> 2;
+			case ReferenceDeclaration ignoredReferenceDeclaration -> UNKNOWN_STATIC_ARITY;
 			case PredicateDefinition predicateDefinition -> predicateDefinition.getParameters().size();
 			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
 		};

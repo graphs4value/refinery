@@ -583,10 +583,17 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var type = parameter.getParameterType();
-		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
-			var message = "Shadow relation '%s' is not allowed in parameter types.".formatted(type.getName());
-			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
-					SHADOW_RELATION_ISSUE);
+		if (type != null && !type.eIsProxy()) {
+			if (type instanceof ReferenceDeclaration referenceDeclaration &&
+					ProblemUtil.isAttribute(referenceDeclaration)) {
+				var message = "Attribute '%s' is not allowed in parameter types.".formatted(type.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+						SHADOW_RELATION_ISSUE);
+			} else if (ProblemUtil.isShadow(type)) {
+				var message = "Shadow relation '%s' is not allowed in parameter types.".formatted(type.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+						SHADOW_RELATION_ISSUE);
+			}
 		}
 		var binding = builtinAnnotationContext.getParameterBinding(parameter);
 		if (parametricDefinition instanceof RuleDefinition rule) {

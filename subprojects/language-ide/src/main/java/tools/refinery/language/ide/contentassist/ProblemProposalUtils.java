@@ -26,6 +26,7 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
 
 @Singleton
@@ -37,6 +38,9 @@ public class ProblemProposalUtils {
 
 	@Inject
 	private IQualifiedNameProvider qualifiedNameProvider;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	@Inject
 	private DocumentationCommentParser documentationCommentParser;
@@ -61,6 +65,12 @@ public class ProblemProposalUtils {
 		} catch (NumberFormatException e) {
 			// Ignore parse error, omit arity.
 		}
+		if (arity < 0) {
+			var candidateEObject = candidate.getEObjectOrProxy();
+			if (!candidateEObject.eIsProxy() && candidateEObject instanceof Relation relation) {
+				arity = signatureProvider.getArity(relation);
+			}
+		}
 		var eClassDescription = getEClassDescription(candidate, null);
 		return getDescriptionWithArity(arity, eClassDescription);
 	}
@@ -71,7 +81,13 @@ public class ProblemProposalUtils {
 			// Datatypes shouldn't have their arity displayed.
 			return DATATYPE_KIND;
 		}
-		int arity = eObject instanceof Relation relation ? ProblemUtil.getArityWithoutProxyResolution(relation) : -1;
+		int arity = -1;
+		if (eObject instanceof Relation relation) {
+			arity = ProblemUtil.getArityWithoutProxyResolution(relation);
+			if (arity < 0) {
+				arity = signatureProvider.getArity(relation);
+			}
+		}
 		var eClassDescription = getEClassDescription(null, eObject);
 		return getDescriptionWithArity(arity, eClassDescription);
 	}

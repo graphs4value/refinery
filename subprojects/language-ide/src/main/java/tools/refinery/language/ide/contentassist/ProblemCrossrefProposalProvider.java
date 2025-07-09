@@ -33,6 +33,8 @@ import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.services.ProblemGrammarAccess;
+import tools.refinery.language.typesystem.FixedType;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ReferenceCounter;
@@ -57,6 +59,9 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 
 	@Inject
 	private IdeContentProposalCreator proposalCreator;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	@Inject
 	private ProblemProposalUtils proposalUtils;
@@ -237,8 +242,7 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			if (builtinSymbols.exists().equals(candidateEObjectOrProxy)) {
 				return false;
 			}
-			return ProblemResourceDescriptionStrategy.TYPE_LIKE_TRUE.equals(
-					candidate.getUserData(ProblemResourceDescriptionStrategy.TYPE_LIKE));
+			return isTypeLike(candidate, candidateEObjectOrProxy);
 		}
 
 		if (eReference.equals(ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS) &&
@@ -258,6 +262,25 @@ public class ProblemCrossrefProposalProvider extends IdeCrossrefProposalProvider
 		}
 
 		return true;
+	}
+
+	private boolean isTypeLike(IEObjectDescription candidate, EObject candidateEObjectOrProxy) {
+		int staticArity = Integer.parseInt(candidate.getUserData(ProblemResourceDescriptionStrategy.ARITY), 10);
+		if (staticArity == 1) {
+			return true;
+		}
+		if (staticArity < 0) {
+			if (candidateEObjectOrProxy.eIsProxy()) {
+				// Be more permissive and list unresolvable proxies in the suggestions.
+				return true;
+			}
+			if (!(candidateEObjectOrProxy instanceof Relation relation)) {
+				return false;
+			}
+			var signature = signatureProvider.getSignature(relation);
+			return signature.arity() == 1 && FixedType.LITERAL.equals(signature.resultType());
+		}
+		return false;
 	}
 
 	private boolean supersetShouldBeVisible(

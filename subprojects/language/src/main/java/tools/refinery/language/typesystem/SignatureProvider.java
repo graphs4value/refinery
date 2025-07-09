@@ -34,7 +34,7 @@ public class SignatureProvider {
 	}
 
 	public int getArity(Relation relation) {
-		return getSignature(relation).parameterTypes().size();
+		return getSignature(relation).arity();
 	}
 
 	private Signature computeSignature(Relation relation) {

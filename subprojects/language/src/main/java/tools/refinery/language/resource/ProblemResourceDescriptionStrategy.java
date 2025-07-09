@@ -30,8 +30,6 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	private static final String DATA_PREFIX = "tools.refinery.language.resource.ProblemResourceDescriptionStrategy.";
 
 	public static final String ARITY = DATA_PREFIX + "ARITY";
-	public static final String TYPE_LIKE = DATA_PREFIX + "TYPE_LIKE";
-	public static final String TYPE_LIKE_TRUE = "true";
 	public static final String ERROR_PREDICATE = DATA_PREFIX + "ERROR_PREDICATE";
 	public static final String ERROR_PREDICATE_TRUE = "true";
 	public static final String SHADOWING_KEY = DATA_PREFIX + "SHADOWING_KEY";
@@ -188,9 +186,6 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	private static void addRelationUserData(Relation relation, ImmutableMap.Builder<String, String> builder) {
 		builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
 		builder.put(ARITY, Integer.toString(ProblemUtil.getArityWithoutProxyResolution(relation), 10));
-		if (ProblemUtil.isTypeLike(relation)) {
-			builder.put(TYPE_LIKE, TYPE_LIKE_TRUE);
-		}
 		if (relation instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			builder.put(ABSTRACT, ABSTRACT_TRUE);
 		}
