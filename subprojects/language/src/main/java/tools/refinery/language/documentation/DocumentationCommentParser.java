@@ -27,14 +27,12 @@ import java.util.regex.Pattern;
 @Singleton
 public class DocumentationCommentParser {
 	private static final String PREFIX = "tools.refinery.language.documentation.DocumentationCommentParser.";
-	private static final String CACHE_KEY = PREFIX  + "CACHE_KEY";
+	private static final String CACHE_KEY = PREFIX + "CACHE_KEY";
 	public static final String CLASS_PARAMETER_NAME = "node";
 	public static final String ENUM_PARAMETER_NAME = CLASS_PARAMETER_NAME;
 	public static final String REFERENCE_SOURCE_PARAMETER_NAME = "source";
 	public static final String REFERENCE_TARGET_PARAMETER_NAME = "target";
 	public static final String ATTRIBUTE_PARAMETER_NAME = CLASS_PARAMETER_NAME;
-	public static final String COLOR_TAG = PREFIX + "COLOR_TAG";
-	public static final String DOCUMENTATION = PREFIX + "DOCUMENTATION";
 
 	private static final Pattern SPLIT_PATTERN = Pattern.compile("(?m)^\\s*@(?:param|color)");
 	private static final Pattern PARAM_PATTERN = Pattern.compile(
@@ -54,16 +52,16 @@ public class DocumentationCommentParser {
 
 	@Nullable
 	public String getDocumentation(EObject eObject) {
-		return parseDocumentation(eObject).get(DOCUMENTATION);
+		return getParsedDocumentation(eObject).documentation();
+	}
+
+	@Nullable
+	public String getColor(EObject eObject) {
+		return getParsedDocumentation(eObject).color();
 	}
 
 	@NotNull
-	public Map<String, String> parseDocumentation(EObject eObject) {
-		return getParsedDocumentation(eObject).userData();
-	}
-
-	@NotNull
-	public ParsedDocumentation getParsedDocumentation(EObject eObject) {
+	private ParsedDocumentation getParsedDocumentation(EObject eObject) {
 		if (eObject == null) {
 			return ParsedDocumentation.EMPTY;
 		}
@@ -109,12 +107,11 @@ public class DocumentationCommentParser {
 		if (parameterDocumentation == null) {
 			return ParsedDocumentation.EMPTY;
 		}
-		return new ParsedDocumentation(Map.of(DOCUMENTATION, parameterDocumentation), Map.of());
+		return new ParsedDocumentation(parameterDocumentation);
 	}
 
 	private ParsedDocumentation parseDocumentationText(EObject eObject, String documentation) {
 		var splits = splitDocumentation(documentation);
-		var parsedMap = new LinkedHashMap<String, String>();
 		var documentationPrefix = splits.removeFirst();
 		var defaultParameters = getDefaultParameterDocumentation(eObject);
 		var parameters = new LinkedHashMap<>(defaultParameters);
@@ -126,7 +123,6 @@ public class DocumentationCommentParser {
 				// Use a {@code _} instead of a {@code #} to signify hex codes, because the type hashes have to be
 				// valid CSS class names.
 				color = colorMatch.group(1).toLowerCase(Locale.ROOT);
-				parsedMap.put(COLOR_TAG, sanitizeHex(color));
 			}
 			var paramMatch = PARAM_PATTERN.matcher(split);
 			if (paramMatch.find()) {
@@ -145,10 +141,10 @@ public class DocumentationCommentParser {
 			}
 		}
 		var transformedDocumentation = formatDocumentation(documentationPrefix, parameters, defaultParameters, color);
-		if (!Strings.isNullOrEmpty(transformedDocumentation)) {
-			parsedMap.put(DOCUMENTATION, transformedDocumentation);
+		if (Strings.isNullOrEmpty(transformedDocumentation)) {
+			transformedDocumentation = null;
 		}
-		return new ParsedDocumentation(Collections.unmodifiableMap(parsedMap),
+		return new ParsedDocumentation(transformedDocumentation, sanitizeHex(color),
 				Collections.unmodifiableMap(parameters));
 	}
 
@@ -157,6 +153,9 @@ public class DocumentationCommentParser {
 	}
 
 	public static String sanitizeHex(String color) {
+		if (color == null) {
+			return null;
+		}
 		return color.replace("#", "_");
 	}
 
@@ -181,13 +180,20 @@ public class DocumentationCommentParser {
 					"The instance of the `%s` enumeration.".formatted(formatIdentifier(enumDeclaration.getName())));
 			case ReferenceDeclaration referenceDeclaration -> {
 				var formattedName = formatIdentifier(referenceDeclaration.getName());
-				var linkType = ProblemUtil.isContainmentReference(referenceDeclaration) ? "containment" : "reference";
-				// Use {@link ImmutableMap} to maintain insertion order.
-				yield ImmutableMap.of(
-						REFERENCE_SOURCE_PARAMETER_NAME,
-						"The source of the `%s` %s link.".formatted(formattedName, linkType),
-						REFERENCE_TARGET_PARAMETER_NAME,
-						"The target of the `%s` %s link.".formatted(formattedName, linkType));
+				if (ProblemUtil.isAttribute(referenceDeclaration)) {
+					yield ImmutableMap.of(
+							ATTRIBUTE_PARAMETER_NAME,
+							"The owner of the `%s` attribute.".formatted(formattedName));
+				} else {
+					var linkType = ProblemUtil.isContainmentReference(referenceDeclaration) ? "containment" :
+							"reference";
+					// Use {@link ImmutableMap} to maintain insertion order.
+					yield ImmutableMap.of(
+							REFERENCE_SOURCE_PARAMETER_NAME,
+							"The source of the `%s` %s link.".formatted(formattedName, linkType),
+							REFERENCE_TARGET_PARAMETER_NAME,
+							"The target of the `%s` %s link.".formatted(formattedName, linkType));
+				}
 			}
 			case ParametricDefinition parametricDefinition -> {
 				// We must allow duplicates, because this could be called on an invalid model.

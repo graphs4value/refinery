@@ -17,6 +17,7 @@ import {
 } from '@mui/material/styles';
 import { range } from 'lodash-es';
 
+import attributeSVG from '../graph/dot_outlined.svg?raw';
 import { darkTheme } from '../theme/ThemeProvider';
 import svgURL from '../utils/svgURL';
 import typeHashTextColor from '../utils/typeHashTextColor';
@@ -642,6 +643,7 @@ export default styled('div', {
     ...completionIconStyle('operator', keywordSVG),
     ...completionIconStyle('relation', labelOutlinedSVG),
     ...completionIconStyle('variable', variableSVG),
+    ...completionIconStyle('attribute', attributeSVG),
     '.cm-tooltip.cm-completionInfo': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
         | CSSObject

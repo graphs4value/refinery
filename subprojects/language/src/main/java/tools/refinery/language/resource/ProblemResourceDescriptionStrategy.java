@@ -10,7 +10,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -18,7 +17,6 @@ import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
-import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportCollector;
@@ -68,12 +66,6 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	@Inject
 	private ImportCollector importCollector;
-
-	@Inject
-	private DocumentationCommentParser documentationCommentParser;
-
-	@Inject
-	private IEObjectDocumentationProvider documentationProvider;
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
@@ -180,8 +172,6 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (ProblemUtil.isShadow(eObject)) {
 			builder.put(SHADOW_PREDICATE, SHADOW_PREDICATE_TRUE);
 		}
-		var documentationMap = documentationCommentParser.parseDocumentation(eObject);
-		builder.putAll(documentationMap);
 		return builder.build();
 	}
 

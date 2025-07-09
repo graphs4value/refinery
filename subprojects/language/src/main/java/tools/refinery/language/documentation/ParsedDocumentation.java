@@ -5,8 +5,16 @@
  */
 package tools.refinery.language.documentation;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Map;
 
-public record ParsedDocumentation(Map<String, String> userData, Map<String, String> parameterDocumentation) {
-	public static final ParsedDocumentation EMPTY = new ParsedDocumentation(Map.of(), Map.of());
+record ParsedDocumentation(@Nullable String documentation, @Nullable String color,
+						   @NotNull Map<String, String> parameterDocumentation) {
+	public static final ParsedDocumentation EMPTY = new ParsedDocumentation(null);
+
+	public ParsedDocumentation(@Nullable String documentation) {
+		this(documentation, null, Map.of());
+	}
 }

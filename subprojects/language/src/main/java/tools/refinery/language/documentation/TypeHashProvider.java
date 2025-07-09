@@ -50,6 +50,9 @@ public class TypeHashProvider {
 	private GlobalResourceDescriptionProvider globalResourceDescriptionProvider;
 
 	@Inject
+	private DocumentationCommentParser documentationCommentParser;
+
+	@Inject
 	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	public String getTypeHash(Relation relation) {
@@ -143,14 +146,11 @@ public class TypeHashProvider {
 	}
 
 	private String getPresetColor(EObject context, IEObjectDescription description) {
-		var documentationTag = description.getUserData(DocumentationCommentParser.COLOR_TAG);
-		if (documentationTag != null) {
-			return documentationTag;
-		}
 		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(description.getEClass())) {
 			var resolved = EcoreUtil.resolve(description.getEObjectOrProxy(), context);
 			if (!resolved.eIsProxy()) {
-				return builtinAnnotationContext.getColor(resolved);
+				var documentationTag = documentationCommentParser.getColor(resolved);
+				return documentationTag == null ? builtinAnnotationContext.getColor(resolved) : documentationTag;
 			}
 		}
 		return null;
