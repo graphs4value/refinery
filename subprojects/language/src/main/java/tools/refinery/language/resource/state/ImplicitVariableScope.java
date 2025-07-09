@@ -17,7 +17,10 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ImplicitVariableScope {
 	private final EObject root;
@@ -51,16 +54,57 @@ public class ImplicitVariableScope {
 								Deque<ImplicitVariableScope> scopeQueue) {
 		initializeKnownVariables();
 		processEObject(root, scopeProvider, linkingHelper, qualifiedNameConverter);
-		var treeIterator = root.eAllContents();
-		while (treeIterator.hasNext()) {
-			var child = treeIterator.next();
-			if (child instanceof ExistentialQuantifier nestedQuantifier) {
-				scopeQueue.addLast(new ImplicitVariableScope(nestedQuantifier, this));
-				treeIterator.prune();
-			} else {
-				processEObject(child, scopeProvider, linkingHelper, qualifiedNameConverter);
+		if (!(root instanceof AggregationExpr aggregationExpr) || aggregationExpr.getCondition() == null) {
+			walkChildren(root, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			return;
+		}
+		// Aggregation expressions for functions (i.e., not literals) can only introduce new variables in their
+		// condition expression, but not in their value expression.
+		var condition = aggregationExpr.getCondition();
+		processChild(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+		walkChildren(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+		var value = aggregationExpr.getValue();
+		if (value != null && !processAggregatorChild(value, scopeQueue)) {
+			var treeIterator = value.eAllContents();
+			while (treeIterator.hasNext()) {
+				var child = treeIterator.next();
+				if (processAggregatorChild(child, scopeQueue)) {
+					treeIterator.prune();
+				}
 			}
 		}
+	}
+
+	private void walkChildren(
+			EObject parent, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
+			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
+		var treeIterator = parent.eAllContents();
+		while (treeIterator.hasNext()) {
+			var child = treeIterator.next();
+			if (processChild(child, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue)) {
+				treeIterator.prune();
+			}
+		}
+	}
+
+	private boolean processChild(
+			EObject child, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
+			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
+		if (child instanceof ExistentialQuantifier nestedQuantifier) {
+			scopeQueue.addLast(new ImplicitVariableScope(nestedQuantifier, this));
+			return true;
+		}
+		processEObject(child, scopeProvider, linkingHelper, qualifiedNameConverter);
+		return false;
+	}
+
+	private boolean processAggregatorChild(
+			EObject child, Deque<ImplicitVariableScope> scopeQueue) {
+		if (child instanceof AggregationExpr aggregationExpr) {
+			scopeQueue.addLast(new ImplicitVariableScope(aggregationExpr, this));
+			return true;
+		}
+		return false;
 	}
 
 	private void initializeKnownVariables() {

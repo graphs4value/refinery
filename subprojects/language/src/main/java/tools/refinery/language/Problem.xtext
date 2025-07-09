@@ -203,7 +203,7 @@ RangeExpr returns Expr:
 
 UnaryExpr returns Expr:
 	ArithmeticUnaryExpr | NegationExpr |
-	CountExpr | AggregationExpr | ModalExpr | CastExpr;
+	AggregationExpr | ModalExpr | CastExpr;
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -214,12 +214,9 @@ ArithmeticUnaryExpr:
 NegationExpr:
 	"!" body=UnaryExpr;
 
-CountExpr:
-	"count" body=UnaryExpr;
-
 AggregationExpr:
 	aggregator=[AggregatorDeclaration|QualifiedName]
-	"{" value=Expr "|" condition=ComparisonExpr "}";
+	"{" value=Expr ("|" condition=ComparisonExpr)? "}";
 
 enum Concreteness:
 	PARTIAL="partial" | CANDIDATE="candidate";

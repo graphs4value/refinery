@@ -156,7 +156,7 @@ BinaryExpr {
 UnaryExpr {
   !prefix
   (
-    "+" | "-" | "!" | kw<"count"> |
+    "+" | "-" | "!" |
     kw<"candidate"> kw<"partial"> | kw<"may"> | kw<"must">
   )
   Expr

@@ -210,8 +210,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ComparisonExpr" eSuperTypes="#//BinaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//ComparisonOp"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="QuantifiedUnaryExpr" abstract="true"
-      eSuperTypes="#//ExistentialQuantifier #//UnaryExpr"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NegationExpr" eSuperTypes="#//ExistentialQuantifier #//UnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDefinition" eSuperTypes="#//ParametricDefinition #//Relation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cases" upperBound="-1"
         eType="#//Case" containment="true"/>
@@ -231,8 +230,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ArithmeticBinaryExpr" eSuperTypes="#//BinaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//BinaryOp"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="NegationExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
-  <eClassifiers xsi:type="ecore:EClass" name="CountExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="Relation" abstract="true" eSuperTypes="#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="RangeExpr" eSuperTypes="#//BinaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="LogicConstant" eSuperTypes="#//Constant">

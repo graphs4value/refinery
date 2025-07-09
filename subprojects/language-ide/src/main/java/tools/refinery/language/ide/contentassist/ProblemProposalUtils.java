@@ -313,6 +313,9 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass)) {
 			return "relation";
 		}
+		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
+			return "aggregator";
+		}
 		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(eClass)) {
 			return "module";
 		}

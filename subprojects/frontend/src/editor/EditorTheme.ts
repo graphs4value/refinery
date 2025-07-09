@@ -6,6 +6,7 @@
 
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
+import functionsSVG from '@material-icons/svg/svg/functions/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
@@ -641,6 +642,7 @@ export default styled('div', {
     ...completionIconStyle('module', namespaceSVG),
     ...completionIconStyle('node', fieldSVG),
     ...completionIconStyle('operator', keywordSVG),
+    ...completionIconStyle('aggregator', functionsSVG),
     ...completionIconStyle('relation', labelOutlinedSVG),
     ...completionIconStyle('variable', variableSVG),
     ...completionIconStyle('attribute', attributeSVG),

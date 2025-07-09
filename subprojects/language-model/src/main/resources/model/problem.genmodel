@@ -215,7 +215,7 @@
     <genClasses ecoreClass="problem.ecore#//ComparisonExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ComparisonExpr/op"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//QuantifiedUnaryExpr"/>
+    <genClasses ecoreClass="problem.ecore#//NegationExpr"/>
     <genClasses ecoreClass="problem.ecore#//FunctionDefinition">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/cases"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/functionType"/>
@@ -231,8 +231,6 @@
     <genClasses ecoreClass="problem.ecore#//ArithmeticBinaryExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ArithmeticBinaryExpr/op"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//NegationExpr"/>
-    <genClasses ecoreClass="problem.ecore#//CountExpr"/>
     <genClasses ecoreClass="problem.ecore#//Relation"/>
     <genClasses ecoreClass="problem.ecore#//RangeExpr"/>
     <genClasses ecoreClass="problem.ecore#//LogicConstant">

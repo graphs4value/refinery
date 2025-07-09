@@ -73,6 +73,10 @@ extern datatype real.
 
 extern datatype string.
 
+extern aggregator some.
+
+extern aggregator count.
+
 extern aggregator min.
 
 extern aggregator max.

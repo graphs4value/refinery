@@ -250,7 +250,6 @@ public class TypedModule {
 			case Atom atom -> computeExpressionType(atom);
 			case NegationExpr negationExpr -> computeExpressionType(negationExpr);
 			case ArithmeticUnaryExpr arithmeticUnaryExpr -> computeExpressionType(arithmeticUnaryExpr);
-			case CountExpr countExpr -> computeExpressionType(countExpr);
 			case AggregationExpr aggregationExpr -> computeExpressionType(aggregationExpr);
 			case ComparisonExpr comparisonExpr -> computeExpressionType(comparisonExpr);
 			case LatticeBinaryExpr latticeBinaryExpr -> computeExpressionType(latticeBinaryExpr);
@@ -388,11 +387,6 @@ public class TypedModule {
 		var message = "Unsupported operator for data type %s.".formatted(actualType);
 		error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 		return ExprType.INVALID;
-	}
-
-	@NotNull
-	private ExprType computeExpressionType(CountExpr countExpr) {
-		return coerceIntoLiteral(countExpr.getBody()) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
 	}
 
 	@NotNull
