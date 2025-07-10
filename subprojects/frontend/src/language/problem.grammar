@@ -165,7 +165,7 @@ UnaryExpr {
 CastExpr { !cast Expr kw<"as"> DatatypeName }
 
 Aggregation {
-  AggregatorName "{" Expr "|" Expr "}"
+  AggregatorName "{" Expr ("|" Expr)? "}"
 }
 
 Atom { RelationName "+"? ParameterList<Expr> }
