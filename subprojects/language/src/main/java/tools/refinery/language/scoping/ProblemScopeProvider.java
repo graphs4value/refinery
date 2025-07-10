@@ -103,7 +103,7 @@ public class ProblemScopeProvider extends AbstractProblemScopeProvider {
 	protected void addExistentiallyQualifiedVariableToScope(EObject currentContext, Collection<Variable> variables) {
 		switch (currentContext) {
 		case ExistentialQuantifier quantifier -> variables.addAll(quantifier.getImplicitVariables());
-		case Match match -> variables.addAll(match.getCondition().getImplicitVariables());
+		case Case match -> variables.addAll(match.getCondition().getImplicitVariables());
 		default -> {
 			// Nothing to add.
 		}

@@ -13,6 +13,7 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
 
@@ -65,17 +66,17 @@ public class DerivedVariableComputer {
 	}
 
 	protected void installDerivedFunctionDefinitionState(FunctionDefinition definition, Set<String> knownVariables) {
-		for (Case body : definition.getCases()) {
-			switch (body) {
-			case Conjunction conjunction ->
-					createVariablesForScope(new ImplicitVariableScope(conjunction, knownVariables));
-			case Match match -> {
-				var condition = match.getCondition();
-				if (condition != null) {
-					createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables));
-				}
-			}
-			default -> throw new IllegalArgumentException("Unknown Case: " + body);
+		if (ProblemUtil.isSingleExpression(definition)) {
+			// If the function is defined by a single expression (without any case separation), it can't introduce
+			// any new variables.
+			var match = definition.getCases().getFirst();
+			createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables, false));
+			return;
+		}
+		for (Case match : definition.getCases()) {
+			var condition = match.getCondition();
+			if (condition != null) {
+				createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables));
 			}
 		}
 	}
@@ -86,7 +87,7 @@ public class DerivedVariableComputer {
 		}
 	}
 
-	protected void createVariablesForScope(ImplicitVariableScope scope) {
+	private void createVariablesForScope(ImplicitVariableScope scope) {
 		var queue = new ArrayDeque<ImplicitVariableScope>();
 		queue.addLast(scope);
 		while (!queue.isEmpty()) {

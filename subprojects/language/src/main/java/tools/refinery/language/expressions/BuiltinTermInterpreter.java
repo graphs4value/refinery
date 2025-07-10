@@ -22,9 +22,13 @@ public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 			BuiltinSymbols.REAL_NAME);
 	public static final DataExprType STRING_TYPE = new DataExprType(BuiltinLibrary.BUILTIN_LIBRARY_NAME,
 			BuiltinSymbols.STRING_NAME);
+	public static final AggregatorName REIFY_AGGREGATOR = new AggregatorName(BuiltinLibrary.BUILTIN_LIBRARY_NAME,
+			"reify");
+	public static final AggregatorName COUNT_AGGREGATOR = new AggregatorName(BuiltinLibrary.BUILTIN_LIBRARY_NAME,
+			"count");
+	public static final AggregatorName SUM_AGGREGATOR = new AggregatorName(BuiltinLibrary.BUILTIN_LIBRARY_NAME, "sum");
 	public static final AggregatorName MIN_AGGREGATOR = new AggregatorName(BuiltinLibrary.BUILTIN_LIBRARY_NAME, "min");
 	public static final AggregatorName MAX_AGGREGATOR = new AggregatorName(BuiltinLibrary.BUILTIN_LIBRARY_NAME, "max");
-	public static final AggregatorName SUM_AGGREGATOR = new AggregatorName(BuiltinLibrary.BUILTIN_LIBRARY_NAME, "sum");
 
 	public BuiltinTermInterpreter() {
 		addDomain(BOOLEAN_TYPE, TruthValueDomain.INSTANCE);

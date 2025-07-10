@@ -56,17 +56,16 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isShadow(EObject eObject) {
-		return eObject instanceof PredicateDefinition predicateDefinition &&
-				predicateDefinition.getKind() == PredicateKind.SHADOW;
+		return switch (eObject) {
+			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
+			case FunctionDefinition functionDefinition -> functionDefinition.isShadow();
+			default -> false;
+		};
 	}
 
 	public static boolean mayReferToShadow(EObject context) {
 		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
-		return switch (definitionContext) {
-			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
-			case RuleDefinition ignored -> true;
-			case null, default -> false;
-		};
+		return isShadow(definitionContext) || definitionContext instanceof RuleDefinition;
 	}
 
 	public static boolean isAtomNode(Node node) {
@@ -195,6 +194,7 @@ public final class ProblemUtil {
 			case EnumDeclaration ignoredEnumDeclaration -> 1;
 			case DatatypeDeclaration ignoredDatatypeDeclaration -> 1;
 			case ReferenceDeclaration ignoredReferenceDeclaration -> UNKNOWN_STATIC_ARITY;
+			case FunctionDefinition functionDefinition -> functionDefinition.getParameters().size();
 			case PredicateDefinition predicateDefinition -> predicateDefinition.getParameters().size();
 			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
 		};
@@ -238,5 +238,15 @@ public final class ProblemUtil {
 
 	public static boolean isAttribute(ReferenceDeclaration referenceDeclaration) {
 		return referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration;
+	}
+
+	public static boolean isSingleExpression(FunctionDefinition functionDefinition) {
+		var cases = functionDefinition.getCases();
+		if (cases.size() != 1) {
+			return false;
+		}
+		var match = cases.getFirst();
+		var condition = match.getCondition();
+		return condition != null && condition.getLiterals().size() == 1 && match.getValue() == null;
 	}
 }

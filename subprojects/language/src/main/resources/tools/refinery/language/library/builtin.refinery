@@ -73,7 +73,7 @@ extern datatype real.
 
 extern datatype string.
 
-extern aggregator some.
+extern aggregator reify.
 
 extern aggregator count.
 

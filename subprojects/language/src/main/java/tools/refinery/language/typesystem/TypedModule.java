@@ -18,12 +18,17 @@ import tools.refinery.language.expressions.BuiltinTermInterpreter;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ProblemValidator;
 
 import java.util.*;
 
 public class TypedModule {
 	private static final String OPERAND_TYPE_ERROR_MESSAGE = "Cannot determine operand type.";
+	private static final Map<AggregatorName, DataExprType> SPECIAL_AGGREGATORS = Map.of(
+			BuiltinTermInterpreter.REIFY_AGGREGATOR, BuiltinTermInterpreter.BOOLEAN_TYPE,
+			BuiltinTermInterpreter.COUNT_AGGREGATOR, BuiltinTermInterpreter.INT_TYPE
+	);
 
 	@Inject
 	private SignatureProvider signatureProvider;
@@ -65,6 +70,7 @@ public class TypedModule {
 		for (var statement : problem.getStatements()) {
 			switch (statement) {
 			case PredicateDefinition predicateDefinition -> checkTypes(predicateDefinition);
+			case FunctionDefinition functionDefinition -> checkTypes(functionDefinition);
 			case RuleDefinition ruleDefinition -> checkTypes(ruleDefinition);
 			case Assertion assertion -> checkTypes(assertion);
 			default -> {
@@ -78,6 +84,38 @@ public class TypedModule {
 		for (var conjunction : predicateDefinition.getBodies()) {
 			for (var literal : conjunction.getLiterals()) {
 				coerceIntoLiteral(literal);
+			}
+		}
+	}
+
+	private void checkTypes(FunctionDefinition functionDefinition) {
+		var functionType = functionDefinition.getFunctionType();
+		if (!(functionType instanceof DatatypeDeclaration datatypeDeclaration)) {
+			return;
+		}
+		var expectedType = signatureProvider.getDataType(datatypeDeclaration);
+		if (ProblemUtil.isSingleExpression(functionDefinition)) {
+			expectType(functionDefinition.getCases().getFirst().getCondition().getLiterals().getFirst(), expectedType);
+			return;
+		}
+		for (var match : functionDefinition.getCases()) {
+			var condition = match.getCondition();
+			if (condition != null) {
+				for (var literal : condition.getLiterals()) {
+					coerceIntoLiteral(literal);
+				}
+			}
+			var value = match.getValue();
+			if (value == null) {
+				var message = "Missing value after case";
+				if (condition == null || condition.getLiterals().isEmpty()) {
+					error(message, match, null, 0, ProblemValidator.TYPE_ERROR);
+				} else {
+					error(message, condition, ProblemPackage.Literals.CONJUNCTION__LITERALS,
+							condition.getLiterals().size() - 1, ProblemValidator.TYPE_ERROR);
+				}
+			} else {
+				expectType(value, expectedType);
 			}
 		}
 	}
@@ -119,7 +157,7 @@ public class TypedModule {
 		if (value == null) {
 			var message = "Assertion value of type %s is required.".formatted(type);
 			error(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__VALUE, 0,
-                    ProblemValidator.TYPE_ERROR);
+					ProblemValidator.TYPE_ERROR);
 		}
 		expectType(value, type);
 	}
@@ -398,6 +436,21 @@ public class TypedModule {
 		// Avoid short-circuiting to let us type check both the value and the condition.
 		boolean ok = coerceIntoLiteral(expr.getCondition());
 		var value = expr.getValue();
+		var aggregatorName = signatureProvider.getAggregatorName(aggregator);
+		var specialAggregatorResult = SPECIAL_AGGREGATORS.get(aggregatorName);
+		if (specialAggregatorResult != null) {
+			if (value != null) {
+				var simpleName = aggregatorName.qualifiedName().getLastSegment();
+				error("Aggregator '%s' must not have any value expression.".formatted(simpleName), expr,
+						ProblemPackage.Literals.AGGREGATION_EXPR__VALUE, 0,	ProblemValidator.TYPE_ERROR);
+			}
+			return specialAggregatorResult;
+		}
+		if (value == null) {
+			error("Missing value for aggregation expression.", expr,
+					ProblemPackage.Literals.AGGREGATION_EXPR__AGGREGATOR, 0,	ProblemValidator.TYPE_ERROR);
+			return ExprType.INVALID;
+		}
 		var actualType = getExpressionType(value);
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
@@ -407,7 +460,6 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		if (actualType instanceof DataExprType dataExprType) {
-			var aggregatorName = signatureProvider.getAggregatorName(aggregator);
 			var result = interpreter.getAggregationType(aggregatorName, dataExprType);
 			if (result.isPresent()) {
 				return ok ? result.get() : ExprType.INVALID;
@@ -548,7 +600,7 @@ public class TypedModule {
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
-		var targetType = signatureProvider.getDataType(targetDeclaration);
+		var targetType = (DataExprType) signatureProvider.getDataType(targetDeclaration);
 		if (actualType instanceof MutableType mutableType) {
 			// Type ascription for polymorphic literal (e.g., `unknown as int` for the set of all integers).
 			mutableType.setActualType(targetType);

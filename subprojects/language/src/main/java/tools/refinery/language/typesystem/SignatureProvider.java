@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,14 +70,20 @@ public class SignatureProvider {
 	}
 
 	private FixedType getResultType(Relation relation) {
+		if (relation instanceof FunctionDefinition functionDefinition) {
+			return getDataType(functionDefinition.getFunctionType());
+		}
 		if (relation instanceof ReferenceDeclaration referenceDeclaration &&
-				referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
-			return getDataType(datatypeDeclaration);
+				ProblemUtil.isAttribute(referenceDeclaration)) {
+			return getDataType(referenceDeclaration.getReferenceType());
 		}
 		return ExprType.LITERAL;
 	}
 
-	public DataExprType getDataType(DatatypeDeclaration datatypeDeclaration) {
+	public FixedType getDataType(Relation relation) {
+		if (!(relation instanceof DatatypeDeclaration datatypeDeclaration)) {
+			return FixedType.INVALID;
+		}
 		var dataTypes = cache.get(DATATYPE_CACHE, datatypeDeclaration.eResource(),
 				() -> new HashMap<DatatypeDeclaration, DataExprType>());
 		return dataTypes.computeIfAbsent(datatypeDeclaration, this::computeDataType);

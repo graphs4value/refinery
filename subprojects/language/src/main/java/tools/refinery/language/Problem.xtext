@@ -48,6 +48,13 @@ AnnotatedStatement returns Statement:
 		("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
 		"."
 	|
+		{FunctionDefinition.annotations=current}
+		shadow?="shadow"? functionType=[Relation|QualifiedName]
+		name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+		("=" cases+=Case (";" cases+=Case)*)?
+		"."
+	|
 		{RuleDefinition.annotations=current}
 		kind=RuleKind? "rule"
 		name=Identifier
@@ -111,14 +118,8 @@ enum PredicateKind:
 Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
-//FunctionDefinition:
-//	"fn" functionType=[DatatypeDefinition|QualifiedName] name=Identifier
-//	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-//	("=" cases+=Case (";" cases+=Case)*)?
-//	".";
-//
-//Case:
-//	Conjunction ({Match.condition=current} "->" value=Expr)?;
+Case:
+	condition=Conjunction ("->" value=Expr)?;
 
 enum RuleKind:
 	DECISION="decision" | PROPAGATION="propagation" | CONCRETIZATION="concretization";
@@ -216,7 +217,7 @@ NegationExpr:
 
 AggregationExpr:
 	aggregator=[AggregatorDeclaration|QualifiedName]
-	"{" value=Expr ("|" condition=ComparisonExpr)? "}";
+	"{" condition=Expr ("->" value=Expr)? "}";
 
 enum Concreteness:
 	PARTIAL="partial" | CANDIDATE="candidate";

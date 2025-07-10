@@ -16,6 +16,7 @@ import tools.refinery.language.semantics.internal.MutableRelationCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
 import tools.refinery.language.semantics.internal.query.QueryCompiler;
 import tools.refinery.language.semantics.internal.query.RuleCompiler;
+import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.BuiltinSymbols;
@@ -354,7 +355,11 @@ public class ModelInitializer {
 	}
 
 	private void collectAttribute(DatatypeDeclaration datatypeDeclaration, ReferenceDeclaration referenceDeclaration) {
-		var dataExprType = signatureProvider.getDataType(datatypeDeclaration);
+		var type = signatureProvider.getDataType(datatypeDeclaration);
+		if (!(type instanceof DataExprType dataExprType)) {
+			throw new TracedException(referenceDeclaration, "Invalid type '%s' for attribute '%s'.".formatted(
+					type, referenceDeclaration.getName()));
+		}
 		var abstractDomain = importAdapterProvider.getTermInterpreter(referenceDeclaration)
 				.getDomain(dataExprType)
 				.orElseThrow(() -> new TracedException(referenceDeclaration,

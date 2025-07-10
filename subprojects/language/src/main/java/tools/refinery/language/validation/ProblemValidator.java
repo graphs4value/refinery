@@ -480,7 +480,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE;
 		if (isDefaultReference || isCrossReference) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
-			if (ProblemUtil.isShadow(referenceType)) {
+			if (referenceType instanceof ReferenceDeclaration referenceTypeDeclaration &&
+					ProblemUtil.isAttribute(referenceTypeDeclaration)) {
+				var message = "Attribute '%s' is not allowed in parameter types.".formatted(referenceType.getName());
+				acceptError(message, referenceDeclaration,
+						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, TYPE_ERROR);
+			} else if (referenceType instanceof FunctionDefinition) {
+				var message = "Function '%s' is not allowed in parameter types.".formatted(referenceType.getName());
+				acceptError(message, referenceDeclaration,
+						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, TYPE_ERROR);
+			} else if (ProblemUtil.isShadow(referenceType)) {
 				var message = "Shadow relation '%s' is not allowed in reference types."
 						.formatted(referenceType.getName());
 				acceptError(message, referenceDeclaration,
@@ -588,7 +597,11 @@ public class ProblemValidator extends AbstractProblemValidator {
 					ProblemUtil.isAttribute(referenceDeclaration)) {
 				var message = "Attribute '%s' is not allowed in parameter types.".formatted(type.getName());
 				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
-						SHADOW_RELATION_ISSUE);
+						TYPE_ERROR);
+			} else if (type instanceof FunctionDefinition) {
+				var message = "Function '%s' is not allowed in parameter types.".formatted(type.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+						TYPE_ERROR);
 			} else if (ProblemUtil.isShadow(type)) {
 				var message = "Shadow relation '%s' is not allowed in parameter types.".formatted(type.getName());
 				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,

@@ -219,14 +219,14 @@
     <genClasses ecoreClass="problem.ecore#//FunctionDefinition">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/cases"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/functionType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//FunctionDefinition/shadow"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//Case"/>
     <genClasses ecoreClass="problem.ecore#//Conjunction">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Conjunction/literals"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//Match">
-      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Match/condition"/>
-      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Match/value"/>
+    <genClasses ecoreClass="problem.ecore#//Case">
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Case/condition"/>
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Case/value"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//ArithmeticBinaryExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ArithmeticBinaryExpr/op"/>

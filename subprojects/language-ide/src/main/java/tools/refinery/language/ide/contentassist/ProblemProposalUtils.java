@@ -32,6 +32,8 @@ import tools.refinery.language.utils.ProblemUtil;
 @Singleton
 public class ProblemProposalUtils {
 	private static final String DATATYPE_KIND = "datatype";
+	public static final String SHADOW_DESCRIPTION = "shadow";
+	public static final String ATTRIBUTE_KIND = "attribute";
 
 	@Inject
 	private ImportAdapterProvider importAdapterProvider;
@@ -128,16 +130,10 @@ public class ProblemProposalUtils {
 			return "class";
 		}
 		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass)) {
-			// To see whether this is a reference or an attribute, we must resolve proxies explicitly,
-			// because the referenceType of a ReferenceDeclaration can't be resolved during
-			// {@link IEObjectDescription} construction.
-			if (forceResolve(candidate, eObject) instanceof ReferenceDeclaration referenceDeclaration &&
-					referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
-				return datatypeDeclaration.getName();
-			}
-			// For predicates, there is no need to show the exact type of definition, since they behave
-			// logically equivalently.
-			return null;
+			return getReferenceDescription(candidate, eObject);
+		}
+		if (ProblemPackage.Literals.FUNCTION_DEFINITION.isSuperTypeOf(eClass)) {
+			return getFunctionDescription(candidate, eObject);
 		}
 		if (ProblemPackage.Literals.ENUM_DECLARATION.isSuperTypeOf(eClass)) {
 			return "enum";
@@ -193,7 +189,32 @@ public class ProblemProposalUtils {
 	}
 
 	private static @Nullable String getPredicateDescription(IEObjectDescription candidate, EObject eObject) {
-		return isShadow(candidate, eObject) ? "shadow" : null;
+		return isShadow(candidate, eObject) ? SHADOW_DESCRIPTION : null;
+	}
+
+	private static @Nullable String getReferenceDescription(IEObjectDescription candidate, EObject eObject) {
+		// To see whether this is a reference or an attribute, we must resolve proxies explicitly,
+		// because the referenceType of a ReferenceDeclaration can't be resolved during
+		// {@link IEObjectDescription} construction.
+		if (forceResolve(candidate, eObject) instanceof ReferenceDeclaration referenceDeclaration &&
+				referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
+			return datatypeDeclaration.getName();
+		}
+		// For predicates, there is no need to show the exact type of definition, since they behave
+		// logically equivalently.
+		return null;
+	}
+
+	private static @Nullable String getFunctionDescription(IEObjectDescription candidate, EObject eObject) {
+		if (!(forceResolve(candidate, eObject) instanceof FunctionDefinition functionDefinition)) {
+			return null;
+		}
+		String description = functionDefinition.isShadow() ? SHADOW_DESCRIPTION : null;
+		if (functionDefinition.getFunctionType() instanceof DatatypeDeclaration datatypeDeclaration) {
+			var typeName = datatypeDeclaration.getName();
+			description = description == null ? typeName : description + " " + typeName;
+		}
+		return description;
 	}
 
 	private static boolean isShadow(IEObjectDescription candidate, EObject eObject) {
@@ -308,7 +329,10 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass) &&
 				forceResolve(candidate, eObject) instanceof ReferenceDeclaration referenceDeclaration &&
 				ProblemUtil.isAttribute(referenceDeclaration)) {
-			return "attribute";
+			return ATTRIBUTE_KIND;
+		}
+		if (ProblemPackage.Literals.FUNCTION_DEFINITION.isSuperTypeOf(eClass)) {
+			return ATTRIBUTE_KIND;
 		}
 		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass)) {
 			return "relation";

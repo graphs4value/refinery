@@ -57,10 +57,10 @@ statement {
     (ckw<"subsets"> sep1<",", RelationName>)*
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
-  // FunctionDefinition {
-  //   kw<"fn"> RelationName RelationName ParameterList<Parameter>?
-  //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
-  // } |
+  FunctionDefinition {
+    ckw<"shadow">? RelationName RelationName ParameterList<Parameter>?
+    FunctionBody { ("=" sep<OrOp, Case>)? "." }
+  } |
   RuleDefinition {
     (ckw<"decision"> | ckw<"propagation"> | ckw<"concretization">)? kw<"rule">
     RuleName ParameterList<Parameter>?
@@ -132,7 +132,7 @@ Parameter {
 // Being looser with token sequencing enables more consistent syntactic highlighting.
 Conjunction { ("," | NextConjunction[@dynamicPrecedence=-10] { Expr })+ }
 
-// Case { Conjunction ("->" Expr)? }
+Case { Conjunction ("->" Expr)? }
 
 OrOp { ";" }
 
