@@ -45,6 +45,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
 	public static final String INVALID_IMPORT_ISSUE = ISSUE_PREFIX + "INVALID_IMPORT";
 	public static final String SINGLETON_VARIABLE_ISSUE = ISSUE_PREFIX + "SINGLETON_VARIABLE";
+	public static final String UNBOUND_VARIABLE_ISSUE = ISSUE_PREFIX + "QUANTIFIED_VARIABLE";
 	public static final String NODE_CONSTANT_ISSUE = ISSUE_PREFIX + "NODE_CONSTANT_ISSUE";
 	public static final String DUPLICATE_NAME_ISSUE = ISSUE_PREFIX + "DUPLICATE_NAME";
 	public static final String INVALID_MULTIPLICITY_ISSUE = ISSUE_PREFIX + "INVALID_MULTIPLICITY";
@@ -760,6 +761,109 @@ public class ProblemValidator extends AbstractProblemValidator {
 					!usedParameter.eIsProxy()) {
 				usedParameters.add(usedParameter);
 			}
+		}
+	}
+
+	@Check
+	public void checkCase(Case match) {
+		var variables = new HashSet<Variable>();
+		var functionDeclaration = EcoreUtil2.getContainerOfType(match, ParametricDefinition.class);
+		if (functionDeclaration != null) {
+			variables.addAll(functionDeclaration.getParameters());
+		}
+		var value = match.getValue();
+		var condition = match.getCondition();
+		if (value == null) {
+			if (condition != null && condition.getLiterals().size() == 1) {
+				checkOnlyAllowedVariables(condition.getLiterals().getFirst(), variables);
+			}
+			return;
+		}
+		if (condition != null) {
+			for (var literal : condition.getLiterals()) {
+				variables.addAll(getMentionedVariables(literal));
+			}
+		}
+		checkOnlyAllowedVariables(value, variables);
+	}
+
+	@Check
+	public void checkAggregationExpr(AggregationExpr aggregationExpr) {
+		var condition = aggregationExpr.getCondition();
+		var value = aggregationExpr.getValue();
+		if (condition == null || value == null) {
+			return;
+		}
+		var allowedInsideAggregation = getMentionedVariables(condition);
+		checkOnlyAllowedVariables(value, allowedInsideAggregation);
+	}
+
+	private static Set<Variable> getMentionedVariables(Expr condition) {
+		var mentionedVariables = new HashSet<Variable>();
+		var iterator = condition.eAllContents();
+		while (iterator.hasNext()) {
+			var child = iterator.next();
+			switch (child) {
+			case VariableOrNodeExpr variableOrNodeExpr -> {
+				if (variableOrNodeExpr.getVariableOrNode() instanceof Variable variable) {
+					mentionedVariables.add(variable);
+				}
+			}
+			case ExistentialQuantifier ignoredExistentialQuantifier -> iterator.prune();
+			default -> {
+				// Nothing to gather.
+			}
+			}
+		}
+		return mentionedVariables;
+	}
+
+	private void checkOnlyAllowedVariables(Expr expr, Set<Variable> allowedVariables) {
+		switch (expr) {
+		case VariableOrNodeExpr variableOrNodeExpr -> {
+			if (variableOrNodeExpr.getVariableOrNode() instanceof Variable variable &&
+					!allowedVariables.contains(variable)) {
+				var message = "Variable '%s' is not bound by a condition in this context.".formatted(
+						variable.getName());
+				acceptError(message, variableOrNodeExpr,
+						ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0, UNBOUND_VARIABLE_ISSUE);
+			}
+		}
+		case AggregationExpr aggregationExpr -> {
+			var allowedInsideAggregation = new HashSet<Variable>();
+			var condition = aggregationExpr.getCondition();
+			if (condition != null) {
+				var iterator = condition.eAllContents();
+				while (iterator.hasNext()) {
+					var child = iterator.next();
+					switch (child) {
+					case ImplicitVariable variable -> allowedInsideAggregation.add(variable);
+					case VariableOrNodeExpr variableOrNodeExpr -> {
+						if (variableOrNodeExpr.getVariableOrNode() instanceof Variable variable &&
+								(allowedVariables.contains(variable) || variable.eContainer() == aggregationExpr)) {
+							allowedInsideAggregation.add(variable);
+						}
+					}
+					case AggregationExpr ignoredAggregationExpr -> iterator.prune();
+					default -> {
+						// No variable to collect.
+					}
+					}
+				}
+				checkOnlyAllowedVariables(condition, allowedInsideAggregation);
+			}
+			// The value will be checked by the {@link checkAggregationExpr(AggregationExpr)} method.
+		}
+		case null -> {
+			// Nothing to check.
+		}
+		default -> {
+			for (var child : expr.eContents()) {
+				if (child instanceof Expr childExpr) {
+					checkOnlyAllowedVariables(childExpr, allowedVariables);
+				}
+			}
+		}
 		}
 	}
 

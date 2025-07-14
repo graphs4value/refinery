@@ -241,7 +241,7 @@ public class QueryCompiler {
 				.orElseThrow(() -> new TracedException(expr, "Cannot interpret expression."));
 	}
 
-	private Constraint getConstraint(Atom atom) {
+	Constraint getConstraint(Atom atom) {
 		var relation = atom.getRelation();
 		var target = getPartialSymbol(relation);
 		if (!(target instanceof PartialRelation partialRelation)) {
@@ -300,9 +300,7 @@ public class QueryCompiler {
 			var variableOrNode = variableOrNodeExpr.getVariableOrNode();
 			switch (variableOrNode) {
 			case Node node -> {
-				int nodeId = getNodeId(node);
-				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
-				literals.add(new ConstantLiteral(tempVariable, nodeId));
+				var tempVariable = createTempVariableForNode(node, literals);
 				arguments.add(tempVariable);
 				filteredArguments.add(tempVariable);
 			}
@@ -325,6 +323,13 @@ public class QueryCompiler {
 		return new ArgumentList(arguments, filteredArguments, needsQuantification);
 	}
 
+	NodeVariable createTempVariableForNode(Node node, List<Literal> literals) {
+		int nodeId = getNodeId(node);
+		var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
+		literals.add(new ConstantLiteral(tempVariable, nodeId));
+		return tempVariable;
+	}
+
 	private boolean isEffectivelySingleton(tools.refinery.language.model.problem.Variable variable,
 										   Map<EObject, Integer> referenceCounts) {
 		if (!(variable instanceof ImplicitVariable)) {
@@ -344,6 +349,6 @@ public class QueryCompiler {
 	}
 
 	record ArgumentList(List<NodeVariable> arguments, Set<NodeVariable> filteredArguments,
-								boolean needsQuantification) {
+						boolean needsQuantification) {
 	}
 }

@@ -13,7 +13,6 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import tools.refinery.language.model.problem.*;
-import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.*;
 
@@ -66,13 +65,6 @@ public class DerivedVariableComputer {
 	}
 
 	protected void installDerivedFunctionDefinitionState(FunctionDefinition definition, Set<String> knownVariables) {
-		if (ProblemUtil.isSingleExpression(definition)) {
-			// If the function is defined by a single expression (without any case separation), it can't introduce
-			// any new variables.
-			var match = definition.getCases().getFirst();
-			createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables, false));
-			return;
-		}
 		for (Case match : definition.getCases()) {
 			var condition = match.getCondition();
 			if (condition != null) {

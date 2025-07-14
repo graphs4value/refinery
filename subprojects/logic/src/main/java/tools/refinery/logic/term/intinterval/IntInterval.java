@@ -15,6 +15,7 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 		implements ComparableAbstractValue<IntInterval, Integer>, Plus<IntInterval>, Minus<IntInterval>,
 		Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval> {
 	public static final IntInterval ZERO = new IntInterval(Bound.Finite.ZERO, Bound.Finite.ZERO);
+	public static final IntInterval ONE = new IntInterval(Bound.Finite.ONE, Bound.Finite.ONE);
 	public static final IntInterval UNKNOWN = new IntInterval(Bound.Infinite.NEGATIVE_INFINITY,
 			Bound.Infinite.POSITIVE_INFINITY);
 	public static final IntInterval ERROR = new IntInterval(Bound.Infinite.POSITIVE_INFINITY,

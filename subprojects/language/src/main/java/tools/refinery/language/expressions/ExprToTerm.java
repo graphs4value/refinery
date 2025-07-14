@@ -27,6 +27,14 @@ public class ExprToTerm {
 	@Inject
 	private ProblemTypeAnalyzer typeAnalyzer;
 
+	protected ImportAdapterProvider getImportAdapterProvider() {
+		return importAdapterProvider;
+	}
+
+	protected ProblemTypeAnalyzer getTypeAnalyzer() {
+		return typeAnalyzer;
+	}
+
 	public Optional<AnyTerm> toTerm(Expr expr) {
 		return switch (expr) {
 			case NegationExpr negationExpr -> createNegation(negationExpr);

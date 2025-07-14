@@ -23,36 +23,23 @@ import java.util.List;
 import java.util.Set;
 
 class ImplicitVariableScope {
-	private final boolean shouldAddVariables;
 	private final EObject root;
 	private final ExistentialQuantifier quantifier;
 	private final ImplicitVariableScope parent;
 	private Set<String> knownVariables;
 
-	public ImplicitVariableScope(ExistentialQuantifier quantifier, ImplicitVariableScope parent,
-								 boolean shouldAddVariables) {
-		this.shouldAddVariables = isShouldAddVariables(quantifier, shouldAddVariables);
+	private ImplicitVariableScope(ExistentialQuantifier quantifier, ImplicitVariableScope parent) {
 		this.root = quantifier;
 		this.quantifier = quantifier;
 		this.parent = parent;
 		this.knownVariables = null;
 	}
 
-	public ImplicitVariableScope(EObject root, ExistentialQuantifier quantifier, Set<String> knownVariables,
-								 boolean shouldAddVariables) {
-		this.shouldAddVariables = isShouldAddVariables(quantifier, shouldAddVariables);
+	public ImplicitVariableScope(EObject root, ExistentialQuantifier quantifier, Set<String> knownVariables) {
 		this.root = root;
 		this.quantifier = quantifier;
 		this.parent = null;
 		this.knownVariables = new HashSet<>(knownVariables);
-	}
-
-	private static boolean isShouldAddVariables(ExistentialQuantifier quantifier, boolean shouldAddVariables) {
-		return shouldAddVariables || quantifier instanceof AggregationExpr;
-	}
-
-	public ImplicitVariableScope(EObject root, ExistentialQuantifier quantifier, Set<String> knownVariables) {
-		this(root, quantifier, knownVariables, true);
 	}
 
 	public ImplicitVariableScope(ExistentialQuantifier root, Set<String> knownVariables) {
@@ -63,30 +50,36 @@ class ImplicitVariableScope {
 								IQualifiedNameConverter qualifiedNameConverter,
 								Deque<ImplicitVariableScope> scopeQueue) {
 		initializeKnownVariables();
-		if (root instanceof AggregationExpr aggregationExpr) {
-			// Aggregation expressions for functions (i.e., not literals) can only introduce new variables in their
-			// condition expression, but not in their value expression.
-			var condition = aggregationExpr.getCondition();
-			if (condition != null) {
-				processChild(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
-				walkChildren(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
-			}
-			walkAggregatorChildren(scopeQueue, aggregationExpr.getValue());
-			return;
-		}
 		if (root instanceof Case match) {
+			// Always process the condition of a {@link Case} before its value.
 			var condition = match.getCondition();
 			if (condition != null) {
 				walkChildren(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
 			}
-			walkAggregatorChildren(scopeQueue, match.getValue());
+			var value = match.getValue();
+			walkSelfAndChildren(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			return;
+		}
+		if (root instanceof AggregationExpr aggregationExpr) {
+			// Always process the condition of an {@link AggregationExpr} before its value.
+			var condition = aggregationExpr.getCondition();
+			walkSelfAndChildren(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			var value = aggregationExpr.getValue();
+			walkSelfAndChildren(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
 			return;
 		}
 		processEObject(root, scopeProvider, linkingHelper, qualifiedNameConverter);
 		walkChildren(root, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
-		return;
 	}
 
+	private void walkSelfAndChildren(
+			EObject value, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
+			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
+		if (value != null &&
+				!processChild(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue)) {
+			walkChildren(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+		}
+	}
 
 	private void walkChildren(
 			EObject parent, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
@@ -104,31 +97,10 @@ class ImplicitVariableScope {
 			EObject child, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
 			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
 		if (child instanceof ExistentialQuantifier nestedQuantifier) {
-			scopeQueue.addLast(new ImplicitVariableScope(nestedQuantifier, this, shouldAddVariables));
+			scopeQueue.addLast(new ImplicitVariableScope(nestedQuantifier, this));
 			return true;
 		}
 		processEObject(child, scopeProvider, linkingHelper, qualifiedNameConverter);
-		return false;
-	}
-
-	private void walkAggregatorChildren(Deque<ImplicitVariableScope> scopeQueue, Expr value) {
-		if (value != null && !processAggregatorChild(value, scopeQueue)) {
-			var treeIterator = value.eAllContents();
-			while (treeIterator.hasNext()) {
-				var child = treeIterator.next();
-				if (processAggregatorChild(child, scopeQueue)) {
-					treeIterator.prune();
-				}
-			}
-		}
-	}
-
-	private boolean processAggregatorChild(
-			EObject child, Deque<ImplicitVariableScope> scopeQueue) {
-		if (child instanceof AggregationExpr aggregationExpr) {
-			scopeQueue.addLast(new ImplicitVariableScope(aggregationExpr, this, shouldAddVariables));
-			return true;
-		}
 		return false;
 	}
 
@@ -148,7 +120,7 @@ class ImplicitVariableScope {
 
 	private void processEObject(EObject eObject, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
 								IQualifiedNameConverter qualifiedNameConverter) {
-		if (!shouldAddVariables || !(eObject instanceof VariableOrNodeExpr variableOrNodeExpr)) {
+		if (!(eObject instanceof VariableOrNodeExpr variableOrNodeExpr)) {
 			return;
 		}
 		IScope scope = scopeProvider.getScope(variableOrNodeExpr,

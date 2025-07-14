@@ -125,6 +125,7 @@ public sealed interface Bound {
 
 	record Finite(int value) implements Bound {
 		public static final Finite ZERO = new Finite(0);
+		public static final Finite ONE = new Finite(1);
 
 		@Override
 		public boolean lessThanOrEquals(Bound other) {

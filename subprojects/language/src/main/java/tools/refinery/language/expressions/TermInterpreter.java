@@ -12,6 +12,7 @@ import tools.refinery.language.model.problem.UnaryOp;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.logic.AnyAbstractDomain;
+import tools.refinery.logic.term.AnyPartialAggregator;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -45,6 +46,8 @@ public interface TermInterpreter {
 	boolean isCastSupported(DataExprType fromType, DataExprType toType);
 
 	Optional<DataExprType> getAggregationType(AggregatorName aggregator, DataExprType type);
+
+	Optional<AnyPartialAggregator> getAggregator(AggregatorName aggregator, DataExprType type);
 
 	Optional<AnyTerm> createUnknown(DataExprType type);
 

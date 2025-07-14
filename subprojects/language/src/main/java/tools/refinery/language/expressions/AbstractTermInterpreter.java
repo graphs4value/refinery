@@ -15,9 +15,9 @@ import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.ComparableAbstractDomain;
-import tools.refinery.logic.term.AnyTerm;
-import tools.refinery.logic.term.ComparableAbstractValue;
-import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.abstractdomain.AbstractDomainMaxAggregator;
+import tools.refinery.logic.term.abstractdomain.AbstractDomainMinAggregator;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainTerms;
 import tools.refinery.logic.term.comparable.EqTerm;
 import tools.refinery.logic.term.comparable.NotEqTerm;
@@ -36,7 +36,7 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	private final Map<UnaryKey, UnaryValue<?, ?>> unaryOperators = new HashMap<>();
 	private final Map<BinaryKey, BinaryValue<?, ?, ?>> binaryOperators = new HashMap<>();
 	private final Set<CastKey> casts = new HashSet<>();
-	private final Map<AggregatorKey, DataExprType> aggregators = new HashMap<>();
+	private final Map<AggregatorKey, AggregatorValue> aggregators = new HashMap<>();
 	private final Map<DataExprType, AnyAbstractDomain> domains = new HashMap<>();
 
 	protected AbstractTermInterpreter() {
@@ -96,9 +96,11 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 						new XorTerm(abstractType, left, right));
 			}
 		}
-		if (domain instanceof ComparableAbstractDomain<?, ?>) {
-			addAggregator(BuiltinTermInterpreter.MIN_AGGREGATOR, type, type);
-			addAggregator(BuiltinTermInterpreter.MAX_AGGREGATOR, type, type);
+		if (domain instanceof ComparableAbstractDomain<?, ?> comparableDomain) {
+			addAggregator(BuiltinTermInterpreter.MIN_AGGREGATOR, type, type,
+					new AbstractDomainMinAggregator<>(comparableDomain));
+			addAggregator(BuiltinTermInterpreter.MAX_AGGREGATOR, type, type,
+                    new AbstractDomainMaxAggregator<>(comparableDomain));
 		}
 	}
 
@@ -124,8 +126,9 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 		casts.add(new CastKey(fromType, toType));
 	}
 
-	protected void addAggregator(AggregatorName aggregator, DataExprType type, DataExprType result) {
-		aggregators.put(new AggregatorKey(aggregator, type), result);
+	protected void addAggregator(AggregatorName aggregator, DataExprType type, DataExprType result,
+								 AnyPartialAggregator partialAggregator) {
+		aggregators.put(new AggregatorKey(aggregator, type), new AggregatorValue(result, partialAggregator));
 	}
 
 	@Override
@@ -285,7 +288,14 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 
 	@Override
 	public Optional<DataExprType> getAggregationType(AggregatorName aggregator, DataExprType type) {
-		return Optional.ofNullable(aggregators.get(new AggregatorKey(aggregator, type)));
+		return Optional.ofNullable(aggregators.get(new AggregatorKey(aggregator, type)))
+				.map(AggregatorValue::resultType);
+	}
+
+	@Override
+	public Optional<AnyPartialAggregator> getAggregator(AggregatorName aggregator, DataExprType type) {
+		return Optional.ofNullable(aggregators.get(new AggregatorKey(aggregator, type)))
+				.map(AggregatorValue::aggregator);
 	}
 
 	@Override
@@ -353,6 +363,9 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 			var uncheckedRight = (Term<T2>) right;
 			return termFactory.apply(uncheckedLeft, uncheckedRight);
 		}
+	}
+
+	private record AggregatorValue(DataExprType resultType, AnyPartialAggregator aggregator) {
 	}
 
 	@FunctionalInterface

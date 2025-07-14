@@ -15,6 +15,8 @@ import tools.refinery.logic.term.operators.SubTerm;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public class IntIntervalTerms {
+	public static final IntIntervalSumAggregator INT_SUM = new IntIntervalSumAggregator();
+
 	private IntIntervalTerms() {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly");
 	}
