@@ -104,6 +104,10 @@ class ReasoningStoreAdapterImpl implements ReasoningStoreAdapter {
 	@Override
 	public PropagatedModel tryCreateInitialModel(ModelSeed modelSeed) {
 		var model = store.createEmptyModel();
+		return tryResetInitialModel(model,modelSeed);
+	}
+
+	public PropagatedModel tryResetInitialModel(Model model, ModelSeed modelSeed) {
 		try {
 			model.getInterpretation(ReasoningAdapterImpl.NODE_COUNT_SYMBOL).put(Tuple.of(), modelSeed.getNodeCount());
 			for (var initializer : initializers) {

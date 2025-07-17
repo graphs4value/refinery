@@ -29,6 +29,7 @@ public interface ReasoningStoreAdapter extends ModelStoreAdapter {
 	}
 
 	PropagatedModel tryCreateInitialModel(ModelSeed modelSeed);
+	PropagatedModel tryResetInitialModel(Model model, ModelSeed modelSeed);
 
 	@Override
 	ReasoningAdapter createModelAdapter(Model model);
