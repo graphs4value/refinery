@@ -424,6 +424,30 @@ class SolutionSerializerTest {
 				Filesystem(git).
 				Dir(project).
 				root(git, project).
+				"""), Arguments.of("""
+				class Foo {
+					int intValue
+					boolean boolValue
+					string stringValue
+				}
+				""", """
+				Foo(a).
+				intValue(a): 10.
+				boolValue(a): true.
+				stringValue(a): "Hello, World!".
+				Foo(b).
+				intValue(b): 0..10 \\/ 5..*.
+				""", false, """
+				declare a, b.
+				!exists(Foo::new).
+				Foo(a).
+				Foo(b).
+				intValue(a): 10.
+				intValue(b): 0..*.
+				boolValue(a).
+				?boolValue(b).
+				stringValue(a): "Hello, World!".
+				?stringValue(b).
 				"""));
 	}
 }

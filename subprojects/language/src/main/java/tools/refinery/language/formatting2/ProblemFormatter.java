@@ -262,6 +262,19 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		}
 	}
 
+	protected void format(RangeExpr rangeExpr, IFormattableDocument doc) {
+		var region = regionFor(rangeExpr);
+		doc.surround(region.keyword(".."), this::noSpace);
+		doc.format(rangeExpr.getLeft());
+		doc.format(rangeExpr.getRight());
+	}
+
+	protected void format(ArithmeticUnaryExpr unaryExpr, IFormattableDocument doc) {
+		var region = regionFor(unaryExpr);
+        doc.append(region.feature(ProblemPackage.Literals.ARITHMETIC_UNARY_EXPR__OP), this::noSpace);
+        doc.format(unaryExpr.getBody());
+	}
+
 	protected void formatParenthesizedList(ISemanticRegionsFinder region, IFormattableDocument doc) {
 		doc.append(region.keyword("("), this::noSpace);
 		doc.prepend(region.keyword(")"), this::noSpace);

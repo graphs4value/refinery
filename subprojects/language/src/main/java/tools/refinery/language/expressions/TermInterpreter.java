@@ -5,10 +5,7 @@
  */
 package tools.refinery.language.expressions;
 
-import tools.refinery.language.model.problem.BinaryOp;
-import tools.refinery.language.model.problem.ComparisonOp;
-import tools.refinery.language.model.problem.LatticeBinaryOp;
-import tools.refinery.language.model.problem.UnaryOp;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.logic.AnyAbstractDomain;
@@ -56,4 +53,6 @@ public interface TermInterpreter {
 	Optional<AnyTerm> createNegativeInfinity(DataExprType type);
 
 	Optional<AnyTerm> createPositiveInfinity(DataExprType type);
+
+	Optional<Expr> serialize(DataExprType type, Object value);
 }

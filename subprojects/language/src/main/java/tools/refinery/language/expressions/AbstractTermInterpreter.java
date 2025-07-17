@@ -5,17 +5,17 @@
  */
 package tools.refinery.language.expressions;
 
-import tools.refinery.language.model.problem.BinaryOp;
-import tools.refinery.language.model.problem.ComparisonOp;
-import tools.refinery.language.model.problem.LatticeBinaryOp;
-import tools.refinery.language.model.problem.UnaryOp;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.ComparableAbstractDomain;
-import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.AnyPartialAggregator;
+import tools.refinery.logic.term.AnyTerm;
+import tools.refinery.logic.term.ComparableAbstractValue;
+import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainMaxAggregator;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainMinAggregator;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainTerms;
@@ -38,6 +38,7 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	private final Set<CastKey> casts = new HashSet<>();
 	private final Map<AggregatorKey, AggregatorValue> aggregators = new HashMap<>();
 	private final Map<DataExprType, AnyAbstractDomain> domains = new HashMap<>();
+	private final Map<DataExprType, Serializer<?, ?>> serializers = new HashMap<>();
 
 	protected AbstractTermInterpreter() {
 	}
@@ -45,6 +46,12 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	protected void addDomain(DataExprType type, AnyAbstractDomain domain) {
 		domains.put(type, domain);
 		addImplementedOperators(type, (AbstractDomain<?, ?>) domain);
+	}
+
+	protected <A extends AbstractValue<A, C>, C> void addDomain(DataExprType type, AbstractDomain<A, C> domain,
+																Serializer<A, C> serializer) {
+		addDomain(type, domain);
+		serializers.put(type, serializer);
 	}
 
 	// We disable generic type checking for this method, because the curiously recurring generic marker interfaces
@@ -329,6 +336,19 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 				AbstractDomainTerms.positiveInfinity(abstractDomain)) : Optional.empty();
 	}
 
+	@Override
+	public Optional<Expr> serialize(DataExprType type, Object value) {
+		var abstractDomain = domains.get(type);
+		if (abstractDomain == null) {
+			return Optional.empty();
+		}
+		var serializer = serializers.get(type);
+		if (serializer == null) {
+			return Optional.empty();
+		}
+		return Optional.of(serializer.serialize(abstractDomain, value));
+	}
+
 	private record UnaryKey(UnaryOp op, DataExprType type) {
 	}
 
@@ -380,6 +400,19 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 			@SuppressWarnings("unchecked")
 			var uncheckedRight = (Term<T>) right;
 			return toRange(uncheckedLeft, uncheckedRight);
+		}
+	}
+
+	@FunctionalInterface
+	public interface Serializer<A extends AbstractValue<A, C>, C> {
+		Expr serialize(A value);
+
+		default Expr serialize(AnyAbstractDomain abstractDomain, Object value) {
+			// This si safe, because we only allow setting the abstract domain and the serializer in one place.
+			@SuppressWarnings("unchecked")
+			var typedAbstractDomain = (AbstractDomain<A, C>) abstractDomain;
+			var typedValue = typedAbstractDomain.abstractType().cast(value);
+			return serialize(typedValue);
 		}
 	}
 }
