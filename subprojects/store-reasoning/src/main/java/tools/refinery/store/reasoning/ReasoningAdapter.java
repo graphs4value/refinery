@@ -17,6 +17,7 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.tuple.Tuple1;
 
 public interface ReasoningAdapter extends ModelAdapter {
@@ -41,7 +42,6 @@ public interface ReasoningAdapter extends ModelAdapter {
 	}
 
 	<A extends AbstractValue<A, C>, C> PartialInterpretationRefiner<A, C> getRefiner(PartialSymbol<A, C> partialSymbol);
-
 	@Nullable
 	Tuple1 split(int parentMultiObject);
 
@@ -51,6 +51,8 @@ public interface ReasoningAdapter extends ModelAdapter {
 	boolean cleanup(int nodeToDelete);
 
 	int getNodeCount();
+
+	void resetInitialModel(ModelSeed modelSeed);
 
 	static ReasoningBuilder builder() {
 		return new ReasoningBuilderImpl();

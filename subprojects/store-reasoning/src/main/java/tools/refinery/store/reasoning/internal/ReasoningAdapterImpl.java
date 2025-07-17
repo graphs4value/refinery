@@ -7,6 +7,8 @@ package tools.refinery.store.reasoning.internal;
 
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
+import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -21,8 +23,6 @@ import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.representation.Symbol;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.tuple.Tuple1;
 
@@ -223,5 +223,11 @@ class ReasoningAdapterImpl implements ReasoningAdapter {
 		for (var refiner : refiners.values()) {
 			refiner.afterInitialize(modelSeed);
 		}
+	}
+
+	@Override
+	public void resetInitialModel(ModelSeed modelSeed) {
+		var result = this.getStoreAdapter().tryResetInitialModel(this.getModel(),modelSeed);
+		result.propagationResult().throwIfRejected();
 	}
 }
