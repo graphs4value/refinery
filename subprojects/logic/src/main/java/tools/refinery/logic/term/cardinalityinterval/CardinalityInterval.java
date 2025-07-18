@@ -5,6 +5,7 @@
  */
 package tools.refinery.logic.term.cardinalityinterval;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
@@ -82,10 +83,10 @@ public record CardinalityInterval(int lowerBound, UpperCardinality upperBound)
 	}
 
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		if (upperBound instanceof FiniteUpperCardinality(var finiteUpperBound) && finiteUpperBound == lowerBound) {
-			return "[%d]".formatted(lowerBound);
+			return "%d".formatted(lowerBound);
 		}
-		return "[%d..%s]".formatted(lowerBound, upperBound);
+		return "%d..%s".formatted(lowerBound, upperBound);
 	}
 }

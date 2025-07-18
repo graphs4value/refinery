@@ -26,7 +26,7 @@ function nodeName(
 ): string {
   let name = escape(graph.getName(metadata));
   if (count !== undefined) {
-    name = `${name}&nbsp;${count}`;
+    name = `${name}&nbsp;[${count}]`;
   }
   switch (metadata.kind) {
     case 'atom':
@@ -126,7 +126,7 @@ function computeNodeData(graph: GraphStore): NodeData[] {
     if (typeof index === 'number') {
       const data = nodeData[index];
       if (data !== undefined) {
-        data.count = extractValue(value) ?? '[0]';
+        data.count = extractValue(value) ?? '0';
       }
     }
   });

@@ -12,20 +12,14 @@ import com.google.inject.Singleton;
 import tools.refinery.generator.ModelFacade;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.logic.AbstractValue;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
-import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.map.Cursor;
-import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
-import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
-import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 import tools.refinery.store.tuple.Tuple;
 import tools.refinery.store.util.CancellationToken;
 
 import java.util.TreeMap;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 @Singleton
 public class PartialInterpretation2Json {
@@ -46,7 +40,6 @@ public class PartialInterpretation2Json {
 			json.add(name, tuples);
 			cancellationToken.checkCancelled();
 		}
-		json.add("builtin::count", getCountJson(model, facade.getConcreteness()));
 		return json;
 	}
 
@@ -99,16 +92,5 @@ public class PartialInterpretation2Json {
 			json.add(jsonObject);
 		}
 		return json;
-	}
-
-	private static JsonArray getCountJson(Model model, Concreteness concreteness) {
-		var interpretation = model.getInterpretation(MultiObjectTranslator.COUNT_STORAGE);
-		var cursor = interpretation.getAll();
-		UnaryOperator<CardinalityInterval> transform = switch (concreteness) {
-			case PARTIAL -> UnaryOperator.identity();
-			case CANDIDATE -> count -> count.lowerBound() == 0 ? CardinalityIntervals.NONE :
-					count.meet(CardinalityIntervals.LONE);
-		};
-		return getTuplesJson(cursor, transform);
 	}
 }

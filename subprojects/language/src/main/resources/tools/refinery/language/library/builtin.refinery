@@ -36,6 +36,14 @@ pred exists(node).
 pred equals(left, right).
 
 /**
+ * The number of concrete nodes represented by a multi-object.
+ *
+ * @param node The node.
+ */
+
+shadow int count(node node).
+
+/**
  * Instances of classes with at least one outgoing reference marked with
  * `contains`.
  */

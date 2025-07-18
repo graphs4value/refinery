@@ -10,6 +10,7 @@ import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityDomain;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.int_.IntTerms;
+import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinality;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
@@ -22,6 +23,7 @@ import tools.refinery.store.query.view.AnySymbolView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.representation.PartialFunction;
+import tools.refinery.store.reasoning.translator.PartialFunctionTranslator;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
 import tools.refinery.store.reasoning.translator.RoundingMode;
 import tools.refinery.store.representation.Symbol;
@@ -88,6 +90,19 @@ public class MultiObjectTranslator implements ModelStoreConfiguration {
 		storeBuilder.with(PartialRelationTranslator.of(ReasoningAdapter.EQUALS_SYMBOL)
 				.rewriter(EqualsRelationRewriter.of(UPPER_CARDINALITY_VIEW))
 				.refiner(EqualsRefiner.of(COUNT_STORAGE))
+				.exclude(null)
+				.accept(null)
+				.objective(null));
+
+		storeBuilder.with(PartialFunctionTranslator.of(ReasoningAdapter.COUNT_SYMBOL)
+				.partial(Query.of("count#partial", IntInterval.class, (builder, p1, output) -> builder
+						.clause(
+								new CountIntervalView(COUNT_STORAGE).call(p1, output)
+						)))
+				.candidate(Query.of("count#candidate", IntInterval.class, (builder, p1, output) -> builder
+						.clause(
+								new CountIntervalCandidateView(COUNT_STORAGE).call(p1, output)
+						)))
 				.exclude(null)
 				.accept(null)
 				.objective(null));

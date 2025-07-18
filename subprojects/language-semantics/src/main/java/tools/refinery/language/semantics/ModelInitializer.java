@@ -155,6 +155,7 @@ public class ModelInitializer {
 			putRelationInfo(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL,
 					(TruthValue) null,
 					null));
+			problemTrace.putRelation(builtinSymbols.count(), ReasoningAdapter.COUNT_SYMBOL);
 			putRelationInfo(builtinSymbols.container(),
 					new RelationInfo(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, null, TruthValue.UNKNOWN));
 			putRelationInfo(builtinSymbols.contained(),

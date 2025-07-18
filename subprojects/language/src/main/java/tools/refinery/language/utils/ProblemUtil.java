@@ -130,6 +130,14 @@ public final class ProblemUtil {
 		return predicateDefinition.getKind() == PredicateKind.DEFAULT && predicateDefinition.getBodies().isEmpty();
 	}
 
+	public static boolean isBaseFunction(FunctionDefinition functionDefinition) {
+		if (isBuiltIn(functionDefinition) || functionDefinition == null) {
+			// Built-in predicates have no clauses, but are not base.
+			return false;
+		}
+		return !isShadow(functionDefinition) && functionDefinition.getCases().isEmpty();
+	}
+
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
 		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition) &&
 				!isBuiltIn(predicateDefinition);

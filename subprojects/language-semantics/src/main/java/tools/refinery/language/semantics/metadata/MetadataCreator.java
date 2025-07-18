@@ -158,12 +158,12 @@ public class MetadataCreator {
 			case EnumDeclaration ignored -> ENUM_PARAMETER_NAMES;
 			case ReferenceDeclaration referenceDeclaration -> ProblemUtil.isAttribute(referenceDeclaration) ?
 					ATTRIBUTE_PARAMETER_NAMES : REFERENCE_PARAMETER_NAMES;
-			case PredicateDefinition predicateDefinition -> getPredicateParameterNames(predicateDefinition);
+			case ParametricDefinition parametricDefinition -> getParameterNames(parametricDefinition);
 			default -> null;
 		};
 	}
 
-	private List<String> getPredicateParameterNames(PredicateDefinition predicateDefinition) {
+	private List<String> getParameterNames(ParametricDefinition predicateDefinition) {
 		return predicateDefinition.getParameters().stream()
 				.map(parameter -> {
 					var qualifiedParameterName = QualifiedName.create(parameter.getName());
@@ -178,6 +178,7 @@ public class MetadataCreator {
 			case ReferenceDeclaration ignored -> getReferenceDetail(partialSymbol);
 			case EnumDeclaration enumDeclaration -> getEnumDetail(enumDeclaration);
 			case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
+			case FunctionDefinition functionDefinition -> getFunctionDetail(functionDefinition);
 			default -> throw new TracedException(relation, "Unknown relation");
 		};
 	}
@@ -224,6 +225,16 @@ public class MetadataCreator {
 			kind = PredicateDetailKind.SHADOW;
 		}
 		return new RelationDetail.Predicate(kind);
+	}
+
+	private RelationDetail getFunctionDetail(FunctionDefinition function) {
+		FunctionDetailKind kind = FunctionDetailKind.DEFINED;
+		if (ProblemUtil.isBaseFunction(function)) {
+			kind = FunctionDetailKind.BASE;
+		} else if (ProblemUtil.isShadow(function)) {
+			kind = FunctionDetailKind.SHADOW;
+		}
+		return new RelationDetail.Function(kind);
 	}
 
 	private QualifiedName getQualifiedName(EObject eObject) {

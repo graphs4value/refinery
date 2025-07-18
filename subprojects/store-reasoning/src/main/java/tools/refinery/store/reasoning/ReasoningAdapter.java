@@ -7,6 +7,8 @@ package tools.refinery.store.reasoning;
 
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.intinterval.IntInterval;
+import tools.refinery.logic.term.intinterval.IntIntervalDomain;
 import tools.refinery.store.adapter.ModelAdapter;
 import tools.refinery.store.reasoning.internal.ReasoningBuilderImpl;
 import tools.refinery.store.reasoning.interpretation.AnyPartialInterpretation;
@@ -15,6 +17,7 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.refinement.AnyPartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.tuple.Tuple1;
@@ -22,6 +25,7 @@ import tools.refinery.store.tuple.Tuple1;
 public interface ReasoningAdapter extends ModelAdapter {
 	PartialRelation EXISTS_SYMBOL = PartialSymbol.of("exists", 1);
 	PartialRelation EQUALS_SYMBOL = PartialSymbol.of("equals", 2);
+	PartialFunction<IntInterval, Integer> COUNT_SYMBOL = PartialSymbol.of("count", 1, IntIntervalDomain.INSTANCE);
 
 	@Override
 	ReasoningStoreAdapter getStoreAdapter();

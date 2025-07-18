@@ -25,4 +25,7 @@ public sealed interface RelationDetail {
 
 	record Attribute() implements RelationDetail {
 	}
+
+	record Function(FunctionDetailKind kind) implements RelationDetail {
+	}
 }
