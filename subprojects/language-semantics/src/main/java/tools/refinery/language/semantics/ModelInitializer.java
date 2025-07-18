@@ -371,7 +371,7 @@ public class ModelInitializer {
 	private <A extends AbstractValue<A, C>, C> void createFunctionInfo(AbstractDomain<A, C> domain,
 																	   ReferenceDeclaration referenceDeclaration) {
 		var partialFunction = new PartialFunction<>(referenceDeclaration.getName(), 1, domain);
-		var info = new FunctionInfo<>(partialFunction, domain, domain.unknown(), domain.unknown());
+		var info = new FunctionInfo<>(partialFunction, domain);
 		problemTrace.putRelation(referenceDeclaration, partialFunction);
 		partialFunctionInfoMap.put(partialFunction, info);
 		functionInfoMap.put(referenceDeclaration, info);
@@ -888,9 +888,9 @@ public class ModelInitializer {
 																  AbstractDomain<A, C> abstractDomain,
 																  MutableSeed<A> assertions,
 																  MutableSeed<A> defaultAssertions) {
-		public FunctionInfo(PartialFunction<A, C> partialFunction, AbstractDomain<A, C> abstractDomain, A value, A defaultValue) {
-			this(partialFunction, abstractDomain, MutableSeed.of(partialFunction.arity(), abstractDomain, value),
-					MutableSeed.of(partialFunction.arity(), abstractDomain, defaultValue));
+		public FunctionInfo(PartialFunction<A, C> partialFunction, AbstractDomain<A, C> abstractDomain) {
+			this(partialFunction, abstractDomain, MutableSeed.of(partialFunction.arity(), abstractDomain, null),
+					MutableSeed.of(partialFunction.arity(), abstractDomain, abstractDomain.unknown()));
 		}
 
 		public Seed<A> toSeed() {

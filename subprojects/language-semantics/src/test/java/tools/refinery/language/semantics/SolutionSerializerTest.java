@@ -448,6 +448,22 @@ class SolutionSerializerTest {
 				?boolValue(b).
 				stringValue(a): "Hello, World!".
 				?stringValue(b).
+				"""), Arguments.of("""
+				class Foo {
+					int intValue
+				}
+				""", """
+				default intValue(*): 10.
+				Foo(a).
+				intValue(a): 20.
+				Foo(b).
+				""", false, """
+				declare a, b.
+				!exists(Foo::new).
+				Foo(a).
+				Foo(b).
+				intValue(a): 20.
+				intValue(b): 10.
 				"""));
 	}
 }
