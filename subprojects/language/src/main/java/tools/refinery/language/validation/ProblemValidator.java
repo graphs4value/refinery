@@ -433,12 +433,20 @@ public class ProblemValidator extends AbstractProblemValidator {
 					i, INVALID_SUPERSET_ISSUE);
 			return;
 		}
-		int arity = signatureProvider.getArity(superSet);
+		var signature = signatureProvider.getSignature(superSet);
+		int arity = signature.arity();
 		if (arity != 2) {
 			var message = "Superset '%s' of reference '%s' must have arity 2, got arity %d instead."
 					.formatted(superSet.getName(), referenceDeclaration.getName(), arity);
 			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
 					i, INVALID_ARITY_ISSUE);
+		}
+		var resultType = signature.resultType();
+		if (!FixedType.LITERAL.equals(resultType)) {
+			var message = "Superset '%s' of reference '%s' must be a predicate, got %s function instead."
+					.formatted(superSet.getName(), referenceDeclaration.getName(), resultType);
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
 		}
 	}
 
@@ -574,12 +582,20 @@ public class ProblemValidator extends AbstractProblemValidator {
 					i, INVALID_SUPERSET_ISSUE);
 			return;
 		}
-		int arity = signatureProvider.getArity(superSet);
+		var signature = signatureProvider.getSignature(superSet);
+		int arity = signature.arity();
 		if (arity != expectedArity) {
-			var message = "Superset '%s' of reference '%s' must have arity %d, got arity %d instead."
+			var message = "Superset '%s' of predicate '%s' must have arity %d, got arity %d instead."
 					.formatted(superSet.getName(), predicateDefinition.getName(), expectedArity, arity);
 			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
 					i, INVALID_ARITY_ISSUE);
+		}
+		var resultType = signature.resultType();
+		if (!FixedType.LITERAL.equals(resultType)) {
+			var message = "Superset '%s' of predicate '%s' must be a predicate, got %s function instead."
+					.formatted(superSet.getName(), predicateDefinition.getName(), resultType);
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
 		}
 	}
 
