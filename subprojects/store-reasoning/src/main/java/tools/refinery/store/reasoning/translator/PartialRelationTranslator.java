@@ -415,18 +415,38 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		builder.action(PartialActionLiterals.remove(ReasoningAdapter.EXISTS_SYMBOL, p1));
 	}
 
+	private void configureFallbackExcludeConcretizationRule(RuleBuilder builder, NodeVariable p1) {
+		int arity = partialRelation.arity();
+		for (int i = 0; i < arity; i++) {
+			var parameters = new NodeVariable[arity];
+			for (int j = 0; j < arity; j++) {
+				parameters[j] = i == j ? p1 : Variable.of("v" + j);
+			}
+			var literals = new ArrayList<Literal>(arity + 3);
+			literals.add(PartialLiterals.candidateMust(partialRelation.call(parameters)));
+			literals.add(not(PartialLiterals.candidateMay(partialRelation.call(parameters))));
+			for (int j = 0; j < arity; j++) {
+				var parameter = parameters[j];
+				if (i == j) {
+					literals.add(PartialLiterals.candidateMay(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+					literals.add(not(PartialLiterals.candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(parameter))));
+				} else {
+					literals.add(PartialLiterals.must(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
+				}
+			}
+			builder.clause(literals);
+		}
+		builder.action(PartialActionLiterals.remove(ReasoningAdapter.EXISTS_SYMBOL, p1));
+	}
+
 	private void createFallbackObjective() {
 		if (acceptWasSet && objectiveWasSet) {
 			return;
 		}
-		var invalidCandidate = createQuery("invalidCandidate", (builder, parameters) -> builder
-				.clause(
-						PartialLiterals.candidateMust(partialRelation.call(parameters)),
-						not(PartialLiterals.candidateMay(partialRelation.call(parameters)))
-				));
 		var reject = createQuery("reject", (builder, parameters) -> {
-			var literals = new ArrayList<Literal>(parameters.length + 1);
-			literals.add(invalidCandidate.call(parameters));
+			var literals = new ArrayList<Literal>(parameters.length + 2);
+			literals.add(PartialLiterals.candidateMust(partialRelation.call(parameters)));
+			literals.add(not(PartialLiterals.candidateMay(partialRelation.call(parameters))));
 			for (var parameter : parameters) {
 				literals.add(PartialLiterals.candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
 			}
