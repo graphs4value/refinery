@@ -7,7 +7,6 @@ package tools.refinery.store.reasoning.literal;
 
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.substitution.Substitution;
-import tools.refinery.logic.term.AbstractCallTerm;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -15,7 +14,7 @@ import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
 import java.util.List;
 
-public class ReifyTerm extends AbstractCallTerm<TruthValue> {
+public class ReifyTerm extends PartialCallTerm<TruthValue> {
 	public ReifyTerm(Constraint target, List<Variable> arguments) {
 		super(TruthValue.class, target, arguments);
 	}

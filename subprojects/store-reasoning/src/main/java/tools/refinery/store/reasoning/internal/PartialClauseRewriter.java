@@ -11,9 +11,16 @@ import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.DnfBuilder;
 import tools.refinery.logic.dnf.DnfClause;
+import tools.refinery.logic.dnf.SymbolicParameter;
 import tools.refinery.logic.literal.*;
 import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.abstractdomain.AbstractDomainTerms;
 import tools.refinery.logic.term.int_.IntTerms;
+import tools.refinery.logic.term.intinterval.IntInterval;
+import tools.refinery.logic.term.intinterval.IntIntervalDomain;
+import tools.refinery.logic.term.intinterval.IntIntervalTerms;
+import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalities;
 import tools.refinery.logic.term.uppercardinality.UpperCardinalityTerms;
 import tools.refinery.logic.util.CircularReferenceException;
@@ -97,9 +104,22 @@ class PartialClauseRewriter {
 	private <T> Term<T> rewriteTerm(Term<T> term) {
 		var termWithProcessedSubTerms = term.rewriteSubTerms(this::rewriteTerm);
 		return switch (termWithProcessedSubTerms) {
+			case ReifyTerm reifyTerm -> {
+				// {@link ReifyTerm} implements {@code Term<TruthValue>}, so {@code T} can only be {@link TruthValue}.
+				@SuppressWarnings("unchecked")
+				var result = (Term<T>) rewriteReifyTerm(reifyTerm);
+				yield result;
+			}
+			case PartialCountTerm partialCountTerm -> {
+				// {@link PartialCountTerm} implements {@code Term<IntInterval>}, so {@code T} can only be
+				// {@link IntInterval}.
+				@SuppressWarnings("unchecked")
+				var result = (Term<T>) rewritePartialCountTerm(partialCountTerm);
+				yield result;
+			}
 			case AbstractCallTerm<T> abstractCallTerm -> rewriteCallTerm(abstractCallTerm);
 			case PartialFunctionCallTerm<?, ?> partialFunctionCallTerm -> {
-				// Rewriting doesn't change the type of a term, but we can't express the generic bound
+				// Rewriting doesn't change a term's type, but we can't express the generic bound
 				// {@code PartialFunctionCallTerm<T extends AbstractValue<T, C>, C>} in Java, so we have to cast
 				// explicitly.
 				@SuppressWarnings("unchecked")
@@ -108,6 +128,92 @@ class PartialClauseRewriter {
 			}
 			default -> termWithProcessedSubTerms;
 		};
+	}
+
+	private Term<TruthValue> rewriteReifyTerm(ReifyTerm reifyTerm) {
+		var target = reifyTerm.getTarget();
+		var concreteness = reifyTerm.getConcreteness();
+		var countResult = computeCountVariables(reifyTerm, "reificationHelper", false);
+		var helper = countResult.builder()
+				.clause(target.call(CallPolarity.POSITIVE, countResult.rewrittenArguments()))
+				.build();
+		var output = Variable.of("output", TruthValue.class);
+		var mayTarget = ModalConstraint.of(ModalitySpecification.MAY, concreteness, helper);
+		var mustTarget = ModalConstraint.of(ModalitySpecification.MUST, concreteness, helper);
+		var arguments = countResult.helperArguments();
+		var reification = Dnf.builder("%s#reified#%s".formatted(target.name(), concreteness))
+				.symbolicParameters(helper.getSymbolicParameters())
+				.parameter(output)
+				.clause(
+						mayTarget.call(CallPolarity.POSITIVE, arguments),
+						mustTarget.call(CallPolarity.POSITIVE, arguments),
+						output.assign(TruthValueTerms.constant(TruthValue.TRUE))
+				)
+				.clause(
+						mayTarget.call(CallPolarity.POSITIVE, arguments),
+						mustTarget.call(CallPolarity.NEGATIVE, arguments),
+						output.assign(TruthValueTerms.constant(TruthValue.UNKNOWN))
+				)
+				.clause(
+						mayTarget.call(CallPolarity.NEGATIVE, arguments),
+						mustTarget.call(CallPolarity.POSITIVE, arguments),
+						output.assign(TruthValueTerms.constant(TruthValue.ERROR))
+				)
+				.build();
+		var reifiedArguments = new ArrayList<Variable>(arguments.size() + 1);
+		reifiedArguments.addAll(arguments);
+		reifiedArguments.add(output);
+		return reification.leftJoinBy(output, TruthValue.FALSE, List.copyOf(reifiedArguments));
+	}
+
+	private Term<IntInterval> rewritePartialCountTerm(PartialCountTerm partialCountTerm) {
+		var constraint = createPartialCountConstraint(partialCountTerm);
+		var symbolicParameters = constraint.getSymbolicParameters();
+		var outputVariable = symbolicParameters.getLast().getVariable().asDataVariable(IntInterval.class);
+		var arguments = symbolicParameters.stream().map(SymbolicParameter::getVariable).toList();
+		return constraint.aggregateBy(outputVariable, IntIntervalTerms.INT_INTERVAL_SUM, arguments);
+	}
+
+	private Dnf createPartialCountConstraint(PartialCallTerm<?> partialCallTerm) {
+		var target = partialCallTerm.getTarget();
+		var concreteness = partialCallTerm.getConcreteness();
+		var countResult = computeCountVariables(partialCallTerm, "partialCount", true);
+		var variablesToCount = countResult.variablesToCount();
+		Term<IntInterval> productTerm;
+		if (variablesToCount.isEmpty()) {
+			productTerm = IntIntervalTerms.constant(IntInterval.ONE);
+		} else {
+			int length = variablesToCount.size();
+			productTerm = ReasoningAdapter.COUNT_SYMBOL.call(concreteness, List.of(variablesToCount.getFirst()));
+			for (int i = 1; i < length; i++) {
+				productTerm = IntIntervalTerms.mul(productTerm,
+						ReasoningAdapter.COUNT_SYMBOL.call(concreteness, List.of(variablesToCount.get(i))));
+			}
+		}
+		var mayTarget = ModalConstraint.of(ModalitySpecification.MAY, concreteness, target);
+		var mustTarget = ModalConstraint.of(ModalitySpecification.MUST, concreteness, target);
+		var arguments = countResult.rewrittenArguments();
+		var output = Variable.of("output", IntInterval.class);
+		return countResult.builder()
+				.parameter(output)
+				.clause(
+						mayTarget.call(CallPolarity.POSITIVE, arguments),
+						mustTarget.call(CallPolarity.POSITIVE, arguments),
+						output.assign(productTerm)
+				)
+				.clause(
+						mayTarget.call(CallPolarity.POSITIVE, arguments),
+						mustTarget.call(CallPolarity.NEGATIVE, arguments),
+						output.assign(AbstractDomainTerms.join(IntIntervalDomain.INSTANCE,
+								IntIntervalTerms.constant(IntInterval.ZERO), productTerm))
+				)
+				.clause(
+						mayTarget.call(CallPolarity.NEGATIVE, arguments),
+						mustTarget.call(CallPolarity.POSITIVE, arguments),
+						output.assign(AbstractDomainTerms.meet(IntIntervalDomain.INSTANCE,
+								IntIntervalTerms.constant(IntInterval.ZERO), productTerm))
+				)
+				.build();
 	}
 
 	private <T> Term<T> rewriteCallTerm(AbstractCallTerm<T> callTerm) {
@@ -231,26 +337,40 @@ class PartialClauseRewriter {
 
 	private CountResult computeCountVariables(AbstractCountLiteral<?> literal, Concreteness concreteness,
 											  String name) {
-		var target = literal.getTarget();
+		return computeCountVariables(literal.getTarget(), literal.getArguments(),
+				literal.getPrivateVariables(unmodifiablePositiveVariables), "%s#%s".formatted(name, concreteness),
+				true);
+	}
+
+	private CountResult computeCountVariables(PartialCallTerm<?> term, String name, boolean exposePrivateVariables) {
+		return computeCountVariables(term.getTarget(), term.getArguments(),
+				term.getPrivateVariables(unmodifiablePositiveVariables), "%s#%s".formatted(
+						name, term.getConcreteness()), exposePrivateVariables);
+	}
+
+	private CountResult computeCountVariables(
+			Constraint target, List<Variable> literalArguments, Set<Variable> privateVariables, String name,
+			boolean exposePrivateVariables) {
 		int arity = target.arity();
 		var parameters = target.getParameters();
-		var literalArguments = literal.getArguments();
-		var privateVariables = literal.getPrivateVariables(positiveVariables);
-		var builder = Dnf.builder("%s#%s#%s".formatted(target.name(), concreteness, name));
+		var builder = Dnf.builder("%s#%s".formatted(target.name(), name));
 		var rewrittenArguments = new ArrayList<Variable>(parameters.size());
-		var variablesToCount = new ArrayList<Variable>();
+		var variablesToCount = new ArrayList<NodeVariable>();
 		var helperArguments = new ArrayList<Variable>();
 		var literalToRewrittenArgumentMap = new HashMap<Variable, Variable>();
 		for (int i = 0; i < arity; i++) {
 			var literalArgument = literalArguments.get(i);
 			var parameter = parameters.get(i);
 			var rewrittenArgument = literalToRewrittenArgumentMap.computeIfAbsent(literalArgument, key -> {
-				helperArguments.add(key);
-				var newArgument = builder.parameter(parameter);
-				if (privateVariables.contains(key)) {
-					variablesToCount.add(newArgument);
+				boolean isPrivate = privateVariables.contains(key);
+				if (exposePrivateVariables || !isPrivate) {
+					helperArguments.add(key);
+					builder.parameter(key, parameter.getDirection());
 				}
-				return newArgument;
+				if (isPrivate && key.isNodeVariable()) {
+					variablesToCount.add(key.asNodeVariable());
+				}
+				return key;
 			});
 			rewrittenArguments.add(rewrittenArgument);
 		}
@@ -292,6 +412,6 @@ class PartialClauseRewriter {
 	}
 
 	private record CountResult(DnfBuilder builder, List<Variable> rewrittenArguments, List<Variable> helperArguments,
-							   List<Variable> variablesToCount) {
+							   List<NodeVariable> variablesToCount) {
 	}
 }

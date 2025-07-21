@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class PartialAggregationTerm<
-		A extends AbstractValue<A, C>, C, A2 extends AbstractValue<A2, C2>, C2> extends AbstractCallTerm<A> {
+		A extends AbstractValue<A, C>, C, A2 extends AbstractValue<A2, C2>, C2> extends PartialCallTerm<A> {
 	private final PartialAggregator<A, C, A2, C2> aggregator;
 	private final Term<A2> body;
 

@@ -20,7 +20,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class PartialFunctionCallTerm<A extends AbstractValue<A, C>, C> extends AbstractTerm<A> {
+public class PartialFunctionCallTerm<A extends AbstractValue<A, C>, C> extends AbstractTerm<A>
+		implements PartialTerm<A> {
 	private final ConcretenessSpecification concreteness;
 	private final PartialFunction<A, C> partialFunction;
 	private final List<NodeVariable> arguments;
@@ -67,6 +68,7 @@ public class PartialFunctionCallTerm<A extends AbstractValue<A, C>, C> extends A
 		return new PartialFunctionCallTerm<>(concreteness, partialFunction, substitutedArguments);
 	}
 
+	@Override
 	public PartialFunctionCallTerm<A, C> orElseConcreteness(Concreteness fallback) {
 		var newConcreteness = concreteness.orElse(fallback.toSpecification());
 		if (concreteness == newConcreteness) {

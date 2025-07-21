@@ -8,7 +8,6 @@ package tools.refinery.store.reasoning.literal;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.substitution.Substitution;
-import tools.refinery.logic.term.AbstractCallTerm;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.intinterval.IntInterval;
@@ -16,7 +15,7 @@ import tools.refinery.logic.term.intinterval.IntIntervalTerms;
 
 import java.util.List;
 
-public class PartialCountTerm extends AbstractCallTerm<IntInterval> {
+public class PartialCountTerm extends PartialCallTerm<IntInterval> {
 	public PartialCountTerm(Constraint target, List<Variable> arguments) {
 		super(IntInterval.class, target, arguments);
 	}

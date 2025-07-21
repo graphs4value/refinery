@@ -5,8 +5,10 @@
  */
 package tools.refinery.logic.term.intinterval;
 
+import tools.refinery.logic.term.Aggregator;
 import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.TreapAggregator;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainTerms;
 import tools.refinery.logic.term.operators.AddTerm;
 import tools.refinery.logic.term.operators.MulTerm;
@@ -16,6 +18,10 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public class IntIntervalTerms {
 	public static final IntIntervalSumAggregator INT_SUM = new IntIntervalSumAggregator();
+
+	public static final Aggregator<IntInterval, IntInterval> INT_INTERVAL_SUM =
+			TreapAggregator.of(IntInterval.class,
+					(count, value) -> value.mul(IntInterval.of(count)), IntInterval.ZERO, IntInterval::add);
 
 	private IntIntervalTerms() {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly");

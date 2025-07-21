@@ -189,11 +189,8 @@ class ClauseLifter {
 
 	private <T> Term<T> rewriteTerm(Term<T> term) {
 		var rewrittenTerm = term.rewriteSubTerms(this::rewriteTerm);
-		if (rewrittenTerm instanceof PartialFunctionCallTerm<?, ?> partialFunctionCallTerm) {
-			// Here, the {@code A} generic argument can only be {@code T}.
-			@SuppressWarnings("unchecked")
-			var newTerm = (Term<T>) partialFunctionCallTerm.orElseConcreteness(concreteness);
-			return newTerm;
+		if (rewrittenTerm instanceof PartialTerm<T> partialTerm) {
+			return partialTerm.orElseConcreteness(concreteness);
 		}
 		return rewrittenTerm;
 	}

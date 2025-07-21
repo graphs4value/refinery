@@ -34,6 +34,8 @@ public sealed interface Bound {
 
 	int signum();
 
+	int compareBound(Bound other);
+
 	enum Infinite implements Bound {
 		POSITIVE_INFINITY {
 			@Override
@@ -73,6 +75,11 @@ public sealed interface Bound {
 			@Override
 			public String toString() {
 				return "∞";
+			}
+
+			@Override
+			public int compareBound(Bound other) {
+				return other == POSITIVE_INFINITY ? 0 : -1;
 			}
 		},
 
@@ -114,6 +121,11 @@ public sealed interface Bound {
 			@Override
 			public String toString() {
 				return "-∞";
+			}
+
+			@Override
+			public int compareBound(Bound other) {
+				return other == NEGATIVE_INFINITY ? 0 : 1;
 			}
 		};
 
@@ -204,6 +216,12 @@ public sealed interface Bound {
 		@Override
 		public @NotNull String toString() {
 			return String.valueOf(value);
+		}
+
+		@Override
+		public int compareBound(Bound other) {
+			return other instanceof Finite(int otherValue) ? Integer.compare(value, otherValue) :
+					-other.compareBound(this);
 		}
 	}
 
