@@ -59,6 +59,8 @@ public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 			return range;
 		});
 		addAggregator(SUM_AGGREGATOR, INT_TYPE, INT_TYPE, IntIntervalTerms.INT_SUM);
+		addAggregator(MIN_AGGREGATOR, INT_TYPE, INT_TYPE, IntIntervalTerms.INT_MIN);
+		addAggregator(MAX_AGGREGATOR, INT_TYPE, INT_TYPE, IntIntervalTerms.INT_MAX);
 
 		addDomain(STRING_TYPE, StringDomain.INSTANCE, (value) -> switch (value) {
 			case StringValue.Abstract abstractValue -> createLogicConstant(switch (abstractValue) {

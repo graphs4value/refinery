@@ -8,14 +8,26 @@ package tools.refinery.logic.term.abstractdomain;
 import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.ComparableAbstractDomain;
-import tools.refinery.logic.term.ComparableAbstractValue;
-import tools.refinery.logic.term.ConstantTerm;
-import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.*;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public final class AbstractDomainTerms {
 	private AbstractDomainTerms() {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly");
+	}
+
+	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> PartialAggregator<A, C, A, C>
+	minAggregator(ComparableAbstractDomain<A, C> domain) {
+		var innerAggregator = TreapAggregator.of(domain.abstractType(), (ignored, value) -> value,
+                domain.positiveInfinity(), ComparableAbstractValue::min);
+		return PartialAggregator.multiplicityInsensitive(domain, innerAggregator);
+	}
+
+	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> PartialAggregator<A, C, A, C>
+	maxAggregator(ComparableAbstractDomain<A, C> domain) {
+		var innerAggregator = TreapAggregator.of(domain.abstractType(), (ignored, value) -> value,
+				domain.negativeInfinity(), ComparableAbstractValue::max);
+		return PartialAggregator.multiplicityInsensitive(domain, innerAggregator);
 	}
 
 	public static <A extends AbstractValue<A, C>, C> Term<A> unknown(AbstractDomain<A, C> abstractDomain) {

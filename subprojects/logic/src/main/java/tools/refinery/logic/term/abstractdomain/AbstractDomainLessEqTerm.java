@@ -18,7 +18,7 @@ public class AbstractDomainLessEqTerm<A extends ComparableAbstractValue<A, C>, C
 
 	@Override
 	protected TruthValue doEvaluate(A leftValue, A rightValue) {
-		return leftValue.checkLess(rightValue);
+		return leftValue.checkLessEq(rightValue);
 	}
 
 	@Override

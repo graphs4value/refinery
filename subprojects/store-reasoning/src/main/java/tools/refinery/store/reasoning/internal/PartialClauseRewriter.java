@@ -117,6 +117,14 @@ class PartialClauseRewriter {
 				var result = (Term<T>) rewritePartialCountTerm(partialCountTerm);
 				yield result;
 			}
+			case PartialAggregationTerm<?, ?, ?, ?> partialAggregationTerm -> {
+				// Rewriting doesn't change a term's type, but we can't express the generic bound
+				// {@code PartialAggregationTerm<T extends AbstractValue<T, C>, C, ?, ?>} in Java, so we have to cast
+				// explicitly.
+				@SuppressWarnings("unchecked")
+				var result = (Term<T>) rewritePartialAggregationTerm(partialAggregationTerm);
+				yield result;
+			}
 			case AbstractCallTerm<T> abstractCallTerm -> rewriteCallTerm(abstractCallTerm);
 			case PartialFunctionCallTerm<?, ?> partialFunctionCallTerm -> {
 				// Rewriting doesn't change a term's type, but we can't express the generic bound
@@ -214,6 +222,88 @@ class PartialClauseRewriter {
 								IntIntervalTerms.constant(IntInterval.ZERO), productTerm))
 				)
 				.build();
+	}
+
+	private <A extends AbstractValue<A, C>, C, A2 extends AbstractValue<A2, C2>, C2> Term<A>
+	rewritePartialAggregationTerm(PartialAggregationTerm<A, C, A2, C2> partialAggregationTerm) {
+		return switch (partialAggregationTerm.getAggregator()) {
+			case PartialAggregator.MultiplicitySensitive<A, C, A2, C2, ?> multiplicitySensitiveAggregator ->
+					rewritePartialAggregationTerm(partialAggregationTerm, multiplicitySensitiveAggregator);
+			case PartialAggregator.MultiplicityInsensitive<A, C, A2, C2> multiplicityInsensitiveAggregator ->
+					rewritePartialAggregationTerm(partialAggregationTerm, multiplicityInsensitiveAggregator);
+		};
+	}
+
+	private <A extends AbstractValue<A, C>, C, A2 extends AbstractValue<A2, C2>, C2, T> Term<A>
+	rewritePartialAggregationTerm(PartialAggregationTerm<A, C, A2, C2> partialAggregationTerm,
+								  PartialAggregator.MultiplicitySensitive<A, C, A2, C2, T> partialAggregator) {
+		var constraint = createPartialCountConstraint(partialAggregationTerm);
+		var symbolicParameters = new ArrayList<>(constraint.getSymbolicParameters());
+		var output = Variable.of("output", partialAggregator.getIntermediateType());
+		symbolicParameters.set(symbolicParameters.size() - 1, new SymbolicParameter(output, ParameterDirection.OUT));
+		var rawCount = Variable.of("rawCount", IntInterval.class);
+		var arguments = symbolicParameters.stream().map(SymbolicParameter::getVariable).toList();
+		var rawArguments = new ArrayList<>(arguments);
+		rawArguments.set(rawArguments.size() - 1, rawCount);
+		var target = partialAggregationTerm.getTarget();
+		var concreteness = partialAggregationTerm.getConcreteness();
+		var body = partialAggregationTerm.getBody();
+		var helper = Dnf.builder("%s#aggregationHelper#%s".formatted(target.name(), concreteness))
+				.symbolicParameters(symbolicParameters)
+				.clause(
+                        constraint.call(CallPolarity.POSITIVE, rawArguments),
+                        output.assign(partialAggregator.withWeight(rawCount, body))
+                )
+				.build();
+		return helper.aggregateBy(output, partialAggregator.getInnerAggregator(), arguments);
+	}
+
+	private <A extends AbstractValue<A, C>, C, A2 extends AbstractValue<A2, C2>, C2> Term<A>
+	rewritePartialAggregationTerm(PartialAggregationTerm<A, C, A2, C2> partialAggregationTerm,
+								  PartialAggregator.MultiplicityInsensitive<A, C, A2, C2> partialAggregator) {
+		var target = partialAggregationTerm.getTarget();
+		var concreteness = partialAggregationTerm.getConcreteness();
+		var countResult = computeCountVariables(partialAggregationTerm, "reificationHelper", true);
+		var variablesToCount = countResult.variablesToCount();
+		var literals = new ArrayList<Literal>(variablesToCount.size() + 1);
+		literals.add(target.call(CallPolarity.POSITIVE, countResult.rewrittenArguments()));
+		for (var variable : variablesToCount) {
+			literals.add(ReasoningAdapter.EXISTS_SYMBOL.call(variable));
+		}
+		var reificationHelper = countResult.builder()
+				.clause(literals)
+				.build();
+		var bodyDomain = partialAggregator.getBodyDomain();
+		var bodyType = bodyDomain.abstractType();
+		var output = Variable.of("output", bodyType);
+		var mayTarget = ModalConstraint.of(ModalitySpecification.MAY, concreteness, reificationHelper);
+		var mustTarget = ModalConstraint.of(ModalitySpecification.MUST, concreteness, reificationHelper);
+		var arguments = countResult.helperArguments();
+		var body = partialAggregationTerm.getBody();
+		var neutralElement = new ConstantTerm<>(bodyType, partialAggregator.getNeutralElement());
+		var helper = Dnf.builder("%s#aggregationHelper#%s".formatted(target.name(), concreteness))
+				.symbolicParameters(reificationHelper.getSymbolicParameters())
+				.parameter(output)
+				.clause(
+                        mayTarget.call(CallPolarity.POSITIVE, arguments),
+                        mustTarget.call(CallPolarity.POSITIVE, arguments),
+                        output.assign(body)
+                )
+				.clause(
+						mayTarget.call(CallPolarity.POSITIVE, arguments),
+						mustTarget.call(CallPolarity.NEGATIVE, arguments),
+						output.assign(AbstractDomainTerms.join(bodyDomain, neutralElement, body))
+				)
+				.clause(
+						mayTarget.call(CallPolarity.NEGATIVE, arguments),
+						mustTarget.call(CallPolarity.POSITIVE, arguments),
+						output.assign(AbstractDomainTerms.meet(bodyDomain, neutralElement, body))
+				)
+				.build();
+		var argumentsWithOutput = new ArrayList<Variable>(arguments.size() + 1);
+		argumentsWithOutput.addAll(arguments);
+		argumentsWithOutput.add(output);
+		return helper.aggregateBy(output, partialAggregator.getInnerAggregator(), argumentsWithOutput);
 	}
 
 	private <T> Term<T> rewriteCallTerm(AbstractCallTerm<T> callTerm) {

@@ -16,8 +16,6 @@ import tools.refinery.logic.term.AnyPartialAggregator;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.ComparableAbstractValue;
 import tools.refinery.logic.term.Term;
-import tools.refinery.logic.term.abstractdomain.AbstractDomainMaxAggregator;
-import tools.refinery.logic.term.abstractdomain.AbstractDomainMinAggregator;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainTerms;
 import tools.refinery.logic.term.comparable.EqTerm;
 import tools.refinery.logic.term.comparable.NotEqTerm;
@@ -102,12 +100,6 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 				addBinaryOperator(BinaryOp.XOR, type, type, type, (left, right) ->
 						new XorTerm(abstractType, left, right));
 			}
-		}
-		if (domain instanceof ComparableAbstractDomain<?, ?> comparableDomain) {
-			addAggregator(BuiltinTermInterpreter.MIN_AGGREGATOR, type, type,
-					new AbstractDomainMinAggregator<>(comparableDomain));
-			addAggregator(BuiltinTermInterpreter.MAX_AGGREGATOR, type, type,
-                    new AbstractDomainMaxAggregator<>(comparableDomain));
 		}
 	}
 
