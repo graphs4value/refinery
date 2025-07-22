@@ -12,10 +12,7 @@ import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.ComparableAbstractDomain;
-import tools.refinery.logic.term.AnyPartialAggregator;
-import tools.refinery.logic.term.AnyTerm;
-import tools.refinery.logic.term.ComparableAbstractValue;
-import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.*;
 import tools.refinery.logic.term.abstractdomain.AbstractDomainTerms;
 import tools.refinery.logic.term.comparable.EqTerm;
 import tools.refinery.logic.term.comparable.NotEqTerm;
@@ -30,6 +27,13 @@ import java.util.function.Function;
 // This class is used to configure term interpreters by clients with various arguments.
 @SuppressWarnings("SameParameterValue")
 public abstract class AbstractTermInterpreter implements TermInterpreter {
+	private static final Set<AggregatorName> SPECIAL_AGGREGATORS = Set.of(
+			BuiltInTerms.COUNT_AGGREGATOR,
+			BuiltInTerms.REIFY_AGGREGATOR,
+			BuiltInTerms.MEET_AGGREGATOR,
+			BuiltInTerms.JOIN_AGGREGATOR
+	);
+
 	private final Map<DataExprType, UnaryValue<?, ?>> negations = new HashMap<>();
 	private final Map<UnaryKey, UnaryValue<?, ?>> unaryOperators = new HashMap<>();
 	private final Map<BinaryKey, BinaryValue<?, ?, ?>> binaryOperators = new HashMap<>();
@@ -101,6 +105,8 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 						new XorTerm(abstractType, left, right));
 			}
 		}
+		addAggregatorInternal(BuiltInTerms.MEET_AGGREGATOR, type, type, PartialAggregator.meet(domain));
+		addAggregatorInternal(BuiltInTerms.JOIN_AGGREGATOR, type, type, PartialAggregator.join(domain));
 	}
 
 	protected <R, T> void addNegation(DataExprType type, DataExprType result, Function<Term<R>, Term<T>> termFactory) {
@@ -127,6 +133,14 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 
 	protected void addAggregator(AggregatorName aggregator, DataExprType type, DataExprType result,
 								 AnyPartialAggregator partialAggregator) {
+		if (SPECIAL_AGGREGATORS.contains(aggregator)) {
+			throw new IllegalArgumentException("The aggregator '%s' cannot be overridden.".formatted(aggregator));
+		}
+		addAggregatorInternal(aggregator, type, result, partialAggregator);
+	}
+
+	private void addAggregatorInternal(AggregatorName aggregator, DataExprType type, DataExprType result,
+									   AnyPartialAggregator partialAggregator) {
 		aggregators.put(new AggregatorKey(aggregator, type), new AggregatorValue(result, partialAggregator));
 	}
 

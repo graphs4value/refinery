@@ -9,7 +9,7 @@ import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public interface ComparableAbstractValue<A extends ComparableAbstractValue<A, C>, C extends Comparable<C>>
-		extends AbstractValue<A, C>, Comparable<A> {
+		extends AbstractValue<A, C> {
 	TruthValue checkLess(A other);
 
 	default TruthValue checkLessEq(A other) {

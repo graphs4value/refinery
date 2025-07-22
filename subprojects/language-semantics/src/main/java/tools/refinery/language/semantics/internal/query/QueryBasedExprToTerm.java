@@ -8,7 +8,7 @@ package tools.refinery.language.semantics.internal.query;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.jetbrains.annotations.NotNull;
-import tools.refinery.language.expressions.BuiltinTermInterpreter;
+import tools.refinery.language.expressions.BuiltInTerms;
 import tools.refinery.language.expressions.ExprToTerm;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
@@ -194,10 +194,10 @@ class QueryBasedExprToTerm extends ExprToTerm {
 			return Optional.empty();
 		}
 		var aggregatorName = signatureProvider.getAggregatorName(aggregatorDeclaration);
-		if (BuiltinTermInterpreter.REIFY_AGGREGATOR.equals(aggregatorName)) {
+		if (BuiltInTerms.REIFY_AGGREGATOR.equals(aggregatorName)) {
 			return Optional.of(new ReifyTerm(constraint, parameterList));
 		}
-		if (BuiltinTermInterpreter.COUNT_AGGREGATOR.equals(aggregatorName)) {
+		if (BuiltInTerms.COUNT_AGGREGATOR.equals(aggregatorName)) {
 			return Optional.of(new PartialCountTerm(constraint, parameterList));
 		}
 		if (term == null) {

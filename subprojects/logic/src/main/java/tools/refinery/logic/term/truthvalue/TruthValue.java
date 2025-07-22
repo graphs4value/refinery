@@ -14,12 +14,9 @@ import tools.refinery.logic.term.operators.Xor;
 
 public enum TruthValue implements ComparableAbstractValue<TruthValue, Boolean>, Not<TruthValue>, And<TruthValue>,
 		Or<TruthValue>, Xor<TruthValue> {
-	TRUE("true"),
-
-	FALSE("false"),
-
 	UNKNOWN("unknown"),
-
+	FALSE("false"),
+	TRUE("true"),
 	ERROR("error");
 
 	private final String name;

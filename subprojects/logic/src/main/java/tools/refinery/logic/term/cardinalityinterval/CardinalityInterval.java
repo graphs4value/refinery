@@ -89,4 +89,10 @@ public record CardinalityInterval(int lowerBound, UpperCardinality upperBound)
 		}
 		return "%d..%s".formatted(lowerBound, upperBound);
 	}
+
+	@Override
+	public int compareTo(@NotNull CardinalityInterval other) {
+		int result = Integer.compare(lowerBound, other.lowerBound);
+        return result == 0 ? upperBound.compareTo(other.upperBound) : result;
+	}
 }

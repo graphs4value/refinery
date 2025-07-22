@@ -6,7 +6,8 @@
  * http://www.eclipse.org/legal/epl-2.0.
  * <p>
  * Portions of this file have been copied from
- * https://github.com/eclipse-xtext/xtext/blob/f9b6d1bebe09dc5775d45671d255384a8160015c/org.eclipse.xtext.util/src/org/eclipse/xtext/util/JavaStringConverter.java
+ * https://github.com/eclipse-xtext/xtext/blob/f9b6d1bebe09dc5775d45671d255384a8160015c/org.eclipse.xtext
+ * .util/src/org/eclipse/xtext/util/JavaStringConverter.java
  * <p>
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
@@ -19,106 +20,61 @@ import tools.refinery.logic.term.operators.Add;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public sealed interface StringValue extends AbstractValue<StringValue, String>, Add<StringValue> {
-	StringValue UNKNOWN = Abstract.UNKNOWN;
-	StringValue ERROR = Abstract.ERROR;
+	StringValue UNKNOWN = new Unknown();
+	StringValue ERROR = new Error();
 
 	static StringValue of(@Nullable String value) {
 		return value == null ? ERROR : new Concrete(value);
 	}
 
-	enum Abstract implements StringValue {
-		UNKNOWN {
-			@Override
-			public @NotNull String getArbitrary() {
-				return "";
-			}
+	final class Unknown implements StringValue {
+		private Unknown() {
+		}
 
-			@Override
-			public boolean isError() {
-				return false;
-			}
+		@Override
+		public @NotNull String getArbitrary() {
+			return "";
+		}
 
-			@Override
-			public StringValue join(StringValue other) {
-				return UNKNOWN;
-			}
+		@Override
+		public boolean isError() {
+			return false;
+		}
 
-			@Override
-			public StringValue meet(StringValue other) {
-				return other;
-			}
+		@Override
+		public StringValue join(StringValue other) {
+			return UNKNOWN;
+		}
 
-			@Override
-			public boolean isRefinementOf(StringValue other) {
-				return other == UNKNOWN;
-			}
+		@Override
+		public StringValue meet(StringValue other) {
+			return other;
+		}
 
-			@Override
-			public boolean isOverlapping(StringValue other) {
-				return other != ERROR;
-			}
+		@Override
+		public boolean isRefinementOf(StringValue other) {
+			return other == UNKNOWN;
+		}
 
-			@Override
-			public TruthValue checkEquals(StringValue other) {
-				return other == ERROR ? TruthValue.ERROR : TruthValue.UNKNOWN;
-			}
+		@Override
+		public boolean isOverlapping(StringValue other) {
+			return other != ERROR;
+		}
 
-			@Override
-			public StringValue add(StringValue other) {
-				return UNKNOWN;
-			}
+		@Override
+		public TruthValue checkEquals(StringValue other) {
+			return other == ERROR ? TruthValue.ERROR : TruthValue.UNKNOWN;
+		}
 
-			@Override
-			public String toString() {
-				return "unknown";
-			}
-		},
-		ERROR {
-			@Override
-			public @Nullable String getArbitrary() {
-				return null;
-			}
+		@Override
+		public StringValue add(StringValue other) {
+			return UNKNOWN;
+		}
 
-			@Override
-			public boolean isError() {
-				return true;
-			}
-
-			@Override
-			public StringValue join(StringValue other) {
-				return other;
-			}
-
-			@Override
-			public StringValue meet(StringValue other) {
-				return ERROR;
-			}
-
-			@Override
-			public boolean isRefinementOf(StringValue other) {
-				return true;
-			}
-
-			@Override
-			public boolean isOverlapping(StringValue other) {
-				return false;
-			}
-
-			@Override
-			public TruthValue checkEquals(StringValue other) {
-				return TruthValue.ERROR;
-			}
-
-			@Override
-			public StringValue add(StringValue other) {
-				return ERROR;
-			}
-
-			@Override
-			public String toString() {
-				return "error";
-			}
-		};
+		@Override
+		public String toString() {
+			return "unknown";
+		}
 
 		@Override
 		public @Nullable String getConcrete() {
@@ -128,6 +84,80 @@ public sealed interface StringValue extends AbstractValue<StringValue, String>, 
 		@Override
 		public boolean isConcrete() {
 			return false;
+		}
+
+		// {@code UNKNOWN} is smaller than any other value.
+		@SuppressWarnings("ComparatorMethodParameterNotUsed")
+		@Override
+		public int compareTo(@NotNull StringValue other) {
+			return other == UNKNOWN ? 0 : -1;
+		}
+	}
+
+	final class Error implements StringValue {
+		private Error() {
+		}
+
+		@Override
+		public @Nullable String getArbitrary() {
+			return null;
+		}
+
+		@Override
+		public boolean isError() {
+			return true;
+		}
+
+		@Override
+		public StringValue join(StringValue other) {
+			return other;
+		}
+
+		@Override
+		public StringValue meet(StringValue other) {
+			return ERROR;
+		}
+
+		@Override
+		public boolean isRefinementOf(StringValue other) {
+			return true;
+		}
+
+		@Override
+		public boolean isOverlapping(StringValue other) {
+			return false;
+		}
+
+		@Override
+		public TruthValue checkEquals(StringValue other) {
+			return TruthValue.ERROR;
+		}
+
+		@Override
+		public StringValue add(StringValue other) {
+			return ERROR;
+		}
+
+		@Override
+		public String toString() {
+			return "error";
+		}
+
+		@Override
+		public @Nullable String getConcrete() {
+			return null;
+		}
+
+		@Override
+		public boolean isConcrete() {
+			return false;
+		}
+
+		// {@code ERROR} is larger than any other value.
+		@SuppressWarnings("ComparatorMethodParameterNotUsed")
+		@Override
+		public int compareTo(@NotNull StringValue other) {
+			return other == ERROR ? 0 : 1;
 		}
 	}
 
@@ -175,8 +205,8 @@ public sealed interface StringValue extends AbstractValue<StringValue, String>, 
 		@Override
 		public StringValue add(StringValue other) {
 			return switch (other) {
-				case Abstract.UNKNOWN -> UNKNOWN;
-				case Abstract.ERROR -> ERROR;
+				case Unknown ignored -> UNKNOWN;
+				case Error ignored -> ERROR;
 				case Concrete(var otherValue) -> new Concrete(value + otherValue);
 			};
 		}
@@ -184,9 +214,9 @@ public sealed interface StringValue extends AbstractValue<StringValue, String>, 
 		@Override
 		public TruthValue checkEquals(StringValue other) {
 			return switch (other) {
-			case Abstract.UNKNOWN -> TruthValue.UNKNOWN;
-			case Abstract.ERROR -> TruthValue.ERROR;
-			case Concrete concrete -> equals(concrete) ? TruthValue.TRUE : TruthValue.FALSE;
+				case Unknown ignored -> TruthValue.UNKNOWN;
+				case Error ignored -> TruthValue.ERROR;
+				case Concrete concrete -> equals(concrete) ? TruthValue.TRUE : TruthValue.FALSE;
 			};
 		}
 
@@ -207,7 +237,8 @@ public sealed interface StringValue extends AbstractValue<StringValue, String>, 
 		 * <p>
 		 * This method was copied from {@code org.eclipse.xtext.util.JavaStringConverter}.
 		 * </p>
-		 * @param c The character to escape and append to the result.
+		 *
+		 * @param c      The character to escape and append to the result.
 		 * @param result The {@link StringBuilder} to append to.
 		 */
 		private static void escapeAndAppendTo(char c, StringBuilder result) {
@@ -242,6 +273,15 @@ public sealed interface StringValue extends AbstractValue<StringValue, String>, 
 				return;
 			}
 			result.append(appendMe);
+		}
+
+		@Override
+		public int compareTo(@NotNull StringValue other) {
+			return switch (other) {
+				case Unknown ignored -> 1;
+				case Error ignored -> -1;
+				case Concrete concrete -> value.compareTo(concrete.value);
+			};
 		}
 	}
 }

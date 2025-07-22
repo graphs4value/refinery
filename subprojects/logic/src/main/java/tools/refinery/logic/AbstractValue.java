@@ -8,7 +8,7 @@ package tools.refinery.logic;
 import org.jetbrains.annotations.Nullable;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
-public interface AbstractValue<A extends AbstractValue<A, C>, C> {
+public interface AbstractValue<A extends AbstractValue<A, C>, C> extends Comparable<A> {
 	@Nullable
 	C getConcrete();
 

@@ -19,7 +19,7 @@ public final class AbstractDomainTerms {
 	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> PartialAggregator<A, C, A, C>
 	minAggregator(ComparableAbstractDomain<A, C> domain) {
 		var innerAggregator = TreapAggregator.of(domain.abstractType(), (ignored, value) -> value,
-                domain.positiveInfinity(), ComparableAbstractValue::min);
+				domain.positiveInfinity(), ComparableAbstractValue::min);
 		return PartialAggregator.multiplicityInsensitive(domain, innerAggregator);
 	}
 

@@ -83,6 +83,34 @@ public sealed abstract class PartialAggregator<
 		}
 	}
 
+	public static final class MeetAggregator<A extends AbstractValue<A, C>, C> extends PartialAggregator<A, C, A, C> {
+		private final Aggregator<A, A> innerAggregator;
+
+		private MeetAggregator(AbstractDomain<A, C> domain) {
+			super(domain, domain);
+			innerAggregator = TreapAggregator.of(domain.abstractType(), (ignored, value) -> value,
+					domain.unknown(), AbstractValue::meet);
+		}
+
+		public Aggregator<A, A> getInnerAggregator() {
+			return innerAggregator;
+		}
+	}
+
+	public static final class JoinAggregator<A extends AbstractValue<A, C>, C> extends PartialAggregator<A, C, A, C> {
+		private final Aggregator<A, A> innerAggregator;
+
+		private JoinAggregator(AbstractDomain<A, C> domain) {
+			super(domain, domain);
+			innerAggregator = TreapAggregator.of(domain.abstractType(), (ignored, value) -> value,
+					domain.error(), AbstractValue::join);
+		}
+
+		public Aggregator<A, A> getInnerAggregator() {
+			return innerAggregator;
+		}
+	}
+
 	public static <A extends AbstractValue<A, C>, C, A2 extends AbstractValue<A2, C2>, C2, T>
 	PartialAggregator<A, C, A2, C2> multiplicitySensitive(
 			AbstractDomain<A, C> resultDomain, AbstractDomain<A2, C2> bodyDomain, Class<T> intermediateType,
@@ -122,5 +150,13 @@ public sealed abstract class PartialAggregator<
 	PartialAggregator<A, C, A, C> multiplicityInsensitive(
 			AbstractDomain<A, C> domain, Aggregator<A, A> innerAggregator) {
 		return multiplicityInsensitive(domain, domain, innerAggregator.getEmptyResult(), innerAggregator);
+	}
+
+	public static <A extends AbstractValue<A, C>, C> PartialAggregator<A, C, A, C> meet(AbstractDomain<A, C> domain) {
+		return new MeetAggregator<>(domain);
+	}
+
+	public static <A extends AbstractValue<A, C>, C> PartialAggregator<A, C, A, C> join(AbstractDomain<A, C> domain) {
+		return new JoinAggregator<>(domain);
 	}
 }

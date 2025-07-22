@@ -19,6 +19,7 @@ import org.eclipse.xtext.resource.IResourceFactory;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import tools.refinery.language.expressions.BuiltInTerms;
 import tools.refinery.language.expressions.BuiltinTermInterpreter;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
@@ -371,7 +372,7 @@ public class SolutionSerializer {
 		var interpreter = importAdapterProvider.getTermInterpreter(relation);
 		var resultType = signatureProvider.getSignature(relation).resultType();
 		var dataType = switch (resultType) {
-			case LiteralType ignoredLiteralType -> BuiltinTermInterpreter.BOOLEAN_TYPE;
+			case LiteralType ignoredLiteralType -> BuiltInTerms.BOOLEAN_TYPE;
 			case DataExprType dataExprType -> dataExprType;
 			default -> throw new IllegalArgumentException("Invalid result type for relation: " + relation.getName());
 		};

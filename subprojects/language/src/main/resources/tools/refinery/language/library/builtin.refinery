@@ -83,6 +83,10 @@ extern datatype string.
 
 extern aggregator reify.
 
+extern aggregator meet.
+
+extern aggregator join.
+
 extern aggregator count.
 
 extern aggregator min.

@@ -14,7 +14,7 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import tools.refinery.language.expressions.BuiltinTermInterpreter;
+import tools.refinery.language.expressions.BuiltInTerms;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
@@ -26,8 +26,8 @@ import java.util.*;
 public class TypedModule {
 	private static final String OPERAND_TYPE_ERROR_MESSAGE = "Cannot determine operand type.";
 	private static final Map<AggregatorName, DataExprType> SPECIAL_AGGREGATORS = Map.of(
-			BuiltinTermInterpreter.REIFY_AGGREGATOR, BuiltinTermInterpreter.BOOLEAN_TYPE,
-			BuiltinTermInterpreter.COUNT_AGGREGATOR, BuiltinTermInterpreter.INT_TYPE
+			BuiltInTerms.REIFY_AGGREGATOR, BuiltInTerms.BOOLEAN_TYPE,
+			BuiltInTerms.COUNT_AGGREGATOR, BuiltInTerms.INT_TYPE
 	);
 
 	@Inject
@@ -151,7 +151,7 @@ public class TypedModule {
 			if (value == null) {
 				return;
 			}
-			expectType(value, BuiltinTermInterpreter.BOOLEAN_TYPE);
+			expectType(value, BuiltInTerms.BOOLEAN_TYPE);
 			return;
 		}
 		if (value == null) {
@@ -279,9 +279,9 @@ public class TypedModule {
 	private ExprType computeExpressionType(Expr expr) {
 		return switch (expr) {
 			case LogicConstant logicConstant -> computeExpressionType(logicConstant);
-			case IntConstant ignored -> BuiltinTermInterpreter.INT_TYPE;
-			case RealConstant ignored -> BuiltinTermInterpreter.REAL_TYPE;
-			case StringConstant ignored -> BuiltinTermInterpreter.STRING_TYPE;
+			case IntConstant ignored -> BuiltInTerms.INT_TYPE;
+			case RealConstant ignored -> BuiltInTerms.REAL_TYPE;
+			case StringConstant ignored -> BuiltInTerms.STRING_TYPE;
 			case InfiniteConstant ignored -> new MutableType();
 			case VariableOrNodeExpr variableOrNodeExpr -> computeExpressionType(variableOrNodeExpr);
 			case AssignmentExpr assignmentExpr -> computeExpressionType(assignmentExpr);
@@ -306,7 +306,7 @@ public class TypedModule {
 	@NotNull
 	private ExprType computeExpressionType(LogicConstant expr) {
 		return switch (expr.getLogicValue()) {
-			case TRUE, FALSE -> BuiltinTermInterpreter.BOOLEAN_TYPE;
+			case TRUE, FALSE -> BuiltInTerms.BOOLEAN_TYPE;
 			case UNKNOWN, ERROR -> new MutableType();
 			case null -> ExprType.INVALID;
 		};
@@ -493,7 +493,7 @@ public class TypedModule {
 			error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 			return ExprType.INVALID;
 		}
-		return BuiltinTermInterpreter.BOOLEAN_TYPE;
+		return BuiltInTerms.BOOLEAN_TYPE;
 	}
 
 	@NotNull
@@ -502,7 +502,7 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		return switch (expr.getOp()) {
-			case EQ, NOT_EQ, SUBSET, SUPERSET -> BuiltinTermInterpreter.BOOLEAN_TYPE;
+			case EQ, NOT_EQ, SUBSET, SUPERSET -> BuiltInTerms.BOOLEAN_TYPE;
 			case JOIN, MEET -> commonType;
 		};
 	}
@@ -628,7 +628,7 @@ public class TypedModule {
 			// Change the concreteness of a partial function call without applying a modality.
 			return actualType;
 		}
-		if (actualType == ExprType.LITERAL || BuiltinTermInterpreter.BOOLEAN_TYPE.equals(actualType)) {
+		if (actualType == ExprType.LITERAL || BuiltInTerms.BOOLEAN_TYPE.equals(actualType)) {
 			// Only literals and booleans may have a modality applied.
 			return actualType;
 		}
@@ -636,8 +636,8 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		if (actualType instanceof MutableType mutableType) {
-			mutableType.setActualType(BuiltinTermInterpreter.BOOLEAN_TYPE);
-			return BuiltinTermInterpreter.BOOLEAN_TYPE;
+			mutableType.setActualType(BuiltInTerms.BOOLEAN_TYPE);
+			return BuiltInTerms.BOOLEAN_TYPE;
 		}
 		var message = "Data type %s does not support modal operators.".formatted(actualType);
 		error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
@@ -683,7 +683,7 @@ public class TypedModule {
 		if (actualType == ExprType.LITERAL) {
 			return true;
 		}
-		return expectType(expr, actualType, BuiltinTermInterpreter.BOOLEAN_TYPE);
+		return expectType(expr, actualType, BuiltInTerms.BOOLEAN_TYPE);
 	}
 
 	private boolean expectType(Expr expr, FixedType expectedType) {
