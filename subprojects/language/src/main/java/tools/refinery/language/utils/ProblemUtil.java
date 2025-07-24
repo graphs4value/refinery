@@ -98,6 +98,12 @@ public final class ProblemUtil {
 		return relation.eContainingFeature() == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
 	}
 
+	public static boolean isComputedValueFunction(Relation relation) {
+		return relation.eContainingFeature() == ProblemPackage.Literals.FUNCTION_DEFINITION__COMPUTED_VALUE;
+	}
+
+
+
 	public static boolean hasMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
 		if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
 			return false;
@@ -116,10 +122,17 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	public static boolean isDerivedStatePredicate(EObject predicateDefinition) {
-		var containingFeature = predicateDefinition.eContainingFeature();
+	public static boolean isDerivedStatePredicate(EObject definition) {
+		var containingFeature = definition.eContainingFeature();
 		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
-				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
+				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE ||
+				containingFeature == ProblemPackage.Literals.FUNCTION_DEFINITION__COMPUTED_VALUE ||
+				isDomainPredicate(definition);
+	}
+
+	public static boolean isDomainPredicate(EObject predicateDefinition) {
+		var containingFeature = predicateDefinition.eContainingFeature();
+		return containingFeature == ProblemPackage.Literals.FUNCTION_DEFINITION__DOMAIN_PREDICATE;
 	}
 
 	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
@@ -139,12 +152,25 @@ public final class ProblemUtil {
 	}
 
 	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition) &&
-				!isBuiltIn(predicateDefinition);
+		if (predicateDefinition.getKind() == PredicateKind.SHADOW || isBuiltIn(predicateDefinition)) {
+			return false;
+		}
+		if (!isBasePredicate(predicateDefinition)) {
+			return true;
+		}
+		if (isDomainPredicate(predicateDefinition)) {
+			return hasComputedValue((FunctionDefinition) predicateDefinition.eContainer());
+		}
+		return false;
 	}
 
-	public static boolean isTypeLike(Relation relation) {
-		return getArityWithoutProxyResolution(relation) == 1;
+	public static boolean hasDomainPredicate(FunctionDefinition functionDefinition) {
+		return !isBuiltIn(functionDefinition);
+	}
+
+	public static boolean hasComputedValue(FunctionDefinition functionDefinition) {
+		return hasDomainPredicate(functionDefinition) && !functionDefinition.isShadow() &&
+				!isBaseFunction(functionDefinition);
 	}
 
 	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
@@ -165,6 +191,7 @@ public final class ProblemUtil {
 					yield false;
 				}
 				opposite = (ReferenceDeclaration) EcoreUtil.resolve(opposite, referenceDeclaration);
+
 				yield opposite.getKind() == ReferenceKind.CONTAINMENT;
 			}
 		};

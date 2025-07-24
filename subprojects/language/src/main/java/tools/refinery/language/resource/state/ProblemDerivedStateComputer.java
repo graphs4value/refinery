@@ -27,6 +27,7 @@ import java.util.function.UnaryOperator;
 @Singleton
 public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 	public static final String NEW_NODE = "new";
+	public static final String COMPUTED_NAME = "computed";
 
 	@Inject
 	@Named(Constants.LANGUAGE_NAME)
@@ -70,13 +71,22 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 
 	protected void installDerivedDeclarationState(Problem problem, Adapter adapter) {
 		for (var statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration classDeclaration) {
+			switch (statement) {
+			case ClassDeclaration classDeclaration -> {
 				installOrRemoveNewNode(adapter, classDeclaration);
 				for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
 					installOrRemoveInvalidMultiplicityPredicate(adapter, classDeclaration, referenceDeclaration);
 				}
-			} else if (statement instanceof PredicateDefinition predicateDefinition) {
-				installOrRemoveComputedValuePredicate(adapter, predicateDefinition);
+			}
+			case PredicateDefinition predicateDefinition ->
+					installOrRemoveComputedValuePredicate(adapter, predicateDefinition);
+			case FunctionDefinition functionDefinition -> {
+				installOrRemoveComputedValueFunction(adapter, functionDefinition);
+				installOrRemoveDomainPredicate(adapter, functionDefinition);
+			}
+			default -> {
+				// Nothing to install.
+			}
 			}
 		}
 	}
@@ -126,18 +136,62 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			var computedValue = adapter.createComputedValuePredicateIfAbsent(predicateDefinition, key -> {
 				var predicate = ProblemFactory.eINSTANCE.createPredicateDefinition();
 				predicate.setKind(PredicateKind.SHADOW);
-				predicate.setName("computed");
+				predicate.setName(COMPUTED_NAME);
 				return predicate;
 			});
-			var parameters = computedValue.getParameters();
-			parameters.clear();
-			parameters.addAll(EcoreUtil.copyAll(predicateDefinition.getParameters()));
+			copyParameters(computedValue, predicateDefinition);
 			predicateDefinition.setComputedValue(computedValue);
 		} else {
 			var computedValue = predicateDefinition.getComputedValue();
 			if (computedValue != null) {
 				predicateDefinition.setComputedValue(null);
-				adapter.removeComputedValuePredicate(computedValue);
+				adapter.removeComputedValuePredicate(predicateDefinition);
+			}
+		}
+	}
+
+	private static void copyParameters(ParametricDefinition target, ParametricDefinition source) {
+		var targetParameters = target.getParameters();
+		targetParameters.clear();
+		targetParameters.addAll(EcoreUtil.copyAll(source.getParameters()));
+	}
+
+	protected void installOrRemoveComputedValueFunction(Adapter adapter, FunctionDefinition functionDefinition) {
+		if (ProblemUtil.hasComputedValue(functionDefinition)) {
+			var computedValue = adapter.createComputedValueFunctionIfAbsent(functionDefinition, key -> {
+				var function = ProblemFactory.eINSTANCE.createFunctionDefinition();
+				function.setShadow(true);
+				function.setName(COMPUTED_NAME);
+				return function;
+			});
+			computedValue.setFunctionType(functionDefinition.getFunctionType());
+			copyParameters(computedValue, functionDefinition);
+			functionDefinition.setComputedValue(computedValue);
+		} else {
+			var computedValue = functionDefinition.getComputedValue();
+			if (computedValue != null) {
+				functionDefinition.setComputedValue(null);
+				adapter.removeComputedValueFunction(functionDefinition);
+			}
+		}
+	}
+
+	protected void installOrRemoveDomainPredicate(Adapter adapter, FunctionDefinition functionDefinition) {
+		if (ProblemUtil.hasDomainPredicate(functionDefinition)) {
+			var domainPredicate = adapter.createDomainPredicateIfAbsent(functionDefinition, key -> {
+				var function = ProblemFactory.eINSTANCE.createPredicateDefinition();
+				function.setName("defined");
+				return function;
+			});
+			copyParameters(domainPredicate, functionDefinition);
+			domainPredicate.setKind(functionDefinition.isShadow() ? PredicateKind.SHADOW : PredicateKind.DEFAULT);
+			functionDefinition.setDomainPredicate(domainPredicate);
+			installOrRemoveComputedValuePredicate(adapter, domainPredicate);
+		} else {
+			var domainPredicate = functionDefinition.getDomainPredicate();
+			if (domainPredicate != null) {
+				functionDefinition.setComputedValue(null);
+				adapter.removeDomainPredicate(functionDefinition);
 			}
 		}
 	}
@@ -172,9 +226,12 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		var abstractClassDeclarations = new HashSet<ClassDeclaration>();
 		var referenceDeclarationsWithMultiplicity = new HashSet<ReferenceDeclaration>();
 		var predicateDefinitionsWithComputedValue = new HashSet<PredicateDefinition>();
+		var functionDefinitionsWithComputedValue = new HashSet<FunctionDefinition>();
+		var functionDefinitionsWithDomainPredicate = new HashSet<FunctionDefinition>();
 		problem.getNodes().clear();
 		for (var statement : problem.getStatements()) {
-			if (statement instanceof ClassDeclaration classDeclaration) {
+			switch (statement) {
+			case ClassDeclaration classDeclaration -> {
 				classDeclaration.setNewNode(null);
 				if (classDeclaration.isAbstract()) {
 					abstractClassDeclarations.add(classDeclaration);
@@ -184,13 +241,29 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 						referenceDeclarationsWithMultiplicity.add(referenceDeclaration);
 					}
 				}
-			} else if (statement instanceof PredicateDefinition predicateDefinition &&
-					ProblemUtil.hasComputedValue(predicateDefinition)) {
-				predicateDefinitionsWithComputedValue.add(predicateDefinition);
+			}
+			case PredicateDefinition predicateDefinition when ProblemUtil.hasComputedValue(predicateDefinition) ->
+					predicateDefinitionsWithComputedValue.add(predicateDefinition);
+			case FunctionDefinition functionDefinition -> {
+				if (ProblemUtil.hasComputedValue(functionDefinition)) {
+					functionDefinitionsWithComputedValue.add(functionDefinition);
+				}
+				if (ProblemUtil.hasDomainPredicate(functionDefinition)) {
+					functionDefinitionsWithDomainPredicate.add(functionDefinition);
+					var domainPredicate = functionDefinition.getDomainPredicate();
+					if (domainPredicate != null && ProblemUtil.hasComputedValue(domainPredicate)) {
+						predicateDefinitionsWithComputedValue.add(domainPredicate);
+					}
+				}
+			}
+			default -> {
+				// Nothing to discard.
+			}
 			}
 		}
 		adapter.retainAll(abstractClassDeclarations, referenceDeclarationsWithMultiplicity,
-				predicateDefinitionsWithComputedValue);
+				predicateDefinitionsWithComputedValue, functionDefinitionsWithComputedValue,
+				functionDefinitionsWithDomainPredicate);
 		derivedVariableComputer.discardDerivedVariables(problem);
 	}
 
@@ -214,6 +287,8 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 		private final Map<ClassDeclaration, Node> newNodes = new HashMap<>();
 		private final Map<ReferenceDeclaration, PredicateDefinition> invalidMultiplicityPredicates = new HashMap<>();
 		private final Map<PredicateDefinition, PredicateDefinition> computedValuePredicates = new HashMap<>();
+		private final Map<FunctionDefinition, FunctionDefinition> computedFunctionValues = new HashMap<>();
+		private final Map<FunctionDefinition, PredicateDefinition> domainPredicates = new HashMap<>();
 
 		public Node createNewNodeIfAbsent(ClassDeclaration classDeclaration,
 										  Function<ClassDeclaration, Node> createNode) {
@@ -243,12 +318,38 @@ public class ProblemDerivedStateComputer implements IDerivedStateComputer {
 			computedValuePredicates.remove(predicateDefinition);
 		}
 
+		public FunctionDefinition createComputedValueFunctionIfAbsent(
+				FunctionDefinition functionDefinition, UnaryOperator<FunctionDefinition> createFunction) {
+			return computedFunctionValues.computeIfAbsent(functionDefinition, createFunction);
+		}
+
+		public void removeComputedValueFunction(FunctionDefinition functionDefinition) {
+			computedFunctionValues.remove(functionDefinition);
+		}
+
+		public PredicateDefinition createDomainPredicateIfAbsent(
+				FunctionDefinition functionDefinition,
+				Function<FunctionDefinition, PredicateDefinition> createPredicate) {
+			return domainPredicates.computeIfAbsent(functionDefinition, createPredicate);
+		}
+
+		public void removeDomainPredicate(FunctionDefinition functionDefinition) {
+			var predicate = domainPredicates.remove(functionDefinition);
+			if (predicate != null && predicate.getComputedValue() != null) {
+				removeComputedValuePredicate(predicate);
+			}
+		}
+
 		public void retainAll(Collection<ClassDeclaration> abstractClassDeclarations,
 							  Collection<ReferenceDeclaration> referenceDeclarationsWithMultiplicity,
-							  Collection<PredicateDefinition> predicateDefinitionsWithComputedValue) {
+							  Collection<PredicateDefinition> predicateDefinitionsWithComputedValue,
+							  Collection<FunctionDefinition> functionDefinitionsWithComputedValue,
+							  Collection<FunctionDefinition> functionDefinitionsWithDomainPredicate) {
 			newNodes.keySet().retainAll(abstractClassDeclarations);
 			invalidMultiplicityPredicates.keySet().retainAll(referenceDeclarationsWithMultiplicity);
 			computedValuePredicates.keySet().retainAll(predicateDefinitionsWithComputedValue);
+			computedFunctionValues.keySet().retainAll(functionDefinitionsWithComputedValue);
+			domainPredicates.keySet().retainAll(functionDefinitionsWithDomainPredicate);
 		}
 
 		@Override

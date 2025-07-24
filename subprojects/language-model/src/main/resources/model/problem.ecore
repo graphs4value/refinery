@@ -216,6 +216,10 @@
         eType="#//Case" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="functionType" eType="#//Relation"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="shadow" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="computedValue" eType="#//FunctionDefinition"
+        transient="true" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="domainPredicate" eType="#//PredicateDefinition"
+        transient="true" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//ExistentialQuantifier">
     <eStructuralFeatures xsi:type="ecore:EReference" name="literals" upperBound="-1"
