@@ -133,7 +133,7 @@ public class QueryCompiler {
 		return problemTrace.getPartialRelation(relation);
 	}
 
-	private Map<tools.refinery.language.model.problem.Variable, ? extends Variable> extendScope(
+	Map<tools.refinery.language.model.problem.Variable, ? extends Variable> extendScope(
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> existing,
 			Collection<? extends tools.refinery.language.model.problem.Variable> newVariables) {
 		if (newVariables.isEmpty()) {
@@ -156,7 +156,7 @@ public class QueryCompiler {
 		return localScope;
 	}
 
-	private void toLiteralsTraced(
+	void toLiteralsTraced(
 			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
 		try {

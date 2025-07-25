@@ -125,8 +125,6 @@ public class ModelInitializer {
 
 	private final Map<Relation, FunctionInfo<?, ?>> functionInfoMap = new LinkedHashMap<>();
 
-	private final Map<PartialFunction<?, ?>, FunctionInfo<?, ?>> partialFunctionInfoMap = new LinkedHashMap<>();
-
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
 	private Metamodel metamodel;
@@ -414,7 +412,6 @@ public class ModelInitializer {
 		var partialFunction = new PartialFunction<>(relation.getName(), arity, domain);
 		var info = new FunctionInfo<>(partialFunction, domain);
 		problemTrace.putRelation(relation, partialFunction);
-		partialFunctionInfoMap.put(partialFunction, info);
 		functionInfoMap.put(relation, info);
 	}
 
