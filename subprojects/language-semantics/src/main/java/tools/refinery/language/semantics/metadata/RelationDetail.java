@@ -28,4 +28,7 @@ public sealed interface RelationDetail {
 
 	record Function(FunctionDetailKind kind) implements RelationDetail {
 	}
+
+	record Domain(String of) implements RelationDetail {
+	}
 }

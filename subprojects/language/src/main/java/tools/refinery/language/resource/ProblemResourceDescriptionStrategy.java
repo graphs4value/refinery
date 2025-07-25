@@ -196,14 +196,16 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	}
 
 	protected boolean shouldExportSimpleName(EObject eObject) {
-		if (eObject instanceof Node node) {
-			return !ProblemUtil.isMultiNode(node);
-		}
-		if (eObject instanceof PredicateDefinition predicateDefinition) {
-			return !ProblemUtil.isInvalidMultiplicityConstraint(predicateDefinition) &&
-					!ProblemUtil.isComputedValuePredicate(predicateDefinition);
-		}
-		return true;
+		return switch (eObject) {
+			case Node node -> !ProblemUtil.isMultiNode(node);
+			case PredicateDefinition predicateDefinition ->
+					!ProblemUtil.isInvalidMultiplicityConstraint(predicateDefinition) &&
+							!ProblemUtil.isComputedValuePredicate(predicateDefinition) &&
+							!ProblemUtil.isDomainPredicate(predicateDefinition);
+
+			case FunctionDefinition functionDefinition -> !ProblemUtil.isComputedValueFunction(functionDefinition);
+			default -> true;
+		};
 	}
 
 	private void acceptEObjectDescription(EObject eObject, QualifiedName prefix, QualifiedName qualifiedName,

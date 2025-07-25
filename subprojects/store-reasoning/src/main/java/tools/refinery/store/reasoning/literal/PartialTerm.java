@@ -8,5 +8,5 @@ package tools.refinery.store.reasoning.literal;
 import tools.refinery.logic.term.Term;
 
 public interface PartialTerm<T> extends Term<T> {
-	Term<T> orElseConcreteness(Concreteness fallback);
+	Term<T> orElseConcreteness(ConcretenessSpecification fallback);
 }

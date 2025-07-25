@@ -81,6 +81,9 @@ public record ModalConstraint(ModalitySpecification modality, ConcretenessSpecif
 
 	public static Constraint of(ModalitySpecification modality, ConcretenessSpecification concreteness,
 								Constraint constraint) {
+		if (modality == ModalitySpecification.UNSPECIFIED && concreteness == ConcretenessSpecification.UNSPECIFIED) {
+			return constraint;
+		}
 		return switch (constraint) {
 			case AnySymbolView anySymbolView -> anySymbolView;
 			case ModalConstraint(var otherModality, var otherConcreteness, var innerConstraint) ->

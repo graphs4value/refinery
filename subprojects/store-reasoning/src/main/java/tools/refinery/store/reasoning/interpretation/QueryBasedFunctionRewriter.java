@@ -26,6 +26,14 @@ public class QueryBasedFunctionRewriter<A extends AbstractValue<A, C>, C> implem
 		this.errorValue = abstractDomain.error();
 	}
 
+	public FunctionalQuery<A> getPartial() {
+		return partialQuery;
+	}
+
+	public FunctionalQuery<A> getCandidate() {
+		return candidateQuery;
+	}
+
 	@Override
 	public Term<A> rewritePartialFunctionCall(Concreteness concreteness, List<NodeVariable> arguments) {
 		return getQuery(concreteness).leftJoin(errorValue, arguments);

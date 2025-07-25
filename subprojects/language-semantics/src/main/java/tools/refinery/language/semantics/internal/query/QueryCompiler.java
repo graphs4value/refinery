@@ -62,25 +62,10 @@ public class QueryCompiler {
 
 	public RelationalQuery toQuery(String name, PredicateDefinition predicateDefinition) {
 		try {
-			var problemParameters = predicateDefinition.getParameters();
-			int arity = problemParameters.size();
-			var parameters = new NodeVariable[arity];
-			var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
-			var commonLiterals = new ArrayList<Literal>();
-			for (int i = 0; i < arity; i++) {
-				var problemParameter = problemParameters.get(i);
-				var parameter = Variable.of(problemParameter.getName());
-				parameters[i] = parameter;
-				parameterMap.put(problemParameter, parameter);
-				var parameterType = problemParameter.getParameterType();
-				if (parameterType != null) {
-					var partialType = getPartialRelation(parameterType);
-					commonLiterals.add(partialType.call(parameter));
-				}
-			}
-			var builder = Query.builder(name).parameters(parameters);
+			var preparedQuery = prepareParameters(predicateDefinition);
+			var builder = Query.builder(name).parameters(preparedQuery.parameters());
 			for (var body : predicateDefinition.getBodies()) {
-				buildConjunction(body, parameterMap, commonLiterals, builder);
+				buildConjunction(body, preparedQuery.parameterMap(), preparedQuery.commonLiterals(), builder);
 			}
 			return builder.build();
 		} catch (RuntimeException e) {
@@ -88,22 +73,52 @@ public class QueryCompiler {
 		}
 	}
 
+	PreparedQuery prepareParameters(ParametricDefinition parametricDefinition) {
+		var problemParameters = parametricDefinition.getParameters();
+		int arity = problemParameters.size();
+		var parameters = new NodeVariable[arity];
+		var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
+		var commonLiterals = new ArrayList<Literal>();
+		for (int i = 0; i < arity; i++) {
+			var problemParameter = problemParameters.get(i);
+			var parameter = Variable.of(problemParameter.getName());
+			parameters[i] = parameter;
+			parameterMap.put(problemParameter, parameter);
+			var parameterType = problemParameter.getParameterType();
+			if (parameterType != null) {
+				var partialType = getPartialRelation(parameterType);
+				commonLiterals.add(partialType.call(parameter));
+			}
+		}
+		return new PreparedQuery(parameters, parameterMap, commonLiterals);
+	}
+
+	record PreparedQuery(NodeVariable[] parameters,
+						 HashMap<tools.refinery.language.model.problem.Variable, Variable> parameterMap,
+						 ArrayList<Literal> commonLiterals) {
+	}
+
 	void buildConjunction(
 			Conjunction body, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> parameterMap,
 			List<Literal> commonLiterals, AbstractQueryBuilder<?> builder) {
 		try {
-			var localScope = extendScope(parameterMap, body.getImplicitVariables());
-			// expression (E)list
-			var problemLiterals = body.getLiterals();
-			// literal list
-			var literals = new ArrayList<>(commonLiterals);
-			for (var problemLiteral : problemLiterals) {
-				toLiteralsTraced(problemLiteral, localScope, literals);
-			}
-			builder.clause(literals);
+			buildConjunction(body.getLiterals(), body.getImplicitVariables(), parameterMap, commonLiterals, builder);
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(body, e);
 		}
+	}
+
+	void buildConjunction(
+			List<Expr> problemLiterals,
+			List<? extends tools.refinery.language.model.problem.Variable> implicitVariables,
+			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> parameterMap,
+			List<Literal> commonLiterals, AbstractQueryBuilder<?> builder) {
+		var localScope = extendScope(parameterMap, implicitVariables);
+		var literals = new ArrayList<>(commonLiterals);
+		for (var problemLiteral : problemLiterals) {
+			toLiteralsTraced(problemLiteral, localScope, literals);
+		}
+		builder.clause(literals);
 	}
 
 	int getNodeId(Node node) {
@@ -229,7 +244,7 @@ public class QueryCompiler {
 		literals.add(new PartialCheckLiteral(term));
 	}
 
-	private AnyTerm interpretTerm(
+	AnyTerm interpretTerm(
 			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
 		var exprToTerm = exprToTermProvider.get();

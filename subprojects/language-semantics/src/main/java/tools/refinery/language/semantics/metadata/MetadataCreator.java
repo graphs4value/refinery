@@ -212,9 +212,11 @@ public class MetadataCreator {
 	private RelationDetail getPredicateDetail(PredicateDefinition predicate) {
 		if (ProblemUtil.isComputedValuePredicate(predicate) &&
 				predicate.eContainer() instanceof PredicateDefinition parentDefinition) {
-			var parentQualifiedName = getQualifiedName(parentDefinition);
-			var computedOf = qualifiedNameConverter.toString(parentQualifiedName);
-			return new RelationDetail.Computed(computedOf);
+			return getComputedDetail(parentDefinition);
+		}
+		if (ProblemUtil.isDomainPredicate(predicate) &&
+				predicate.eContainer() instanceof FunctionDefinition parentDefinition) {
+			return getDomainDetail(parentDefinition);
 		}
 		PredicateDetailKind kind = PredicateDetailKind.DEFINED;
 		if (ProblemUtil.isBasePredicate(predicate)) {
@@ -227,7 +229,23 @@ public class MetadataCreator {
 		return new RelationDetail.Predicate(kind);
 	}
 
+	private RelationDetail.Computed getComputedDetail(Relation parentDefinition) {
+		var parentQualifiedName = getQualifiedName(parentDefinition);
+		var computedOf = qualifiedNameConverter.toString(parentQualifiedName);
+		return new RelationDetail.Computed(computedOf);
+	}
+
+	private RelationDetail.Domain getDomainDetail(FunctionDefinition parentDefinition) {
+		var parentQualifiedName = getQualifiedName(parentDefinition);
+		var domainOf = qualifiedNameConverter.toString(parentQualifiedName);
+		return new RelationDetail.Domain(domainOf);
+	}
+
 	private RelationDetail getFunctionDetail(FunctionDefinition function) {
+		if (ProblemUtil.isComputedValueFunction(function) &&
+				function.eContainer() instanceof FunctionDefinition parentDefinition) {
+			return getComputedDetail(parentDefinition);
+		}
 		FunctionDetailKind kind = FunctionDetailKind.DEFINED;
 		if (ProblemUtil.isBaseFunction(function)) {
 			kind = FunctionDetailKind.BASE;

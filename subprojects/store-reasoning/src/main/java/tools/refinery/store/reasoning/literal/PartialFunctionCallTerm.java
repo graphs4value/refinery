@@ -69,8 +69,8 @@ public class PartialFunctionCallTerm<A extends AbstractValue<A, C>, C> extends A
 	}
 
 	@Override
-	public PartialFunctionCallTerm<A, C> orElseConcreteness(Concreteness fallback) {
-		var newConcreteness = concreteness.orElse(fallback.toSpecification());
+	public PartialFunctionCallTerm<A, C> orElseConcreteness(ConcretenessSpecification fallback) {
+		var newConcreteness = concreteness.orElse(fallback);
 		if (concreteness == newConcreteness) {
 			return this;
 		}

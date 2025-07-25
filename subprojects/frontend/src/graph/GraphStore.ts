@@ -26,10 +26,18 @@ function hideBuiltIn(
   return isBuiltIn(metadata) ? 'none' : visibility;
 }
 
+function alwaysHidden(metadata: RelationMetadata): boolean {
+  return (
+    metadata.arity <= 0 ||
+    metadata.arity > 2 ||
+    (metadata.dataType !== undefined && metadata.arity > 1)
+  );
+}
+
 export function getDefaultVisibility(
   metadata: RelationMetadata | undefined,
 ): Visibility {
-  if (metadata === undefined || metadata.arity <= 0 || metadata.arity > 2) {
+  if (metadata === undefined || alwaysHidden(metadata)) {
     return 'none';
   }
   if (metadata.visibility) {
@@ -51,6 +59,12 @@ export function getDefaultVisibility(
         default:
           return 'none';
       }
+    case 'function':
+      if (detail.kind === 'base') {
+        return hideBuiltIn(metadata, 'all');
+      } else {
+        return 'none';
+      }
     default:
       return 'none';
   }
@@ -60,7 +74,7 @@ export function isVisibilityAllowed(
   metadata: RelationMetadata | undefined,
   visibility: Visibility,
 ): boolean {
-  if (metadata === undefined || metadata.arity <= 0 || metadata.arity > 2) {
+  if (metadata === undefined || alwaysHidden(metadata)) {
     return visibility === 'none';
   }
   const { detail } = metadata;

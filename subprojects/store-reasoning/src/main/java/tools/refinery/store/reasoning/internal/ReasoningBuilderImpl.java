@@ -22,7 +22,9 @@ import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.ModalitySpecification;
 import tools.refinery.store.reasoning.refinement.DefaultStorageRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
@@ -97,7 +99,18 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	}
 
 	@Override
+	public <T> Query<T> lift(ModalitySpecification modality, ConcretenessSpecification concreteness, Query<T> query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
 	public RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
+	public RelationalQuery lift(ModalitySpecification modality, ConcretenessSpecification concreteness,
+                                RelationalQuery query) {
 		return lifter.lift(modality, concreteness, query);
 	}
 
@@ -107,7 +120,18 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	}
 
 	@Override
+	public <T> FunctionalQuery<T> lift(ModalitySpecification modality, ConcretenessSpecification concreteness,
+									   FunctionalQuery<T> query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
 	public Dnf lift(Modality modality, Concreteness concreteness, Dnf dnf) {
+		return lifter.lift(modality, concreteness, dnf);
+	}
+
+	@Override
+	public Dnf lift(ModalitySpecification modality, ConcretenessSpecification concreteness, Dnf dnf) {
 		return lifter.lift(modality, concreteness, dnf);
 	}
 

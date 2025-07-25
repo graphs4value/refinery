@@ -46,6 +46,7 @@ export const RelationMetadata = z.object({
       type: z.literal('function'),
       kind: z.enum(['defined', 'base', 'shadow']),
     }),
+    z.object({ type: z.literal('domain'), of: z.string() }),
   ]),
   visibility: Visibility.optional(),
   dataType: z.string().optional(),

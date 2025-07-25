@@ -9,7 +9,10 @@ import tools.refinery.logic.Constraint;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.DnfClause;
 import tools.refinery.logic.literal.*;
-import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.ParameterDirection;
+import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.Variable;
 import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.*;
@@ -18,13 +21,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 class ClauseLifter {
-	private final Modality modality;
-	private final Concreteness concreteness;
+	private final ModalitySpecification modality;
+	private final ConcretenessSpecification concreteness;
 	private final DnfClause clause;
 	private final Set<NodeVariable> quantifiedVariables;
 	private final Set<NodeVariable> existentialQuantifiersToAdd;
 
-	public ClauseLifter(Modality modality, Concreteness concreteness, Dnf dnf, DnfClause clause) {
+	public ClauseLifter(ModalitySpecification modality, ConcretenessSpecification concreteness, Dnf dnf,
+						DnfClause clause) {
 		this.modality = modality;
 		this.concreteness = concreteness;
 		this.clause = clause;
@@ -173,13 +177,14 @@ class ClauseLifter {
 				.call(CallPolarity.NEGATIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
 	}
 
-	private CheckLiteral liftPartialCheckLiteral(PartialCheckLiteral partialCheckLiteral) {
-		var term = rewriteTerm(partialCheckLiteral.getTerm());
-		var liftedTerm = switch (modality) {
-			case MAY -> TruthValueTerms.may(term);
-			case MUST -> TruthValueTerms.must(term);
+	private Literal liftPartialCheckLiteral(PartialCheckLiteral partialCheckLiteral) {
+		var term = partialCheckLiteral.getTerm();
+		var rewrittenTerm = rewriteTerm(term);
+		return switch (modality) {
+			case MAY -> new CheckLiteral(TruthValueTerms.may(rewrittenTerm));
+			case MUST -> new CheckLiteral(TruthValueTerms.must(rewrittenTerm));
+			case UNSPECIFIED -> partialCheckLiteral.withTerm(rewrittenTerm);
 		};
-		return new CheckLiteral(liftedTerm);
 	}
 
 	private <T> TermLiteral<T> liftTermLiteral(TermLiteral<T> termLiteral) {

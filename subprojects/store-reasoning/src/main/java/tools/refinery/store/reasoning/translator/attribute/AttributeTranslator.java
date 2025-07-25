@@ -32,7 +32,7 @@ public class AttributeTranslator<A extends AbstractValue<A, C>, C> implements Mo
 	public void apply(ModelStoreBuilder storeBuilder) {
 		PartialFunctionTranslator<A, C> translator = PartialFunctionTranslator.of(partialFunction);
 		var abstractType = partialFunction.abstractDomain().abstractType();
-		Symbol<A> symbol = new Symbol<>(partialFunction.name(), 1, abstractType,
+		Symbol<A> symbol = new Symbol<>(partialFunction.name(), partialRelation.arity(), abstractType,
 				defaultValue);
 		translator.symbol(symbol);
 		translator.domain(partialRelation);

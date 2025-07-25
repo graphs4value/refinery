@@ -25,12 +25,13 @@ import tools.refinery.store.dse.transition.objectives.Objectives;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.view.FunctionView;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.ReasoningBuilder;
 import tools.refinery.store.reasoning.actions.PartialActionLiterals;
 import tools.refinery.store.reasoning.interpretation.PartialFunctionRewriter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.interpretation.QueryBasedFunctionInterpretationFactory;
 import tools.refinery.store.reasoning.interpretation.QueryBasedFunctionRewriter;
-import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.refinement.ConcreteSymbolRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
@@ -53,6 +54,7 @@ public final class PartialFunctionTranslator<A extends AbstractValue<A, C>, C>
 	private final PartialFunction<A, C> partialFunction;
 	private Constraint domainConstraint;
 	private PartialFunctionRewriter<A, C> rewriter;
+	private FunctionalQuery<A> query;
 	private FunctionalQuery<A> partial;
 	private FunctionalQuery<A> candidate;
 
@@ -121,6 +123,15 @@ public final class PartialFunctionTranslator<A extends AbstractValue<A, C>, C>
 		return this;
 	}
 
+	public PartialFunctionTranslator<A, C> query(FunctionalQuery<A> query) {
+		checkNotConfigured();
+		if (this.query != null) {
+			throw new IllegalArgumentException("Query was already set");
+		}
+		this.query = query;
+		return this;
+	}
+
 	public PartialFunctionTranslator<A, C> partial(FunctionalQuery<A> partial) {
 		checkNotConfigured();
 		if (this.partial != null) {
@@ -141,6 +152,8 @@ public final class PartialFunctionTranslator<A extends AbstractValue<A, C>, C>
 
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
+		createFallbackQueryFromRewriter();
+		liftQueries(storeBuilder);
 		createFallbackQueriesFromSymbol();
 		createFallbackRewriter();
 		createFallbackInterpretation();
@@ -148,6 +161,37 @@ public final class PartialFunctionTranslator<A extends AbstractValue<A, C>, C>
 		createFallbackExclude(storeBuilder);
 		createFallbackObjective();
 		super.doConfigure(storeBuilder);
+	}
+
+	private void createFallbackQueryFromRewriter() {
+		if (rewriter != null && query == null) {
+			query = createFunctionalQuery(partialFunction.name(), (builder, parameters, output) -> builder
+					.clause(
+							ModalConstraint.of(Modality.MAY, domainConstraint).call(parameters),
+							output.assign(partialFunction.call(parameters))
+					));
+		}
+	}
+
+	private void liftQueries(ModelStoreBuilder storeBuilder) {
+		if (rewriter instanceof QueryBasedFunctionRewriter<A, C> queryBasedFunctionRewriter) {
+			if (partial == null) {
+				partial = queryBasedFunctionRewriter.getPartial();
+			}
+			if (candidate == null) {
+				candidate = queryBasedFunctionRewriter.getCandidate();
+			}
+		} else if (query != null) {
+			var reasoningBuilder = storeBuilder.getAdapter(ReasoningBuilder.class);
+			if (partial == null) {
+				partial = reasoningBuilder.lift(ModalitySpecification.UNSPECIFIED, ConcretenessSpecification.PARTIAL,
+						query);
+			}
+			if (candidate == null) {
+				candidate = reasoningBuilder.lift(ModalitySpecification.UNSPECIFIED,
+                        ConcretenessSpecification.CANDIDATE, query);
+			}
+		}
 	}
 
 	private void createFallbackQueriesFromSymbol() {

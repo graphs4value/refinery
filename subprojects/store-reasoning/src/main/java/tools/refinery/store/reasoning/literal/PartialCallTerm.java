@@ -18,9 +18,9 @@ public abstract class PartialCallTerm<T> extends AbstractCallTerm<T> implements 
 	}
 
 	@Override
-	public Term<T> orElseConcreteness(Concreteness fallback) {
+	public Term<T> orElseConcreteness(ConcretenessSpecification fallback) {
 		var target = getTarget();
-		var modalTarget = ModalConstraint.of(fallback, target);
+		var modalTarget = ModalConstraint.of(ModalitySpecification.UNSPECIFIED, fallback, target);
 		return withTarget(modalTarget);
 	}
 
