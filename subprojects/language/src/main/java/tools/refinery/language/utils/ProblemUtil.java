@@ -103,7 +103,6 @@ public final class ProblemUtil {
 	}
 
 
-
 	public static boolean hasMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
 		if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
 			return false;
@@ -136,7 +135,7 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
-		if (isBuiltIn(predicateDefinition) || predicateDefinition == null) {
+		if (predicateDefinition == null || isBuiltIn(predicateDefinition) || isDomainPredicate(predicateDefinition)) {
 			// Built-in predicates have no clauses, but are not base.
 			return false;
 		}

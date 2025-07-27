@@ -14,6 +14,7 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.translator.TranslationException;
@@ -117,12 +118,25 @@ class ProblemTraceImpl implements ProblemTrace {
 		while (iterator.hasNext()) {
 			var entry = iterator.next();
 			var relation = entry.getKey();
-			if (relation instanceof PredicateDefinition predicateDefinition &&
-					predicateDefinition.getKind() == PredicateKind.SHADOW) {
+			if (shouldRemoveShadowRelation(relation)) {
 				iterator.remove();
 				mutableInverseTrace.remove(entry.getValue());
 			}
 		}
+	}
+
+	private boolean shouldRemoveShadowRelation(Relation relation) {
+		if (!ProblemUtil.isShadow(relation)) {
+			return false;
+		}
+		// Computed values are kept to ensure correct serialization.
+		if (ProblemUtil.isComputedValuePredicate(relation)) {
+			var owningDefinition = relation.eContainer();
+			// We don't need to keep error predicate computed values, because they are never used for serialization.
+			return !(owningDefinition instanceof PredicateDefinition predicateDefinition) ||
+					ProblemUtil.isError(predicateDefinition);
+		}
+		return !ProblemUtil.isComputedValueFunction(relation);
 	}
 
 	@Override

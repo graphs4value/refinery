@@ -30,7 +30,6 @@ public class PartialInterpretation2Json {
 	private SemanticsUtils semanticsUtils;
 
 	public JsonObject getPartialInterpretation(ModelFacade facade, CancellationToken cancellationToken) {
-		var model = facade.getModel();
 		var json = new JsonObject();
 		for (var entry : facade.getProblemTrace().getRelationTrace().entrySet()) {
 			var relation = entry.getKey();
