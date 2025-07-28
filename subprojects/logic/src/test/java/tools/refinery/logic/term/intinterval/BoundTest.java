@@ -126,4 +126,24 @@ class BoundTest {
 				Arguments.of(Bound.of(Integer.MIN_VALUE), Bound.of(Integer.MIN_VALUE), POSITIVE_INFINITY)
 		);
 	}
+
+	@ParameterizedTest
+	@MethodSource
+	void testCompareBound(Bound left, Bound right, int result) {
+		assertThat(left.compareBound(right), is(result));
+	}
+
+	static Stream<Arguments> testCompareBound() {
+		return Stream.of(
+                Arguments.of(Bound.of(2), Bound.of(3), -1),
+                Arguments.of(Bound.of(2), Bound.of(2), 0),
+                Arguments.of(Bound.of(3), Bound.of(2), 1),
+				Arguments.of(POSITIVE_INFINITY, Bound.of(2), -1),
+				Arguments.of(POSITIVE_INFINITY, POSITIVE_INFINITY, 0),
+				Arguments.of(POSITIVE_INFINITY, NEGATIVE_INFINITY, -1),
+				Arguments.of(NEGATIVE_INFINITY, Bound.of(2), 1),
+				Arguments.of(NEGATIVE_INFINITY, POSITIVE_INFINITY, 1),
+				Arguments.of(NEGATIVE_INFINITY, NEGATIVE_INFINITY, 0)
+        );
+	}
 }

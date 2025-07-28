@@ -152,46 +152,46 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 				upperBound().sub(other.lowerBound(), Bound.Infinite.NEGATIVE_INFINITY));
 	}
 
-	private boolean isZero() {
-		return Bound.Finite.ZERO.equals(lowerBound) && Bound.Finite.ZERO.equals(upperBound);
-	}
-
 	@Override
 	public IntInterval mul(IntInterval other) {
-		if (isZero() || other.isZero()) {
-			return ZERO;
-		}
+		// Kaucher, E. (1980). Interval Analysis in the Extended Interval Space IR. In: Fundamentals of Numerical
+		// Computation (Computer-Oriented Numerical Analysis). Springer. https://doi.org/10.1007/978-3-7091-8577-3_3
 		var lowerBound = lowerBound();
 		var upperBound = upperBound();
 		var otherLowerBound = other.lowerBound();
 		var otherUpperBound = other.upperBound();
-		if (lowerBound.signum() >= 0) {
-			if (otherLowerBound.signum() >= 0) {
-				return of(lowerBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
-			}
-			if (otherUpperBound.signum() <= 0) {
-				return of(upperBound.mul(otherLowerBound), lowerBound.mul(otherUpperBound));
-			}
-			return of(upperBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
-		}
-		if (upperBound.signum() <= 0) {
-			if (otherLowerBound.signum() >= 0) {
-				return of(lowerBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
-			}
-			if (otherUpperBound.signum() <= 0) {
-				return of(upperBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
-			}
-			return of(lowerBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
-		}
-		if (otherLowerBound.signum() >= 0) {
-			return of(lowerBound.mul(otherUpperBound), upperBound.mul(otherUpperBound));
-		}
-		if (otherUpperBound.signum() <= 0) {
-			return of(upperBound.mul(otherLowerBound), lowerBound.mul(otherLowerBound));
-		}
-		var newLowerBound = upperBound.mul(otherLowerBound).min(lowerBound.mul(otherUpperBound));
-		var newUpperBound = lowerBound.mul(otherLowerBound).max(upperBound.mul(otherUpperBound));
-		return of(newLowerBound, newUpperBound);
+		return switch (positivity()) {
+			case POSITIVE -> switch (other.positivity()) {
+				case POSITIVE -> of(lowerBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
+				case ZERO_PROPER -> of(upperBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
+				case NEGATIVE -> of(upperBound.mul(otherLowerBound), lowerBound.mul(otherUpperBound));
+				case ZERO_IMPROPER -> of(lowerBound.mul(otherLowerBound), lowerBound.mul(otherUpperBound));
+			};
+			case ZERO_PROPER -> switch (other.positivity()) {
+				case POSITIVE -> of(lowerBound.mul(otherUpperBound), upperBound.mul(otherUpperBound));
+				case ZERO_PROPER -> of(
+						lowerBound.mul(otherUpperBound).min(upperBound.mul(otherLowerBound)),
+						lowerBound.mul(otherLowerBound).max(upperBound.mul(otherUpperBound))
+				);
+				case NEGATIVE -> of(upperBound.mul(otherLowerBound), lowerBound.mul(otherLowerBound));
+				case ZERO_IMPROPER -> IntInterval.ZERO;
+			};
+			case NEGATIVE -> switch (other.positivity()) {
+				case POSITIVE -> of(lowerBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
+				case ZERO_PROPER -> of(lowerBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
+				case NEGATIVE -> of(upperBound.mul(upperBound), lowerBound.mul(lowerBound));
+				case ZERO_IMPROPER -> of(upperBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
+			};
+			case ZERO_IMPROPER -> switch (other.positivity()) {
+				case POSITIVE -> of(lowerBound.mul(otherLowerBound), upperBound.mul(otherLowerBound));
+				case ZERO_PROPER -> IntInterval.ZERO;
+				case NEGATIVE -> of(upperBound.mul(otherUpperBound), lowerBound.mul(otherUpperBound));
+				case ZERO_IMPROPER -> of(
+						lowerBound.mul(otherLowerBound).max(upperBound.mul(otherUpperBound)),
+						lowerBound.mul(otherUpperBound).min(upperBound.mul(otherLowerBound))
+				);
+			};
+		};
 	}
 
 	@Override
@@ -224,5 +224,24 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 	@Override
 	public IntInterval max(IntInterval other) {
 		return of(lowerBound().max(other.lowerBound()), upperBound().max(other.upperBound()));
+	}
+
+	private Positivity positivity() {
+		int lowerCompare = lowerBound.signum();
+		int upperCompare = upperBound.signum();
+		if (lowerCompare >= 0 && upperCompare >= 0) {
+			return Positivity.POSITIVE;
+		}
+		if (lowerCompare <= 0 && upperCompare <= 0) {
+			return Positivity.NEGATIVE;
+		}
+		return isError() ? Positivity.ZERO_IMPROPER : Positivity.ZERO_PROPER;
+	}
+
+	private enum Positivity {
+		POSITIVE,
+		NEGATIVE,
+		ZERO_PROPER,
+		ZERO_IMPROPER
 	}
 }
