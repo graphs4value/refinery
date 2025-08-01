@@ -75,8 +75,8 @@ class PartialClauseRewriter {
 			switch (target) {
 			case Dnf dnf -> rewriteRecursively(callLiteral, dnf);
 			case ModalConstraint modalConstraint -> {
-				var modality = modalConstraint.modality().toModality();
-				var concreteness = modalConstraint.concreteness().toConcreteness();
+				var modality = modalConstraint.modality();
+				var concreteness = modalConstraint.concreteness();
 				var constraint = modalConstraint.constraint();
 				switch (constraint) {
 				case Dnf dnf -> rewriteRecursively(callLiteral, modality, concreteness, dnf);
@@ -360,8 +360,8 @@ class PartialClauseRewriter {
 		return switch (target) {
 			case Dnf dnf -> callTerm.withTarget(rewriter.rewrite(dnf));
 			case ModalConstraint modalConstraint -> {
-				var modality = modalConstraint.modality().toModality();
-				var concreteness = modalConstraint.concreteness().toConcreteness();
+				var modality = modalConstraint.modality();
+				var concreteness = modalConstraint.concreteness();
 				var constraint = modalConstraint.constraint();
 				yield switch (constraint) {
 					case Dnf dnf -> {
@@ -370,7 +370,8 @@ class PartialClauseRewriter {
 					}
 					case PartialRelation partialRelation -> {
 						var relationRewriter = rewriter.getRelationRewriter(partialRelation);
-						var term = relationRewriter.rewriteTerm(callTerm, modality, concreteness);
+						var term = relationRewriter.rewriteTerm(callTerm, modality.toModality(),
+                                concreteness.toConcreteness());
 						yield rewriteTerm(term);
 					}
 					default -> throw new IllegalArgumentException("Cannot interpret modal constraint: " +
@@ -521,8 +522,8 @@ class PartialClauseRewriter {
 		positiveVariables.addAll(literal.getOutputVariables());
 	}
 
-	private void rewriteRecursively(AbstractCallLiteral callLiteral, Modality modality, Concreteness concreteness,
-									Dnf dnf) {
+	private void rewriteRecursively(AbstractCallLiteral callLiteral, ModalitySpecification modality,
+									ConcretenessSpecification concreteness, Dnf dnf) {
 		var liftedDnf = rewriter.getLifter().lift(modality, concreteness, dnf);
 		rewriteRecursively(callLiteral, liftedDnf);
 	}
@@ -539,11 +540,15 @@ class PartialClauseRewriter {
 		markAsDone(rewrittenLiteral);
 	}
 
-	private void rewrite(AbstractCallLiteral callLiteral, Modality modality, Concreteness concreteness,
-						 PartialRelation partialRelation) {
+	private void rewrite(AbstractCallLiteral callLiteral, ModalitySpecification modality,
+						 ConcretenessSpecification concreteness, PartialRelation partialRelation) {
+		if (modality == ModalitySpecification.UNSPECIFIED || concreteness == ConcretenessSpecification.UNSPECIFIED) {
+			markAsDone(callLiteral);
+			return;
+		}
 		var relationRewriter = rewriter.getRelationRewriter(partialRelation);
-		var literals = relationRewriter.rewriteLiteral(unmodifiablePositiveVariables, callLiteral, modality,
-				concreteness);
+		var literals = relationRewriter.rewriteLiteral(unmodifiablePositiveVariables, callLiteral,
+				modality.toModality(), concreteness.toConcreteness());
 		int length = literals.size();
 		for (int i = length - 1; i >= 0; i--) {
 			addWithTrace(literals.get(i), partialRelation);

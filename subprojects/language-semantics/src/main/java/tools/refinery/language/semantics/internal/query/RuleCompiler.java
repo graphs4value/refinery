@@ -13,24 +13,25 @@ import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.validation.ReferenceCounter;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.dnf.Query;
-import tools.refinery.logic.literal.BooleanLiteral;
 import tools.refinery.logic.literal.CallPolarity;
 import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Variable;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.dse.transition.actions.ActionLiterals;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.actions.PartialActionLiterals;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.ModalConstraint;
 import tools.refinery.store.reasoning.literal.ModalitySpecification;
 import tools.refinery.store.reasoning.literal.PartialLiterals;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 
@@ -38,7 +39,7 @@ import java.util.*;
 
 public class RuleCompiler {
 	private static final String UNKNOWN_ACTION_MESSAGE = "Unknown action";
-	private static final String INVALID_ARGUMENT_MESSAGE = "Invalid argument";
+	static final String INVALID_ARGUMENT_MESSAGE = "Invalid argument";
 
 	@Inject
 	private SemanticsUtils semanticsUtils;
@@ -63,37 +64,80 @@ public class RuleCompiler {
 		if (consequents.isEmpty()) {
 			return toRule(name, ruleDefinition);
 		}
-		var firstConsequent = consequents.getFirst();
 		var preparedRule = prepareRule(ruleDefinition, true);
+		var firstConsequent = consequents.getFirst();
+		var wrappedActions = wrapConsequent(firstConsequent, preparedRule);
 		var parameters = preparedRule.allParameters();
 
 		var moreCommonLiterals = new ArrayList<Literal>();
-		toLiterals(firstConsequent, preparedRule, ConcreteModality.PARTIAL_MAY, moreCommonLiterals);
+		var delayedActions = new ArrayList<WrappedAction>();
+		for (var action : wrappedActions) {
+			if (action.toLiterals(true, ConcreteModality.PARTIAL_MAY, moreCommonLiterals)) {
+				delayedActions.add(action);
+			}
+		}
 		var precondition = preparedRule.buildQuery(name, parameters, moreCommonLiterals, queryCompiler);
+		for (var action : wrappedActions) {
+			action.setPrecondition(precondition);
+		}
 
 		var blockerLiterals = new ArrayList<Literal>(moreCommonLiterals.size() + 1);
 		blockerLiterals.add(PartialLiterals.must(precondition.call(CallPolarity.POSITIVE, parameters)));
-		toLiterals(firstConsequent, preparedRule, ConcreteModality.CANDIDATE_MUST, blockerLiterals);
+		toLiteralsChecked(wrappedActions, ConcreteModality.CANDIDATE_MUST, blockerLiterals);
 		var blocker = Query.builder(name + "#blocker")
 				.parameters(parameters)
 				.clause(blockerLiterals)
 				.build();
 
+		var withBlockerLiterals = new ArrayList<Literal>(delayedActions.size() + 2);
+		withBlockerLiterals.add(PartialLiterals.must(precondition.call(CallPolarity.POSITIVE, parameters)));
+		withBlockerLiterals.add(blocker.call(CallPolarity.NEGATIVE, parameters));
+		toLiteralsChecked(delayedActions, ConcreteModality.PARTIAL_MAY, withBlockerLiterals);
 		var preconditionWithBlocker = Query.builder(name + "#withBlocker")
 				.parameters(parameters)
-				.clause(
-						PartialLiterals.must(precondition.call(CallPolarity.POSITIVE, parameters)),
-						blocker.call(CallPolarity.NEGATIVE, parameters)
-				)
+				.clause(withBlockerLiterals)
 				.build();
 
 		var ruleBuilder = Rule.builder(name)
 				.parameters(parameters)
 				.clause(preconditionWithBlocker.call(CallPolarity.POSITIVE, parameters));
-		for (var consequent : ruleDefinition.getConsequents()) {
-			buildConsequent(consequent, preparedRule, ruleBuilder);
-		}
+		buildConsequent(firstConsequent, wrappedActions, preparedRule, ruleBuilder);
 		return ruleBuilder.build();
+	}
+
+	private List<WrappedAction> wrapConsequent(Consequent consequent, PreparedRule preparedRule) {
+		return consequent.getActions().stream()
+				.map(action -> wrapAction(action, preparedRule))
+				.toList();
+	}
+
+	private WrappedAction wrapAction(Action action, PreparedRule preparedRule) {
+		if (!(action instanceof AssertionAction assertionAction)) {
+			throw new TracedException(action, UNKNOWN_ACTION_MESSAGE);
+		}
+		var partialSymbol = queryCompiler.getPartialSymbol(assertionAction.getRelation());
+		var arguments = assertionAction.getArguments();
+		return switch (partialSymbol) {
+			case PartialRelation partialRelation -> {
+				var truthValue = SemanticsUtils.getTruthValue(assertionAction.getValue());
+				yield new WrappedRelationAction(this, preparedRule, partialRelation, arguments, truthValue);
+			}
+			case PartialFunction<?, ?> partialFunction -> wrapAction(assertionAction, partialFunction, preparedRule);
+		};
+	}
+
+	private <A extends AbstractValue<A, C>, C> WrappedAction wrapAction(
+			AssertionAction action, PartialFunction<A, C> partialFunction, PreparedRule preparedRule) {
+		var literals = new ArrayList<Literal>();
+		var term = queryCompiler.interpretTerm(action.getValue(), preparedRule.parameterMap(), literals)
+				.asType(partialFunction.abstractDomain().abstractType())
+				.reduce();
+		if (term instanceof ConstantTerm<A> constantTerm && literals.isEmpty()) {
+			return new WrappedConstantFunctionAction<>(this, preparedRule, partialFunction,
+					action.getArguments(), constantTerm.getValue());
+		}
+		return new WrappedComputedFunctionAction<>(this, preparedRule, partialFunction,
+				action.getArguments(), literals, term);
 	}
 
 	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition,
@@ -118,18 +162,27 @@ public class RuleCompiler {
 		for (int i = 0; i < actionCount; i++) {
 			var actionName = actionCount == 1 ? name : name + "#" + (i + 1);
 			var action = actions.get(i);
-			if (!(action instanceof AssertionAction assertionAction)) {
-				throw new TracedException(action, UNKNOWN_ACTION_MESSAGE);
-			}
 			try {
-				var parameters = getParameterList(assertionAction, preparedRule);
+				var wrappedAction = wrapAction(action, preparedRule);
+				var parameters = wrappedAction.getNodeVariables();
 				var moreCommonLiterals = new ArrayList<Literal>();
-				toLiterals(assertionAction, preparedRule, false, postConditionModality, moreCommonLiterals);
+				boolean delayed = wrappedAction.toLiterals(false, postConditionModality, moreCommonLiterals);
 				var omittedParametersMustExist = concreteness == ConcretenessSpecification.CANDIDATE;
 				var precondition = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler,
 						omittedParametersMustExist);
+				wrappedAction.setPrecondition(precondition);
+				if (delayed) {
+					var literalsWithDelayed = new ArrayList<Literal>(2);
+					literalsWithDelayed.add(precondition.call(CallPolarity.POSITIVE, parameters));
+					wrappedAction.toLiteralsChecked(false, postConditionModality, literalsWithDelayed);
+					precondition = Query.builder(precondition.name() + "#withDelayed")
+							.symbolicParameters(precondition.getDnf().getSymbolicParameters())
+							.clause(literalsWithDelayed)
+							.build();
+				}
 				var actionLiterals = new ArrayList<ActionLiteral>();
-				toActionLiterals(action, preparedRule.parameterMap(), actionLiterals);
+				wrappedAction.toActionLiterals(concreteness.toConcreteness(), actionLiterals,
+						preparedRule.parameterMap());
 				var rule = Rule.builder(actionName)
 						.parameters(parameters)
 						.clause(new ModalConstraint(ModalitySpecification.MUST, concreteness, precondition.getDnf())
@@ -144,20 +197,6 @@ public class RuleCompiler {
 		return rules;
 	}
 
-	private static List<NodeVariable> getParameterList(AssertionAction assertionAction, PreparedRule preparedRule) {
-		var parameterSet = new LinkedHashSet<NodeVariable>();
-		for (AssertionArgument argument : assertionAction.getArguments()) {
-			if (argument instanceof NodeAssertionArgument nodeAssertionArgument) {
-				VariableOrNode variableOrNode = nodeAssertionArgument.getNode();
-				if (variableOrNode instanceof tools.refinery.language.model.problem.Variable problemVariable) {
-					NodeVariable nodeVariable = preparedRule.parameterMap().get(problemVariable);
-					parameterSet.add(nodeVariable);
-				}
-			}
-		}
-		return List.copyOf(parameterSet);
-	}
-
 	public Rule toRule(String name, RuleDefinition ruleDefinition) {
 		var preparedRule = prepareRule(ruleDefinition, true);
 		var parameters = preparedRule.allParameters();
@@ -166,7 +205,11 @@ public class RuleCompiler {
 				.parameters(parameters)
 				.clause(PartialLiterals.must(precondition.call(CallPolarity.POSITIVE, parameters)));
 		for (var consequent : ruleDefinition.getConsequents()) {
-			buildConsequent(consequent, preparedRule, ruleBuilder);
+			var wrappedActions = wrapConsequent(consequent, preparedRule);
+			for (var action : wrappedActions) {
+				action.setPrecondition(precondition);
+			}
+			buildConsequent(consequent, wrappedActions, preparedRule, ruleBuilder);
 		}
 		return ruleBuilder.build();
 	}
@@ -205,12 +248,13 @@ public class RuleCompiler {
 				Collections.unmodifiableCollection(parametersToFocus), Collections.unmodifiableList(commonLiterals));
 	}
 
-	private void buildConsequent(Consequent body, PreparedRule preparedRule, RuleBuilder builder) {
+	private void buildConsequent(Consequent body, List<WrappedAction> wrappedActions, PreparedRule preparedRule,
+								 RuleBuilder builder) {
 		try {
 			var actionLiterals = new ArrayList<ActionLiteral>();
 			var localScope = preparedRule.focusParameters(actionLiterals);
-			for (var action : body.getActions()) {
-				toActionLiterals(action, localScope, actionLiterals);
+			for (var action : wrappedActions) {
+				action.toActionLiterals(Concreteness.PARTIAL, actionLiterals, localScope);
 			}
 			builder.action(actionLiterals);
 		} catch (RuntimeException e) {
@@ -218,80 +262,21 @@ public class RuleCompiler {
 		}
 	}
 
-	private void toActionLiterals(
-			Action action, Map<tools.refinery.language.model.problem.Variable, NodeVariable> localScope,
-			List<ActionLiteral> actionLiterals) {
-		if (!(action instanceof AssertionAction assertionAction)) {
-			throw new TracedException(action, UNKNOWN_ACTION_MESSAGE);
-		}
-		var partialRelation = getPartialRelation(assertionAction.getRelation());
-		var truthValue = SemanticsUtils.getTruthValue(assertionAction.getValue());
-		var problemArguments = assertionAction.getArguments();
-		var arguments = new NodeVariable[problemArguments.size()];
-		for (int i = 0; i < arguments.length; i++) {
-			var problemArgument = problemArguments.get(i);
-			if (!(problemArgument instanceof NodeAssertionArgument nodeAssertionArgument)) {
-				throw new TracedException(problemArgument, INVALID_ARGUMENT_MESSAGE);
-			}
-			var variableOrNode = nodeAssertionArgument.getNode();
-			switch (variableOrNode) {
-			case tools.refinery.language.model.problem.Variable problemVariable ->
-					arguments[i] = localScope.get(problemVariable);
-			case Node node -> {
-				int nodeId = getNodeId(node);
-				var tempVariable = Variable.of(getTempVariableName(node, nodeId));
-				actionLiterals.add(ActionLiterals.constant(tempVariable, nodeId));
-				arguments[i] = tempVariable;
-			}
-			default -> throw new TracedException(problemArgument, INVALID_ARGUMENT_MESSAGE);
-			}
-		}
-		actionLiterals.add(PartialActionLiterals.merge(partialRelation, truthValue, arguments));
-	}
-
-	private @NotNull String getTempVariableName(Node node, int nodeId) {
+	@NotNull String getTempVariableName(Node node, int nodeId) {
 		return semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId);
 	}
 
-	private void toLiterals(Consequent body, PreparedRule preparedRule, ConcreteModality concreteModality,
-							List<Literal> literals) {
-		for (var action : body.getActions()) {
-			if (!(action instanceof AssertionAction assertionAction)) {
-				throw new TracedException(action, UNKNOWN_ACTION_MESSAGE);
-			}
-			toLiterals(assertionAction, preparedRule, true, concreteModality, literals);
+	private void toLiteralsChecked(List<WrappedAction> wrappedActions, ConcreteModality concreteModality,
+								   List<Literal> literals) {
+		for (var action : wrappedActions) {
+			action.toLiteralsChecked(true, concreteModality, literals);
 		}
 	}
 
-	private void toLiterals(AssertionAction assertionAction, PreparedRule preparedRule, boolean positive,
-							ConcreteModality concreteModality, List<Literal> literals) {
-		var truthValue = SemanticsUtils.getTruthValue(assertionAction.getValue());
-		if (truthValue == TruthValue.UNKNOWN) {
-			if (!positive) {
-				literals.add(BooleanLiteral.FALSE);
-			}
-			return;
-		}
-		var partialRelation = getPartialRelation(assertionAction.getRelation());
-		var arguments = collectArguments(assertionAction, preparedRule, concreteModality, literals);
-		if (truthValue == TruthValue.ERROR ||
-				(truthValue == TruthValue.TRUE && positive) ||
-				(truthValue == TruthValue.FALSE && !positive)) {
-			literals.add(concreteModality.wrapConstraint(partialRelation).call(CallPolarity.POSITIVE, arguments));
-		}
-		if (truthValue == TruthValue.ERROR ||
-				(truthValue == TruthValue.FALSE && positive) ||
-				(truthValue == TruthValue.TRUE && !positive)) {
-			literals.add(concreteModality.negate().wrapConstraint(partialRelation)
-					.call(CallPolarity.NEGATIVE, arguments));
-		}
-	}
-
-	private NodeVariable[] collectArguments(AssertionAction assertionAction, PreparedRule preparedRule,
-											ConcreteModality concreteModality, List<Literal> literals) {
-		var problemArguments = assertionAction.getArguments();
+	NodeVariable[] collectArguments(List<AssertionArgument> problemArguments, PreparedRule preparedRule,
+									ConcreteModality concreteModality, List<Literal> literals) {
 		var arguments = new NodeVariable[problemArguments.size()];
-		var referenceCounts = ReferenceCounter.computeReferenceCounts(assertionAction);
+		var referenceCounts = ReferenceCounter.computeReferenceCounts(problemArguments);
 		for (int i = 0; i < arguments.length; i++) {
 			var problemArgument = problemArguments.get(i);
 			if (!(problemArgument instanceof NodeAssertionArgument nodeAssertionArgument)) {
@@ -315,6 +300,31 @@ public class RuleCompiler {
 				arguments[i] = tempVariable;
 			}
 			default -> throw new TracedException(problemArgument, INVALID_ARGUMENT_MESSAGE);
+			}
+		}
+		return arguments;
+	}
+
+	NodeVariable[] collectArguments(List<AssertionArgument> problemArguments,
+									Map<tools.refinery.language.model.problem.Variable, NodeVariable> localScope,
+									List<ActionLiteral> actionLiterals) {
+		var arguments = new NodeVariable[problemArguments.size()];
+		for (int i = 0; i < arguments.length; i++) {
+			var problemArgument = problemArguments.get(i);
+			if (!(problemArgument instanceof NodeAssertionArgument nodeAssertionArgument)) {
+				throw new TracedException(problemArgument, RuleCompiler.INVALID_ARGUMENT_MESSAGE);
+			}
+			var variableOrNode = nodeAssertionArgument.getNode();
+			switch (variableOrNode) {
+			case tools.refinery.language.model.problem.Variable problemVariable ->
+					arguments[i] = localScope.get(problemVariable);
+			case Node node -> {
+				int nodeId = getNodeId(node);
+				var tempVariable = Variable.of(getTempVariableName(node, nodeId));
+				actionLiterals.add(ActionLiterals.constant(tempVariable, nodeId));
+				arguments[i] = tempVariable;
+			}
+			default -> throw new TracedException(problemArgument, RuleCompiler.INVALID_ARGUMENT_MESSAGE);
 			}
 		}
 		return arguments;

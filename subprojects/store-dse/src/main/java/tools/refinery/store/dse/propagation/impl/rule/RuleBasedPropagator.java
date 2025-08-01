@@ -27,10 +27,10 @@ public class RuleBasedPropagator implements Propagator {
 	public void configure(ModelStoreBuilder storeBuilder) {
 		var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
 		for (var propagationRule : propagationRules) {
-			queryBuilder.query(propagationRule.getPrecondition());
+			queryBuilder.queries(propagationRule.getQueries());
 		}
 		for (var concretizationRule : concretizationRules) {
-			queryBuilder.query(concretizationRule.getPrecondition());
+			queryBuilder.queries(concretizationRule.getQueries());
 		}
 	}
 

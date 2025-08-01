@@ -14,6 +14,7 @@ import tools.refinery.store.dse.propagation.PropagationAdapter;
 import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
+import tools.refinery.store.dse.transition.ExclusionPropagator;
 import tools.refinery.store.model.Model;
 
 import java.util.Optional;
@@ -40,7 +41,10 @@ public class ConcreteModelSemantics extends ConcreteModelFacade implements Model
 			// Fatal propagation error.
 			throw getDiagnostics().wrapPropagationRejectedException(e, getProblemTrace());
 		}
-		if (concretizationResult instanceof PropagationRejectedResult rejectedResult) {
+		if (concretizationResult instanceof PropagationRejectedResult rejectedResult &&
+				!(rejectedResult.reason() instanceof ExclusionPropagator)) {
+			// Return models with errors as if they were correctly concretized. Callers can check for consistency with
+			// {@link #checkConsistency()} later.
 			return new ModelFacadeResult.ConcretizationRejected(rejectedResult);
 		}
 		return createInitialModelResult;

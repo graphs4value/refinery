@@ -55,9 +55,11 @@ class ClauseLifter {
 			var liftedLiteral = liftLiteral(literal);
 			liftedLiterals.add(liftedLiteral);
 		}
-		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
-		for (var quantifiedVariable : existentialQuantifiersToAdd) {
-			liftedLiterals.add(existsConstraint.call(quantifiedVariable));
+		if (modality != ModalitySpecification.UNSPECIFIED) {
+			var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
+			for (var quantifiedVariable : existentialQuantifiersToAdd) {
+				liftedLiterals.add(existsConstraint.call(quantifiedVariable));
+			}
 		}
 		return liftedLiterals;
 	}

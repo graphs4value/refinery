@@ -21,6 +21,8 @@ import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
+import tools.refinery.store.dse.propagation.PropagationResult;
+import tools.refinery.store.dse.transition.ExclusionPropagator;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -75,6 +77,12 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 			throw diagnostics.wrapTracedException(e, problemTrace);
 		} catch (PropagationRejectedException e) {
 			throw diagnostics.wrapPropagationRejectedException(e, problemTrace);
+		}
+		if (propagatedModel.propagationResult() instanceof PropagationRejectedResult rejectedResult &&
+				rejectedResult.reason() instanceof ExclusionPropagator) {
+			// Return models with errors as if they were correctly propagated. Callers can check for consistency with
+			// {@link #checkConsistency()} later.
+			return new PropagatedModel(propagatedModel.model(), PropagationResult.PROPAGATED);
 		}
 		return propagatedModel;
 	}
