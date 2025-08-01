@@ -40,13 +40,11 @@ class AnnotatedResource {
 				continue;
 			}
 			var qualifiedName = typedAnnotation.getAnnotationName();
-			if (qualifiedName != null) {
-				var collectedAnnotations = collectedMap.computeIfAbsent(qualifiedName, ignored -> {
-					boolean repeated = AnnotationUtil.isRepeatable(annotation.getDeclaration());
-					return new CollectedAnnotations(new ArrayList<>(1), repeated);
-				});
-				collectedAnnotations.instances().add(typedAnnotation);
-			}
+			var collectedAnnotations = collectedMap.computeIfAbsent(qualifiedName, ignored -> {
+				boolean repeated = AnnotationUtil.isRepeatable(annotation.getDeclaration());
+				return new CollectedAnnotations(new ArrayList<>(1), repeated);
+			});
+			collectedAnnotations.instances().add(typedAnnotation);
 		}
 		var typedAnnotations = new TypedAnnotations(annotatedElement, collectedMap);
 		annotationsMap.put(annotatedElement, typedAnnotations);
@@ -60,6 +58,9 @@ class AnnotatedResource {
 
 	@Nullable
 	private TypedAnnotation getTypedAnnotationOrNull(Annotation annotation) {
+		if (annotation == null) {
+			return null;
+		}
 		return typingMap.computeIfAbsent(annotation, this::computeTypedAnnotation);
 	}
 
