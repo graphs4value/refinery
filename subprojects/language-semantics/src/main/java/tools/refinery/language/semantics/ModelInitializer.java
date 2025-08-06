@@ -27,6 +27,7 @@ import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.dnf.InvalidClauseException;
 import tools.refinery.logic.term.ConstantTerm;
+import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -613,20 +614,19 @@ public class ModelInitializer {
 
 	private void collectAssertion(Assertion assertion) {
 		var relation = assertion.getRelation();
-		// attribute value declaration
 		var functionInfo = functionInfoMap.get(relation);
 		if (functionInfo != null) {
 			collectAttributeAssertion(assertion, functionInfo);
 			return;
 		}
 		var tuple = getTuple(assertion);
-		var value = SemanticsUtils.getTruthValue(assertion.getValue());
 		var info = getRelationInfo(relation);
 		var partialRelation = info.partialRelation();
 		if (partialRelation.arity() != tuple.getSize()) {
 			throw new TracedException(assertion, "Expected %d arguments for %s, got %d instead"
 					.formatted(partialRelation.arity(), partialRelation, tuple.getSize()));
 		}
+		var value = parseConstant(assertion.getValue(), TruthValue.class);
 		if (assertion.isDefault()) {
 			info.defaultAssertions().mergeValue(tuple, value);
 		} else {
@@ -636,27 +636,33 @@ public class ModelInitializer {
 
 	private <A extends AbstractValue<A, C>, C> void collectAttributeAssertion(Assertion assertion,
 																			  FunctionInfo<A, C> functionInfo) {
-		var value = assertion.getValue();
 		var tuple = getTuple(assertion);
-		var term = exprToTerm.toTerm(value);
-		if (term.isEmpty()) {
-			throw new TracedException(value, "Invalid assertion value expression");
-		}
 		var partialFunction = functionInfo.partialFunction();
-		var simplifiedTerm = term.get().asType(partialFunction.abstractDomain().abstractType()).reduce();
-		if (!(simplifiedTerm instanceof ConstantTerm<A> constantTerm)) {
-			throw new TracedException(value, "Assertion value must be constant");
-		}
 		if (partialFunction.arity() != tuple.getSize()) {
 			throw new TracedException(assertion, "Expected %d arguments for %s, got %d instead"
 					.formatted(partialFunction.arity(), partialFunction, tuple.getSize()));
 		}
-		var abstractValue = constantTerm.getValue();
+		var abstractValue = parseConstant(assertion.getValue(), partialFunction.abstractDomain().abstractType());
 		if (assertion.isDefault()) {
 			functionInfo.defaultAssertions().mergeValue(tuple, abstractValue);
 		} else {
 			functionInfo.assertions().mergeValue(tuple, abstractValue);
 		}
+	}
+
+	private <T> Term<T> parseTerm(Expr value, Class<T> type) {
+		return exprToTerm.toTerm(value)
+				.orElseThrow(() -> new TracedException(value, "Invalid assertion value expression"))
+				.asType(type)
+				.reduce();
+	}
+
+	private <T> T parseConstant(Expr value, Class<T> type) {
+		var simplifiedTerm = parseTerm(value, type);
+		if (!(simplifiedTerm instanceof ConstantTerm<T> constantTerm)) {
+			throw new TracedException(value, "Assertion value must be constant");
+		}
+		return constantTerm.getValue();
 	}
 
 	private void fixClassDeclarationAssertions() {

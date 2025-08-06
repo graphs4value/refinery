@@ -30,8 +30,12 @@ public class DerivedVariableComputer {
 
 	public void installDerivedVariables(Problem problem) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof ParametricDefinition definition) {
-				installDerivedParametricDefinitionState(definition);
+			switch (statement) {
+			case ParametricDefinition definition -> installDerivedParametricDefinitionState(definition);
+			case Assertion assertion -> installDerivedAssertionState(assertion);
+			default -> {
+				// No derived state to install.
+			}
 			}
 		}
 	}
@@ -77,6 +81,17 @@ public class DerivedVariableComputer {
 		for (Conjunction precondition : definition.getPreconditions()) {
 			createVariablesForScope(new ImplicitVariableScope(precondition, knownVariables));
 		}
+		for (var consequent : definition.getConsequents()) {
+			for (var action : consequent.getActions()) {
+				if (action instanceof AssertionAction assertionAction) {
+					createVariablesForScope(new ImplicitVariableScope(assertionAction, knownVariables));
+				}
+			}
+		}
+	}
+
+	protected void installDerivedAssertionState(AbstractAssertion assertion) {
+		createVariablesForScope(new ImplicitVariableScope(assertion, Set.of()));
 	}
 
 	private void createVariablesForScope(ImplicitVariableScope scope) {

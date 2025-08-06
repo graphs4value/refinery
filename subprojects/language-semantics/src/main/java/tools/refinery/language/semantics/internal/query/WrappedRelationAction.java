@@ -17,7 +17,6 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.List;
-import java.util.Map;
 
 class WrappedRelationAction extends WrappedAction {
 	private final PartialRelation partialRelation;
@@ -55,9 +54,7 @@ class WrappedRelationAction extends WrappedAction {
 	}
 
 	@Override
-	public void toActionLiterals(Concreteness concreteness, List<ActionLiteral> actionLiterals,
-								 Map<tools.refinery.language.model.problem.Variable, NodeVariable> localScope) {
-		var arguments = collectArguments(localScope, actionLiterals);
-		actionLiterals.add(PartialActionLiterals.merge(partialRelation, truthValue, arguments));
+	protected ActionLiteral getActionLiteral(Concreteness concreteness, List<NodeVariable> arguments) {
+		return PartialActionLiterals.merge(partialRelation, truthValue, arguments);
 	}
 }

@@ -65,7 +65,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="implicitVariables" upperBound="-1"
         eType="#//ImplicitVariable" transient="true" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssertion" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssertion" abstract="true" eSuperTypes="#//ExistentialQuantifier">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
         eType="#//AssertionArgument" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>

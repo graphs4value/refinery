@@ -778,6 +778,36 @@ public class ProblemValidator extends AbstractProblemValidator {
 				usedParameters.add(usedParameter);
 			}
 		}
+		var value = assertionAction.getValue();
+		if (value instanceof VariableOrNodeExpr variableOrNodeExpr &&
+				variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
+				!usedParameter.eIsProxy()) {
+			usedParameters.add(usedParameter);
+		}
+		var iterator = value.eAllContents();
+		while (iterator.hasNext()) {
+			var expr = iterator.next();
+			if (expr instanceof VariableOrNodeExpr variableOrNodeExpr &&
+					variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
+					!usedParameter.eIsProxy()) {
+				usedParameters.add(usedParameter);
+			}
+		}
+	}
+
+	@Check
+	public void checkAssertionActions(AssertionAction assertionAction) {
+		var variables = new HashSet<Variable>();
+		var ruleDeclaration = EcoreUtil2.getContainerOfType(assertionAction, ParametricDefinition.class);
+		if (ruleDeclaration != null) {
+			variables.addAll(ruleDeclaration.getParameters());
+		}
+		checkOnlyAllowedVariables(assertionAction.getValue(), variables);
+	}
+
+	@Check
+	public void checkAssertion(Assertion assertion) {
+		checkOnlyAllowedVariables(assertion.getValue(), Set.of());
 	}
 
 	@Check

@@ -21,7 +21,12 @@ public final class PartialActionLiterals {
 
 	public static <A extends AbstractValue<A, C>, C> MergeActionLiteral<A, C> merge(
 			PartialSymbol<A, C> partialSymbol, A value, NodeVariable... parameters) {
-		return new MergeActionLiteral<>(partialSymbol, value, List.of(parameters));
+		return merge(partialSymbol, value, List.of(parameters));
+	}
+
+	public static <A extends AbstractValue<A, C>, C> MergeActionLiteral<A, C> merge(
+			PartialSymbol<A, C> partialSymbol, A value, List<NodeVariable> parameters) {
+		return new MergeActionLiteral<>(partialSymbol, value, parameters);
 	}
 
 	public static <A extends AbstractValue<A, C>, C> ComputedMergeActionLiteral<A, C> mergeComputed(

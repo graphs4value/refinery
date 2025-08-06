@@ -92,6 +92,11 @@ abstract class WrappedAction {
 		}
 	}
 
-	public abstract void toActionLiterals(Concreteness concreteness, List<ActionLiteral> actionLiterals,
-										  Map<Variable, NodeVariable> localScope);
+	public void toActionLiterals(Concreteness concreteness, List<ActionLiteral> actionLiterals,
+								 Map<Variable, NodeVariable> localScope) {
+		var arguments = collectArguments(localScope, actionLiterals);
+		actionLiterals.add(getActionLiteral(concreteness, List.of(arguments)));
+	}
+
+	protected abstract ActionLiteral getActionLiteral(Concreteness concreteness, List<NodeVariable> arguments);
 }

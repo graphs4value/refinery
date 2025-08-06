@@ -17,20 +17,19 @@ import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.literal.CallPolarity;
 import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.dse.transition.RuleBuilder;
 import tools.refinery.store.dse.transition.actions.ActionLiteral;
 import tools.refinery.store.dse.transition.actions.ActionLiterals;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
-import tools.refinery.store.reasoning.literal.ModalConstraint;
-import tools.refinery.store.reasoning.literal.ModalitySpecification;
-import tools.refinery.store.reasoning.literal.PartialLiterals;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
@@ -115,29 +114,35 @@ public class RuleCompiler {
 		if (!(action instanceof AssertionAction assertionAction)) {
 			throw new TracedException(action, UNKNOWN_ACTION_MESSAGE);
 		}
+		var literals = new ArrayList<Literal>();
+		var term = queryCompiler.interpretTerm(assertionAction.getValue(), preparedRule.parameterMap(), literals);
 		var partialSymbol = queryCompiler.getPartialSymbol(assertionAction.getRelation());
 		var arguments = assertionAction.getArguments();
 		return switch (partialSymbol) {
 			case PartialRelation partialRelation -> {
-				var truthValue = SemanticsUtils.getTruthValue(assertionAction.getValue());
-				yield new WrappedRelationAction(this, preparedRule, partialRelation, arguments, truthValue);
+				var truthValueTerm = term.asType(TruthValue.class);
+				if (truthValueTerm instanceof ConstantTerm<TruthValue> constantTerm && literals.isEmpty()) {
+					yield new WrappedRelationAction(this, preparedRule, partialRelation, arguments,
+							constantTerm.getValue());
+				}
+				yield new WrappedComputedRelationAction(this, preparedRule, partialRelation, arguments, literals,
+                        truthValueTerm);
 			}
-			case PartialFunction<?, ?> partialFunction -> wrapAction(assertionAction, partialFunction, preparedRule);
+			case PartialFunction<?, ?> partialFunction -> wrapAction(arguments, literals, term, partialFunction,
+					preparedRule);
 		};
 	}
 
 	private <A extends AbstractValue<A, C>, C> WrappedAction wrapAction(
-			AssertionAction action, PartialFunction<A, C> partialFunction, PreparedRule preparedRule) {
-		var literals = new ArrayList<Literal>();
-		var term = queryCompiler.interpretTerm(action.getValue(), preparedRule.parameterMap(), literals)
-				.asType(partialFunction.abstractDomain().abstractType())
-				.reduce();
+			List<AssertionArgument> arguments, List<Literal> literals, AnyTerm anyTerm,
+			PartialFunction<A, C> partialFunction, PreparedRule preparedRule) {
+		var term = anyTerm.asType(partialFunction.abstractDomain().abstractType());
 		if (term instanceof ConstantTerm<A> constantTerm && literals.isEmpty()) {
 			return new WrappedConstantFunctionAction<>(this, preparedRule, partialFunction,
-					action.getArguments(), constantTerm.getValue());
+					arguments, constantTerm.getValue());
 		}
 		return new WrappedComputedFunctionAction<>(this, preparedRule, partialFunction,
-				action.getArguments(), literals, term);
+				arguments, literals, term);
 	}
 
 	public Collection<Rule> toPropagationRules(String name, RuleDefinition ruleDefinition,
