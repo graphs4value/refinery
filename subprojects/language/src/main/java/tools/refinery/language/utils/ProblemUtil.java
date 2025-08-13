@@ -59,6 +59,7 @@ public final class ProblemUtil {
 		return switch (eObject) {
 			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
 			case FunctionDefinition functionDefinition -> functionDefinition.isShadow();
+			case OverloadedDeclaration overloadedDeclaration -> overloadedDeclaration.isShadow();
 			default -> false;
 		};
 	}
@@ -228,8 +229,7 @@ public final class ProblemUtil {
 			case EnumDeclaration ignoredEnumDeclaration -> 1;
 			case DatatypeDeclaration ignoredDatatypeDeclaration -> 1;
 			case ReferenceDeclaration ignoredReferenceDeclaration -> UNKNOWN_STATIC_ARITY;
-			case FunctionDefinition functionDefinition -> functionDefinition.getParameters().size();
-			case PredicateDefinition predicateDefinition -> predicateDefinition.getParameters().size();
+			case ParametricDefinition parametricDefinition -> parametricDefinition.getParameters().size();
 			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
 		};
 	}

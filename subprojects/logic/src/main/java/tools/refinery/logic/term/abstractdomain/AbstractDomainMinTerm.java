@@ -11,7 +11,7 @@ import tools.refinery.logic.term.Term;
 
 public class AbstractDomainMinTerm<A extends ComparableAbstractValue<A, C>, C extends Comparable<C>>
 		extends AbstractDomainBinaryTerm<A, A, C> {
-	public AbstractDomainMinTerm(ComparableAbstractDomain<A, C> abstractDomain, Term<A> left, Term<A> right) {
+	protected AbstractDomainMinTerm(ComparableAbstractDomain<A, C> abstractDomain, Term<A> left, Term<A> right) {
 		super(abstractDomain.abstractType(), abstractDomain, left, right);
 	}
 

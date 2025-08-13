@@ -123,8 +123,9 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.VARIABLE.isSuperTypeOf(eClass)) {
 			return "variable";
 		}
-		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass)) {
-			return getPredicateDescription(candidate, eObject);
+		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass) ||
+				ProblemPackage.Literals.OVERLOADED_DECLARATION.isSuperTypeOf(eClass)) {
+			return getShadowOrEmptyDescription(candidate, eObject);
 		}
 		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(eClass)) {
 			return "class";
@@ -188,7 +189,7 @@ public class ProblemProposalUtils {
 		return eObject instanceof Node node && ProblemUtil.isMultiNode(node);
 	}
 
-	private static @Nullable String getPredicateDescription(IEObjectDescription candidate, EObject eObject) {
+	private static @Nullable String getShadowOrEmptyDescription(IEObjectDescription candidate, EObject eObject) {
 		return isShadow(candidate, eObject) ? SHADOW_DESCRIPTION : null;
 	}
 
@@ -333,6 +334,9 @@ public class ProblemProposalUtils {
 		}
 		if (ProblemPackage.Literals.FUNCTION_DEFINITION.isSuperTypeOf(eClass)) {
 			return ATTRIBUTE_KIND;
+		}
+		if (ProblemPackage.Literals.OVERLOADED_DECLARATION.isSuperTypeOf(eClass)) {
+			return "function";
 		}
 		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass)) {
 			return "relation";

@@ -73,6 +73,11 @@ public final class AbstractDomainTerms {
 		return new IsErrorTerm<>(abstractDomain, body);
 	}
 
+	public static <A extends AbstractValue<A, C>, C> Term<Boolean> isConcrete(AbstractDomain<A, C> abstractDomain,
+																			  Term<A> body) {
+		return new IsConcreteTerm<>(abstractDomain, body);
+	}
+
 	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> Term<A> negativeInfinity(
 			ComparableAbstractDomain<A, C> abstractDomain) {
 		return new ConstantTerm<>(abstractDomain.abstractType(), abstractDomain.negativeInfinity());
@@ -116,5 +121,15 @@ public final class AbstractDomainTerms {
 	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> Term<A> max(
 			ComparableAbstractDomain<A, C> abstractDomain, Term<A> left, Term<A> right) {
 		return new AbstractDomainMaxTerm<>(abstractDomain, left, right);
+	}
+
+	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> Term<A> lowerBound(
+			ComparableAbstractDomain<A, C> abstractDomain, Term<A> body) {
+		return new AbstractDomainLowerBoundTerm<>(abstractDomain, body);
+	}
+
+	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> Term<A> upperBound(
+			ComparableAbstractDomain<A, C> abstractDomain, Term<A> body) {
+		return new AbstractDomainUpperBoundTerm<>(abstractDomain, body);
 	}
 }

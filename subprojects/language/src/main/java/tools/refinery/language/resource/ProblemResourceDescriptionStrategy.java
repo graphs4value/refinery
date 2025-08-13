@@ -17,6 +17,7 @@ import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportCollector;
@@ -173,7 +174,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		return builder.build();
 	}
 
-	private static void addNodeUserData(Node node, ImmutableMap.Builder<String, String> builder) {
+	private static void addNodeUserData(Node node, ImmutableMap.Builder<@NotNull String, @NotNull String> builder) {
 		builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
 		if (ProblemUtil.isAtomNode(node)) {
 			builder.put(ATOM, ATOM_TRUE);
@@ -183,7 +184,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		}
 	}
 
-	private static void addRelationUserData(Relation relation, ImmutableMap.Builder<String, String> builder) {
+	private static void addRelationUserData(Relation relation,
+											ImmutableMap.Builder<@NotNull String, @NotNull String> builder) {
 		builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
 		builder.put(ARITY, Integer.toString(ProblemUtil.getArityWithoutProxyResolution(relation), 10));
 		if (relation instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {

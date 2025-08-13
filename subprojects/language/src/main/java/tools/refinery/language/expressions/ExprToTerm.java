@@ -10,6 +10,7 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.typesystem.DataExprType;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.intinterval.IntIntervalTerms;
@@ -18,6 +19,7 @@ import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ExprToTerm {
@@ -26,6 +28,9 @@ public class ExprToTerm {
 
 	@Inject
 	private ProblemTypeAnalyzer typeAnalyzer;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	protected ImportAdapterProvider getImportAdapterProvider() {
 		return importAdapterProvider;
@@ -44,6 +49,7 @@ public class ExprToTerm {
 			case RangeExpr rangeExpr -> createRange(rangeExpr);
 			case LatticeBinaryExpr latticeBinaryExpr -> createLatticeBinaryOperator(latticeBinaryExpr);
 			case ModalExpr modalExpr -> createModalOperator(modalExpr);
+			case Atom atom -> createOverloadedFunctionCall(atom);
 			case LogicConstant logicConstant -> createLogicConstant(logicConstant);
 			case IntConstant intConstant -> createIntConstant(intConstant);
 			case StringConstant stringConstant -> createStringConstant(stringConstant);
@@ -136,6 +142,32 @@ public class ExprToTerm {
 			return Optional.empty();
 		}
 		return toTerm(expr.getBody()).map(bodyTerm -> wrapModality(bodyTerm, expr.getModality()));
+	}
+
+	protected Optional<AnyTerm> createOverloadedFunctionCall(Atom atom) {
+		if(!(atom.getRelation() instanceof OverloadedDeclaration overloadedDeclaration)) {
+			return Optional.empty();
+		}
+		var name = signatureProvider.getPrimitiveName(overloadedDeclaration);
+		var arguments = atom.getArguments();
+		int arity = arguments.size();
+		var argumentTypes = new DataExprType[arity];
+		var argumentTerms = new AnyTerm[arity];
+		for (int i = 0; i < arity; i++) {
+			var argument = arguments.get(i);
+			var argumentType = typeAnalyzer.getExpressionType(argument);
+			if (!(argumentType instanceof DataExprType dataExprType)) {
+				return Optional.empty();
+			}
+			argumentTypes[i] = dataExprType;
+			var argumentTerm = toTerm(argument);
+			if (argumentTerm.isEmpty()) {
+				return Optional.empty();
+			}
+			argumentTerms[i] = argumentTerm.get();
+		}
+		var termInterpreter = importAdapterProvider.getTermInterpreter(atom);
+		return termInterpreter.createOverloadedFunctionCall(name, List.of(argumentTypes), List.of(argumentTerms));
 	}
 
 	protected static AnyTerm wrapModality(AnyTerm bodyTerm, Modality modality) {

@@ -21,4 +21,8 @@ public interface ComparableAbstractValue<A extends ComparableAbstractValue<A, C>
 	A min(A other);
 
 	A max(A other);
+
+	A abstractLowerBound();
+
+	A abstractUpperBound();
 }

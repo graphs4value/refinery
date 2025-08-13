@@ -22,6 +22,7 @@ import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ProblemValidator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TypedModule {
 	private static final String OPERAND_TYPE_ERROR_MESSAGE = "Cannot determine operand type.";
@@ -361,12 +362,42 @@ public class TypedModule {
 		var arguments = atom.getArguments();
 		int size = Math.min(parameterTypes.size(), arguments.size());
 		boolean ok = parameterTypes.size() == arguments.size();
-		for (int i = 0; i < size; i++) {
-			var parameterType = parameterTypes.get(i);
-			var argument = arguments.get(i);
-			if (!expectType(argument, parameterType)) {
-				// Avoid short-circuiting to let us type check all arguments.
-				ok = false;
+		if (relation instanceof OverloadedDeclaration overloadedDeclaration) {
+			var name = signatureProvider.getPrimitiveName(overloadedDeclaration);
+			var argumentTypes = new ArrayList<@Nullable DataExprType>(size);
+			for (var argument : arguments) {
+				var argumentType = getExpressionType(argument);
+				switch (argumentType) {
+				case DataExprType dataExprType -> argumentTypes.add(dataExprType);
+				case MutableType ignoredMutableType -> argumentTypes.add(null);
+				default -> ok = false;
+				}
+			}
+			if (ok) {
+				var optionalSignature = interpreter.getOverloadedSignature(name,
+						Collections.unmodifiableList(argumentTypes));
+				if (optionalSignature.isPresent()) {
+					signature = optionalSignature.get();
+					parameterTypes = signature.parameterTypes();
+				} else {
+					ok = false;
+					var argumentsString = argumentTypes.stream()
+							.map(argument -> argument == null ? "unknown" : '\'' + argument.toString() + '\'')
+							.collect(Collectors.joining(", "));
+					var message = "No matching overload of function '%s' was found with argument%s %s."
+							.formatted(name, size == 1 ? "" : "s", argumentsString);
+					error(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, ProblemValidator.TYPE_ERROR);
+				}
+			}
+		}
+		if (ok) {
+			for (int i = 0; i < size; i++) {
+				var parameterType = parameterTypes.get(i);
+				var argument = arguments.get(i);
+				if (!expectType(argument, parameterType)) {
+					// Avoid short-circuiting to let us type check all arguments.
+					ok = false;
+				}
 			}
 		}
 		return ok ? signature.resultType() : ExprType.INVALID;
@@ -442,13 +473,13 @@ public class TypedModule {
 			if (value != null) {
 				var simpleName = aggregatorName.qualifiedName().getLastSegment();
 				error("Aggregator '%s' must not have any value expression.".formatted(simpleName), expr,
-						ProblemPackage.Literals.AGGREGATION_EXPR__VALUE, 0,	ProblemValidator.TYPE_ERROR);
+						ProblemPackage.Literals.AGGREGATION_EXPR__VALUE, 0, ProblemValidator.TYPE_ERROR);
 			}
 			return specialAggregatorResult;
 		}
 		if (value == null) {
 			error("Missing value for aggregation expression.", expr,
-					ProblemPackage.Literals.AGGREGATION_EXPR__AGGREGATOR, 0,	ProblemValidator.TYPE_ERROR);
+					ProblemPackage.Literals.AGGREGATION_EXPR__AGGREGATOR, 0, ProblemValidator.TYPE_ERROR);
 			return ExprType.INVALID;
 		}
 		var actualType = getExpressionType(value);

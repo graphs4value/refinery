@@ -5,9 +5,12 @@
  */
 package tools.refinery.language.expressions;
 
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.PrimitiveName;
+import tools.refinery.language.typesystem.Signature;
 import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.AnyAbstractDomain;
@@ -33,12 +36,21 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 			BuiltInTerms.MEET_AGGREGATOR,
 			BuiltInTerms.JOIN_AGGREGATOR
 	);
+	private static final Set<PrimitiveName> SPECIAL_OVERLOADED_FUNCTIONS = Set.of(
+			BuiltInTerms.MIN,
+			BuiltInTerms.MAX,
+			BuiltInTerms.IS_ERROR,
+			BuiltInTerms.IS_CONCRETE,
+			BuiltInTerms.LOWER_BOUND,
+			BuiltInTerms.UPPER_BOUND
+	);
 
 	private final Map<DataExprType, UnaryValue<?, ?>> negations = new HashMap<>();
 	private final Map<UnaryKey, UnaryValue<?, ?>> unaryOperators = new HashMap<>();
 	private final Map<BinaryKey, BinaryValue<?, ?, ?>> binaryOperators = new HashMap<>();
 	private final Set<CastKey> casts = new HashSet<>();
 	private final Map<AggregatorKey, AggregatorValue> aggregators = new HashMap<>();
+	private final Map<PrimitiveName, List<OverloadedSignature>> overloadMap = new HashMap<>();
 	private final Map<DataExprType, AnyAbstractDomain> domains = new HashMap<>();
 	private final Map<DataExprType, Serializer<?, ?>> serializers = new HashMap<>();
 
@@ -107,6 +119,29 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 		}
 		addAggregatorInternal(BuiltInTerms.MEET_AGGREGATOR, type, type, PartialAggregator.meet(domain));
 		addAggregatorInternal(BuiltInTerms.JOIN_AGGREGATOR, type, type, PartialAggregator.join(domain));
+		var checkSignature = new Signature(List.of(type), BuiltInTerms.BOOLEAN_TYPE);
+		addOverloadInternal(BuiltInTerms.IS_ERROR, checkSignature, args -> TruthValueTerms.asTruthValue(
+				AbstractDomainTerms.isError(domain, args.getFirst().asType(abstractType))));
+		addOverloadInternal(BuiltInTerms.IS_CONCRETE, checkSignature, args -> TruthValueTerms.asTruthValue(
+				AbstractDomainTerms.isConcrete(domain, args.getFirst().asType(abstractType))));
+		if (domain instanceof ComparableAbstractDomain<?, ?> comparableAbstractDomain) {
+			addImplementedComparableOperators(type, comparableAbstractDomain);
+		}
+	}
+
+	private <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> void addImplementedComparableOperators(
+			DataExprType type, ComparableAbstractDomain<A, C> domain) {
+		var abstractType = domain.abstractType();
+		var binarySignature = new Signature(List.of(type, type), type);
+		addOverloadInternal(BuiltInTerms.MIN, binarySignature, args -> AbstractDomainTerms.min(
+				domain, args.get(1).asType(abstractType), args.get(2).asType(abstractType)));
+		addOverloadInternal(BuiltInTerms.MAX, binarySignature, args -> AbstractDomainTerms.max(
+				domain, args.get(1).asType(abstractType), args.get(2).asType(abstractType)));
+		var unarySignature = new Signature(List.of(type), type);
+		addOverloadInternal(BuiltInTerms.LOWER_BOUND, unarySignature, args -> AbstractDomainTerms.lowerBound(
+				domain, args.getFirst().asType(abstractType)));
+		addOverloadInternal(BuiltInTerms.UPPER_BOUND, unarySignature, args -> AbstractDomainTerms.upperBound(
+				domain, args.getFirst().asType(abstractType)));
 	}
 
 	protected <R, T> void addNegation(DataExprType type, DataExprType result, Function<Term<R>, Term<T>> termFactory) {
@@ -142,6 +177,20 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	private void addAggregatorInternal(AggregatorName aggregator, DataExprType type, DataExprType result,
 									   AnyPartialAggregator partialAggregator) {
 		aggregators.put(new AggregatorKey(aggregator, type), new AggregatorValue(result, partialAggregator));
+	}
+
+	protected void addOverload(PrimitiveName name, Signature signature,
+							   Function<List<AnyTerm>, AnyTerm> termFactory) {
+		if (SPECIAL_OVERLOADED_FUNCTIONS.contains(name)) {
+			throw new IllegalArgumentException("The primitive function '%s' cannot be overridden.".formatted(name));
+		}
+		addOverloadInternal(name, signature, termFactory);
+	}
+
+	protected void addOverloadInternal(PrimitiveName name, Signature signature,
+									   Function<List<AnyTerm>, AnyTerm> termFactory) {
+		overloadMap.computeIfAbsent(name, ignored -> new ArrayList<>())
+				.add(new OverloadedSignature(signature, termFactory));
 	}
 
 	@Override
@@ -317,6 +366,31 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	}
 
 	@Override
+	public Optional<Signature> getOverloadedSignature(PrimitiveName primitive,
+													  List<@Nullable DataExprType> argumentTypes) {
+		return findOverload(primitive, argumentTypes).map(OverloadedSignature::signature);
+	}
+
+	private Optional<OverloadedSignature> findOverload(PrimitiveName primitiveName, List<DataExprType> argumentTypes) {
+		var overloads = overloadMap.get(primitiveName);
+		if (overloads == null) {
+			return Optional.empty();
+		}
+		for (var overload : overloads) {
+			if (overload.matches(argumentTypes)) {
+				return Optional.of(overload);
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createOverloadedFunctionCall(PrimitiveName primitive, List<DataExprType> argumentTypes,
+														  List<AnyTerm> arguments) {
+		return findOverload(primitive, argumentTypes).map(overload -> overload.createTerm(arguments));
+	}
+
+	@Override
 	public Optional<AnyTerm> createUnknown(DataExprType type) {
 		var abstractDomain = domains.get(type);
 		return abstractDomain == null ? Optional.empty() : Optional.of(
@@ -392,6 +466,28 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	}
 
 	private record AggregatorValue(DataExprType resultType, AnyPartialAggregator aggregator) {
+	}
+
+	private record OverloadedSignature(Signature signature, Function<List<AnyTerm>, AnyTerm> termFactory) {
+		public boolean matches(List<@Nullable DataExprType> argumentTypes) {
+			var parameterTypes = signature.parameterTypes();
+			int arity = parameterTypes.size();
+			if (argumentTypes.size() != arity) {
+				return false;
+			}
+			for (int i = 0; i < arity; i++) {
+				var parameterType = parameterTypes.get(i);
+				var argumentType = argumentTypes.get(i);
+				if (argumentType != null && !argumentType.equals(parameterType)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		public AnyTerm createTerm(List<AnyTerm> arguments) {
+			return termFactory.apply(arguments);
+		}
 	}
 
 	@FunctionalInterface

@@ -9,23 +9,23 @@ import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.Term;
 
-public class IsErrorTerm<A extends AbstractValue<A, C>, C> extends AbstractDomainUnaryTerm<Boolean, A, C> {
-	protected IsErrorTerm(AbstractDomain<A, C> abstractDomain, Term<A> body) {
+public class IsConcreteTerm<A extends AbstractValue<A, C>, C> extends AbstractDomainUnaryTerm<Boolean, A, C> {
+	protected IsConcreteTerm(AbstractDomain<A, C> abstractDomain, Term<A> body) {
 		super(Boolean.class, abstractDomain, body);
 	}
 
 	@Override
 	protected Boolean doEvaluate(A bodyValue) {
-		return bodyValue.isError();
+		return bodyValue.isConcrete();
 	}
 
 	@Override
 	protected Term<Boolean> constructWithBody(Term<A> newBody) {
-		return new IsErrorTerm<>(getAbstractDomain(), newBody);
+		return new IsConcreteTerm<>(getAbstractDomain(), newBody);
 	}
 
 	@Override
 	public String toString() {
-		return "isError(%s)".formatted(super.toString());
+		return "isConcrete(%s)".formatted(super.toString());
 	}
 }

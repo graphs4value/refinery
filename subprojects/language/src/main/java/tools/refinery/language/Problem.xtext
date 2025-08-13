@@ -33,10 +33,14 @@ AnnotatedStatement returns Statement:
 		("{" (literals+=EnumLiteral ("," literals+=EnumLiteral)* ("," | ";")?)? "}" | ".")
 	|
 		{DatatypeDeclaration.annotations=current}
-		"extern" "datatype" name=Identifier "."
+		"#" "datatype" name=Identifier "."
 	|
 		{AggregatorDeclaration.annotations=current}
-		"extern" "aggregator" name=Identifier "."
+		"#" "aggregator" name=Identifier "."
+	|
+		{OverloadedDeclaration.annotations=current}
+		"#" "primitive" shadow?="shadow"? name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")" "."
 	|
 		{PredicateDefinition.annotations=current}
 		(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
@@ -329,7 +333,8 @@ Identifier:
 
 NonContainmentIdentifier:
 	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
-	"datatype" | "aggregator" | "decision" | "propagation" | "concretization" |
+	"datatype" | "aggregator" | "primitive" |
+	"decision" | "propagation" | "concretization" |
 	"shadow";
 
 Real returns ecore::EDouble:

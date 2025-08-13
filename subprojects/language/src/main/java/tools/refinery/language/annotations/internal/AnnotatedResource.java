@@ -61,7 +61,14 @@ class AnnotatedResource {
 		if (annotation == null) {
 			return null;
 		}
-		return typingMap.computeIfAbsent(annotation, this::computeTypedAnnotation);
+		// We don't use {@code computeIfAbsent} here to avoid {@code ConcurrentModificationException} if this method
+		// is called in a reentrant way.
+		var result = typingMap.get(annotation);
+		if (result == null) {
+			result = computeTypedAnnotation(annotation);
+			typingMap.put(annotation, result);
+		}
+		return result;
 	}
 
 	@Nullable

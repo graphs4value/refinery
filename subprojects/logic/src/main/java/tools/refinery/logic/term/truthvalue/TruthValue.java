@@ -192,4 +192,14 @@ public enum TruthValue implements ComparableAbstractValue<TruthValue, Boolean>, 
 	public TruthValue max(TruthValue other) {
 		return or(other);
 	}
+
+	@Override
+	public TruthValue abstractLowerBound() {
+		return TruthValue.of(must());
+	}
+
+	@Override
+	public TruthValue abstractUpperBound() {
+		return TruthValue.of(may());
+	}
 }

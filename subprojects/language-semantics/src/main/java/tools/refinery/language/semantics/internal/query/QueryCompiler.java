@@ -15,6 +15,7 @@ import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.ExprType;
 import tools.refinery.language.typesystem.FixedType;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.utils.ProblemUtil;
@@ -169,74 +170,77 @@ public class QueryCompiler {
 	private void toLiterals(
 			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
-		var extractedOuter = ExtractedModalExpr.of(expr);
-		var outerModality = extractedOuter.modality();
-		switch (extractedOuter.body()) {
-		case LogicConstant logicConstant -> {
-			switch (logicConstant.getLogicValue()) {
-			case TRUE -> literals.add(BooleanLiteral.TRUE);
-			case FALSE -> literals.add(BooleanLiteral.FALSE);
-			default -> throw new TracedException(logicConstant, "Unsupported literal");
-			}
-			return;
-		}
-		case Atom atom -> {
-			var constraint = getConstraint(atom);
-			if (constraint != null) {
-				var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
-				literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
-						argumentList.arguments()));
+		var exprType = problemTypeAnalyzer.getExpressionType(expr);
+		if (ExprType.LITERAL.equals(exprType)) {
+			var extractedOuter = ExtractedModalExpr.of(expr);
+			var outerModality = extractedOuter.modality();
+			switch (extractedOuter.body()) {
+			case LogicConstant logicConstant -> {
+				switch (logicConstant.getLogicValue()) {
+				case TRUE -> literals.add(BooleanLiteral.TRUE);
+				case FALSE -> literals.add(BooleanLiteral.FALSE);
+				default -> throw new TracedException(logicConstant, "Unsupported literal");
+				}
 				return;
 			}
-		}
-		case NegationExpr negationExpr -> {
-			var body = negationExpr.getBody();
-			var extractedInner = ExtractedModalExpr.of(body);
-			if (extractedInner.body() instanceof Atom atom) {
-				var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-				var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
-				var innerModality = extractedInner.modality().merge(outerModality.negate());
+			case Atom atom -> {
 				var constraint = getConstraint(atom);
 				if (constraint != null) {
-					literals.add(createNegationLiteral(innerModality, constraint, argumentList));
+					var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
+					literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
+							argumentList.arguments()));
 					return;
 				}
 			}
-		}
-		case ComparisonExpr comparisonExpr -> {
-			FixedType rightType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getRight());
-			FixedType leftType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getLeft());
-			if (!(rightType instanceof DataExprType) && !(leftType instanceof DataExprType)) {
-				var argumentList = toArgumentList(comparisonExpr,
-						List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
-				boolean positive = switch (comparisonExpr.getOp()) {
-					case EQ -> true;
-					case NOT_EQ -> false;
-					default -> throw new TracedException(
-							comparisonExpr, "Unsupported operator");
-				};
-				literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
+			case NegationExpr negationExpr -> {
+				var body = negationExpr.getBody();
+				var extractedInner = ExtractedModalExpr.of(body);
+				if (extractedInner.body() instanceof Atom atom) {
+					var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
+					var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
+					var innerModality = extractedInner.modality().merge(outerModality.negate());
+					var constraint = getConstraint(atom);
+					if (constraint != null) {
+						literals.add(createNegationLiteral(innerModality, constraint, argumentList));
+						return;
+					}
+				}
+			}
+			case ComparisonExpr comparisonExpr -> {
+				FixedType rightType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getRight());
+				FixedType leftType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getLeft());
+				if (!(rightType instanceof DataExprType) && !(leftType instanceof DataExprType)) {
+					var argumentList = toArgumentList(comparisonExpr,
+							List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
+					boolean positive = switch (comparisonExpr.getOp()) {
+						case EQ -> true;
+						case NOT_EQ -> false;
+						default -> throw new TracedException(
+								comparisonExpr, "Unsupported operator");
+					};
+					literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
+					return;
+				}
+			}
+			case AssignmentExpr assignmentExpr -> {
+				if (!(assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) ||
+						!(variableOrNodeExpr.getVariableOrNode() instanceof
+								tools.refinery.language.model.problem.Variable problemVariable)) {
+					throw new TracedException(assignmentExpr, "Left side of an assignment must be variable.");
+				}
+				if (!(localScope.get(problemVariable) instanceof DataVariable<?> variable)) {
+					throw new TracedException(assignmentExpr, "Left side of an assignment must be a data variable.");
+				}
+				var term = interpretTerm(assignmentExpr.getRight(), localScope, literals);
+				// Well-typed assignments always match the type of the variable and the term.
+				@SuppressWarnings({"rawtypes", "unchecked"})
+				var literal = new AssignLiteral(variable, (Term) term);
+				literals.add(literal);
 				return;
 			}
-		}
-		case AssignmentExpr assignmentExpr -> {
-			if (!(assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) ||
-					!(variableOrNodeExpr.getVariableOrNode() instanceof
-							tools.refinery.language.model.problem.Variable problemVariable)) {
-				throw new TracedException(assignmentExpr, "Left side of an assignment must be variable.");
+			default -> {
 			}
-			if (!(localScope.get(problemVariable) instanceof DataVariable<?> variable)) {
-				throw new TracedException(assignmentExpr, "Left side of an assignment must be a data variable.");
 			}
-			var term = interpretTerm(assignmentExpr.getRight(), localScope, literals);
-			// Well-typed assignments always match the type of the variable and the term.
-			@SuppressWarnings({"rawtypes", "unchecked"})
-			var literal = new AssignLiteral(variable, (Term) term);
-			literals.add(literal);
-			return;
-		}
-		default -> {
-		}
 		}
 		// Well-typed top-level terms are always Booleans.
 		@SuppressWarnings("unchecked")

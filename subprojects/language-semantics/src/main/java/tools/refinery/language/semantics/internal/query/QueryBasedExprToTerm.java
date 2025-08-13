@@ -73,6 +73,10 @@ class QueryBasedExprToTerm extends ExprToTerm {
 	}
 
 	private Optional<AnyTerm> createPartialFunctionCall(Atom atom) {
+		var relation = atom.getRelation();
+		if (relation instanceof OverloadedDeclaration) {
+			return createOverloadedFunctionCall(atom);
+		}
 		return createPartialFunctionCall(atom, ConcretenessSpecification.UNSPECIFIED);
 	}
 

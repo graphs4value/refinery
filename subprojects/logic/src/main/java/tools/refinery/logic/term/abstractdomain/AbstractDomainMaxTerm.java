@@ -11,7 +11,7 @@ import tools.refinery.logic.term.Term;
 
 public class AbstractDomainMaxTerm<A extends ComparableAbstractValue<A, C>, C extends Comparable<C>>
 		extends AbstractDomainBinaryTerm<A, A, C> {
-	public AbstractDomainMaxTerm(ComparableAbstractDomain<A, C> abstractDomain, Term<A> left, Term<A> right) {
+	protected AbstractDomainMaxTerm(ComparableAbstractDomain<A, C> abstractDomain, Term<A> left, Term<A> right) {
 		super(abstractDomain.abstractType(), abstractDomain, left, right);
 	}
 

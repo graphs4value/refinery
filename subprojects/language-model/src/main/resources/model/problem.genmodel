@@ -278,5 +278,8 @@
     <genClasses ecoreClass="problem.ecore#//TopLevelAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//TopLevelAnnotation/annotation"/>
     </genClasses>
+    <genClasses ecoreClass="problem.ecore#//OverloadedDeclaration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//OverloadedDeclaration/shadow"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

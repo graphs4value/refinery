@@ -55,6 +55,9 @@ public class DerivedVariableComputer {
 		case FunctionDefinition functionDefinition ->
 				installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
 		case RuleDefinition ruleDefinition -> installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
+		case OverloadedDeclaration ignoredOverloadedDeclaration -> {
+			// No derived state to install.
+		}
 		case AnnotationDeclaration ignoredAnnotationDeclaration -> {
 			// No derived state to install.
 		}

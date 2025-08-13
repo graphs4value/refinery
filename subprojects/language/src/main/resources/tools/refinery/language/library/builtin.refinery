@@ -73,24 +73,36 @@ pred contains(container container, contained contained).
  */
 error invalidContainer(contained contained).
 
-extern datatype boolean.
+#datatype boolean.
 
-extern datatype int.
+#datatype int.
 
-extern datatype real.
+#datatype real.
 
-extern datatype string.
+#datatype string.
 
-extern aggregator reify.
+#aggregator reify.
 
-extern aggregator meet.
+#aggregator meet.
 
-extern aggregator join.
+#aggregator join.
 
-extern aggregator count.
+#aggregator count.
 
-extern aggregator min.
+#aggregator min.
 
-extern aggregator max.
+#aggregator max.
 
-extern aggregator sum.
+#aggregator sum.
+
+#primitive min(left, right).
+
+#primitive max(left, right).
+
+#primitive shadow isError(value).
+
+#primitive shadow isConcrete(value).
+
+#primitive shadow lowerBound(value).
+
+#primitive shadow upperBound(value).

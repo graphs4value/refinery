@@ -226,6 +226,16 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 		return of(lowerBound().max(other.lowerBound()), upperBound().max(other.upperBound()));
 	}
 
+	@Override
+	public IntInterval abstractLowerBound() {
+		return IntInterval.of(lowerBound, lowerBound);
+	}
+
+	@Override
+	public IntInterval abstractUpperBound() {
+		return IntInterval.of(upperBound, upperBound);
+	}
+
 	private Positivity positivity() {
 		int lowerCompare = lowerBound.signum();
 		int upperCompare = upperBound.signum();

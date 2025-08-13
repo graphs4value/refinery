@@ -5,9 +5,12 @@
  */
 package tools.refinery.language.expressions;
 
+import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.typesystem.AggregatorName;
 import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.PrimitiveName;
+import tools.refinery.language.typesystem.Signature;
 import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.term.AnyPartialAggregator;
 import tools.refinery.logic.term.AnyTerm;
@@ -17,6 +20,8 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 import java.util.List;
 import java.util.Optional;
 
+// This class should not have value semantics {@code hashCode} and {@code equals} methods.
+@SuppressWarnings("ClassCanBeRecord")
 public class CompositeTermInterpreter implements TermInterpreter {
 	private final List<TermInterpreter> interpreters;
 
@@ -174,6 +179,29 @@ public class CompositeTermInterpreter implements TermInterpreter {
 	public Optional<AnyPartialAggregator> getAggregator(AggregatorName aggregator, DataExprType type) {
 		for (var interpreter : interpreters) {
 			var result = interpreter.getAggregator(aggregator, type);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<Signature> getOverloadedSignature(PrimitiveName primitive, List<@Nullable DataExprType> argumentTypes) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.getOverloadedSignature(primitive, argumentTypes);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<AnyTerm> createOverloadedFunctionCall(PrimitiveName primitive, List<DataExprType> argumentTypes,
+														  List<AnyTerm> arguments) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createOverloadedFunctionCall(primitive, argumentTypes, arguments);
 			if (result.isPresent()) {
 				return result;
 			}
