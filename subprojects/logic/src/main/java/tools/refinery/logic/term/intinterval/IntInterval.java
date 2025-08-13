@@ -13,7 +13,7 @@ import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 		implements ComparableAbstractValue<IntInterval, Integer>, Comparable<IntInterval>, Plus<IntInterval>,
-		Minus<IntInterval>, Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval> {
+		Minus<IntInterval>, Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval>, Div<IntInterval> {
 	public static final IntInterval ZERO = new IntInterval(Bound.Finite.ZERO, Bound.Finite.ZERO);
 	public static final IntInterval ONE = new IntInterval(Bound.Finite.ONE, Bound.Finite.ONE);
 	public static final IntInterval UNKNOWN = new IntInterval(Bound.Infinite.NEGATIVE_INFINITY,
@@ -156,8 +156,6 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 	public IntInterval mul(IntInterval other) {
 		// Kaucher, E. (1980). Interval Analysis in the Extended Interval Space IR. In: Fundamentals of Numerical
 		// Computation (Computer-Oriented Numerical Analysis). Springer. https://doi.org/10.1007/978-3-7091-8577-3_3
-		var lowerBound = lowerBound();
-		var upperBound = upperBound();
 		var otherLowerBound = other.lowerBound();
 		var otherUpperBound = other.upperBound();
 		return switch (positivity()) {
@@ -179,7 +177,7 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 			case NEGATIVE -> switch (other.positivity()) {
 				case POSITIVE -> of(lowerBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
 				case ZERO_PROPER -> of(lowerBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
-				case NEGATIVE -> of(upperBound.mul(upperBound), lowerBound.mul(lowerBound));
+				case NEGATIVE -> of(upperBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
 				case ZERO_IMPROPER -> of(upperBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
 			};
 			case ZERO_IMPROPER -> switch (other.positivity()) {
@@ -191,6 +189,45 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 						lowerBound.mul(otherUpperBound).min(upperBound.mul(otherLowerBound))
 				);
 			};
+		};
+	}
+
+	@Override
+	public IntInterval div(IntInterval other) {
+		var otherLowerBound = other.lowerBound();
+		var otherUpperBound = other.upperBound();
+		IntInterval negativeResult = null;
+		if (otherLowerBound.signum() < 0) {
+			var negativeDivisor = IntInterval.of(otherLowerBound, otherUpperBound.min(Bound.Finite.NEGATIVE_ONE));
+			negativeResult = divWithNegative(negativeDivisor);
+		}
+		if (otherUpperBound.signum() > 0) {
+			var positiveDivisor = IntInterval.of(otherLowerBound.max(Bound.Finite.ONE), otherUpperBound);
+            var positiveResult = divWithPositive(positiveDivisor);
+			return negativeResult == null ? positiveResult : positiveResult.join(negativeResult);
+		}
+		return negativeResult != null ? negativeResult : IntInterval.ERROR;
+	}
+
+	private IntInterval divWithNegative(IntInterval other) {
+		var otherLowerBound = other.lowerBound();
+		var otherUpperBound = other.upperBound();
+		return switch (positivity()) {
+			case POSITIVE -> of(upperBound.div(otherUpperBound), lowerBound.div(otherLowerBound));
+			case ZERO_PROPER -> of(upperBound.div(otherUpperBound), lowerBound.div(otherUpperBound));
+			case NEGATIVE -> of(upperBound.div(otherLowerBound), lowerBound.div(otherUpperBound));
+			case ZERO_IMPROPER -> of(upperBound.div(otherLowerBound), lowerBound.div(otherLowerBound));
+		};
+	}
+
+	private IntInterval divWithPositive(IntInterval other) {
+		var otherLowerBound = other.lowerBound();
+		var otherUpperBound = other.upperBound();
+		return switch (positivity()) {
+			case POSITIVE -> of(lowerBound.div(otherUpperBound), upperBound.div(otherLowerBound));
+			case ZERO_PROPER -> of(lowerBound.div(otherLowerBound), upperBound.div(otherLowerBound));
+			case NEGATIVE -> of(lowerBound.div(otherLowerBound), upperBound.div(otherUpperBound));
+			case ZERO_IMPROPER -> of(lowerBound.div(otherUpperBound), upperBound.div(otherUpperBound));
 		};
 	}
 

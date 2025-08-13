@@ -32,6 +32,8 @@ public sealed interface Bound {
 
 	Bound mul(Bound other);
 
+	Bound div(Bound other);
+
 	int signum();
 
 	int compareBound(Bound other);
@@ -63,6 +65,14 @@ public sealed interface Bound {
 				var signum = other.signum();
 				if (signum == 0) {
 					return Finite.ZERO;
+				}
+				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+			}
+
+			public Bound div(Bound other) {
+				var signum = other.signum();
+				if (signum == 0) {
+					throw new ArithmeticException();
 				}
 				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
 			}
@@ -113,6 +123,14 @@ public sealed interface Bound {
 				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
 			}
 
+			public Bound div(Bound other) {
+				var signum = other.signum();
+				if (signum == 0) {
+					throw new ArithmeticException();
+				}
+				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
+			}
+
 			@Override
 			public int signum() {
 				return -1;
@@ -138,6 +156,7 @@ public sealed interface Bound {
 	record Finite(int value) implements Bound {
 		public static final Finite ZERO = new Finite(0);
 		public static final Finite ONE = new Finite(1);
+		public static final Finite NEGATIVE_ONE = new Finite(-1);
 
 		@Override
 		public boolean lessThanOrEquals(Bound other) {
@@ -205,6 +224,14 @@ public sealed interface Bound {
 					}
 					yield new Finite(result);
 				}
+			};
+		}
+
+		@Override
+		public Bound div(Bound other) {
+			return switch (other) {
+				case Infinite ignored -> ZERO;
+				case Finite(int otherValue) -> new Finite(value / otherValue);
 			};
 		}
 
