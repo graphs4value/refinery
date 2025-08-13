@@ -46,10 +46,13 @@ statement {
     (EnumBody { "{" sep<",", EnumLiteral> "}" } | ".")
   } |
   DatatypeDeclaration {
-    kw<"extern"> ckw<"datatype"> DatatypeName "."
+    AnnotationKeyword ckw<"datatype"> DatatypeName "."
   } |
   AggregatorDeclaration {
-    kw<"extern"> ckw<"aggregator"> AggregatorName "."
+    AnnotationKeyword ckw<"aggregator"> AggregatorName "."
+  } |
+  OverloadedDeclaration {
+    AnnotationKeyword ckw<"primitive"> RelationName ParameterList<Parameter> "."
   } |
   PredicateDefinition {
     ((kw<"error"> | kw<"partial"> | ckw<"shadow">)* kw<"pred"> | kw<"error">)
