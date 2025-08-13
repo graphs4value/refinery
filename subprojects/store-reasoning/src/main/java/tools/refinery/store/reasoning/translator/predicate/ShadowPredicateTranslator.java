@@ -28,7 +28,11 @@ public class ShadowPredicateTranslator implements ModelStoreConfiguration {
 		var translator = PartialRelationTranslator.of(relation)
 				.query(query)
 				// Shadow predicates do not have to obey the refinement from the partial to the candidate model.
-				.mergeCandidateWithPartial(false);
+				.mergeCandidateWithPartial(false)
+				// We don't care if a shadow predicate is {@code error}.
+				.objective(null)
+				.exclude(null)
+				.accept(null);
 		if (!hasInterpretation) {
 			translator.interpretation(MissingInterpretation::new);
 		}

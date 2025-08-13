@@ -32,7 +32,11 @@ public class ShadowFunctionTranslator<A extends AbstractValue<A, C>, C> implemen
 	public void apply(ModelStoreBuilder storeBuilder) {
 		var translator = PartialFunctionTranslator.of(partialFunction)
 				.domain(domainRelation)
-				.query(query);
+				.query(query)
+				// We don't care if a shadow function is {@code error}.
+				.objective(null)
+				.exclude(null)
+				.accept(null);
 		if (!hasInterpretation) {
 			translator.interpretation(MissingInterpretation::new);
 		}
