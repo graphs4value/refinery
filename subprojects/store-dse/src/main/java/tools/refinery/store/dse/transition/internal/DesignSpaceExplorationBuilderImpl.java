@@ -56,7 +56,7 @@ public class DesignSpaceExplorationBuilderImpl
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		var queryEngine = storeBuilder.getAdapter(ModelQueryBuilder.class);
-		decisionRules.forEach(x -> queryEngine.query(x.rule().getPrecondition()));
+		decisionRules.forEach(x -> queryEngine.queries(x.rule().getQueries()));
 		accepts.forEach(x -> x.configure(storeBuilder));
 		excludes.forEach(x -> x.configure(storeBuilder));
 		objectives.forEach(x -> x.configure(storeBuilder));
