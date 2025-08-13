@@ -4,11 +4,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import annotationSVG from '@material-icons/svg/svg/alternate_email/baseline.svg?raw';
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
+import namespaceSVG from '@material-icons/svg/svg/data_object/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
 import functionsSVG from '@material-icons/svg/svg/functions/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
+import gearSVG from '@material-icons/svg/svg/settings/baseline.svg?raw';
 import warningSVG from '@material-icons/svg/svg/warning/baseline.svg?raw';
 import {
   alpha,
@@ -18,6 +21,7 @@ import {
 } from '@mui/material/styles';
 import { range } from 'lodash-es';
 
+import functionSVG from '../graph/dot_filled.svg?raw';
 import attributeSVG from '../graph/dot_outlined.svg?raw';
 import { darkTheme } from '../theme/ThemeProvider';
 import svgURL from '../utils/svgURL';
@@ -25,8 +29,6 @@ import typeHashTextColor from '../utils/typeHashTextColor';
 
 import fieldSVG from './icons/symbol-field.svg?raw';
 import keywordSVG from './icons/symbol-keyword.svg?raw';
-import miscSVG from './icons/symbol-misc.svg?raw';
-import namespaceSVG from './icons/symbol-namespace.svg?raw';
 import structureSVG from './icons/symbol-structure.svg?raw';
 import variableSVG from './icons/symbol-variable.svg?raw';
 
@@ -545,7 +547,11 @@ export default styled('div', {
     },
   };
 
-  function completionIconStyle(name: string, icon: string): CSSObject {
+  function completionIconStyle(
+    name: string,
+    icon: string,
+    extra?: CSSObject,
+  ): CSSObject {
     return {
       [`.cm-completionIcon-${name}::after`]: {
         content: '" "',
@@ -555,6 +561,7 @@ export default styled('div', {
         maskSize: '16px 16px',
         height: 16,
         width: 16,
+        ...(extra ?? {}),
       },
     };
   }
@@ -636,14 +643,16 @@ export default styled('div', {
     '.cm-completionIcon-variable + .cm-completionLabel': {
       color: `${theme.palette.highlight.parameter} !important`,
     },
-    ...completionIconStyle('annotation', miscSVG),
+    ...completionIconStyle('annotation', annotationSVG),
     ...completionIconStyle('datatype', structureSVG),
     ...completionIconStyle('keyword', keywordSVG),
     ...completionIconStyle('module', namespaceSVG),
     ...completionIconStyle('node', fieldSVG),
     ...completionIconStyle('operator', keywordSVG),
     ...completionIconStyle('aggregator', functionsSVG),
+    ...completionIconStyle('function', functionSVG, { opacity: 0.7 }),
     ...completionIconStyle('relation', labelOutlinedSVG),
+    ...completionIconStyle('rule', gearSVG, { opacity: 0.7 }),
     ...completionIconStyle('variable', variableSVG),
     ...completionIconStyle('attribute', attributeSVG),
     '.cm-tooltip.cm-completionInfo': {
@@ -737,6 +746,10 @@ export default styled('div', {
             ? theme.palette.text.secondary
             : '#d0d0d0',
       },
+      '.cm-completionIcon-keyword + .cm-completionLabel, .cm-completionIcon-builtin + .cm-completionLabel':
+        {
+          color: `${darkTheme.palette.primary.main} !important`,
+        },
       '.cm-completionIcon-containment + .cm-completionLabel': {
         fontWeight: darkTheme.typography.fontWeightEditorBold,
       },

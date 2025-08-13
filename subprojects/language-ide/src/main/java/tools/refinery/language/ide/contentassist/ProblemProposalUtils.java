@@ -338,6 +338,9 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.OVERLOADED_DECLARATION.isSuperTypeOf(eClass)) {
 			return "function";
 		}
+		if (ProblemPackage.Literals.RULE_DEFINITION.isSuperTypeOf(eClass)) {
+			return "rule";
+		}
 		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass)) {
 			return "relation";
 		}
