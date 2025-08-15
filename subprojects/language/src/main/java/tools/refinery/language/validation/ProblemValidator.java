@@ -25,6 +25,7 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.typesystem.FixedType;
+import tools.refinery.language.typesystem.InvalidType;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
@@ -443,8 +444,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		var resultType = signature.resultType();
 		if (!FixedType.LITERAL.equals(resultType)) {
-			var message = "Superset '%s' of reference '%s' must be a predicate, got %s function instead."
-					.formatted(superSet.getName(), referenceDeclaration.getName(), resultType);
+			var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+			var message = "Superset '%s' of reference '%s' must be a predicate, got%s function instead."
+					.formatted(superSet.getName(), referenceDeclaration.getName(), resultTypeString);
 			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
 					i, INVALID_SUPERSET_ISSUE);
 		}
@@ -494,7 +496,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 				var message = "Attribute '%s' is not allowed in parameter types.".formatted(referenceType.getName());
 				acceptError(message, referenceDeclaration,
 						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, TYPE_ERROR);
-			} else if (referenceType instanceof FunctionDefinition) {
+			} else if (referenceType instanceof FunctionDefinition || referenceType instanceof OverloadedDeclaration) {
 				var message = "Function '%s' is not allowed in parameter types.".formatted(referenceType.getName());
 				acceptError(message, referenceDeclaration,
 						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, TYPE_ERROR);
@@ -592,8 +594,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		var resultType = signature.resultType();
 		if (!FixedType.LITERAL.equals(resultType)) {
-			var message = "Superset '%s' of predicate '%s' must be a predicate, got %s function instead."
-					.formatted(superSet.getName(), predicateDefinition.getName(), resultType);
+			var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+			var message = "Superset '%s' of predicate '%s' must be a predicate, got%s function instead."
+					.formatted(superSet.getName(), predicateDefinition.getName(), resultTypeString);
 			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
 					i, INVALID_SUPERSET_ISSUE);
 		}
@@ -615,7 +618,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 				var message = "Attribute '%s' is not allowed in parameter types.".formatted(type.getName());
 				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
 						TYPE_ERROR);
-			} else if (type instanceof FunctionDefinition) {
+			} else if (type instanceof FunctionDefinition || type instanceof OverloadedDeclaration) {
 				var message = "Function '%s' is not allowed in parameter types.".formatted(type.getName());
 				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
 						TYPE_ERROR);
@@ -690,8 +693,9 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (atom.isTransitiveClosure()) {
 			var resultType = signatureProvider.getSignature(target).resultType();
 			if (!FixedType.LITERAL.equals(resultType)) {
-				var message = "Transitive closure needs a predicate, got %s function instead."
-						.formatted(resultType);
+				var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+				var message = "Transitive closure needs a predicate, got%s function instead."
+						.formatted(resultTypeString);
 				acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
 						INVALID_TRANSITIVE_CLOSURE_ISSUE);
 			} else if (argumentCount != 2) {
@@ -925,6 +929,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 					UNSUPPORTED_ASSERTION_ISSUE);
 			return;
 		}
+		if (relation instanceof OverloadedDeclaration) {
+			var message = "Assertions for primitive functions are not supported.";
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
 		if (ProblemUtil.isShadow(relation)) {
 			var message = "Shadow relation '%s' may not have any assertions.".formatted(relation.getName());
 			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
@@ -949,7 +959,23 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (type == null || type.eIsProxy()) {
 			return;
 		}
+		if (type instanceof DatatypeDeclaration) {
+			var message = "Type scopes for data types are not supported.";
+			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
 		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+		var signature = signatureProvider.getSignature(type);
+		var resultType = signature.resultType();
+		if (!FixedType.LITERAL.equals(resultType)) {
+			var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+			var message = "Type scopes must refer to a predicate, got%s function instead."
+					.formatted(resultTypeString);
+			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
 		if (ProblemUtil.isShadow(type)) {
 			var message = "Shadow relations '%s' is not allowed in type scopes.".formatted(type.getName());
 			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
