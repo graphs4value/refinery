@@ -6,7 +6,7 @@
 
 /* eslint-disable @typescript-eslint/no-redeclare -- Declare types with their companion objects */
 
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const XtextWebRequest = z.object({
   id: z.string().min(1),

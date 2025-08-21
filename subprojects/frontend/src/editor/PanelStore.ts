@@ -70,7 +70,7 @@ export default class PanelStore {
     if (this.state === newState) {
       return false;
     }
-    log.debug('Show %s panel: %s', this.panelClass, newState);
+    log.debug('Show %s panel: %s', this.panelClass, String(newState));
     if (newState) {
       this.doOpen();
     } else {

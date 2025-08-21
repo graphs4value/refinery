@@ -10,7 +10,7 @@ import {
   ConcretizationSuccessResult,
   RefineryResult,
 } from '@tools.refinery/client';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const PongResult = z.object({
   pong: z.string().min(1),

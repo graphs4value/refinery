@@ -202,7 +202,7 @@ export default class EditorStore {
   }
 
   setDarkMode(darkMode: boolean): void {
-    log.debug('Update editor dark mode: %s', darkMode);
+    log.debug('Update editor dark mode: %s', String(darkMode));
     this.dispatch({
       effects: [
         StateEffect.appendConfig.of([EditorView.darkTheme.of(darkMode)]),
@@ -375,7 +375,7 @@ export default class EditorStore {
   }
 
   undo(): void {
-    log.debug('Undo: %s', this.doStateCommand(undo));
+    log.debug('Undo: %s', String(this.doStateCommand(undo)));
   }
 
   /**
@@ -386,17 +386,17 @@ export default class EditorStore {
   }
 
   redo(): void {
-    log.debug('Redo: %s', this.doStateCommand(redo));
+    log.debug('Redo: %s', String(this.doStateCommand(redo)));
   }
 
   toggleLineNumbers(): void {
     this.showLineNumbers = !this.showLineNumbers;
-    log.debug('Show line numbers: %s', this.showLineNumbers);
+    log.debug('Show line numbers: %s', String(this.showLineNumbers));
   }
 
   toggleColorIdentifiers(): void {
     this.colorIdentifiers = !this.colorIdentifiers;
-    log.debug('Color identifiers: %s', this.colorIdentifiers);
+    log.debug('Color identifiers: %s', String(this.colorIdentifiers));
   }
 
   get hasSelection(): boolean {

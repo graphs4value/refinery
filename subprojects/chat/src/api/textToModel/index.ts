@@ -21,7 +21,9 @@ import { z } from 'zod';
 
 import system from './system.md';
 
-const model = process.env['OPENAI_MODEL'] ?? 'google/gemini-2.5-flash-preview';
+// We deliberately use zod v3 here instead of v4, because this is what OpenAI uses.
+
+const model = process.env['OPENAI_MODEL'] ?? 'google/gemini-2.5-flash';
 
 const ChatResponse = z.object({
   explanation: z.string(),

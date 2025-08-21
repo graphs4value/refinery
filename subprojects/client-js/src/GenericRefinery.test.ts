@@ -6,7 +6,7 @@
 
 import { nanoid } from 'nanoid';
 import { beforeEach, describe, expect, inject, test } from 'vitest';
-import z from 'zod';
+import z from 'zod/v4';
 
 import { GenericRefinery, type RefineryOptions } from './GenericRefinery';
 import * as RefineryError from './RefineryError';

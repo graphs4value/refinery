@@ -5,7 +5,7 @@
  */
 
 import { Visibility } from '@tools.refinery/client';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 /* eslint-disable @typescript-eslint/no-redeclare -- Declare types with their companion objects */
 
@@ -29,7 +29,10 @@ export const DecompressRequest = z.object({
 
 export type DecompressRequest = z.infer<typeof DecompressRequest>;
 
-export const CompressorRequest = z.union([CompressRequest, DecompressRequest]);
+export const CompressorRequest = z.discriminatedUnion('request', [
+  CompressRequest,
+  DecompressRequest,
+]);
 
 export type CompressorRequest = z.infer<typeof CompressorRequest>;
 
@@ -56,7 +59,7 @@ export const ErrorResponse = z.object({
 
 export type ErrorResponse = z.infer<typeof ErrorResponse>;
 
-export const CompressorResponse = z.union([
+export const CompressorResponse = z.discriminatedUnion('response', [
   CompressResponse,
   DecompressResponse,
   ErrorResponse,

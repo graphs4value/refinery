@@ -93,3 +93,20 @@ index c4638cb0e4042844c59c52dfe4749e13999fef6e..28dcfb71ad787c78645c460a29e9c522
          'dataExtractEnd',
          'dataProcessPass1End',
          'dataProcessPass2End',
+diff --git a/src/workerCode.js b/src/workerCode.js
+index be538bb85921dca4da6521740a9d8159d1b39d98..5429379d17ebc957399fd2ab594dea05a4f168fc 100644
+--- a/src/workerCode.js
++++ b/src/workerCode.js
+@@ -9,10 +9,10 @@ export function workerCodeBody(port) {
+     self.document = {}; // Workaround for "ReferenceError: document is not defined" in hpccWasm
+ 
+     port.addEventListener('message', function(event) {
+-        let hpccWasm = self["@hpcc-js/wasm"];
++        let hpccWasm = self["@hpcc-js/wasm/graphviz"];
+         if (hpccWasm == undefined && event.data.vizURL) {
+             importScripts(event.data.vizURL);
+-            hpccWasm = self["@hpcc-js/wasm"];
++            hpccWasm = self["@hpcc-js/wasm/graphviz"];
+             // This is an alternative workaround where wasmFolder() is not needed
+ //                                    document = {currentScript: {src: event.data.vizURL}};
+         }

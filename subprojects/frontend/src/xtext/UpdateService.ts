@@ -196,7 +196,11 @@ export default class UpdateService {
       deltaText: '',
     };
     const { concretize } = this.store;
-    log.trace({ delta }, 'Editor delta with concretize: %s', concretize);
+    log.trace(
+      { delta },
+      'Editor delta with concretize: %s',
+      String(concretize),
+    );
     this.store.analysisStarted();
     const result = await this.webSocketClient.send({
       resource: this.resourceName,

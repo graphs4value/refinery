@@ -76,6 +76,6 @@ logger.info(
   import.meta.env.VITE_PACKAGE_VERSION,
 );
 
-logger.info('Debug mode: %s', import.meta.env.DEV);
+logger.info('Debug mode: %s', String(import.meta.env.DEV));
 
 export default logger;
