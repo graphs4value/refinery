@@ -11,6 +11,9 @@ import tools.refinery.logic.term.ComparableAbstractValue;
 import tools.refinery.logic.term.operators.*;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
+import static tools.refinery.logic.term.intinterval.RoundingMode.FLOOR;
+import static tools.refinery.logic.term.intinterval.RoundingMode.CEIL;
+
 public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperBound)
 		implements ComparableAbstractValue<IntInterval, Integer>, Comparable<IntInterval>, Plus<IntInterval>,
 		Minus<IntInterval>, Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval>, Div<IntInterval> {
@@ -137,19 +140,19 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 
 	@Override
 	public IntInterval minus() {
-		return of(upperBound().minus(), lowerBound().minus());
+		return of(upperBound().minus(FLOOR), lowerBound().minus(CEIL));
 	}
 
 	@Override
 	public IntInterval add(IntInterval other) {
-		return of(lowerBound().add(other.lowerBound(), IntBound.Infinite.POSITIVE_INFINITY),
-				upperBound().add(other.upperBound(), IntBound.Infinite.NEGATIVE_INFINITY));
+		return of(lowerBound().add(other.lowerBound(), FLOOR),
+				upperBound().add(other.upperBound(), CEIL));
 	}
 
 	@Override
 	public IntInterval sub(IntInterval other) {
-		return of(lowerBound().sub(other.upperBound(), IntBound.Infinite.POSITIVE_INFINITY),
-				upperBound().sub(other.lowerBound(), IntBound.Infinite.NEGATIVE_INFINITY));
+		return of(lowerBound().sub(other.upperBound(), FLOOR),
+				upperBound().sub(other.lowerBound(), CEIL));
 	}
 
 	@Override
@@ -160,33 +163,35 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 		var otherUpperBound = other.upperBound();
 		return switch (positivity()) {
 			case POSITIVE -> switch (other.positivity()) {
-				case POSITIVE -> of(lowerBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
-				case ZERO_PROPER -> of(upperBound.mul(otherLowerBound), upperBound.mul(otherUpperBound));
-				case NEGATIVE -> of(upperBound.mul(otherLowerBound), lowerBound.mul(otherUpperBound));
-				case ZERO_IMPROPER -> of(lowerBound.mul(otherLowerBound), lowerBound.mul(otherUpperBound));
+				case POSITIVE -> of(lowerBound.mul(otherLowerBound, FLOOR), upperBound.mul(otherUpperBound, CEIL));
+				case ZERO_PROPER -> of(upperBound.mul(otherLowerBound, FLOOR), upperBound.mul(otherUpperBound, CEIL));
+				case NEGATIVE -> of(upperBound.mul(otherLowerBound, FLOOR), lowerBound.mul(otherUpperBound, CEIL));
+				case ZERO_IMPROPER -> of(lowerBound.mul(otherLowerBound, FLOOR),
+						lowerBound.mul(otherUpperBound, CEIL));
 			};
 			case ZERO_PROPER -> switch (other.positivity()) {
-				case POSITIVE -> of(lowerBound.mul(otherUpperBound), upperBound.mul(otherUpperBound));
+				case POSITIVE -> of(lowerBound.mul(otherUpperBound, FLOOR), upperBound.mul(otherUpperBound, CEIL));
 				case ZERO_PROPER -> of(
-						lowerBound.mul(otherUpperBound).min(upperBound.mul(otherLowerBound)),
-						lowerBound.mul(otherLowerBound).max(upperBound.mul(otherUpperBound))
+						lowerBound.mul(otherUpperBound, FLOOR).min(upperBound.mul(otherLowerBound, FLOOR)),
+						lowerBound.mul(otherLowerBound, CEIL).max(upperBound.mul(otherUpperBound, CEIL))
 				);
-				case NEGATIVE -> of(upperBound.mul(otherLowerBound), lowerBound.mul(otherLowerBound));
+				case NEGATIVE -> of(upperBound.mul(otherLowerBound, FLOOR), lowerBound.mul(otherLowerBound, CEIL));
 				case ZERO_IMPROPER -> IntInterval.ZERO;
 			};
 			case NEGATIVE -> switch (other.positivity()) {
-				case POSITIVE -> of(lowerBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
-				case ZERO_PROPER -> of(lowerBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
-				case NEGATIVE -> of(upperBound.mul(otherUpperBound), lowerBound.mul(otherLowerBound));
-				case ZERO_IMPROPER -> of(upperBound.mul(otherUpperBound), upperBound.mul(otherLowerBound));
+				case POSITIVE -> of(lowerBound.mul(otherUpperBound, FLOOR), upperBound.mul(otherLowerBound, CEIL));
+				case ZERO_PROPER -> of(lowerBound.mul(otherUpperBound, FLOOR), lowerBound.mul(otherLowerBound, CEIL));
+				case NEGATIVE -> of(upperBound.mul(otherUpperBound, FLOOR), lowerBound.mul(otherLowerBound, FLOOR));
+				case ZERO_IMPROPER -> of(upperBound.mul(otherUpperBound, FLOOR),
+						upperBound.mul(otherLowerBound, CEIL));
 			};
 			case ZERO_IMPROPER -> switch (other.positivity()) {
-				case POSITIVE -> of(lowerBound.mul(otherLowerBound), upperBound.mul(otherLowerBound));
+				case POSITIVE -> of(lowerBound.mul(otherLowerBound, FLOOR), upperBound.mul(otherLowerBound, CEIL));
 				case ZERO_PROPER -> IntInterval.ZERO;
-				case NEGATIVE -> of(upperBound.mul(otherUpperBound), lowerBound.mul(otherUpperBound));
+				case NEGATIVE -> of(upperBound.mul(otherUpperBound, FLOOR), lowerBound.mul(otherUpperBound, CEIL));
 				case ZERO_IMPROPER -> of(
-						lowerBound.mul(otherLowerBound).max(upperBound.mul(otherUpperBound)),
-						lowerBound.mul(otherUpperBound).min(upperBound.mul(otherLowerBound))
+						lowerBound.mul(otherLowerBound, FLOOR).max(upperBound.mul(otherUpperBound, FLOOR)),
+						lowerBound.mul(otherUpperBound, CEIL).min(upperBound.mul(otherLowerBound, CEIL))
 				);
 			};
 		};
@@ -203,7 +208,7 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 		}
 		if (otherUpperBound.signum() > 0) {
 			var positiveDivisor = IntInterval.of(otherLowerBound.max(IntBound.Finite.ONE), otherUpperBound);
-            var positiveResult = divWithPositive(positiveDivisor);
+			var positiveResult = divWithPositive(positiveDivisor);
 			return negativeResult == null ? positiveResult : positiveResult.join(negativeResult);
 		}
 		return negativeResult != null ? negativeResult : IntInterval.ERROR;
@@ -213,10 +218,10 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 		var otherLowerBound = other.lowerBound();
 		var otherUpperBound = other.upperBound();
 		return switch (positivity()) {
-			case POSITIVE -> of(upperBound.div(otherUpperBound), lowerBound.div(otherLowerBound));
-			case ZERO_PROPER -> of(upperBound.div(otherUpperBound), lowerBound.div(otherUpperBound));
-			case NEGATIVE -> of(upperBound.div(otherLowerBound), lowerBound.div(otherUpperBound));
-			case ZERO_IMPROPER -> of(upperBound.div(otherLowerBound), lowerBound.div(otherLowerBound));
+			case POSITIVE -> of(upperBound.div(otherUpperBound, FLOOR), lowerBound.div(otherLowerBound, CEIL));
+			case ZERO_PROPER -> of(upperBound.div(otherUpperBound, FLOOR), lowerBound.div(otherUpperBound, CEIL));
+			case NEGATIVE -> of(upperBound.div(otherLowerBound, FLOOR), lowerBound.div(otherUpperBound, CEIL));
+			case ZERO_IMPROPER -> of(upperBound.div(otherLowerBound, FLOOR), lowerBound.div(otherLowerBound, CEIL));
 		};
 	}
 
@@ -224,10 +229,10 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 		var otherLowerBound = other.lowerBound();
 		var otherUpperBound = other.upperBound();
 		return switch (positivity()) {
-			case POSITIVE -> of(lowerBound.div(otherUpperBound), upperBound.div(otherLowerBound));
-			case ZERO_PROPER -> of(lowerBound.div(otherLowerBound), upperBound.div(otherLowerBound));
-			case NEGATIVE -> of(lowerBound.div(otherLowerBound), upperBound.div(otherUpperBound));
-			case ZERO_IMPROPER -> of(lowerBound.div(otherUpperBound), upperBound.div(otherUpperBound));
+			case POSITIVE -> of(lowerBound.div(otherUpperBound, FLOOR), upperBound.div(otherLowerBound, CEIL));
+			case ZERO_PROPER -> of(lowerBound.div(otherLowerBound, FLOOR), upperBound.div(otherLowerBound, CEIL));
+			case NEGATIVE -> of(lowerBound.div(otherLowerBound, FLOOR), upperBound.div(otherUpperBound, CEIL));
+			case ZERO_IMPROPER -> of(lowerBound.div(otherUpperBound, FLOOR), upperBound.div(otherUpperBound, CEIL));
 		};
 	}
 

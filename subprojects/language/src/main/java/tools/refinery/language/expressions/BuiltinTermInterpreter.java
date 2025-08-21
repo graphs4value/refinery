@@ -18,6 +18,7 @@ import tools.refinery.logic.term.string.StringDomain;
 import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.truthvalue.TruthValueDomain;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
 import java.math.BigDecimal;
 
@@ -26,6 +27,7 @@ import static tools.refinery.language.expressions.BuiltInTerms.*;
 public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 	public BuiltinTermInterpreter() {
 		addDomain(BOOLEAN_TYPE, TruthValueDomain.INSTANCE, BuiltinTermInterpreter::createLogicConstant);
+		addCast(STRING_TYPE, BOOLEAN_TYPE, TruthValueTerms::fromString);
 
 		addDomain(INT_TYPE, IntIntervalDomain.INSTANCE, (value) -> {
 			// We can't express improper intervals where one end is the opposite infinity.
@@ -46,6 +48,7 @@ public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 			range.setRight(boundToConstant(value.upperBound()));
 			return range;
 		});
+		addCast(STRING_TYPE, INT_TYPE, IntIntervalTerms::fromString);
 		addAggregator(SUM_AGGREGATOR, INT_TYPE, INT_TYPE, IntIntervalTerms.INT_SUM);
 		addAggregator(MIN_AGGREGATOR, INT_TYPE, INT_TYPE, IntIntervalTerms.INT_MIN);
 		addAggregator(MAX_AGGREGATOR, INT_TYPE, INT_TYPE, IntIntervalTerms.INT_MAX);
@@ -69,6 +72,9 @@ public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 			range.setRight(boundToConstant(value.upperBound()));
 			return range;
 		});
+		addCast(INT_TYPE, REAL_TYPE, RealIntervalTerms::asReal);
+		addCast(REAL_TYPE, INT_TYPE, RealIntervalTerms::asInt);
+		addCast(STRING_TYPE, REAL_TYPE, RealIntervalTerms::fromString);
 		addAggregator(SUM_AGGREGATOR, REAL_TYPE, REAL_TYPE, RealIntervalTerms.REAL_SUM);
 		addAggregator(MIN_AGGREGATOR, REAL_TYPE, REAL_TYPE, RealIntervalTerms.REAL_MIN);
 		addAggregator(MAX_AGGREGATOR, REAL_TYPE, REAL_TYPE, RealIntervalTerms.REAL_MAX);

@@ -48,7 +48,7 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	private final Map<DataExprType, UnaryValue<?, ?>> negations = new HashMap<>();
 	private final Map<UnaryKey, UnaryValue<?, ?>> unaryOperators = new HashMap<>();
 	private final Map<BinaryKey, BinaryValue<?, ?, ?>> binaryOperators = new HashMap<>();
-	private final Set<CastKey> casts = new HashSet<>();
+	private final Map<CastKey, Cast<?, ?>> casts = new HashMap<>();
 	private final Map<AggregatorKey, AggregatorValue> aggregators = new HashMap<>();
 	private final Map<PrimitiveName, List<OverloadedSignature>> overloadMap = new HashMap<>();
 	private final Map<DataExprType, AnyAbstractDomain> domains = new HashMap<>();
@@ -127,6 +127,9 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 		if (domain instanceof ComparableAbstractDomain<?, ?> comparableAbstractDomain) {
 			addImplementedComparableOperators(type, comparableAbstractDomain);
 		}
+		if (!BuiltInTerms.STRING_TYPE.equals(type)) {
+			addCast(type, BuiltInTerms.STRING_TYPE, (Term<A> body) -> AbstractDomainTerms.asString(domain, body));
+		}
 	}
 
 	private <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> void addImplementedComparableOperators(
@@ -159,11 +162,11 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 		binaryOperators.put(new BinaryKey(op, leftType, rightType), new BinaryValue<>(result, termFactory));
 	}
 
-	protected void addCast(DataExprType fromType, DataExprType toType) {
+	protected <R, T> void addCast(DataExprType fromType, DataExprType toType, Cast<R, T> cast) {
 		if (fromType.equals(toType)) {
 			throw new IllegalArgumentException("The fromType and toType of a cast operator must be different");
 		}
-		casts.add(new CastKey(fromType, toType));
+		casts.put(new CastKey(fromType, toType), cast);
 	}
 
 	protected void addAggregator(AggregatorName aggregator, DataExprType type, DataExprType result,
@@ -362,7 +365,13 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 
 	@Override
 	public boolean isCastSupported(DataExprType fromType, DataExprType toType) {
-		return casts.contains(new CastKey(fromType, toType));
+		return casts.containsKey(new CastKey(fromType, toType));
+	}
+
+	@Override
+	public Optional<AnyTerm> createCast(DataExprType fromType, DataExprType toType, AnyTerm body) {
+		return Optional.ofNullable(casts.get(new CastKey(fromType, toType)))
+				.map(cast -> cast.createCastUnchecked(body));
 	}
 
 	@Override
@@ -502,6 +511,19 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 			@SuppressWarnings("unchecked")
 			var uncheckedRight = (Term<T>) right;
 			return toRange(uncheckedLeft, uncheckedRight);
+		}
+	}
+
+	@FunctionalInterface
+	public interface Cast<R, T> {
+		Term<R> createCast(Term<T> body);
+
+		default Term<R> createCastUnchecked(AnyTerm body) {
+			// This is safe, because the constructor of the term created by {@code createCast} will always check the
+			// runtime type of the term, avoiding heap pollution.
+			@SuppressWarnings("unchecked")
+			var uncheckedBody = (Term<T>) body;
+			return createCast(uncheckedBody);
 		}
 	}
 

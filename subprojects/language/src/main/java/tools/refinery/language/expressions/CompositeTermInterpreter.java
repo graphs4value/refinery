@@ -165,6 +165,17 @@ public class CompositeTermInterpreter implements TermInterpreter {
 	}
 
 	@Override
+	public Optional<AnyTerm> createCast(DataExprType fromType, DataExprType toType, AnyTerm body) {
+		for (var interpreter : interpreters) {
+			var result = interpreter.createCast(fromType, toType, body);
+			if (result.isPresent()) {
+				return result;
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
 	public Optional<DataExprType> getAggregationType(AggregatorName aggregator, DataExprType type) {
 		for (var interpreter : interpreters) {
 			var result = interpreter.getAggregationType(aggregator, type);

@@ -11,6 +11,7 @@ import tools.refinery.logic.term.operators.AddTerm;
 import tools.refinery.logic.term.operators.MulTerm;
 import tools.refinery.logic.term.operators.PlusTerm;
 import tools.refinery.logic.term.operators.SubTerm;
+import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public class IntIntervalTerms {
@@ -79,5 +80,9 @@ public class IntIntervalTerms {
 
 	public static Term<TruthValue> greaterEq(Term<IntInterval> left, Term<IntInterval> right) {
 		return AbstractDomainTerms.greaterEq(IntIntervalDomain.INSTANCE, left, right);
+	}
+
+	public static Term<IntInterval> fromString(Term<StringValue> body) {
+		return new IntIntervalFromStringTerm(body);
 	}
 }

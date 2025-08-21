@@ -12,6 +12,7 @@ import tools.refinery.logic.term.operators.AddTerm;
 import tools.refinery.logic.term.operators.MulTerm;
 import tools.refinery.logic.term.operators.PlusTerm;
 import tools.refinery.logic.term.operators.SubTerm;
+import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 import java.math.BigDecimal;
@@ -40,6 +41,10 @@ public class RealIntervalTerms {
 
 	public static Term<RealInterval> asReal(Term<IntInterval> body) {
 		return new AsRealIntervalTerm(body);
+	}
+
+	public static Term<IntInterval> asInt(Term<RealInterval> body) {
+		return new AsIntIntervalTerm(body);
 	}
 
 	public static Term<RealInterval> plus(Term<RealInterval> body) {
@@ -88,5 +93,9 @@ public class RealIntervalTerms {
 
 	public static Term<TruthValue> greaterEq(Term<RealInterval> left, Term<RealInterval> right) {
 		return AbstractDomainTerms.greaterEq(RealIntervalDomain.INSTANCE, left, right);
+	}
+
+	public static Term<RealInterval> fromString(Term<StringValue> body) {
+		return new RealIntervalFromStringTerm(body);
 	}
 }

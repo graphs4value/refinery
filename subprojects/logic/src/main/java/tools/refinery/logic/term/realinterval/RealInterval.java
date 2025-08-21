@@ -79,31 +79,35 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 
 	public static RealInterval of(BigDecimal value) {
 		var bound = RealBound.of(value);
-		return new RealInterval(bound, bound);
+		return of(bound, bound);
 	}
 
 	public static RealInterval of(BigDecimal value1, BigDecimal value2) {
 		var bound1 = RealBound.of(value1);
 		var bound2 = RealBound.of(value2);
-		return new RealInterval(bound1, bound2);
+		return of(bound1, bound2);
 	}
 
 	public static RealInterval of(BigDecimal value, RealBound bound) {
 		var valueBound = RealBound.of(value);
-		return new RealInterval(valueBound, bound);
+		return of(valueBound, bound);
 	}
 
 	public static RealInterval of(RealBound bound, BigDecimal value) {
 		var valueBound = RealBound.of(value);
-		return new RealInterval(bound, valueBound);
+		return of(bound, valueBound);
 	}
 
 	public static RealInterval of(RealBound bound1, RealBound bound2) {
-		return new RealInterval(bound1, bound2);
+		return new RealInterval(bound1.round(FLOOR), bound2.round(CEIL));
 	}
 
-	public static RealInterval fromInteger(IntInterval intInterval) {
-		return of(RealBound.fromInteger(intInterval.lowerBound()), RealBound.fromInteger(intInterval.upperBound()));
+	public static RealInterval fromInt(IntInterval intInterval) {
+		return of(RealBound.fromInt(intInterval.lowerBound()), RealBound.fromInt(intInterval.upperBound()));
+	}
+
+	public IntInterval asInt() {
+		return IntInterval.of(lowerBound.asInt(FLOOR), upperBound.asInt(CEIL));
 	}
 
 	@Override

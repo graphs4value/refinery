@@ -27,6 +27,8 @@ public sealed interface RealBound {
 		return greaterThanOrEquals(other) ? this : other;
 	}
 
+	RealBound round(RoundingMode roundingMode);
+
 	RealBound minus(RoundingMode roundingMode);
 
 	RealBound add(RealBound other, RoundingMode roundingMode);
@@ -40,6 +42,8 @@ public sealed interface RealBound {
 	int signum();
 
 	int compareBound(RealBound other);
+
+	IntBound asInt(RoundingMode roundingMode);
 
 	enum Infinite implements RealBound {
 		POSITIVE_INFINITY {
@@ -93,6 +97,11 @@ public sealed interface RealBound {
 			@Override
 			public int compareBound(RealBound other) {
 				return other == POSITIVE_INFINITY ? 0 : -1;
+			}
+
+			@Override
+			public IntBound asInt(RoundingMode roundingMode) {
+				return IntBound.Infinite.POSITIVE_INFINITY;
 			}
 		},
 
@@ -148,11 +157,21 @@ public sealed interface RealBound {
 			public int compareBound(RealBound other) {
 				return other == NEGATIVE_INFINITY ? 0 : 1;
 			}
+
+			@Override
+			public IntBound asInt(RoundingMode roundingMode) {
+				return IntBound.Infinite.NEGATIVE_INFINITY;
+			}
 		};
 
 		@Override
 		public boolean isFinite() {
 			return false;
+		}
+
+		@Override
+		public RealBound round(RoundingMode roundingMode) {
+			return this;
 		}
 	}
 
@@ -160,6 +179,9 @@ public sealed interface RealBound {
 		public static final Finite ZERO = new Finite(BigDecimal.ZERO);
 		public static final Finite ONE = new Finite(BigDecimal.ONE);
 		public static final Finite NEGATIVE_ONE = new Finite(BigDecimal.valueOf(-1));
+
+		private static final BigDecimal INT_MIN = BigDecimal.valueOf(Integer.MIN_VALUE);
+		private static final BigDecimal INT_MAX = BigDecimal.valueOf(Integer.MAX_VALUE);
 
 		@Override
 		public boolean lessThanOrEquals(RealBound other) {
@@ -173,6 +195,15 @@ public sealed interface RealBound {
 		@Override
 		public boolean isFinite() {
 			return true;
+		}
+
+		@Override
+		public RealBound round(RoundingMode roundingMode) {
+			var context = roundingMode.context();
+			if (value.precision() <= context.getPrecision()) {
+				return this;
+			}
+			return new Finite(value.round(context));
 		}
 
 		@Override
@@ -232,13 +263,18 @@ public sealed interface RealBound {
 			return other instanceof Finite(var otherValue) ? value.compareTo(otherValue) :
 					-other.compareBound(this);
 		}
+
+		@Override
+		public IntBound asInt(RoundingMode roundingMode) {
+			return IntBound.of(value, roundingMode.asInt());
+		}
 	}
 
 	static RealBound of(BigDecimal value) {
 		return new RealBound.Finite(value);
 	}
 
-	static RealBound fromInteger(IntBound intValue) {
+	static RealBound fromInt(IntBound intValue) {
 		return switch (intValue) {
 			case IntBound.Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
 			case IntBound.Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;

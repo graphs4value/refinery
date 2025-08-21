@@ -16,7 +16,7 @@ public class AsRealIntervalTerm extends UnaryTerm<RealInterval, IntInterval> {
 
 	@Override
 	protected RealInterval doEvaluate(IntInterval bodyValue) {
-		return RealInterval.fromInteger(bodyValue);
+		return RealInterval.fromInt(bodyValue);
 	}
 
 	@Override

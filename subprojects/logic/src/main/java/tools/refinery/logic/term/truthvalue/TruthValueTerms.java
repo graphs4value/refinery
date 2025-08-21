@@ -12,6 +12,7 @@ import tools.refinery.logic.term.operators.AndTerm;
 import tools.refinery.logic.term.operators.NotTerm;
 import tools.refinery.logic.term.operators.OrTerm;
 import tools.refinery.logic.term.operators.XorTerm;
+import tools.refinery.logic.term.string.StringValue;
 
 public class TruthValueTerms {
 	private TruthValueTerms() {
@@ -56,5 +57,9 @@ public class TruthValueTerms {
 
 	public static Term<TruthValue> notEq(Term<TruthValue> left, Term<TruthValue> right) {
 		return AbstractDomainTerms.notEq(TruthValueDomain.INSTANCE, left, right);
+	}
+
+	public static Term<TruthValue> fromString(Term<StringValue> body) {
+		return new TruthValueFromStringTerm(body);
 	}
 }

@@ -9,6 +9,7 @@ import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.ComparableAbstractDomain;
 import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public final class AbstractDomainTerms {
@@ -131,5 +132,10 @@ public final class AbstractDomainTerms {
 	public static <A extends ComparableAbstractValue<A, C>, C extends Comparable<C>> Term<A> upperBound(
 			ComparableAbstractDomain<A, C> abstractDomain, Term<A> body) {
 		return new AbstractDomainUpperBoundTerm<>(abstractDomain, body);
+	}
+
+	public static <A extends AbstractValue<A, C>, C> Term<StringValue> asString(
+			AbstractDomain<A, C> abstractDomain, Term<A> body) {
+		return new AsStringTerm<>(abstractDomain, body);
 	}
 }

@@ -51,7 +51,7 @@ public class ExprToTerm {
 			case RangeExpr rangeExpr -> createRange(rangeExpr);
 			case LatticeBinaryExpr latticeBinaryExpr -> createLatticeBinaryOperator(latticeBinaryExpr);
 			case ModalExpr modalExpr -> createModalOperator(modalExpr);
-			case Atom atom -> createOverloadedFunctionCall(atom);
+			case Atom atom -> createAtom(atom);
 			case LogicConstant logicConstant -> createLogicConstant(logicConstant);
 			case IntConstant intConstant -> createIntConstant(intConstant);
 			case RealConstant realConstant -> createRealConstant(realConstant);
@@ -147,12 +147,18 @@ public class ExprToTerm {
 		return toTerm(expr.getBody()).map(bodyTerm -> wrapModality(bodyTerm, expr.getModality()));
 	}
 
-	protected Optional<AnyTerm> createOverloadedFunctionCall(Atom atom) {
-		if(!(atom.getRelation() instanceof OverloadedDeclaration overloadedDeclaration)) {
-			return Optional.empty();
-		}
-		var name = signatureProvider.getPrimitiveName(overloadedDeclaration);
+	protected Optional<AnyTerm> createAtom(Atom atom) {
+		return switch (atom.getRelation()) {
+			case OverloadedDeclaration overloadedDeclaration -> createOverloadedFunctionCall(atom,
+					overloadedDeclaration);
+			case DatatypeDeclaration ignoredDatatypeDeclaration -> createCast(atom);
+			case null, default -> Optional.empty();
+		};
+	}
+
+	private Optional<AnyTerm> createOverloadedFunctionCall(Atom atom, OverloadedDeclaration overloadedDeclaration) {
 		var arguments = atom.getArguments();
+		var name = signatureProvider.getPrimitiveName(overloadedDeclaration);
 		int arity = arguments.size();
 		var argumentTypes = new DataExprType[arity];
 		var argumentTerms = new AnyTerm[arity];
@@ -171,6 +177,24 @@ public class ExprToTerm {
 		}
 		var termInterpreter = importAdapterProvider.getTermInterpreter(atom);
 		return termInterpreter.createOverloadedFunctionCall(name, List.of(argumentTypes), List.of(argumentTerms));
+	}
+
+	private Optional<AnyTerm> createCast(Atom atom) {
+		var arguments = atom.getArguments();
+		if (arguments.size() != 1) {
+			return Optional.empty();
+		}
+		var body = arguments.getFirst();
+		if (!(typeAnalyzer.getExpressionType(body) instanceof DataExprType fromType) ||
+				!(typeAnalyzer.getExpressionType(atom) instanceof DataExprType toType)) {
+			return Optional.empty();
+		}
+		var result = toTerm(body);
+		if (fromType.equals(toType)) {
+			return result;
+		}
+		var termInterpreter = importAdapterProvider.getTermInterpreter(atom);
+		return result.flatMap(bodyTerm -> termInterpreter.createCast(fromType, toType, bodyTerm));
 	}
 
 	protected static AnyTerm wrapModality(AnyTerm bodyTerm, Modality modality) {
@@ -204,8 +228,8 @@ public class ExprToTerm {
 	}
 
 	private static Optional<AnyTerm> createRealConstant(RealConstant expr) {
-        return Optional.of(RealIntervalTerms.constant(RealInterval.of(expr.getRealValue())));
-    }
+		return Optional.of(RealIntervalTerms.constant(RealInterval.of(expr.getRealValue())));
+	}
 
 	private static Optional<AnyTerm> createStringConstant(StringConstant expr) {
 		return Optional.of(StringTerms.constant(StringValue.of(expr.getStringValue())));

@@ -46,6 +46,8 @@ public interface TermInterpreter {
 
 	boolean isCastSupported(DataExprType fromType, DataExprType toType);
 
+	Optional<AnyTerm> createCast(DataExprType fromType, DataExprType toType, AnyTerm body);
+
 	Optional<DataExprType> getAggregationType(AggregatorName aggregator, DataExprType type);
 
 	Optional<AnyPartialAggregator> getAggregator(AggregatorName aggregator, DataExprType type);
