@@ -55,7 +55,8 @@ public class RuleCompiler {
 	public DecisionRule toDecisionRule(String name, RuleDefinition ruleDefinition) {
 		var rule = toDecisionRuleInternal(name, ruleDefinition);
 		var settings = builtinAnnotationContext.getDecisionSettings(ruleDefinition);
-		return new DecisionRule(rule, settings.priority(), settings.coefficient(), settings.exponent());
+		return new DecisionRule(rule, settings.priority(), settings.coefficient().doubleValue(),
+				settings.exponent().doubleValue());
 	}
 
 	private Rule toDecisionRuleInternal(String name, RuleDefinition ruleDefinition) {

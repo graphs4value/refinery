@@ -11,23 +11,23 @@ import tools.refinery.logic.term.ComparableAbstractValue;
 import tools.refinery.logic.term.operators.*;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
-public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
+public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperBound)
 		implements ComparableAbstractValue<IntInterval, Integer>, Comparable<IntInterval>, Plus<IntInterval>,
 		Minus<IntInterval>, Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval>, Div<IntInterval> {
-	public static final IntInterval ZERO = new IntInterval(Bound.Finite.ZERO, Bound.Finite.ZERO);
-	public static final IntInterval ONE = new IntInterval(Bound.Finite.ONE, Bound.Finite.ONE);
-	public static final IntInterval UNKNOWN = new IntInterval(Bound.Infinite.NEGATIVE_INFINITY,
-			Bound.Infinite.POSITIVE_INFINITY);
-	public static final IntInterval ERROR = new IntInterval(Bound.Infinite.POSITIVE_INFINITY,
-			Bound.Infinite.NEGATIVE_INFINITY);
-	public static final IntInterval NEGATIVE_INFINITY = new IntInterval(Bound.Infinite.NEGATIVE_INFINITY,
-			Bound.Infinite.NEGATIVE_INFINITY);
-	public static final IntInterval POSITIVE_INFINITY = new IntInterval(Bound.Infinite.POSITIVE_INFINITY,
-			Bound.Infinite.POSITIVE_INFINITY);
+	public static final IntInterval ZERO = new IntInterval(IntBound.Finite.ZERO, IntBound.Finite.ZERO);
+	public static final IntInterval ONE = new IntInterval(IntBound.Finite.ONE, IntBound.Finite.ONE);
+	public static final IntInterval UNKNOWN = new IntInterval(IntBound.Infinite.NEGATIVE_INFINITY,
+			IntBound.Infinite.POSITIVE_INFINITY);
+	public static final IntInterval ERROR = new IntInterval(IntBound.Infinite.POSITIVE_INFINITY,
+			IntBound.Infinite.NEGATIVE_INFINITY);
+	public static final IntInterval NEGATIVE_INFINITY = new IntInterval(IntBound.Infinite.NEGATIVE_INFINITY,
+			IntBound.Infinite.NEGATIVE_INFINITY);
+	public static final IntInterval POSITIVE_INFINITY = new IntInterval(IntBound.Infinite.POSITIVE_INFINITY,
+			IntBound.Infinite.POSITIVE_INFINITY);
 
 	@Override
 	public @Nullable Integer getConcrete() {
-		if (lowerBound.equals(upperBound) && lowerBound instanceof Bound.Finite(int value)) {
+		if (lowerBound.equals(upperBound) && lowerBound instanceof IntBound.Finite(int value)) {
 			return value;
 		}
 		return null;
@@ -43,10 +43,10 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 		if (isError()) {
 			return null;
 		}
-		if (lowerBound instanceof Bound.Finite(int value)) {
+		if (lowerBound instanceof IntBound.Finite(int value)) {
 			return value;
 		}
-		if (upperBound instanceof Bound.Finite(int value)) {
+		if (upperBound instanceof IntBound.Finite(int value)) {
 			return value;
 		}
 		return 0;
@@ -55,8 +55,8 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 	@Override
 	public boolean isError() {
 		if (lowerBound.lessThanOrEquals(upperBound)) {
-			return lowerBound == Bound.Infinite.POSITIVE_INFINITY ||
-					upperBound == Bound.Infinite.NEGATIVE_INFINITY;
+			return lowerBound == IntBound.Infinite.POSITIVE_INFINITY ||
+					upperBound == IntBound.Infinite.NEGATIVE_INFINITY;
 		}
 		return true;
 	}
@@ -72,27 +72,27 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 	}
 
 	public static IntInterval of(int value) {
-		var bound = Bound.of(value);
+		var bound = IntBound.of(value);
 		return new IntInterval(bound, bound);
 	}
 
 	public static IntInterval of(int value1, int value2) {
-		var bound1 = Bound.of(value1);
-		var bound2 = Bound.of(value2);
+		var bound1 = IntBound.of(value1);
+		var bound2 = IntBound.of(value2);
 		return new IntInterval(bound1, bound2);
 	}
 
-	public static IntInterval of(int value, Bound bound) {
-		var valueBound = Bound.of(value);
+	public static IntInterval of(int value, IntBound bound) {
+		var valueBound = IntBound.of(value);
 		return new IntInterval(valueBound, bound);
 	}
 
-	public static IntInterval of(Bound bound, int value) {
-		var valueBound = Bound.of(value);
+	public static IntInterval of(IntBound bound, int value) {
+		var valueBound = IntBound.of(value);
 		return new IntInterval(bound, valueBound);
 	}
 
-	public static IntInterval of(Bound bound1, Bound bound2) {
+	public static IntInterval of(IntBound bound1, IntBound bound2) {
 		return new IntInterval(bound1, bound2);
 	}
 
@@ -101,22 +101,22 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 		if (lowerBound.equals(upperBound)) {
 			return lowerBound().toString();
 		}
-		if (Bound.Infinite.NEGATIVE_INFINITY.equals(lowerBound) &&
-				Bound.Infinite.POSITIVE_INFINITY.equals(upperBound)) {
+		if (IntBound.Infinite.NEGATIVE_INFINITY.equals(lowerBound) &&
+				IntBound.Infinite.POSITIVE_INFINITY.equals(upperBound)) {
 			return "unknown";
 		}
-		if (Bound.Infinite.POSITIVE_INFINITY.equals(lowerBound) &&
-				Bound.Infinite.NEGATIVE_INFINITY.equals(upperBound)) {
+		if (IntBound.Infinite.POSITIVE_INFINITY.equals(lowerBound) &&
+				IntBound.Infinite.NEGATIVE_INFINITY.equals(upperBound)) {
 			return "error";
 		}
 		var builder = new StringBuilder();
-		if (Bound.Infinite.NEGATIVE_INFINITY.equals(lowerBound)) {
+		if (IntBound.Infinite.NEGATIVE_INFINITY.equals(lowerBound)) {
 			builder.append("*");
 		} else {
 			builder.append(lowerBound);
 		}
 		builder.append("..");
-		if (Bound.Infinite.POSITIVE_INFINITY.equals(upperBound)) {
+		if (IntBound.Infinite.POSITIVE_INFINITY.equals(upperBound)) {
 			builder.append("*");
 		} else {
 			builder.append(upperBound);
@@ -142,14 +142,14 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 
 	@Override
 	public IntInterval add(IntInterval other) {
-		return of(lowerBound().add(other.lowerBound(), Bound.Infinite.POSITIVE_INFINITY),
-				upperBound().add(other.upperBound(), Bound.Infinite.NEGATIVE_INFINITY));
+		return of(lowerBound().add(other.lowerBound(), IntBound.Infinite.POSITIVE_INFINITY),
+				upperBound().add(other.upperBound(), IntBound.Infinite.NEGATIVE_INFINITY));
 	}
 
 	@Override
 	public IntInterval sub(IntInterval other) {
-		return of(lowerBound().sub(other.upperBound(), Bound.Infinite.POSITIVE_INFINITY),
-				upperBound().sub(other.lowerBound(), Bound.Infinite.NEGATIVE_INFINITY));
+		return of(lowerBound().sub(other.upperBound(), IntBound.Infinite.POSITIVE_INFINITY),
+				upperBound().sub(other.lowerBound(), IntBound.Infinite.NEGATIVE_INFINITY));
 	}
 
 	@Override
@@ -198,11 +198,11 @@ public record IntInterval(@NotNull Bound lowerBound, @NotNull Bound upperBound)
 		var otherUpperBound = other.upperBound();
 		IntInterval negativeResult = null;
 		if (otherLowerBound.signum() < 0) {
-			var negativeDivisor = IntInterval.of(otherLowerBound, otherUpperBound.min(Bound.Finite.NEGATIVE_ONE));
+			var negativeDivisor = IntInterval.of(otherLowerBound, otherUpperBound.min(IntBound.Finite.NEGATIVE_ONE));
 			negativeResult = divWithNegative(negativeDivisor);
 		}
 		if (otherUpperBound.signum() > 0) {
-			var positiveDivisor = IntInterval.of(otherLowerBound.max(Bound.Finite.ONE), otherUpperBound);
+			var positiveDivisor = IntInterval.of(otherLowerBound.max(IntBound.Finite.ONE), otherUpperBound);
             var positiveResult = divWithPositive(positiveDivisor);
 			return negativeResult == null ? positiveResult : positiveResult.join(negativeResult);
 		}

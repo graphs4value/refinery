@@ -7,61 +7,61 @@ package tools.refinery.logic.term.intinterval;
 
 import org.jetbrains.annotations.NotNull;
 
-public sealed interface Bound {
-	boolean lessThanOrEquals(Bound other);
+public sealed interface IntBound {
+	boolean lessThanOrEquals(IntBound other);
 
-	default boolean greaterThanOrEquals(Bound other) {
+	default boolean greaterThanOrEquals(IntBound other) {
 		return other.lessThanOrEquals(this);
 	}
 
 	boolean isFinite();
 
-	default Bound min(Bound other) {
+	default IntBound min(IntBound other) {
 		return lessThanOrEquals(other) ? this : other;
 	}
 
-	default Bound max(Bound other) {
+	default IntBound max(IntBound other) {
 		return greaterThanOrEquals(other) ? this : other;
 	}
 
-	Bound minus();
+	IntBound minus();
 
-	Bound add(Bound other, Infinite errorTowards);
+	IntBound add(IntBound other, Infinite errorTowards);
 
-	Bound sub(Bound other, Infinite errorTowards);
+	IntBound sub(IntBound other, Infinite errorTowards);
 
-	Bound mul(Bound other);
+	IntBound mul(IntBound other);
 
-	Bound div(Bound other);
+	IntBound div(IntBound other);
 
 	int signum();
 
-	int compareBound(Bound other);
+	int compareBound(IntBound other);
 
-	enum Infinite implements Bound {
+	enum Infinite implements IntBound {
 		POSITIVE_INFINITY {
 			@Override
-			public boolean lessThanOrEquals(Bound other) {
+			public boolean lessThanOrEquals(IntBound other) {
 				return this == other;
 			}
 
 			@Override
-			public Bound minus() {
+			public IntBound minus() {
 				return NEGATIVE_INFINITY;
 			}
 
 			@Override
-			public Bound add(Bound other, Infinite errorTowards) {
+			public IntBound add(IntBound other, Infinite errorTowards) {
 				return other == NEGATIVE_INFINITY ? errorTowards : POSITIVE_INFINITY;
 			}
 
 			@Override
-			public Bound sub(Bound other, Infinite errorTowards) {
+			public IntBound sub(IntBound other, Infinite errorTowards) {
 				return other == POSITIVE_INFINITY ? errorTowards : POSITIVE_INFINITY;
 			}
 
 			@Override
-			public Bound mul(Bound other) {
+			public IntBound mul(IntBound other) {
 				var signum = other.signum();
 				if (signum == 0) {
 					return Finite.ZERO;
@@ -69,7 +69,7 @@ public sealed interface Bound {
 				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
 			}
 
-			public Bound div(Bound other) {
+			public IntBound div(IntBound other) {
 				var signum = other.signum();
 				if (signum == 0) {
 					throw new ArithmeticException();
@@ -88,34 +88,34 @@ public sealed interface Bound {
 			}
 
 			@Override
-			public int compareBound(Bound other) {
+			public int compareBound(IntBound other) {
 				return other == POSITIVE_INFINITY ? 0 : -1;
 			}
 		},
 
 		NEGATIVE_INFINITY {
 			@Override
-			public boolean lessThanOrEquals(Bound other) {
+			public boolean lessThanOrEquals(IntBound other) {
 				return true;
 			}
 
 			@Override
-			public Bound minus() {
+			public IntBound minus() {
 				return NEGATIVE_INFINITY;
 			}
 
 			@Override
-			public Bound add(Bound other, Infinite errorTowards) {
+			public IntBound add(IntBound other, Infinite errorTowards) {
 				return other == POSITIVE_INFINITY ? errorTowards : NEGATIVE_INFINITY;
 			}
 
 			@Override
-			public Bound sub(Bound other, Infinite errorTowards) {
+			public IntBound sub(IntBound other, Infinite errorTowards) {
 				return other == NEGATIVE_INFINITY ? errorTowards : NEGATIVE_INFINITY;
 			}
 
 			@Override
-			public Bound mul(Bound other) {
+			public IntBound mul(IntBound other) {
 				var signum = other.signum();
 				if (signum == 0) {
 					return Finite.ZERO;
@@ -123,7 +123,7 @@ public sealed interface Bound {
 				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
 			}
 
-			public Bound div(Bound other) {
+			public IntBound div(IntBound other) {
 				var signum = other.signum();
 				if (signum == 0) {
 					throw new ArithmeticException();
@@ -142,7 +142,7 @@ public sealed interface Bound {
 			}
 
 			@Override
-			public int compareBound(Bound other) {
+			public int compareBound(IntBound other) {
 				return other == NEGATIVE_INFINITY ? 0 : 1;
 			}
 		};
@@ -153,13 +153,13 @@ public sealed interface Bound {
 		}
 	}
 
-	record Finite(int value) implements Bound {
+	record Finite(int value) implements IntBound {
 		public static final Finite ZERO = new Finite(0);
 		public static final Finite ONE = new Finite(1);
 		public static final Finite NEGATIVE_ONE = new Finite(-1);
 
 		@Override
-		public boolean lessThanOrEquals(Bound other) {
+		public boolean lessThanOrEquals(IntBound other) {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> true;
 				case Infinite.NEGATIVE_INFINITY -> false;
@@ -173,12 +173,12 @@ public sealed interface Bound {
 		}
 
 		@Override
-		public Bound minus() {
+		public IntBound minus() {
 			return new Finite(-value);
 		}
 
 		@Override
-		public Bound add(Bound other, Infinite errorTowards) {
+		public IntBound add(IntBound other, Infinite errorTowards) {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
 				case Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
@@ -195,7 +195,7 @@ public sealed interface Bound {
 		}
 
 		@Override
-		public Bound sub(Bound other, Infinite errorTowards) {
+		public IntBound sub(IntBound other, Infinite errorTowards) {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
 				case Infinite.NEGATIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
@@ -212,7 +212,7 @@ public sealed interface Bound {
 		}
 
 		@Override
-		public Bound mul(Bound other) {
+		public IntBound mul(IntBound other) {
 			return switch (other) {
 				case Infinite ignored -> other.mul(this);
 				case Finite(int otherValue) -> {
@@ -228,7 +228,7 @@ public sealed interface Bound {
 		}
 
 		@Override
-		public Bound div(Bound other) {
+		public IntBound div(IntBound other) {
 			return switch (other) {
 				case Infinite ignored -> ZERO;
 				case Finite(int otherValue) -> new Finite(value / otherValue);
@@ -246,13 +246,13 @@ public sealed interface Bound {
 		}
 
 		@Override
-		public int compareBound(Bound other) {
+		public int compareBound(IntBound other) {
 			return other instanceof Finite(int otherValue) ? Integer.compare(value, otherValue) :
 					-other.compareBound(this);
 		}
 	}
 
-	static Bound of(int value) {
+	static IntBound of(int value) {
 		return new Finite(value);
 	}
 }

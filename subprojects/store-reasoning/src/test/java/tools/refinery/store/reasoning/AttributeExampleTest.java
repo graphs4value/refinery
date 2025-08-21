@@ -8,7 +8,7 @@ package tools.refinery.store.reasoning;
 import org.junit.jupiter.api.Test;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
-import tools.refinery.logic.term.intinterval.Bound;
+import tools.refinery.logic.term.intinterval.IntBound;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.intinterval.IntIntervalDomain;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -150,9 +150,9 @@ class AttributeExampleTest {
 						.put(Tuple.of(4), IntInterval.of(16))
 						.put(Tuple.of(8), IntInterval.of(5))
 						.put(Tuple.of(5), IntInterval.of(5, 10))
-						.put(Tuple.of(6), IntInterval.of(6, Bound.Infinite.POSITIVE_INFINITY))
-						.put(Tuple.of(7), IntInterval.of(Bound.Infinite.NEGATIVE_INFINITY,
-								Bound.Infinite.POSITIVE_INFINITY))
+						.put(Tuple.of(6), IntInterval.of(6, IntBound.Infinite.POSITIVE_INFINITY))
+						.put(Tuple.of(7), IntInterval.of(IntBound.Infinite.NEGATIVE_INFINITY,
+								IntBound.Infinite.POSITIVE_INFINITY))
 				)
 				.build())) {
 

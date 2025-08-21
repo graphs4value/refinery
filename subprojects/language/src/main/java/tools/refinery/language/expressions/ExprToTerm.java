@@ -14,6 +14,8 @@ import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.logic.term.AnyTerm;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.intinterval.IntIntervalTerms;
+import tools.refinery.logic.term.realinterval.RealInterval;
+import tools.refinery.logic.term.realinterval.RealIntervalTerms;
 import tools.refinery.logic.term.string.StringTerms;
 import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -52,6 +54,7 @@ public class ExprToTerm {
 			case Atom atom -> createOverloadedFunctionCall(atom);
 			case LogicConstant logicConstant -> createLogicConstant(logicConstant);
 			case IntConstant intConstant -> createIntConstant(intConstant);
+			case RealConstant realConstant -> createRealConstant(realConstant);
 			case StringConstant stringConstant -> createStringConstant(stringConstant);
 			case null, default -> Optional.empty();
 		};
@@ -199,6 +202,10 @@ public class ExprToTerm {
 	private static Optional<AnyTerm> createIntConstant(IntConstant expr) {
 		return Optional.of(IntIntervalTerms.constant(IntInterval.of(expr.getIntValue())));
 	}
+
+	private static Optional<AnyTerm> createRealConstant(RealConstant expr) {
+        return Optional.of(RealIntervalTerms.constant(RealInterval.of(expr.getRealValue())));
+    }
 
 	private static Optional<AnyTerm> createStringConstant(StringConstant expr) {
 		return Optional.of(StringTerms.constant(StringValue.of(expr.getStringValue())));

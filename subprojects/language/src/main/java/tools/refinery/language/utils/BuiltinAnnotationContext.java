@@ -49,7 +49,7 @@ public class BuiltinAnnotationContext {
 				.flatMap(annotation -> annotation.getBoolean(BuiltinAnnotations.DECIDE_AUTO));
 		return new ConcretizationSettings(concretize.orElseGet(() -> ProblemUtil.isConcretizeByDefault(relation)),
 				decide.orElseGet(() -> {
-					if (concretize.isPresent() && Boolean.FALSE.equals(concretize.get())) {
+					if (concretize.isPresent() && !concretize.get()) {
 						return false;
 					}
 					return ProblemUtil.isDecideByDefault(relation);
@@ -73,11 +73,11 @@ public class BuiltinAnnotationContext {
 		if (weighAnnotation.isEmpty()) {
 			return new DecisionSettings(priority);
 		}
-		double coefficient = weighAnnotation.get()
-				.getDouble(BuiltinAnnotations.WEIGHT_COEFFICIENT)
+		var coefficient = weighAnnotation.get()
+				.getBigDecimal(BuiltinAnnotations.WEIGHT_COEFFICIENT)
 				.orElse(DecisionSettings.DEFAULT_COEFFICIENT);
-		double exponent = weighAnnotation.get()
-				.getDouble(BuiltinAnnotations.WEIGHT_EXPONENT)
+		var exponent = weighAnnotation.get()
+				.getBigDecimal(BuiltinAnnotations.WEIGHT_EXPONENT)
 				.orElse(DecisionSettings.DEFAULT_EXPONENT);
 		return new DecisionSettings(priority, coefficient, exponent);
 	}

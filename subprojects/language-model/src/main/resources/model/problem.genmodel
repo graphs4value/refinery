@@ -246,10 +246,6 @@
     <genClasses ecoreClass="problem.ecore#//LatticeBinaryExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LatticeBinaryExpr/op"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//CastExpr">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/body"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/targetType"/>
-    </genClasses>
     <genClasses ecoreClass="problem.ecore#//AssignmentExpr"/>
     <genClasses ecoreClass="problem.ecore#//InfiniteConstant"/>
     <genClasses ecoreClass="problem.ecore#//AggregatorDeclaration"/>

@@ -208,7 +208,8 @@ RangeExpr returns Expr:
 
 UnaryExpr returns Expr:
 	ArithmeticUnaryExpr | NegationExpr |
-	AggregationExpr | ModalExpr | CastExpr;
+	AggregationExpr | ModalExpr |
+	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -232,12 +233,6 @@ enum Modality:
 ModalExpr:
 	(concreteness=Concreteness => modality=Modality? | modality=Modality => concreteness=Concreteness?)
 	body=UnaryExpr;
-
-CastExpr returns Expr:
-	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
-
-CastExprBody returns Expr:
-	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 Atom:
 	relation=[Relation|QualifiedName]
@@ -332,12 +327,12 @@ Identifier:
 	NonContainmentIdentifier | "contains" | "container" | "opposite" | "subsets";
 
 NonContainmentIdentifier:
-	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
+	ID | QUOTED_ID | "as" | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "primitive" |
 	"decision" | "propagation" | "concretization" |
 	"shadow";
 
-Real returns ecore::EDouble:
+Real returns ecore::EBigDecimal:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);
 
 terminal TRANSITIVE_CLOSURE:

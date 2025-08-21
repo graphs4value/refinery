@@ -6,7 +6,7 @@
 package tools.refinery.store.reasoning.translator.multiobject;
 
 import tools.refinery.logic.term.Parameter;
-import tools.refinery.logic.term.intinterval.Bound;
+import tools.refinery.logic.term.intinterval.IntBound;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.uppercardinality.FiniteUpperCardinality;
 import tools.refinery.store.query.view.AbstractFunctionView;
@@ -21,7 +21,7 @@ class CountIntervalView extends AbstractFunctionView<CardinalityInterval> {
 	@Override
 	protected Object forwardMapValue(CardinalityInterval value) {
 		var upperBound = value.upperBound() instanceof FiniteUpperCardinality(int finiteUpperBound) ?
-				Bound.of(finiteUpperBound) : Bound.Infinite.POSITIVE_INFINITY;
+				IntBound.of(finiteUpperBound) : IntBound.Infinite.POSITIVE_INFINITY;
 		return IntInterval.of(value.lowerBound(), upperBound);
 	}
 }

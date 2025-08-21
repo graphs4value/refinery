@@ -10,6 +10,8 @@ import org.eclipse.xtext.common.services.DefaultTerminalConverters;
 import org.eclipse.xtext.conversion.IValueConverter;
 import org.eclipse.xtext.conversion.ValueConverter;
 
+import java.math.BigDecimal;
+
 // Method names in this class follow the Xtext convention and match the corresponding rule name.
 @SuppressWarnings("squid:S100")
 public class ProblemValueConverterService extends DefaultTerminalConverters {
@@ -21,6 +23,9 @@ public class ProblemValueConverterService extends DefaultTerminalConverters {
 
 	@Inject
 	private IdentifierValueConverter identifierValueConverter;
+
+	@Inject
+	private RealValueConverter realValueConverter;
 
 	@ValueConverter(rule = "UpperBound")
 	public IValueConverter<Integer> UpperBound() {
@@ -35,5 +40,10 @@ public class ProblemValueConverterService extends DefaultTerminalConverters {
 	@ValueConverter(rule = "Identifier")
 	public IValueConverter<String> Identifier() {
 		return identifierValueConverter;
+	}
+
+	@ValueConverter(rule = "Real")
+	public IValueConverter<BigDecimal> Real() {
+		return realValueConverter;
 	}
 }

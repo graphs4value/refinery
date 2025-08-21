@@ -14,10 +14,9 @@ import tools.refinery.language.model.problem.Expr;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.Relation;
 
+import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -71,16 +70,16 @@ public interface Annotation {
 		return getValues(parameterName).map(AnnotationUtil::toInteger).mapMultiToInt(OptionalInt::ifPresent);
 	}
 
-	default OptionalDouble getDouble(String parameterName) {
+	default Optional<BigDecimal> getBigDecimal(String parameterName) {
 		var value = getValue(parameterName);
 		if (value.isPresent()) {
-			return AnnotationUtil.toDouble(value.get());
+			return AnnotationUtil.toBigDecimal(value.get());
 		}
-		return OptionalDouble.empty();
+		return Optional.empty();
 	}
 
-	default DoubleStream getDoubles(String parameterName) {
-		return getValues(parameterName).map(AnnotationUtil::toDouble).mapMultiToDouble(OptionalDouble::ifPresent);
+	default Stream<BigDecimal> getBigDecimals(String parameterName) {
+		return getValues(parameterName).map(AnnotationUtil::toBigDecimal).mapMulti(Optional::ifPresent);
 	}
 
 	default Optional<String> getString(String parameterName) {

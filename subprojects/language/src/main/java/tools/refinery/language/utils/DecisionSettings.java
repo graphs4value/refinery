@@ -5,10 +5,12 @@
  */
 package tools.refinery.language.utils;
 
-public record DecisionSettings(int priority, double coefficient, double exponent) {
+import java.math.BigDecimal;
+
+public record DecisionSettings(int priority, BigDecimal coefficient, BigDecimal exponent) {
 	public static final int DEFAULT_PRIORITY = 0;
-	public static final double DEFAULT_COEFFICIENT = 1;
-	public static final double DEFAULT_EXPONENT = 1;
+	public static final BigDecimal DEFAULT_COEFFICIENT = BigDecimal.ONE;
+	public static final BigDecimal DEFAULT_EXPONENT = BigDecimal.ONE;
 
 	public DecisionSettings(int priority) {
 		this(priority, DEFAULT_COEFFICIENT, DEFAULT_EXPONENT);

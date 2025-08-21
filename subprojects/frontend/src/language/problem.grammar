@@ -26,7 +26,7 @@
 
 statement {
   ImportStatement {
-    kw<"import"> ModuleName (kw<"as"> ModuleName)? "."
+    kw<"import"> ModuleName (ckw<"as"> ModuleName)? "."
   } |
   Assertion {
     kw<"default">? (NotOp | UnknownOp)? RelationName
@@ -140,7 +140,7 @@ Case { Conjunction ("->" Expr)? }
 OrOp { ";" }
 
 Expr {
-  AssignmentExpr | UnaryExpr | BinaryExpr | CastExpr | Aggregation |
+  AssignmentExpr | UnaryExpr | BinaryExpr | Aggregation |
   VariableName | Atom | Constant | "(" Expr ")"
 }
 
@@ -164,8 +164,6 @@ UnaryExpr {
   )
   Expr
 }
-
-CastExpr { !cast Expr kw<"as"> DatatypeName }
 
 Aggregation {
   AggregatorName "{" Expr ("|" Expr)? "}"

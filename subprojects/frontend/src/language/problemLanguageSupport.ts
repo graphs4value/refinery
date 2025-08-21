@@ -34,7 +34,7 @@ const parserWithMetadata = parser.configure({
       BlockComment: t.blockComment,
       'module problem class enum pred scope': t.definitionKeyword,
       'import as declare atom multi': t.definitionKeyword,
-      'extern datatype aggregator primitive': t.definitionKeyword,
+      'datatype aggregator primitive': t.definitionKeyword,
       'AnnotationKeyword/#': t.definitionKeyword,
       rule: t.definitionKeyword,
       'abstract extends refers contains container partial': t.modifier,

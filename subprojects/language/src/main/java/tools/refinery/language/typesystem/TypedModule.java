@@ -294,7 +294,6 @@ public class TypedModule {
 			case LatticeBinaryExpr latticeBinaryExpr -> computeExpressionType(latticeBinaryExpr);
 			case RangeExpr rangeExpr -> computeExpressionType(rangeExpr);
 			case ArithmeticBinaryExpr arithmeticBinaryExpr -> computeExpressionType(arithmeticBinaryExpr);
-			case CastExpr castExpr -> computeExpressionType(castExpr);
 			case ModalExpr modalExpr -> computeExpressionType(modalExpr);
 			default -> {
 				error("Unknown expression: " + expr.getClass().getSimpleName(), expr, null, 0,
@@ -353,9 +352,7 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		if (relation instanceof DatatypeDeclaration) {
-			var message = "Invalid call to data type. Use 'as %s' for casting.".formatted(
-					relation.getName());
-			error(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, ProblemValidator.TYPE_ERROR);
+			return computeCastExpressionType(atom);
 		}
 		var signature = signatureProvider.getSignature(relation);
 		var parameterTypes = signature.parameterTypes();
@@ -621,9 +618,13 @@ public class TypedModule {
 	}
 
 	@NotNull
-	private ExprType computeExpressionType(CastExpr expr) {
-		var body = expr.getBody();
-		var targetRelation = expr.getTargetType();
+	private ExprType computeCastExpressionType(Atom expr) {
+		var arguments = expr.getArguments();
+		if (arguments.size() != 1) {
+            return ExprType.INVALID;
+        }
+		var body = arguments.getFirst();
+		var targetRelation = expr.getRelation();
 		if (body == null || !(targetRelation instanceof DatatypeDeclaration targetDeclaration)) {
 			return ExprType.INVALID;
 		}

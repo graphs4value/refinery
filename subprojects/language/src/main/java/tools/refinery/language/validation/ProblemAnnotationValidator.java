@@ -165,7 +165,7 @@ public class ProblemAnnotationValidator extends AbstractProblemValidator {
 					expr -> AnnotationUtil.toInteger(expr).isPresent(), "Expected an integer literal");
 		} else if (builtinSymbols.realDatatype().equals(type)) {
 			return checkLiteralType(argument, value, typedModule, BuiltInTerms.REAL_TYPE,
-					expr -> AnnotationUtil.toDouble(expr).isPresent(), "Expected a floating-point literal");
+					expr -> AnnotationUtil.toBigDecimal(expr).isPresent(), "Expected a floating-point literal");
 		} else if (builtinSymbols.stringDatatype().equals(type)) {
 			return checkLiteralType(argument, value, typedModule, BuiltInTerms.STRING_TYPE,
 					expr -> AnnotationUtil.toString(expr).isPresent(), "Expected a string literal");
