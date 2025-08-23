@@ -5,10 +5,12 @@
  */
 package tools.refinery.logic.term.realinterval;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.term.intinterval.IntBound;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public sealed interface RealBound {
 	boolean lessThanOrEquals(RealBound other);
@@ -38,6 +40,14 @@ public sealed interface RealBound {
 	RealBound mul(RealBound other, RoundingMode roundingMode);
 
 	RealBound div(RealBound other, RoundingMode roundingMode);
+
+	RealBound exp(RoundingMode roundingMode);
+
+	RealBound log(RoundingMode roundingMode);
+
+	RealBound sqrt(RoundingMode roundingMode);
+
+	RealBound pow(RealBound other, RoundingMode roundingMode);
 
 	int signum();
 
@@ -82,6 +92,33 @@ public sealed interface RealBound {
 					throw new ArithmeticException();
 				}
 				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+			}
+
+			@Override
+			public RealBound exp(RoundingMode roundingMode) {
+				return this;
+			}
+
+			@Override
+			public RealBound log(RoundingMode roundingMode) {
+				return this;
+			}
+
+			@Override
+			public RealBound sqrt(RoundingMode roundingMode) {
+				return this;
+			}
+
+			@Override
+			public RealBound pow(RealBound other, RoundingMode roundingMode) {
+				int sign = other.signum();
+				if (sign < 0) {
+					return Finite.ZERO;
+				}
+				if (sign == 0) {
+					return Finite.ONE;
+				}
+				return POSITIVE_INFINITY;
 			}
 
 			@Override
@@ -144,6 +181,26 @@ public sealed interface RealBound {
 			}
 
 			@Override
+			public RealBound exp(RoundingMode roundingMode) {
+				return Finite.ZERO;
+			}
+
+			@Override
+			public RealBound log(RoundingMode roundingMode) {
+				throw new ArithmeticException();
+			}
+
+			@Override
+			public RealBound sqrt(RoundingMode roundingMode) {
+				throw new ArithmeticException();
+			}
+
+			@Override
+			public RealBound pow(RealBound other, RoundingMode roundingMode) {
+				throw new ArithmeticException();
+			}
+
+			@Override
 			public int signum() {
 				return -1;
 			}
@@ -179,9 +236,6 @@ public sealed interface RealBound {
 		public static final Finite ZERO = new Finite(BigDecimal.ZERO);
 		public static final Finite ONE = new Finite(BigDecimal.ONE);
 		public static final Finite NEGATIVE_ONE = new Finite(BigDecimal.valueOf(-1));
-
-		private static final BigDecimal INT_MIN = BigDecimal.valueOf(Integer.MIN_VALUE);
-		private static final BigDecimal INT_MAX = BigDecimal.valueOf(Integer.MAX_VALUE);
 
 		@Override
 		public boolean lessThanOrEquals(RealBound other) {
@@ -247,8 +301,83 @@ public sealed interface RealBound {
 		}
 
 		@Override
+		public RealBound exp(RoundingMode roundingMode) {
+			return new Finite(BigDecimalMath.exp(value, roundingMode.context()));
+		}
+
+		@Override
+		public RealBound log(RoundingMode roundingMode) {
+			int compare = value.compareTo(BigDecimal.ZERO);
+			if (compare < 0) {
+				throw new ArithmeticException();
+			}
+			if (compare == 0) {
+				return Infinite.NEGATIVE_INFINITY;
+			}
+			return new Finite(BigDecimalMath.log(value, roundingMode.context()));
+		}
+
+		@Override
+		public RealBound sqrt(RoundingMode roundingMode) {
+			int compare = value.compareTo(BigDecimal.ZERO);
+			if (compare < 0) {
+				throw new ArithmeticException();
+			}
+			return new Finite(BigDecimalMath.sqrt(value, roundingMode.context()));
+		}
+
+		@Override
+		public RealBound pow(RealBound other, RoundingMode roundingMode) {
+			int signum = signum();
+			if (signum < 0) {
+				throw new ArithmeticException();
+			}
+			if (signum == 0) {
+				// To preserve (anti-)monotonicity, negative powers of 0 are considered as 1.
+				// The case of raising 0 to a surely negative power is handled in
+				// {@link RealInterval#pow(RealInterval)} instead, so in the current method, a value of 0 stands for
+				// a very small (but positive) number instead.
+				int otherSignum = other.signum();
+				if (otherSignum < 0) {
+					return Infinite.POSITIVE_INFINITY;
+				}
+				if (otherSignum == 0) {
+					return ONE;
+				}
+				return ZERO;
+			}
+			return switch (other) {
+				case Infinite ignored -> {
+					int compareTo1 = value.compareTo(BigDecimal.ONE);
+					if (compareTo1 < 0) {
+						yield other == Infinite.POSITIVE_INFINITY ? ZERO : Infinite.POSITIVE_INFINITY;
+					}
+					if (compareTo1 == 0) {
+						yield ONE;
+					}
+					yield other == Infinite.POSITIVE_INFINITY ? Infinite.POSITIVE_INFINITY : ZERO;
+				}
+				case Finite(var finiteValue) ->
+						new Finite(BigDecimalMath.pow(value, finiteValue, roundingMode.context()));
+			};
+		}
+
+		@Override
 		public int signum() {
 			return value.signum();
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (!(o instanceof Finite(var otherValue))) {
+				return false;
+			}
+			return value.compareTo(otherValue) == 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(value);
 		}
 
 		@Override
@@ -278,8 +407,7 @@ public sealed interface RealBound {
 		return switch (intValue) {
 			case IntBound.Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
 			case IntBound.Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
-			case IntBound.Finite finiteBound ->
-					new Finite(BigDecimal.valueOf(finiteBound.value()));
+			case IntBound.Finite finiteBound -> new Finite(BigDecimal.valueOf(finiteBound.value()));
 		};
 	}
 }

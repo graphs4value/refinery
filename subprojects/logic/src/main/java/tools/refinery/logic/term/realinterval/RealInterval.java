@@ -19,13 +19,16 @@ import static tools.refinery.logic.term.realinterval.RoundingMode.FLOOR;
 
 public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upperBound)
 		implements ComparableAbstractValue<RealInterval, BigDecimal>, Comparable<RealInterval>, Plus<RealInterval>,
-		Minus<RealInterval>, Add<RealInterval>, Sub<RealInterval>, Mul<RealInterval>, Div<RealInterval> {
+		Minus<RealInterval>, Add<RealInterval>, Sub<RealInterval>, Mul<RealInterval>, Div<RealInterval>,
+		Exp<RealInterval>, Log<RealInterval>, Sqrt<RealInterval>, Pow<RealInterval> {
 	public static final RealInterval ZERO = new RealInterval(RealBound.Finite.ZERO, RealBound.Finite.ZERO);
 	public static final RealInterval ONE = new RealInterval(RealBound.Finite.ONE, RealBound.Finite.ONE);
 	public static final RealInterval UNKNOWN = new RealInterval(RealBound.Infinite.NEGATIVE_INFINITY,
 			RealBound.Infinite.POSITIVE_INFINITY);
 	public static final RealInterval ERROR = new RealInterval(RealBound.Infinite.POSITIVE_INFINITY,
 			RealBound.Infinite.NEGATIVE_INFINITY);
+	public static final RealInterval POSITIVE_ERROR = new RealInterval(RealBound.Infinite.POSITIVE_INFINITY,
+			RealBound.Finite.ZERO);
 	public static final RealInterval NEGATIVE_INFINITY = new RealInterval(RealBound.Infinite.NEGATIVE_INFINITY,
 			RealBound.Infinite.NEGATIVE_INFINITY);
 	public static final RealInterval POSITIVE_INFINITY = new RealInterval(RealBound.Infinite.POSITIVE_INFINITY,
@@ -222,7 +225,7 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 			var positiveResult = divWithPositive(positiveDivisor);
 			return negativeResult == null ? positiveResult : positiveResult.join(negativeResult);
 		}
-		return negativeResult != null ? negativeResult : RealInterval.ERROR;
+		return negativeResult == null ? RealInterval.ERROR : negativeResult;
 	}
 
 	private RealInterval divWithNegative(RealInterval other) {
@@ -244,6 +247,81 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 			case ZERO_PROPER -> of(lowerBound.div(otherLowerBound, FLOOR), upperBound.div(otherLowerBound, CEIL));
 			case NEGATIVE -> of(lowerBound.div(otherLowerBound, FLOOR), upperBound.div(otherUpperBound, CEIL));
 			case ZERO_IMPROPER -> of(lowerBound.div(otherUpperBound, FLOOR), upperBound.div(otherUpperBound, CEIL));
+		};
+	}
+
+	@Override
+	public RealInterval exp() {
+		return of(lowerBound.exp(FLOOR), upperBound.exp(CEIL));
+	}
+
+	@Override
+	public RealInterval log() {
+		if (upperBound.signum() < 0) {
+			return RealInterval.ERROR;
+		}
+		var clampedLowerBound = lowerBound().max(RealBound.Finite.ZERO);
+		return of(clampedLowerBound.log(FLOOR), upperBound.log(CEIL));
+	}
+
+	@Override
+	public RealInterval sqrt() {
+		if (upperBound.signum() < 0) {
+			return RealInterval.POSITIVE_ERROR;
+		}
+		var clampedLowerBound = lowerBound().max(RealBound.Finite.ZERO);
+		return of(clampedLowerBound.sqrt(FLOOR), upperBound.sqrt(CEIL));
+	}
+
+	@Override
+	public RealInterval pow(RealInterval other) {
+		int upperBoundSign = upperBound.signum();
+		if (upperBoundSign < 0) {
+			// Trying to exponentiate a surely negative number.
+			return RealInterval.POSITIVE_ERROR;
+		}
+		if (upperBoundSign == 0) {
+			// When the only non-negative number in the interval is 0, negative exponents are forbidden.
+			// If the interval contains positive numbers, 0 is treated as an infinitesimally small (but positive)
+			// number in {@link RealBound#pow(RealBound, RoundingMode)}.
+			if (other.upperBound.signum() < 0) {
+				return RealInterval.POSITIVE_ERROR;
+			}
+			other = of(other.lowerBound.max(RealBound.Finite.ZERO), other.upperBound);
+		}
+		var clampedLowerBound = lowerBound.max(RealBound.Finite.ZERO);
+		RealInterval antiMonotoneResult = null;
+		if (clampedLowerBound.compareBound(RealBound.Finite.ONE) <= 0) {
+			antiMonotoneResult = powLessThan1(clampedLowerBound, upperBound.min(RealBound.Finite.ONE), other);
+		}
+		if (upperBound.compareBound(RealBound.Finite.ONE) >= 0) {
+			var monotoneResult = powGreaterThan1(clampedLowerBound.max(RealBound.Finite.ONE), upperBound, other);
+			return antiMonotoneResult == null ? monotoneResult : monotoneResult.join(antiMonotoneResult);
+		}
+		return antiMonotoneResult == null ? POSITIVE_ERROR : antiMonotoneResult;
+	}
+
+	private static RealInterval powLessThan1(RealBound lowerBound, RealBound upperBound, RealInterval exponent) {
+		var otherLowerBound = exponent.lowerBound();
+		var otherUpperBound = exponent.upperBound();
+		return switch (exponent.positivity()) {
+			case POSITIVE -> of(lowerBound.pow(otherUpperBound, FLOOR), upperBound.pow(otherLowerBound, CEIL));
+			case ZERO_PROPER -> of(lowerBound.pow(otherUpperBound, FLOOR), lowerBound.pow(otherLowerBound, CEIL));
+			case NEGATIVE -> of(upperBound.pow(otherUpperBound, FLOOR), lowerBound.pow(otherLowerBound, CEIL));
+			case ZERO_IMPROPER -> of(upperBound.pow(otherUpperBound, FLOOR),
+					upperBound.pow(otherLowerBound, CEIL));
+		};
+	}
+
+	private static RealInterval powGreaterThan1(RealBound lowerBound, RealBound upperBound, RealInterval exponent) {
+		var otherLowerBound = exponent.lowerBound();
+		var otherUpperBound = exponent.upperBound();
+		return switch (exponent.positivity()) {
+			case POSITIVE -> of(lowerBound.pow(otherLowerBound, FLOOR), upperBound.pow(otherUpperBound, CEIL));
+			case ZERO_PROPER -> of(upperBound.pow(otherLowerBound, FLOOR), upperBound.pow(otherUpperBound, CEIL));
+			case NEGATIVE -> of(upperBound.pow(otherLowerBound, FLOOR), lowerBound.pow(otherUpperBound, CEIL));
+			case ZERO_IMPROPER -> of(lowerBound.pow(otherLowerBound, FLOOR),
+					lowerBound.pow(otherUpperBound, CEIL));
 		};
 	}
 

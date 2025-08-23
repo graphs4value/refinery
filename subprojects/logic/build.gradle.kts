@@ -14,5 +14,6 @@ mavenArtifact {
 }
 
 dependencies {
+	implementation(libs.bigmath)
 	testFixturesApi(libs.hamcrest)
 }

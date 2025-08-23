@@ -6,6 +6,7 @@
 antlr = "3.2" # To retain Xtext compatibility, this mustn't be increased
 apiguardian = "1.1.2"
 asm = "9.8"
+bigmath = "2.3.2"
 classgraph = "4.8.181"
 eclipse-commands = "3.12.400"
 eclipse-contenttype = "3.9.600"
@@ -68,6 +69,7 @@ apiguardian = { group = "org.apiguardian", name = "apiguardian-api", version.ref
 asm = { group = "org.ow2.asm", name = "asm", version.ref = "asm" }
 asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
 asm-tree = { group = "org.ow2.asm", name = "asm-tree", version.ref = "asm" }
+bigmath = { group = "ch.obermuhlner", name = "big-math", version.ref = "bigmath" }
 classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref = "classgraph" }
 eclipse-commands = { group = "org.eclipse.platform", name = "org.eclipse.core.commands", version.ref = "eclipse-commands" }
 eclipse-contenttype = { group = "org.eclipse.platform", name = "org.eclipse.core.contenttype", version.ref = "eclipse-contenttype" }

@@ -73,6 +73,7 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private <A extends AbstractValue<A, C>, C> void addImplementedOperators(DataExprType type,
 																			AbstractDomain<A, C> domain) {
+		var unarySignature = new Signature(List.of(type), type);
 		var abstractType = domain.abstractType();
 		for (var implementedInterface : abstractType.getInterfaces()) {
 			if (Not.class.equals(implementedInterface)) {
@@ -115,6 +116,18 @@ public abstract class AbstractTermInterpreter implements TermInterpreter {
 			if (Xor.class.equals(implementedInterface)) {
 				addBinaryOperator(BinaryOp.XOR, type, type, type, (left, right) ->
 						new XorTerm(abstractType, left, right));
+			}
+			if (Exp.class.equals(implementedInterface)) {
+				addOverloadInternal(BuiltInTerms.EXP, unarySignature, args -> new ExpTerm(abstractType,
+						(Term) args.getFirst()));
+			}
+			if (Log.class.equals(implementedInterface)) {
+				addOverloadInternal(BuiltInTerms.LOG, unarySignature, args -> new LogTerm(abstractType,
+						(Term) args.getFirst()));
+			}
+			if (Sqrt.class.equals(implementedInterface)) {
+				addOverloadInternal(BuiltInTerms.SQRT, unarySignature, args -> new SqrtTerm(abstractType,
+						(Term) args.getFirst()));
 			}
 		}
 		addAggregatorInternal(BuiltInTerms.MEET_AGGREGATOR, type, type, PartialAggregator.meet(domain));
