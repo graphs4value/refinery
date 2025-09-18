@@ -14,10 +14,12 @@ import java.util.Objects;
 
 class NullaryMutableSeed<A extends AbstractValue<A, C>, C> implements MutableSeed<A> {
 	private final Class<A> valueType;
+	private final A fallbackMajorityValue;
 	private DecisionTreeValue<A, C> value;
 
-	public NullaryMutableSeed(Class<A> valueType, A reducedValue) {
+	public NullaryMutableSeed(Class<A> valueType, A fallbackMajorityValue, A reducedValue) {
 		this.valueType = valueType;
+		this.fallbackMajorityValue = fallbackMajorityValue;
 		value = DecisionTreeValue.ofNullable(reducedValue);
 	}
 
@@ -33,13 +35,18 @@ class NullaryMutableSeed<A extends AbstractValue<A, C>, C> implements MutableSee
 
 	@Override
 	public A majorityValue() {
+		var majorityValue = getValue();
+		return majorityValue == null ? fallbackMajorityValue : majorityValue;
+	}
+
+	private A getValue() {
 		return value.orElseNull();
 	}
 
 	@Override
 	public A get(Tuple key) {
 		validateKey(key);
-		return majorityValue();
+		return getValue();
 	}
 
 	private static void validateKey(Tuple key) {
@@ -58,6 +65,7 @@ class NullaryMutableSeed<A extends AbstractValue<A, C>, C> implements MutableSee
 
 	@Override
 	public void mergeValue(Tuple tuple, A value) {
+		validateKey(tuple);
 		this.value = DecisionTreeValue.ofNullable(this.value.merge(value));
 	}
 
@@ -79,11 +87,9 @@ class NullaryMutableSeed<A extends AbstractValue<A, C>, C> implements MutableSee
 		if (!(other instanceof NullaryMutableSeed<?, ?> nullaryMutableSeed)) {
 			throw new IllegalArgumentException("Incompatible overwrite: " + other);
 		}
-		if (nullaryMutableSeed.value.isUnset()) {
-			// This is safe, because A uniquely determines C.
-			@SuppressWarnings("unchecked")
-			var typedValue = (DecisionTreeValue<A, C>) nullaryMutableSeed.value;
-			value = typedValue;
-		}
+		// This is safe, because A uniquely determines C.
+		@SuppressWarnings("unchecked")
+		var typedValue = (DecisionTreeValue<A, C>) nullaryMutableSeed.value;
+		value = value.overwrite(typedValue);
 	}
 }

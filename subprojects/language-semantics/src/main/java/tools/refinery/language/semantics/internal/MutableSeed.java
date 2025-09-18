@@ -24,8 +24,7 @@ public interface MutableSeed<T> extends Seed<T> {
 	static <A extends AbstractValue<A, C>, C> MutableSeed<A> of(int levels, AbstractDomain<A, C> domain,
 																A fallbackMajorityValue, A initialValue) {
 		if (levels == 0) {
-			return new NullaryMutableSeed<>(domain.abstractType(),
-					initialValue == null ? fallbackMajorityValue : initialValue);
+			return new NullaryMutableSeed<>(domain.abstractType(), fallbackMajorityValue, initialValue);
 		} else {
 			return new DecisionTree<>(levels, domain.abstractType(), fallbackMajorityValue, initialValue);
 		}
