@@ -88,6 +88,7 @@
          <trusted-key id="BB785E0400E71390977E4D1ADF3CC7C64D56297B" group="jakarta.interceptor" name="jakarta.interceptor-api"/>
          <trusted-key id="BD7A06A58793C8CD6B23F29C48649310781A80FB" group="org.eclipse.lsp4j"/>
          <trusted-key id="BDB5FA4FE719D787FB3D3197F6D4A1D411E9D1AE" group="^com[.]google($|([.].*))" regex="true"/>
+         <trusted-key id="C3259D20DAEC4ACE6D57CC83340B090F727518D8" group="com.google.j2objc" name="j2objc-annotations"/>
          <trusted-key id="C73B7FB12A0B8D0DFF2F0FBADA70365F88DD141C" group="jakarta.el" name="jakarta.el-api"/>
          <trusted-key id="C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7" group="com.google.code.gson" name="gson"/>
          <trusted-key id="D477D51812E692011DB11E66A6EA2E2BF22E0543" group="io.github.java-diff-utils" name="java-diff-utils"/>
