@@ -66,7 +66,7 @@ class QueryBasedExprToTerm extends ExprToTerm {
 		return switch (expr) {
 			case Atom atom -> createPartialFunctionCall(atom);
 			case VariableOrNodeExpr variableOrNodeExpr -> createVariableReference(variableOrNodeExpr);
-			case ModalExpr modalExpr -> createModalOperator(modalExpr);
+			case ModalExpr modalExpr -> createModalOperatorWithConcreteness(modalExpr);
 			case AggregationExpr aggregationExpr -> createAggregation(aggregationExpr);
 			case null, default -> super.toTerm(expr);
 		};
@@ -96,9 +96,10 @@ class QueryBasedExprToTerm extends ExprToTerm {
 		}
 	}
 
-	private Optional<AnyTerm> createModalOperator(ModalExpr expr) {
+	private Optional<AnyTerm> createModalOperatorWithConcreteness(ModalExpr expr) {
 		var concreteness = expr.getConcreteness();
 		if (concreteness == Concreteness.UNSPECIFIED) {
+			// Fall back on the original implementation without concreteness support.
 			return super.toTerm(expr);
 		}
 		var concretenessSpecification = switch (concreteness) {

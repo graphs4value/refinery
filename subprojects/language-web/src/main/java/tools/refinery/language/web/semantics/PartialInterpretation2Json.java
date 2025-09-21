@@ -71,7 +71,7 @@ public class PartialInterpretation2Json {
 	}
 
 	// We deliberately use {@code ==} to check for the equality of interned strings.
-	@SuppressWarnings("StringEquality")
+	@SuppressWarnings({"StringEquality", "squid:S4973"})
 	private static <A extends AbstractValue<A, C>, C> JsonArray toArray(Tuple tuple, A value) {
 		int arity = tuple.getSize();
 		var json = new JsonArray(arity + 1);

@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.semantics.ProblemTrace;
@@ -97,6 +98,28 @@ public class QueryCompiler {
 	record PreparedQuery(NodeVariable[] parameters,
 						 HashMap<tools.refinery.language.model.problem.Variable, Variable> parameterMap,
 						 ArrayList<Literal> commonLiterals) {
+		@Override
+		public boolean equals(Object o) {
+			if (!(o instanceof PreparedQuery that)) {
+				return false;
+			}
+			return Objects.deepEquals(parameters, that.parameters) && Objects.equals(commonLiterals,
+					that.commonLiterals) && Objects.equals(parameterMap, that.parameterMap);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(Arrays.hashCode(parameters), parameterMap, commonLiterals);
+		}
+
+		@Override
+		public @NotNull String toString() {
+			return "PreparedQuery{" +
+					"parameters=" + Arrays.toString(parameters) +
+					", parameterMap=" + parameterMap +
+					", commonLiterals=" + commonLiterals +
+					'}';
+		}
 	}
 
 	void buildConjunction(
