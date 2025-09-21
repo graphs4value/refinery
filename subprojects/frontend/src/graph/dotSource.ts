@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2025 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -13,6 +13,7 @@ import type {
 
 import type GraphStore from './GraphStore';
 import obfuscateColor from './obfuscateColor';
+import { binarySearch, extractValue, extractValueColor } from './valueUtils';
 
 const EDGE_WEIGHT = 1;
 const CONTAINMENT_WEIGHT = 5;
@@ -25,7 +26,7 @@ function nodeName(
 ): string {
   let name = escape(graph.getName(metadata));
   if (count !== undefined) {
-    name = `${name}&nbsp;${count}`;
+    name = `${name}&nbsp;[${count}]`;
   }
   switch (metadata.kind) {
     case 'atom':
@@ -66,8 +67,8 @@ function computeNodeData(graph: GraphStore): NodeData[] {
 
   const nodeData = Array.from(Array(nodes.length)).map(() => ({
     isolated: true,
-    exists: 'FALSE',
-    equalsSelf: 'FALSE',
+    exists: 'false',
+    equalsSelf: 'false',
     unaryPredicates: new Map(),
     count: '[0]',
   }));
@@ -81,7 +82,7 @@ function computeNodeData(graph: GraphStore): NodeData[] {
     const interpretation = partialInterpretation[relation.name] ?? [];
     interpretation.forEach((tuple) => {
       const value = tuple[arity];
-      if (visibility !== 'all' && value === 'UNKNOWN') {
+      if (visibility !== 'all' && extractValueColor(value) === 'unknown') {
         return;
       }
       for (let i = 0; i < arity; i += 1) {
@@ -122,10 +123,10 @@ function computeNodeData(graph: GraphStore): NodeData[] {
   });
 
   partialInterpretation['builtin::count']?.forEach(([index, value]) => {
-    if (typeof index === 'number' && typeof value === 'string') {
+    if (typeof index === 'number') {
       const data = nodeData[index];
       if (data !== undefined) {
-        data.count = value;
+        data.count = extractValue(value) ?? '0';
       }
     }
   });
@@ -188,7 +189,7 @@ function setLabelWidth(
     const { width, height } = measureDiv.getBoundingClientRect();
     // Rounding the length (converted to points) to 1 decimal precision seems to yield the best alignment.
     // The rounding matters here, because Graphviz will also apply some rounding internall.
-    cached = `<table align="${align}" fixedsize="TRUE" width="${Math.ceil(width * 7.5) / 10}" height="${Math.ceil(height * 7.5) / 10}" border="0" cellborder="0" cellpadding="0" cellspacing="0">
+    cached = `<table align="${align}" fixedsize="true" width="${Math.ceil(width * 7.5) / 10}" height="${Math.ceil(height * 7.5) / 10}" border="0" cellborder="0" cellpadding="0" cellspacing="0">
             <tr><td>${text}</td></tr>
           </table>`;
     sizeCache.set(key, cached);
@@ -213,7 +214,7 @@ function createNodes(
     if (
       data === undefined ||
       data.isolated ||
-      (!showNonExistent && data.exists === 'FALSE')
+      (!showNonExistent && data.exists === 'false')
     ) {
       return;
     }
@@ -238,81 +239,45 @@ function createNodes(
           <tr><td cellpadding="4.5" width="32" bgcolor="green">${nodeLabel}</td></tr>`);
     if (data.unaryPredicates.size > 0) {
       lines.push(
-        '<hr/><tr><td cellpadding="4.5"><table fixedsize="TRUE" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="1.5">',
+        '<hr/><tr><td cellpadding="4.5"><table fixedsize="true" align="left" border="0" cellborder="0" cellspacing="0" cellpadding="1.5">',
       );
       data.unaryPredicates.forEach((value, relation) => {
         const encodedRelationName = `${encodedNodeName},${encodeName(relation.name)}`;
-        const relationLabel = setLabelWidth(
-          relationName(graph, relation),
-          'left',
-          12,
-          sizeCache,
-        );
-        lines.push(
-          `<tr>
-              <td><img src="#${value}"/></td>
-              <td width="1.5"></td>
-              <td align="left" href="#${value}" id="${encodedRelationName},label">${relationLabel}</td>
-            </tr>`,
-        );
+        if (relation.dataType === undefined) {
+          const relationLabel = setLabelWidth(
+            relationName(graph, relation),
+            'left',
+            12,
+            sizeCache,
+          );
+          lines.push(
+            `<tr>
+                <td><img src="#${value}"/></td>
+                <td width="1.5"></td>
+                <td align="left" href="#${value}" id="${encodedRelationName},label">${relationLabel}</td>
+              </tr>`,
+          );
+        } else {
+          let valueString = extractValue(value);
+          if (valueString === 'unknown') {
+            valueString = '?';
+          }
+          const attributeName = graph.getName(relation);
+          const attributeLabel = `${attributeName}: ${valueString}`;
+          const color = extractValueColor(value);
+          lines.push(
+            `<tr>
+                <td><img src="#attribute-${color}"/></td>
+                <td width="1.5"></td>
+                <td align="left" href="#${color}" id="${encodedRelationName},label">${attributeLabel}</td>
+              </tr>`,
+          );
+        }
       });
       lines.push('</table></td></tr>');
     }
     lines.push('</table>>]');
   });
-}
-
-function compare(
-  a: readonly (number | string)[],
-  b: readonly number[],
-): number {
-  if (a.length !== b.length + 1) {
-    throw new Error('Tuple length mismatch');
-  }
-  for (let i = 0; i < b.length; i += 1) {
-    const aItem = a[i];
-    const bItem = b[i];
-    if (typeof aItem !== 'number' || typeof bItem !== 'number') {
-      throw new Error('Invalid tuple');
-    }
-    if (aItem < bItem) {
-      return -1;
-    }
-    if (aItem > bItem) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-function binarySerach(
-  tuples: readonly (readonly (number | string)[])[],
-  key: readonly number[],
-): string | undefined {
-  let lower = 0;
-  let upper = tuples.length - 1;
-  while (lower <= upper) {
-    const middle = Math.floor((lower + upper) / 2);
-    const tuple = tuples[middle];
-    if (tuple === undefined) {
-      throw new Error('Range error');
-    }
-    const result = compare(tuple, key);
-    if (result === 0) {
-      const found = tuple[key.length];
-      if (typeof found !== 'string') {
-        throw new Error('Invalid tuple value');
-      }
-      return found;
-    }
-    if (result < 0) {
-      lower = middle + 1;
-    } else {
-      // result > 0
-      upper = middle - 1;
-    }
-  }
-  return undefined;
 }
 
 function getEdgeLabel(
@@ -327,14 +292,14 @@ function getEdgeLabel(
     10.5,
     sizeCache,
   );
-  if (value !== 'ERROR') {
+  if (value !== 'error') {
     return `<${label}>`;
   }
   // No need to set an id for the image for animation,
   // because it will be the only `<use>` element in its group.
   return `<<table align="left" border="0" cellborder="0" cellspacing="0" cellpadding="0">
     <tr>
-      <td><img src="#ERROR"/></td>
+      <td><img src="#error"/></td>
       <td width="3.9375"></td>
       <td align="left">${label}</td>
     </tr>
@@ -375,7 +340,7 @@ function createRelationEdges(
   const tuples = partialInterpretation[relation.name] ?? [];
   const encodedRelation = encodeName(relation.name);
   tuples.forEach(([from, to, value]) => {
-    const isUnknown = value === 'UNKNOWN';
+    const isUnknown = value === 'unknown';
     if (
       (!showUnknown && isUnknown) ||
       typeof from !== 'number' ||
@@ -397,7 +362,7 @@ function createRelationEdges(
       fromData === undefined ||
       toData === undefined ||
       (!showNonExistent &&
-        (fromData.exists === 'FALSE' || toData.exists === 'FALSE'))
+        (fromData.exists === 'false' || toData.exists === 'false'))
     ) {
       return;
     }
@@ -405,8 +370,8 @@ function createRelationEdges(
     let dir = 'forward';
     let edgeConstraint = constraint;
     let edgeWeight = weight;
-    const opposite = binarySerach(tuples, [to, from]);
-    const oppositeUnknown = opposite === 'UNKNOWN';
+    const opposite = binarySearch(tuples, [to, from]);
+    const oppositeUnknown = opposite === 'unknown';
     const oppositeSet = opposite !== undefined;
     const oppositeVisible = oppositeSet && (showUnknown || !oppositeUnknown);
     if (opposite === value) {
@@ -422,7 +387,7 @@ function createRelationEdges(
       edgeConstraint = 'false';
       edgeWeight = 0;
     } else if (isUnknown && (!oppositeSet || oppositeUnknown)) {
-      // Only apply the UNKNOWN value penalty if we aren't the opposite
+      // Only apply the unknown value penalty if we aren't the opposite
       // edge driving the graph layout from above, or the penalty would
       // be applied anyway.
       edgeWeight *= UNKNOWN_WEIGHT_FACTOR;

@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.internal;
 
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.FunctionalQuery;
 import tools.refinery.logic.dnf.Query;
@@ -21,14 +22,18 @@ import tools.refinery.store.reasoning.ReasoningStoreAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.lifting.DnfLifter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.ModalitySpecification;
 import tools.refinery.store.reasoning.refinement.DefaultStorageRefiner;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.translator.AnyPartialSymbolTranslator;
+import tools.refinery.store.reasoning.translator.PartialFunctionTranslator;
 import tools.refinery.store.reasoning.translator.PartialRelationTranslator;
+import tools.refinery.store.reasoning.translator.PartialSymbolTranslator;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.statecoding.StateCoderBuilder;
@@ -94,7 +99,18 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	}
 
 	@Override
+	public <T> Query<T> lift(ModalitySpecification modality, ConcretenessSpecification concreteness, Query<T> query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
 	public RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
+	public RelationalQuery lift(ModalitySpecification modality, ConcretenessSpecification concreteness,
+                                RelationalQuery query) {
 		return lifter.lift(modality, concreteness, query);
 	}
 
@@ -104,7 +120,18 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 	}
 
 	@Override
+	public <T> FunctionalQuery<T> lift(ModalitySpecification modality, ConcretenessSpecification concreteness,
+									   FunctionalQuery<T> query) {
+		return lifter.lift(modality, concreteness, query);
+	}
+
+	@Override
 	public Dnf lift(Modality modality, Concreteness concreteness, Dnf dnf) {
+		return lifter.lift(modality, concreteness, dnf);
+	}
+
+	@Override
+	public Dnf lift(ModalitySpecification modality, ConcretenessSpecification concreteness, Dnf dnf) {
 		return lifter.lift(modality, concreteness, dnf);
 	}
 
@@ -115,12 +142,7 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 				.ifPresent(stateCoderBuilder -> stateCoderBuilder.exclude(ReasoningAdapterImpl.NODE_COUNT_SYMBOL));
 		for (var translator : translators.values()) {
 			translator.configure(storeBuilder);
-			if (translator instanceof PartialRelationTranslator relationConfiguration) {
-				doConfigure(storeBuilder, relationConfiguration);
-			} else {
-				throw new IllegalArgumentException("Unknown partial symbol translator %s for partial symbol %s"
-						.formatted(translator, translator.getPartialSymbol()));
-			}
+			doConfigure(storeBuilder, (PartialSymbolTranslator<?, ?>) translator);
 		}
 		storeBuilder.symbols(registeredStorageRefiners.keySet());
 		var queryBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
@@ -131,15 +153,25 @@ public class ReasoningBuilderImpl extends AbstractModelAdapterBuilder<ReasoningS
 		}
 	}
 
-	private void doConfigure(ModelStoreBuilder storeBuilder, PartialRelationTranslator relationConfiguration) {
-		var partialRelation = relationConfiguration.getPartialRelation();
-		queryRewriter.addRelationRewriter(partialRelation, relationConfiguration.getRewriter());
-		var interpretationFactory = relationConfiguration.getInterpretationFactory();
+	private <A extends AbstractValue<A, C>, C> void doConfigure(
+			ModelStoreBuilder storeBuilder, PartialSymbolTranslator<A, C> translator) {
+		var partialSymbol = translator.getPartialSymbol();
+		var interpretationFactory = translator.getInterpretationFactory();
 		interpretationFactory.configure(storeBuilder, requiredInterpretations);
-		symbolInterpreters.put(partialRelation, interpretationFactory);
-		var refiner = relationConfiguration.getInterpretationRefiner();
+		symbolInterpreters.put(partialSymbol, interpretationFactory);
+		var refiner = translator.getInterpretationRefiner();
 		if (refiner != null) {
-			symbolRefiners.put(partialRelation, refiner);
+			symbolRefiners.put(partialSymbol, refiner);
+		}
+		switch (translator) {
+		case PartialRelationTranslator partialRelationTranslator -> {
+			var partialRelation = partialRelationTranslator.getPartialRelation();
+			queryRewriter.addRelationRewriter(partialRelation, partialRelationTranslator.getRewriter());
+		}
+		case PartialFunctionTranslator<A, C> partialFunctionTranslator -> {
+			var partialFunction = partialFunctionTranslator.getPartialFunction();
+			queryRewriter.addFunctionRewriter(partialFunction, partialFunctionTranslator.getRewriter());
+		}
 		}
 	}
 

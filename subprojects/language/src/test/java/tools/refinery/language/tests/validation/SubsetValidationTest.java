@@ -115,7 +115,30 @@ class SubsetValidationTest {
 		assertThat(issues, hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
 				hasProperty("issueCode", is(ProblemValidator.INVALID_ARITY_ISSUE)),
-				hasProperty("message", stringContainsInOrder("bar", "bar2"))
+				hasProperty("message", stringContainsInOrder("bar", "bar2", "arity"))
+		)));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"""
+			class Foo {
+				int bar
+			}
+
+			pred bar2(Foo a) subsets bar.
+			""", """
+			class Foo {
+			    int bar
+			    Foo[] bar2 subsets bar
+			}
+			"""})
+	void subsetFunctionTest(String text) {
+		var problem = parseHelper.parse(text);
+		var issues = problem.validate();
+		assertThat(issues, hasItem(allOf(
+				hasProperty("severity", is(Diagnostic.ERROR)),
+				hasProperty("issueCode", is(ProblemValidator.INVALID_SUPERSET_ISSUE)),
+				hasProperty("message", stringContainsInOrder("bar", "bar2", "int"))
 		)));
 	}
 

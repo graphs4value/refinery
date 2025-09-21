@@ -11,23 +11,24 @@ import tools.refinery.logic.dnf.DnfClause;
 import tools.refinery.logic.literal.*;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.ParameterDirection;
+import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.reasoning.ReasoningAdapter;
-import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.literal.ModalConstraint;
-import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 class ClauseLifter {
-	private final Modality modality;
-	private final Concreteness concreteness;
+	private final ModalitySpecification modality;
+	private final ConcretenessSpecification concreteness;
 	private final DnfClause clause;
 	private final Set<NodeVariable> quantifiedVariables;
 	private final Set<NodeVariable> existentialQuantifiersToAdd;
 
-	public ClauseLifter(Modality modality, Concreteness concreteness, Dnf dnf, DnfClause clause) {
+	public ClauseLifter(ModalitySpecification modality, ConcretenessSpecification concreteness, Dnf dnf,
+						DnfClause clause) {
 		this.modality = modality;
 		this.concreteness = concreteness;
 		this.clause = clause;
@@ -54,29 +55,29 @@ class ClauseLifter {
 			var liftedLiteral = liftLiteral(literal);
 			liftedLiterals.add(liftedLiteral);
 		}
-		var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
-		for (var quantifiedVariable : existentialQuantifiersToAdd) {
-			liftedLiterals.add(existsConstraint.call(quantifiedVariable));
+		if (modality != ModalitySpecification.UNSPECIFIED) {
+			var existsConstraint = ModalConstraint.of(modality, concreteness, ReasoningAdapter.EXISTS_SYMBOL);
+			for (var quantifiedVariable : existentialQuantifiersToAdd) {
+				liftedLiterals.add(existsConstraint.call(quantifiedVariable));
+			}
 		}
 		return liftedLiterals;
 	}
 
 	private Literal liftLiteral(Literal literal) {
-		if (literal instanceof CallLiteral callLiteral) {
-			return liftCallLiteral(callLiteral);
-		} else if (literal instanceof EquivalenceLiteral equivalenceLiteral) {
-			return liftEquivalenceLiteral(equivalenceLiteral);
-		} else if (literal instanceof ConstantLiteral ||
-				literal instanceof AssignLiteral<?> ||
-				literal instanceof CheckLiteral) {
-			return literal;
-		} else if (literal instanceof AbstractCountLiteral<?>) {
-			throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(literal));
-		} else if (literal instanceof RepresentativeElectionLiteral) {
-			throw new IllegalArgumentException("SCC literal %s cannot be lifted".formatted(literal));
-		} else {
-			throw new IllegalArgumentException("Unknown literal to lift: " + literal);
-		}
+		return switch (literal) {
+			case CallLiteral callLiteral -> liftCallLiteral(callLiteral);
+			case EquivalenceLiteral equivalenceLiteral -> liftEquivalenceLiteral(equivalenceLiteral);
+			case ConstantLiteral constantLiteral -> constantLiteral;
+			case PartialCheckLiteral partialCheckLiteral -> liftPartialCheckLiteral(partialCheckLiteral);
+			case TermLiteral<?> termLiteral -> liftTermLiteral(termLiteral);
+			case AbstractCountLiteral<?> countLiteral ->
+					throw new IllegalArgumentException("Count literal %s cannot be lifted".formatted(countLiteral));
+			case RepresentativeElectionLiteral representativeLiteral ->
+					throw new IllegalArgumentException("SCC literal %s cannot be lifted"
+							.formatted(representativeLiteral));
+			default -> throw new IllegalArgumentException("Unknown literal to lift: " + literal);
+		};
 	}
 
 	private Literal liftCallLiteral(CallLiteral callLiteral) {
@@ -176,5 +177,28 @@ class ClauseLifter {
 		}
 		return ModalConstraint.of(modality.negate(), concreteness, ReasoningAdapter.EQUALS_SYMBOL)
 				.call(CallPolarity.NEGATIVE, equivalenceLiteral.getLeft(), equivalenceLiteral.getRight());
+	}
+
+	private Literal liftPartialCheckLiteral(PartialCheckLiteral partialCheckLiteral) {
+		var term = partialCheckLiteral.getTerm();
+		var rewrittenTerm = rewriteTerm(term);
+		return switch (modality) {
+			case MAY -> new CheckLiteral(TruthValueTerms.may(rewrittenTerm));
+			case MUST -> new CheckLiteral(TruthValueTerms.must(rewrittenTerm));
+			case UNSPECIFIED -> partialCheckLiteral.withTerm(rewrittenTerm);
+		};
+	}
+
+	private <T> TermLiteral<T> liftTermLiteral(TermLiteral<T> termLiteral) {
+		var liftedTerm = rewriteTerm(termLiteral.getTerm());
+		return termLiteral.withTerm(liftedTerm);
+	}
+
+	private <T> Term<T> rewriteTerm(Term<T> term) {
+		var rewrittenTerm = term.rewriteSubTerms(this::rewriteTerm);
+		if (rewrittenTerm instanceof PartialTerm<T> partialTerm) {
+			return partialTerm.orElseConcreteness(concreteness);
+		}
+		return rewrittenTerm;
 	}
 }

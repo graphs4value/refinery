@@ -133,7 +133,7 @@ export default class XtextClient {
     if (stateId !== xtextStateId) {
       log.error(
         'Unexpected xtext state id: expected: %s got: %s',
-        xtextStateId,
+        xtextStateId ?? 'undefined',
         stateId,
       );
       // The current push message might be stale (referring to a previous state),

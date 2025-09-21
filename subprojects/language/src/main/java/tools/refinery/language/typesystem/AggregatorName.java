@@ -6,6 +6,7 @@
 package tools.refinery.language.typesystem;
 
 import org.eclipse.xtext.naming.QualifiedName;
+import org.jetbrains.annotations.NotNull;
 
 public record AggregatorName(QualifiedName qualifiedName) {
 	public AggregatorName(QualifiedName prefix, String name) {
@@ -13,7 +14,7 @@ public record AggregatorName(QualifiedName qualifiedName) {
 	}
 
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return qualifiedName.isEmpty() ? "" : qualifiedName.getLastSegment();
 	}
 }

@@ -5,11 +5,15 @@
  */
 package tools.refinery.store.dse.transition;
 
+import tools.refinery.logic.dnf.AnyQuery;
+import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.dse.transition.actions.Action;
 import tools.refinery.store.dse.transition.actions.BoundAction;
 import tools.refinery.store.dse.transition.callback.*;
 import tools.refinery.store.model.Model;
-import tools.refinery.logic.dnf.RelationalQuery;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Rule {
 	private final String name;
@@ -34,8 +38,26 @@ public class Rule {
 		return precondition;
 	}
 
+	public List<AnyQuery> getQueries() {
+		var queries = new ArrayList<AnyQuery>(1);
+		queries.add(precondition);
+		for (var literal : action.getActionLiterals()) {
+			queries.addAll(literal.getQueries());
+		}
+		return List.copyOf(queries);
+	}
+
 	public BoundAction createAction(Model model) {
 		return action.bindToModel(model);
+	}
+
+	public boolean isDynamic() {
+		for (var actionLiteral : action.getActionLiterals()) {
+			if (actionLiteral.isDynamic()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static RuleBuilder builder(String name) {

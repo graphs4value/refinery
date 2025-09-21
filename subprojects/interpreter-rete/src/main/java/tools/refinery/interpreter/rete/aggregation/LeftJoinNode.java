@@ -22,10 +22,7 @@ import tools.refinery.interpreter.rete.network.ReteContainer;
 import tools.refinery.interpreter.rete.network.StandardNode;
 import tools.refinery.interpreter.rete.network.communication.Timestamp;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class LeftJoinNode extends StandardNode {
 	private final Object defaultValue;
@@ -57,7 +54,7 @@ public class LeftJoinNode extends StandardNode {
 			@Override
 			public void notifyIndexerUpdate(Direction direction, Tuple updateElement, Tuple signature, boolean change,
 											Timestamp timestamp) {
-				update(direction, updateElement, signature, change, timestamp);
+				update(direction, updateElement, signature, change);
 			}
 		});
 	}
@@ -96,11 +93,10 @@ public class LeftJoinNode extends StandardNode {
 		return true;
 	}
 
-	protected void update(Direction direction, Tuple updateElement, Tuple signature, boolean change,
-						  Timestamp timestamp) {
-		propagateUpdate(direction, updateElement, timestamp);
+	protected void update(Direction direction, Tuple updateElement, Tuple signature, boolean change) {
+		propagateUpdate(direction, updateElement, Timestamp.ZERO);
 		if (outerIndexer != null) {
-			outerIndexer.update(direction, updateElement, signature, change, timestamp);
+			outerIndexer.update(direction, updateElement, signature, change);
 		}
 	}
 
@@ -148,6 +144,9 @@ public class LeftJoinNode extends StandardNode {
 	 * @author Gabor Bergmann
 	 */
 	class OuterIndexer extends StandardIndexer {
+		private Tuple updatingSignature;
+		private Collection<Tuple> updateValue;
+
 		public OuterIndexer() {
 			super(LeftJoinNode.this.reteContainer, LeftJoinNode.this.projectionMask);
 			this.parent = LeftJoinNode.this;
@@ -155,6 +154,9 @@ public class LeftJoinNode extends StandardNode {
 
 		@Override
 		public Collection<Tuple> get(Tuple signature) {
+			if (signature.equals(updatingSignature)) {
+				return updateValue;
+			}
 			var collection = projectionIndexer.get(signature);
 			if (collection == null || collection.isEmpty()) {
 				return List.of(getDefaultTuple(signature));
@@ -162,13 +164,35 @@ public class LeftJoinNode extends StandardNode {
 			return collection;
 		}
 
-		public void update(Direction direction, Tuple updateElement, Tuple signature, boolean change,
-						   Timestamp timestamp) {
-			propagate(direction, updateElement, signature, false, timestamp);
-			if (change) {
-				var defaultTuple = getDefaultTuple(signature);
-				propagate(direction.opposite(), defaultTuple, signature, false, timestamp);
+		public void update(Direction direction, Tuple updateElement, Tuple signature, boolean change) {
+			if (!change) {
+				propagate(direction, updateElement, signature, false, Timestamp.ZERO);
+				return;
 			}
+			var defaultTuple = getDefaultTuple(signature);
+			if (direction == Direction.INSERT) {
+				swap(defaultTuple, updateElement, signature);
+			} else {
+				swap(updateElement, defaultTuple, signature);
+			}
+		}
+
+		private void swap(Tuple oldValue, Tuple newValue, Tuple signature) {
+			if (updateValue != null) {
+				throw new IllegalStateException("Reentrant updates of LeftJoinNode are not supported.");
+			}
+			if (oldValue.equals(newValue)) {
+				return;
+			}
+			updatingSignature = signature;
+			updateValue = List.of(oldValue, newValue);
+			try {
+				propagate(Direction.INSERT, newValue, signature, false, Timestamp.ZERO);
+			} finally {
+				updatingSignature = null;
+				updateValue = null;
+			}
+			propagate(Direction.DELETE, oldValue, signature, false, Timestamp.ZERO);
 		}
 
 		@Override

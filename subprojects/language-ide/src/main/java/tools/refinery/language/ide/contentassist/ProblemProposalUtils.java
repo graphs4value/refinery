@@ -11,6 +11,7 @@ import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -25,17 +26,23 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
 
 @Singleton
 public class ProblemProposalUtils {
 	private static final String DATATYPE_KIND = "datatype";
+	public static final String SHADOW_DESCRIPTION = "shadow";
+	public static final String ATTRIBUTE_KIND = "attribute";
 
 	@Inject
 	private ImportAdapterProvider importAdapterProvider;
 
 	@Inject
 	private IQualifiedNameProvider qualifiedNameProvider;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	@Inject
 	private DocumentationCommentParser documentationCommentParser;
@@ -60,6 +67,12 @@ public class ProblemProposalUtils {
 		} catch (NumberFormatException e) {
 			// Ignore parse error, omit arity.
 		}
+		if (arity < 0) {
+			var candidateEObject = candidate.getEObjectOrProxy();
+			if (!candidateEObject.eIsProxy() && candidateEObject instanceof Relation relation) {
+				arity = signatureProvider.getArity(relation);
+			}
+		}
 		var eClassDescription = getEClassDescription(candidate, null);
 		return getDescriptionWithArity(arity, eClassDescription);
 	}
@@ -70,7 +83,13 @@ public class ProblemProposalUtils {
 			// Datatypes shouldn't have their arity displayed.
 			return DATATYPE_KIND;
 		}
-		int arity = eObject instanceof Relation relation ? ProblemUtil.getArityWithoutProxyResolution(relation) : -1;
+		int arity = -1;
+		if (eObject instanceof Relation relation) {
+			arity = ProblemUtil.getArityWithoutProxyResolution(relation);
+			if (arity < 0) {
+				arity = signatureProvider.getArity(relation);
+			}
+		}
 		var eClassDescription = getEClassDescription(null, eObject);
 		return getDescriptionWithArity(arity, eClassDescription);
 	}
@@ -104,16 +123,18 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.VARIABLE.isSuperTypeOf(eClass)) {
 			return "variable";
 		}
-		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass)) {
-			return getPredicateDescription(candidate, eObject);
+		if (ProblemPackage.Literals.PREDICATE_DEFINITION.isSuperTypeOf(eClass) ||
+				ProblemPackage.Literals.OVERLOADED_DECLARATION.isSuperTypeOf(eClass)) {
+			return getShadowOrEmptyDescription(candidate, eObject);
 		}
 		if (ProblemPackage.Literals.CLASS_DECLARATION.isSuperTypeOf(eClass)) {
 			return "class";
 		}
 		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass)) {
-			// For predicates, there is no need to show the exact type of definition, since they behave
-			// logically equivalently.
-			return null;
+			return getReferenceDescription(candidate, eObject);
+		}
+		if (ProblemPackage.Literals.FUNCTION_DEFINITION.isSuperTypeOf(eClass)) {
+			return getFunctionDescription(candidate, eObject);
 		}
 		if (ProblemPackage.Literals.ENUM_DECLARATION.isSuperTypeOf(eClass)) {
 			return "enum";
@@ -129,6 +150,17 @@ public class ProblemProposalUtils {
 			return null;
 		}
 		return eClass.getName();
+	}
+
+	private static @Nullable EObject forceResolve(IEObjectDescription candidate, EObject eObject) {
+		var target = eObject;
+		if (target == null) {
+			var eObjectOrProxy = candidate.getEObjectOrProxy();
+			if (!eObjectOrProxy.eIsProxy()) {
+				target = eObjectOrProxy;
+			}
+		}
+		return target;
 	}
 
 	private static @NotNull String getNodeDescription(IEObjectDescription candidate, EObject eObject) {
@@ -157,8 +189,33 @@ public class ProblemProposalUtils {
 		return eObject instanceof Node node && ProblemUtil.isMultiNode(node);
 	}
 
-	private static @Nullable String getPredicateDescription(IEObjectDescription candidate, EObject eObject) {
-		return isShadow(candidate, eObject) ? "shadow" : null;
+	private static @Nullable String getShadowOrEmptyDescription(IEObjectDescription candidate, EObject eObject) {
+		return isShadow(candidate, eObject) ? SHADOW_DESCRIPTION : null;
+	}
+
+	private static @Nullable String getReferenceDescription(IEObjectDescription candidate, EObject eObject) {
+		// To see whether this is a reference or an attribute, we must resolve proxies explicitly,
+		// because the referenceType of a ReferenceDeclaration can't be resolved during
+		// {@link IEObjectDescription} construction.
+		if (forceResolve(candidate, eObject) instanceof ReferenceDeclaration referenceDeclaration &&
+				referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
+			return datatypeDeclaration.getName();
+		}
+		// For predicates, there is no need to show the exact type of definition, since they behave
+		// logically equivalently.
+		return null;
+	}
+
+	private static @Nullable String getFunctionDescription(IEObjectDescription candidate, EObject eObject) {
+		if (!(forceResolve(candidate, eObject) instanceof FunctionDefinition functionDefinition)) {
+			return null;
+		}
+		String description = functionDefinition.isShadow() ? SHADOW_DESCRIPTION : null;
+		if (functionDefinition.getFunctionType() instanceof DatatypeDeclaration datatypeDeclaration) {
+			var typeName = datatypeDeclaration.getName();
+			description = description == null ? typeName : description + " " + typeName;
+		}
+		return description;
 	}
 
 	private static boolean isShadow(IEObjectDescription candidate, EObject eObject) {
@@ -179,7 +236,11 @@ public class ProblemProposalUtils {
 			// Description was not generated by our ResourceDescriptionStrategy, so we must trigger proxy resolution.
 			return getDocumentation(candidate.getEObjectOrProxy());
 		}
-		return candidate.getUserData(DocumentationCommentParser.DOCUMENTATION);
+		var candidateEObject = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
+		if (candidateEObject.eIsProxy()) {
+			return null;
+		}
+		return documentationCommentParser.getDocumentation(candidateEObject);
 	}
 
 	@Nullable
@@ -221,7 +282,7 @@ public class ProblemProposalUtils {
 			return new String[]{ContentAssistEntry.KIND_REFERENCE};
 		}
 		var builder = ImmutableList.<String>builder();
-		builder.add(getEClassKind(eClass));
+		builder.add(getEClassKind(eClass, candidate, eObject));
 		if (isBuiltIn(candidate, eObject) && !ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
 			// Built-in annotations are not rendered with the keyword color in the frontend.
 			builder.add("builtin");
@@ -253,7 +314,7 @@ public class ProblemProposalUtils {
 		return eClass;
 	}
 
-	private static String getEClassKind(EClass eClass) {
+	private static String getEClassKind(EClass eClass, IEObjectDescription candidate, EObject eObject) {
 		if (ProblemPackage.Literals.VARIABLE.isSuperTypeOf(eClass)) {
 			return "variable";
 		}
@@ -266,8 +327,25 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.DATATYPE_DECLARATION.isSuperTypeOf(eClass)) {
 			return DATATYPE_KIND;
 		}
+		if (ProblemPackage.Literals.REFERENCE_DECLARATION.isSuperTypeOf(eClass) &&
+				forceResolve(candidate, eObject) instanceof ReferenceDeclaration referenceDeclaration &&
+				ProblemUtil.isAttribute(referenceDeclaration)) {
+			return ATTRIBUTE_KIND;
+		}
+		if (ProblemPackage.Literals.FUNCTION_DEFINITION.isSuperTypeOf(eClass)) {
+			return ATTRIBUTE_KIND;
+		}
+		if (ProblemPackage.Literals.OVERLOADED_DECLARATION.isSuperTypeOf(eClass)) {
+			return "function";
+		}
+		if (ProblemPackage.Literals.RULE_DEFINITION.isSuperTypeOf(eClass)) {
+			return "rule";
+		}
 		if (ProblemPackage.Literals.RELATION.isSuperTypeOf(eClass)) {
 			return "relation";
+		}
+		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
+			return "aggregator";
 		}
 		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(eClass)) {
 			return "module";

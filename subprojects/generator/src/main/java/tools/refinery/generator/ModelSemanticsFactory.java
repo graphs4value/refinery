@@ -10,6 +10,7 @@ import tools.refinery.generator.impl.ModelSemanticsImpl;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.store.dse.propagation.PropagationAdapter;
+import tools.refinery.store.dse.transition.DesignSpaceExplorationAdapter;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.query.interpreter.QueryInterpreterAdapter;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -59,6 +60,7 @@ public final class ModelSemanticsFactory extends ModelFacadeFactory<ModelSemanti
 				.with(QueryInterpreterAdapter.builder())
 				.with(PropagationAdapter.builder()
 						.throwOnFatalRejection(false))
+				.with(DesignSpaceExplorationAdapter.builder())
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(getRequiredInterpretations()));
 		try {

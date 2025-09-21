@@ -26,7 +26,7 @@
 
 statement {
   ImportStatement {
-    kw<"import"> ModuleName (kw<"as"> ModuleName)? "."
+    kw<"import"> ModuleName (ckw<"as"> ModuleName)? "."
   } |
   Assertion {
     kw<"default">? (NotOp | UnknownOp)? RelationName
@@ -46,10 +46,13 @@ statement {
     (EnumBody { "{" sep<",", EnumLiteral> "}" } | ".")
   } |
   DatatypeDeclaration {
-    kw<"extern"> ckw<"datatype"> DatatypeName "."
+    AnnotationKeyword ckw<"datatype"> DatatypeName "."
   } |
   AggregatorDeclaration {
-    kw<"extern"> ckw<"aggregator"> AggregatorName "."
+    AnnotationKeyword ckw<"aggregator"> AggregatorName "."
+  } |
+  OverloadedDeclaration {
+    AnnotationKeyword ckw<"primitive"> RelationName ParameterList<Parameter> "."
   } |
   PredicateDefinition {
     ((kw<"error"> | kw<"partial"> | ckw<"shadow">)* kw<"pred"> | kw<"error">)
@@ -57,10 +60,10 @@ statement {
     (ckw<"subsets"> sep1<",", RelationName>)*
     PredicateBody { ("<->" sep<OrOp, Conjunction>)? "." }
   } |
-  // FunctionDefinition {
-  //   kw<"fn"> RelationName RelationName ParameterList<Parameter>?
-  //   FunctionBody { ("=" sep<OrOp, Case>)? "." }
-  // } |
+  FunctionDefinition {
+    ckw<"shadow">? RelationName RelationName ParameterList<Parameter>?
+    FunctionBody { ("=" sep<OrOp, Case>)? "." }
+  } |
   RuleDefinition {
     (ckw<"decision"> | ckw<"propagation"> | ckw<"concretization">)? kw<"rule">
     RuleName ParameterList<Parameter>?
@@ -132,12 +135,12 @@ Parameter {
 // Being looser with token sequencing enables more consistent syntactic highlighting.
 Conjunction { ("," | NextConjunction[@dynamicPrecedence=-10] { Expr })+ }
 
-// Case { Conjunction ("->" Expr)? }
+Case { Conjunction ("->" Expr)? }
 
 OrOp { ";" }
 
 Expr {
-  AssignmentExpr | UnaryExpr | BinaryExpr | CastExpr | Aggregation |
+  AssignmentExpr | UnaryExpr | BinaryExpr | Aggregation |
   VariableName | Atom | Constant | "(" Expr ")"
 }
 
@@ -156,16 +159,14 @@ BinaryExpr {
 UnaryExpr {
   !prefix
   (
-    "+" | "-" | "!" | kw<"count"> |
+    "+" | "-" | "!" |
     kw<"candidate"> kw<"partial"> | kw<"may"> | kw<"must">
   )
   Expr
 }
 
-CastExpr { !cast Expr kw<"as"> DatatypeName }
-
 Aggregation {
-  AggregatorName "{" Expr "|" Expr "}"
+  AggregatorName "{" Expr ("|" Expr)? "}"
 }
 
 Atom { RelationName "+"? ParameterList<Expr> }
@@ -188,7 +189,7 @@ LogicValue {
   kw<"true"> | kw<"false"> | kw<"unknown"> | kw<"error">
 }
 
-ComparisonOp { SymbolicComparisonOp | kw<"in"> }
+ComparisonOp { SymbolicComparisonOp }
 
 ScopeElement { RelationName ("=" | "+=") Multiplicity }
 
@@ -208,7 +209,7 @@ RuleName { QualifiedName }
 
 AtomNodeName { QualifiedName }
 
-VariableName[@dynamicPrecedence=10] { QualifiedName ~name }
+VariableName[@dynamicPrecedence=5] { QualifiedName ~name }
 
 NodeName { QualifiedName }
 

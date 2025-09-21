@@ -36,6 +36,14 @@ pred exists(node).
 pred equals(left, right).
 
 /**
+ * The number of concrete nodes represented by a multi-object.
+ *
+ * @param node The node.
+ */
+
+shadow int count(node node).
+
+/**
  * Instances of classes with at least one outgoing reference marked with
  * `contains`.
  */
@@ -65,16 +73,42 @@ pred contains(container container, contained contained).
  */
 error invalidContainer(contained contained).
 
-extern datatype boolean.
+#datatype boolean.
 
-extern datatype int.
+#datatype int.
 
-extern datatype real.
+#datatype real.
 
-extern datatype string.
+#datatype string.
 
-extern aggregator min.
+#aggregator reify.
 
-extern aggregator max.
+#aggregator meet.
 
-extern aggregator sum.
+#aggregator join.
+
+#aggregator count.
+
+#aggregator min.
+
+#aggregator max.
+
+#aggregator sum.
+
+#primitive min(left, right).
+
+#primitive max(left, right).
+
+#primitive exp(value).
+
+#primitive log(value).
+
+#primitive sqrt(value).
+
+#primitive shadow isError(value).
+
+#primitive shadow isConcrete(value).
+
+#primitive shadow lowerBound(value).
+
+#primitive shadow upperBound(value).

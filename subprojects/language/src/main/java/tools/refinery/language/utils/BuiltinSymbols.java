@@ -21,6 +21,7 @@ public final class BuiltinSymbols {
     private final ClassDeclaration contained;
     private final PredicateDefinition contains;
     private final PredicateDefinition invalidContainer;
+	private final FunctionDefinition count;
 	private final DatatypeDeclaration booleanDatatype;
 	private final DatatypeDeclaration intDatatype;
 	private final DatatypeDeclaration realDatatype;
@@ -35,6 +36,7 @@ public final class BuiltinSymbols {
 		contained = getDeclaration(ClassDeclaration.class, "contained");
 		contains = getDeclaration(PredicateDefinition.class, "contains");
 		invalidContainer = getDeclaration(PredicateDefinition.class, "invalidContainer");
+		count = getDeclaration(FunctionDefinition.class, "count");
 		booleanDatatype = getDeclaration(DatatypeDeclaration.class, BOOLEAN_NAME);
 		intDatatype = getDeclaration(DatatypeDeclaration.class, INT_NAME);
 		realDatatype = getDeclaration(DatatypeDeclaration.class, REAL_NAME);
@@ -67,6 +69,10 @@ public final class BuiltinSymbols {
 
     public PredicateDefinition contains() {
         return contains;
+    }
+
+	public FunctionDefinition count() {
+        return count;
     }
 
     public PredicateDefinition invalidContainer() {

@@ -5,7 +5,7 @@
  */
 
 import sjson from 'secure-json-parse';
-import z from 'zod';
+import z from 'zod/v4';
 
 import * as RefineryError from './RefineryError';
 import { RefineryResult } from './dto';
@@ -255,7 +255,7 @@ export abstract class GenericRefinery {
           },
           'text/event-stream',
         );
-        let last: RefineryResult.Success<U> | undefined;
+        let last: RefineryResult.Success<z.output<U>> | undefined;
         for await (const element of parseSSE(fetchRequest, abortController)) {
           const parsedResponse = responseType.parse(element);
           if (parsedResponse.result === 'status') {
@@ -284,12 +284,12 @@ export abstract class GenericRefinery {
       }
     }
     const doStreaming = (
-      request: z.infer<T>,
-      { onStatus, ...init }: StreamingInit<z.infer<V>> = {},
+      request: z.input<T>,
+      { onStatus, ...init }: StreamingInit<z.output<V>> = {},
     ) => {
       const asyncIterable = parseStream(request, init);
       if (onStatus === 'ignore' || typeof onStatus === 'function') {
-        return streamToPromise<U, V>(asyncIterable, onStatus);
+        return streamToPromise(asyncIterable, onStatus);
       }
       return asyncIterable;
     };

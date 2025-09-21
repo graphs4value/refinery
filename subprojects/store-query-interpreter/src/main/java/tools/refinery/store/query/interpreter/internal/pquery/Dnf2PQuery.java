@@ -192,6 +192,9 @@ public class Dnf2PQuery {
 	private <T> void translateAssignLiteral(DnfClause clause, AssignLiteral<T> assignLiteral, PBody body) {
 		var variable = body.getOrCreateVariableByName(assignLiteral.getVariable().getUniqueName());
 		var term = assignLiteral.getTerm();
+		if (term instanceof OptimizationBarrier<T>(var wrappedTerm)) {
+			term = wrappedTerm;
+		}
 		switch (term) {
 		case ConstantTerm<T> constantTerm -> new ConstantValue(body, variable, constantTerm.getValue());
 		case CountTerm countTerm -> translateCountTerm(countTerm, variable, body);

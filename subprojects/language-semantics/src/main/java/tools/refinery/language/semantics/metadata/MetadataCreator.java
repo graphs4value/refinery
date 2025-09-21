@@ -19,11 +19,14 @@ import tools.refinery.language.documentation.TypeHashProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.ArrayList;
@@ -37,6 +40,8 @@ public class MetadataCreator {
 	private static final List<String> REFERENCE_PARAMETER_NAMES = List.of(
 			DocumentationCommentParser.REFERENCE_SOURCE_PARAMETER_NAME,
 			DocumentationCommentParser.REFERENCE_TARGET_PARAMETER_NAME);
+	private static final List<String> ATTRIBUTE_PARAMETER_NAMES = List.of(
+			DocumentationCommentParser.ATTRIBUTE_PARAMETER_NAME);
 
 	@Inject
 	private IScopeProvider scopeProvider;
@@ -46,6 +51,9 @@ public class MetadataCreator {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+
+	@Inject
+	private SignatureProvider signatureProvider;
 
 	@Inject
 	private TypeHashProvider typeHashProvider;
@@ -127,16 +135,20 @@ public class MetadataCreator {
 		return Collections.unmodifiableList(relations);
 	}
 
-	private RelationMetadata getRelationMetadata(Relation relation, PartialRelation partialRelation) {
+	private RelationMetadata getRelationMetadata(Relation relation, AnyPartialSymbol partialSymbol) {
 		var qualifiedName = getQualifiedName(relation);
 		var qualifiedNameString = qualifiedNameConverter.toString(qualifiedName);
 		var simpleName = getSimpleName(relation, qualifiedName, relationScope);
 		var simpleNameString = qualifiedNameConverter.toString(simpleName);
-		var arity = partialRelation.arity();
+		var arity = partialSymbol.arity();
 		var parameterNames = getParameterNames(relation);
-		var detail = getRelationDetail(relation, partialRelation);
+		var detail = getRelationDetail(relation, partialSymbol);
 		var visibility = builtinAnnotationContext.getVisibility(relation);
-		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail, visibility);
+		var resultType = signatureProvider.getSignature(relation).resultType();
+		var dataType = resultType instanceof DataExprType(QualifiedName name) ? qualifiedNameConverter.toString(name) :
+				null;
+		return new RelationMetadata(qualifiedNameString, simpleNameString, arity, parameterNames, detail, visibility,
+				dataType);
 	}
 
 	@Nullable
@@ -144,13 +156,14 @@ public class MetadataCreator {
 		return switch (relation) {
 			case ClassDeclaration ignored -> CLASS_PARAMETER_NAMES;
 			case EnumDeclaration ignored -> ENUM_PARAMETER_NAMES;
-			case ReferenceDeclaration ignored -> REFERENCE_PARAMETER_NAMES;
-			case PredicateDefinition predicateDefinition -> getPredicateParameterNames(predicateDefinition);
+			case ReferenceDeclaration referenceDeclaration -> ProblemUtil.isAttribute(referenceDeclaration) ?
+					ATTRIBUTE_PARAMETER_NAMES : REFERENCE_PARAMETER_NAMES;
+			case ParametricDefinition parametricDefinition -> getParameterNames(parametricDefinition);
 			default -> null;
 		};
 	}
 
-	private List<String> getPredicateParameterNames(PredicateDefinition predicateDefinition) {
+	private List<String> getParameterNames(ParametricDefinition predicateDefinition) {
 		return predicateDefinition.getParameters().stream()
 				.map(parameter -> {
 					var qualifiedParameterName = QualifiedName.create(parameter.getName());
@@ -159,12 +172,13 @@ public class MetadataCreator {
 				.toList();
 	}
 
-	private RelationDetail getRelationDetail(Relation relation, PartialRelation partialRelation) {
+	private RelationDetail getRelationDetail(Relation relation, AnyPartialSymbol partialSymbol) {
 		return switch (relation) {
 			case ClassDeclaration classDeclaration -> getClassDetail(classDeclaration);
-			case ReferenceDeclaration ignored -> getReferenceDetail(partialRelation);
+			case ReferenceDeclaration ignored -> getReferenceDetail(partialSymbol);
 			case EnumDeclaration enumDeclaration -> getEnumDetail(enumDeclaration);
 			case PredicateDefinition predicateDefinition -> getPredicateDetail(predicateDefinition);
+			case FunctionDefinition functionDefinition -> getFunctionDetail(functionDefinition);
 			default -> throw new TracedException(relation, "Unknown relation");
 		};
 	}
@@ -174,15 +188,19 @@ public class MetadataCreator {
 		return new RelationDetail.Class(classDeclaration.isAbstract(), typeHash);
 	}
 
-	private RelationDetail getReferenceDetail(PartialRelation partialRelation) {
+	private RelationDetail getReferenceDetail(AnyPartialSymbol partialSymbol) {
 		var metamodel = problemTrace.getMetamodel();
-		var opposite = metamodel.oppositeReferences().get(partialRelation);
-		if (opposite == null) {
-			boolean isContainment = metamodel.containmentHierarchy().containsKey(partialRelation);
-			return new RelationDetail.Reference(isContainment);
+		if (partialSymbol instanceof PartialRelation) {
+			var opposite = metamodel.oppositeReferences().get(partialSymbol);
+			if (opposite == null) {
+				boolean isContainment = metamodel.containmentHierarchy().containsKey(partialSymbol);
+				return new RelationDetail.Reference(isContainment);
+			} else {
+				boolean isContainer = metamodel.containmentHierarchy().containsKey(opposite);
+				return new RelationDetail.Opposite(opposite.name(), isContainer);
+			}
 		} else {
-			boolean isContainer = metamodel.containmentHierarchy().containsKey(opposite);
-			return new RelationDetail.Opposite(opposite.name(), isContainer);
+			return new RelationDetail.Attribute();
 		}
 	}
 
@@ -194,9 +212,11 @@ public class MetadataCreator {
 	private RelationDetail getPredicateDetail(PredicateDefinition predicate) {
 		if (ProblemUtil.isComputedValuePredicate(predicate) &&
 				predicate.eContainer() instanceof PredicateDefinition parentDefinition) {
-			var parentQualifiedName = getQualifiedName(parentDefinition);
-			var computedOf = qualifiedNameConverter.toString(parentQualifiedName);
-			return new RelationDetail.Computed(computedOf);
+			return getComputedDetail(parentDefinition);
+		}
+		if (ProblemUtil.isDomainPredicate(predicate) &&
+				predicate.eContainer() instanceof FunctionDefinition parentDefinition) {
+			return getDomainDetail(parentDefinition);
 		}
 		PredicateDetailKind kind = PredicateDetailKind.DEFINED;
 		if (ProblemUtil.isBasePredicate(predicate)) {
@@ -207,6 +227,32 @@ public class MetadataCreator {
 			kind = PredicateDetailKind.SHADOW;
 		}
 		return new RelationDetail.Predicate(kind);
+	}
+
+	private RelationDetail.Computed getComputedDetail(Relation parentDefinition) {
+		var parentQualifiedName = getQualifiedName(parentDefinition);
+		var computedOf = qualifiedNameConverter.toString(parentQualifiedName);
+		return new RelationDetail.Computed(computedOf);
+	}
+
+	private RelationDetail.Domain getDomainDetail(FunctionDefinition parentDefinition) {
+		var parentQualifiedName = getQualifiedName(parentDefinition);
+		var domainOf = qualifiedNameConverter.toString(parentQualifiedName);
+		return new RelationDetail.Domain(domainOf);
+	}
+
+	private RelationDetail getFunctionDetail(FunctionDefinition function) {
+		if (ProblemUtil.isComputedValueFunction(function) &&
+				function.eContainer() instanceof FunctionDefinition parentDefinition) {
+			return getComputedDetail(parentDefinition);
+		}
+		FunctionDetailKind kind = FunctionDetailKind.DEFINED;
+		if (ProblemUtil.isBaseFunction(function)) {
+			kind = FunctionDetailKind.BASE;
+		} else if (ProblemUtil.isShadow(function)) {
+			kind = FunctionDetailKind.SHADOW;
+		}
+		return new RelationDetail.Function(kind);
 	}
 
 	private QualifiedName getQualifiedName(EObject eObject) {

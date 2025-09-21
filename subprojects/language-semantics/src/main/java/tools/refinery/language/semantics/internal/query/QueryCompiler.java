@@ -6,12 +6,18 @@
 package tools.refinery.language.semantics.internal.query;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.ExprType;
+import tools.refinery.language.typesystem.FixedType;
+import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ReferenceCounter;
 import tools.refinery.logic.Constraint;
@@ -19,13 +25,13 @@ import tools.refinery.logic.dnf.AbstractQueryBuilder;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
-import tools.refinery.logic.literal.BooleanLiteral;
-import tools.refinery.logic.literal.CallPolarity;
-import tools.refinery.logic.literal.ConstantLiteral;
-import tools.refinery.logic.literal.Literal;
-import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.literal.*;
+import tools.refinery.logic.term.*;
 import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
+import tools.refinery.store.reasoning.literal.PartialCheckLiteral;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 
 import java.util.*;
@@ -37,6 +43,18 @@ public class QueryCompiler {
 	@Inject
 	private ReferenceCounter referenceCounter;
 
+	@Inject
+	private ProblemTypeAnalyzer problemTypeAnalyzer;
+
+	@Inject
+	private Provider<QueryBasedExprToTerm> exprToTermProvider;
+
+	@Inject
+	private QueryBasedExprToTerm queryBasedExprToTerm;
+
+	@Inject
+	private ImportAdapterProvider importAdapterProvider;
+
 	private ProblemTrace problemTrace;
 
 	public void setProblemTrace(ProblemTrace problemTrace) {
@@ -45,25 +63,10 @@ public class QueryCompiler {
 
 	public RelationalQuery toQuery(String name, PredicateDefinition predicateDefinition) {
 		try {
-			var problemParameters = predicateDefinition.getParameters();
-			int arity = problemParameters.size();
-			var parameters = new NodeVariable[arity];
-			var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
-			var commonLiterals = new ArrayList<Literal>();
-			for (int i = 0; i < arity; i++) {
-				var problemParameter = problemParameters.get(i);
-				var parameter = Variable.of(problemParameter.getName());
-				parameters[i] = parameter;
-				parameterMap.put(problemParameter, parameter);
-				var parameterType = problemParameter.getParameterType();
-				if (parameterType != null) {
-					var partialType = getPartialRelation(parameterType);
-					commonLiterals.add(partialType.call(parameter));
-				}
-			}
-			var builder = Query.builder(name).parameters(parameters);
+			var preparedQuery = prepareParameters(predicateDefinition);
+			var builder = Query.builder(name).parameters(preparedQuery.parameters());
 			for (var body : predicateDefinition.getBodies()) {
-				buildConjunction(body, parameterMap, commonLiterals, builder);
+				buildConjunction(body, preparedQuery.parameterMap(), preparedQuery.commonLiterals(), builder);
 			}
 			return builder.build();
 		} catch (RuntimeException e) {
@@ -71,31 +74,67 @@ public class QueryCompiler {
 		}
 	}
 
+	PreparedQuery prepareParameters(ParametricDefinition parametricDefinition) {
+		var problemParameters = parametricDefinition.getParameters();
+		int arity = problemParameters.size();
+		var parameters = new NodeVariable[arity];
+		var parameterMap = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(arity);
+		var commonLiterals = new ArrayList<Literal>();
+		for (int i = 0; i < arity; i++) {
+			var problemParameter = problemParameters.get(i);
+			var parameter = Variable.of(problemParameter.getName());
+			parameters[i] = parameter;
+			parameterMap.put(problemParameter, parameter);
+			var parameterType = problemParameter.getParameterType();
+			if (parameterType != null) {
+				var partialType = getPartialRelation(parameterType);
+				commonLiterals.add(partialType.call(parameter));
+			}
+		}
+		return new PreparedQuery(parameters, parameterMap, commonLiterals);
+	}
+
+	record PreparedQuery(NodeVariable[] parameters,
+						 HashMap<tools.refinery.language.model.problem.Variable, Variable> parameterMap,
+						 ArrayList<Literal> commonLiterals) {
+	}
+
 	void buildConjunction(
 			Conjunction body, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> parameterMap,
 			List<Literal> commonLiterals, AbstractQueryBuilder<?> builder) {
 		try {
-			var localScope = extendScope(parameterMap, body.getImplicitVariables());
-			var problemLiterals = body.getLiterals();
-			var literals = new ArrayList<>(commonLiterals);
-			for (var problemLiteral : problemLiterals) {
-				toLiteralsTraced(problemLiteral, localScope, literals);
-			}
-			builder.clause(literals);
+			buildConjunction(body.getLiterals(), body.getImplicitVariables(), parameterMap, commonLiterals, builder);
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(body, e);
 		}
+	}
+
+	void buildConjunction(
+			List<Expr> problemLiterals,
+			List<? extends tools.refinery.language.model.problem.Variable> implicitVariables,
+			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> parameterMap,
+			List<Literal> commonLiterals, AbstractQueryBuilder<?> builder) {
+		var localScope = extendScope(parameterMap, implicitVariables);
+		var literals = new ArrayList<>(commonLiterals);
+		for (var problemLiteral : problemLiterals) {
+			toLiteralsTraced(problemLiteral, localScope, literals);
+		}
+		builder.clause(literals);
 	}
 
 	int getNodeId(Node node) {
 		return problemTrace.getNodeId(node);
 	}
 
+	AnyPartialSymbol getPartialSymbol(Relation relation) {
+		return problemTrace.getPartialSymbol(relation);
+	}
+
 	PartialRelation getPartialRelation(Relation relation) {
 		return problemTrace.getPartialRelation(relation);
 	}
 
-	private Map<tools.refinery.language.model.problem.Variable, ? extends Variable> extendScope(
+	Map<tools.refinery.language.model.problem.Variable, ? extends Variable> extendScope(
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> existing,
 			Collection<? extends tools.refinery.language.model.problem.Variable> newVariables) {
 		if (newVariables.isEmpty()) {
@@ -105,12 +144,20 @@ public class QueryCompiler {
 		var localScope = HashMap.<tools.refinery.language.model.problem.Variable, Variable>newHashMap(localScopeSize);
 		localScope.putAll(existing);
 		for (var newVariable : newVariables) {
-			localScope.put(newVariable, Variable.of(newVariable.getName()));
+			var variableType = problemTypeAnalyzer.getVariableType(newVariable);
+			if (variableType instanceof DataExprType dataVariableType) {
+				var abstractDomain = importAdapterProvider.getTermInterpreter(newVariable)
+						.getDomain(dataVariableType)
+						.orElseThrow(() -> new TracedException(newVariable, "Unknown variable type"));
+				localScope.put(newVariable, Variable.of(newVariable.getName(), abstractDomain.abstractType()));
+			} else {
+				localScope.put(newVariable, Variable.of(newVariable.getName()));
+			}
 		}
 		return localScope;
 	}
 
-	private void toLiteralsTraced(
+	void toLiteralsTraced(
 			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
 		try {
@@ -123,53 +170,103 @@ public class QueryCompiler {
 	private void toLiterals(
 			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
-		var extractedOuter = ExtractedModalExpr.of(expr);
-		var outerModality = extractedOuter.modality();
-		switch (extractedOuter.body()) {
-		case LogicConstant logicConstant -> {
-			switch (logicConstant.getLogicValue()) {
-			case TRUE -> literals.add(BooleanLiteral.TRUE);
-			case FALSE -> literals.add(BooleanLiteral.FALSE);
-			default -> throw new TracedException(logicConstant, "Unsupported literal");
+		var exprType = problemTypeAnalyzer.getExpressionType(expr);
+		if (ExprType.LITERAL.equals(exprType)) {
+			var extractedOuter = ExtractedModalExpr.of(expr);
+			var outerModality = extractedOuter.modality();
+			switch (extractedOuter.body()) {
+			case LogicConstant logicConstant -> {
+				switch (logicConstant.getLogicValue()) {
+				case TRUE -> literals.add(BooleanLiteral.TRUE);
+				case FALSE -> literals.add(BooleanLiteral.FALSE);
+				default -> throw new TracedException(logicConstant, "Unsupported literal");
+				}
+				return;
+			}
+			case Atom atom -> {
+				var constraint = getConstraint(atom);
+				if (constraint != null) {
+					var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
+					literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
+							argumentList.arguments()));
+					return;
+				}
+			}
+			case NegationExpr negationExpr -> {
+				var body = negationExpr.getBody();
+				var extractedInner = ExtractedModalExpr.of(body);
+				if (extractedInner.body() instanceof Atom atom) {
+					var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
+					var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
+					var innerModality = extractedInner.modality().merge(outerModality.negate());
+					var constraint = getConstraint(atom);
+					if (constraint != null) {
+						literals.add(createNegationLiteral(innerModality, constraint, argumentList));
+						return;
+					}
+				}
+			}
+			case ComparisonExpr comparisonExpr -> {
+				FixedType rightType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getRight());
+				FixedType leftType = problemTypeAnalyzer.getExpressionType(comparisonExpr.getLeft());
+				if (!(rightType instanceof DataExprType) && !(leftType instanceof DataExprType)) {
+					var argumentList = toArgumentList(comparisonExpr,
+							List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
+					boolean positive = switch (comparisonExpr.getOp()) {
+						case EQ -> true;
+						case NOT_EQ -> false;
+						default -> throw new TracedException(
+								comparisonExpr, "Unsupported operator");
+					};
+					literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
+					return;
+				}
+			}
+			case AssignmentExpr assignmentExpr -> {
+				if (!(assignmentExpr.getLeft() instanceof VariableOrNodeExpr variableOrNodeExpr) ||
+						!(variableOrNodeExpr.getVariableOrNode() instanceof
+								tools.refinery.language.model.problem.Variable problemVariable)) {
+					throw new TracedException(assignmentExpr, "Left side of an assignment must be variable.");
+				}
+				if (!(localScope.get(problemVariable) instanceof DataVariable<?> variable)) {
+					throw new TracedException(assignmentExpr, "Left side of an assignment must be a data variable.");
+				}
+				var term = interpretTerm(assignmentExpr.getRight(), localScope, literals);
+				// Well-typed assignments always match the type of the variable and the term.
+				@SuppressWarnings({"rawtypes", "unchecked"})
+				var literal = new AssignLiteral(variable, (Term) term);
+				literals.add(literal);
+				return;
+			}
+			default -> {
+			}
 			}
 		}
-		case Atom atom -> {
-			var constraint = getConstraint(atom);
-			var argumentList = toArgumentList(atom, atom.getArguments(), localScope, literals);
-			literals.add(extractedOuter.modality().wrapConstraint(constraint).call(CallPolarity.POSITIVE,
-					argumentList.arguments()));
-		}
-		case NegationExpr negationExpr -> {
-			var body = negationExpr.getBody();
-			var extractedInner = ExtractedModalExpr.of(body);
-			if (!(extractedInner.body() instanceof Atom atom)) {
-				throw new TracedException(extractedInner.body(), "Cannot negate literal");
-			}
-			var negatedScope = extendScope(localScope, negationExpr.getImplicitVariables());
-			var argumentList = toArgumentList(atom, atom.getArguments(), negatedScope, literals);
-			var innerModality = extractedInner.modality().merge(outerModality.negate());
-			var constraint = getConstraint(atom);
-			literals.add(createNegationLiteral(innerModality, constraint, argumentList));
-		}
-		case ComparisonExpr comparisonExpr -> {
-			var argumentList = toArgumentList(comparisonExpr,
-					List.of(comparisonExpr.getLeft(), comparisonExpr.getRight()), localScope, literals);
-			boolean positive = switch (comparisonExpr.getOp()) {
-				case NODE_EQ -> true;
-				case NODE_NOT_EQ -> false;
-				default -> throw new TracedException(
-						comparisonExpr, "Unsupported operator");
-			};
-			literals.add(createEquivalenceLiteral(outerModality, positive, argumentList));
-		}
-		default -> throw new TracedException(extractedOuter.body(), "Unsupported literal");
-		}
+		// Well-typed top-level terms are always Booleans.
+		@SuppressWarnings("unchecked")
+		var term = (Term<TruthValue>) interpretTerm(expr, localScope, literals);
+		literals.add(new PartialCheckLiteral(term));
 	}
 
-	private Constraint getConstraint(Atom atom) {
+	AnyTerm interpretTerm(
+			Expr expr, Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
+			List<Literal> literals) {
+		var exprToTerm = exprToTermProvider.get();
+		exprToTerm.setLiterals(literals);
+		exprToTerm.setQueryCompiler(this);
+		exprToTerm.setLocalScope(localScope);
+		exprToTerm.setProblemTrace(problemTrace);
+		return exprToTerm.toTerm(expr)
+				.orElseThrow(() -> new TracedException(expr, "Cannot interpret expression."));
+	}
+
+	Constraint getConstraint(Atom atom) {
 		var relation = atom.getRelation();
-		var target = getPartialRelation(relation);
-		return atom.isTransitiveClosure() ? getTransitiveWrapper(target) : target;
+		var target = getPartialSymbol(relation);
+		if (!(target instanceof PartialRelation partialRelation)) {
+			return null;
+		}
+		return atom.isTransitiveClosure() ? getTransitiveWrapper(partialRelation) : partialRelation;
 	}
 
 	private Constraint getTransitiveWrapper(Constraint target) {
@@ -207,12 +304,12 @@ public class QueryCompiler {
 		return createNegationLiteral(outerModality.negate(), ReasoningAdapter.EQUALS_SYMBOL, argumentList);
 	}
 
-	private ArgumentList toArgumentList(
+	ArgumentList toArgumentList(
 			Expr atom, List<Expr> expressions,
 			Map<tools.refinery.language.model.problem.Variable, ? extends Variable> localScope,
 			List<Literal> literals) {
-		var arguments = new ArrayList<Variable>(expressions.size());
-		var filteredArguments = LinkedHashSet.<Variable>newLinkedHashSet(expressions.size());
+		var arguments = new ArrayList<NodeVariable>(expressions.size());
+		var filteredArguments = LinkedHashSet.<NodeVariable>newLinkedHashSet(expressions.size());
 		boolean needsQuantification = false;
 		var referenceCounts = ReferenceCounter.computeReferenceCounts(atom);
 		for (var expr : expressions) {
@@ -222,9 +319,7 @@ public class QueryCompiler {
 			var variableOrNode = variableOrNodeExpr.getVariableOrNode();
 			switch (variableOrNode) {
 			case Node node -> {
-				int nodeId = getNodeId(node);
-				var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
-				literals.add(new ConstantLiteral(tempVariable, nodeId));
+				var tempVariable = createTempVariableForNode(node, literals);
 				arguments.add(tempVariable);
 				filteredArguments.add(tempVariable);
 			}
@@ -233,7 +328,7 @@ public class QueryCompiler {
 					arguments.add(Variable.of(problemVariable.getName()));
 					needsQuantification = true;
 				} else {
-					var variable = localScope.get(problemVariable);
+					var variable = localScope.get(problemVariable).asNodeVariable();
 					if (variable == null) {
 						throw new TracedException(variableOrNode, "Unknown variable: " + problemVariable.getName());
 					}
@@ -245,6 +340,13 @@ public class QueryCompiler {
 			}
 		}
 		return new ArgumentList(arguments, filteredArguments, needsQuantification);
+	}
+
+	NodeVariable createTempVariableForNode(Node node, List<Literal> literals) {
+		int nodeId = getNodeId(node);
+		var tempVariable = Variable.of(semanticsUtils.getNameWithoutRootPrefix(node).orElse("_" + nodeId));
+		literals.add(new ConstantLiteral(tempVariable, nodeId));
+		return tempVariable;
 	}
 
 	private boolean isEffectivelySingleton(tools.refinery.language.model.problem.Variable variable,
@@ -265,7 +367,7 @@ public class QueryCompiler {
 		return crossReferencesInAtom == crossReferencesInModel;
 	}
 
-	private record ArgumentList(List<Variable> arguments, Set<Variable> filteredArguments,
-								boolean needsQuantification) {
+	record ArgumentList(List<NodeVariable> arguments, Set<NodeVariable> filteredArguments,
+						boolean needsQuantification) {
 	}
 }

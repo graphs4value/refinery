@@ -19,17 +19,22 @@ import org.eclipse.xtext.resource.IResourceFactory;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import tools.refinery.language.expressions.BuiltInTerms;
+import tools.refinery.language.expressions.BuiltinTermInterpreter;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.LiteralType;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
-import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.representation.*;
 import tools.refinery.store.reasoning.translator.typehierarchy.InferredType;
 import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
 import tools.refinery.store.tuple.Tuple;
@@ -119,8 +124,11 @@ public class SolutionSerializer {
 		addExistsAssertions();
 		addClassAssertions();
 		addReferenceAssertions();
+		addAttributeAssertions();
 		addBasePredicateAssertions();
 		addComputedPredicateAssertions();
+		addBaseFunctionAssertions();
+		addComputedFunctionAssertions();
 		if (nodeDeclaration.getNodes().isEmpty()) {
 			problem.getStatements().remove(nodeDeclaration);
 		}
@@ -214,8 +222,8 @@ public class SolutionSerializer {
 				ProblemPackage.Literals.RELATION);
 	}
 
-	private Relation findPartialRelation(PartialRelation partialRelation) {
-		return findRelation(trace.getRelation(partialRelation));
+	private Relation findRelation(AnyPartialSymbol partialSymbol) {
+		return findRelation(trace.getRelation(partialSymbol));
 	}
 
 	private Node findNode(Node originalNode) {
@@ -227,6 +235,12 @@ public class SolutionSerializer {
 	}
 
 	private void addAssertion(Relation relation, LogicValue value, Node... arguments) {
+		var logicConstant = ProblemFactory.eINSTANCE.createLogicConstant();
+		logicConstant.setLogicValue(value);
+		addAssertion(relation, logicConstant, arguments);
+	}
+
+	private void addAssertion(Relation relation, Expr value, Node... arguments) {
 		var assertion = ProblemFactory.eINSTANCE.createAssertion();
 		assertion.setRelation(relation);
 		for (var node : arguments) {
@@ -234,9 +248,7 @@ public class SolutionSerializer {
 			argument.setNode(node);
 			assertion.getArguments().add(argument);
 		}
-		var logicConstant = ProblemFactory.eINSTANCE.createLogicConstant();
-		logicConstant.setLogicValue(value);
-		assertion.setValue(logicConstant);
+		assertion.setValue(value);
 		problem.getStatements().add(assertion);
 	}
 
@@ -249,7 +261,7 @@ public class SolutionSerializer {
 			int nodeId = pair.getTwo();
 			var newNode = findNode(originalNode);
 			if (newNode == null) {
-				// If a node doesn't exists in the solution, do not add it to the nodes map.
+				// If a node doesn't exist in the solution, do not add it to the nodes map.
 				continue;
 			}
 			// Since all implicit nodes that do not exist has already been removed in serializeSolution,
@@ -277,7 +289,7 @@ public class SolutionSerializer {
 
 	private void addClassAssertions() {
 		var types = trace.getMetamodel().typeHierarchy().getPreservedTypes().keySet().stream()
-				.collect(Collectors.toMap(Function.identity(), this::findPartialRelation));
+				.collect(Collectors.toMap(Function.identity(), this::findRelation));
 		var cursor = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL).getAll();
 		while (cursor.move()) {
 			var key = cursor.getKey();
@@ -333,36 +345,45 @@ public class SolutionSerializer {
 		}
 	}
 
+	private void addAttributeAssertions() {
+		var metamodel = trace.getMetamodel();
+		for (var partialFunction : metamodel.attributes().keySet()) {
+			addAssertions((PartialFunction<?, ?>) partialFunction);
+		}
+	}
+
 	private void addBasePredicateAssertions() {
 		for (var entry : trace.getRelationTrace().entrySet()) {
 			if (entry.getKey() instanceof PredicateDefinition predicateDefinition &&
 					ProblemUtil.isBasePredicate(predicateDefinition)) {
-				var partialRelation = entry.getValue();
+				var partialRelation = entry.getValue().asPartialRelation();
 				addDefaultAssertion(partialRelation);
 				addAssertions(partialRelation);
 			}
 		}
 	}
 
-	private void addAssertions(PartialRelation partialRelation) {
-		var relation = findPartialRelation(partialRelation);
-		var cursor = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, partialRelation).getAll();
+	private <A extends AbstractValue<A, C>, C> void addAssertions(PartialSymbol<A, C> partialSymbol) {
+		var relation = findRelation(partialSymbol);
+		var cursor = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, partialSymbol).getAll();
 		// Make sure to output assertions in a deterministic order.
-		var sortedTuples = new TreeMap<Tuple, LogicValue>();
+		var sortedTuples = new TreeMap<Tuple, Expr>();
+		var interpreter = importAdapterProvider.getTermInterpreter(relation);
+		var resultType = signatureProvider.getSignature(relation).resultType();
+		var dataType = switch (resultType) {
+			case LiteralType ignoredLiteralType -> BuiltInTerms.BOOLEAN_TYPE;
+			case DataExprType dataExprType -> dataExprType;
+			default -> throw new IllegalArgumentException("Invalid result type for relation: " + relation.getName());
+		};
 		while (cursor.move()) {
 			var tuple = cursor.getKey();
 			if (isEndpointMissing(tuple)) {
 				continue;
 			}
-			var value = cursor.getValue();
-			var logicValue = switch (value) {
-				case TRUE -> LogicValue.TRUE;
-				case FALSE -> throw new IllegalStateException("Invalid %s %s for tuple %s"
-						.formatted(partialRelation, value, tuple));
-				case UNKNOWN -> LogicValue.UNKNOWN;
-				case ERROR -> LogicValue.ERROR;
-			};
-			sortedTuples.put(tuple, logicValue);
+			var value = interpreter.serialize(dataType, cursor.getValue())
+					.orElseThrow(() -> new IllegalArgumentException(
+							"Failed to serialize value for relation: " + relation.getName()));
+			sortedTuples.put(tuple, value);
 		}
 		addAssertions(sortedTuples, relation);
 	}
@@ -377,7 +398,7 @@ public class SolutionSerializer {
 		return false;
 	}
 
-	private void addAssertions(Map<Tuple, LogicValue> sortedTuples, Relation relation) {
+	private void addAssertions(Map<Tuple, Expr> sortedTuples, Relation relation) {
 		for (var entry : sortedTuples.entrySet()) {
 			var tuple = entry.getKey();
 			int arity = tuple.getSize();
@@ -390,7 +411,7 @@ public class SolutionSerializer {
 	}
 
 	private void addDefaultAssertion(PartialRelation partialRelation) {
-		var relation = findPartialRelation(partialRelation);
+		var relation = findRelation(partialRelation);
 		var assertion = ProblemFactory.eINSTANCE.createAssertion();
 		assertion.setDefault(true);
 		assertion.setRelation(relation);
@@ -411,7 +432,7 @@ public class SolutionSerializer {
 					ProblemUtil.isComputedValuePredicate(predicateDefinition) &&
 					predicateDefinition.eContainer() instanceof PredicateDefinition parentDefinition &&
 					!ProblemUtil.isError(parentDefinition)) {
-				var computedRelation = entry.getValue();
+				var computedRelation = entry.getValue().asPartialRelation();
 				var partialRelation = trace.getPartialRelation(parentDefinition);
 				addComputedAssertions(computedRelation, partialRelation);
 			}
@@ -419,11 +440,11 @@ public class SolutionSerializer {
 	}
 
 	private void addComputedAssertions(PartialRelation computedRelation, PartialRelation partialRelation) {
-		var relation = findPartialRelation(partialRelation);
+		var relation = findRelation(partialRelation);
 		var assertedInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE,
 				partialRelation);
 		var cursor = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, computedRelation).getAll();
-		var sortedTuples = new TreeMap<Tuple, LogicValue>();
+		var sortedTuples = new TreeMap<Tuple, Expr>();
 		while (cursor.move()) {
 			var tuple = cursor.getKey();
 			if (isEndpointMissing(tuple)) {
@@ -431,14 +452,63 @@ public class SolutionSerializer {
 			}
 			var value = assertedInterpretation.get(tuple);
 			if (!Objects.equals(value, cursor.getValue())) {
-				var logicValue = switch (value) {
-					case TRUE -> LogicValue.TRUE;
-					case FALSE -> LogicValue.FALSE;
-					case UNKNOWN -> throw new IllegalStateException("Invalid %s %s asserted for tuple %s"
-							.formatted(partialRelation, value, tuple));
-					case ERROR -> LogicValue.ERROR;
-				};
-				sortedTuples.put(tuple, logicValue);
+				if (value == TruthValue.UNKNOWN) {
+					throw new IllegalStateException("Invalid %s UNKNOWN asserted for tuple %s"
+							.formatted(partialRelation, tuple));
+				}
+				sortedTuples.put(tuple, BuiltinTermInterpreter.createLogicConstant(value));
+			}
+		}
+		addAssertions(sortedTuples, relation);
+	}
+
+	private void addBaseFunctionAssertions() {
+		for (var entry : trace.getRelationTrace().entrySet()) {
+			if (entry.getKey() instanceof FunctionDefinition functionDefinition &&
+					ProblemUtil.isBaseFunction(functionDefinition)) {
+				var partialFunction = (PartialFunction<?, ?>) entry.getValue().asPartialFunction();
+				addAssertions(partialFunction);
+			}
+		}
+	}
+
+	private void addComputedFunctionAssertions() {
+		for (var entry : trace.getRelationTrace().entrySet()) {
+			if (entry.getKey() instanceof FunctionDefinition functionDefinition &&
+					ProblemUtil.isComputedValueFunction(functionDefinition) &&
+					functionDefinition.eContainer() instanceof FunctionDefinition parentDefinition) {
+				var computedFunction = entry.getValue().asPartialFunction();
+				var partialFunction = trace.getPartialFunction(parentDefinition);
+				addComputedAssertions((PartialFunction<?, ?>) computedFunction, partialFunction);
+			}
+		}
+	}
+
+	private <A extends AbstractValue<A, C>, C> void addComputedAssertions(PartialFunction<A, C> computedFunction,
+																		  AnyPartialFunction partialFunction) {
+		// The computed value function and the original function always has the same type.
+		var relation = findRelation(partialFunction);
+		var interpreter = importAdapterProvider.getTermInterpreter(relation);
+		if (!(signatureProvider.getSignature(relation).resultType() instanceof DataExprType dataType)) {
+			throw new IllegalArgumentException("Invalid result type for function: " + relation.getName());
+		}
+		@SuppressWarnings("unchecked")
+		var uncheckedPartialFunction = (PartialFunction<A, C>) partialFunction;
+		var assertedInterpretation = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE,
+				uncheckedPartialFunction);
+		var cursor = reasoningAdapter.getPartialInterpretation(Concreteness.CANDIDATE, computedFunction).getAll();
+		var sortedTuples = new TreeMap<Tuple, Expr>();
+		while (cursor.move()) {
+			var tuple = cursor.getKey();
+			if (isEndpointMissing(tuple)) {
+				continue;
+			}
+			var value = assertedInterpretation.get(tuple);
+			if (!Objects.equals(value, cursor.getValue())) {
+				var expr = interpreter.serialize(dataType, value)
+						.orElseThrow(() -> new IllegalArgumentException(
+								"Failed to serialize value for function: " + relation.getName()));
+				sortedTuples.put(tuple, expr);
 			}
 		}
 		addAssertions(sortedTuples, relation);

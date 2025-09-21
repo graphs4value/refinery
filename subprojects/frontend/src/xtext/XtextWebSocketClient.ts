@@ -85,7 +85,7 @@ export default class XtextWebSocketClient {
   };
 
   private readonly errorListener = (event: Event) => {
-    log.error('WebSocket error', event);
+    log.error({ err: event }, 'WebSocket error');
     this.interpreter.send({ type: 'ERROR', message: 'WebSocket error' });
   };
 
@@ -179,11 +179,7 @@ export default class XtextWebSocketClient {
   start(): void {
     this.interpreter
       .onTransition((state, event) => {
-        log.trace(
-          'WebSocket state transition %s on events %s',
-          state.value,
-          event,
-        );
+        log.trace({ state, event }, 'WebSocket state transition');
         this.stateAtom.reportChanged();
       })
       .start();

@@ -6,8 +6,9 @@
 package tools.refinery.logic;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
-public interface AbstractValue<A extends AbstractValue<A, C>, C> {
+public interface AbstractValue<A extends AbstractValue<A, C>, C> extends Comparable<A> {
 	@Nullable
 	C getConcrete();
 
@@ -28,5 +29,19 @@ public interface AbstractValue<A extends AbstractValue<A, C>, C> {
 
 	default boolean isRefinementOf(A other) {
 		return equals(meet(other));
+	}
+
+	default boolean isOverlapping(A other) {
+		return !meet(other).isError();
+	}
+
+	default TruthValue checkEquals(A other) {
+		if (isError() || other.isError()) {
+			return TruthValue.ERROR;
+		}
+		if (!isOverlapping(other)) {
+			return TruthValue.FALSE;
+		}
+		return isConcrete() && other.isConcrete() ? TruthValue.TRUE : TruthValue.UNKNOWN;
 	}
 }

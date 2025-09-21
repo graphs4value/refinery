@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import z from 'zod';
+import z from 'zod/v4';
 
 import { Issue } from './Issue';
 
@@ -58,7 +58,7 @@ export const Unsatisfiable = z.object({
 
 export type Unsatisfiable = z.infer<typeof Unsatisfiable>;
 
-const ErrorResult = z.union([
+const ErrorResult = z.discriminatedUnion('result', [
   Timeout,
   Cancelled,
   RequestError,
@@ -79,19 +79,13 @@ export interface Success<T> {
 
 export function Success<T extends z.ZodTypeAny>(
   value: T,
-): z.ZodType<Success<z.infer<T>>> {
-  if (value.isOptional()) {
-    // If we allowed `undefined extends z.infer<T>`,
-    // Zod would allow and optional property `value?: z.infer<T>`,
-    // which would make downstream type inference much more complex.
-    throw new Error('Success payload cannot be optional');
-  }
+): z.ZodType<Success<z.output<T>>, Success<z.input<T>>> {
   // Force a simpler return type to work around
   // https://github.com/colinhacks/zod/issues/2260
   return z.object({
     result: z.literal('success'),
     value,
-  }) as z.ZodType<Success<z.infer<T>>>;
+  }) as unknown as z.ZodType<Success<z.output<T>>, Success<z.input<T>>>;
 }
 
 export interface Status<T> {
@@ -101,14 +95,11 @@ export interface Status<T> {
 
 export function Status<T extends z.ZodTypeAny>(
   value: T,
-): z.ZodType<Status<z.infer<T>>> {
-  if (value.isOptional()) {
-    throw new Error('Status payload cannot be optional');
-  }
+): z.ZodType<Status<z.output<T>>, Status<z.input<T>>> {
   // Force a simpler return type to work around
   // https://github.com/colinhacks/zod/issues/2260
   return z.object({
     result: z.literal('status'),
     value,
-  }) as z.ZodType<Status<z.infer<T>>>;
+  }) as unknown as z.ZodType<Status<z.output<T>>, Status<z.input<T>>>;
 }

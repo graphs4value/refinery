@@ -7,8 +7,8 @@ package tools.refinery.generator.impl;
 
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
-import tools.refinery.store.map.AnyVersionedMap;
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.map.FilteredCursor;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -16,7 +16,6 @@ import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Objects;
-import java.util.Set;
 
 public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements PartialInterpretation<A, C> {
 	private final PartialInterpretation<A, C> wrappedInterpretation;
@@ -51,7 +50,7 @@ public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements
 
 	@Override
 	public Cursor<Tuple, A> getAll() {
-		return new FilteredCursor(wrappedInterpretation.getAll());
+		return new FilteredInterpretationCursor(wrappedInterpretation.getAll());
 	}
 
 	private boolean tupleExists(Tuple key) {
@@ -77,46 +76,14 @@ public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements
 		return new FilteredInterpretation<>(wrappedInterpretation, existsInterpretation);
 	}
 
-	private class FilteredCursor implements Cursor<Tuple, A> {
-		private final Cursor<Tuple, A> wrappedCursor;
-
-		private FilteredCursor(Cursor<Tuple, A> wrappedCursor) {
-			this.wrappedCursor = wrappedCursor;
+	private class FilteredInterpretationCursor extends FilteredCursor<Tuple, A> {
+		private FilteredInterpretationCursor(Cursor<Tuple, A> wrappedCursor) {
+			super(wrappedCursor);
 		}
 
 		@Override
-		public Tuple getKey() {
-			return wrappedCursor.getKey();
-		}
-
-		@Override
-		public A getValue() {
-			return wrappedCursor.getValue();
-		}
-
-		@Override
-		public boolean isTerminated() {
-			return wrappedCursor.isTerminated();
-		}
-
-		@Override
-		public boolean move() {
-			while (wrappedCursor.move()) {
-				if (tupleExists(getKey())) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@Override
-		public boolean isDirty() {
-			return wrappedCursor.isDirty();
-		}
-
-		@Override
-		public Set<AnyVersionedMap> getDependingMaps() {
-			return wrappedCursor.getDependingMaps();
+		protected boolean keep() {
+			return tupleExists(getKey());
 		}
 	}
 }

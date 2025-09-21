@@ -2,8 +2,9 @@
 <genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
     modelDirectory="/tools.refinery.refinery-language-model/src/main/emf-gen"
-    creationIcons="false" editDirectory="/toosl.refinery.language.model.edit/src/main/emf-gen" editorDirectory="/tools.refinery.language.model.editor/src-gen"
-    modelPluginID="language-model" modelName="Problem" rootExtendsClass="tools.refinery.language.model.problem.impl.ProblemEObjectImpl"
+    creationIcons="false" editDirectory="/toosl.refinery.language.model.edit/src/main/emf-gen"
+    editorDirectory="/tools.refinery.language.model.editor/src-gen" modelPluginID="language-model"
+    modelName="Problem" rootExtendsClass="tools.refinery.language.model.problem.impl.ProblemEObjectImpl"
     codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0"
     copyrightFields="false" operationReflection="true" importOrganizing="true">
   <foreignModel>problem.ecore</foreignModel>
@@ -23,9 +24,6 @@
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/GREATER_EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/EQ"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NOT_EQ"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/IN"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NODE_EQ"/>
-      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ComparisonOp/NODE_NOT_EQ"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//ReferenceKind">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//ReferenceKind/DEFAULT"/>
@@ -59,6 +57,10 @@
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//LatticeBinaryOp">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/MEET"/>
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/JOIN"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/NOT_EQ"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/SUBSET"/>
+      <genEnumLiterals ecoreEnumLiteral="problem.ecore#//LatticeBinaryOp/SUPERSET"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="problem.ecore#//Modality">
       <genEnumLiterals ecoreEnumLiteral="problem.ecore#//Modality/UNSPECIFIED"/>
@@ -213,24 +215,24 @@
     <genClasses ecoreClass="problem.ecore#//ComparisonExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ComparisonExpr/op"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//QuantifiedUnaryExpr"/>
+    <genClasses ecoreClass="problem.ecore#//NegationExpr"/>
     <genClasses ecoreClass="problem.ecore#//FunctionDefinition">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/cases"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/functionType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//FunctionDefinition/shadow"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/computedValue"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//FunctionDefinition/domainPredicate"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//Case"/>
     <genClasses ecoreClass="problem.ecore#//Conjunction">
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Conjunction/literals"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//Match">
-      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Match/condition"/>
-      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Match/value"/>
+    <genClasses ecoreClass="problem.ecore#//Case">
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Case/condition"/>
+      <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//Case/value"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//ArithmeticBinaryExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//ArithmeticBinaryExpr/op"/>
     </genClasses>
-    <genClasses ecoreClass="problem.ecore#//NegationExpr"/>
-    <genClasses ecoreClass="problem.ecore#//CountExpr"/>
     <genClasses ecoreClass="problem.ecore#//Relation"/>
     <genClasses ecoreClass="problem.ecore#//RangeExpr"/>
     <genClasses ecoreClass="problem.ecore#//LogicConstant">
@@ -243,10 +245,6 @@
     <genClasses ecoreClass="problem.ecore#//DatatypeDeclaration"/>
     <genClasses ecoreClass="problem.ecore#//LatticeBinaryExpr">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//LatticeBinaryExpr/op"/>
-    </genClasses>
-    <genClasses ecoreClass="problem.ecore#//CastExpr">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/body"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//CastExpr/targetType"/>
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//AssignmentExpr"/>
     <genClasses ecoreClass="problem.ecore#//InfiniteConstant"/>
@@ -275,6 +273,9 @@
     </genClasses>
     <genClasses ecoreClass="problem.ecore#//TopLevelAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//TopLevelAnnotation/annotation"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//OverloadedDeclaration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//OverloadedDeclaration/shadow"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

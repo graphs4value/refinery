@@ -6,27 +6,31 @@
 package tools.refinery.language.semantics.internal;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
-class DecisionTree implements MutableSeed<TruthValue> {
+class DecisionTree<A extends AbstractValue<A, C>, C> implements MutableSeed<A> {
 	private final int levels;
+	private final Class<A> valueType;
+	private final A fallbackMajorityValue;
+	private final DecisionTreeNode<A, C> root;
 
-	private final DecisionTreeNode root;
-
-	public DecisionTree(int levels, TruthValue initialValue) {
+	public DecisionTree(int levels, Class<A> valueType, A fallbackMajorityValue, A initialValue) {
 		this.levels = levels;
-		DecisionTreeNode node = new TerminalNode(IntObjectMaps.mutable.empty(),
-				DecisionTreeValue.fromTruthValue(initialValue));
+		this.valueType = valueType;
+		this.fallbackMajorityValue = fallbackMajorityValue;
+		DecisionTreeNode<A, C> node = new TerminalNode<>(IntObjectMaps.mutable.empty(),
+				DecisionTreeValue.ofNullable(initialValue));
 		for (int level = 1; level < levels; level++) {
-			node = new IntermediateNode(IntObjectMaps.mutable.empty(), node);
+			node = new IntermediateNode<>(IntObjectMaps.mutable.empty(), node);
 		}
 		root = node;
 	}
 
-	public DecisionTree(int levels) {
-		this(levels, null);
+	public DecisionTree(int levels, Class<A> valueType, A fallbackMajorityValue) {
+		this(levels, valueType, fallbackMajorityValue, null);
 	}
 
 	@Override
@@ -35,56 +39,59 @@ class DecisionTree implements MutableSeed<TruthValue> {
 	}
 
 	@Override
-	public Class<TruthValue> valueType() {
-		return TruthValue.class;
+	public Class<A> valueType() {
+		return valueType;
 	}
 
 	@Override
-	public TruthValue majorityValue() {
-		return root.getMajorityValue().getTruthValueOrElse(TruthValue.FALSE);
+	public A majorityValue() {
+		return root.getMajorityValue().orElse(fallbackMajorityValue);
 	}
 
 	@Override
-	public TruthValue get(Tuple tuple) {
-		return root.getValue(levels - 1, tuple).getTruthValue();
+	public A get(Tuple tuple) {
+		return root.getValue(levels - 1, tuple).orElseNull();
 	}
 
 	@Override
-	public void mergeValue(Tuple tuple, TruthValue truthValue) {
+	public void mergeValue(Tuple tuple, A truthValue) {
 		if (truthValue != null) {
 			root.mergeValue(levels - 1, tuple, truthValue);
 		}
 	}
 
 	@Override
-	public void setIfMissing(Tuple tuple, TruthValue truthValue) {
+	public void setIfMissing(Tuple tuple, A truthValue) {
 		if (truthValue != null) {
 			root.setIfMissing(levels - 1, tuple, truthValue);
 		}
 	}
 
 	@Override
-	public void setAllMissing(TruthValue truthValue) {
+	public void setAllMissing(A truthValue) {
 		if (truthValue != null) {
 			root.setAllMissing(truthValue);
 		}
 	}
 
 	@Override
-	public void overwriteValues(MutableSeed<TruthValue> values) {
-		if (!(values instanceof DecisionTree decisionTree)) {
+	public void overwriteValues(MutableSeed<A> values) {
+		if (!(values instanceof DecisionTree<?, ?> decisionTree)) {
 			throw new IllegalArgumentException("Incompatible overwrite: " + values);
 		}
-		root.overwriteValues(decisionTree.root);
+		// This is safe, because A uniquely determines C.
+		@SuppressWarnings("unchecked")
+		var typedRoot = (DecisionTreeNode<A, C>) decisionTree.root;
+		root.overwriteValues(typedRoot);
 	}
 
-	public TruthValue getReducedValue() {
+	public A getReducedValue() {
 		var reducedValue = root.getReducedValue();
-		return reducedValue == null ? null : reducedValue.getTruthValue();
+		return reducedValue == null ? null : reducedValue.orElseNull();
 	}
 
 	@Override
-	public Cursor<Tuple, TruthValue> getCursor(TruthValue defaultValue, int nodeCount) {
-		return new DecisionTreeCursor(levels, defaultValue, nodeCount, root);
+	public Cursor<Tuple, A> getCursor(A defaultValue, int nodeCount) {
+		return new DecisionTreeCursor<>(levels, defaultValue, nodeCount, root);
 	}
 }

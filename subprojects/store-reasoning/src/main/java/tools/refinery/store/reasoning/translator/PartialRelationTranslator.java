@@ -419,14 +419,10 @@ public final class PartialRelationTranslator extends PartialSymbolTranslator<Tru
 		if (acceptWasSet && objectiveWasSet) {
 			return;
 		}
-		var invalidCandidate = createQuery("invalidCandidate", (builder, parameters) -> builder
-				.clause(
-						PartialLiterals.candidateMust(partialRelation.call(parameters)),
-						not(PartialLiterals.candidateMay(partialRelation.call(parameters)))
-				));
 		var reject = createQuery("reject", (builder, parameters) -> {
-			var literals = new ArrayList<Literal>(parameters.length + 1);
-			literals.add(invalidCandidate.call(parameters));
+			var literals = new ArrayList<Literal>(parameters.length + 2);
+			literals.add(PartialLiterals.candidateMust(partialRelation.call(parameters)));
+			literals.add(not(PartialLiterals.candidateMay(partialRelation.call(parameters))));
 			for (var parameter : parameters) {
 				literals.add(PartialLiterals.candidateMust(ReasoningAdapter.EXISTS_SYMBOL.call(parameter)));
 			}

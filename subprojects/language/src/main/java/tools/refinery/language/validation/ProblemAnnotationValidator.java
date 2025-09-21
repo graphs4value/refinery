@@ -14,7 +14,7 @@ import tools.refinery.language.annotations.internal.AnnotationUtil;
 import tools.refinery.language.annotations.BuiltinAnnotations;
 import tools.refinery.language.annotations.internal.TypedAnnotation;
 import tools.refinery.language.annotations.internal.TypedAnnotationContext;
-import tools.refinery.language.expressions.BuiltinTermInterpreter;
+import tools.refinery.language.expressions.BuiltInTerms;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.typesystem.FixedType;
@@ -158,16 +158,16 @@ public class ProblemAnnotationValidator extends AbstractProblemValidator {
 				return true;
 			}
 		} else if (builtinSymbols.booleanDatatype().equals(type)) {
-			return checkLiteralType(argument, value, typedModule, BuiltinTermInterpreter.BOOLEAN_TYPE,
+			return checkLiteralType(argument, value, typedModule, BuiltInTerms.BOOLEAN_TYPE,
 					expr -> AnnotationUtil.toBoolean(expr).isPresent(), "Expected a Boolean literal");
 		} else if (builtinSymbols.intDatatype().equals(type)) {
-			return checkLiteralType(argument, value, typedModule, BuiltinTermInterpreter.INT_TYPE,
+			return checkLiteralType(argument, value, typedModule, BuiltInTerms.INT_TYPE,
 					expr -> AnnotationUtil.toInteger(expr).isPresent(), "Expected an integer literal");
 		} else if (builtinSymbols.realDatatype().equals(type)) {
-			return checkLiteralType(argument, value, typedModule, BuiltinTermInterpreter.REAL_TYPE,
-					expr -> AnnotationUtil.toDouble(expr).isPresent(), "Expected a floating-point literal");
+			return checkLiteralType(argument, value, typedModule, BuiltInTerms.REAL_TYPE,
+					expr -> AnnotationUtil.toBigDecimal(expr).isPresent(), "Expected a floating-point literal");
 		} else if (builtinSymbols.stringDatatype().equals(type)) {
-			return checkLiteralType(argument, value, typedModule, BuiltinTermInterpreter.STRING_TYPE,
+			return checkLiteralType(argument, value, typedModule, BuiltInTerms.STRING_TYPE,
 					expr -> AnnotationUtil.toString(expr).isPresent(), "Expected a string literal");
 		} else {
 			error("Unknown annotation argument type.", argument, ProblemPackage.Literals.ANNOTATION_ARGUMENT__VALUE,

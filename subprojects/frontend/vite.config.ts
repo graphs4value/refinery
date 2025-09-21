@@ -11,6 +11,7 @@ import { lezer } from '@lezer/generator/rollup';
 import react from '@vitejs/plugin-react-swc';
 import { defineConfig, type UserConfig as ViteConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import svgr from 'vite-plugin-svgr';
 
 import { CONFIG_ENDPOINT } from './config/backendConfigVitePlugin';
 import detectDevModeOptions, {
@@ -47,6 +48,7 @@ const viteConfig: ViteConfig = {
   plugins: [
     react(),
     lezer(),
+    svgr(),
     preloadFontsVitePlugin(fontsGlob),
     minifyHTMLVitePlugin(),
     graphvizUMDVitePlugin(),

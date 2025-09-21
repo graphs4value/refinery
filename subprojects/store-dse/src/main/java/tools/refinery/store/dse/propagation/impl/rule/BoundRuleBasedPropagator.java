@@ -57,16 +57,45 @@ public class BoundRuleBasedPropagator implements BoundPropagator {
 
 	private PropagationResult fireAll(BoundPropagationRule[] boundRules) {
 		queryEngine.flushChanges();
+		boolean hasStaticRules = false;
 		PropagationResult result = PropagationResult.UNCHANGED;
 		// Use a classic for loop to avoid allocating an iterator.
 		//noinspection ForLoopReplaceableByForEach
 		for (int i = 0; i < boundRules.length; i++) {
-			var lastResult = boundRules[i].fireAll();
+			var boundRule = boundRules[i];
+			if (!boundRule.isDynamic()) {
+				hasStaticRules = true;
+			}
+			var lastResult = boundRule.fireAll();
 			result = result.andThen(lastResult);
 			if (result.isRejected()) {
 				break;
 			}
 		}
+		if (!hasStaticRules || !result.isChanged()) {
+			return result;
+		}
+		PropagationResult roundResult;
+		do {
+			queryEngine.flushChanges();
+			roundResult = PropagationResult.UNCHANGED;
+			// Use a classic for loop to avoid allocating an iterator.
+			//noinspection ForLoopReplaceableByForEach
+			for (int i = 0; i < boundRules.length; i++) {
+				var boundRule = boundRules[i];
+				if (boundRule.isDynamic()) {
+					// Dynamic rules may get stuck in a loop, so pass the control back to other propagators to allow
+					// them to detect inconsistency and abort the loop.
+					continue;
+				}
+				var lastResult = boundRule.fireAll();
+				roundResult = roundResult.andThen(lastResult);
+				if (roundResult.isRejected()) {
+					break;
+				}
+			}
+			result = result.andThen(roundResult);
+		} while (roundResult.isChanged());
 		return result;
 	}
 }

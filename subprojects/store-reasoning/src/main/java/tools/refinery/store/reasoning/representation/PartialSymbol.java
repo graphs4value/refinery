@@ -23,4 +23,12 @@ public sealed interface PartialSymbol<A extends AbstractValue<A, C>, C> extends 
 			String name, int arity, AbstractDomain<A, C> abstractDomain) {
 		return new PartialFunction<>(name, arity, abstractDomain);
 	}
+
+	@Override
+	default PartialFunction<A, C> asPartialFunction() {
+		// This is always safe because {@code asPartialFunction} always returns {@code this}.
+		@SuppressWarnings("unchecked")
+		var partialFunction = (PartialFunction<A, C>) AnyPartialSymbol.super.asPartialFunction();
+		return partialFunction;
+	}
 }

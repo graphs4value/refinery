@@ -5,8 +5,11 @@
  */
 package tools.refinery.language.semantics.internal;
 
-import tools.refinery.store.reasoning.seed.Seed;
+import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.logic.term.truthvalue.TruthValueDomain;
+import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.tuple.Tuple;
 
 public interface MutableSeed<T> extends Seed<T> {
@@ -18,11 +21,21 @@ public interface MutableSeed<T> extends Seed<T> {
 
 	void overwriteValues(MutableSeed<T> other);
 
-	static MutableSeed<TruthValue> of(int levels, TruthValue initialValue) {
+	static <A extends AbstractValue<A, C>, C> MutableSeed<A> of(int levels, AbstractDomain<A, C> domain,
+																A fallbackMajorityValue, A initialValue) {
 		if (levels == 0) {
-			return new NullaryMutableSeed(initialValue);
+			return new NullaryMutableSeed<>(domain.abstractType(), fallbackMajorityValue, initialValue);
 		} else {
-			return new DecisionTree(levels, initialValue);
+			return new DecisionTree<>(levels, domain.abstractType(), fallbackMajorityValue, initialValue);
 		}
+	}
+
+	static <A extends AbstractValue<A, C>, C> MutableSeed<A> of(int levels, AbstractDomain<A, C> domain,
+																A initialValue) {
+		return of(levels, domain, domain.unknown(), initialValue);
+	}
+
+	static MutableSeed<TruthValue> of(int levels, TruthValue initialValue) {
+		return of(levels, TruthValueDomain.INSTANCE, TruthValue.FALSE, initialValue);
 	}
 }

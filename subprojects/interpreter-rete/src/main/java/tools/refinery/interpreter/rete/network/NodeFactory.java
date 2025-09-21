@@ -84,13 +84,19 @@ class NodeFactory {
 				result.assignTraceInfo(traceInfo);
 			return result;
 		} else if (recipe instanceof OuterJoinIndexerRecipe) {
+			int indexOfAggregateResult = recipe.getParent().getArity();
+			int resultPosition = recipe.getMask().getSourceIndices().lastIndexOf(indexOfAggregateResult);
+			if (resultPosition != -1) {
+				throw new IllegalArgumentException("Invalid left join recipe");
+			}
+
 			var leftJoinNode = (LeftJoinNode) parentNode;
 			var result = leftJoinNode.getOuterIndexer();
 			for (TraceInfo traceInfo : traces)
 				result.assignTraceInfo(traceInfo);
 			return result;
         } else {
-			throw new IllegalArgumentException("Unkown Indexer recipe: " + recipe);
+			throw new IllegalArgumentException("Unknown Indexer recipe: " + recipe);
 		}
     }
 

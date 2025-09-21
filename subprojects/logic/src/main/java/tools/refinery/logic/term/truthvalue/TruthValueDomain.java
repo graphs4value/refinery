@@ -5,11 +5,11 @@
  */
 package tools.refinery.logic.term.truthvalue;
 
-import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.ComparableAbstractDomain;
 
 // Singleton pattern, because there is only one domain for truth values.
 @SuppressWarnings("squid:S6548")
-public final class TruthValueDomain implements AbstractDomain<TruthValue, Boolean> {
+public final class TruthValueDomain implements ComparableAbstractDomain<TruthValue, Boolean> {
 	public static final TruthValueDomain INSTANCE = new TruthValueDomain();
 
 	private TruthValueDomain() {
@@ -37,6 +37,16 @@ public final class TruthValueDomain implements AbstractDomain<TruthValue, Boolea
 
 	@Override
 	public TruthValue toAbstract(Boolean concreteValue) {
-		return TruthValue.toTruthValue(concreteValue);
+		return TruthValue.of(concreteValue);
+	}
+
+	@Override
+	public TruthValue negativeInfinity() {
+		return TruthValue.FALSE;
+	}
+
+	@Override
+	public TruthValue positiveInfinity() {
+		return TruthValue.TRUE;
 	}
 }

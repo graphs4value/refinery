@@ -11,6 +11,7 @@ import tools.refinery.logic.term.Variable;
 import tools.refinery.interpreter.matchers.psystem.IExpressionEvaluator;
 import tools.refinery.interpreter.matchers.psystem.IValueProvider;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 class TermEvaluator<T> implements IExpressionEvaluator {
@@ -38,5 +39,17 @@ class TermEvaluator<T> implements IExpressionEvaluator {
 	public Object evaluateExpression(IValueProvider provider) {
 		var valuation = new ValueProviderBasedValuation(provider);
 		return term.evaluate(valuation);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		TermEvaluator<?> that = (TermEvaluator<?>) o;
+		return Objects.equals(term, that.term) && Objects.equals(clause, that.clause);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(term, clause);
 	}
 }

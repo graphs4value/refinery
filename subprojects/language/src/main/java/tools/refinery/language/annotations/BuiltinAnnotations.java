@@ -18,6 +18,7 @@ import tools.refinery.language.utils.DecisionSettings;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ClassHierarchyCollector;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
@@ -218,18 +219,18 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 
 	@ValidateAnnotation("WEIGHT")
 	private void validateWeight(Annotation annotation) {
-		var coefficient = annotation.getDouble(WEIGHT_COEFFICIENT);
-		var exponent = annotation.getDouble(WEIGHT_EXPONENT);
+		var coefficient = annotation.getBigDecimal(WEIGHT_COEFFICIENT);
+		var exponent = annotation.getBigDecimal(WEIGHT_EXPONENT);
 		if (coefficient.isEmpty() && exponent.isEmpty()) {
 			var message = "Must set either weight %s or %s.".formatted(WEIGHT_COEFFICIENT, WEIGHT_EXPONENT);
 			error(message, annotation);
 			return;
 		}
-		if (coefficient.orElse(DecisionSettings.DEFAULT_COEFFICIENT) <= 0) {
+		if (coefficient.orElse(DecisionSettings.DEFAULT_COEFFICIENT).compareTo(BigDecimal.ZERO) <= 0) {
 			var message = "Weight coefficient must be positive.";
 			error(message, annotation);
 		}
-		if (exponent.orElse(DecisionSettings.DEFAULT_EXPONENT) < 0) {
+		if (exponent.orElse(DecisionSettings.DEFAULT_EXPONENT).compareTo(BigDecimal.ZERO) < 0) {
 			var message = "Weight exponent must be non-negative.";
 			error(message, annotation);
 		}

@@ -6,7 +6,7 @@
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { alpha } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import {
   DataGrid,
   type GridRenderCellParams,
@@ -17,13 +17,19 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
+import { binarySearch, type Value } from '../graph/valueUtils';
 
 import TableToolbar from './TableToolbar';
 import ValueRenderer from './ValueRenderer';
 
+interface NodeName {
+  name: string;
+  missing: boolean;
+}
+
 interface Row {
-  nodes: string[];
-  value: string;
+  nodes: NodeName[];
+  value: Value | undefined;
 }
 
 declare module '@mui/x-data-grid' {
@@ -87,6 +93,14 @@ function NoResultsOverlay({
   );
 }
 
+const NodeNameRenderer = styled('span', {
+  name: 'TableArea-NodeNameRenderer',
+  shouldForwardProp: (prop) => prop !== 'missing',
+})<{ missing: boolean }>(({ theme, missing }) => ({
+  color: missing ? theme.palette.text.secondary : theme.palette.text.primary,
+  textDecoration: missing ? 'line-through' : 'none',
+}));
+
 function TableArea({
   graph,
   touchesTop,
@@ -102,6 +116,7 @@ function TableArea({
     ? graph.getComputedName(symbolName)
     : symbolName;
   const arity = selectedSymbol?.arity ?? 0;
+  const attribute = selectedSymbol?.dataType !== undefined;
   const parameterNames = selectedSymbol?.parameterNames;
 
   const [cachedConcretize, setCachedConcretize] = useState(false);
@@ -124,38 +139,52 @@ function TableArea({
         headerName: namesOrEmpty[i] ?? String(i + 1),
         valueGetter: (_, row) => row.nodes[i] ?? '',
         flex: 1,
+        renderCell: ({ value }: GridRenderCellParams<Row, NodeName>) => (
+          <NodeNameRenderer missing={value?.missing ?? false}>
+            {value?.name}
+          </NodeNameRenderer>
+        ),
       });
     }
     defs.push({
       field: 'value',
       headerName: namesOrEmpty.includes('value') ? '$VALUE' : 'value',
       flex: 1,
-      renderCell: ({ value }: GridRenderCellParams<Row, string>) => (
-        <ValueRenderer concretize={cachedConcretize} value={value} />
+      renderCell: ({ value }: GridRenderCellParams<Row, Value>) => (
+        <ValueRenderer
+          concretize={cachedConcretize}
+          value={value}
+          attribute={attribute}
+        />
       ),
     });
     return defs;
-  }, [arity, cachedConcretize, parameterNames]);
+  }, [arity, attribute, cachedConcretize, parameterNames]);
 
   const rows = useMemo<Row[]>(() => {
     if (computedName === undefined) {
       return [];
     }
     const interpretation = partialInterpretation[computedName] ?? [];
+    const existsInterpretation = partialInterpretation['builtin::exists'] ?? [];
     return interpretation.map((tuple) => {
-      const nodeNames: string[] = [];
+      const nodeNames: NodeName[] = [];
       for (let i = 0; i < arity; i += 1) {
         const index = tuple[i];
         if (typeof index === 'number') {
           const node = nodes[index];
+          const exists = binarySearch(existsInterpretation, [index]);
           if (node !== undefined) {
-            nodeNames.push(node.name);
+            nodeNames.push({
+              name: node.name,
+              missing: exists === undefined,
+            });
           }
         }
       }
       return {
         nodes: nodeNames,
-        value: String(tuple[arity]),
+        value: tuple[arity],
       };
     });
   }, [arity, nodes, partialInterpretation, computedName]);
@@ -184,7 +213,7 @@ function TableArea({
         rowSelection={false}
         columns={columns}
         rows={rows}
-        getRowId={(row) => row.nodes.join(',')}
+        getRowId={(row) => row.nodes.map(({ name }) => name).join(',')}
         sx={(theme) => ({
           border: 'none',
           backgroundColor: dimView

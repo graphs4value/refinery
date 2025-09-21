@@ -17,15 +17,15 @@ import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.resource.ProblemResourceDescriptionStrategy;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class ImplicitVariableScope {
+class ImplicitVariableScope {
 	private final EObject root;
-
 	private final ExistentialQuantifier quantifier;
-
 	private final ImplicitVariableScope parent;
-
 	private Set<String> knownVariables;
 
 	private ImplicitVariableScope(ExistentialQuantifier quantifier, ImplicitVariableScope parent) {
@@ -50,17 +50,58 @@ public class ImplicitVariableScope {
 								IQualifiedNameConverter qualifiedNameConverter,
 								Deque<ImplicitVariableScope> scopeQueue) {
 		initializeKnownVariables();
+		if (root instanceof Case match) {
+			// Always process the condition of a {@link Case} before its value.
+			var condition = match.getCondition();
+			if (condition != null) {
+				walkChildren(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			}
+			var value = match.getValue();
+			walkSelfAndChildren(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			return;
+		}
+		if (root instanceof AggregationExpr aggregationExpr) {
+			// Always process the condition of an {@link AggregationExpr} before its value.
+			var condition = aggregationExpr.getCondition();
+			walkSelfAndChildren(condition, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			var value = aggregationExpr.getValue();
+			walkSelfAndChildren(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+			return;
+		}
 		processEObject(root, scopeProvider, linkingHelper, qualifiedNameConverter);
-		var treeIterator = root.eAllContents();
+		walkChildren(root, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+	}
+
+	private void walkSelfAndChildren(
+			EObject value, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
+			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
+		if (value != null &&
+				!processChild(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue)) {
+			walkChildren(value, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue);
+		}
+	}
+
+	private void walkChildren(
+			EObject parent, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
+			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
+		var treeIterator = parent.eAllContents();
 		while (treeIterator.hasNext()) {
 			var child = treeIterator.next();
-			if (child instanceof ExistentialQuantifier nestedQuantifier) {
-				scopeQueue.addLast(new ImplicitVariableScope(nestedQuantifier, this));
+			if (processChild(child, scopeProvider, linkingHelper, qualifiedNameConverter, scopeQueue)) {
 				treeIterator.prune();
-			} else {
-				processEObject(child, scopeProvider, linkingHelper, qualifiedNameConverter);
 			}
 		}
+	}
+
+	private boolean processChild(
+			EObject child, IScopeProvider scopeProvider, LinkingHelper linkingHelper,
+			IQualifiedNameConverter qualifiedNameConverter, Deque<ImplicitVariableScope> scopeQueue) {
+		if (child instanceof ExistentialQuantifier nestedQuantifier) {
+			scopeQueue.addLast(new ImplicitVariableScope(nestedQuantifier, this));
+			return true;
+		}
+		processEObject(child, scopeProvider, linkingHelper, qualifiedNameConverter);
+		return false;
 	}
 
 	private void initializeKnownVariables() {

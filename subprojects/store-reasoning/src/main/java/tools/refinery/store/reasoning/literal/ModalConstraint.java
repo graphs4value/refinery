@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.literal;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.equality.LiteralEqualityHelper;
@@ -55,7 +56,7 @@ public record ModalConstraint(ModalitySpecification modality, ConcretenessSpecif
 	}
 
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return formatName(constraint.toString());
 	}
 
@@ -67,12 +68,28 @@ public record ModalConstraint(ModalitySpecification modality, ConcretenessSpecif
 	}
 
 	public static Constraint of(Modality modality, Concreteness concreteness, Constraint constraint) {
+		return of(modality.toSpecification(), concreteness.toSpecification(), constraint);
+	}
+
+	public static Constraint of(Modality modality, Constraint constraint) {
+		return of(modality.toSpecification(), ConcretenessSpecification.UNSPECIFIED, constraint);
+	}
+
+	public static Constraint of(Concreteness concreteness, Constraint constraint) {
+		return of(ModalitySpecification.UNSPECIFIED, concreteness.toSpecification(), constraint);
+	}
+
+	public static Constraint of(ModalitySpecification modality, ConcretenessSpecification concreteness,
+								Constraint constraint) {
+		if (modality == ModalitySpecification.UNSPECIFIED && concreteness == ConcretenessSpecification.UNSPECIFIED) {
+			return constraint;
+		}
 		return switch (constraint) {
 			case AnySymbolView anySymbolView -> anySymbolView;
 			case ModalConstraint(var otherModality, var otherConcreteness, var innerConstraint) ->
-					new ModalConstraint(otherModality.orElse(modality.toSpecification()),
-							otherConcreteness.orElse(concreteness.toSpecification()), innerConstraint);
-			default -> new ModalConstraint(modality.toSpecification(), concreteness.toSpecification(), constraint);
+					new ModalConstraint(otherModality.orElse(modality), otherConcreteness.orElse(concreteness),
+							innerConstraint);
+			default -> new ModalConstraint(modality, concreteness, constraint);
 		};
 	}
 }

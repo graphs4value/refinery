@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.actions;
 
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.dnf.FunctionalQuery;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -20,7 +21,18 @@ public final class PartialActionLiterals {
 
 	public static <A extends AbstractValue<A, C>, C> MergeActionLiteral<A, C> merge(
 			PartialSymbol<A, C> partialSymbol, A value, NodeVariable... parameters) {
-		return new MergeActionLiteral<>(partialSymbol, value, List.of(parameters));
+		return merge(partialSymbol, value, List.of(parameters));
+	}
+
+	public static <A extends AbstractValue<A, C>, C> MergeActionLiteral<A, C> merge(
+			PartialSymbol<A, C> partialSymbol, A value, List<NodeVariable> parameters) {
+		return new MergeActionLiteral<>(partialSymbol, value, parameters);
+	}
+
+	public static <A extends AbstractValue<A, C>, C> ComputedMergeActionLiteral<A, C> mergeComputed(
+			PartialSymbol<A, C> partialSymbol, List<NodeVariable> parameters, FunctionalQuery<A> valueQuery,
+			List<NodeVariable> arguments) {
+		return new ComputedMergeActionLiteral<>(partialSymbol, parameters, valueQuery, arguments);
 	}
 
 	public static MergeActionLiteral<TruthValue, Boolean> add(PartialRelation partialRelation,

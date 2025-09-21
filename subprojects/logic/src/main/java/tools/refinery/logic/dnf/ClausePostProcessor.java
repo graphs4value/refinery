@@ -8,12 +8,14 @@ package tools.refinery.logic.dnf;
 import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.InvalidQueryException;
+import tools.refinery.logic.equality.DnfEqualityChecker;
+import tools.refinery.logic.equality.SubstitutingLiteralEqualityHelper;
+import tools.refinery.logic.equality.SubstitutingLiteralHashCodeHelper;
 import tools.refinery.logic.literal.*;
 import tools.refinery.logic.substitution.MapBasedSubstitution;
 import tools.refinery.logic.substitution.StatelessSubstitution;
 import tools.refinery.logic.substitution.Substitution;
-import tools.refinery.logic.term.ParameterDirection;
-import tools.refinery.logic.term.Variable;
+import tools.refinery.logic.term.*;
 
 import java.util.*;
 import java.util.function.Function;
@@ -45,8 +47,9 @@ class ClausePostProcessor {
 		validatePositiveRepresentatives();
 		validatePrivateVariables();
 		topologicallySortLiterals();
-		var filteredLiterals = new ArrayList<Literal>(topologicallySortedLiterals.size());
-		for (var literal : topologicallySortedLiterals) {
+		var prunedLiterals = pruneAssignments(topologicallySortedLiterals);
+		var filteredLiterals = new ArrayList<Literal>(prunedLiterals.size());
+		for (var literal : prunedLiterals) {
 			var reducedLiteral = literal.reduce();
 			if (BooleanLiteral.FALSE.equals(reducedLiteral)) {
 				return ConstantResult.ALWAYS_FALSE;
@@ -261,6 +264,53 @@ class ClausePostProcessor {
 		return true;
 	}
 
+	private Collection<Literal> pruneAssignments(Collection<Literal> inputLiterals) {
+		boolean changed;
+		var substitutionMap = new LinkedHashMap<Variable, Variable>();
+		var substitution = new MapBasedSubstitution(substitutionMap, StatelessSubstitution.IDENTITY);
+		do {
+			changed = false;
+			var outputLiterals = new ArrayList<Literal>(inputLiterals.size());
+			var canonicalVariables = new LinkedHashMap<EquatableTerm<?>, AnyDataVariable>();
+			for (var literal : inputLiterals) {
+				var newLiteral = literal.substitute(substitution).reduce();
+				if (newLiteral instanceof TermLiteral<?> termLiteral) {
+					newLiteral = processTermLiteral(termLiteral, substitutionMap, canonicalVariables);
+				}
+				if (!literal.equals(newLiteral)) {
+					changed = true;
+				}
+				if (newLiteral != null) {
+					outputLiterals.add(newLiteral);
+				}
+			}
+			inputLiterals = outputLiterals;
+		} while (changed);
+		return inputLiterals;
+	}
+
+	private <T> Literal processTermLiteral(TermLiteral<T> termLiteral, Map<Variable, Variable> substitutionMap,
+										   Map<EquatableTerm<?>, AnyDataVariable> canonicalVariables) {
+		if (termLiteral instanceof AssignLiteral<T> assignLiteral) {
+			var targetVariable = assignLiteral.getVariable();
+			if (parameters.containsKey(targetVariable)) {
+				return termLiteral;
+			}
+			var existingSubstitute = substitutionMap.get(targetVariable);
+			var substitute = canonicalVariables.putIfAbsent(new EquatableTerm<>(assignLiteral.getTerm()),
+					existingSubstitute == null ? targetVariable : (AnyDataVariable) existingSubstitute);
+			if (substitute != null) {
+				if (existingSubstitute == null) {
+					substitutionMap.put(targetVariable, substitute);
+				}
+				return null;
+			} else if (existingSubstitute != null) {
+				return existingSubstitute.asDataVariable(targetVariable.getType()).assign(assignLiteral.getTerm());
+			}
+		}
+		return termLiteral;
+	}
+
 	private class SortableLiteral implements Comparable<SortableLiteral> {
 		private final int index;
 		private final Literal literal;
@@ -343,6 +393,26 @@ class ClausePostProcessor {
 		@Override
 		public int hashCode() {
 			return Objects.hash(index, literal);
+		}
+	}
+
+	private class EquatableTerm<T> {
+		private final Term<T> term;
+
+		public EquatableTerm(Term<T> term) {
+			this.term = term;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof EquatableTerm<?> otherTerm &&
+					term.equalsWithSubstitution(new SubstitutingLiteralEqualityHelper(
+							DnfEqualityChecker.DEFAULT, positiveVariables), otherTerm.term);
+		}
+
+		@Override
+		public int hashCode() {
+			return term.hashCodeWithSubstitution(new SubstitutingLiteralHashCodeHelper(positiveVariables));
 		}
 	}
 

@@ -161,6 +161,23 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 		}
 	}
 
+	protected void format(FunctionDefinition functionDefinition, IFormattableDocument doc) {
+		surroundNewLines(doc, functionDefinition, this::twoNewLines);
+		var region = regionFor(functionDefinition);
+		doc.append(region.feature(ProblemPackage.Literals.FUNCTION_DEFINITION__FUNCTION_TYPE), this::oneSpace);
+		doc.append(region.feature(ProblemPackage.Literals.NAMED_ELEMENT__NAME), this::noSpace);
+		formatParenthesizedList(region, doc);
+		doc.surround(region.keyword("="), this::oneSpace);
+		formatList(region, ";", doc);
+		doc.prepend(region.keyword("."), this::noSpace);
+		for (var parameter : functionDefinition.getParameters()) {
+			doc.format(parameter);
+		}
+		for (var match : functionDefinition.getCases()) {
+			doc.format(match);
+		}
+	}
+
 	protected void format(NegationExpr literal, IFormattableDocument doc) {
 		var region = regionFor(literal);
 		doc.append(region.keyword("!"), this::noSpace);
@@ -260,6 +277,19 @@ public class ProblemFormatter extends AbstractJavaFormatter {
 			doc.format(annotation);
 			doc.append(annotation, initializer);
 		}
+	}
+
+	protected void format(RangeExpr rangeExpr, IFormattableDocument doc) {
+		var region = regionFor(rangeExpr);
+		doc.surround(region.keyword(".."), this::noSpace);
+		doc.format(rangeExpr.getLeft());
+		doc.format(rangeExpr.getRight());
+	}
+
+	protected void format(ArithmeticUnaryExpr unaryExpr, IFormattableDocument doc) {
+		var region = regionFor(unaryExpr);
+        doc.append(region.feature(ProblemPackage.Literals.ARITHMETIC_UNARY_EXPR__OP), this::noSpace);
+        doc.format(unaryExpr.getBody());
 	}
 
 	protected void formatParenthesizedList(ISemanticRegionsFinder region, IFormattableDocument doc) {

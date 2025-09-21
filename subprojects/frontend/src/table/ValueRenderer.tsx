@@ -7,23 +7,32 @@
 import CancelIcon from '@mui/icons-material/Cancel';
 import LabelIcon from '@mui/icons-material/Label';
 import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
+import SvgIcon from '@mui/material/SvgIcon';
 import { styled } from '@mui/material/styles';
+
+import NumberSVG from '../graph/dot_filled.svg?react';
+import NumberOutlinedSVG from '../graph/dot_outlined.svg?react';
+import {
+  type Value,
+  extractValue,
+  extractValueColor,
+} from '../graph/valueUtils';
 
 const Label = styled('div', {
   name: 'ValueRenderer-Label',
   shouldForwardProp: (prop) => prop !== 'value',
 })<{
-  value: 'TRUE' | 'UNKNOWN' | 'ERROR';
+  value: 'true' | 'unknown' | 'error';
   concretize: boolean;
 }>(({ theme, value, concretize }) => ({
   display: 'flex',
   alignItems: 'center',
-  ...(value === 'UNKNOWN'
+  ...(value === 'unknown'
     ? {
         color: theme.palette.text.secondary,
       }
     : {}),
-  ...(value === 'ERROR'
+  ...(value === 'error'
     ? {
         color: concretize ? theme.palette.info.main : theme.palette.error.main,
       }
@@ -36,30 +45,44 @@ const Label = styled('div', {
 export default function ValueRenderer({
   concretize,
   value,
+  attribute,
 }: {
   concretize: boolean;
-  value: string | undefined;
+  value: Value | undefined;
+  attribute: boolean | undefined;
 }): React.ReactNode {
-  switch (value) {
-    case 'TRUE':
-      return (
-        <Label concretize={concretize} value={value}>
-          <LabelIcon fontSize="small" /> true
-        </Label>
-      );
-    case 'UNKNOWN':
-      return (
-        <Label concretize={concretize} value={value}>
-          <LabelOutlinedIcon fontSize="small" /> unknown
-        </Label>
-      );
-    case 'ERROR':
-      return (
-        <Label concretize={concretize} value={value}>
-          <CancelIcon fontSize="small" /> error
-        </Label>
-      );
+  const color = extractValueColor(value);
+  let icon: React.ReactNode;
+  switch (color) {
+    case 'true':
+      if (attribute) {
+        icon = (
+          <SvgIcon component={NumberSVG} inheritViewBox fontSize="small" />
+        );
+      } else {
+        icon = <LabelIcon fontSize="small" />;
+      }
+      break;
+    case 'error':
+      icon = <CancelIcon fontSize="small" />;
+      break;
     default:
-      return value;
+      if (attribute) {
+        icon = (
+          <SvgIcon
+            component={NumberOutlinedSVG}
+            inheritViewBox
+            fontSize="small"
+          />
+        );
+      } else {
+        icon = <LabelOutlinedIcon fontSize="small" />;
+      }
+      break;
   }
+  return (
+    <Label concretize={concretize} value={color}>
+      {icon} {extractValue(value)}
+    </Label>
+  );
 }

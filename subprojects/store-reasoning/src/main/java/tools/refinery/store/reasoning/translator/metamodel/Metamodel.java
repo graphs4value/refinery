@@ -5,7 +5,10 @@
  */
 package tools.refinery.store.reasoning.translator.metamodel;
 
+import tools.refinery.store.reasoning.representation.AnyPartialFunction;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
 import tools.refinery.store.reasoning.translator.containment.ContainmentInfo;
 import tools.refinery.store.reasoning.translator.crossreference.DirectedCrossReferenceInfo;
 import tools.refinery.store.reasoning.translator.crossreference.UndirectedCrossReferenceInfo;
@@ -16,7 +19,8 @@ import java.util.Map;
 public record Metamodel(TypeHierarchy typeHierarchy, Map<PartialRelation, ContainmentInfo> containmentHierarchy,
 						Map<PartialRelation, DirectedCrossReferenceInfo> directedCrossReferences,
 						Map<PartialRelation, UndirectedCrossReferenceInfo> undirectedCrossReferences,
-						Map<PartialRelation, PartialRelation> oppositeReferences) {
+						Map<PartialRelation, PartialRelation> oppositeReferences,
+						Map<AnyPartialFunction, AttributeInfo> attributes) {
 	public static MetamodelBuilder builder() {
 		return new MetamodelBuilder();
 	}

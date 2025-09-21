@@ -65,7 +65,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="implicitVariables" upperBound="-1"
         eType="#//ImplicitVariable" transient="true" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssertion" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssertion" abstract="true" eSuperTypes="#//ExistentialQuantifier">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
         eType="#//AssertionArgument" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relation" eType="#//Relation"/>
@@ -113,7 +113,7 @@
         defaultValueLiteral="0"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RealConstant" eSuperTypes="#//Constant">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="realValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="realValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigDecimal"
         defaultValueLiteral="0.0"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringConstant" eSuperTypes="#//Constant">
@@ -154,9 +154,6 @@
     <eLiterals name="GREATER_EQ" value="3"/>
     <eLiterals name="EQ" value="4"/>
     <eLiterals name="NOT_EQ" value="5"/>
-    <eLiterals name="IN" value="6"/>
-    <eLiterals name="NODE_EQ" value="9"/>
-    <eLiterals name="NODE_NOT_EQ" value="10"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ReferenceKind">
     <eLiterals name="DEFAULT" value="1"/>
@@ -213,19 +210,22 @@
   <eClassifiers xsi:type="ecore:EClass" name="ComparisonExpr" eSuperTypes="#//BinaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//ComparisonOp"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="QuantifiedUnaryExpr" abstract="true"
-      eSuperTypes="#//ExistentialQuantifier #//UnaryExpr"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NegationExpr" eSuperTypes="#//ExistentialQuantifier #//UnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDefinition" eSuperTypes="#//ParametricDefinition #//Relation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cases" upperBound="-1"
         eType="#//Case" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="functionType" eType="#//DatatypeDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionType" eType="#//Relation"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="shadow" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="computedValue" eType="#//FunctionDefinition"
+        transient="true" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="domainPredicate" eType="#//PredicateDefinition"
+        transient="true" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Case" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//Case #//ExistentialQuantifier">
+  <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//ExistentialQuantifier">
     <eStructuralFeatures xsi:type="ecore:EReference" name="literals" upperBound="-1"
         eType="#//Expr" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Match" eSuperTypes="#//Case">
+  <eClassifiers xsi:type="ecore:EClass" name="Case">
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" eType="#//Conjunction"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expr"
@@ -234,8 +234,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ArithmeticBinaryExpr" eSuperTypes="#//BinaryExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="#//BinaryOp"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="NegationExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
-  <eClassifiers xsi:type="ecore:EClass" name="CountExpr" eSuperTypes="#//QuantifiedUnaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="Relation" abstract="true" eSuperTypes="#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="RangeExpr" eSuperTypes="#//BinaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="LogicConstant" eSuperTypes="#//Constant">
@@ -261,10 +259,10 @@
   <eClassifiers xsi:type="ecore:EEnum" name="LatticeBinaryOp">
     <eLiterals name="MEET"/>
     <eLiterals name="JOIN" value="1"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CastExpr" eSuperTypes="#//Expr">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//Expr" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="targetType" eType="#//Relation"/>
+    <eLiterals name="EQ" value="2"/>
+    <eLiterals name="NOT_EQ" value="3"/>
+    <eLiterals name="SUBSET" value="5"/>
+    <eLiterals name="SUPERSET" value="6"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpr" eSuperTypes="#//BinaryExpr"/>
   <eClassifiers xsi:type="ecore:EClass" name="InfiniteConstant" eSuperTypes="#//Constant"/>
@@ -324,5 +322,8 @@
   <eClassifiers xsi:type="ecore:EEnum" name="ParameterKind">
     <eLiterals name="VALUE"/>
     <eLiterals name="PRED" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OverloadedDeclaration" eSuperTypes="#//ParametricDefinition #//Relation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="shadow" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
 </ecore:EPackage>

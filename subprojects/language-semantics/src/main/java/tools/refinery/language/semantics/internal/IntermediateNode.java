@@ -9,39 +9,41 @@ import org.eclipse.collections.api.LazyIntIterable;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntObjectPair;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 
-final class IntermediateNode extends DecisionTreeNode {
-	private final MutableIntObjectMap<DecisionTreeNode> children;
+import java.util.Objects;
 
-	private final DecisionTreeNode otherwise;
+final class IntermediateNode<A extends AbstractValue<A, C>, C> extends DecisionTreeNode<A, C> {
+	private final MutableIntObjectMap<DecisionTreeNode<A, C>> children;
 
-	IntermediateNode(MutableIntObjectMap<DecisionTreeNode> children, DecisionTreeNode otherwise) {
+	private final DecisionTreeNode<A, C> otherwise;
+
+	IntermediateNode(MutableIntObjectMap<DecisionTreeNode<A, C>> children, DecisionTreeNode<A, C> otherwise) {
 		this.children = children;
 		this.otherwise = otherwise;
 	}
 
-	private DecisionTreeNode getChild(int index) {
+	private DecisionTreeNode<A, C> getChild(int index) {
 		var child = children.get(index);
 		return child == null ? otherwise : child;
 	}
 
 	@Override
-	public DecisionTreeValue getValue(int level, Tuple tuple) {
+	public DecisionTreeValue<A, C> getValue(int level, Tuple tuple) {
 		return getChild(tuple.get(level)).getValue(level - 1, tuple);
 	}
 
 	@Override
-	public DecisionTreeNode deepCopy() {
+	public DecisionTreeNode<A, C> deepCopy() {
 		var newChildren = IntObjectMaps.mutable.from(children.keyValuesView(), IntObjectPair::getOne,
 				pair -> pair.getTwo().deepCopy());
 		var newOtherwise = otherwise.deepCopy();
-		return new IntermediateNode(newChildren, newOtherwise);
+		return new IntermediateNode<>(newChildren, newOtherwise);
 	}
 
 	@Override
-	protected void mergeAllValues(int nextLevel, Tuple tuple, TruthValue value) {
+	protected void mergeAllValues(int nextLevel, Tuple tuple, A value) {
 		otherwise.mergeValue(nextLevel, tuple, value);
 		for (var child : children) {
 			child.mergeValue(nextLevel, tuple, value);
@@ -50,28 +52,28 @@ final class IntermediateNode extends DecisionTreeNode {
 	}
 
 	@Override
-	protected void mergeSingleValue(int key, int nextLevel, Tuple tuple, TruthValue value) {
+	protected void mergeSingleValue(int key, int nextLevel, Tuple tuple, A value) {
 		var otherwiseReduced = getOtherwiseReducedValue();
 		var child = children.get(key);
 		if (child == null) {
 			var newChild = otherwise.withMergedValue(nextLevel, tuple, value);
-			if (otherwiseReduced == null || newChild.getReducedValue() != otherwiseReduced) {
+			if (otherwiseReduced == null || !Objects.equals(newChild.getReducedValue(), otherwiseReduced)) {
 				children.put(key, newChild);
 			}
 			return;
 		}
 		child.mergeValue(nextLevel, tuple, value);
-		if (otherwiseReduced != null && child.getReducedValue() == otherwiseReduced) {
+		if (otherwiseReduced != null && Objects.equals(child.getReducedValue(), otherwiseReduced)) {
 			children.remove(key);
 		}
 	}
 
 	@Override
-	protected void doSetIfMissing(int key, int nextLevel, Tuple tuple, TruthValue value) {
+	protected void doSetIfMissing(int key, int nextLevel, Tuple tuple, A value) {
 		var child = children.get(key);
 		if (child == null) {
 			var otherwiseReducedValue = getOtherwiseReducedValue();
-			if (otherwiseReducedValue != null && otherwiseReducedValue != DecisionTreeValue.UNSET) {
+			if (otherwiseReducedValue != null && !otherwiseReducedValue.isUnset()) {
 				// Value already set.
 				return;
 			}
@@ -83,7 +85,7 @@ final class IntermediateNode extends DecisionTreeNode {
 	}
 
 	@Override
-	public void setAllMissing(TruthValue value) {
+	public void setAllMissing(A value) {
 		otherwise.setAllMissing(value);
 		for (var child : children) {
 			child.setAllMissing(value);
@@ -92,8 +94,8 @@ final class IntermediateNode extends DecisionTreeNode {
 	}
 
 	@Override
-	public void overwriteValues(DecisionTreeNode values) {
-		if (!(values instanceof IntermediateNode intermediateValues)) {
+	public void overwriteValues(DecisionTreeNode<A, C> values) {
+		if (!(values instanceof IntermediateNode<A, C> intermediateValues)) {
 			throw new IllegalArgumentException("Level mismatch");
 		}
 		otherwise.overwriteValues(intermediateValues.otherwise);
@@ -114,14 +116,14 @@ final class IntermediateNode extends DecisionTreeNode {
 		var iterator = children.iterator();
 		while (iterator.hasNext()) {
 			var child = iterator.next();
-			if (child.getReducedValue() == otherwiseReduced) {
+			if (Objects.equals(child.getReducedValue(), otherwiseReduced)) {
 				iterator.remove();
 			}
 		}
 	}
 
 	@Override
-	protected DecisionTreeValue getOtherwiseReducedValue() {
+	protected DecisionTreeValue<A, C> getOtherwiseReducedValue() {
 		return otherwise.getReducedValue();
 	}
 
@@ -131,11 +133,11 @@ final class IntermediateNode extends DecisionTreeNode {
 	}
 
 	@Override
-	public DecisionTreeValue getMajorityValue() {
+	public DecisionTreeValue<A, C> getMajorityValue() {
 		return otherwise.getMajorityValue();
 	}
 
-	protected boolean moveNextSparse(int level, DecisionTreeCursor cursor, int startIndex, int[] sortedChildren) {
+	protected boolean moveNextSparse(int level, DecisionTreeCursor<A, C> cursor, int startIndex, int[] sortedChildren) {
 		for (int i = startIndex; i < sortedChildren.length; i++) {
 			var key = sortedChildren[i];
 			var child = getChild(key);
@@ -149,7 +151,7 @@ final class IntermediateNode extends DecisionTreeNode {
 		return false;
 	}
 
-	protected boolean moveNextDense(int level, DecisionTreeCursor cursor, int startIndex) {
+	protected boolean moveNextDense(int level, DecisionTreeCursor<A, C> cursor, int startIndex) {
 		for (int i = startIndex; i < cursor.nodeCount; i++) {
 			var child = getChild(i);
 			var found = child.moveNext(level - 1, cursor);

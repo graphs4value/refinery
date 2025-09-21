@@ -18,8 +18,11 @@ import tools.refinery.language.semantics.metadata.NodesMetadata;
 import tools.refinery.language.semantics.metadata.RelationMetadata;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
+import tools.refinery.store.dse.propagation.PropagationResult;
+import tools.refinery.store.dse.transition.ExclusionPropagator;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelStore;
 import tools.refinery.store.reasoning.ReasoningAdapter;
@@ -74,6 +77,12 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 			throw diagnostics.wrapTracedException(e, problemTrace);
 		} catch (PropagationRejectedException e) {
 			throw diagnostics.wrapPropagationRejectedException(e, problemTrace);
+		}
+		if (propagatedModel.propagationResult() instanceof PropagationRejectedResult rejectedResult &&
+				rejectedResult.reason() instanceof ExclusionPropagator) {
+			// Return models with errors as if they were correctly propagated. Callers can check for consistency with
+			// {@link #checkConsistency()} later.
+			return new PropagatedModel(propagatedModel.model(), PropagationResult.PROPAGATED);
 		}
 		return propagatedModel;
 	}
@@ -162,19 +171,25 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 			if (ProblemUtil.isShadow(relation)) {
 				continue;
 			}
-			var partialRelation = entry.getValue();
-			// Filter for non-existing errors even if they are retained by getPartialInterpretation.
-			var interpretation = FilteredInterpretation.of(getPartialInterpretation(partialRelation),
-					existsInterpretation);
-			var cursor = interpretation.getAll();
-			while (cursor.move()) {
-				var value = cursor.getValue();
-				if (value.isError()) {
-					errors.add(new ConsistencyCheckResult.Error<>(partialRelation, cursor.getKey(), value));
-				}
-			}
+			var partialSymbol = (PartialSymbol<? extends AbstractValue<?, ?>, ?>) entry.getValue();
+			checkConsistency(partialSymbol, existsInterpretation, errors);
 		}
 		return new ConsistencyCheckResult(this, List.copyOf(errors));
+	}
+
+	private <A extends AbstractValue<A, C>, C> void checkConsistency(
+			PartialSymbol<A, C> partialSymbol, PartialInterpretation<TruthValue, Boolean> existsInterpretation,
+			List<ConsistencyCheckResult.AnyError> errors) {
+		// Filter for non-existing errors even if they are retained by getPartialInterpretation.
+		var interpretation = FilteredInterpretation.of(getPartialInterpretation(partialSymbol),
+				existsInterpretation);
+		var cursor = interpretation.getAll();
+		while (cursor.move()) {
+			var value = cursor.getValue();
+			if (value.isError()) {
+				errors.add(new ConsistencyCheckResult.Error<>(partialSymbol, cursor.getKey(), value));
+			}
+		}
 	}
 
 	@Override

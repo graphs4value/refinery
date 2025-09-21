@@ -36,8 +36,8 @@ class DnfPostProcessor {
 			} catch (InvalidQueryException e) {
 				throw new InvalidClauseException(index, e);
 			}
-			if (result instanceof ClausePostProcessor.ClauseResult clauseResult) {
-				postProcessedClauses.add(new CanonicalClause(clauseResult.clause()));
+			if (result instanceof ClausePostProcessor.ClauseResult(DnfClause clause)) {
+				postProcessedClauses.add(new CanonicalClause(clause));
 			} else if (result instanceof ClausePostProcessor.ConstantResult constantResult) {
 				switch (constantResult) {
 				case ALWAYS_TRUE -> {

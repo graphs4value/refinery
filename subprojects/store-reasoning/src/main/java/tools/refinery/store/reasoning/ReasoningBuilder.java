@@ -13,7 +13,9 @@ import tools.refinery.logic.dnf.FunctionalQuery;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.Modality;
+import tools.refinery.store.reasoning.literal.ModalitySpecification;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.refinement.StorageRefiner;
 import tools.refinery.store.reasoning.translator.AnyPartialSymbolTranslator;
@@ -49,11 +51,21 @@ public interface ReasoningBuilder extends ModelAdapterBuilder {
 
 	<T> Query<T> lift(Modality modality, Concreteness concreteness, Query<T> query);
 
+	<T> Query<T> lift(ModalitySpecification modality, ConcretenessSpecification concreteness, Query<T> query);
+
 	RelationalQuery lift(Modality modality, Concreteness concreteness, RelationalQuery query);
+
+	RelationalQuery lift(ModalitySpecification modality, ConcretenessSpecification concreteness,
+						 RelationalQuery query);
 
 	<T> FunctionalQuery<T> lift(Modality modality, Concreteness concreteness, FunctionalQuery<T> query);
 
+	<T> FunctionalQuery<T> lift(ModalitySpecification modality, ConcretenessSpecification concreteness,
+								FunctionalQuery<T> query);
+
 	Dnf lift(Modality modality, Concreteness concreteness, Dnf dnf);
+
+	Dnf lift(ModalitySpecification modality, ConcretenessSpecification concreteness, Dnf dnf);
 
 	@Override
 	ReasoningStoreAdapter build(ModelStore store);

@@ -7,6 +7,8 @@ package tools.refinery.store.reasoning.literal;
 
 import tools.refinery.logic.InvalidQueryException;
 import tools.refinery.logic.literal.CallLiteral;
+import tools.refinery.logic.term.Term;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 
 public final class PartialLiterals {
 	private PartialLiterals() {
@@ -37,5 +39,9 @@ public final class PartialLiterals {
 		var polarity = literal.getPolarity();
 		var modalTarget = ModalConstraint.of(modality.commute(polarity), concreteness, target);
 		return new CallLiteral(polarity, modalTarget, literal.getArguments());
+	}
+
+	public static PartialCheckLiteral partialCheck(Term<TruthValue> term) {
+		return new PartialCheckLiteral(term);
 	}
 }

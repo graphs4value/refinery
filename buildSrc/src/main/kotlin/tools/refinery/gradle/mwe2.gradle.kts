@@ -30,4 +30,4 @@ dependencies {
 	mwe2(libs.slf4j.simple)
 }
 
-eclipse.classpath.plusConfigurations += mwe2
+eclipse.classpath.plusConfigurations.add(mwe2)

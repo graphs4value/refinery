@@ -9,53 +9,55 @@ import org.eclipse.collections.api.LazyIntIterable;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntObjectPair;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.tuple.Tuple;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 
-class TerminalNode extends DecisionTreeNode {
-	private MutableIntObjectMap<TruthValue> children;
+import java.util.Objects;
 
-	private DecisionTreeValue otherwise;
+class TerminalNode<A extends AbstractValue<A, C>, C> extends DecisionTreeNode<A, C> {
+	private MutableIntObjectMap<A> children;
 
-	TerminalNode(MutableIntObjectMap<TruthValue> children, DecisionTreeValue otherwise) {
+	private DecisionTreeValue<A, C> otherwise;
+
+	TerminalNode(MutableIntObjectMap<A> children, DecisionTreeValue<A, C> otherwise) {
 		this.children = children;
 		this.otherwise = otherwise;
 	}
 
-	private DecisionTreeValue getChild(int index) {
+	private DecisionTreeValue<A, C> getChild(int index) {
 		var child = children.get(index);
-		return child == null ? otherwise : DecisionTreeValue.fromTruthValue(child);
+		return child == null ? otherwise : DecisionTreeValue.ofNullable(child);
 	}
 
 	@Override
-	public DecisionTreeValue getValue(int level, Tuple tuple) {
+	public DecisionTreeValue<A, C> getValue(int level, Tuple tuple) {
 		assertLevel(level);
 		return getChild(tuple.get(level));
 	}
 
 	@Override
-	public DecisionTreeNode deepCopy() {
-		return new TerminalNode(IntObjectMaps.mutable.ofAll(children), otherwise);
+	public DecisionTreeNode<A, C> deepCopy() {
+		return new TerminalNode<>(IntObjectMaps.mutable.ofAll(children), otherwise);
 	}
 
 	@Override
-	public void mergeValue(int level, Tuple tuple, TruthValue value) {
+	public void mergeValue(int level, Tuple tuple, A value) {
 		assertLevel(level);
 		super.mergeValue(level, tuple, value);
 	}
 
 	@Override
-	protected void mergeAllValues(int nextLevel, Tuple tuple, TruthValue value) {
-		otherwise = DecisionTreeValue.fromTruthValue(otherwise.merge(value));
+	protected void mergeAllValues(int nextLevel, Tuple tuple, A value) {
+		otherwise = DecisionTreeValue.ofNullable(otherwise.merge(value));
 		children = IntObjectMaps.mutable.from(children.keyValuesView(), IntObjectPair::getOne,
 				pair -> pair.getTwo().meet(value));
 		reduceChildren();
 	}
 
 	@Override
-	protected void mergeSingleValue(int key, int nextLevel, Tuple tuple, TruthValue value) {
+	protected void mergeSingleValue(int key, int nextLevel, Tuple tuple, A value) {
 		var newChild = getChild(key).merge(value);
-		if (otherwise.getTruthValue() == newChild) {
+		if (Objects.equals(otherwise.orElseNull(), newChild)) {
 			children.remove(key);
 		} else {
 			children.put(key, newChild);
@@ -63,34 +65,34 @@ class TerminalNode extends DecisionTreeNode {
 	}
 
 	@Override
-	public void setIfMissing(int level, Tuple tuple, TruthValue value) {
+	public void setIfMissing(int level, Tuple tuple, A value) {
 		assertLevel(level);
 		super.setIfMissing(level, tuple, value);
 	}
 
 	@Override
-	protected void doSetIfMissing(int key, int nextLevel, Tuple tuple, TruthValue value) {
-		if (otherwise == DecisionTreeValue.UNSET) {
+	protected void doSetIfMissing(int key, int nextLevel, Tuple tuple, A value) {
+		if (otherwise.isUnset()) {
 			children.getIfAbsentPut(key, value);
 		}
 	}
 
 	@Override
-	public void setAllMissing(TruthValue value) {
-		if (otherwise == DecisionTreeValue.UNSET) {
-			otherwise = DecisionTreeValue.fromTruthValue(value);
+	public void setAllMissing(A value) {
+		if (otherwise.isUnset()) {
+			otherwise = DecisionTreeValue.ofNullable(value);
 			reduceChildren();
 		}
 	}
 
 	@Override
-	public void overwriteValues(DecisionTreeNode values) {
-		if (!(values instanceof TerminalNode terminalValues)) {
+	public void overwriteValues(DecisionTreeNode<A, C> values) {
+		if (!(values instanceof TerminalNode<A, C> terminalValues)) {
 			throw new IllegalArgumentException("Level mismatch");
 		}
 		otherwise = otherwise.overwrite(terminalValues.otherwise);
 		children = IntObjectMaps.mutable.from(children.keyValuesView(), IntObjectPair::getOne,
-				pair -> terminalValues.getChild(pair.getOne()).getTruthValueOrElse(pair.getTwo()));
+				pair -> terminalValues.getChild(pair.getOne()).orElse(pair.getTwo()));
 		for (var pair : terminalValues.children.keyValuesView()) {
 			children.getIfAbsentPut(pair.getOne(), pair.getTwo());
 		}
@@ -101,20 +103,20 @@ class TerminalNode extends DecisionTreeNode {
 		var iterator = children.iterator();
 		while (iterator.hasNext()) {
 			var child = iterator.next();
-			if (otherwise.getTruthValue() == child) {
+			if (Objects.equals(otherwise.orElseNull(), child)) {
 				iterator.remove();
 			}
 		}
 	}
 
 	@Override
-	public boolean moveNext(int level, DecisionTreeCursor cursor) {
+	public boolean moveNext(int level, DecisionTreeCursor<A, C> cursor) {
 		assertLevel(level);
 		return super.moveNext(level, cursor);
 	}
 
 	@Override
-	protected DecisionTreeValue getOtherwiseReducedValue() {
+	protected DecisionTreeValue<A, C> getOtherwiseReducedValue() {
 		return getMajorityValue();
 	}
 
@@ -124,12 +126,12 @@ class TerminalNode extends DecisionTreeNode {
 	}
 
 	@Override
-	public DecisionTreeValue getMajorityValue() {
+	public DecisionTreeValue<A, C> getMajorityValue() {
 		return otherwise;
 	}
 
 	@Override
-	protected boolean moveNextSparse(int level, DecisionTreeCursor cursor, int startIndex, int[] sortedChildren) {
+	protected boolean moveNextSparse(int level, DecisionTreeCursor<A, C> cursor, int startIndex, int[] sortedChildren) {
 		if (startIndex >= sortedChildren.length) {
 			return false;
 		}
@@ -141,7 +143,7 @@ class TerminalNode extends DecisionTreeNode {
 	}
 
 	@Override
-	protected boolean moveNextDense(int level, DecisionTreeCursor cursor, int startIndex) {
+	protected boolean moveNextDense(int level, DecisionTreeCursor<A, C> cursor, int startIndex) {
 		if (startIndex >= cursor.nodeCount) {
 			return false;
 		}

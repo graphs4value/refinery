@@ -19,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class DecisionTreeTests {
 	@Test
 	void initialValueTest() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		assertThat(sut.get(Tuple.of(3, 4, 5)), is(TruthValue.UNKNOWN));
 	}
 
 	@Test
 	void mergeValueTest() {
-		var sut = new DecisionTree(3, TruthValue.FALSE);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(3, 4, 5), TruthValue.TRUE);
 		assertThat(sut.get(Tuple.of(3, 4, 5)), is(TruthValue.ERROR));
 		assertThat(sut.get(Tuple.of(3, 4, 6)), is(TruthValue.FALSE));
@@ -33,14 +33,14 @@ class DecisionTreeTests {
 
 	@Test
 	void mergeUnknownValueTest() {
-		var sut = new DecisionTree(3, TruthValue.FALSE);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(3, 4, 5), TruthValue.UNKNOWN);
 		assertThat(sut.get(Tuple.of(3, 4, 5)), is(TruthValue.FALSE));
 	}
 
 	@Test
 	void mergeWildcardTest() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(3, -1, 5), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(-1, 4, 5), TruthValue.FALSE);
 		assertThat(sut.get(Tuple.of(2, 4, 5)), is(TruthValue.FALSE));
@@ -51,7 +51,7 @@ class DecisionTreeTests {
 
 	@Test
 	void mergeWildcardTest2() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(-1, 4, -1), TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(3, -1, 5), TruthValue.TRUE);
 		assertThat(sut.get(Tuple.of(2, 4, 5)), is(TruthValue.FALSE));
@@ -63,7 +63,7 @@ class DecisionTreeTests {
 
 	@Test
 	void mergeWildcardTest3() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(-1, 4, -1), TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(3, -1, 5), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(-1, -1, -1), TruthValue.ERROR);
@@ -76,7 +76,7 @@ class DecisionTreeTests {
 
 	@Test
 	void mergeOverUnsetTest() {
-		var sut = new DecisionTree(3, null);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, null);
 		sut.mergeValue(Tuple.of(-1, 4, 5), TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(3, -1, 5), TruthValue.FALSE);
 		assertThat(sut.get(Tuple.of(2, 4, 5)), is(TruthValue.UNKNOWN));
@@ -87,14 +87,14 @@ class DecisionTreeTests {
 
 	@Test
 	void emptyIterationTest() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		var map = iterateAll(sut, TruthValue.UNKNOWN, 2);
 		assertThat(map.keySet(), hasSize(0));
 	}
 
 	@Test
 	void completeIterationTest() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		var map = iterateAll(sut, TruthValue.FALSE, 2);
 		assertThat(map.keySet(), hasSize(8));
 		assertThat(map, hasEntry(Tuple.of(0, 0, 0), TruthValue.UNKNOWN));
@@ -109,7 +109,7 @@ class DecisionTreeTests {
 
 	@Test
 	void mergedIterationTest() {
-		var sut = new DecisionTree(2, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(1, -1), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(-1, 2), TruthValue.FALSE);
 		var map = iterateAll(sut, TruthValue.UNKNOWN, 3);
@@ -123,7 +123,7 @@ class DecisionTreeTests {
 
 	@Test
 	void sparseIterationTest() {
-		var sut = new DecisionTree(2, null);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, null);
 		sut.mergeValue(Tuple.of(0, 0), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(1, 1), TruthValue.FALSE);
 		var map = iterateAll(sut, null, 10);
@@ -134,8 +134,8 @@ class DecisionTreeTests {
 
 	@Test
 	void overwriteIterationTest() {
-		var sut = new DecisionTree(1, TruthValue.TRUE);
-		var overwrite = new DecisionTree(1, null);
+		var sut = new DecisionTree<>(1, TruthValue.class, TruthValue.FALSE, TruthValue.TRUE);
+		var overwrite = new DecisionTree<>(1, TruthValue.class, TruthValue.FALSE, null);
 		overwrite.mergeValue(Tuple.of(0), TruthValue.UNKNOWN);
 		sut.overwriteValues(overwrite);
 		var map = iterateAll(sut, TruthValue.UNKNOWN, 2);
@@ -145,17 +145,17 @@ class DecisionTreeTests {
 
 	@Test
 	void overwriteNothingTest() {
-		var sut = new DecisionTree(2, TruthValue.UNKNOWN);
-		var values = new DecisionTree(2, null);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
+		var values = new DecisionTree<>(2, TruthValue.class, null);
 		sut.overwriteValues(values);
 		assertThat(sut.get(Tuple.of(0, 0)), is(TruthValue.UNKNOWN));
 	}
 
 	@Test
 	void overwriteEverythingTest() {
-		var sut = new DecisionTree(2, TruthValue.FALSE);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(0, 0), TruthValue.ERROR);
-		var values = new DecisionTree(2, TruthValue.TRUE);
+		var values = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.TRUE);
 		sut.overwriteValues(values);
 		assertThat(sut.get(Tuple.of(0, 0)), is(TruthValue.TRUE));
 		assertThat(sut.get(Tuple.of(0, 1)), is(TruthValue.TRUE));
@@ -163,11 +163,11 @@ class DecisionTreeTests {
 
 	@Test
 	void overwriteWildcardTest() {
-		var sut = new DecisionTree(3, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(1, 1, 1), TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(-1, 4, 5), TruthValue.FALSE);
 		sut.mergeValue(Tuple.of(3, -1, 5), TruthValue.TRUE);
-		var values = new DecisionTree(3, null);
+		var values = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, null);
 		values.mergeValue(Tuple.of(2, 2, 2), TruthValue.TRUE);
 		values.mergeValue(Tuple.of(-1, 4, 5), TruthValue.UNKNOWN);
 		values.mergeValue(Tuple.of(3, -1, 5), TruthValue.FALSE);
@@ -182,27 +182,27 @@ class DecisionTreeTests {
 
 	@Test
 	void reducedValueEmptyTest() {
-		var sut = new DecisionTree(2, TruthValue.TRUE);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.TRUE);
 		assertThat(sut.getReducedValue(), is(TruthValue.TRUE));
 	}
 
 	@Test
 	void reducedValueUnsetTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE);
 		assertThat(sut.getReducedValue(), is(nullValue()));
 	}
 
 	@Test
 	void reducedValueNonEmptyTest() {
-		var sut = new DecisionTree(2, TruthValue.UNKNOWN);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		sut.mergeValue(Tuple.of(1, 2), TruthValue.TRUE);
 		assertThat(sut.getReducedValue(), is(nullValue()));
 	}
 
 	@Test
 	void removeIntermediateChildTest() {
-		var sut = new DecisionTree(3, TruthValue.TRUE);
-		var values = new DecisionTree(3, null);
+		var sut = new DecisionTree<>(3, TruthValue.class, TruthValue.FALSE, TruthValue.TRUE);
+		var values = new DecisionTree<>(3, TruthValue.class, null);
 		values.mergeValue(Tuple.of(1, 1, 1), TruthValue.UNKNOWN);
 		sut.overwriteValues(values);
 		sut.mergeValue(Tuple.of(1, 1, 1), TruthValue.TRUE);
@@ -212,14 +212,14 @@ class DecisionTreeTests {
 
 	@Test
 	void setMissingValueTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, null);
 		sut.setIfMissing(Tuple.of(0, 0), TruthValue.FALSE);
 		assertThat(sut.get(Tuple.of(0, 0)), is(TruthValue.FALSE));
 	}
 
 	@Test
 	void setNotMissingValueTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, null);
 		sut.mergeValue(Tuple.of(0, 0), TruthValue.TRUE);
 		sut.setIfMissing(Tuple.of(0, 0), TruthValue.FALSE);
 		assertThat(sut.get(Tuple.of(0, 0)), is(TruthValue.TRUE));
@@ -227,14 +227,14 @@ class DecisionTreeTests {
 
 	@Test
 	void setNotMissingDefaultValueTest() {
-		var sut = new DecisionTree(2, TruthValue.TRUE);
+		var sut = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.TRUE);
 		sut.setIfMissing(Tuple.of(0, 0), TruthValue.FALSE);
 		assertThat(sut.get(Tuple.of(0, 0)), is(TruthValue.TRUE));
 	}
 
 	@Test
 	void setMissingValueWildcardTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, null);
 		sut.mergeValue(Tuple.of(-1, 0), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(1, -1), TruthValue.TRUE);
 		sut.setIfMissing(Tuple.of(0, 0), TruthValue.FALSE);
@@ -248,14 +248,14 @@ class DecisionTreeTests {
 
 	@Test
 	void setMissingValueInvalidTupleTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, null);
 		var tuple = Tuple.of(-1, -1);
 		assertThrows(IllegalArgumentException.class, () -> sut.setIfMissing(tuple, TruthValue.TRUE));
 	}
 
 	@Test
 	void setAllMissingTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, null);
 		sut.mergeValue(Tuple.of(-1, 0), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(1, -1), TruthValue.TRUE);
 		sut.mergeValue(Tuple.of(2, 2), TruthValue.TRUE);
@@ -271,22 +271,23 @@ class DecisionTreeTests {
 
 	@Test
 	void setAllMissingEmptyTest() {
-		var sut = new DecisionTree(2);
+		var sut = new DecisionTree<>(2, TruthValue.class, null);
 		sut.setAllMissing(TruthValue.TRUE);
 		assertThat(sut.getReducedValue(), is(TruthValue.TRUE));
 	}
 
 	@Test
 	void overwriteWildcardAllTest() {
-		var first = new DecisionTree(2, TruthValue.UNKNOWN);
+		var first = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, TruthValue.UNKNOWN);
 		first.mergeValue(Tuple.of(-1, -1), TruthValue.FALSE);
-		var second = new DecisionTree(2, null);
+		var second = new DecisionTree<>(2, TruthValue.class, TruthValue.FALSE, null);
 		second.mergeValue(Tuple.of(1, -1), TruthValue.TRUE);
 		first.overwriteValues(second);
 		assertThat(first.majorityValue(), is(TruthValue.FALSE));
 	}
 
-	private Map<Tuple, TruthValue> iterateAll(DecisionTree sut, TruthValue defaultValue, int nodeCount) {
+	private Map<Tuple, TruthValue> iterateAll(DecisionTree<TruthValue, Boolean> sut, TruthValue defaultValue,
+											  int nodeCount) {
 		var cursor = sut.getCursor(defaultValue, nodeCount);
 		var map = new LinkedHashMap<Tuple, TruthValue>();
 		while (cursor.move()) {

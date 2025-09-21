@@ -66,7 +66,7 @@ export default class Compressor {
   private nextVersion: CompressorVersion = 1;
 
   constructor(private readonly onDecompressed: DecompressCallback) {
-    this.worker.onerror = (error) => LOG.error('Worker error', error);
+    this.worker.onerror = (err) => LOG.error({ err }, 'Worker error');
     this.worker.onmessageerror = (err: unknown) =>
       LOG.error({ err }, 'Worker message error');
     this.worker.onmessage = (event) => {

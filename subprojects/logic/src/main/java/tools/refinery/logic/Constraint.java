@@ -9,6 +9,7 @@ import tools.refinery.logic.equality.LiteralEqualityHelper;
 import tools.refinery.logic.literal.*;
 import tools.refinery.logic.term.*;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface Constraint {
@@ -36,8 +37,8 @@ public interface Constraint {
 		return name();
 	}
 
-	default CallLiteral call(CallPolarity polarity, List<Variable> arguments) {
-		return new CallLiteral(polarity, this, arguments);
+	default CallLiteral call(CallPolarity polarity, List<? extends Variable> arguments) {
+		return new CallLiteral(polarity, this, Collections.unmodifiableList(arguments));
 	}
 
 	default CallLiteral call(CallPolarity polarity, Variable... arguments) {

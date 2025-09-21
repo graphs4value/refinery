@@ -14,6 +14,7 @@ import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
 	public static final String MODULE_EXTENSION = "refinery";
+	public static final int UNKNOWN_STATIC_ARITY = -1;
 
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
@@ -55,17 +56,17 @@ public final class ProblemUtil {
 	}
 
 	public static boolean isShadow(EObject eObject) {
-		return eObject instanceof PredicateDefinition predicateDefinition &&
-				predicateDefinition.getKind() == PredicateKind.SHADOW;
+		return switch (eObject) {
+			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
+			case FunctionDefinition functionDefinition -> functionDefinition.isShadow();
+			case OverloadedDeclaration overloadedDeclaration -> overloadedDeclaration.isShadow();
+			default -> false;
+		};
 	}
 
 	public static boolean mayReferToShadow(EObject context) {
 		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
-		return switch (definitionContext) {
-			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
-			case RuleDefinition ignored -> true;
-			case null, default -> false;
-		};
+		return isShadow(definitionContext) || definitionContext instanceof RuleDefinition;
 	}
 
 	public static boolean isAtomNode(Node node) {
@@ -88,6 +89,8 @@ public final class ProblemUtil {
 		return node.eContainingFeature() == ProblemPackage.Literals.NODE_DECLARATION__NODES;
 	}
 
+	// This method only makes sense written positively even if we always invert it in conditions.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean isInvalidMultiplicityConstraint(Relation relation) {
 		return relation.eContainingFeature() == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY;
 	}
@@ -95,6 +98,11 @@ public final class ProblemUtil {
 	public static boolean isComputedValuePredicate(Relation relation) {
 		return relation.eContainingFeature() == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
 	}
+
+	public static boolean isComputedValueFunction(Relation relation) {
+		return relation.eContainingFeature() == ProblemPackage.Literals.FUNCTION_DEFINITION__COMPUTED_VALUE;
+	}
+
 
 	public static boolean hasMultiplicityConstraint(ReferenceDeclaration referenceDeclaration) {
 		if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
@@ -114,27 +122,55 @@ public final class ProblemUtil {
 		return true;
 	}
 
-	public static boolean isDerivedStatePredicate(EObject predicateDefinition) {
-		var containingFeature = predicateDefinition.eContainingFeature();
+	public static boolean isDerivedStatePredicate(EObject definition) {
+		var containingFeature = definition.eContainingFeature();
 		return containingFeature == ProblemPackage.Literals.REFERENCE_DECLARATION__INVALID_MULTIPLICITY ||
-				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE;
+				containingFeature == ProblemPackage.Literals.PREDICATE_DEFINITION__COMPUTED_VALUE ||
+				containingFeature == ProblemPackage.Literals.FUNCTION_DEFINITION__COMPUTED_VALUE ||
+				isDomainPredicate(definition);
+	}
+
+	public static boolean isDomainPredicate(EObject predicateDefinition) {
+		var containingFeature = predicateDefinition.eContainingFeature();
+		return containingFeature == ProblemPackage.Literals.FUNCTION_DEFINITION__DOMAIN_PREDICATE;
 	}
 
 	public static boolean isBasePredicate(PredicateDefinition predicateDefinition) {
-		if (isBuiltIn(predicateDefinition) || predicateDefinition == null) {
+		if (predicateDefinition == null || isBuiltIn(predicateDefinition) || isDomainPredicate(predicateDefinition)) {
 			// Built-in predicates have no clauses, but are not base.
 			return false;
 		}
 		return predicateDefinition.getKind() == PredicateKind.DEFAULT && predicateDefinition.getBodies().isEmpty();
 	}
 
-	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
-		return predicateDefinition.getKind() != PredicateKind.SHADOW && !isBasePredicate(predicateDefinition) &&
-				!isBuiltIn(predicateDefinition);
+	public static boolean isBaseFunction(FunctionDefinition functionDefinition) {
+		if (isBuiltIn(functionDefinition) || functionDefinition == null) {
+			// Built-in predicates have no clauses, but are not base.
+			return false;
+		}
+		return !isShadow(functionDefinition) && functionDefinition.getCases().isEmpty();
 	}
 
-	public static boolean isTypeLike(Relation relation) {
-		return getArityWithoutProxyResolution(relation) == 1;
+	public static boolean hasComputedValue(PredicateDefinition predicateDefinition) {
+		if (predicateDefinition.getKind() == PredicateKind.SHADOW || isBuiltIn(predicateDefinition)) {
+			return false;
+		}
+		if (!isBasePredicate(predicateDefinition)) {
+			return true;
+		}
+		if (isDomainPredicate(predicateDefinition)) {
+			return hasComputedValue((FunctionDefinition) predicateDefinition.eContainer());
+		}
+		return false;
+	}
+
+	public static boolean hasDomainPredicate(FunctionDefinition functionDefinition) {
+		return !isBuiltIn(functionDefinition);
+	}
+
+	public static boolean hasComputedValue(FunctionDefinition functionDefinition) {
+		return hasDomainPredicate(functionDefinition) && !functionDefinition.isShadow() &&
+				!isBaseFunction(functionDefinition);
 	}
 
 	public static boolean isContainmentReference(ReferenceDeclaration referenceDeclaration) {
@@ -155,6 +191,7 @@ public final class ProblemUtil {
 					yield false;
 				}
 				opposite = (ReferenceDeclaration) EcoreUtil.resolve(opposite, referenceDeclaration);
+
 				yield opposite.getKind() == ReferenceKind.CONTAINMENT;
 			}
 		};
@@ -191,8 +228,8 @@ public final class ProblemUtil {
 			case ClassDeclaration ignoredClassDeclaration -> 1;
 			case EnumDeclaration ignoredEnumDeclaration -> 1;
 			case DatatypeDeclaration ignoredDatatypeDeclaration -> 1;
-			case ReferenceDeclaration ignoredReferenceDeclaration -> 2;
-			case PredicateDefinition predicateDefinition -> predicateDefinition.getParameters().size();
+			case ReferenceDeclaration ignoredReferenceDeclaration -> UNKNOWN_STATIC_ARITY;
+			case ParametricDefinition parametricDefinition -> parametricDefinition.getParameters().size();
 			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
 		};
 	}
@@ -231,5 +268,19 @@ public final class ProblemUtil {
 
 	public static boolean canDisableDecision(Relation relation) {
 		return isDecideByDefault(relation);
+	}
+
+	public static boolean isAttribute(ReferenceDeclaration referenceDeclaration) {
+		return referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration;
+	}
+
+	public static boolean isSingleExpression(FunctionDefinition functionDefinition) {
+		var cases = functionDefinition.getCases();
+		if (cases.size() != 1) {
+			return false;
+		}
+		var match = cases.getFirst();
+		var condition = match.getCondition();
+		return condition != null && condition.getLiterals().size() == 1 && match.getValue() == null;
 	}
 }

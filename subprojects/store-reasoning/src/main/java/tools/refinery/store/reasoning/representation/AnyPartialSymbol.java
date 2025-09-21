@@ -13,4 +13,18 @@ public sealed interface AnyPartialSymbol permits AnyPartialFunction, PartialSymb
 	int arity();
 
 	AnyAbstractDomain abstractDomain();
+
+	default PartialRelation asPartialRelation() {
+		if (this instanceof PartialRelation partialRelation) {
+			return partialRelation;
+		}
+		throw new IllegalStateException("Not a PartialRelation");
+	}
+
+	default AnyPartialFunction asPartialFunction() {
+		if (this instanceof AnyPartialFunction partialFunction) {
+			return partialFunction;
+		}
+		throw new IllegalStateException("Not a PartialFunction");
+	}
 }

@@ -30,8 +30,12 @@ public class DerivedVariableComputer {
 
 	public void installDerivedVariables(Problem problem) {
 		for (Statement statement : problem.getStatements()) {
-			if (statement instanceof ParametricDefinition definition) {
-				installDerivedParametricDefinitionState(definition);
+			switch (statement) {
+			case ParametricDefinition definition -> installDerivedParametricDefinitionState(definition);
+			case Assertion assertion -> installDerivedAssertionState(assertion);
+			default -> {
+				// No derived state to install.
+			}
 			}
 		}
 	}
@@ -51,6 +55,9 @@ public class DerivedVariableComputer {
 		case FunctionDefinition functionDefinition ->
 				installDerivedFunctionDefinitionState(functionDefinition, knownVariables);
 		case RuleDefinition ruleDefinition -> installDerivedRuleDefinitionState(ruleDefinition, knownVariables);
+		case OverloadedDeclaration ignoredOverloadedDeclaration -> {
+			// No derived state to install.
+		}
 		case AnnotationDeclaration ignoredAnnotationDeclaration -> {
 			// No derived state to install.
 		}
@@ -65,17 +72,10 @@ public class DerivedVariableComputer {
 	}
 
 	protected void installDerivedFunctionDefinitionState(FunctionDefinition definition, Set<String> knownVariables) {
-		for (Case body : definition.getCases()) {
-			switch (body) {
-			case Conjunction conjunction ->
-					createVariablesForScope(new ImplicitVariableScope(conjunction, knownVariables));
-			case Match match -> {
-				var condition = match.getCondition();
-				if (condition != null) {
-					createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables));
-				}
-			}
-			default -> throw new IllegalArgumentException("Unknown Case: " + body);
+		for (Case match : definition.getCases()) {
+			var condition = match.getCondition();
+			if (condition != null) {
+				createVariablesForScope(new ImplicitVariableScope(match, match.getCondition(), knownVariables));
 			}
 		}
 	}
@@ -84,9 +84,20 @@ public class DerivedVariableComputer {
 		for (Conjunction precondition : definition.getPreconditions()) {
 			createVariablesForScope(new ImplicitVariableScope(precondition, knownVariables));
 		}
+		for (var consequent : definition.getConsequents()) {
+			for (var action : consequent.getActions()) {
+				if (action instanceof AssertionAction assertionAction) {
+					createVariablesForScope(new ImplicitVariableScope(assertionAction, knownVariables));
+				}
+			}
+		}
 	}
 
-	protected void createVariablesForScope(ImplicitVariableScope scope) {
+	protected void installDerivedAssertionState(AbstractAssertion assertion) {
+		createVariablesForScope(new ImplicitVariableScope(assertion, Set.of()));
+	}
+
+	private void createVariablesForScope(ImplicitVariableScope scope) {
 		var queue = new ArrayDeque<ImplicitVariableScope>();
 		queue.addLast(scope);
 		while (!queue.isEmpty()) {

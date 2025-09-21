@@ -162,6 +162,16 @@ class BoundScopePropagator implements BoundPropagator, ModelListener {
 
 	@Override
 	public PropagationResult propagateOne() {
+		PropagationResult result = PropagationResult.UNCHANGED;
+		PropagationResult lastResult;
+		do {
+			lastResult = propagateOneInternal();
+			result = result.andThen(lastResult);
+		} while (lastResult.isChanged());
+		return result;
+	}
+
+	public PropagationResult propagateOneInternal() {
 		if (disposed) {
 			return PropagationResult.UNCHANGED;
 		}

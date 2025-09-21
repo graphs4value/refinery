@@ -24,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.typesystem.FixedType;
+import tools.refinery.language.typesystem.InvalidType;
 import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
@@ -44,6 +46,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 	public static final String UNEXPECTED_MODULE_NAME_ISSUE = ISSUE_PREFIX + "UNEXPECTED_MODULE_NAME";
 	public static final String INVALID_IMPORT_ISSUE = ISSUE_PREFIX + "INVALID_IMPORT";
 	public static final String SINGLETON_VARIABLE_ISSUE = ISSUE_PREFIX + "SINGLETON_VARIABLE";
+	public static final String UNBOUND_VARIABLE_ISSUE = ISSUE_PREFIX + "QUANTIFIED_VARIABLE";
 	public static final String NODE_CONSTANT_ISSUE = ISSUE_PREFIX + "NODE_CONSTANT_ISSUE";
 	public static final String DUPLICATE_NAME_ISSUE = ISSUE_PREFIX + "DUPLICATE_NAME";
 	public static final String INVALID_MULTIPLICITY_ISSUE = ISSUE_PREFIX + "INVALID_MULTIPLICITY";
@@ -431,12 +434,21 @@ public class ProblemValidator extends AbstractProblemValidator {
 					i, INVALID_SUPERSET_ISSUE);
 			return;
 		}
-		int arity = signatureProvider.getArity(superSet);
+		var signature = signatureProvider.getSignature(superSet);
+		int arity = signature.arity();
 		if (arity != 2) {
 			var message = "Superset '%s' of reference '%s' must have arity 2, got arity %d instead."
 					.formatted(superSet.getName(), referenceDeclaration.getName(), arity);
 			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
 					i, INVALID_ARITY_ISSUE);
+		}
+		var resultType = signature.resultType();
+		if (!FixedType.LITERAL.equals(resultType)) {
+			var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+			var message = "Superset '%s' of reference '%s' must be a predicate, got%s function instead."
+					.formatted(superSet.getName(), referenceDeclaration.getName(), resultTypeString);
+			acceptError(message, referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
 		}
 	}
 
@@ -479,7 +491,16 @@ public class ProblemValidator extends AbstractProblemValidator {
 		boolean isCrossReference = referenceDeclaration.getKind() == ReferenceKind.REFERENCE;
 		if (isDefaultReference || isCrossReference) {
 			checkArity(referenceDeclaration, ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 1);
-			if (ProblemUtil.isShadow(referenceType)) {
+			if (referenceType instanceof ReferenceDeclaration referenceTypeDeclaration &&
+					ProblemUtil.isAttribute(referenceTypeDeclaration)) {
+				var message = "Attribute '%s' is not allowed in parameter types.".formatted(referenceType.getName());
+				acceptError(message, referenceDeclaration,
+						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, TYPE_ERROR);
+			} else if (referenceType instanceof FunctionDefinition || referenceType instanceof OverloadedDeclaration) {
+				var message = "Function '%s' is not allowed in parameter types.".formatted(referenceType.getName());
+				acceptError(message, referenceDeclaration,
+						ProblemPackage.Literals.REFERENCE_DECLARATION__REFERENCE_TYPE, 0, TYPE_ERROR);
+			} else if (ProblemUtil.isShadow(referenceType)) {
 				var message = "Shadow relation '%s' is not allowed in reference types."
 						.formatted(referenceType.getName());
 				acceptError(message, referenceDeclaration,
@@ -563,12 +584,21 @@ public class ProblemValidator extends AbstractProblemValidator {
 					i, INVALID_SUPERSET_ISSUE);
 			return;
 		}
-		int arity = signatureProvider.getArity(superSet);
+		var signature = signatureProvider.getSignature(superSet);
+		int arity = signature.arity();
 		if (arity != expectedArity) {
-			var message = "Superset '%s' of reference '%s' must have arity %d, got arity %d instead."
+			var message = "Superset '%s' of predicate '%s' must have arity %d, got arity %d instead."
 					.formatted(superSet.getName(), predicateDefinition.getName(), expectedArity, arity);
 			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
 					i, INVALID_ARITY_ISSUE);
+		}
+		var resultType = signature.resultType();
+		if (!FixedType.LITERAL.equals(resultType)) {
+			var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+			var message = "Superset '%s' of predicate '%s' must be a predicate, got%s function instead."
+					.formatted(superSet.getName(), predicateDefinition.getName(), resultTypeString);
+			acceptError(message, predicateDefinition, ProblemPackage.Literals.PREDICATE_DEFINITION__SUPER_SETS,
+					i, INVALID_SUPERSET_ISSUE);
 		}
 	}
 
@@ -582,10 +612,21 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		checkArity(parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 1);
 		var type = parameter.getParameterType();
-		if (type != null && !type.eIsProxy() && ProblemUtil.isShadow(type)) {
-			var message = "Shadow relation '%s' is not allowed in parameter types.".formatted(type.getName());
-			acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
-					SHADOW_RELATION_ISSUE);
+		if (type != null && !type.eIsProxy()) {
+			if (type instanceof ReferenceDeclaration referenceDeclaration &&
+					ProblemUtil.isAttribute(referenceDeclaration)) {
+				var message = "Attribute '%s' is not allowed in parameter types.".formatted(type.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+						TYPE_ERROR);
+			} else if (type instanceof FunctionDefinition || type instanceof OverloadedDeclaration) {
+				var message = "Function '%s' is not allowed in parameter types.".formatted(type.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+						TYPE_ERROR);
+			} else if (ProblemUtil.isShadow(type)) {
+				var message = "Shadow relation '%s' is not allowed in parameter types.".formatted(type.getName());
+				acceptError(message, parameter, ProblemPackage.Literals.PARAMETER__PARAMETER_TYPE, 0,
+						SHADOW_RELATION_ISSUE);
+			}
 		}
 		var binding = builtinAnnotationContext.getParameterBinding(parameter);
 		if (parametricDefinition instanceof RuleDefinition rule) {
@@ -644,21 +685,51 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkAtom(Atom atom) {
-		int argumentCount = atom.getArguments().size();
-		if (atom.isTransitiveClosure() && argumentCount != 2) {
-			var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
-					.formatted(argumentCount);
-			acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
-					INVALID_TRANSITIVE_CLOSURE_ISSUE);
-		}
 		var target = atom.getRelation();
 		if (target == null || target.eIsProxy()) {
 			return;
+		}
+		int argumentCount = atom.getArguments().size();
+		if (atom.isTransitiveClosure()) {
+			var resultType = signatureProvider.getSignature(target).resultType();
+			if (!FixedType.LITERAL.equals(resultType)) {
+				var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+				var message = "Transitive closure needs a predicate, got%s function instead."
+						.formatted(resultTypeString);
+				acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
+						INVALID_TRANSITIVE_CLOSURE_ISSUE);
+			} else if (argumentCount != 2) {
+				var message = "Transitive closure needs exactly 2 arguments, got %d arguments instead."
+						.formatted(argumentCount);
+				acceptError(message, atom, ProblemPackage.Literals.ATOM__TRANSITIVE_CLOSURE, 0,
+						INVALID_TRANSITIVE_CLOSURE_ISSUE);
+			}
 		}
 		checkArity(atom, ProblemPackage.Literals.ATOM__RELATION, argumentCount);
 		if (ProblemUtil.isShadow(target) && !ProblemUtil.mayReferToShadow(atom)) {
 			var message = "Shadow relation '%s' is not allowed in a non-shadow context.".formatted(target.getName());
 			acceptError(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, SHADOW_RELATION_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkModalExpr(ModalExpr modalExpr) {
+		if (!ProblemUtil.mayReferToShadow(modalExpr)) {
+			var message = "Modal operators are only allowed in a shadow context.";
+			acceptError(message, modalExpr, null, 0, SHADOW_RELATION_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkLatticeExpr(LatticeBinaryExpr latticeExpr) {
+		var op = latticeExpr.getOp();
+		if (op == LatticeBinaryOp.MEET || op == LatticeBinaryOp.JOIN) {
+			// Meet and join operators don't violate monotonicity, so they are allowed in all contexts.
+			return;
+		}
+		if (!ProblemUtil.mayReferToShadow(latticeExpr)) {
+			var message = "Abstract domain operators are only allowed in a shadow context.";
+			acceptError(message, latticeExpr, null, 0, SHADOW_RELATION_ISSUE);
 		}
 	}
 
@@ -711,6 +782,139 @@ public class ProblemValidator extends AbstractProblemValidator {
 				usedParameters.add(usedParameter);
 			}
 		}
+		var value = assertionAction.getValue();
+		if (value instanceof VariableOrNodeExpr variableOrNodeExpr &&
+				variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
+				!usedParameter.eIsProxy()) {
+			usedParameters.add(usedParameter);
+		}
+		var iterator = value.eAllContents();
+		while (iterator.hasNext()) {
+			var expr = iterator.next();
+			if (expr instanceof VariableOrNodeExpr variableOrNodeExpr &&
+					variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
+					!usedParameter.eIsProxy()) {
+				usedParameters.add(usedParameter);
+			}
+		}
+	}
+
+	@Check
+	public void checkAssertionActions(AssertionAction assertionAction) {
+		var variables = new HashSet<Variable>();
+		var ruleDeclaration = EcoreUtil2.getContainerOfType(assertionAction, ParametricDefinition.class);
+		if (ruleDeclaration != null) {
+			variables.addAll(ruleDeclaration.getParameters());
+		}
+		checkOnlyAllowedVariables(assertionAction.getValue(), variables);
+	}
+
+	@Check
+	public void checkAssertion(Assertion assertion) {
+		checkOnlyAllowedVariables(assertion.getValue(), Set.of());
+	}
+
+	@Check
+	public void checkCase(Case match) {
+		var variables = new HashSet<Variable>();
+		var functionDeclaration = EcoreUtil2.getContainerOfType(match, ParametricDefinition.class);
+		if (functionDeclaration != null) {
+			variables.addAll(functionDeclaration.getParameters());
+		}
+		var value = match.getValue();
+		var condition = match.getCondition();
+		if (value == null) {
+			if (condition != null && condition.getLiterals().size() == 1) {
+				checkOnlyAllowedVariables(condition.getLiterals().getFirst(), variables);
+			}
+			return;
+		}
+		if (condition != null) {
+			for (var literal : condition.getLiterals()) {
+				variables.addAll(getMentionedVariables(literal));
+			}
+		}
+		checkOnlyAllowedVariables(value, variables);
+	}
+
+	@Check
+	public void checkAggregationExpr(AggregationExpr aggregationExpr) {
+		var condition = aggregationExpr.getCondition();
+		var value = aggregationExpr.getValue();
+		if (condition == null || value == null) {
+			return;
+		}
+		var allowedInsideAggregation = getMentionedVariables(condition);
+		checkOnlyAllowedVariables(value, allowedInsideAggregation);
+	}
+
+	private static Set<Variable> getMentionedVariables(Expr condition) {
+		var mentionedVariables = new HashSet<Variable>();
+		var iterator = condition.eAllContents();
+		while (iterator.hasNext()) {
+			var child = iterator.next();
+			switch (child) {
+			case VariableOrNodeExpr variableOrNodeExpr -> {
+				if (variableOrNodeExpr.getVariableOrNode() instanceof Variable variable) {
+					mentionedVariables.add(variable);
+				}
+			}
+			case ExistentialQuantifier ignoredExistentialQuantifier -> iterator.prune();
+			default -> {
+				// Nothing to gather.
+			}
+			}
+		}
+		return mentionedVariables;
+	}
+
+	private void checkOnlyAllowedVariables(Expr expr, Set<Variable> allowedVariables) {
+		switch (expr) {
+		case VariableOrNodeExpr variableOrNodeExpr -> {
+			if (variableOrNodeExpr.getVariableOrNode() instanceof Variable variable &&
+					!allowedVariables.contains(variable)) {
+				var message = "Variable '%s' is not bound by a condition in this context.".formatted(
+						variable.getName());
+				acceptError(message, variableOrNodeExpr,
+						ProblemPackage.Literals.VARIABLE_OR_NODE_EXPR__VARIABLE_OR_NODE, 0, UNBOUND_VARIABLE_ISSUE);
+			}
+		}
+		case AggregationExpr aggregationExpr -> {
+			var allowedInsideAggregation = new HashSet<Variable>();
+			var condition = aggregationExpr.getCondition();
+			if (condition != null) {
+				var iterator = condition.eAllContents();
+				while (iterator.hasNext()) {
+					var child = iterator.next();
+					switch (child) {
+					case ImplicitVariable variable -> allowedInsideAggregation.add(variable);
+					case VariableOrNodeExpr variableOrNodeExpr -> {
+						if (variableOrNodeExpr.getVariableOrNode() instanceof Variable variable &&
+								(allowedVariables.contains(variable) || variable.eContainer() == aggregationExpr)) {
+							allowedInsideAggregation.add(variable);
+						}
+					}
+					case AggregationExpr ignoredAggregationExpr -> iterator.prune();
+					default -> {
+						// No variable to collect.
+					}
+					}
+				}
+				checkOnlyAllowedVariables(condition, allowedInsideAggregation);
+			}
+			// The value will be checked by the {@link checkAggregationExpr(AggregationExpr)} method.
+		}
+		case null -> {
+			// Nothing to check.
+		}
+		default -> {
+			for (var child : expr.eContents()) {
+				if (child instanceof Expr childExpr) {
+					checkOnlyAllowedVariables(childExpr, allowedVariables);
+				}
+			}
+		}
+		}
 	}
 
 	@Check
@@ -721,6 +925,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 		}
 		if (relation instanceof DatatypeDeclaration) {
 			var message = "Assertions for data types are not supported.";
+			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
+		if (relation instanceof OverloadedDeclaration) {
+			var message = "Assertions for primitive functions are not supported.";
 			acceptError(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION, 0,
 					UNSUPPORTED_ASSERTION_ISSUE);
 			return;
@@ -749,7 +959,23 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (type == null || type.eIsProxy()) {
 			return;
 		}
+		if (type instanceof DatatypeDeclaration) {
+			var message = "Type scopes for data types are not supported.";
+			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
 		checkArity(typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 1);
+		var signature = signatureProvider.getSignature(type);
+		var resultType = signature.resultType();
+		if (!FixedType.LITERAL.equals(resultType)) {
+			var resultTypeString = resultType instanceof InvalidType ? "" : " " + resultType.toString();
+			var message = "Type scopes must refer to a predicate, got%s function instead."
+					.formatted(resultTypeString);
+			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
+					UNSUPPORTED_ASSERTION_ISSUE);
+			return;
+		}
 		if (ProblemUtil.isShadow(type)) {
 			var message = "Shadow relations '%s' is not allowed in type scopes.".formatted(type.getName());
 			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,

@@ -14,6 +14,7 @@ import org.eclipse.xtext.util.Tuples;
 import tools.refinery.language.model.problem.Problem;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Singleton
@@ -40,15 +41,27 @@ public class ReferenceCounter {
 		return cache.get(Tuples.create(problem, REFERENCE_COUNTS), resource, () -> computeReferenceCounts(problem));
 	}
 
+	public static Map<EObject, Integer> computeReferenceCounts(List<? extends EObject> roots) {
+		var map = new HashMap<EObject, Integer>();
+		for (var root : roots) {
+			computeReferenceCounts(root, map);
+		}
+		return map;
+	}
+
 	public static Map<EObject, Integer> computeReferenceCounts(EObject root) {
 		var map = new HashMap<EObject, Integer>();
+		computeReferenceCounts(root, map);
+		return map;
+	}
+
+	private static void computeReferenceCounts(EObject root, Map<EObject, Integer> map) {
 		countCrossReferences(root, map);
 		var iterator = root.eAllContents();
 		while (iterator.hasNext()) {
 			var eObject = iterator.next();
 			countCrossReferences(eObject, map);
 		}
-		return map;
 	}
 
 	private static void countCrossReferences(EObject eObject, Map<EObject, Integer> map) {

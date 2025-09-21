@@ -9,6 +9,7 @@ import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.SymbolicParameter;
 import tools.refinery.logic.term.Variable;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,18 @@ public class SubstitutingLiteralEqualityHelper implements LiteralEqualityHelper 
 			if (!variableEqual(leftParameters.get(i).getVariable(), rightParameters.get(i).getVariable())) {
 				throw new IllegalArgumentException("Parameter lists cannot be unified: duplicate parameter " + i);
 			}
+		}
+	}
+
+	public SubstitutingLiteralEqualityHelper(DnfEqualityChecker dnfEqualityChecker,
+											 Collection<Variable> positiveVariables) {
+		this.dnfEqualityChecker = dnfEqualityChecker;
+		int arity = positiveVariables.size();
+		leftToRight = new HashMap<>(arity);
+		rightToLeft = new HashMap<>(arity);
+		for (var variable : positiveVariables) {
+			leftToRight.put(variable, variable);
+            rightToLeft.put(variable, variable);
 		}
 	}
 

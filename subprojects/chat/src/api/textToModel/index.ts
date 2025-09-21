@@ -21,7 +21,9 @@ import { z } from 'zod';
 
 import system from './system.md';
 
-const model = process.env['OPENAI_MODEL'] ?? 'google/gemini-2.5-flash-preview';
+// We deliberately use zod v3 here instead of v4, because this is what OpenAI uses.
+
+const model = process.env['OPENAI_MODEL'] ?? 'google/gemini-2.5-flash';
 
 const ChatResponse = z.object({
   explanation: z.string(),
@@ -77,14 +79,17 @@ function concretizationResultToChatMessage(
     const tuples = json.partialInterpretation[relationMetadata.name] ?? [];
     for (const tuple of tuples) {
       const value = tuple[tuple.length - 1];
-      if (value !== 'ERROR') {
+      if (
+        value !== 'error' &&
+        !(typeof value === 'object' && 'error' in value)
+      ) {
         continue;
       }
       const args = tuple
         .slice(0, -1)
         .map((id) => {
           if (typeof id !== 'number') {
-            return String(id);
+            throw new Error('Invalid node ID');
           }
           const nodeMetadata = json.nodes[id];
           return nodeMetadata?.simpleName ?? String(id);

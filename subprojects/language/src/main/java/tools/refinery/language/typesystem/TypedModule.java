@@ -14,16 +14,22 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import tools.refinery.language.expressions.BuiltinTermInterpreter;
+import tools.refinery.language.expressions.BuiltInTerms;
 import tools.refinery.language.expressions.TermInterpreter;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
+import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.language.validation.ProblemValidator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TypedModule {
 	private static final String OPERAND_TYPE_ERROR_MESSAGE = "Cannot determine operand type.";
+	private static final Map<AggregatorName, DataExprType> SPECIAL_AGGREGATORS = Map.of(
+			BuiltInTerms.REIFY_AGGREGATOR, BuiltInTerms.BOOLEAN_TYPE,
+			BuiltInTerms.COUNT_AGGREGATOR, BuiltInTerms.INT_TYPE
+	);
 
 	@Inject
 	private SignatureProvider signatureProvider;
@@ -65,6 +71,7 @@ public class TypedModule {
 		for (var statement : problem.getStatements()) {
 			switch (statement) {
 			case PredicateDefinition predicateDefinition -> checkTypes(predicateDefinition);
+			case FunctionDefinition functionDefinition -> checkTypes(functionDefinition);
 			case RuleDefinition ruleDefinition -> checkTypes(ruleDefinition);
 			case Assertion assertion -> checkTypes(assertion);
 			default -> {
@@ -77,7 +84,39 @@ public class TypedModule {
 	private void checkTypes(PredicateDefinition predicateDefinition) {
 		for (var conjunction : predicateDefinition.getBodies()) {
 			for (var literal : conjunction.getLiterals()) {
-				coerceIntoLiteral(literal, predicateDefinition.getKind() == PredicateKind.SHADOW);
+				coerceIntoLiteral(literal);
+			}
+		}
+	}
+
+	private void checkTypes(FunctionDefinition functionDefinition) {
+		var functionType = functionDefinition.getFunctionType();
+		if (!(functionType instanceof DatatypeDeclaration datatypeDeclaration)) {
+			return;
+		}
+		var expectedType = signatureProvider.getDataType(datatypeDeclaration);
+		if (ProblemUtil.isSingleExpression(functionDefinition)) {
+			expectType(functionDefinition.getCases().getFirst().getCondition().getLiterals().getFirst(), expectedType);
+			return;
+		}
+		for (var match : functionDefinition.getCases()) {
+			var condition = match.getCondition();
+			if (condition != null) {
+				for (var literal : condition.getLiterals()) {
+					coerceIntoLiteral(literal);
+				}
+			}
+			var value = match.getValue();
+			if (value == null) {
+				var message = "Missing value after case";
+				if (condition == null || condition.getLiterals().isEmpty()) {
+					error(message, match, null, 0, ProblemValidator.TYPE_ERROR);
+				} else {
+					error(message, condition, ProblemPackage.Literals.CONJUNCTION__LITERALS,
+							condition.getLiterals().size() - 1, ProblemValidator.TYPE_ERROR);
+				}
+			} else {
+				expectType(value, expectedType);
 			}
 		}
 	}
@@ -85,7 +124,7 @@ public class TypedModule {
 	private void checkTypes(RuleDefinition ruleDefinition) {
 		for (var conjunction : ruleDefinition.getPreconditions()) {
 			for (var literal : conjunction.getLiterals()) {
-				coerceIntoLiteral(literal, true);
+				coerceIntoLiteral(literal);
 			}
 		}
 		for (var consequent : ruleDefinition.getConsequents()) {
@@ -113,13 +152,13 @@ public class TypedModule {
 			if (value == null) {
 				return;
 			}
-			expectType(value, BuiltinTermInterpreter.BOOLEAN_TYPE);
+			expectType(value, BuiltInTerms.BOOLEAN_TYPE);
 			return;
 		}
 		if (value == null) {
 			var message = "Assertion value of type %s is required.".formatted(type);
 			error(message, assertion, ProblemPackage.Literals.ABSTRACT_ASSERTION__VALUE, 0,
-                    ProblemValidator.TYPE_ERROR);
+					ProblemValidator.TYPE_ERROR);
 		}
 		expectType(value, type);
 	}
@@ -241,22 +280,20 @@ public class TypedModule {
 	private ExprType computeExpressionType(Expr expr) {
 		return switch (expr) {
 			case LogicConstant logicConstant -> computeExpressionType(logicConstant);
-			case IntConstant ignored -> BuiltinTermInterpreter.INT_TYPE;
-			case RealConstant ignored -> BuiltinTermInterpreter.REAL_TYPE;
-			case StringConstant ignored -> BuiltinTermInterpreter.STRING_TYPE;
+			case IntConstant ignored -> BuiltInTerms.INT_TYPE;
+			case RealConstant ignored -> BuiltInTerms.REAL_TYPE;
+			case StringConstant ignored -> BuiltInTerms.STRING_TYPE;
 			case InfiniteConstant ignored -> new MutableType();
 			case VariableOrNodeExpr variableOrNodeExpr -> computeExpressionType(variableOrNodeExpr);
 			case AssignmentExpr assignmentExpr -> computeExpressionType(assignmentExpr);
 			case Atom atom -> computeExpressionType(atom);
 			case NegationExpr negationExpr -> computeExpressionType(negationExpr);
 			case ArithmeticUnaryExpr arithmeticUnaryExpr -> computeExpressionType(arithmeticUnaryExpr);
-			case CountExpr countExpr -> computeExpressionType(countExpr);
 			case AggregationExpr aggregationExpr -> computeExpressionType(aggregationExpr);
 			case ComparisonExpr comparisonExpr -> computeExpressionType(comparisonExpr);
 			case LatticeBinaryExpr latticeBinaryExpr -> computeExpressionType(latticeBinaryExpr);
 			case RangeExpr rangeExpr -> computeExpressionType(rangeExpr);
 			case ArithmeticBinaryExpr arithmeticBinaryExpr -> computeExpressionType(arithmeticBinaryExpr);
-			case CastExpr castExpr -> computeExpressionType(castExpr);
 			case ModalExpr modalExpr -> computeExpressionType(modalExpr);
 			default -> {
 				error("Unknown expression: " + expr.getClass().getSimpleName(), expr, null, 0,
@@ -269,7 +306,7 @@ public class TypedModule {
 	@NotNull
 	private ExprType computeExpressionType(LogicConstant expr) {
 		return switch (expr.getLogicValue()) {
-			case TRUE, FALSE -> BuiltinTermInterpreter.BOOLEAN_TYPE;
+			case TRUE, FALSE -> BuiltInTerms.BOOLEAN_TYPE;
 			case UNKNOWN, ERROR -> new MutableType();
 			case null -> ExprType.INVALID;
 		};
@@ -315,21 +352,49 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		if (relation instanceof DatatypeDeclaration) {
-			var message = "Invalid call to data type. Use 'as %s' for casting.".formatted(
-					relation.getName());
-			error(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, ProblemValidator.TYPE_ERROR);
+			return computeCastExpressionType(atom);
 		}
 		var signature = signatureProvider.getSignature(relation);
 		var parameterTypes = signature.parameterTypes();
 		var arguments = atom.getArguments();
 		int size = Math.min(parameterTypes.size(), arguments.size());
 		boolean ok = parameterTypes.size() == arguments.size();
-		for (int i = 0; i < size; i++) {
-			var parameterType = parameterTypes.get(i);
-			var argument = arguments.get(i);
-			if (!expectType(argument, parameterType)) {
-				// Avoid short-circuiting to let us type check all arguments.
-				ok = false;
+		if (relation instanceof OverloadedDeclaration overloadedDeclaration) {
+			var name = signatureProvider.getPrimitiveName(overloadedDeclaration);
+			var argumentTypes = new ArrayList<@Nullable DataExprType>(size);
+			for (var argument : arguments) {
+				var argumentType = getExpressionType(argument);
+				switch (argumentType) {
+				case DataExprType dataExprType -> argumentTypes.add(dataExprType);
+				case MutableType ignoredMutableType -> argumentTypes.add(null);
+				default -> ok = false;
+				}
+			}
+			if (ok) {
+				var optionalSignature = interpreter.getOverloadedSignature(name,
+						Collections.unmodifiableList(argumentTypes));
+				if (optionalSignature.isPresent()) {
+					signature = optionalSignature.get();
+					parameterTypes = signature.parameterTypes();
+				} else {
+					ok = false;
+					var argumentsString = argumentTypes.stream()
+							.map(argument -> argument == null ? "unknown" : '\'' + argument.toString() + '\'')
+							.collect(Collectors.joining(", "));
+					var message = "No matching overload of function '%s' was found with argument%s %s."
+							.formatted(name, size == 1 ? "" : "s", argumentsString);
+					error(message, atom, ProblemPackage.Literals.ATOM__RELATION, 0, ProblemValidator.TYPE_ERROR);
+				}
+			}
+		}
+		if (ok) {
+			for (int i = 0; i < size; i++) {
+				var parameterType = parameterTypes.get(i);
+				var argument = arguments.get(i);
+				if (!expectType(argument, parameterType)) {
+					// Avoid short-circuiting to let us type check all arguments.
+					ok = false;
+				}
 			}
 		}
 		return ok ? signature.resultType() : ExprType.INVALID;
@@ -345,9 +410,6 @@ public class TypedModule {
 		if (actualType == ExprType.LITERAL) {
 			// Negation of literals yields another (non-enumerable) literal.
 			return ExprType.LITERAL;
-		}
-		if (actualType == ExprType.MODAL_LITERAL) {
-			return ExprType.MODAL_LITERAL;
 		}
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
@@ -394,19 +456,29 @@ public class TypedModule {
 	}
 
 	@NotNull
-	private ExprType computeExpressionType(CountExpr countExpr) {
-		return coerceIntoLiteral(countExpr.getBody(), false) ? BuiltinTermInterpreter.INT_TYPE : ExprType.INVALID;
-	}
-
-	@NotNull
 	private ExprType computeExpressionType(AggregationExpr expr) {
 		var aggregator = expr.getAggregator();
 		if (aggregator == null || aggregator.eIsProxy()) {
 			return ExprType.INVALID;
 		}
 		// Avoid short-circuiting to let us type check both the value and the condition.
-		boolean ok = coerceIntoLiteral(expr.getCondition(), false);
+		boolean ok = coerceIntoLiteral(expr.getCondition());
 		var value = expr.getValue();
+		var aggregatorName = signatureProvider.getAggregatorName(aggregator);
+		var specialAggregatorResult = SPECIAL_AGGREGATORS.get(aggregatorName);
+		if (specialAggregatorResult != null) {
+			if (value != null) {
+				var simpleName = aggregatorName.qualifiedName().getLastSegment();
+				error("Aggregator '%s' must not have any value expression.".formatted(simpleName), expr,
+						ProblemPackage.Literals.AGGREGATION_EXPR__VALUE, 0, ProblemValidator.TYPE_ERROR);
+			}
+			return specialAggregatorResult;
+		}
+		if (value == null) {
+			error("Missing value for aggregation expression.", expr,
+					ProblemPackage.Literals.AGGREGATION_EXPR__AGGREGATOR, 0, ProblemValidator.TYPE_ERROR);
+			return ExprType.INVALID;
+		}
 		var actualType = getExpressionType(value);
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
@@ -416,7 +488,6 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		if (actualType instanceof DataExprType dataExprType) {
-			var aggregatorName = signatureProvider.getAggregatorName(aggregator);
 			var result = interpreter.getAggregationType(aggregatorName, dataExprType);
 			if (result.isPresent()) {
 				return ok ? result.get() : ExprType.INVALID;
@@ -431,29 +502,37 @@ public class TypedModule {
 	private ExprType computeExpressionType(ComparisonExpr expr) {
 		var left = expr.getLeft();
 		var right = expr.getRight();
+		if (left == null || right == null) {
+			return ExprType.INVALID;
+		}
 		var op = expr.getOp();
-		if (op == ComparisonOp.NODE_EQ || op == ComparisonOp.NODE_NOT_EQ) {
-			// Avoid short-circuiting to let us type check both arguments.
-			boolean leftOk = expectType(left, ExprType.NODE);
-			boolean rightOk = expectType(right, ExprType.NODE);
-			return leftOk && rightOk ? ExprType.LITERAL : ExprType.INVALID;
+		if (op == ComparisonOp.EQ || op == ComparisonOp.NOT_EQ) {
+			var leftType = getExpressionType(left);
+			if (ExprType.NODE.equals(leftType) && expectType(right, ExprType.NODE)) {
+				return ExprType.LITERAL;
+			}
 		}
 		if (!(getCommonDataType(expr) instanceof DataExprType commonType)) {
 			return ExprType.INVALID;
 		}
 		// Data equality and inequality are always supported for data types.
-		if (op != ComparisonOp.EQ && op != ComparisonOp.NOT_EQ && !interpreter.isComparisonSupported(commonType)) {
+		if (op != ComparisonOp.EQ && op != ComparisonOp.NOT_EQ && !interpreter.isComparable(commonType)) {
 			var message = "Data type %s does not support comparison.".formatted(commonType);
 			error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 			return ExprType.INVALID;
 		}
-		return BuiltinTermInterpreter.BOOLEAN_TYPE;
+		return BuiltInTerms.BOOLEAN_TYPE;
 	}
 
 	@NotNull
 	private ExprType computeExpressionType(LatticeBinaryExpr expr) {
-		// Lattice operations are always supported for data types.
-		return getCommonDataType(expr);
+		if (!(getCommonDataType(expr) instanceof DataExprType commonType)) {
+			return ExprType.INVALID;
+		}
+		return switch (expr.getOp()) {
+			case EQ, NOT_EQ, SUBSET, SUPERSET -> BuiltInTerms.BOOLEAN_TYPE;
+			case JOIN, MEET -> commonType;
+		};
 	}
 
 	@NotNull
@@ -471,7 +550,7 @@ public class TypedModule {
 		if (!(getCommonDataType(expr) instanceof DataExprType commonType)) {
 			return ExprType.INVALID;
 		}
-		if (!interpreter.isRangeSupported(commonType)) {
+		if (!interpreter.isComparable(commonType)) {
 			var message = "Data type %s does not support ranges.".formatted(commonType);
 			error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
 			return ExprType.INVALID;
@@ -530,7 +609,7 @@ public class TypedModule {
 			}
 		}
 		if (leftType instanceof DataExprType leftExprType && rightType instanceof DataExprType rightExprType) {
-			var result = interpreter.getBinaryOperationType(op, leftExprType, rightExprType);
+			var result = interpreter.getBinaryOperatorType(op, leftExprType, rightExprType);
 			if (result.isPresent()) {
 				return result.get();
 			}
@@ -539,9 +618,13 @@ public class TypedModule {
 	}
 
 	@NotNull
-	private ExprType computeExpressionType(CastExpr expr) {
-		var body = expr.getBody();
-		var targetRelation = expr.getTargetType();
+	private ExprType computeCastExpressionType(Atom expr) {
+		var arguments = expr.getArguments();
+		if (arguments.size() != 1) {
+            return ExprType.INVALID;
+        }
+		var body = arguments.getFirst();
+		var targetRelation = expr.getRelation();
 		if (body == null || !(targetRelation instanceof DatatypeDeclaration targetDeclaration)) {
 			return ExprType.INVALID;
 		}
@@ -549,7 +632,7 @@ public class TypedModule {
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
-		var targetType = signatureProvider.getDataType(targetDeclaration);
+		var targetType = (DataExprType) signatureProvider.getDataType(targetDeclaration);
 		if (actualType instanceof MutableType mutableType) {
 			// Type ascription for polymorphic literal (e.g., `unknown as int` for the set of all integers).
 			mutableType.setActualType(targetType);
@@ -573,15 +656,20 @@ public class TypedModule {
 			return ExprType.INVALID;
 		}
 		var actualType = getExpressionType(body);
-		if (actualType == ExprType.LITERAL || BuiltinTermInterpreter.BOOLEAN_TYPE.equals(actualType)) {
-			return ExprType.MODAL_LITERAL;
+		if (expr.getModality() == Modality.UNSPECIFIED) {
+			// Change the concreteness of a partial function call without applying a modality.
+			return actualType;
+		}
+		if (actualType == ExprType.LITERAL || BuiltInTerms.BOOLEAN_TYPE.equals(actualType)) {
+			// Only literals and booleans may have a modality applied.
+			return actualType;
 		}
 		if (actualType == ExprType.INVALID) {
 			return ExprType.INVALID;
 		}
-		if (actualType instanceof MutableType) {
-			error(OPERAND_TYPE_ERROR_MESSAGE, body, null, 0, ProblemValidator.TYPE_ERROR);
-			return ExprType.INVALID;
+		if (actualType instanceof MutableType mutableType) {
+			mutableType.setActualType(BuiltInTerms.BOOLEAN_TYPE);
+			return BuiltInTerms.BOOLEAN_TYPE;
 		}
 		var message = "Data type %s does not support modal operators.".formatted(actualType);
 		error(message, expr, null, 0, ProblemValidator.TYPE_ERROR);
@@ -619,15 +707,15 @@ public class TypedModule {
 		}
 	}
 
-	private boolean coerceIntoLiteral(Expr expr, boolean allowModal) {
+	private boolean coerceIntoLiteral(Expr expr) {
 		if (expr == null) {
 			return false;
 		}
 		var actualType = getExpressionType(expr);
-		if (actualType == ExprType.LITERAL || (allowModal && actualType == ExprType.MODAL_LITERAL)) {
+		if (actualType == ExprType.LITERAL) {
 			return true;
 		}
-		return expectType(expr, actualType, BuiltinTermInterpreter.BOOLEAN_TYPE);
+		return expectType(expr, actualType, BuiltInTerms.BOOLEAN_TYPE);
 	}
 
 	private boolean expectType(Expr expr, FixedType expectedType) {

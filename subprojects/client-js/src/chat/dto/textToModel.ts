@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import z from 'zod';
+import z from 'zod/v4';
 
 import { OutputFormats, ProblemInput } from '@tools.refinery/client';
 
 export const TextToModelRequest = z.object({
   metamodel: ProblemInput,
   text: z.string(),
-  format: OutputFormats.default({}),
+  format: OutputFormats.prefault({}),
 });
 
 export type TextToModelRequest = z.infer<typeof TextToModelRequest>;

@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.dse.transition.actions;
 
+import tools.refinery.logic.dnf.AnyQuery;
 import tools.refinery.store.model.Model;
 import tools.refinery.logic.term.NodeVariable;
 
@@ -16,4 +17,12 @@ public interface ActionLiteral {
 	List<NodeVariable> getOutputVariables();
 
 	BoundActionLiteral bindToModel(Model model);
+
+	default List<AnyQuery> getQueries() {
+		return List.of();
+	}
+
+	default boolean isDynamic() {
+		return false;
+	}
 }

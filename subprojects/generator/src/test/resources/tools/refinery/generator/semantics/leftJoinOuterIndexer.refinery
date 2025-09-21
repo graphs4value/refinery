@@ -1,0 +1,31 @@
+% Copyright (c) 2025 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+% Test case for a subtle bug in the Refinery Interpreter
+% LeftJoinNode.OuterIndexer that has been fixed in Refinery 0.1.7.
+
+class Person {
+    int age
+}
+
+pred canPlayBoardGames(Person p) <->
+    q == p,
+    2 * age(p) >= 12 && age(q) <= 99 || age(p) == 10.
+
+Person(anne).
+age(anne): 30.
+
+Person(bob).
+age(bob): 0..1.
+
+Person(ciri).
+age(ciri): 144.
+
+Person(david).
+
+% EXPECT EXACTLY:
+canPlayBoardGames(anne).
+!canPlayBoardGames(bob).
+!canPlayBoardGames(ciri).
+?canPlayBoardGames(david).

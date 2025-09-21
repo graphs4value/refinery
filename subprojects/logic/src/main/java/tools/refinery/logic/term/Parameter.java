@@ -5,6 +5,8 @@
  */
 package tools.refinery.logic.term;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -51,6 +53,10 @@ public class Parameter {
 		} else {
 			throw new IllegalArgumentException("Unknown variable " + variable);
 		}
+	}
+
+	public Variable makeVariable(@Nullable String name) {
+		return dataType == null ? Variable.of(name) : Variable.of(name, dataType);
 	}
 
 	@Override

@@ -8,8 +8,8 @@ package tools.refinery.language.annotations.internal;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 
+import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 public final class AnnotationUtil {
@@ -99,21 +99,21 @@ public final class AnnotationUtil {
 		};
 	}
 
-	public static OptionalDouble toDouble(Expr value) {
+	public static Optional<BigDecimal> toBigDecimal(Expr value) {
 		return switch (value) {
-			case RealConstant realConstant -> OptionalDouble.of(realConstant.getRealValue());
+			case RealConstant realConstant -> Optional.of(realConstant.getRealValue());
 			case ArithmeticUnaryExpr unaryExpr -> {
 				if (!(unaryExpr.getBody() instanceof RealConstant realConstant)) {
-					yield OptionalDouble.empty();
+					yield Optional.empty();
 				}
-				double realValue = realConstant.getRealValue();
+				var realValue = realConstant.getRealValue();
 				yield switch (unaryExpr.getOp()) {
-					case PLUS -> OptionalDouble.of(realValue);
-					case MINUS -> OptionalDouble.of(-realValue);
-					case null -> OptionalDouble.empty();
+					case PLUS -> Optional.of(realValue);
+					case MINUS -> Optional.of(realValue.multiply(BigDecimal.valueOf(-1)));
+					case null -> Optional.empty();
 				};
 			}
-			case null, default -> OptionalDouble.empty();
+			case null, default -> Optional.empty();
 		};
 	}
 

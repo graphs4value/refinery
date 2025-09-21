@@ -10,8 +10,10 @@ import com.google.inject.Singleton;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
 import tools.refinery.language.model.problem.*;
+import tools.refinery.language.utils.ProblemUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class SignatureProvider {
 	private static final String SIGNATURE_CACHE = PREFIX + "SIGNATURE_CACHE";
 	private static final String DATATYPE_CACHE = PREFIX + "DATATYPE_CACHE";
 	private static final String AGGREGATOR_CACHE = PREFIX + "AGGREGATOR_CACHE";
+	private static final String PRIMITIVE_CACHE = PREFIX + "PRIMITIVE_CACHE";
 
 	@Inject
 	private IQualifiedNameProvider qualifiedNameProvider;
@@ -34,7 +37,7 @@ public class SignatureProvider {
 	}
 
 	public int getArity(Relation relation) {
-		return getSignature(relation).parameterTypes().size();
+		return getSignature(relation).arity();
 	}
 
 	private Signature computeSignature(Relation relation) {
@@ -51,6 +54,12 @@ public class SignatureProvider {
 					yield List.of(ExprType.NODE);
 				}
 				yield List.of(ExprType.NODE, ExprType.NODE);
+			}
+			case OverloadedDeclaration overloadedDeclaration -> {
+				int arity = overloadedDeclaration.getParameters().size();
+				var parameters = new FixedType[arity];
+				Arrays.fill(parameters, ExprType.INVALID);
+				yield List.of(parameters);
 			}
 			case ParametricDefinition parametricDefinition -> {
 				var parameters = parametricDefinition.getParameters();
@@ -69,14 +78,19 @@ public class SignatureProvider {
 	}
 
 	private FixedType getResultType(Relation relation) {
-		if (relation instanceof ReferenceDeclaration referenceDeclaration &&
-				referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
-			return getDataType(datatypeDeclaration);
-		}
-		return ExprType.LITERAL;
+		return switch (relation) {
+			case FunctionDefinition functionDefinition -> getDataType(functionDefinition.getFunctionType());
+			case ReferenceDeclaration referenceDeclaration when ProblemUtil.isAttribute(referenceDeclaration) ->
+					getDataType(referenceDeclaration.getReferenceType());
+			case OverloadedDeclaration ignored -> ExprType.INVALID;
+			case null, default -> ExprType.LITERAL;
+		};
 	}
 
-	public DataExprType getDataType(DatatypeDeclaration datatypeDeclaration) {
+	public FixedType getDataType(Relation relation) {
+		if (!(relation instanceof DatatypeDeclaration datatypeDeclaration)) {
+			return FixedType.INVALID;
+		}
 		var dataTypes = cache.get(DATATYPE_CACHE, datatypeDeclaration.eResource(),
 				() -> new HashMap<DatatypeDeclaration, DataExprType>());
 		return dataTypes.computeIfAbsent(datatypeDeclaration, this::computeDataType);
@@ -103,5 +117,20 @@ public class SignatureProvider {
 					"Aggregator declaration has no qualified name: " + aggregatorDeclaration);
 		}
 		return new AggregatorName(qualifiedName);
+	}
+
+	public PrimitiveName getPrimitiveName(OverloadedDeclaration overloadedDeclaration) {
+		var dataTypes = cache.get(PRIMITIVE_CACHE, overloadedDeclaration.eResource(),
+				() -> new HashMap<OverloadedDeclaration, PrimitiveName>());
+		return dataTypes.computeIfAbsent(overloadedDeclaration, this::computePrimitiveName);
+	}
+
+	private PrimitiveName computePrimitiveName(OverloadedDeclaration overloadedDeclaration) {
+		var qualifiedName = qualifiedNameProvider.getFullyQualifiedName(overloadedDeclaration);
+		if (qualifiedName == null) {
+			throw new IllegalArgumentException(
+					"Aggregator declaration has no qualified name: " + overloadedDeclaration);
+		}
+		return new PrimitiveName(qualifiedName);
 	}
 }

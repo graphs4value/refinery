@@ -6,15 +6,17 @@
 package tools.refinery.logic.term.truthvalue;
 
 import org.jetbrains.annotations.Nullable;
-import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.term.ComparableAbstractValue;
+import tools.refinery.logic.term.operators.And;
+import tools.refinery.logic.term.operators.Not;
+import tools.refinery.logic.term.operators.Or;
+import tools.refinery.logic.term.operators.Xor;
 
-public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
-	TRUE("true"),
-
-	FALSE("false"),
-
+public enum TruthValue implements ComparableAbstractValue<TruthValue, Boolean>, Not<TruthValue>, And<TruthValue>,
+		Or<TruthValue>, Xor<TruthValue> {
 	UNKNOWN("unknown"),
-
+	FALSE("false"),
+	TRUE("true"),
 	ERROR("error");
 
 	private final String name;
@@ -27,8 +29,20 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		return name;
 	}
 
-	public static TruthValue toTruthValue(boolean value) {
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	public static TruthValue of(boolean value) {
 		return value ? TRUE : FALSE;
+	}
+
+	public static TruthValue of(boolean may, boolean must) {
+		if (may) {
+			return must ? TRUE : UNKNOWN;
+		}
+		return must ? ERROR : FALSE;
 	}
 
 	@Override
@@ -77,6 +91,7 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 		return this == TRUE || this == UNKNOWN;
 	}
 
+	@Override
 	public TruthValue not() {
 		return switch (this) {
 			case TRUE -> FALSE;
@@ -103,5 +118,88 @@ public enum TruthValue implements AbstractValue<TruthValue, Boolean> {
 			case UNKNOWN -> other;
 			case ERROR -> ERROR;
 		};
+	}
+
+	@Override
+	public TruthValue and(TruthValue other) {
+		return switch (this) {
+			case UNKNOWN -> other.may() ? TruthValue.UNKNOWN : TruthValue.FALSE;
+			case FALSE -> TruthValue.FALSE;
+			case TRUE -> other;
+			case ERROR -> other.must() ? TruthValue.ERROR : TruthValue.FALSE;
+		};
+	}
+
+	@Override
+	public TruthValue or(TruthValue other) {
+		return switch (this) {
+			case UNKNOWN -> other.must() ? TruthValue.TRUE : TruthValue.UNKNOWN;
+			case FALSE -> other;
+			case TRUE -> TruthValue.TRUE;
+			case ERROR -> other.may() ? TruthValue.TRUE : TruthValue.ERROR;
+		};
+	}
+
+	@Override
+	public TruthValue xor(TruthValue other) {
+		return checkEquals(other).not();
+	}
+
+	@Override
+	public TruthValue checkEquals(TruthValue other) {
+		return switch (this) {
+			case UNKNOWN -> other == ERROR ? ERROR : TruthValue.UNKNOWN;
+			case TRUE -> other;
+			case FALSE -> other.not();
+			case ERROR -> ERROR;
+		};
+	}
+
+	@Override
+	public TruthValue checkLess(TruthValue other) {
+		return switch (this) {
+			case UNKNOWN -> other.may() ? UNKNOWN : FALSE;
+			case TRUE -> FALSE;
+			case FALSE -> other;
+			case ERROR -> other.must() ? ERROR : FALSE;
+		};
+	}
+
+	@Override
+	public TruthValue checkLessEq(TruthValue other) {
+		return switch(this) {
+			case UNKNOWN -> other.must() ? TRUE : UNKNOWN;
+			case TRUE -> other;
+			case FALSE -> TRUE;
+			case ERROR -> other.may() ? TRUE : ERROR;
+		};
+	}
+
+	@Override
+	public TruthValue upToIncluding(TruthValue other) {
+		if (must()) {
+			return other.may() ? TRUE : ERROR;
+		}
+		return other.may() ? UNKNOWN : FALSE;
+	}
+
+	@Override
+	public TruthValue min(TruthValue other) {
+		return and(other);
+	}
+
+	@Override
+	public TruthValue max(TruthValue other) {
+		return or(other);
+	}
+
+	@Override
+	public TruthValue abstractLowerBound() {
+		return TruthValue.of(must());
+	}
+
+	@Override
+	public TruthValue abstractUpperBound() {
+		return TruthValue.of(may());
 	}
 }

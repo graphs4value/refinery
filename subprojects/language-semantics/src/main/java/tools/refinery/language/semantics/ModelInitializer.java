@@ -6,18 +6,28 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import tools.refinery.language.expressions.ExprToTerm;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableRelationCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
+import tools.refinery.language.semantics.internal.query.FunctionCompiler;
 import tools.refinery.language.semantics.internal.query.QueryCompiler;
 import tools.refinery.language.semantics.internal.query.RuleCompiler;
+import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.BuiltinSymbols;
 import tools.refinery.language.utils.ProblemUtil;
+import tools.refinery.logic.AbstractDomain;
+import tools.refinery.logic.AbstractValue;
+import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.dnf.InvalidClauseException;
+import tools.refinery.logic.term.ConstantTerm;
+import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -26,14 +36,20 @@ import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
 import tools.refinery.store.dse.transition.Rule;
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
+import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
 import tools.refinery.store.reasoning.translator.ConcretizationSettings;
 import tools.refinery.store.reasoning.translator.TranslationException;
+import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
+import tools.refinery.store.reasoning.translator.attribute.AttributeTranslator;
+import tools.refinery.store.reasoning.translator.attribute.FunctionTranslator;
+import tools.refinery.store.reasoning.translator.attribute.ShadowFunctionTranslator;
 import tools.refinery.store.reasoning.translator.containment.ContainmentHierarchyTranslator;
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
 import tools.refinery.store.reasoning.translator.metamodel.MetamodelBuilder;
@@ -73,10 +89,22 @@ public class ModelInitializer {
 	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	@Inject
+	private IQualifiedNameProvider qualifiedNameProvider;
+
+	@Inject
+	private SignatureProvider signatureProvider;
+
+	@Inject
 	private QueryCompiler queryCompiler;
 
 	@Inject
 	private RuleCompiler ruleCompiler;
+
+	@Inject
+	private FunctionCompiler functionCompiler;
+
+	@Inject
+	private ExprToTerm exprToTerm;
 
 	private boolean keepNonExistingObjects;
 
@@ -95,6 +123,8 @@ public class ModelInitializer {
 	private final Map<Relation, RelationInfo> relationInfoMap = new LinkedHashMap<>();
 
 	private final Map<PartialRelation, RelationInfo> partialRelationInfoMap = new HashMap<>();
+
+	private final Map<Relation, FunctionInfo<?, ?>> functionInfoMap = new LinkedHashMap<>();
 
 	private final MetamodelBuilder metamodelBuilder = Metamodel.builder();
 
@@ -123,6 +153,7 @@ public class ModelInitializer {
 		problemTrace.setProblem(problem);
 		queryCompiler.setProblemTrace(problemTrace);
 		ruleCompiler.setQueryCompiler(queryCompiler);
+		functionCompiler.setQueryCompiler(queryCompiler);
 		try {
 			builtinSymbols = importAdapterProvider.getBuiltinSymbols(problem);
 			var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
@@ -133,6 +164,7 @@ public class ModelInitializer {
 			putRelationInfo(builtinSymbols.equals(), new RelationInfo(ReasoningAdapter.EQUALS_SYMBOL,
 					(TruthValue) null,
 					null));
+			problemTrace.putRelation(builtinSymbols.count(), ReasoningAdapter.COUNT_SYMBOL);
 			putRelationInfo(builtinSymbols.container(),
 					new RelationInfo(ContainmentHierarchyTranslator.CONTAINER_SYMBOL, null, TruthValue.UNKNOWN));
 			putRelationInfo(builtinSymbols.contained(),
@@ -158,6 +190,12 @@ public class ModelInitializer {
 				var info = entry.getValue();
 				var partialRelation = info.partialRelation();
 				modelSeedBuilder.seed(partialRelation, info.toSeed(nodeCount));
+			}
+			for (var entry : functionInfoMap.entrySet()) {
+				if (entry.getKey() instanceof ReferenceDeclaration) {
+					continue;
+				}
+				entry.getValue().addToModelSeed(modelSeedBuilder);
 			}
 			collectScopes();
 			modelSeedBuilder.seed(MultiObjectTranslator.COUNT_SYMBOL, builder -> builder
@@ -276,12 +314,15 @@ public class ModelInitializer {
 	private void collectPartialSymbols() {
 		for (var importedProblem : importedProblems) {
 			for (var statement : importedProblem.getStatements()) {
-				if (statement instanceof ClassDeclaration classDeclaration) {
-					collectClassDeclarationSymbols(classDeclaration);
-				} else if (statement instanceof EnumDeclaration enumDeclaration) {
-					collectPartialRelation(enumDeclaration, 1, TruthValue.FALSE, TruthValue.FALSE);
-				} else if (statement instanceof PredicateDefinition predicateDefinition) {
-					collectPredicateDefinitionSymbol(predicateDefinition);
+				switch (statement) {
+				case ClassDeclaration classDeclaration -> collectClassDeclarationSymbols(classDeclaration);
+				case EnumDeclaration enumDeclaration ->
+						collectPartialRelation(enumDeclaration, 1, TruthValue.FALSE, TruthValue.FALSE);
+				case PredicateDefinition predicateDefinition -> collectPredicateDefinitionSymbol(predicateDefinition);
+				case FunctionDefinition functionDefinition -> collectFunctionDefinitionSymbol(functionDefinition);
+				default -> {
+					// Nothing to collect.
+				}
 				}
 			}
 		}
@@ -290,8 +331,9 @@ public class ModelInitializer {
 	private void collectClassDeclarationSymbols(ClassDeclaration classDeclaration) {
 		collectPartialRelation(classDeclaration, 1, null, TruthValue.UNKNOWN);
 		for (var referenceDeclaration : classDeclaration.getFeatureDeclarations()) {
-			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
-				throw new TracedException(referenceDeclaration, "Attributes are not yet supported");
+			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration datatypeDeclaration) {
+				collectAttribute(datatypeDeclaration, referenceDeclaration);
+				continue;
 			}
 			collectPartialRelation(referenceDeclaration, 2, null, TruthValue.UNKNOWN);
 			var invalidMultiplicityConstraint = referenceDeclaration.getInvalidMultiplicity();
@@ -314,6 +356,23 @@ public class ModelInitializer {
 		}
 	}
 
+	private void collectFunctionDefinitionSymbol(FunctionDefinition functionDefinition) {
+		if (!(functionDefinition.getFunctionType() instanceof DatatypeDeclaration functionType)) {
+			throw new TracedException(functionDefinition, "Function type of function '%s' is not a datatype."
+					.formatted(functionDefinition.getName()));
+		}
+		var domain = (AbstractDomain<?, ?>) getAbstractDomain(functionType, functionDefinition);
+		createFunctionInfo(domain, functionDefinition);
+		var computedValue = functionDefinition.getComputedValue();
+		if (computedValue != null) {
+			createFunctionInfo(domain, computedValue);
+		}
+		var domainPredicate = functionDefinition.getDomainPredicate();
+		if (domainPredicate != null) {
+			collectPredicateDefinitionSymbol(domainPredicate);
+		}
+	}
+
 	private void putRelationInfo(Relation relation, RelationInfo info) {
 		relationInfoMap.put(relation, info);
 		partialRelationInfoMap.put(info.partialRelation(), info);
@@ -329,6 +388,32 @@ public class ModelInitializer {
 			problemTrace.putRelation(relation, info.partialRelation());
 			return info;
 		});
+	}
+
+	private void collectAttribute(DatatypeDeclaration datatypeDeclaration, ReferenceDeclaration referenceDeclaration) {
+		var domain = (AbstractDomain<?, ?>) getAbstractDomain(datatypeDeclaration, referenceDeclaration);
+		createFunctionInfo(domain, referenceDeclaration);
+	}
+
+	private AnyAbstractDomain getAbstractDomain(DatatypeDeclaration datatype, Relation relation) {
+		var type = signatureProvider.getDataType(datatype);
+		if (!(type instanceof DataExprType dataExprType)) {
+			throw new TracedException(relation, "Invalid type '%s' for function '%s'.".formatted(
+					type, relation.getName()));
+		}
+		return importAdapterProvider.getTermInterpreter(relation)
+				.getDomain(dataExprType)
+				.orElseThrow(() -> new TracedException(relation,
+						"No abstract domain for datatype '%s'.".formatted(datatype.getName())));
+	}
+
+	private <A extends AbstractValue<A, C>, C> void createFunctionInfo(AbstractDomain<A, C> domain,
+																	   Relation relation) {
+		int arity = signatureProvider.getArity(relation);
+		var partialFunction = new PartialFunction<>(relation.getName(), arity, domain);
+		var info = new FunctionInfo<>(partialFunction, domain);
+		problemTrace.putRelation(relation, partialFunction);
+		functionInfoMap.put(relation, info);
 	}
 
 	private String getName(Relation relation) {
@@ -375,21 +460,27 @@ public class ModelInitializer {
 
 	private void collectReferenceDeclarationMetamodel(ClassDeclaration classDeclaration,
 													  ReferenceDeclaration referenceDeclaration) {
-		var relation = getPartialRelation(referenceDeclaration);
 		var source = getPartialRelation(classDeclaration);
-		var target = getPartialRelation(referenceDeclaration.getReferenceType());
-		boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
-		var concretizationSettings = getConcretizationSettings(referenceDeclaration);
-		var opposite = referenceDeclaration.getOpposite();
-		PartialRelation oppositeRelation = null;
-		if (opposite != null) {
-			oppositeRelation = getPartialRelation(opposite);
-		}
-		var multiplicity = getMultiplicityConstraint(referenceDeclaration);
-		Set<PartialRelation> supersets = referenceDeclaration.getSuperSets().stream()
-				.map(this::getPartialRelation)
-				.collect(Collectors.toCollection(LinkedHashSet::new));
 		try {
+			if (referenceDeclaration.getReferenceType() instanceof DatatypeDeclaration) {
+				var partialFunction = problemTrace.getPartialFunction(referenceDeclaration);
+				collectAttributeDeclarationMetamodel((PartialFunction<?, ?>) partialFunction, source,
+						referenceDeclaration);
+				return;
+			}
+			var relation = getPartialRelation(referenceDeclaration);
+			var target = getPartialRelation(referenceDeclaration.getReferenceType());
+			boolean containment = referenceDeclaration.getKind() == ReferenceKind.CONTAINMENT;
+			var concretizationSettings = getConcretizationSettings(referenceDeclaration);
+			var opposite = referenceDeclaration.getOpposite();
+			PartialRelation oppositeRelation = null;
+			if (opposite != null) {
+				oppositeRelation = getPartialRelation(opposite);
+			}
+			var multiplicity = getMultiplicityConstraint(referenceDeclaration);
+			Set<PartialRelation> supersets = referenceDeclaration.getSuperSets().stream()
+					.map(this::getPartialRelation)
+					.collect(Collectors.toCollection(LinkedHashSet::new));
 			var seed = relationInfoMap.get(referenceDeclaration).toSeed(nodeCount);
 			var defaultValue = seed.majorityValue();
 			if (defaultValue.must()) {
@@ -409,6 +500,17 @@ public class ModelInitializer {
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(classDeclaration, e);
 		}
+	}
+
+	private <A extends AbstractValue<A, C>, C> void collectAttributeDeclarationMetamodel(
+			PartialFunction<A, C> partialFunction, PartialRelation source, ReferenceDeclaration referenceDeclaration) {
+		// The type of the FunctionInfo always matches the type of the PartialFunction,
+		// because we have created them at the same time.
+		@SuppressWarnings("unchecked")
+		var functionInfo = (FunctionInfo<A, C>) functionInfoMap.get(referenceDeclaration);
+		var seed = functionInfo.toSeed();
+		modelSeedBuilder.seed(partialFunction, seed);
+		metamodelBuilder.attribute(partialFunction, new AttributeInfo(source, seed.majorityValue()));
 	}
 
 	private ConcretizationSettings getConcretizationSettings(Relation relation) {
@@ -511,20 +613,56 @@ public class ModelInitializer {
 	}
 
 	private void collectAssertion(Assertion assertion) {
-		var tuple = getTuple(assertion);
-		var value = SemanticsUtils.getTruthValue(assertion.getValue());
 		var relation = assertion.getRelation();
+		var functionInfo = functionInfoMap.get(relation);
+		if (functionInfo != null) {
+			collectAttributeAssertion(assertion, functionInfo);
+			return;
+		}
+		var tuple = getTuple(assertion);
 		var info = getRelationInfo(relation);
 		var partialRelation = info.partialRelation();
 		if (partialRelation.arity() != tuple.getSize()) {
 			throw new TracedException(assertion, "Expected %d arguments for %s, got %d instead"
 					.formatted(partialRelation.arity(), partialRelation, tuple.getSize()));
 		}
+		var value = parseConstant(assertion.getValue(), TruthValue.class);
 		if (assertion.isDefault()) {
 			info.defaultAssertions().mergeValue(tuple, value);
 		} else {
 			info.assertions().mergeValue(tuple, value);
 		}
+	}
+
+	private <A extends AbstractValue<A, C>, C> void collectAttributeAssertion(Assertion assertion,
+																			  FunctionInfo<A, C> functionInfo) {
+		var tuple = getTuple(assertion);
+		var partialFunction = functionInfo.partialFunction();
+		if (partialFunction.arity() != tuple.getSize()) {
+			throw new TracedException(assertion, "Expected %d arguments for %s, got %d instead"
+					.formatted(partialFunction.arity(), partialFunction, tuple.getSize()));
+		}
+		var abstractValue = parseConstant(assertion.getValue(), partialFunction.abstractDomain().abstractType());
+		if (assertion.isDefault()) {
+			functionInfo.defaultAssertions().mergeValue(tuple, abstractValue);
+		} else {
+			functionInfo.assertions().mergeValue(tuple, abstractValue);
+		}
+	}
+
+	private <T> Term<T> parseTerm(Expr value, Class<T> type) {
+		return exprToTerm.toTerm(value)
+				.orElseThrow(() -> new TracedException(value, "Invalid assertion value expression"))
+				.asType(type)
+				.reduce();
+	}
+
+	private <T> T parseConstant(Expr value, Class<T> type) {
+		var simplifiedTerm = parseTerm(value, type);
+		if (!(simplifiedTerm instanceof ConstantTerm<T> constantTerm)) {
+			throw new TracedException(value, "Assertion value must be constant");
+		}
+		return constantTerm.getValue();
 	}
 
 	private void fixClassDeclarationAssertions() {
@@ -598,8 +736,14 @@ public class ModelInitializer {
 	private void collectPredicates(ModelStoreBuilder storeBuilder) {
 		for (var importedProblem : importedProblems) {
 			for (var statement : importedProblem.getStatements()) {
-				if (statement instanceof PredicateDefinition predicateDefinition) {
-					collectPredicateDefinitionTraced(predicateDefinition, storeBuilder);
+				switch (statement) {
+				case PredicateDefinition predicateDefinition ->
+						collectPredicateDefinitionTraced(predicateDefinition, storeBuilder);
+				case FunctionDefinition functionDefinition ->
+						collectFunctionDefinitionTraced(functionDefinition, storeBuilder);
+				default -> {
+					// Nothing to collect.
+				}
 				}
 			}
 		}
@@ -688,12 +832,16 @@ public class ModelInitializer {
 		var partialRelation = getPartialRelation(predicateDefinition);
 		var parameterTypes = getParameterTypes(predicateDefinition, nodeRelation);
 		var supersets = getSupersets(predicateDefinition);
-		var seed = modelSeed.getSeed(partialRelation);
-		var defaultValue = seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
+		var defaultValue = getDefaultValue(partialRelation);
 		var concretizationSettings = getConcretizationSettings(predicateDefinition);
 		var translator = new BasePredicateTranslator(partialRelation, parameterTypes, supersets, defaultValue,
 				concretizationSettings);
 		storeBuilder.with(translator);
+	}
+
+	private TruthValue getDefaultValue(PartialRelation partialRelation) {
+		var seed = modelSeed.getSeed(partialRelation);
+		return seed.majorityValue() == TruthValue.FALSE ? TruthValue.FALSE : TruthValue.UNKNOWN;
 	}
 
 	private void collectShadowPredicateDefinition(PredicateDefinition predicateDefinition,
@@ -709,6 +857,95 @@ public class ModelInitializer {
 			for (var statement : importedProblem.getStatements()) {
 				collectScopes(statement);
 			}
+		}
+	}
+
+	private void collectFunctionDefinitionTraced(FunctionDefinition functionDefinition,
+												 ModelStoreBuilder storeBuilder) {
+		try {
+			collectFunctionDefinition(functionDefinition, storeBuilder);
+		} catch (InvalidClauseException e) {
+			int clauseIndex = e.getClauseIndex();
+			var cases = functionDefinition.getCases();
+			if (clauseIndex < cases.size()) {
+				throw new TracedException(cases.get(clauseIndex), e);
+			} else {
+				throw new TracedException(functionDefinition, e);
+			}
+		} catch (RuntimeException e) {
+			throw TracedException.addTrace(functionDefinition, e);
+		}
+	}
+
+	private void collectFunctionDefinition(FunctionDefinition functionDefinition, ModelStoreBuilder storeBuilder) {
+		var domainPredicate = functionDefinition.getDomainPredicate();
+		if (domainPredicate == null) {
+			throw new TracedException(functionDefinition, "Function '%s' has no domain predicate.".formatted(
+					functionDefinition.getName()));
+		}
+		var domainRelation = getPartialRelation(domainPredicate);
+		var domainQuery = functionCompiler.toDomainQuery(domainRelation.name(), functionDefinition);
+		ModelStoreConfiguration domainTranslator;
+		boolean keepComputedDomain;
+		if (functionDefinition.isShadow()) {
+			domainTranslator = new ShadowPredicateTranslator(domainRelation, domainQuery, keepShadowPredicates);
+			keepComputedDomain = keepShadowPredicates;
+		} else {
+			var domainDefaultValue = getDefaultValue(domainRelation);
+			var parameterTypes = getParameterTypes(functionDefinition, nodeRelation);
+			domainTranslator = new PredicateTranslator(domainRelation, domainQuery, parameterTypes, Set.of(), true,
+					domainDefaultValue);
+			// The shadow interpretation is needed for serialization.
+			keepComputedDomain = true;
+		}
+		storeBuilder.with(domainTranslator);
+		var computedDomainPredicate = domainPredicate.getComputedValue();
+		if (computedDomainPredicate != null) {
+			var computedPartialRelation = getPartialRelation(computedDomainPredicate);
+			var computedTranslator = new ShadowPredicateTranslator(computedPartialRelation, domainQuery,
+					keepComputedDomain);
+			storeBuilder.with(computedTranslator);
+		}
+		collectFunctionDefinition(functionDefinition, functionInfoMap.get(functionDefinition), domainRelation,
+				storeBuilder);
+	}
+
+	private <A extends AbstractValue<A, C>, C> void collectFunctionDefinition(
+			FunctionDefinition functionDefinition, FunctionInfo<A, C> functionInfo,
+			PartialRelation domainRelation, ModelStoreBuilder storeBuilder) {
+		var partialFunction = functionInfo.partialFunction();
+		if (ProblemUtil.isBaseFunction(functionDefinition)) {
+			var defaultValue = modelSeed.getSeed(partialFunction).majorityValue();
+			var translator = new AttributeTranslator<>(partialFunction, new AttributeInfo(domainRelation,
+					defaultValue));
+			storeBuilder.with(translator);
+			return;
+		}
+		var query = functionCompiler.toQuery(partialFunction.name(), partialFunction.abstractDomain(),
+				functionDefinition, domainRelation);
+		if (functionDefinition.isShadow()) {
+			var translator = new ShadowFunctionTranslator<>(partialFunction, domainRelation, query,
+					keepShadowPredicates);
+			storeBuilder.with(translator);
+			return;
+		}
+		var seed = modelSeed.getSeed(partialFunction);
+		var defaultValue = seed.majorityValue();
+		var cursor = seed.getCursor(defaultValue, problemTrace.getNodeTrace().size());
+		boolean mutable = mutableRelationCollector.isMutable(functionDefinition) || cursor.move();
+		var translator = new FunctionTranslator<>(partialFunction, domainRelation, query, defaultValue, mutable);
+		storeBuilder.with(translator);
+		var computedValueFunction = functionDefinition.getComputedValue();
+		if (computedValueFunction != null) {
+			// The type of the shadow function always matches the original function, because we create them in the
+			// same place for the same {@code AbstractDomain}.
+			@SuppressWarnings("unchecked")
+			var computedValuePartialFunction = (PartialFunction<A, C>) functionInfoMap.get(computedValueFunction)
+					.partialFunction();
+			// The shadow interpretation is needed for serialization.
+			var computedValueTranslator = new ShadowFunctionTranslator<>(computedValuePartialFunction, domainRelation,
+					query, true);
+			storeBuilder.with(computedValueTranslator);
 		}
 	}
 
@@ -784,6 +1021,25 @@ public class ModelInitializer {
 				defaultAssertions.setAllMissing(TruthValue.FALSE);
 			}
 			return defaultAssertions;
+		}
+	}
+
+	private record FunctionInfo<A extends AbstractValue<A, C>, C>(PartialFunction<A, C> partialFunction,
+																  AbstractDomain<A, C> abstractDomain,
+																  MutableSeed<A> assertions,
+																  MutableSeed<A> defaultAssertions) {
+		public FunctionInfo(PartialFunction<A, C> partialFunction, AbstractDomain<A, C> abstractDomain) {
+			this(partialFunction, abstractDomain, MutableSeed.of(partialFunction.arity(), abstractDomain, null),
+					MutableSeed.of(partialFunction.arity(), abstractDomain, abstractDomain.unknown()));
+		}
+
+		public Seed<A> toSeed() {
+			defaultAssertions.overwriteValues(assertions);
+			return defaultAssertions;
+		}
+
+		public void addToModelSeed(ModelSeed.Builder modelSeedBuilder) {
+			modelSeedBuilder.seed(partialFunction, toSeed());
 		}
 	}
 

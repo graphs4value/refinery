@@ -22,4 +22,13 @@ public sealed interface RelationDetail {
 
 	record Reference(boolean isContainment) implements RelationDetail {
 	}
+
+	record Attribute() implements RelationDetail {
+	}
+
+	record Function(FunctionDetailKind kind) implements RelationDetail {
+	}
+
+	record Domain(String of) implements RelationDetail {
+	}
 }

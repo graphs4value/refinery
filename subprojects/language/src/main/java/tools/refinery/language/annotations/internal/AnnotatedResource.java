@@ -40,13 +40,11 @@ class AnnotatedResource {
 				continue;
 			}
 			var qualifiedName = typedAnnotation.getAnnotationName();
-			if (qualifiedName != null) {
-				var collectedAnnotations = collectedMap.computeIfAbsent(qualifiedName, ignored -> {
-					boolean repeated = AnnotationUtil.isRepeatable(annotation.getDeclaration());
-					return new CollectedAnnotations(new ArrayList<>(1), repeated);
-				});
-				collectedAnnotations.instances().add(typedAnnotation);
-			}
+			var collectedAnnotations = collectedMap.computeIfAbsent(qualifiedName, ignored -> {
+				boolean repeated = AnnotationUtil.isRepeatable(annotation.getDeclaration());
+				return new CollectedAnnotations(new ArrayList<>(1), repeated);
+			});
+			collectedAnnotations.instances().add(typedAnnotation);
 		}
 		var typedAnnotations = new TypedAnnotations(annotatedElement, collectedMap);
 		annotationsMap.put(annotatedElement, typedAnnotations);
@@ -60,7 +58,17 @@ class AnnotatedResource {
 
 	@Nullable
 	private TypedAnnotation getTypedAnnotationOrNull(Annotation annotation) {
-		return typingMap.computeIfAbsent(annotation, this::computeTypedAnnotation);
+		if (annotation == null) {
+			return null;
+		}
+		// We don't use {@code computeIfAbsent} here to avoid {@code ConcurrentModificationException} if this method
+		// is called in a reentrant way.
+		var result = typingMap.get(annotation);
+		if (result == null) {
+			result = computeTypedAnnotation(annotation);
+			typingMap.put(annotation, result);
+		}
+		return result;
 	}
 
 	@Nullable

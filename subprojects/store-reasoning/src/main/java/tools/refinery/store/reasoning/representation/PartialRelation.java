@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.representation;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.Constraint;
 import tools.refinery.logic.term.Parameter;
@@ -49,7 +50,7 @@ public record PartialRelation(String name, int arity) implements PartialSymbol<T
 	}
 
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return "%s/%d".formatted(name, arity);
 	}
 }

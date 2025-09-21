@@ -79,26 +79,17 @@ class PropagationAdapterImpl implements PropagationAdapter {
 
 	private PropagationResult propagateOne(PropagationRequest request) {
 		PropagationResult result = PropagationResult.UNCHANGED;
+		// Use a classic for loop to avoid allocating an iterator.
+		//noinspection ForLoopReplaceableByForEach
 		for (int i = 0; i < boundPropagators.length; i++) {
 			model.checkCancelled();
-			var lastResult = propagateUntilFixedPoint(i, request);
+			var propagator = boundPropagators[i];
+			var lastResult = propagator.propagateOne(request);
 			result = result.andThen(lastResult);
 			if (result.isRejected()) {
 				break;
 			}
 		}
-		return result;
-	}
-
-	private PropagationResult propagateUntilFixedPoint(int propagatorIndex, PropagationRequest request) {
-		var propagator = boundPropagators[propagatorIndex];
-		PropagationResult result = PropagationResult.UNCHANGED;
-		PropagationResult lastResult;
-		do {
-			model.checkCancelled();
-			lastResult = propagator.propagateOne(request);
-			result = result.andThen(lastResult);
-		} while (lastResult.isChanged());
 		return result;
 	}
 

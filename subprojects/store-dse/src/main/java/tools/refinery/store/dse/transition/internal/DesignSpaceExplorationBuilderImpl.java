@@ -6,9 +6,10 @@
 package tools.refinery.store.dse.transition.internal;
 
 import tools.refinery.store.adapter.AbstractModelAdapterBuilder;
+import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.dse.transition.DecisionRule;
 import tools.refinery.store.dse.transition.DesignSpaceExplorationBuilder;
-import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.dse.transition.ExclusionPropagator;
 import tools.refinery.store.dse.transition.objectives.Criterion;
 import tools.refinery.store.dse.transition.objectives.Objective;
 import tools.refinery.store.model.ModelStore;
@@ -55,10 +56,12 @@ public class DesignSpaceExplorationBuilderImpl
 	@Override
 	protected void doConfigure(ModelStoreBuilder storeBuilder) {
 		var queryEngine = storeBuilder.getAdapter(ModelQueryBuilder.class);
-		decisionRules.forEach(x -> queryEngine.query(x.rule().getPrecondition()));
+		decisionRules.forEach(x -> queryEngine.queries(x.rule().getQueries()));
 		accepts.forEach(x -> x.configure(storeBuilder));
 		excludes.forEach(x -> x.configure(storeBuilder));
 		objectives.forEach(x -> x.configure(storeBuilder));
+		storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder ->
+				propagationBuilder.propagator(new ExclusionPropagator()));
 
 		super.doConfigure(storeBuilder);
 	}

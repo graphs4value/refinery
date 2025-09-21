@@ -31,8 +31,7 @@ class DocumentationCommentParserTest {
 	void colorTest(String text, String expectedColor) {
 		var parseResult = parseHelper.parse(text);
 		var foo = parseResult.findClass("Foo").classDeclaration();
-		var documentation = commentParser.parseDocumentation(foo);
-		var actualColor = documentation.get(DocumentationCommentParser.COLOR_TAG);
+		var actualColor = commentParser.getColor(foo);
 		assertThat(actualColor, is(expectedColor));
 	}
 

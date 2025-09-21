@@ -213,7 +213,7 @@ export default class ContentAssistService {
         options.push(completion);
       }
     });
-    log.debug('Fetched %s completions from server', options.length);
+    log.debug('Fetched %d completions from server', options.length);
     this.lastCompletion = {
       ...range,
       options,

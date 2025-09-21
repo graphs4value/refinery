@@ -10,7 +10,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -18,7 +17,7 @@ import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
-import tools.refinery.language.documentation.DocumentationCommentParser;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportCollector;
@@ -32,8 +31,6 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	private static final String DATA_PREFIX = "tools.refinery.language.resource.ProblemResourceDescriptionStrategy.";
 
 	public static final String ARITY = DATA_PREFIX + "ARITY";
-	public static final String TYPE_LIKE = DATA_PREFIX + "TYPE_LIKE";
-	public static final String TYPE_LIKE_TRUE = "true";
 	public static final String ERROR_PREDICATE = DATA_PREFIX + "ERROR_PREDICATE";
 	public static final String ERROR_PREDICATE_TRUE = "true";
 	public static final String SHADOWING_KEY = DATA_PREFIX + "SHADOWING_KEY";
@@ -68,12 +65,6 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	@Inject
 	private ImportCollector importCollector;
-
-	@Inject
-	private DocumentationCommentParser documentationCommentParser;
-
-	@Inject
-	private IEObjectDocumentationProvider documentationProvider;
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
@@ -180,12 +171,10 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (ProblemUtil.isShadow(eObject)) {
 			builder.put(SHADOW_PREDICATE, SHADOW_PREDICATE_TRUE);
 		}
-		var documentationMap = documentationCommentParser.parseDocumentation(eObject);
-		builder.putAll(documentationMap);
 		return builder.build();
 	}
 
-	private static void addNodeUserData(Node node, ImmutableMap.Builder<String, String> builder) {
+	private static void addNodeUserData(Node node, ImmutableMap.Builder<@NotNull String, @NotNull String> builder) {
 		builder.put(SHADOWING_KEY, SHADOWING_KEY_NODE);
 		if (ProblemUtil.isAtomNode(node)) {
 			builder.put(ATOM, ATOM_TRUE);
@@ -195,12 +184,10 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 		}
 	}
 
-	private static void addRelationUserData(Relation relation, ImmutableMap.Builder<String, String> builder) {
+	private static void addRelationUserData(Relation relation,
+											ImmutableMap.Builder<@NotNull String, @NotNull String> builder) {
 		builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
 		builder.put(ARITY, Integer.toString(ProblemUtil.getArityWithoutProxyResolution(relation), 10));
-		if (ProblemUtil.isTypeLike(relation)) {
-			builder.put(TYPE_LIKE, TYPE_LIKE_TRUE);
-		}
 		if (relation instanceof ClassDeclaration classDeclaration && classDeclaration.isAbstract()) {
 			builder.put(ABSTRACT, ABSTRACT_TRUE);
 		}
@@ -211,14 +198,16 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	}
 
 	protected boolean shouldExportSimpleName(EObject eObject) {
-		if (eObject instanceof Node node) {
-			return !ProblemUtil.isMultiNode(node);
-		}
-		if (eObject instanceof PredicateDefinition predicateDefinition) {
-			return !ProblemUtil.isInvalidMultiplicityConstraint(predicateDefinition) &&
-					!ProblemUtil.isComputedValuePredicate(predicateDefinition);
-		}
-		return true;
+		return switch (eObject) {
+			case Node node -> !ProblemUtil.isMultiNode(node);
+			case PredicateDefinition predicateDefinition ->
+					!ProblemUtil.isInvalidMultiplicityConstraint(predicateDefinition) &&
+							!ProblemUtil.isComputedValuePredicate(predicateDefinition) &&
+							!ProblemUtil.isDomainPredicate(predicateDefinition);
+
+			case FunctionDefinition functionDefinition -> !ProblemUtil.isComputedValueFunction(functionDefinition);
+			default -> true;
+		};
 	}
 
 	private void acceptEObjectDescription(EObject eObject, QualifiedName prefix, QualifiedName qualifiedName,

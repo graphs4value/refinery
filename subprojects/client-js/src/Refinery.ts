@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import z from 'zod';
+import z from 'zod/v4';
 
 import { GenericRefinery, type RefineryOptions } from './GenericRefinery';
 import { Issue, JsonOutput, OutputFormats, ProblemInput, Scope } from './dto';
@@ -38,7 +38,7 @@ export class Refinery extends GenericRefinery {
     'generate',
     z.object({
       input: ProblemInput,
-      format: OutputFormats.default({}),
+      format: OutputFormats.prefault({}),
       scopes: Scope.array().optional(),
       randomSeed: z.number().default(1),
     }),

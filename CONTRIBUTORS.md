@@ -15,6 +15,7 @@ Other contributors (in alphabetical order):
 * Ficsor, Attila &lt;ficsorattila96@gmail.com&gt;
 * Garami, Bence &lt;85867500+garamibence@users.noreply.github.com&gt;
 * Golej, Márton Marcell &lt;golejmarci@gmail.com&gt;
+* Kecskés, Boldizsár &lt;kecskesbodo@gmail.com&gt;
 * Marussy, Kristóf &lt;marussy@mit.bme.hu&gt;
 * Nemes, Lili &lt;lili.nemes@outlook.com&gt;
 * Semeráth, Oszkár &lt;semerath@mit.bme.hu&gt;

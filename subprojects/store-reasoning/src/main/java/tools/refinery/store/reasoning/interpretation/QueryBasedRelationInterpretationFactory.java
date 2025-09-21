@@ -81,7 +81,7 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 
 		@Override
 		public TruthValue get(Tuple key) {
-			return TruthValue.toTruthValue(resultSet.get(key));
+			return TruthValue.of(resultSet.get(key));
 		}
 
 		@Override
@@ -97,7 +97,7 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 
 			@Override
 			public TruthValue getValue() {
-				return TruthValue.toTruthValue(cursor.getValue());
+				return TruthValue.of(cursor.getValue());
 			}
 
 			@Override

@@ -8,6 +8,7 @@ package tools.refinery.logic.equality;
 import tools.refinery.logic.dnf.SymbolicParameter;
 import tools.refinery.logic.term.Variable;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,12 +20,18 @@ public class SubstitutingLiteralHashCodeHelper implements LiteralHashCodeHelper 
 	private int next = 1;
 
 	public SubstitutingLiteralHashCodeHelper() {
-		this(List.of());
+		this(List.<Variable>of());
 	}
 
 	public SubstitutingLiteralHashCodeHelper(List<SymbolicParameter> parameters) {
 		for (var parameter : parameters) {
 			getVariableHashCode(parameter.getVariable());
+		}
+	}
+
+	public SubstitutingLiteralHashCodeHelper(Collection<Variable> positiveVariables) {
+		for (var variable : positiveVariables) {
+			getVariableHashCode(variable);
 		}
 	}
 

@@ -55,6 +55,8 @@ class SolutionSerializerTest {
 				.with(ReasoningAdapter.builder()
 						.requiredInterpretations(Set.of(Concreteness.CANDIDATE)));
 		var initializer = initializerProvider.get();
+		initializer.setKeepNonExistingObjects(false);
+		initializer.setKeepShadowPredicates(false);
 		var modelSeed = initializer.createModel(problem, storeBuilder);
 		var store = storeBuilder.build();
 		String actualOutput;
@@ -424,6 +426,99 @@ class SolutionSerializerTest {
 				Filesystem(git).
 				Dir(project).
 				root(git, project).
+				"""), Arguments.of("""
+				class Foo {
+					int intValue
+					boolean boolValue
+					string stringValue
+				}
+				""", """
+				Foo(a).
+				intValue(a): 10.
+				boolValue(a): true.
+				stringValue(a): "Hello, World!".
+				Foo(b).
+				intValue(b): 0..10 \\/ 5..*.
+				""", false, """
+				declare a, b.
+				!exists(Foo::new).
+				Foo(a).
+				Foo(b).
+				intValue(a): 10.
+				intValue(b): 0..*.
+				boolValue(a).
+				?boolValue(b).
+				stringValue(a): "Hello, World!".
+				?stringValue(b).
+				"""), Arguments.of("""
+				class Foo {
+					int intValue
+				}
+				""", """
+				default intValue(*): 10.
+				Foo(a).
+				intValue(a): 20.
+				Foo(b).
+				""", false, """
+				declare a, b.
+				!exists(Foo::new).
+				Foo(a).
+				Foo(b).
+				intValue(a): 20.
+				intValue(b): 10.
+				"""), Arguments.of("""
+				import builtin::strategy.
+
+				class Foo {
+					@concretize(false)
+					Foo[] bar
+				}
+
+				int quux(Foo x) = bar(x, x) -> count { bar(x, _) }.
+				""", """
+				Foo(a).
+				Foo(b).
+				Foo(c).
+				bar(a, a).
+				quux::defined(a).
+				quux::defined(b).
+				quux(a): 1..*.
+				quux(b): 2.
+				quux(c): 0..1.
+				""", false, """
+				declare a, b, c.
+				!exists(Foo::new).
+				Foo(a).
+				Foo(b).
+				Foo(c).
+				default !bar(*, *).
+				bar(a, a).
+				?bar(a, b).
+				?bar(a, c).
+				?bar(b, a).
+				?bar(b, b).
+				?bar(b, c).
+				?bar(c, a).
+				?bar(c, b).
+				?bar(c, c).
+				quux::defined(b).
+				quux(b): 2.
+				quux(c): 0..1.
+				"""), Arguments.of("""
+				class Foo.
+
+				int quux(Foo x).
+				""", """
+				Foo(a).
+				quux::defined(b).
+				quux(a): 1..*.
+				""", false, """
+				declare a, b.
+				!exists(Foo::new).
+				Foo(a).
+				Foo(b).
+				quux(a): 1..*.
+				?quux(b).
 				"""));
 	}
 }

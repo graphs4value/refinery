@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import z from 'zod';
+import z from 'zod/v4';
 
 const OutputFormat = z.object({
   enabled: z.boolean().default(true),
@@ -29,9 +29,9 @@ export type SourceOutputFormat = z.infer<typeof SourceOutputFormat>;
 
 export const OutputFormats = z
   .object({
-    json: JsonOutputFormat.default({}),
-    source: SourceOutputFormat.default({}),
+    json: JsonOutputFormat.prefault({}),
+    source: SourceOutputFormat.prefault({}),
   })
-  .default({});
+  .prefault({});
 
 export type OutputFormats = z.infer<typeof OutputFormats>;

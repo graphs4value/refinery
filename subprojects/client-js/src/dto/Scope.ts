@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import z from 'zod';
+import z from 'zod/v4';
 
 export const Scope = z
   .object({

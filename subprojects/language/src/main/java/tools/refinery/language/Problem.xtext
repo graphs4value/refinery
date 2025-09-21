@@ -33,10 +33,14 @@ AnnotatedStatement returns Statement:
 		("{" (literals+=EnumLiteral ("," literals+=EnumLiteral)* ("," | ";")?)? "}" | ".")
 	|
 		{DatatypeDeclaration.annotations=current}
-		"extern" "datatype" name=Identifier "."
+		"#" "datatype" name=Identifier "."
 	|
 		{AggregatorDeclaration.annotations=current}
-		"extern" "aggregator" name=Identifier "."
+		"#" "aggregator" name=Identifier "."
+	|
+		{OverloadedDeclaration.annotations=current}
+		"#" "primitive" shadow?="shadow"? name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")" "."
 	|
 		{PredicateDefinition.annotations=current}
 		(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
@@ -46,6 +50,13 @@ AnnotatedStatement returns Statement:
 			("," superSets+=[ReferenceDeclaration|QualifiedName])*
 		)?
 		("<->" bodies+=Conjunction (";" bodies+=Conjunction)*)?
+		"."
+	|
+		{FunctionDefinition.annotations=current}
+		shadow?="shadow"? functionType=[Relation|QualifiedName]
+		name=Identifier
+		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
+		("=" cases+=Case (";" cases+=Case)*)?
 		"."
 	|
 		{RuleDefinition.annotations=current}
@@ -111,14 +122,8 @@ enum PredicateKind:
 Conjunction:
 	literals+=Expr ("," literals+=Expr)*;
 
-//FunctionDefinition:
-//	"fn" functionType=[DatatypeDefinition|QualifiedName] name=Identifier
-//	"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")"
-//	("=" cases+=Case (";" cases+=Case)*)?
-//	".";
-//
-//Case:
-//	Conjunction ({Match.condition=current} "->" value=Expr)?;
+Case:
+	condition=Conjunction ("->" value=Expr)?;
 
 enum RuleKind:
 	DECISION="decision" | PROPAGATION="propagation" | CONCRETIZATION="concretization";
@@ -159,12 +164,16 @@ BooleanExpr returns Expr:
 	op=BooleanBinaryOp right=ComparisonExpr)*;
 
 enum ComparisonOp:
-	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="===" | NOT_EQ="!==" |
-	IN="in" | NODE_EQ="==" | NODE_NOT_EQ="!=";
+	LESS="<" | LESS_EQ="<=" | GREATER=">" | GREATER_EQ=">=" | EQ="==" | NOT_EQ="!=";
+
+enum LatticeComparisonOp returns LatticeBinaryOp:
+	EQ="===" | NOT_EQ="!==" | SUBSET="<:" | SUPERSET=":>";
 
 ComparisonExpr returns Expr:
 	LatticeExpr ({ComparisonExpr.left=current}
-	op=ComparisonOp right=LatticeExpr)*;
+	op=ComparisonOp right=LatticeExpr |
+	{LatticeBinaryExpr.left=current}
+	op=LatticeComparisonOp right=LatticeExpr)*;
 
 enum LatticeBinaryOp:
 	MEET="/\\" | JOIN="\\/";
@@ -199,7 +208,8 @@ RangeExpr returns Expr:
 
 UnaryExpr returns Expr:
 	ArithmeticUnaryExpr | NegationExpr |
-	CountExpr | AggregationExpr | ModalExpr | CastExpr;
+	AggregationExpr | ModalExpr |
+	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 enum UnaryOp:
 	PLUS="+" | MINUS="-";
@@ -210,12 +220,9 @@ ArithmeticUnaryExpr:
 NegationExpr:
 	"!" body=UnaryExpr;
 
-CountExpr:
-	"count" body=UnaryExpr;
-
 AggregationExpr:
 	aggregator=[AggregatorDeclaration|QualifiedName]
-	"{" value=Expr "|" condition=ComparisonExpr "}";
+	"{" condition=Expr ("->" value=Expr)? "}";
 
 enum Concreteness:
 	PARTIAL="partial" | CANDIDATE="candidate";
@@ -226,12 +233,6 @@ enum Modality:
 ModalExpr:
 	(concreteness=Concreteness => modality=Modality? | modality=Modality => concreteness=Concreteness?)
 	body=UnaryExpr;
-
-CastExpr returns Expr:
-	CastExprBody ({CastExpr.body=current} "as" targetType=[Relation|QualifiedName])?;
-
-CastExprBody returns Expr:
-	Atom | VariableOrNodeExpr | Constant | "(" Expr ")";
 
 Atom:
 	relation=[Relation|QualifiedName]
@@ -326,11 +327,12 @@ Identifier:
 	NonContainmentIdentifier | "contains" | "container" | "opposite" | "subsets";
 
 NonContainmentIdentifier:
-	ID | QUOTED_ID | "atom" | "multi" | "problem" | "module" |
-	"datatype" | "aggregator" | "decision" | "propagation" | "concretization" |
+	ID | QUOTED_ID | "as" | "atom" | "multi" | "problem" | "module" |
+	"datatype" | "aggregator" | "primitive" |
+	"decision" | "propagation" | "concretization" |
 	"shadow";
 
-Real returns ecore::EDouble:
+Real returns ecore::EBigDecimal:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);
 
 terminal TRANSITIVE_CLOSURE:

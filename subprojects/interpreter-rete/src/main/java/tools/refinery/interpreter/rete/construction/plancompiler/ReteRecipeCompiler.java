@@ -612,7 +612,7 @@ public class ReteRecipeCompiler {
 
 		var leftIndexerRecipe = FACTORY.createOuterJoinIndexerRecipe();
 		leftIndexerRecipe.setParent(leftIndexerRecipe);
-		// Must make a copy of the mask here, because we are already using secondaryIndexerRecipe in the plan an mask
+		// Must make a copy of the mask here, because we are already using secondaryIndexerRecipe in the plan and mask
 		// is a containment reference.
 		var copyOfMask = EcoreUtil.copy(secondaryIndexerRecipe.getMask());
 		leftIndexerRecipe.setMask(copyOfMask);
