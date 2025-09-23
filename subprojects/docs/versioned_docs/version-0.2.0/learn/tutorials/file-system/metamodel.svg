@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="202pt" height="358pt" viewBox="-6 -6 214.1699981689453 370" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="refinery-3QBf1eGyrSuIh9K81Q93C"><style>.refinery-3QBf1eGyrSuIh9K81Q93C .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-3QBf1eGyrSuIh9K81Q93C .node .node-outline{stroke:#19202b;}.refinery-3QBf1eGyrSuIh9K81Q93C .node .node-header{fill:rgb(53, 161, 173);}.refinery-3QBf1eGyrSuIh9K81Q93C .node .node-bg{fill:#fff;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-INDIVIDUAL .node-outline{stroke-width:2;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-shadow.node-bg{fill:#19202b;opacity:0.24;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-g .node-header{fill:#e5c07b;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-h .node-header{fill:#e06c75;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-i .node-header{fill:#98c379;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-j .node-header{fill:#c678dd;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-k .node-header{fill:#80a7f4;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-l .node-header{fill:#e3d1b2;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-m .node-header{fill:#e78b8f;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-n .node-header{fill:#abcc94;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-o .node-header{fill:#dbb2e8;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-p .node-header{fill:#92c0e9;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge .edge-line{stroke:#19202b;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge .edge-arrow{fill:#19202b;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge-UNKNOWN text{fill:#696c77;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge-UNKNOWN .edge-line{stroke:#696c77;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge-UNKNOWN .edge-arrow{fill:none;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge-ERROR text{fill:#ca1243;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge-ERROR .edge-line{stroke:#ca1243;}.refinery-3QBf1eGyrSuIh9K81Q93C .edge-ERROR .edge-arrow{fill:#ca1243;}.refinery-3QBf1eGyrSuIh9K81Q93C .icon-TRUE{fill:#19202b;}.refinery-3QBf1eGyrSuIh9K81Q93C .icon-UNKNOWN{fill:#696c77;}.refinery-3QBf1eGyrSuIh9K81Q93C .icon-ERROR{fill:#ca1243;}.refinery-3QBf1eGyrSuIh9K81Q93C text.label-UNKNOWN{fill:#696c77;}.refinery-3QBf1eGyrSuIh9K81Q93C text.label-ERROR{fill:#ca1243;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE text:not(.label-ERROR){fill:#696c77;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE .node-outline{stroke:#696c77;stroke-dasharray:2 4;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE .node-header{fill:#fff;}.refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE .icon-TRUE{fill:#696c77;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node .node-outline{stroke:#ebebff;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node .node-header{fill:rgb(60, 127, 135);}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node .node-bg{fill:#282c34;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-INDIVIDUAL .node-outline{stroke-width:2;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-shadow.node-bg{fill:#ebebff;opacity:0.32;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-g .node-header{fill:#ae8003;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-h .node-header{fill:#a23b47;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-i .node-header{fill:#428141;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-j .node-header{fill:#854797;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-k .node-header{fill:#3982bb;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-l .node-header{fill:#827662;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-m .node-header{fill:#904f53;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-n .node-header{fill:#647e63;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-o .node-header{fill:#805f89;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-typeHash-p .node-header{fill:#4f7799;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge .edge-line{stroke:#ebebff;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge .edge-arrow{fill:#ebebff;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge-UNKNOWN text{fill:#abb2bf;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge-UNKNOWN .edge-line{stroke:#abb2bf;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge-UNKNOWN .edge-arrow{fill:none;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge-ERROR text{fill:#e06c75;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge-ERROR .edge-line{stroke:#e06c75;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .edge-ERROR .edge-arrow{fill:#e06c75;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .icon-TRUE{fill:#ebebff;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .icon-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .icon-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C text.label-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C text.label-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE text:not(.label-ERROR){fill:#abb2bf;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE .node-outline{stroke:#abb2bf;stroke-dasharray:2 4;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE .node-header{fill:#282c34;}[data-theme="dark"] .refinery-3QBf1eGyrSuIh9K81Q93C .node-exists-FALSE .icon-TRUE{fill:#abb2bf;}</style><defs><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon-TRUE"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-3QBf1eGyrSuIh9K81Q93C-icon-UNKNOWN" class="icon-UNKNOWN"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-3QBf1eGyrSuIh9K81Q93C-icon-ERROR" class="icon-ERROR"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12L17 15.59z"/></svg></defs>
+<g class="graph" transform="scale(1 1) rotate(0) translate(4 354)">
+<!-- n0 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-g"><rect stroke="none" x="29.5" y="-344.5" width="99" height="49" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="24.28" y="-350" width="98.44" height="48.80000000000001" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="20" y="-354" width="106" height="27" clip-path="url(#refinery-3QBf1eGyrSuIh9K81Q93C-clip-0)" class="node-header"/>
+<text text-anchor="start" x="29.28" y="-334.2" font-size="12.00">Filesystem::new</text>
+<use x="30.2793" y="-320.40000000000003" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="46.28" y="-310.8" font-size="12.00" class="label label-TRUE">Filesystem</text>
+</g>
+<polyline points="24.28,-326.6 122.72,-326.6" class="node-outline"/>
+<rect fill="none" x="24.28" y="-350" width="98.44" height="48.80000000000001" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-3QBf1eGyrSuIh9K81Q93C-clip-0"><rect stroke="none" x="24.28" y="-350" width="98.44" height="48.80000000000001" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n1 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-n"><rect stroke="none" x="42.5" y="-259.5" width="74" height="65" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="37" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="33" y="-269" width="81" height="27" clip-path="url(#refinery-3QBf1eGyrSuIh9K81Q93C-clip-1)" class="node-header"/>
+<text text-anchor="start" x="50.25" y="-249.4" font-size="12.00">Dir::new</text>
+<use x="43" y="-235.8" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="58.74" y="-227" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="43" y="-219.8" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="59" y="-210" font-size="12.00" class="label label-TRUE">Dir</text>
+</g>
+<polyline points="37,-241.8 110,-241.8" class="node-outline"/>
+<rect fill="none" x="37" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-3QBf1eGyrSuIh9K81Q93C-clip-1"><rect stroke="none" x="37" y="-265.2" width="73" height="64.39999999999998" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n0&#45;&gt;n1 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-width="2" stroke-dasharray="5,2" d="M73.5,-301.27C73.5,-293.78 73.5,-285.25 73.5,-276.82" class="edge-line"/>
+<polygon stroke-width="2" points="76.56,-276.89 73.5,-268.14 70.44,-276.89 76.56,-276.89" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="51.17" y="-287.69" font-weight="bold" font-size="10.50">root</text>
+</g>
+<!-- n1&#45;&gt;n1 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M109.92,-241.64C120.15,-241.26 128,-238.38 128,-233 128,-229.89 125.38,-227.61 121.19,-226.18" class="edge-line"/>
+<polygon points="121.85,-222.74 111.42,-224.6 120.73,-229.65 121.85,-222.74" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="126.7" y="-244.77" font-size="10.50">parent</text>
+</g>
+<!-- n1&#45;&gt;n1 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-width="2" stroke-dasharray="5,2" d="M109.68,-249.7C128.74,-252.4 146,-246.84 146,-233 146,-222.08 135.25,-216.31 121.36,-215.69" class="edge-line"/>
+<polygon stroke-width="2" points="121.29,-212.63 112.71,-216.14 121.6,-218.75 121.29,-212.63" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="109.74" y="-253.86" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n2 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-i"><rect stroke="none" x="5.5" y="-58.5" width="74" height="65" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="0" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="-4" y="-68" width="81" height="27" clip-path="url(#refinery-3QBf1eGyrSuIh9K81Q93C-clip-2)" class="node-header"/>
+<text text-anchor="start" x="12.09" y="-48.6" font-size="12.00">File::new</text>
+<use x="6" y="-35" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="21.74" y="-26.2" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="6" y="-19" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="22" y="-9.2" font-size="12.00" class="label label-TRUE">File</text>
+</g>
+<polyline points="0,-41 73,-41" class="node-outline"/>
+<rect fill="none" x="0" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-3QBf1eGyrSuIh9K81Q93C-clip-2"><rect stroke="none" x="0" y="-64.4" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n1&#45;&gt;n2 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-width="2" stroke-dasharray="5,2" d="M62.66,-200.94C54.37,-167.34 44.16,-113.54 38.8,-75.96" class="edge-line"/>
+<polygon stroke-width="2" points="41.84,-75.63 37.64,-67.37 35.77,-76.45 41.84,-75.63" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="2.11" y="-137.27" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n3 -->
+<g class="node node-NEW node-exists-UNKNOWN node-equalsSelf-UNKNOWN node-typeHash-h"><rect stroke="none" x="79.5" y="-158.5" width="74" height="65" rx="12.5" ry="12.5" class="node-shadow node-bg"/>
+
+<rect stroke="none" x="74" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="70" y="-168" width="81" height="27" clip-path="url(#refinery-3QBf1eGyrSuIh9K81Q93C-clip-3)" class="node-header"/>
+<text text-anchor="start" x="84.13" y="-149" font-size="12.00">Link::new</text>
+<use x="80" y="-135.4" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="95.74" y="-126.6" font-style="italic" font-size="12.00" class="label label-TRUE">FSObject</text>
+</g>
+<use x="80" y="-119.4" width="12" height="12" href="#refinery-3QBf1eGyrSuIh9K81Q93C-icon-TRUE" class="icon icon-TRUE"/>
+<g><text text-anchor="start" x="96" y="-109.6" font-size="12.00" class="label label-TRUE">Link</text>
+</g>
+<polyline points="74,-141.4 147,-141.4" class="node-outline"/>
+<rect fill="none" x="74" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-3QBf1eGyrSuIh9K81Q93C-clip-3"><rect stroke="none" x="74" y="-164.8" width="73" height="64.4" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n1&#45;&gt;n3 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-width="2" stroke-dasharray="5,2" d="M72.55,-200.87C74.82,-192.71 77.94,-183.79 81.51,-175.18" class="edge-line"/>
+<polygon stroke-width="2" points="84.26,-176.54 85.01,-167.3 78.66,-174.06 84.26,-176.54" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="32.38" y="-186.64" font-weight="bold" font-size="10.50">contents</text>
+</g>
+<!-- n2&#45;&gt;n1 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M47.37,-64.37C55.69,-98.16 65.95,-152.28 71.29,-189.85" class="edge-line"/>
+<polygon points="67.78,-189.99 72.58,-199.44 74.72,-189.06 67.78,-189.99" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="45.44" y="-123.1" font-size="10.50">parent</text>
+</g>
+<!-- n3&#45;&gt;n1 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M98.87,-164.53C95.81,-172.67 92.45,-181.6 89.22,-190.21" class="edge-line"/>
+<polygon points="85.98,-188.86 85.74,-199.45 92.54,-191.32 85.98,-188.86" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="108.27" y="-173.44" font-size="10.50">parent</text>
+</g>
+<!-- n3&#45;&gt;n1 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M111.51,-164.53C109.22,-172.76 106.07,-181.79 102.46,-190.49" class="edge-line"/>
+<polygon points="99.33,-188.92 98.48,-199.48 105.73,-191.76 99.33,-188.92" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="119.98" y="-186.25" font-size="10.50">target</text>
+</g>
+<!-- n3&#45;&gt;n2 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M87.09,-100.47C80.54,-91.77 73.34,-82.19 66.48,-73.06" class="edge-line"/>
+<polygon points="69.48,-71.23 60.67,-65.34 63.88,-75.44 69.48,-71.23" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="58.72" y="-85.3" font-size="10.50">target</text>
+</g>
+<!-- n3&#45;&gt;n3 -->
+<g class="edge edge-UNKNOWN">
+
+<path fill="none" stroke-dasharray="5,2" d="M146.92,-151.33C157.15,-150.51 165,-144.27 165,-132.6 165,-125.49 162.08,-120.39 157.49,-117.31" class="edge-line"/>
+<polygon points="158.95,-114.11 148.36,-114.34 156.78,-120.76 158.95,-114.11" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="179.58" y="-135.09" font-size="10.50">target</text>
+</g>
+</g>
+</svg>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="216pt" height="226pt" viewBox="-6 -6 227.8699951171875 238.39999389648438" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="refinery-9k5t5y1ScYnYvNXEZbWT4"><style>.refinery-9k5t5y1ScYnYvNXEZbWT4 .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node .node-outline{stroke:#19202b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node .node-header{fill:rgb(53, 161, 173);}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node .node-bg{fill:#fff;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-INDIVIDUAL .node-outline{stroke-width:2;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-shadow.node-bg{fill:#19202b;opacity:0.24;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-g .node-header{fill:#e5c07b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-h .node-header{fill:#e06c75;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-i .node-header{fill:#98c379;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-j .node-header{fill:#c678dd;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-k .node-header{fill:#80a7f4;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-l .node-header{fill:#e3d1b2;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-m .node-header{fill:#e78b8f;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-n .node-header{fill:#abcc94;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-o .node-header{fill:#dbb2e8;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-p .node-header{fill:#92c0e9;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#19202b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge .edge-line{stroke:#19202b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge .edge-arrow{fill:#19202b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-UNKNOWN text{fill:#696c77;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-UNKNOWN .edge-line{stroke:#696c77;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-UNKNOWN .edge-arrow{fill:none;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-ERROR text{fill:#ca1243;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-ERROR .edge-line{stroke:#ca1243;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-ERROR .edge-arrow{fill:#ca1243;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .icon-TRUE{fill:#19202b;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .icon-UNKNOWN{fill:#696c77;}.refinery-9k5t5y1ScYnYvNXEZbWT4 .icon-ERROR{fill:#ca1243;}.refinery-9k5t5y1ScYnYvNXEZbWT4 text.label-UNKNOWN{fill:#696c77;}.refinery-9k5t5y1ScYnYvNXEZbWT4 text.label-ERROR{fill:#ca1243;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node .node-outline{stroke:#ebebff;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node .node-header{fill:rgb(60, 127, 135);}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node .node-bg{fill:#282c34;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-INDIVIDUAL .node-outline{stroke-width:2;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-shadow.node-bg{fill:#ebebff;opacity:0.32;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-exists-UNKNOWN .node-outline{stroke-dasharray:5 2;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-g .node-header{fill:#ae8003;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-h .node-header{fill:#a23b47;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-i .node-header{fill:#428141;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-j .node-header{fill:#854797;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-k .node-header{fill:#3982bb;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-l .node-header{fill:#827662;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-m .node-header{fill:#904f53;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-n .node-header{fill:#647e63;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-o .node-header{fill:#805f89;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .node-typeHash-p .node-header{fill:#4f7799;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge text{font-family:"Open Sans Variable","Open Sans","Roboto","Helvetica","Arial",sans-serif;fill:#ebebff;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge .edge-line{stroke:#ebebff;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge .edge-arrow{fill:#ebebff;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-UNKNOWN text{fill:#abb2bf;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-UNKNOWN .edge-line{stroke:#abb2bf;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-UNKNOWN .edge-arrow{fill:none;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-ERROR text{fill:#e06c75;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-ERROR .edge-line{stroke:#e06c75;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .edge-ERROR .edge-arrow{fill:#e06c75;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .icon-TRUE{fill:#ebebff;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .icon-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 .icon-ERROR{fill:#e06c75;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 text.label-UNKNOWN{fill:#abb2bf;}[data-theme="dark"] .refinery-9k5t5y1ScYnYvNXEZbWT4 text.label-ERROR{fill:#e06c75;}</style><defs><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-9k5t5y1ScYnYvNXEZbWT4-icon-TRUE" class="icon-TRUE"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-9k5t5y1ScYnYvNXEZbWT4-icon-UNKNOWN" class="icon-UNKNOWN"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" id="refinery-9k5t5y1ScYnYvNXEZbWT4-icon-ERROR" class="icon-ERROR"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12L17 15.59z"/></svg></defs>
+<g class="graph" transform="translate(4, 222.39999389648438)">
+<!-- n2 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-i">
+
+<rect stroke="none" x="64.75" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="60" y="-52" width="92" height="27" clip-path="url(#refinery-9k5t5y1ScYnYvNXEZbWT4-clip-0)" class="node-header"/>
+<text text-anchor="start" x="76.52" y="-33" font-size="12.00">transition1</text>
+<use x="70.7485" y="-19.2" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-9k5t5y1ScYnYvNXEZbWT4-icon-TRUE"/>
+<g><text text-anchor="start" x="86.75" y="-9.6" font-size="12.00" class="label label-TRUE">Transition</text>
+</g>
+<polyline points="64.75,-25.4 148.97,-25.4" class="node-outline"/>
+<rect fill="none" x="64.75" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-9k5t5y1ScYnYvNXEZbWT4-clip-0"><rect stroke="none" x="64.75" y="-48.8" width="84.22" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n3 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-h">
+
+<rect stroke="none" x="74.84" y="-218.4" width="64.03" height="48.80000000000001" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="70" y="-222" width="72" height="27" clip-path="url(#refinery-9k5t5y1ScYnYvNXEZbWT4-clip-1)" class="node-header"/>
+<text text-anchor="start" x="85.98" y="-202.6" font-size="12.00">vertex1</text>
+<use x="80.8442" y="-188.8" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-9k5t5y1ScYnYvNXEZbWT4-icon-TRUE"/>
+<g><text text-anchor="start" x="96.84" y="-179.2" font-size="12.00" class="label label-TRUE">Vertex</text>
+</g>
+<polyline points="74.84,-195 138.87,-195" class="node-outline"/>
+<rect fill="none" x="74.84" y="-218.4" width="64.03" height="48.80000000000001" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-9k5t5y1ScYnYvNXEZbWT4-clip-1"><rect stroke="none" x="74.84" y="-218.4" width="64.03" height="48.80000000000001" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n2&#45;&gt;n3 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M111.71,-48.78C113.97,-77.25 114.21,-125.59 112.45,-158.38" class="edge-line"/>
+<polygon points="108.96,-157.98 111.8,-168.19 115.95,-158.44 108.96,-157.98" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="97.12" y="-99.47" font-size="10.50">source</text>
+</g>
+<!-- n4 -->
+<g class="node node-IMPLICIT node-exists-TRUE node-equalsSelf-TRUE node-typeHash-h">
+
+<rect stroke="none" x="143.84" y="-133.6" width="64.03" height="48.8" rx="12" ry="12" class="node-bg"/>
+<rect stroke="none" x="139" y="-137" width="72" height="27" clip-path="url(#refinery-9k5t5y1ScYnYvNXEZbWT4-clip-2)" class="node-header"/>
+<text text-anchor="start" x="154.98" y="-117.8" font-size="12.00">vertex2</text>
+<use x="149.844" y="-104" width="12" height="12" id="" class="icon icon-TRUE" href="#refinery-9k5t5y1ScYnYvNXEZbWT4-icon-TRUE"/>
+<g><text text-anchor="start" x="165.84" y="-94.4" font-size="12.00" class="label label-TRUE">Vertex</text>
+</g>
+<polyline points="143.84,-110.2 207.87,-110.2" class="node-outline"/>
+<rect fill="none" x="143.84" y="-133.6" width="64.03" height="48.8" rx="12" ry="12" class="node-outline"/>
+<clipPath id="refinery-9k5t5y1ScYnYvNXEZbWT4-clip-2"><rect stroke="none" x="143.84" y="-133.6" width="64.03" height="48.8" rx="12" ry="12" class="node-bg"/></clipPath></g>
+<!-- n2&#45;&gt;n4 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M132.35,-48.63C140.1,-57.19 148.46,-67.04 155.81,-76.23" class="edge-line"/>
+<polygon points="152.92,-78.21 161.83,-83.94 158.44,-73.91 152.92,-78.21" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="133.35" y="-57.15" font-size="10.50">target</text>
+</g>
+<!-- n3&#45;&gt;n2 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" stroke-width="2" d="M102.01,-169.7C99.75,-141.26 99.5,-92.92 101.27,-60.1" class="edge-line"/>
+<polygon stroke-width="2" points="104.3,-60.73 101.81,-51.8 98.18,-60.33 104.3,-60.73" class="edge-line edge-arrow"/>
+<text text-anchor="start" x="0" y="-113.73" font-weight="bold" font-size="10.50">outgoingTransition</text>
+</g>
+<!-- n4&#45;&gt;n2 -->
+<!-- n4&#45;&gt;n2 -->
+<g class="edge edge-TRUE">
+
+<path fill="none" d="M150.52,-85.14C142.77,-76.59 134.41,-66.75 127.05,-57.54" class="edge-line"/>
+<polygon points="129.93,-55.54 121.01,-49.82 124.41,-59.86 129.93,-55.54" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="87.8" y="-70.33" font-size="10.50">incomingTransition</text>
+</g><g class="edge edge-TRUE">
+
+<path fill="none" d="M126.08,-169.94C133.27,-161.31 141.57,-151.34 149.31,-142.06" class="edge-line"/>
+<polygon points="151.82,-144.51 155.53,-134.59 146.44,-140.03 151.82,-144.51" class="edge-line edge-arrow"/>
+<text text-anchor="middle" x="116.57" y="-154.94" font-size="10.50">neighbors</text>
+</g>
+
+</g>
+</svg>

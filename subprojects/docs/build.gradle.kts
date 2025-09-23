@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import com.sun.tools.javac.resources.compiler
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
 import tools.refinery.gradle.internal.JavaBasicLibraryPlugin
 import tools.refinery.gradle.utils.SonarPropertiesUtils
@@ -27,9 +28,7 @@ val releasedJavadocs: Configuration by configurations.creating {
 	isCanBeResolved = true
 }
 
-val interpreterGroup = property("tools.refinery.interpreter.group").toString()
 val releasedVersion = property("tools.refinery.release").toString()
-val releasedInterpreterVersion = property("tools.refinery.interpreter.release").toString()
 
 repositories {
 	mavenCentral()
@@ -40,10 +39,7 @@ dependencies {
 		for (subproject in rootProject.subprojects) {
 			if (subproject.plugins.hasPlugin(JavaBasicLibraryPlugin::class)) {
 				javadocs(project(subproject.path, "javadocElements"))
-				var isInterpreter = subproject.name.startsWith("refinery-interpreter")
-				val releasedGroup = if (isInterpreter) interpreterGroup else subproject.group
-				val releasedProjectVersion = if (isInterpreter) releasedInterpreterVersion else releasedVersion
-				releasedJavadocs("${releasedGroup}:${subproject.name}:$releasedProjectVersion:javadoc@jar")
+				releasedJavadocs("${subproject.group}:${subproject.name}:$releasedVersion:javadoc@jar")
 			}
 		}
 	}
@@ -100,8 +96,16 @@ abstract class ExtractJavadocTask : DefaultTask() {
 
 fun resolveJavadocs(configuration: Configuration): Provider<Map<String, File>> {
 	return provider {
-		configuration.resolvedConfiguration.resolvedArtifacts.associate { artifact ->
-			artifact.moduleVersion.id.name to artifact.file
+		configuration.incoming.artifactView {
+			// Use lenient resolution to avoid throwing an error on subprojects that don't have any released Javadoc
+			// artifacts yet.
+			lenient(true)
+		}.artifacts.resolvedArtifacts.get().associate { artifact ->
+			when (val componentIdentifier = artifact.id.componentIdentifier) {
+				is ModuleComponentIdentifier -> componentIdentifier.module
+				is ProjectComponentIdentifier -> componentIdentifier.projectName
+				else -> throw IllegalArgumentException("Unsupported component identifier: $componentIdentifier")
+			} to artifact.file
 		}
 	}
 }
@@ -109,13 +113,13 @@ fun resolveJavadocs(configuration: Configuration): Provider<Map<String, File>> {
 tasks {
 	val extractJavadocs by registering(ExtractJavadocTask::class) {
 		dependsOn(javadocs)
-		targetDir = javadocsDir.map { it.dir("snapshot/develop/javadoc" ) }
+		targetDir = javadocsDir.map { it.dir("snapshot/develop/javadoc") }
 		resolvedJavadocArtifacts = resolveJavadocs(javadocs)
 	}
 
 	val extractReleasedJavadocs by registering(ExtractJavadocTask::class) {
 		dependsOn(releasedJavadocs)
-		targetDir = javadocsDir.map { it.dir("develop/javadoc" ) }
+		targetDir = javadocsDir.map { it.dir("develop/javadoc") }
 		resolvedJavadocArtifacts = resolveJavadocs(releasedJavadocs)
 	}
 
