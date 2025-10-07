@@ -83,7 +83,7 @@ public abstract class AbstractNeighborhoodCalculator<T> implements StateCodeCalc
 		@SuppressWarnings("squid:S2245")
 		Random random = new Random(1);
 
-		individuals.stream().forEach(o -> individualHashValues.put(o, random.nextLong()));
+		individuals.stream().forEachOrdered(o -> individualHashValues.put(o, random.nextLong()));
 
 		for (var interpretation : getInterpretations()) {
 			int arity = getArity(interpretation);
