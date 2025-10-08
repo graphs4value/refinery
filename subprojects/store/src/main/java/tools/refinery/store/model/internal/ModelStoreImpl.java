@@ -92,9 +92,11 @@ public class ModelStoreImpl implements ModelStore {
 	@Override
 	public synchronized ModelDiffCursor getDiffCursor(Version from, Version to) {
 		var diffCursors = new HashMap<AnySymbol, DiffCursor<?, ?>>();
+		var i = 0;
 		for (var entry : stores.entrySet()) {
 			var representation = entry.getKey();
-			var diffCursor = entry.getValue().getDiffCursor(from, to);
+			var diffCursor = entry.getValue().getDiffCursor(ModelVersion.getInternalVersion(from, i),
+					ModelVersion.getInternalVersion(to, i++));
 			diffCursors.put(representation, diffCursor);
 		}
 		return new ModelDiffCursor(diffCursors);
