@@ -1,5 +1,5 @@
 ---
-SPDX-FileCopyrightText: 2024 The Refinery Authors
+SPDX-FileCopyrightText: 2024-2025 The Refinery Authors
 SPDX-License-Identifier: EPL-2.0
 description: Four-valued logic abstraction
 sidebar_position: 1
@@ -88,6 +88,45 @@ State(v1).
 import AssertionsError from './AssertionsError.svg';
 
 <AssertionsError />
+
+### Attribute assertions
+
+Attributes assertions are formed by an _attribute_ name, an _argument node_
+in parentheses, and a value or interval after a colon:
+
+Consider the following example:
+
+```refinery
+class Person {
+    string name
+    int age
+    real height
+    boolean hasDrivingLicense
+}
+
+Person(p1).
+Person(p2).
+name(p1): "Alice".
+name(p2): "Bob".
+age(p1): 10..*.
+age(p2): 42.
+height(p1): 174.5.
+height(p2): 2.1 * 88.3.
+hasDrivingLicense(p2): true.
+```
+
+import AssertionsAttribute from './AssertionsAttribute.svg';
+
+<AssertionsAttribute />
+
+It is true that `p1` and `p2` are instances of the `Person` class. We assert
+that the `name` of `p1` is _Alice_, while the `name` of `p2` is _Bob._ We
+restrict the age of `p1` to the `[10..*]` interval, where `*` denotes infinity,
+and assert that the age of `p2` is 42. The height of `p1` is set to `174.5`,
+while the height of `p2` is calculated by the expression `2.7 * 88.3` to be
+`185.43`.
+
+The supported operators include: `+`, `-`, `*`, `/`, `sqrt()`, `log()`.
 
 ### Default assertions
 

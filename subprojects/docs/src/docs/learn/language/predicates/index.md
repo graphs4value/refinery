@@ -1,5 +1,5 @@
 ---
-SPDX-FileCopyrightText: 2024 The Refinery Authors
+SPDX-FileCopyrightText: 2024-2025 The Refinery Authors
 SPDX-License-Identifier: EPL-2.0
 description: Model queries and model validation
 sidebar_position: 2
@@ -22,10 +22,13 @@ In the examples on this page, we will use the following metamodel as illustratio
 ```refinery
 abstract class CompositeElement {
     contains Region[] regions
+    string name
 }
 
 class Region {
     contains Vertex[] vertices opposite region
+    boolean concurrent
+    int priority
 }
 
 abstract class Vertex {
@@ -58,7 +61,7 @@ class Statechart extends CompositeElement.
 
 <p>
   <Link
-    href="https://refinery.services/#/1/KLUv_WAEAiUIAOIKIR5gadMGg1ajk9jLoipJ58vc0vAE5opt1YaDpyOCAAdaCjMohSdgl4rj1yTo8UCgpTDHCIAE-o3Jr28mGO9AEoDcR-tLGh4liE2Z3IOX50z-FksLaNWLpLXd1QiUII2vNjCMBWOVEgTzjhG0eHVMIyIyFOjoxcrBv83FkgftlmJ0K_0eVDQgEBSCrXYvD1Q2wlwGXecz2HjRADQOLMh6iIYIWBPuFBBCI2igVgiHAFH4uclAydd4TFayN-oOpjzxgd0FlTzkN6QZ8CQDXBN4EPjB5VJZCANQlJA3wDd_PVyUA5eA0gaeAcgENsm4YnCogWihMAMkA8-CoB-gm9HJC0AB"
+    href="https://refinery.services/#/1/KLUv_WA-AhUJAEJNJh5gadMGg1ajk5jJpieTT0ia7sMTmCsaJBsGyaJQAiVGbXEAkuENnMuF4bck6PFQoJYUZESAAv3F5ds3FYqX4BAwbqR2JA9eHYaPKrkIL9GV_C2aGtSqE36ap0kd72hV5aA5ZSaSrPW5qxHqMBZffWDMgjFiWAhPv6t1GJiHjKjFs2OeqiqjUEcjTgf_NhMkDbVr6dSP6TdhATggEBRCMd6vBFRshIsM8prPtPGmAegcWJD1iIbIsCbfKSCERtAwrUgaAkzhF5OBktd4lqwEb_QOJnmiA7sLKnnIbUgZ8HwGOCbwgMBEuFwrizAAiRLOBvjm54eLcyBIQH4DrQEYEliX8RmDnwZstaS30V8mC6jIAH3gAQTNATSmBn4i2QIo"
     className="button button--lg button--primary button--play"
   >Try in Refinery</Link>
 </p>
@@ -192,6 +195,41 @@ pred regionWithInvalidNumberOfEntries(r) <->
     entryInRegion(r, e1),
     entryInRegion(r, e2),
     e1 != e2.
+```
+
+## Count
+
+It is possible to count the number of matches with the `count` keyword. The
+following predicate matches `Vertex` instances that have at least five
+`outgoingTransition` relations.
+
+```refinery
+pred atLeastFiveOutgoing(Vertex v) <->
+    count{outgoingTransition(v, _)} >= 5.
+```
+
+## Attributes
+
+Attribute values can also be used in predicates. See the section about
+[attribute assertions](../logic/#Attribute-assertions) for more information
+about attributes.
+
+The following predicate `nonConcurrentPriority` matches `Region` instances
+that are not `concurrent`, and have a `priority` larger than 0:
+
+```refinery
+pred nonConcurrentPriority(Region r) <->
+    !concurrent(r),
+    priority(r) > 0.
+```
+
+The following predicate `sameName` finds ` CompositeElement` instances with
+the same `name`.
+
+```refinery
+pred sameName(CompositeElement a, CompositeElement b) <->
+    a != b,
+    name(a) == name(b).
 ```
 
 ## Derived features
