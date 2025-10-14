@@ -1,5 +1,5 @@
 ---
-SPDX-FileCopyrightText: 2024 The Refinery Authors
+SPDX-FileCopyrightText: 2024-2025 The Refinery Authors
 SPDX-License-Identifier: EPL-2.0
 description: Metamodeling in Refinery
 sidebar_position: 0
@@ -164,6 +164,30 @@ class Transition {
 import MultiplicityConstraintsInstance from './MultiplicityConstraintsInstance.svg';
 
 <MultiplicityConstraintsInstance />
+
+### Attributes
+In addition to the graph structure, attributes can store additional
+information about the nodes (class instances). Supported attributes types
+are `string`, `boolean`, `int` and `real` numbers.
+
+Attributes are declared as class members by providing the _type_ and the name of the
+attribute:
+
+```refinery
+class Person {
+    Person[] friend opposite friend
+    string name
+    int age
+    real height
+    boolean hasDrivingLicense
+}
+```
+
+Unknown attribute values are denoted by `?` in the graph view.
+
+import AttributeSimple from './AttributeSimple.svg';
+
+<AttributeSimple />
 
 ### Containment hierarchy
 
