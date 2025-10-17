@@ -5,9 +5,22 @@
  */
 package tools.refinery.store.representation;
 
+import org.jetbrains.annotations.NotNull;
+
 public record Symbol<T>(String name, int arity, Class<T> valueType, T defaultValue) implements AnySymbol {
 	@Override
-	public String toString() {
+	public boolean equals(Object o) {
+		return this == o;
+	}
+
+	@Override
+	public int hashCode() {
+		// Compare by identity to make hash table look-ups more efficient.
+		return System.identityHashCode(this);
+	}
+
+	@Override
+	public @NotNull String toString() {
 		return "%s/%d".formatted(name, arity);
 	}
 
