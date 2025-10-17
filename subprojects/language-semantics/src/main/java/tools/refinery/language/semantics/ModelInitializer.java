@@ -410,7 +410,7 @@ public class ModelInitializer {
 	private <A extends AbstractValue<A, C>, C> void createFunctionInfo(AbstractDomain<A, C> domain,
 																	   Relation relation) {
 		int arity = signatureProvider.getArity(relation);
-		var partialFunction = new PartialFunction<>(relation.getName(), arity, domain);
+		var partialFunction = new PartialFunction<>(getName(relation), arity, domain);
 		var info = new FunctionInfo<>(partialFunction, domain);
 		problemTrace.putRelation(relation, partialFunction);
 		functionInfoMap.put(relation, info);
