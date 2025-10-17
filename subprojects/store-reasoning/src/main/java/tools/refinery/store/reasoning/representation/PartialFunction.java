@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.representation;
 
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.NodeVariable;
@@ -50,7 +51,7 @@ public record PartialFunction<A extends AbstractValue<A, C>, C>(
 	}
 
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return "%s/%d".formatted(name, arity);
 	}
 }
