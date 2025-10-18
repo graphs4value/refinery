@@ -7,6 +7,7 @@ package tools.refinery.language.tests.validation;
 
 import com.google.inject.Inject;
 import org.eclipse.emf.common.util.Diagnostic;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tools.refinery.language.tests.InjectWithRefinery;
@@ -45,10 +46,9 @@ class MultiplicityValidationTest {
 		assertThat(problem.validate(), empty());
 	}
 
-
 	@ParameterizedTest
 	@ValueSource(strings = {"0", "0..0"})
-	void zeroMReferenceMultiplicityTest(String range) {
+	void zeroReferenceMultiplicityTest(String range) {
 		var problem = parseHelper.parse("""
 				class Foo {
 					Bar[%s] bar
@@ -107,6 +107,19 @@ class MultiplicityValidationTest {
 					contains Foo foo opposite bar
 				}
 				""".formatted(referenceText));
+		assertThat(problem.validate(), hasItem(allOf(
+				hasProperty("severity", is(Diagnostic.ERROR)),
+				hasProperty("issueCode", is(ProblemValidator.INVALID_MULTIPLICITY_ISSUE))
+		)));
+	}
+
+	@Test
+	void attributeMultiplicityTest() {
+		var problem = parseHelper.parse("""
+				class Foo {
+					int[0..*] bar
+				}
+				""");
 		assertThat(problem.validate(), hasItem(allOf(
 				hasProperty("severity", is(Diagnostic.ERROR)),
 				hasProperty("issueCode", is(ProblemValidator.INVALID_MULTIPLICITY_ISSUE))

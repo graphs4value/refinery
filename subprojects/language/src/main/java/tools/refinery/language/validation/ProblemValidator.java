@@ -289,19 +289,25 @@ public class ProblemValidator extends AbstractProblemValidator {
 		if (multiplicity == null) {
 			return;
 		}
+		if (ProblemUtil.isAttribute(referenceDeclaration)) {
+			var message = "Multiplicity declaration not allowed for attributes.";
+			acceptError(message, multiplicity, null, 0, INVALID_MULTIPLICITY_ISSUE);
+			return;
+		}
 		if (ProblemUtil.isContainerReference(referenceDeclaration) && (
 				!(multiplicity instanceof RangeMultiplicity rangeMultiplicity) ||
 						rangeMultiplicity.getLowerBound() != 0 ||
 						rangeMultiplicity.getUpperBound() != 1)) {
-			var message = "The only allowed multiplicity for container references is [0..1]";
+			var message = "The only allowed multiplicity for container references is [0..1].";
 			acceptError(message, multiplicity, null, 0, INVALID_MULTIPLICITY_ISSUE);
+			return;
 		}
 		if ((multiplicity instanceof ExactMultiplicity exactMultiplicity &&
 				exactMultiplicity.getExactValue() == 0) ||
 				(multiplicity instanceof RangeMultiplicity rangeMultiplicity &&
 						rangeMultiplicity.getLowerBound() == 0 &&
 						rangeMultiplicity.getUpperBound() == 0)) {
-			var message = "The multiplicity constraint does not allow any reference links";
+			var message = "The multiplicity constraint does not allow any reference links.";
 			acceptWarning(message, multiplicity, null, 0, ZERO_MULTIPLICITY_ISSUE);
 		}
 	}
