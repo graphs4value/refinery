@@ -211,7 +211,7 @@ pred atLeastFiveOutgoing(Vertex v) <->
 ## Attributes
 
 Attribute values can also be used in predicates. See the section about
-[attribute assertions](../logic/#Attribute-assertions) for more information
+[attribute assertions](../logic/#attribute-assertions) for more information
 about attributes.
 
 The following predicate `nonConcurrentPriority` matches `Region` instances

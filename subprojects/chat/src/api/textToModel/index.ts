@@ -17,7 +17,7 @@ import {
 import type { RequestHandler } from 'express';
 import type { OpenAI } from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 import system from './system.md';
 

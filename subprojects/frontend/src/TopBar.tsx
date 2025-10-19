@@ -27,7 +27,10 @@ import GenerateButton from './editor/GenerateButton';
 
 function useWindowControlsOverlayVisible(): boolean {
   const [windowControlsOverlayVisible, setWindowControlsOverlayVisible] =
-    useState(false);
+    useState(
+      'windowControlsOverlayVisible' in navigator &&
+        !!navigator.windowControlsOverlay?.visible,
+    );
   const updateWindowControlsOverlayVisible = useMemo(
     () =>
       throttle(
@@ -40,7 +43,6 @@ function useWindowControlsOverlayVisible(): boolean {
   useEffect(() => {
     if ('windowControlsOverlay' in navigator) {
       const { windowControlsOverlay } = navigator;
-      setWindowControlsOverlayVisible(windowControlsOverlay.visible);
       windowControlsOverlay.addEventListener(
         'geometrychange',
         updateWindowControlsOverlayVisible,
