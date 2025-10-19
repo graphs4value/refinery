@@ -1,0 +1,115 @@
+/*
+ * SPDX-FileCopyrightText: 2025 The Refinery Authors
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+.placeholder {
+  width: 100%;
+}
+
+.placeholder, .wrapper {
+  aspect-ratio: 16/9;
+  background: var(--ifm-background-surface-color);
+}
+
+.wrapper {
+  position: relative;
+}
+
+.wrapper--pip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+}
+
+:global(.annotationLayer) {
+  z-index: 120;
+}
+
+.message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 16/9;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nav {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 110;
+  width: 15%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(255 255 255);
+  background: rgb(0 0 0);
+  mix-blend-mode: multiply;
+  border: none;
+  opacity: 0;
+  transition: opacity var(--ifm-transition-fast) var(--ifm-transition-timing-default);
+}
+
+.wrapper:hover .nav, .wrapper:focus-within.nav {
+  opacity: 0.2;
+}
+
+.wrapper:has(:global(.annotationLayer):hover) .nav {
+  opacity: 0;
+}
+
+.nav:hover, .nav:focus-visible {
+  opacity: 0.4 !important;
+}
+
+@media (pointer: coarse) and (hover: none) {
+  .nav, .nav:hover, .wrapper:has(:global(.annotationLayer):hover) .nav {
+    opacity: 0.2;
+  }
+}
+
+.nav--previous {
+  left: 0;
+}
+
+.nav--next {
+  right: 0;
+}
+
+.navbar {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.button--first::before {
+  content: "\0000ab";
+  margin-right: 0.5em;
+}
+
+.button--prev::before {
+  content: "\002039";
+  margin-right: 0.5em;
+}
+
+.button--next::after {
+  content: "\00203a";
+  margin-left: 0.5em;
+}
+
+.button--last::after {
+  content: "\0000bb";
+  margin-left: 0.5em;
+}
+
+.page-number {
+  display: inline-block;
+  text-align: right;
+}

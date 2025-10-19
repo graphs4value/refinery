@@ -10,6 +10,10 @@ sidebar_label: DLT architectures
 
 This tutorial has appeared at the [ACM / IEEE 27th International Conference on Model Driven Engineering Languages and Systems (MODELS)](https://conf.researchr.org/details/models-2024/models-2024-tutorials/9/T9-Refinery-Logic-based-Partial-Modeling) on September 22, 2024.
 
+import Presentation from '@site/src/components/Presentation';
+
+<Presentation src="/tutorials/models24.pdf" />
+
 ## Metamodeling
 
 ### 1. Simple example

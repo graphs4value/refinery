@@ -10,6 +10,10 @@ sidebar_label: Project planning
 
 This tutorial has appeared at the [1st International School on Foundations and Advances of Model-Based Engineering (FAME)](https://fame-school.github.io/) on September 20, 2024.
 
+import Presentation from '@site/src/components/Presentation';
+
+<Presentation src="/tutorials/fame24.pdf" />
+
 ## Metamodeling
 
 ### 1. Metamodel from the MDE Hands-on

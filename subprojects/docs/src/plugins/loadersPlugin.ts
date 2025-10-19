@@ -86,8 +86,11 @@ export default function loadersPlugin(): Plugin {
       }
       return {
         mergeStrategy: {
+          devtool: 'replace',
           'module.rules': 'replace',
         },
+        // See https://github.com/wojtekmaj/react-pdf/issues/1813#issuecomment-2144505807
+        devtool: 'source-map',
         module: {
           rules: [
             // Configuration based on
