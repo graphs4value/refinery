@@ -26,6 +26,7 @@ import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
+import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.IResourceValidator;
@@ -44,6 +45,7 @@ import tools.refinery.language.scoping.ProblemLocalScopeProvider;
 import tools.refinery.language.serializer.PreferShortAssertionsProblemSemanticSequencer;
 import tools.refinery.language.serializer.ProblemCrossReferenceSerializer;
 import tools.refinery.language.serializer.ProblemTransientValueService;
+import tools.refinery.language.serializer.SyntheticTokenProblemSyntacticSequencer;
 import tools.refinery.language.validation.ProblemDiagnosticConverter;
 
 /**
@@ -132,6 +134,11 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 	@Override
 	public Class<? extends ITransientValueService> bindITransientValueService() {
 		return ProblemTransientValueService.class;
+	}
+
+	@Override
+	public Class<? extends ISyntacticSequencer> bindISyntacticSequencer() {
+		return SyntheticTokenProblemSyntacticSequencer.class;
 	}
 
 	@Override

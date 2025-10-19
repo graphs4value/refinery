@@ -519,6 +519,17 @@ class SolutionSerializerTest {
 				Foo(b).
 				quux(a): 1..*.
 				?quux(b).
+				"""), Arguments.of("""
+				class Foo {
+					Foo[1] next
+				}
+
+				error loop(Foo f) <-> next+(f, f).
+				""", """
+				scope Foo = 0.
+				""", false, """
+				!exists(Foo::new).
+				default !next(*, *).
 				"""));
 	}
 }
