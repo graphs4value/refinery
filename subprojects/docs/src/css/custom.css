@@ -85,8 +85,29 @@ code {
   font-variation-settings: 'wdth' 87.5;
 }
 
+.DocSearch-Button {
+  border-radius: 50em !important;
+  padding-right: 0.5rem !important;
+}
+
+.DocSearch-Button:hover {
+  border-color: var(--ifm-color-primary-dark);
+}
+
 .DocSearch-Button-Placeholder {
   font-family: var(--ifm-font-family-base) !important;
+  font-weight: 600;
+  font-variation-settings: 'wdth' 87.5;
+  text-transform: uppercase;
+}
+
+.DocSearch-Button-Key {
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.DocSearch-Button-Key.DocSearch-Button-Key--ctrl {
+  width: 33px !important;
 }
 
 .button {
