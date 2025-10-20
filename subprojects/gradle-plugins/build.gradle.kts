@@ -19,8 +19,8 @@ val generatedSourceFile = generatedSourcesDir.map {
 }
 
 java {
-	setSourceCompatibility(11)
-	setTargetCompatibility(11)
+	setSourceCompatibility(17)
+	setTargetCompatibility(17)
 }
 
 sourceSets.main {
@@ -36,7 +36,6 @@ gradlePlugin {
 			id = "tools.refinery.settings"
 			displayName = "Refinery settings plugin"
 			description = "Configures common build settings for projects using Refinery"
-			@Suppress("UnstableApiUsage")
 			tags = listOf("refinery", "settings", "conventions")
 			implementationClass = "tools.refinery.gradle.plugins.RefinerySettingsPlugin"
 		}
@@ -45,7 +44,6 @@ gradlePlugin {
 			id = "tools.refinery.java"
 			displayName = "Refinery Java conventions plugin"
 			description = "Configures common Java settings for projects using Refinery"
-			@Suppress("UnstableApiUsage")
 			tags = listOf("refinery", "java", "conventions")
 			implementationClass = "tools.refinery.gradle.plugins.RefineryJavaPlugin"
 		}
