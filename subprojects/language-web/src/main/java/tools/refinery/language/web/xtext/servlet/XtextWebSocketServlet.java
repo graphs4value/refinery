@@ -79,6 +79,11 @@ public class XtextWebSocketServlet extends JettyWebSocketServlet implements Jett
 					req.getRemoteSocketAddress());
 			resp.setAcceptedSubProtocol(null);
 		}
+		// Remove permessage-deflate extension to work around the WebSocket getting spuriously closed by the
+		// PerMessageDeflateExtension in Jetty.
+		resp.setExtensions(resp.getExtensions().stream()
+				.filter(config -> !"permessage-deflate".equals(config.getName()))
+				.toList());
 		var session = new SimpleSession();
 		return new XtextWebSocket(session, IResourceServiceProvider.Registry.INSTANCE);
 	}
