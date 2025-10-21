@@ -85,10 +85,18 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 		return of(bound, bound);
 	}
 
+	public static RealInterval of(String value) {
+		return of(new BigDecimal(value));
+	}
+
 	public static RealInterval of(BigDecimal value1, BigDecimal value2) {
 		var bound1 = RealBound.of(value1);
 		var bound2 = RealBound.of(value2);
 		return of(bound1, bound2);
+	}
+
+	public static RealInterval of(String value1, String value2) {
+		return of(new BigDecimal(value1), new BigDecimal(value2));
 	}
 
 	public static RealInterval of(BigDecimal value, RealBound bound) {
@@ -96,9 +104,17 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 		return of(valueBound, bound);
 	}
 
+	public static RealInterval of(String value, RealBound bound) {
+		return of(new BigDecimal(value), bound);
+	}
+
 	public static RealInterval of(RealBound bound, BigDecimal value) {
 		var valueBound = RealBound.of(value);
 		return of(bound, valueBound);
+	}
+
+	public static RealInterval of(RealBound bound, String value) {
+		return of(bound, new BigDecimal(value));
 	}
 
 	public static RealInterval of(RealBound bound1, RealBound bound2) {
@@ -215,6 +231,9 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 	public RealInterval div(RealInterval other) {
 		var otherLowerBound = other.lowerBound();
 		var otherUpperBound = other.upperBound();
+		if (ZERO.equals(this)) {
+			return ZERO;
+		}
 		RealInterval negativeResult = null;
 		if (otherLowerBound.signum() < 0) {
 			var negativeDivisor = RealInterval.of(otherLowerBound, otherUpperBound.min(RealBound.Finite.ZERO));

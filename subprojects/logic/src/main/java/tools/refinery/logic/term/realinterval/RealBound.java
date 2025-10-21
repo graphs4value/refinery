@@ -89,7 +89,7 @@ public sealed interface RealBound {
 			public RealBound div(RealBound other, RoundingMode roundingMode) {
 				var signum = other.signum();
 				if (signum == 0) {
-					throw new ArithmeticException();
+					return roundingMode.infinity();
 				}
 				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
 			}
@@ -175,7 +175,7 @@ public sealed interface RealBound {
 			public RealBound div(RealBound other, RoundingMode roundingMode) {
 				var signum = other.signum();
 				if (signum == 0) {
-					throw new ArithmeticException();
+					return roundingMode.infinity();
 				}
 				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
 			}
