@@ -17,6 +17,9 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.*;
 
 public abstract class AbstractNeighborhoodCalculator<T> implements StateCodeCalculator {
+	private static final long MURMUR64_MAGIC_VALUE = 0xc6a4a7935bd1e995L;
+	private static final int MURMUR64_SHIFT = 47;
+
 	private final Model model;
 	private final IndividualsSet individuals;
 	private final int depth;
@@ -25,8 +28,6 @@ public abstract class AbstractNeighborhoodCalculator<T> implements StateCodeCalc
 	private MutableIntLongMap individualHashValues;
 	private ObjectCodeImpl previousObjectCode = new ObjectCodeImpl();
 	private ObjectCodeImpl nextObjectCode = new ObjectCodeImpl();
-
-	protected static final long PRIME = 31;
 
 	protected AbstractNeighborhoodCalculator(Model model, IndividualsSet individuals, int depth) {
 		this.model = model;
@@ -103,15 +104,17 @@ public abstract class AbstractNeighborhoodCalculator<T> implements StateCodeCalc
 	private long calculateLastSum(ObjectCode codes) {
 		long result = 0;
 		for (var nullImpactValue : nullImpactValues) {
-			result = result * PRIME + Objects.hashCode(getNullValue(nullImpactValue));
+			result = murmur64Scramble(Objects.hashCode(getNullValue(nullImpactValue)), result);
 		}
 
+		long accum = 0;
 		for (int i = 0; i < codes.getSize(); i++) {
 			final long hash = codes.get(i);
-			result += hash*PRIME;
+			accum += hash;
 		}
+		result = murmur64Scramble(accum, result);
 
-		return result;
+		return murmur64Finish(result);
 	}
 
 	private void constructNextObjectCodes(ObjectCodeImpl previous, ObjectCodeImpl next) {
@@ -188,32 +191,47 @@ public abstract class AbstractNeighborhoodCalculator<T> implements StateCodeCalc
 	}
 
 	protected long getTupleHash1(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
-		long result = Objects.hashCode(value);
-		result = result * PRIME + objectCodeImpl.get(tuple.get(0));
-		return result;
+		long result = murmur64Scramble(Objects.hashCode(value), 0);
+		result = murmur64Scramble(objectCodeImpl.get(tuple.get(0)), result);
+		return murmur64Finish(result);
 	}
 
 	protected long getTupleHash2(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
-		long result = Objects.hashCode(value);
-		result = result * PRIME + objectCodeImpl.get(tuple.get(0));
-		result = result * PRIME + objectCodeImpl.get(tuple.get(1));
+		long result = murmur64Scramble(Objects.hashCode(value), 0);
+		result = murmur64Scramble(objectCodeImpl.get(tuple.get(0)), result);
+		result = murmur64Scramble(objectCodeImpl.get(tuple.get(1)), result);
 		if (tuple.get(0) == tuple.get(1)) {
-			result += PRIME;
-			result *= PRIME;
+			result = murmur64Scramble(result, 1);
 		}
-		return result;
+		return murmur64Finish(result);
 	}
 
 	protected long getTupleHashN(Tuple tuple, Object value, ObjectCode objectCodeImpl) {
-		long result = Objects.hashCode(value);
+		long result = murmur64Scramble(Objects.hashCode(value), 0);
 		for (int i = 0; i < tuple.getSize(); i++) {
-			result = result * PRIME + objectCodeImpl.get(tuple.get(i));
+			result = murmur64Scramble(objectCodeImpl.get(tuple.get(i)), result);
 		}
-		return result;
+		return murmur64Finish(result);
 	}
 
 	protected void addHash(ObjectCodeImpl objectCodeImpl, int o, long impact, long tupleHash) {
 		long x = tupleHash * impact;
 		objectCodeImpl.set(o, objectCodeImpl.get(o) + x);
+	}
+
+	private static long murmur64Scramble(long k, long h) {
+		k *= MURMUR64_MAGIC_VALUE;
+		k ^= k >>> MURMUR64_SHIFT;
+		k *= MURMUR64_MAGIC_VALUE;
+		h ^= k;
+		h *= MURMUR64_MAGIC_VALUE;
+		return h;
+	}
+
+	private static long murmur64Finish(long h) {
+		h ^= h >>> MURMUR64_SHIFT;
+		h *= MURMUR64_MAGIC_VALUE;
+		h ^= h >>> MURMUR64_SHIFT;
+		return h;
 	}
 }
