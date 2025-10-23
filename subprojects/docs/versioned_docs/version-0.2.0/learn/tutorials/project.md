@@ -87,7 +87,7 @@ Person(carol).
 
 Add scope constraints to the [metamodel](#2-metamodel-extended-with-dependencies-and-teams).
 
-```refinery continue=metamodel checkpoint=scope try
+```refinery continue=metamodel try
 scope node = 30..50, Person += 10, Task += 5, Project = 1, Team = 3.
 ```
 
@@ -95,7 +95,7 @@ scope node = 30..50, Person += 10, Task += 5, Project = 1, Team = 3.
 
 Add scope constraints to the [initial partial model](#3-partial-modeling).
 
-```refinery continue=instance try
+```refinery continue=instance checkpoint=scope try
 scope node = 15, Project = 1, Team = 2.
 ```
 
