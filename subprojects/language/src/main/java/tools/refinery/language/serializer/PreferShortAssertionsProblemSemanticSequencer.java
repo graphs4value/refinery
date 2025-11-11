@@ -7,14 +7,12 @@ package tools.refinery.language.serializer;
 
 import com.google.inject.Inject;
 import org.eclipse.xtext.serializer.ISerializationContext;
-import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ListTransient;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.LogicConstant;
 import tools.refinery.language.model.problem.LogicValue;
 import tools.refinery.language.services.ProblemGrammarAccess;
 
-import static tools.refinery.language.model.problem.ProblemPackage.Literals.ABSTRACT_ASSERTION__ARGUMENTS;
 import static tools.refinery.language.model.problem.ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION;
 
 public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemanticSequencer {
@@ -32,10 +30,6 @@ public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemant
 			if (transientValues.isValueTransient(semanticObject, ABSTRACT_ASSERTION__RELATION) == ValueTransient.YES) {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject,
 						ABSTRACT_ASSERTION__RELATION));
-			}
-			if (transientValues.isListTransient(semanticObject, ABSTRACT_ASSERTION__ARGUMENTS) == ListTransient.YES) {
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject,
-						ABSTRACT_ASSERTION__ARGUMENTS));
 			}
 		}
 		var feeder = createSequencerFeeder(context, semanticObject);
