@@ -96,9 +96,8 @@ function createCompletion(
   if (entry.documentation !== undefined) {
     const { documentation } = entry;
     completion.info = async () => {
-      const { default: transformDocumentation } = await import(
-        './transformDocumentation'
-      );
+      const { default: transformDocumentation } =
+        await import('./transformDocumentation');
       return transformDocumentation(documentation);
     };
   }

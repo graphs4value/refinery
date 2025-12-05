@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { playwright } from '@vitest/browser-playwright';
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 
 // Only run Webkit tests in the CI environment or whe explicitly requested,
-// because Playwright only supports specific environments that may be unavaiable
+// because Playwright only supports specific environments that may be unavailable
 // on a developer machine. See https://playwright.dev/docs/intro#system-requirements
 const isCI = process.env['CI'] === 'true';
 
@@ -36,11 +37,11 @@ export default defineConfig({
             // so avoid any paralellism to prevent deadlocks due to our mock server.
             fileParallelism: false,
             headless: true,
-            provider: 'playwright',
+            provider: playwright(),
             instances: [
               { browser: 'chromium' },
               { browser: 'firefox' },
-              ...(isCI ? [{ browser: 'webkit' }] : []),
+              ...(isCI ? [{ browser: 'webkit' as const }] : []),
             ],
           },
         },
