@@ -6,8 +6,8 @@
 frontend = "10.0.0"
 pluginPublish = "2.0.0"
 shadow = "8.1.8"
-sonarqube = "6.3.1.5724"
-versions = "0.52.0"
+sonarqube = "7.2.0.6526"
+versions = "0.53.0"
 
 [libraries]
 frontend = { group = "org.siouan", name = "frontend-jdk21", version.ref = "frontend" }

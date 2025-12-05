@@ -37,19 +37,19 @@
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"
   },
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "yarn@4.12.0",
   "dependencies": {
-    "react": "^19.2.0"
+    "react": "^19.2.1"
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
-    "@types/node": "^22.18.11",
-    "@types/react": "^19.2.2",
-    "@typescript-eslint/eslint-plugin": "^8.46.1",
-    "@typescript-eslint/parser": "^8.46.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
     "cheerio": "^1.1.2",
-    "corepack": "^0.34.1",
-    "eslint": "^9.38.0",
+    "corepack": "^0.34.5",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
@@ -57,10 +57,10 @@
     "eslint-plugin-mobx": "^0.0.13",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.0",
-    "playwright": "^1.56.1",
-    "prettier": "^3.6.2",
-    "smol-toml": "^1.4.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "playwright": "^1.57.0",
+    "prettier": "^3.7.4",
+    "smol-toml": "^1.5.2",
     "typescript": "5.9.3"
   },
   "resolutions": {
