@@ -29,6 +29,8 @@ import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslat
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
+import java.math.BigInteger;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static tools.refinery.logic.literal.Literals.not;
@@ -43,7 +45,7 @@ class AttributeExampleTest {
 	private final Symbol<TruthValue> personStorage = Symbol.of("Person", 1, TruthValue.class, TruthValue.UNKNOWN);
 	private final PartialRelation vehicle = new PartialRelation("Vehicle", 1);
 	private final Symbol<TruthValue> vehicleStorage = Symbol.of("Vehicle", 1, TruthValue.class, TruthValue.UNKNOWN);
-	private final PartialFunction<IntInterval, Integer> age = new PartialFunction<>("age", 1,
+	private final PartialFunction<IntInterval, BigInteger> age = new PartialFunction<>("age", 1,
 			IntIntervalDomain.INSTANCE);
 	private final PartialRelation adult = new PartialRelation("adult", 1);
 	private final PartialRelation canPlayBoardgames = new PartialRelation("canPlayBoardgames", 1);

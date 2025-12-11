@@ -246,7 +246,7 @@ Constant:
 	RealConstant | IntConstant | StringConstant | InfiniteConstant | LogicConstant;
 
 IntConstant:
-	intValue=INT;
+	intValue=Integer;
 
 RealConstant:
 	realValue=Real;
@@ -331,6 +331,9 @@ NonContainmentIdentifier:
 	"datatype" | "aggregator" | "primitive" |
 	"decision" | "propagation" | "concretization" |
 	"shadow";
+
+Integer returns ecore::EBigInteger:
+	INT;
 
 Real returns ecore::EBigDecimal:
 	EXPONENTIAL | INT "." (INT | EXPONENTIAL);

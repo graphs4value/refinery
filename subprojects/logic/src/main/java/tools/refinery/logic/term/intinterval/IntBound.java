@@ -8,6 +8,7 @@ package tools.refinery.logic.term.intinterval;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public sealed interface IntBound {
 	boolean lessThanOrEquals(IntBound other);
@@ -68,7 +69,7 @@ public sealed interface IntBound {
 				if (signum == 0) {
 					return Finite.ZERO;
 				}
-				return signum < 0 ? roundingMode.negativeInfinity() : roundingMode.positiveInfinity();
+				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
 			}
 
 			public IntBound div(IntBound other, RoundingMode roundingMode) {
@@ -76,7 +77,7 @@ public sealed interface IntBound {
 				if (signum == 0) {
 					throw new ArithmeticException();
 				}
-				return signum < 0 ? roundingMode.negativeInfinity() : roundingMode.positiveInfinity();
+				return signum < 0 ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
 			}
 
 			@Override
@@ -122,7 +123,7 @@ public sealed interface IntBound {
 				if (signum == 0) {
 					return Finite.ZERO;
 				}
-				return signum < 0 ? roundingMode.positiveInfinity() : roundingMode.negativeInfinity();
+				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
 			}
 
 			public IntBound div(IntBound other, RoundingMode roundingMode) {
@@ -130,7 +131,7 @@ public sealed interface IntBound {
 				if (signum == 0) {
 					throw new ArithmeticException();
 				}
-				return signum < 0 ? roundingMode.positiveInfinity() : roundingMode.negativeInfinity();
+				return signum < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY;
 			}
 
 			@Override
@@ -155,22 +156,17 @@ public sealed interface IntBound {
 		}
 	}
 
-	record Finite(int value) implements IntBound {
-		public static final Finite ZERO = new Finite(0);
-		public static final Finite ONE = new Finite(1);
-		public static final Finite NEGATIVE_ONE = new Finite(-1);
-		public static final Finite MIN_VALUE = new Finite(Integer.MIN_VALUE);
-		public static final Finite MAX_VALUE = new Finite(Integer.MAX_VALUE);
-
-		public static final BigDecimal MIN_DECIMAL_VALUE = BigDecimal.valueOf(MIN_VALUE.value);
-		public static final BigDecimal MAX_DECIMAL_VALUE = BigDecimal.valueOf(MAX_VALUE.value);
+	record Finite(BigInteger value) implements IntBound {
+		public static final Finite ZERO = new Finite(BigInteger.ZERO);
+		public static final Finite ONE = new Finite(BigInteger.ONE);
+		public static final Finite NEGATIVE_ONE = new Finite(BigInteger.valueOf(-1));
 
 		@Override
 		public boolean lessThanOrEquals(IntBound other) {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> true;
 				case Infinite.NEGATIVE_INFINITY -> false;
-				case Finite(int otherValue) -> value <= otherValue;
+				case Finite(var otherValue) -> value.compareTo(otherValue) <= 0;
 			};
 		}
 
@@ -181,10 +177,7 @@ public sealed interface IntBound {
 
 		@Override
 		public IntBound minus(RoundingMode roundingMode) {
-			if (value == Integer.MIN_VALUE) {
-				return roundingMode.positiveInfinity();
-			}
-			return new Finite(-value);
+			return new Finite(value.negate());
 		}
 
 		@Override
@@ -192,15 +185,7 @@ public sealed interface IntBound {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
 				case Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
-				case Finite(int otherValue) -> {
-					int sum = value + otherValue;
-					int sign = Integer.signum(value);
-					int otherSign = Integer.signum(otherValue);
-					if (sign == otherSign && sign != Integer.signum(sum)) {
-						yield sign > 0 ? roundingMode.positiveInfinity() : roundingMode.negativeInfinity();
-					}
-					yield new Finite(sum);
-				}
+				case Finite(var otherValue) -> new Finite(value.add(otherValue));
 			};
 		}
 
@@ -209,15 +194,7 @@ public sealed interface IntBound {
 			return switch (other) {
 				case Infinite.POSITIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
 				case Infinite.NEGATIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
-				case Finite(int otherValue) -> {
-					int diff = value - otherValue;
-					int sign = Integer.signum(value);
-					int otherSign = Integer.signum(otherValue);
-					if (sign != otherSign && sign != Integer.signum(diff)) {
-						yield sign > 0 ? roundingMode.positiveInfinity() : roundingMode.negativeInfinity();
-					}
-					yield new Finite(diff);
-				}
+				case Finite(var otherValue) -> new Finite(value.subtract(otherValue));
 			};
 		}
 
@@ -225,15 +202,7 @@ public sealed interface IntBound {
 		public IntBound mul(IntBound other, RoundingMode roundingMode) {
 			return switch (other) {
 				case Infinite ignored -> other.mul(this, roundingMode);
-				case Finite(int otherValue) -> {
-					long longResult = (long) value * (long) otherValue;
-					int result = (int) longResult;
-					if ((long) result != longResult) {
-						yield Integer.signum(value) * Integer.signum(otherValue) > 0 ?
-								roundingMode.positiveInfinity() : roundingMode.negativeInfinity();
-					}
-					yield new Finite(result);
-				}
+				case Finite(var otherValue) -> new Finite(value.multiply(otherValue));
 			};
 		}
 
@@ -241,40 +210,38 @@ public sealed interface IntBound {
 		public IntBound div(IntBound other, RoundingMode roundingMode) {
 			return switch (other) {
 				case Infinite ignored -> ZERO;
-				case Finite(int otherValue) -> new Finite(value / otherValue);
+				case Finite(var otherValue) -> new Finite(value.divide(otherValue));
 			};
 		}
 
 		@Override
 		public int signum() {
-			return Integer.signum(value);
+			return value.signum();
 		}
 
 		@Override
 		public @NotNull String toString() {
-			return String.valueOf(value);
+			return value.toString();
 		}
 
 		@Override
 		public int compareBound(IntBound other) {
-			return other instanceof Finite(int otherValue) ? Integer.compare(value, otherValue) :
+			return other instanceof Finite(var otherValue) ? value.compareTo(otherValue) :
 					-other.compareBound(this);
 		}
 	}
 
-	static IntBound of(int value) {
+	static IntBound of(BigInteger value) {
 		return new Finite(value);
 	}
 
-	static IntBound of(BigDecimal value, RoundingMode roundingMode) {
+	static IntBound of(int value) {
+		return new Finite(BigInteger.valueOf(value));
+	}
+
+	static IntBound of(BigDecimal value) {
 		// Casting to {@code int} in Java rounds towards zero.
 		var rounded = value.setScale(0, java.math.RoundingMode.DOWN);
-		if (rounded.compareTo(Finite.MIN_DECIMAL_VALUE) < 0) {
-			return roundingMode.negativeInfinity();
-		}
-		if (rounded.compareTo(Finite.MAX_DECIMAL_VALUE) > 0) {
-			return roundingMode.positiveInfinity();
-		}
-		return IntBound.of(rounded.intValueExact());
+		return IntBound.of(rounded.toBigIntegerExact());
 	}
 }

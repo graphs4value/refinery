@@ -11,6 +11,7 @@ import org.eclipse.xtext.conversion.IValueConverter;
 import org.eclipse.xtext.conversion.ValueConverter;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 // Method names in this class follow the Xtext convention and match the corresponding rule name.
 @SuppressWarnings("squid:S100")
@@ -23,6 +24,9 @@ public class ProblemValueConverterService extends DefaultTerminalConverters {
 
 	@Inject
 	private IdentifierValueConverter identifierValueConverter;
+
+	@Inject
+	private IntegerValueConverter integerValueConverter;
 
 	@Inject
 	private RealValueConverter realValueConverter;
@@ -40,6 +44,11 @@ public class ProblemValueConverterService extends DefaultTerminalConverters {
 	@ValueConverter(rule = "Identifier")
 	public IValueConverter<String> Identifier() {
 		return identifierValueConverter;
+	}
+
+	@ValueConverter(rule = "Integer")
+	public IValueConverter<BigInteger> Integer() {
+		return integerValueConverter;
 	}
 
 	@ValueConverter(rule = "Real")

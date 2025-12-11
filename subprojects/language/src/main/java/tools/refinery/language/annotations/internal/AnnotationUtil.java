@@ -9,8 +9,8 @@ import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 public final class AnnotationUtil {
 	static final String REPEATABLE_NAME = "repeatable";
@@ -81,21 +81,21 @@ public final class AnnotationUtil {
 		return Optional.empty();
 	}
 
-	public static OptionalInt toInteger(Expr value) {
+	public static Optional<BigInteger> toBigInteger(Expr value) {
 		return switch (value) {
-			case IntConstant intConstant -> OptionalInt.of(intConstant.getIntValue());
+			case IntConstant intConstant -> Optional.of(intConstant.getIntValue());
 			case ArithmeticUnaryExpr unaryExpr -> {
 				if (!(unaryExpr.getBody() instanceof IntConstant intConstant)) {
-					yield OptionalInt.empty();
+					yield Optional.empty();
 				}
-				int intValue = intConstant.getIntValue();
+				var intValue = intConstant.getIntValue();
 				yield switch (unaryExpr.getOp()) {
-					case PLUS -> OptionalInt.of(intValue);
-					case MINUS -> OptionalInt.of(-intValue);
-					case null -> OptionalInt.empty();
+					case PLUS -> Optional.of(intValue);
+					case MINUS -> Optional.of(intValue.negate());
+					case null -> Optional.empty();
 				};
 			}
-			case null, default -> OptionalInt.empty();
+			case null, default -> Optional.empty();
 		};
 	}
 

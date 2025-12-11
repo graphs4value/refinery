@@ -11,11 +11,13 @@ import tools.refinery.logic.term.ComparableAbstractValue;
 import tools.refinery.logic.term.operators.*;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
+import java.math.BigInteger;
+
 import static tools.refinery.logic.term.intinterval.RoundingMode.FLOOR;
 import static tools.refinery.logic.term.intinterval.RoundingMode.CEIL;
 
 public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperBound)
-		implements ComparableAbstractValue<IntInterval, Integer>, Comparable<IntInterval>, Plus<IntInterval>,
+		implements ComparableAbstractValue<IntInterval, BigInteger>, Comparable<IntInterval>, Plus<IntInterval>,
 		Minus<IntInterval>, Add<IntInterval>, Sub<IntInterval>, Mul<IntInterval>, Div<IntInterval> {
 	public static final IntInterval ZERO = new IntInterval(IntBound.Finite.ZERO, IntBound.Finite.ZERO);
 	public static final IntInterval ONE = new IntInterval(IntBound.Finite.ONE, IntBound.Finite.ONE);
@@ -29,8 +31,8 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 			IntBound.Infinite.POSITIVE_INFINITY);
 
 	@Override
-	public @Nullable Integer getConcrete() {
-		if (lowerBound.equals(upperBound) && lowerBound instanceof IntBound.Finite(int value)) {
+	public @Nullable BigInteger getConcrete() {
+		if (lowerBound.equals(upperBound) && lowerBound instanceof IntBound.Finite(var value)) {
 			return value;
 		}
 		return null;
@@ -42,17 +44,17 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 	}
 
 	@Override
-	public @Nullable Integer getArbitrary() {
+	public @Nullable BigInteger getArbitrary() {
 		if (isError()) {
 			return null;
 		}
-		if (lowerBound instanceof IntBound.Finite(int value)) {
+		if (lowerBound instanceof IntBound.Finite(var value)) {
 			return value;
 		}
-		if (upperBound instanceof IntBound.Finite(int value)) {
+		if (upperBound instanceof IntBound.Finite(var value)) {
 			return value;
 		}
-		return 0;
+		return BigInteger.ZERO;
 	}
 
 	@Override
@@ -91,6 +93,27 @@ public record IntInterval(@NotNull IntBound lowerBound, @NotNull IntBound upperB
 	}
 
 	public static IntInterval of(IntBound bound, int value) {
+		var valueBound = IntBound.of(value);
+		return new IntInterval(bound, valueBound);
+	}
+
+	public static IntInterval of(BigInteger value) {
+		var bound = IntBound.of(value);
+		return new IntInterval(bound, bound);
+	}
+
+	public static IntInterval of(BigInteger value1, BigInteger value2) {
+		var bound1 = IntBound.of(value1);
+		var bound2 = IntBound.of(value2);
+		return new IntInterval(bound1, bound2);
+	}
+
+	public static IntInterval of(BigInteger value, IntBound bound) {
+		var valueBound = IntBound.of(value);
+		return new IntInterval(valueBound, bound);
+	}
+
+	public static IntInterval of(IntBound bound, BigInteger value) {
 		var valueBound = IntBound.of(value);
 		return new IntInterval(bound, valueBound);
 	}

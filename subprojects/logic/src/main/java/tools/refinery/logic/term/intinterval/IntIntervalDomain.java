@@ -7,9 +7,11 @@ package tools.refinery.logic.term.intinterval;
 
 import tools.refinery.logic.ComparableAbstractDomain;
 
+import java.math.BigInteger;
+
 // Singleton pattern, because there is only one domain for integer intervals.
 @SuppressWarnings("squid:S6548")
-public class IntIntervalDomain implements ComparableAbstractDomain<IntInterval, Integer> {
+public class IntIntervalDomain implements ComparableAbstractDomain<IntInterval, BigInteger> {
 	public static final IntIntervalDomain INSTANCE = new IntIntervalDomain();
 
 	private IntIntervalDomain() {
@@ -21,8 +23,8 @@ public class IntIntervalDomain implements ComparableAbstractDomain<IntInterval, 
 	}
 
 	@Override
-	public Class<Integer> concreteType() {
-		return Integer.class;
+	public Class<BigInteger> concreteType() {
+		return BigInteger.class;
 	}
 
 	@Override
@@ -36,7 +38,7 @@ public class IntIntervalDomain implements ComparableAbstractDomain<IntInterval, 
 	}
 
 	@Override
-	public IntInterval toAbstract(Integer concreteValue) {
+	public IntInterval toAbstract(BigInteger concreteValue) {
 		return IntInterval.of(concreteValue);
 	}
 

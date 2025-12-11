@@ -23,11 +23,6 @@ public enum RoundingMode {
 		public RealBound infinity() {
 			return RealBound.Infinite.POSITIVE_INFINITY;
 		}
-
-		@Override
-		public tools.refinery.logic.term.intinterval.RoundingMode asInt() {
-			return tools.refinery.logic.term.intinterval.RoundingMode.CEIL;
-		}
 	},
 	FLOOR {
 		@Override
@@ -44,11 +39,6 @@ public enum RoundingMode {
         public RealBound infinity() {
             return RealBound.Infinite.NEGATIVE_INFINITY;
         }
-
-		@Override
-		public tools.refinery.logic.term.intinterval.RoundingMode asInt() {
-			return tools.refinery.logic.term.intinterval.RoundingMode.FLOOR;
-		}
 	};
 
 	private static final int PRECISION = 16;
@@ -60,6 +50,4 @@ public enum RoundingMode {
 	public abstract RealBound error();
 
 	public abstract RealBound infinity();
-
-	public abstract tools.refinery.logic.term.intinterval.RoundingMode asInt();
 }

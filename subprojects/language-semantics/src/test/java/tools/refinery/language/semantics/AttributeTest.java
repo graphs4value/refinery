@@ -20,6 +20,8 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.tuple.Tuple;
 
+import java.math.BigInteger;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -55,7 +57,7 @@ public class AttributeTest {
 		var store = storeBuilder.build();
 		var trace = modelInitializer.getProblemTrace();
 		@SuppressWarnings("unchecked")
-		var age = (PartialFunction<IntInterval, Integer>) trace.getPartialFunction("Creature::age");
+		var age = (PartialFunction<IntInterval, BigInteger>) trace.getPartialFunction("Creature::age");
 		var alice = trace.getNodeId("Alice");
 
 		try (var model = store.getAdapter(ReasoningStoreAdapter.class)

@@ -17,6 +17,8 @@ import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 
+import java.math.BigInteger;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static tools.refinery.logic.literal.Literals.check;
 import static tools.refinery.logic.term.intinterval.IntIntervalTerms.constant;
@@ -27,7 +29,7 @@ import static tools.refinery.store.reasoning.literal.PartialLiterals.partialChec
 
 class DnfFunctionLifterTest {
 	private static final PartialRelation person = PartialSymbol.of("Person", 1);
-	private static final PartialFunction<IntInterval, Integer> age = PartialSymbol.of("age", 1,
+	private static final PartialFunction<IntInterval, BigInteger> age = PartialSymbol.of("age", 1,
 			IntIntervalDomain.INSTANCE);
 
 	private DnfLifter sut;

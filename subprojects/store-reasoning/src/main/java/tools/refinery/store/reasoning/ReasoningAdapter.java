@@ -23,10 +23,12 @@ import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.tuple.Tuple1;
 
+import java.math.BigInteger;
+
 public interface ReasoningAdapter extends ModelAdapter {
 	PartialRelation EXISTS_SYMBOL = PartialSymbol.of("exists", 1);
 	PartialRelation EQUALS_SYMBOL = PartialSymbol.of("equals", 2);
-	PartialFunction<IntInterval, Integer> COUNT_SYMBOL = PartialSymbol.of("count", 1, IntIntervalDomain.INSTANCE);
+	PartialFunction<IntInterval, BigInteger> COUNT_SYMBOL = PartialSymbol.of("count", 1, IntIntervalDomain.INSTANCE);
 
 	@Override
 	ReasoningStoreAdapter getStoreAdapter();

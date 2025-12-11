@@ -17,6 +17,7 @@ import tools.refinery.language.model.problem.Parameter;
 import tools.refinery.language.model.problem.Relation;
 import tools.refinery.language.model.problem.RuleDefinition;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 @Singleton
@@ -66,7 +67,8 @@ public class BuiltinAnnotationContext {
 	public DecisionSettings getDecisionSettings(RuleDefinition ruleDefinition) {
 		var annotations = annotationContext.annotationsFor(ruleDefinition);
 		var priorityAnnotation = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
-		int priority = priorityAnnotation.map(annotation -> annotation.getInteger(BuiltinAnnotations.PRIORITY_VALUE)
+		int priority = priorityAnnotation.map(annotation -> annotation.getBigInteger(BuiltinAnnotations.PRIORITY_VALUE)
+						.map(BigInteger::intValue)
 						.orElse(DecisionSettings.DEFAULT_PRIORITY))
 				.orElse(DecisionSettings.DEFAULT_PRIORITY);
 		var weighAnnotation = annotations.getAnnotation(BuiltinAnnotations.WEIGHT);
@@ -89,9 +91,9 @@ public class BuiltinAnnotationContext {
 		return annotationContext.annotationsFor(eObject)
 				.getAnnotation(BuiltinAnnotations.COLOR)
 				.flatMap(annotation -> {
-					var colorId = annotation.getInteger(BuiltinAnnotations.COLOR_COLOR_ID);
+					var colorId = annotation.getBigInteger(BuiltinAnnotations.COLOR_COLOR_ID);
 					if (colorId.isPresent()) {
-						int value = colorId.getAsInt();
+						int value = colorId.get().intValue();
 						if (value >= 0 && value < TypeHashProvider.COLOR_COUNT) {
 							return Optional.of(Integer.toString(value, 10));
 						}

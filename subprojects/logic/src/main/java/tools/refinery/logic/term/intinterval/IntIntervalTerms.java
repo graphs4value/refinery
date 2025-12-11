@@ -14,16 +14,18 @@ import tools.refinery.logic.term.operators.SubTerm;
 import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 
+import java.math.BigInteger;
+
 public class IntIntervalTerms {
 	public static final Aggregator<IntInterval, IntInterval> INT_INTERVAL_SUM = TreapAggregator.of(IntInterval.class,
 			(count, value) -> value.mul(IntInterval.of(count)), IntInterval.ZERO, IntInterval::add);
 
-	public static final PartialAggregator<IntInterval, Integer, IntInterval, Integer> INT_SUM =
+	public static final PartialAggregator<IntInterval, BigInteger, IntInterval, BigInteger> INT_SUM =
 			PartialAggregator.multiplicitySensitive(IntIntervalDomain.INSTANCE, IntIntervalTerms::mul,
 					INT_INTERVAL_SUM);
-	public static final PartialAggregator<IntInterval, Integer, IntInterval, Integer> INT_MIN =
+	public static final PartialAggregator<IntInterval, BigInteger, IntInterval, BigInteger> INT_MIN =
 			AbstractDomainTerms.minAggregator(IntIntervalDomain.INSTANCE);
-	public static final PartialAggregator<IntInterval, Integer, IntInterval, Integer> INT_MAX =
+	public static final PartialAggregator<IntInterval, BigInteger, IntInterval, BigInteger> INT_MAX =
 			AbstractDomainTerms.maxAggregator(IntIntervalDomain.INSTANCE);
 
 	private IntIntervalTerms() {

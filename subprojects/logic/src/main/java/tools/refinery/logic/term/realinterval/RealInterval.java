@@ -122,11 +122,12 @@ public record RealInterval(@NotNull RealBound lowerBound, @NotNull RealBound upp
 	}
 
 	public static RealInterval fromInt(IntInterval intInterval) {
-		return of(RealBound.fromInt(intInterval.lowerBound()), RealBound.fromInt(intInterval.upperBound()));
+		return of(RealBound.fromInt(intInterval.lowerBound(), FLOOR),
+				RealBound.fromInt(intInterval.upperBound(), CEIL));
 	}
 
 	public IntInterval asInt() {
-		return IntInterval.of(lowerBound.asInt(FLOOR), upperBound.asInt(CEIL));
+		return IntInterval.of(lowerBound.asInt(), upperBound.asInt());
 	}
 
 	@Override

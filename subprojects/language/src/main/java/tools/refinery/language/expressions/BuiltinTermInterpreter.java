@@ -21,6 +21,7 @@ import tools.refinery.logic.term.truthvalue.TruthValueDomain;
 import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static tools.refinery.language.expressions.BuiltInTerms.*;
 
@@ -97,7 +98,7 @@ public final class BuiltinTermInterpreter extends AbstractTermInterpreter {
 		return constant;
 	}
 
-	public static IntConstant createIntConstant(int value) {
+	public static IntConstant createIntConstant(BigInteger value) {
 		var constant = ProblemFactory.eINSTANCE.createIntConstant();
 		constant.setIntValue(value);
 		return constant;

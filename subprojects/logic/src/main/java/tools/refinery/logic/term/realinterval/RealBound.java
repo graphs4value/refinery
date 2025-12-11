@@ -53,7 +53,7 @@ public sealed interface RealBound {
 
 	int compareBound(RealBound other);
 
-	IntBound asInt(RoundingMode roundingMode);
+	IntBound asInt();
 
 	enum Infinite implements RealBound {
 		POSITIVE_INFINITY {
@@ -137,7 +137,7 @@ public sealed interface RealBound {
 			}
 
 			@Override
-			public IntBound asInt(RoundingMode roundingMode) {
+			public IntBound asInt() {
 				return IntBound.Infinite.POSITIVE_INFINITY;
 			}
 		},
@@ -216,7 +216,7 @@ public sealed interface RealBound {
 			}
 
 			@Override
-			public IntBound asInt(RoundingMode roundingMode) {
+			public IntBound asInt() {
 				return IntBound.Infinite.NEGATIVE_INFINITY;
 			}
 		};
@@ -394,8 +394,8 @@ public sealed interface RealBound {
 		}
 
 		@Override
-		public IntBound asInt(RoundingMode roundingMode) {
-			return IntBound.of(value, roundingMode.asInt());
+		public IntBound asInt() {
+			return IntBound.of(value);
 		}
 	}
 
@@ -403,11 +403,12 @@ public sealed interface RealBound {
 		return new RealBound.Finite(value);
 	}
 
-	static RealBound fromInt(IntBound intValue) {
+	static RealBound fromInt(IntBound intValue, RoundingMode roundingMode) {
 		return switch (intValue) {
 			case IntBound.Infinite.POSITIVE_INFINITY -> Infinite.POSITIVE_INFINITY;
 			case IntBound.Infinite.NEGATIVE_INFINITY -> Infinite.NEGATIVE_INFINITY;
-			case IntBound.Finite finiteBound -> new Finite(BigDecimal.valueOf(finiteBound.value()));
+			case IntBound.Finite finiteBound ->
+					new Finite(new BigDecimal(finiteBound.value()).round(roundingMode.context()));
 		};
 	}
 }

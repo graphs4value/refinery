@@ -19,6 +19,7 @@ import tools.refinery.language.tests.utils.ProblemParseHelper;
 import tools.refinery.language.tests.utils.WrappedProblem;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
@@ -422,7 +423,7 @@ class AnnotationContextTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void intArgumentTest(String valueString, OptionalInt expectedValue) {
+	void intArgumentTest(String valueString, Optional<BigInteger> expectedValue) {
 		var problem = parseHelper.parse("""
 				#pred Example(int value).
 
@@ -431,16 +432,16 @@ class AnnotationContextTest {
 		var annotations = annotationContext.annotationsFor(problem.get());
 		var actualValue = annotations.getAnnotation(EXAMPLE)
 				.orElseThrow()
-				.getInteger("value");
+				.getBigInteger("value");
 		assertThat(actualValue, is(expectedValue));
 	}
 
 	static Stream<Arguments> intArgumentTest() {
 		return Stream.of(
-				Arguments.of("3", OptionalInt.of(3)),
-				Arguments.of("+3", OptionalInt.of(3)),
-				Arguments.of("-3", OptionalInt.of(-3)),
-				Arguments.of("\"not an int\"", OptionalInt.empty())
+				Arguments.of("3", Optional.of(BigInteger.valueOf(3))),
+				Arguments.of("+3", Optional.of(BigInteger.valueOf(3))),
+				Arguments.of("-3", Optional.of(BigInteger.valueOf(-3))),
+				Arguments.of("\"not an int\"", Optional.empty())
 		);
 	}
 
@@ -456,8 +457,8 @@ class AnnotationContextTest {
 		var annotations = annotationContext.annotationsFor(problem.get());
 		var actualValue = annotations.getAnnotation(EXAMPLE)
 				.orElseThrow()
-				.getInteger("value");
-		assertThat(actualValue, is(OptionalInt.empty()));
+				.getBigInteger("value");
+		assertThat(actualValue, is(Optional.empty()));
 	}
 
 	@Test
@@ -472,9 +473,9 @@ class AnnotationContextTest {
 		var annotations = annotationContext.annotationsFor(problem.get());
 		var actualValue = annotations.getAnnotation(EXAMPLE)
 				.orElseThrow()
-				.getIntegers("value")
+				.getBigIntegers("value")
 				.toArray();
-		assertThat(actualValue, is(new int[]{1, 2, 3}));
+		assertThat(actualValue, is(new BigInteger[]{BigInteger.ONE, BigInteger.valueOf(2), BigInteger.valueOf(3)}));
 	}
 
 	@ParameterizedTest
