@@ -21,7 +21,6 @@ import tools.refinery.language.tests.utils.WrappedProblem;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;

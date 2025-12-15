@@ -33,10 +33,10 @@ jobs:
           if [ "${SONAR_TOKEN}" != '' ]; then
             echo 'is_SONAR_TOKEN_set=true' >> $GITHUB_OUTPUT
           fi
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
-          java-version: 21
+          java-version: 25
           distribution: corretto
       - name: Checkout code
         uses: actions/checkout@v6
