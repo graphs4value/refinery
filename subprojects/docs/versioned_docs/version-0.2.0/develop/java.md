@@ -63,7 +63,7 @@ For example, to add a dependency to the [`tools.refinery:refinery-generator`](pa
 <Tabs groupId="gradleLanguage">
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="build.gradle.kts"
-    depndencies {
+    dependencies {
         implementation(refinery.generator)
     }
     ```
@@ -83,7 +83,7 @@ For example, you may add [GSON](https://google.github.io/gson/) for JSON parsing
 <Tabs groupId="gradleLanguage">
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="build.gradle.kts"
-    depndencies {
+    dependencies {
         implementation(refinery.gson)
         implementation(refinery.jcommander)
     }
@@ -203,7 +203,7 @@ Instead, you should use Xtext's [dependency injection](https://eclipse.dev/Xtext
 <Tabs groupId="gradleLanguage">
   <TabItem value="kotlin" label="Kotlin">
     ```kotlin title="build.gradle.kts"
-    depndencies {
+    dependencies {
         implementation(refinery.generator)
         // highlight-next-line
         testImplementation(testFixtures(refinery.language))
