@@ -77,7 +77,7 @@ function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
       renderOption={({ className, key, ...props }, option) => (
         <Box
           component="li"
-          key={key as undefined}
+          key={key}
           {...props}
           className={clsx(className ?? '', {
             builtInOption: isBuiltIn(option),

@@ -6,7 +6,7 @@
 frontend = "10.0.0"
 pluginPublish = "2.0.0"
 shadow = "8.1.8"
-sonarqube = "7.2.0.6526"
+sonarqube = "7.2.2.6593"
 versions = "0.53.0"
 
 [libraries]

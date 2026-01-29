@@ -31,11 +31,13 @@ export default defineConfig({
           include: ['src/**/*.test.ts'],
           environment: 'node',
           globalSetup: ['src/__fixtures__/mockServer.ts'],
+          // Firefox has a limit on HTTP 1.1 requests to the same origin,
+          // so avoid any paralellism to prevent deadlocks due to our mock server.
+          maxConcurrency: 1,
+          maxWorkers: 1,
+          fileParallelism: false,
           browser: {
             enabled: true,
-            // Firefox has a limit on HTTP 1.1 requests to the same origin,
-            // so avoid any paralellism to prevent deadlocks due to our mock server.
-            fileParallelism: false,
             headless: true,
             provider: playwright(),
             instances: [
