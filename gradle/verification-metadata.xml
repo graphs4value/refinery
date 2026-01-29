@@ -71,7 +71,7 @@
          <trusted-key id="7464550A61C90BA385FC97A76D9567281201E5E3" group="jakarta.servlet" name="jakarta.servlet-api"/>
          <trusted-key id="78DF98EF7F95578FD545B9A159A7C2A1BD98C013" group="org.jdom" name="jdom2"/>
          <trusted-key id="79156E0351AF8604DE9B186B09A79E1E15A04694" group="org.vafer" name="jdependency"/>
-         <trusted-key id="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0" group="org.bouncycastle" name="bcprov-jdk18on"/>
+         <trusted-key id="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0" group="org.bouncycastle"/>
          <trusted-key id="84789D24DF77A32433CE1F079EB80E92EB2135B1" group="org.codehaus.plexus"/>
          <trusted-key id="8756C4F765C9AC3CB6B85D62379CE192D401AB61" group="org.jetbrains.intellij.deps" name="trove4j"/>
          <trusted-key id="894F14D98D7F20D5E82645E3DFE102108BF9381F" group="org.hibernate.validator" name="hibernate-validator"/>
@@ -94,7 +94,10 @@
          <trusted-key id="C3259D20DAEC4ACE6D57CC83340B090F727518D8" group="com.google.j2objc" name="j2objc-annotations"/>
          <trusted-key id="C73B7FB12A0B8D0DFF2F0FBADA70365F88DD141C" group="jakarta.el" name="jakarta.el-api"/>
          <trusted-key id="C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7" group="com.google.code.gson" name="gson"/>
-         <trusted-key id="D1436C0DBACEA48702AF97C363F1DD7753B8B315" group="org.sonarsource.scanner.gradle" name="sonarqube-gradle-plugin"/>
+         <trusted-key id="D1436C0DBACEA48702AF97C363F1DD7753B8B315">
+            <trusting group="org.sonarsource.scanner.gradle" name="sonarqube-gradle-plugin"/>
+            <trusting group="org.sonarsource.scanner.lib"/>
+         </trusted-key>
          <trusted-key id="D477D51812E692011DB11E66A6EA2E2BF22E0543" group="io.github.java-diff-utils" name="java-diff-utils"/>
          <trusted-key id="D4A77129F00F736293BE5A51AFC18A2271EDDFE1" group="^org[.]glassfish[.]hk2($|([.].*))" regex="true"/>
          <trusted-key id="D9905D77178BAC979B03C462E46D9A6A3624B8E3" group="org.eclipse.collections"/>
