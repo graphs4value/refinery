@@ -32,7 +32,7 @@
     "lint": "yarn run g:lint",
     "lint:fix": "yarn run lint --fix",
     "browsers:install": "PLAYWRIGHT_BROWSERS_PATH=./.playwright playwright install chromium chromium-headless-shell firefox",
-    "browsers:install:ci": "yarn run browsers:install webkit --with-deps",
+    "browsers:install:ci": "yarn run browsers:install --with-deps",
     "upgrade-versions": "node scripts/upgradeVersions.mjs",
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"

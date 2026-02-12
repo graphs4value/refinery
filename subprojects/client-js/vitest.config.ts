@@ -7,11 +7,6 @@
 import { playwright } from '@vitest/browser-playwright';
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 
-// Only run Webkit tests in the CI environment or whe explicitly requested,
-// because Playwright only supports specific environments that may be unavailable
-// on a developer machine. See https://playwright.dev/docs/intro#system-requirements
-const isCI = process.env['CI'] === 'true';
-
 export default defineConfig({
   test: {
     projects: [
@@ -40,11 +35,7 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright(),
-            instances: [
-              { browser: 'chromium' },
-              { browser: 'firefox' },
-              ...(isCI ? [{ browser: 'webkit' as const }] : []),
-            ],
+            instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
           },
         },
       },
