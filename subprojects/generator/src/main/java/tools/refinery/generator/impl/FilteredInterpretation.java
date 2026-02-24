@@ -9,6 +9,7 @@ import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.map.FilteredCursor;
+import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -51,6 +52,16 @@ public class FilteredInterpretation<A extends AbstractValue<A, C>, C> implements
 	@Override
 	public Cursor<Tuple, A> getAll() {
 		return new FilteredInterpretationCursor(wrappedInterpretation.getAll());
+	}
+
+	@Override
+	public void addListener(ResultSetListener<A> listener) {
+		throw new UnsupportedOperationException("Filtered interpretations do not support listeners");
+	}
+
+	@Override
+	public void removeListener(ResultSetListener<A> listener) {
+		throw new UnsupportedOperationException("Filtered interpretations do not support listeners");
 	}
 
 	private boolean tupleExists(Tuple key) {

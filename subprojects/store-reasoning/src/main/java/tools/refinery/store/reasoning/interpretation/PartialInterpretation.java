@@ -8,6 +8,7 @@ package tools.refinery.store.reasoning.interpretation;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -22,6 +23,10 @@ public non-sealed interface PartialInterpretation<A extends AbstractValue<A, C>,
 	A get(Tuple key);
 
 	Cursor<Tuple, A> getAll();
+
+	void addListener(ResultSetListener<A> listener);
+
+	void removeListener(ResultSetListener<A> listener);
 
 	@FunctionalInterface
 	interface Factory<A extends AbstractValue<A, C>, C> {
