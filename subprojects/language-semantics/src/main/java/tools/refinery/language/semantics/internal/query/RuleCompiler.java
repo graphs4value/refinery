@@ -32,6 +32,7 @@ import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
+import tools.refinery.store.reasoning.smt.SmtRule;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 
 import java.util.*;
@@ -166,8 +167,12 @@ public class RuleCompiler {
 		var rules = new ArrayList<Rule>(actionCount);
 		var postConditionModality = new ConcreteModality(concreteness, ModalitySpecification.MAY);
 		for (int i = 0; i < actionCount; i++) {
-			var actionName = actionCount == 1 ? name : name + "#" + (i + 1);
 			var action = actions.get(i);
+			if (action instanceof TheoryAction) {
+				continue;
+				// Theory actions are handled separately.
+			}
+			var actionName = getPropagationActionName(name, actionCount, i);
 			try {
 				var wrappedAction = wrapAction(action, preparedRule);
 				var parameters = wrappedAction.getNodeVariables();
@@ -196,6 +201,43 @@ public class RuleCompiler {
 						.action(actionLiterals)
 						.build();
 				rules.add(rule);
+			} catch (RuntimeException e) {
+				throw TracedException.addTrace(action, e);
+			}
+		}
+		return rules;
+	}
+
+	private static String getPropagationActionName(String name, int actionCount, int i) {
+		return actionCount == 1 ? name : name + "#" + (i + 1);
+	}
+
+	public Collection<SmtRule> toSmtRules(String name, RuleDefinition ruleDefinition) {
+		var preparedRule = prepareRule(ruleDefinition, false);
+		var parameterMap = preparedRule.parameterMap();
+		var consequents = ruleDefinition.getConsequents();
+		if (consequents.isEmpty()) {
+			return List.of();
+		}
+		var actions = consequents.getFirst().getActions();
+		int actionCount = actions.size();
+		var rules = new ArrayList<SmtRule>();
+		for (int i = 0; i < actionCount; i++) {
+			var action = actions.get(i);
+			if (!(action instanceof TheoryAction theoryAction)) {
+				continue;
+			}
+			var actionName = getPropagationActionName(name, actionCount, i);
+			try {
+				var expr = theoryAction.getTerm();
+				var moreCommonLiterals = new ArrayList<Literal>();
+				var term = queryCompiler.interpretTerm(expr, parameterMap, moreCommonLiterals)
+						.asType(TruthValue.class);
+				var parameters = term.getInputVariables(Set.copyOf(parameterMap.values())).stream()
+						.map(Variable::asNodeVariable)
+						.toList();
+				var query = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler);
+				rules.add(new SmtRule(query, term));
 			} catch (RuntimeException e) {
 				throw TracedException.addTrace(action, e);
 			}

@@ -44,6 +44,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
+import tools.refinery.store.reasoning.smt.SmtPropagator;
+import tools.refinery.store.reasoning.smt.SmtRule;
 import tools.refinery.store.reasoning.translator.ConcretizationSettings;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
@@ -133,6 +135,8 @@ public class ModelInitializer {
 	private final Map<Tuple, CardinalityInterval> countSeed = new LinkedHashMap<>();
 
 	private ScopePropagator scopePropagator;
+
+	private SmtPropagator smtPropagator;
 
 	private int nodeCount;
 
@@ -243,6 +247,12 @@ public class ModelInitializer {
 			}
 			collectPredicates(storeBuilder);
 			collectRules(storeBuilder);
+			if (smtPropagator != null) {
+				if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {
+					throw new TracedException(problem, "SMT rules require a PropagationBuilder");
+				}
+				storeBuilder.with(smtPropagator);
+			}
 			storeBuilder.tryGetAdapter(StateCoderBuilder.class)
 					.ifPresent(stateCoderBuilder -> stateCoderBuilder.individuals(individuals));
 			if (!keepShadowPredicates) {
@@ -1073,6 +1083,7 @@ public class ModelInitializer {
 						ConcretenessSpecification.CANDIDATE);
 				rules.addAll(propagationRules);
 				rules.addAll(concretizationRules);
+				addSmtRules(ruleCompiler.toSmtRules(name, ruleDefinition));
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, List.copyOf(rules));
 				storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder -> {
 					propagationBuilder.rules(propagationRules);
@@ -1102,5 +1113,15 @@ public class ModelInitializer {
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(ruleDefinition, e);
 		}
+	}
+
+	private void addSmtRules(Collection<SmtRule> smtRules) {
+		if (smtRules.isEmpty()) {
+			return;
+		}
+		if (smtPropagator == null) {
+			smtPropagator = new SmtPropagator();
+		}
+		smtPropagator.rules(smtRules);
 	}
 }
