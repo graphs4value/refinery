@@ -173,7 +173,9 @@ Atom { RelationName "+"? ParameterList<Expr> }
 
 Consequent { ("," | Action)+ }
 
-Action {
+Action { AssertionAction | TermAction }
+
+AssertionAction {
   (NotOp | UnknownOp)? RelationName
   ParameterList<AssertionActionArgument>
   (":" Expr)?
@@ -182,6 +184,8 @@ Action {
 AssertionArgument { NodeName | StarArgument }
 
 AssertionActionArgument { VariableName | StarArgument }
+
+TermAction { ckw<"assert"> Expr }
 
 Constant { Real | String | StarMult | LogicValue }
 

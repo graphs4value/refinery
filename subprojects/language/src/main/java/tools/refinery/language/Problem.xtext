@@ -140,7 +140,7 @@ Consequent:
 	actions+=Action ("," actions+=Action)*;
 
 Action:
-	AssertionAction;
+	AssertionAction | TheoryAction;
 
 AssertionAction:
 	relation=[Relation|QualifiedName]
@@ -149,6 +149,9 @@ AssertionAction:
 	value=ShortLogicConstant
 	relation=[Relation|QualifiedName]
 	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")";
+
+TheoryAction:
+	"assert" term=Expr;
 
 Expr:
 	AssignmentExpr;
@@ -330,7 +333,7 @@ NonContainmentIdentifier:
 	ID | QUOTED_ID | "as" | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "primitive" |
 	"decision" | "propagation" | "concretization" |
-	"shadow";
+	"shadow" | "assert";
 
 Integer returns ecore::EBigInteger:
 	INT;

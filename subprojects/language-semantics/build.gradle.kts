@@ -19,6 +19,7 @@ dependencies {
 	api(project(":refinery-store-reasoning"))
 	api(libs.eclipseCollections)
 	implementation(project(":refinery-store-reasoning-scope"))
+	implementation(project(":refinery-store-reasoning-smt"))
 	runtimeOnly(libs.eclipseCollections.impl)
 	testImplementation(project(":refinery-store-dse-visualization"))
 	testImplementation(project(":refinery-store-query-interpreter"))

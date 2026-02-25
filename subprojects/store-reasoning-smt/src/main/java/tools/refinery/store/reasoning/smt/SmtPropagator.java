@@ -12,12 +12,16 @@ import tools.refinery.store.dse.propagation.PropagationBuilder;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.model.ModelStoreConfiguration;
 import tools.refinery.store.query.ModelQueryBuilder;
+import tools.refinery.store.reasoning.ReasoningBuilder;
+import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.smt.internal.BoundSmtPropagator;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.z3.Z3SolverLoader;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class SmtPropagator implements ModelStoreConfiguration {
 	private final List<SmtRule> rules = new ArrayList<>();
@@ -35,7 +39,7 @@ public class SmtPropagator implements ModelStoreConfiguration {
 		return rules(List.of(rules));
 	}
 
-	public SmtPropagator rules(List<SmtRule> rules) {
+	public SmtPropagator rules(Collection<SmtRule> rules) {
 		this.rules.addAll(rules);
 		return this;
 	}
@@ -50,5 +54,8 @@ public class SmtPropagator implements ModelStoreConfiguration {
 		}
 		storeBuilder.getAdapter(PropagationBuilder.class)
 				.propagator(model -> new BoundSmtPropagator(this, model, preparedRules));
+		// SMT rules rely on `PARTIAL` interpretations for attributes.
+		storeBuilder.getAdapter(ReasoningBuilder.class)
+				.requiredInterpretations(Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE));
 	}
 }

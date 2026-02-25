@@ -277,5 +277,8 @@
     <genClasses ecoreClass="problem.ecore#//OverloadedDeclaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//OverloadedDeclaration/shadow"/>
     </genClasses>
+    <genClasses ecoreClass="problem.ecore#//TheoryAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//TheoryAction/term"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

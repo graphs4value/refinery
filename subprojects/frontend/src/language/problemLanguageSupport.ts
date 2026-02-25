@@ -42,7 +42,7 @@ const parserWithMetadata = parser.configure({
       default: t.modifier,
       'shadow propagation decision concretization': t.modifier,
       'true false unknown error': t.keyword,
-      'candidate may must': t.operatorKeyword,
+      'candidate may must assert': t.operatorKeyword,
       is: t.operatorKeyword,
       NotOp: t.operator,
       UnknownOp: t.operator,
