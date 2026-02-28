@@ -165,8 +165,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 		boolean isEmpty = "".equals(name);
 		if (isNull || isEmpty) {
 			var message = "A name must be specified for the element.";
-            error(message, namedElement, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
-                    INVALID_NAME_ISSUE);
+			error(message, namedElement, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+					INVALID_NAME_ISSUE);
 		}
 	}
 
@@ -787,8 +787,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 	private static void countRuleParameterUsages(Consequent consequent, Map<Parameter, Integer> useCounts) {
 		var usedParameters = new HashSet<Parameter>();
 		for (var action : consequent.getActions()) {
-			if (action instanceof AssertionAction assertionAction) {
-				collectUsedParameters(assertionAction, usedParameters);
+			switch (action) {
+			case AssertionAction assertionAction -> collectUsedParameters(assertionAction, usedParameters);
+			case TheoryAction theoryAction -> collectUsedParameters(theoryAction, usedParameters);
+			default -> {
+				// No parameters to collect.
+			}
 			}
 		}
 		for (var usedParameter : usedParameters) {
@@ -804,20 +808,35 @@ public class ProblemValidator extends AbstractProblemValidator {
 				usedParameters.add(usedParameter);
 			}
 		}
-		var value = assertionAction.getValue();
-		if (value instanceof VariableOrNodeExpr variableOrNodeExpr &&
-				variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
-				!usedParameter.eIsProxy()) {
-			usedParameters.add(usedParameter);
+		collectUsedParameters(assertionAction.getValue(), usedParameters);
+	}
+
+	private static void collectUsedParameters(TheoryAction theoryAction, HashSet<Parameter> usedParameters) {
+		collectUsedParameters(theoryAction.getTerm(), usedParameters);
+	}
+
+	private static void collectUsedParameters(Expr expr, HashSet<Parameter> usedParameters) {
+		if (expr == null) {
+			return;
 		}
-		var iterator = value.eAllContents();
+		if (expr instanceof VariableOrNodeExpr variableOrNodeExpr) {
+			collectUsedParameters(variableOrNodeExpr, usedParameters);
+			return;
+		}
+		var iterator = expr.eAllContents();
 		while (iterator.hasNext()) {
-			var expr = iterator.next();
-			if (expr instanceof VariableOrNodeExpr variableOrNodeExpr &&
-					variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
-					!usedParameter.eIsProxy()) {
-				usedParameters.add(usedParameter);
+			var childExpr = iterator.next();
+			if (childExpr instanceof VariableOrNodeExpr variableOrNodeExpr) {
+				collectUsedParameters(variableOrNodeExpr, usedParameters);
+				iterator.prune();
 			}
+		}
+	}
+
+	private static void collectUsedParameters(VariableOrNodeExpr variableOrNodeExpr,
+											  HashSet<Parameter> usedParameters) {
+		if (variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter && !usedParameter.eIsProxy()) {
+			usedParameters.add(usedParameter);
 		}
 	}
 
