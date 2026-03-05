@@ -841,13 +841,28 @@ public class ProblemValidator extends AbstractProblemValidator {
 	}
 
 	@Check
-	public void checkAssertionActions(AssertionAction assertionAction) {
-		var variables = new HashSet<Variable>();
-		var ruleDeclaration = EcoreUtil2.getContainerOfType(assertionAction, ParametricDefinition.class);
-		if (ruleDeclaration != null) {
-			variables.addAll(ruleDeclaration.getParameters());
-		}
+	public void checkAssertionAction(AssertionAction assertionAction) {
+		var variables = getAllowedVariables(assertionAction);
 		checkOnlyAllowedVariables(assertionAction.getValue(), variables);
+	}
+
+	private static HashSet<Variable> getAllowedVariables(EObject eObject) {
+		var parametricDefinition = EcoreUtil2.getContainerOfType(eObject, ParametricDefinition.class);
+		var variables = new HashSet<Variable>();
+		if (parametricDefinition != null) {
+			variables.addAll(parametricDefinition.getParameters());
+		}
+		return variables;
+	}
+
+	@Check
+	public void checkTheoryAction(TheoryAction theoryAction) {
+		var variables = getAllowedVariables(theoryAction);
+		checkOnlyAllowedVariables(theoryAction.getTerm(), variables);
+		if (!ProblemUtil.supportsTheoryActions(theoryAction)) {
+			acceptError("Theory actions may only appear in propagation or concretization rules.", theoryAction, null,
+					0, INVALID_RULE_ISSUE);
+		}
 	}
 
 	@Check
@@ -857,11 +872,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkCase(Case match) {
-		var variables = new HashSet<Variable>();
-		var functionDeclaration = EcoreUtil2.getContainerOfType(match, ParametricDefinition.class);
-		if (functionDeclaration != null) {
-			variables.addAll(functionDeclaration.getParameters());
-		}
+		var variables = getAllowedVariables(match);
 		var value = match.getValue();
 		var condition = match.getCondition();
 		if (value == null) {
