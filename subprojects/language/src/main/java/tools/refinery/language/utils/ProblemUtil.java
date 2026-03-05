@@ -66,7 +66,21 @@ public final class ProblemUtil {
 
 	public static boolean mayReferToShadow(EObject context) {
 		var definitionContext = EcoreUtil2.getContainerOfType(context, ParametricDefinition.class);
-		return isShadow(definitionContext) || definitionContext instanceof RuleDefinition;
+		if (!isShadow(definitionContext) && !(definitionContext instanceof RuleDefinition)) {
+			return false;
+		}
+		var theoryAction = EcoreUtil2.getContainerOfType(context, TheoryAction.class);
+		// Theory assertions must be abstract interpretable.
+		return theoryAction == null;
+	}
+
+	public static boolean supportsTheoryActions(EObject context) {
+		var rule = EcoreUtil2.getContainerOfType(context, RuleDefinition.class);
+		if (rule == null) {
+			return false;
+		}
+		var kind = rule.getKind();
+		return kind == RuleKind.PROPAGATION || kind == RuleKind.CONCRETIZATION;
 	}
 
 	public static boolean isAtomNode(Node node) {

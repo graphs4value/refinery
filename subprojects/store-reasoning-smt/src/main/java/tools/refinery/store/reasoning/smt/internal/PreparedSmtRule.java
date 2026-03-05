@@ -11,8 +11,7 @@ import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.logic.dnf.SymbolicParameter;
-import tools.refinery.logic.literal.CallPolarity;
-import tools.refinery.logic.literal.Literal;
+import tools.refinery.logic.literal.*;
 import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Term;
@@ -20,6 +19,7 @@ import tools.refinery.logic.term.bool.BoolTerms;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.smt.SmtRule;
@@ -61,14 +61,21 @@ public record PreparedSmtRule(RelationalQuery partialPrecondition, RelationalQue
 			partialLiterals.add(not(MULTI_VIEW.call(variable)));
 			candidateLiterals.add(must(EXISTS_SYMBOL.call(variable)));
 		}
-		var partialPrecondition = Query.builder(precondition.name() + "#partial")
-				.symbolicParameters(symbolicParameters)
-				.clause(partialLiterals)
-				.build();
-		var candidatePrecondition = Query.builder(precondition.name() + "#candidate")
-				.symbolicParameters(symbolicParameters)
-				.clause(candidateLiterals)
-				.build();
+
+		var concreteness = rule.concreteness();
+		var partialPreconditionBuilder = Query.builder(precondition.name() + "#partial")
+				.symbolicParameters(symbolicParameters);
+		if (concreteness != ConcretenessSpecification.CANDIDATE) {
+			partialPreconditionBuilder.clause(partialLiterals);
+		}
+		var partialPrecondition = partialPreconditionBuilder.build();
+		var candidatePreconditionBuilder = Query.builder(precondition.name() + "#candidate")
+				.symbolicParameters(symbolicParameters);
+		if (concreteness != ConcretenessSpecification.PARTIAL) {
+			candidatePreconditionBuilder.clause(candidateLiterals);
+		}
+		var candidatePrecondition = candidatePreconditionBuilder.build();
+
 		var assertedTerm = rule.assertedTerm();
 		int arity = parameterVariables.size();
 		var mutableParameterMap = ObjectIntMaps.mutable.<NodeVariable>withInitialCapacity(arity);

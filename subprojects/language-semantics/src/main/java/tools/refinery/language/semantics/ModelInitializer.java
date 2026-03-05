@@ -1092,6 +1092,9 @@ public class ModelInitializer {
 			}
 			case CONCRETIZATION -> {
 				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
+				addSmtRules(ruleCompiler.toSmtRules(name, ruleDefinition).stream()
+						.map(smtRule -> smtRule.withConcreteness(ConcretenessSpecification.CANDIDATE))
+						.toList());
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
 				storeBuilder.tryGetAdapter(PropagationBuilder.class)
 						.ifPresent(propagationBuilder -> propagationBuilder.concretizationRules(rules));
