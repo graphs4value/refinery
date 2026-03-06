@@ -86,8 +86,14 @@ public class DerivedVariableComputer {
 		}
 		for (var consequent : definition.getConsequents()) {
 			for (var action : consequent.getActions()) {
-				if (action instanceof AssertionAction assertionAction) {
-					createVariablesForScope(new ImplicitVariableScope(assertionAction, knownVariables));
+				switch (action) {
+				case AssertionAction assertionAction ->
+						createVariablesForScope(new ImplicitVariableScope(assertionAction, knownVariables));
+				case TheoryAction theoryAction ->
+						createVariablesForScope(new ImplicitVariableScope(theoryAction, knownVariables));
+				default -> {
+					// No variables to infer.
+				}
 				}
 			}
 		}
