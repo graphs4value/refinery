@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class ModelContext implements AutoCloseable {
 	public static final int SOLVER_TIMEOUT = 10000;
@@ -45,6 +46,7 @@ public class ModelContext implements AutoCloseable {
 	private final TermToExpr termToExpr;
 	private final Map<AnyPartialFunction, Map<Tuple, FuncDecl<?>>> variableCache = new HashMap<>();
 	private final Map<PreparedSmtRule, Map<Tuple, Expr<?>>> exprCache = new HashMap<>();
+	private final InterruptibleWrapper interruptibleWrapper;
 
 	public ModelContext(Model model, Collection<PreparedSmtRule> rules) {
 		this.model = model;
@@ -56,6 +58,7 @@ public class ModelContext implements AutoCloseable {
 		realSort = context.getRealSort();
 		stringSort = context.getStringSort();
 		termToExpr = new TermToExpr(this);
+		interruptibleWrapper = new InterruptibleWrapper(model.getCancellationToken(), context);
 	}
 
 	public Context getZ3Context() {
@@ -125,8 +128,12 @@ public class ModelContext implements AutoCloseable {
 		return result;
 	}
 
+	public <T> T callWithInterrupt(Callable<T> callable) {
+		return interruptibleWrapper.call(callable);
+	}
+
 	@Override
 	public void close() {
-		context.close();
+		interruptibleWrapper.shutdown();
 	}
 }

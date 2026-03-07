@@ -36,6 +36,7 @@ public class RuleBasedSolver {
 		this.context = context;
 		this.concreteness = concreteness;
 		this.solver = solver;
+		solver.interrupt();
 		variableMonitor = new VariableMonitor(this);
 		ruleMonitors = rules.stream()
 				.map(rule -> new RuleMonitor(this, rule))
@@ -77,7 +78,7 @@ public class RuleBasedSolver {
 		for (var ruleMonitor : ruleMonitors) {
 			ruleMonitor.addAssertions(solver);
 		}
-		return solver.check();
+		return context.callWithInterrupt(solver::check);
 	}
 
 	private void startIfNeeded() {
@@ -113,7 +114,7 @@ public class RuleBasedSolver {
 				if (!variableMonitor.isTracking()) {
 					yield PropagationResult.UNCHANGED;
 				}
-				var model = solver.getModel();
+				var model = context.callWithInterrupt(solver::getModel);
 				if (model == null) {
 					yield new PropagationRejectedResult(reason, REJECTION_NO_MODEL, true);
 				}
