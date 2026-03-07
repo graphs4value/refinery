@@ -10,6 +10,7 @@ import tools.refinery.store.map.Version;
 import tools.refinery.store.map.Versioned;
 import tools.refinery.store.representation.AnySymbol;
 import tools.refinery.store.representation.Symbol;
+import tools.refinery.store.util.CancellationToken;
 
 import java.util.Optional;
 
@@ -37,6 +38,8 @@ public interface Model extends Versioned, AutoCloseable {
 	void addListener(ModelListener listener);
 
 	void removeListener(ModelListener listener);
+
+	CancellationToken getCancellationToken();
 
 	void checkCancelled();
 
