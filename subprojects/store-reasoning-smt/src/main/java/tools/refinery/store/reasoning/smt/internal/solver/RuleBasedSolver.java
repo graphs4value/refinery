@@ -7,6 +7,8 @@ package tools.refinery.store.reasoning.smt.internal.solver;
 
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -18,6 +20,8 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.List;
 
 public class RuleBasedSolver {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RuleBasedSolver.class);
+
 	public static final String REJECTION_UNSAT = "SMT problem is not satisfiable";
 	public static final String REJECTION_UNKNOWN = "SMT solver failed to return model";
 	public static final String REJECTION_NO_MODEL = REJECTION_UNKNOWN + " unexpectedly";
@@ -96,6 +100,9 @@ public class RuleBasedSolver {
 			return cachedResult;
 		}
 		var status = doCheckSatisfiable();
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("checkSatisfiable {}", solver.getStatistics());
+		}
 		cachedResult = switch (status) {
 			case SATISFIABLE, UNKNOWN -> PropagationResult.UNCHANGED;
 			case UNSATISFIABLE -> new PropagationRejectedResult(reason, REJECTION_UNSAT);
@@ -109,6 +116,9 @@ public class RuleBasedSolver {
 			return cachedResult;
 		}
 		var status = doCheckSatisfiable();
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("concretize {}", solver.getStatistics());
+		}
 		cachedResult = switch (status) {
 			case SATISFIABLE -> {
 				if (!variableMonitor.isTracking()) {

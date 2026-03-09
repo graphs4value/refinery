@@ -32,7 +32,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class ModelContext implements AutoCloseable {
-	public static final int SOLVER_TIMEOUT = 10000;
+	public static final int SOLVER_TIMEOUT = 10_000;
+	public static final int SOLVER_RLIMIT = 1_000_000;
 
 	private final Model model;
 	private final ModelQueryAdapter queryEngine;
@@ -91,6 +92,7 @@ public class ModelContext implements AutoCloseable {
 		var params = context.mkParams();
 		params.add("model", concreteness == Concreteness.CANDIDATE);
 		params.add("timeout", SOLVER_TIMEOUT);
+		params.add("rlimit", SOLVER_RLIMIT);
 		solver.setParameters(params);
 		return new RuleBasedSolver(this, concreteness, rules, solver);
 	}
