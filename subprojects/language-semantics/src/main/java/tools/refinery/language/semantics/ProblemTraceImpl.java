@@ -16,6 +16,7 @@ import org.eclipse.xtext.scoping.IScopeProvider;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.utils.ProblemUtil;
 import tools.refinery.store.dse.transition.Rule;
+import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.metamodel.Metamodel;
@@ -136,7 +137,11 @@ class ProblemTraceImpl implements ProblemTrace {
 			return !(owningDefinition instanceof PredicateDefinition predicateDefinition) ||
 					ProblemUtil.isError(predicateDefinition);
 		}
-		return !ProblemUtil.isComputedValueFunction(relation);
+		if (ProblemUtil.isComputedValueFunction(relation)) {
+			return false;
+		}
+		// Must preserve the `count` symbol for the visualization.
+		return !ReasoningAdapter.COUNT_SYMBOL.equals(relationTrace.get(relation));
 	}
 
 	@Override
