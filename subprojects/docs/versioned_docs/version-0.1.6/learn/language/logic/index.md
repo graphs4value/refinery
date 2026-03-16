@@ -134,7 +134,7 @@ Therefore, multi-objects represent _possibly more than 1_ graph nodes.
 | `true` | `unknown` | `1..*` | multi-object |
 | `unknown` | `unknown` | `0..*` | removable multi-object |
 
-In the Refinery web UI, `?exists(o)` is represented with a _dashed_ border, while `?equals(o, o)`
+In the Refinery web UI, `?exists(o)` is represented with a _dashed_ border, while `?equals(o, o)` is represented with a _dashed_ line.
 
 ```refinery
 node(node).
