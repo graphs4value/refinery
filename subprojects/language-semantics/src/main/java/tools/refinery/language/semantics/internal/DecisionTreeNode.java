@@ -70,7 +70,7 @@ abstract class DecisionTreeNode<A extends AbstractValue<A, C>, C> {
 		if (currentState == DecisionTreeCursor.STATE_FINISH) {
 			// Entering this node for the first time.
 			cursor.path.push(this);
-			if (cursor.defaultValue == getOtherwiseReducedValue()) {
+			if (cursor.defaultValue.equals(getOtherwiseReducedValue())) {
 				var sortedChildren = getChildKeys().toSortedArray();
 				cursor.sortedChildren[level] = sortedChildren;
 				found = moveNextSparse(level, cursor, 0, sortedChildren);
