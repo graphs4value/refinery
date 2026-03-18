@@ -24,10 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
-import tools.refinery.language.typesystem.FixedType;
-import tools.refinery.language.typesystem.InvalidType;
-import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
-import tools.refinery.language.typesystem.SignatureProvider;
+import tools.refinery.language.typesystem.*;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.utils.ProblemUtil;
@@ -239,6 +236,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var nodes = new ArrayList<Node>();
 		var aggregators = new ArrayList<AggregatorDeclaration>();
 		var annotationDeclarations = new ArrayList<AnnotationDeclaration>();
+		var theoryDeclarations = new ArrayList<TheoryDeclaration>();
 		for (var statement : problem.getStatements()) {
 			switch (statement) {
 			case Relation relation -> relations.add(relation);
@@ -247,6 +245,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 			case NodeDeclaration nodeDeclaration -> nodes.addAll(nodeDeclaration.getNodes());
 			case AggregatorDeclaration aggregatorDeclaration -> aggregators.add(aggregatorDeclaration);
 			case AnnotationDeclaration annotationDeclaration -> annotationDeclarations.add(annotationDeclaration);
+			case TheoryDeclaration theoryDeclaration -> theoryDeclarations.add(theoryDeclaration);
 			default -> {
 				// Nothing to check.
 			}
@@ -256,6 +255,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		checkUniqueSimpleNames(nodes);
 		checkUniqueSimpleNames(aggregators);
 		checkUniqueSimpleNames(annotationDeclarations);
+		checkUniqueSimpleNames(theoryDeclarations);
 	}
 
 	@Check
@@ -1029,9 +1029,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 			return;
 		}
 		if (ProblemUtil.isShadow(type)) {
-			var message = "Shadow relations '%s' is not allowed in type scopes.".formatted(type.getName());
+			var message = "Shadow relation '%s' is not allowed in type scopes.".formatted(type.getName());
 			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
 					SHADOW_RELATION_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkDatatype(DatatypeDeclaration datatypeDeclaration) {
+		var dataExprType = signatureProvider.getDataType(datatypeDeclaration);
+		var termInterpreter = importAdapterProvider.getTermInterpreter(datatypeDeclaration);
+		if (termInterpreter.getDomain(dataExprType).isEmpty()) {
+			var message = "Datatype '%s' has no associated abstract domain.".formatted(datatypeDeclaration.getName());
+			acceptError(message, datatypeDeclaration, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, TYPE_ERROR);
 		}
 	}
 

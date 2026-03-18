@@ -51,6 +51,9 @@ statement {
   AggregatorDeclaration {
     AnnotationKeyword ckw<"aggregator"> AggregatorName "."
   } |
+  TheoryDeclaration {
+    AnnotationKeyword ckw<"theory"> TheoryName "."
+  }
   OverloadedDeclaration {
     AnnotationKeyword ckw<"primitive"> RelationName ParameterList<Parameter> "."
   } |
@@ -185,7 +188,7 @@ AssertionArgument { NodeName | StarArgument }
 
 AssertionActionArgument { VariableName | StarArgument }
 
-TermAction { ckw<"assert"> Expr }
+TermAction { ckw<"assert"> Expr (ckw<"using"> ( TheoryName | "{" sep<",", TheoryName> "}"))? }
 
 Constant { Real | String | StarMult | LogicValue }
 
@@ -220,6 +223,8 @@ NodeName { QualifiedName }
 ModuleName { QualifiedName }
 
 AggregatorName { QualifiedName }
+
+TheoryName { QualifiedName }
 
 AnnotationName { QualifiedName }
 

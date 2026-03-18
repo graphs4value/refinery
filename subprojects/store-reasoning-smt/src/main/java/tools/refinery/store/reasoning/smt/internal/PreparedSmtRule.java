@@ -11,7 +11,8 @@ import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
 import tools.refinery.logic.dnf.SymbolicParameter;
-import tools.refinery.logic.literal.*;
+import tools.refinery.logic.literal.CallPolarity;
+import tools.refinery.logic.literal.Literal;
 import tools.refinery.logic.rewriter.TermRewriter;
 import tools.refinery.logic.term.NodeVariable;
 import tools.refinery.logic.term.Term;
@@ -22,7 +23,7 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
-import tools.refinery.store.reasoning.smt.SmtRule;
+import tools.refinery.store.reasoning.theory.TheoryRule;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectT
 public record PreparedSmtRule(RelationalQuery partialPrecondition, RelationalQuery candidatePrecondition,
 							  Term<TruthValue> assertedTerm, ObjectIntMap<NodeVariable> parameterMap,
 							  List<Influence> influences) {
-	public static PreparedSmtRule of(SmtRule rule) {
+	public static PreparedSmtRule of(TheoryRule rule) {
 		var precondition = rule.precondition().getDnf();
 		var symbolicParameters = precondition.getSymbolicParameters();
 		var parameterVariables = symbolicParameters.stream().map(SymbolicParameter::getVariable).toList();
@@ -62,7 +63,7 @@ public record PreparedSmtRule(RelationalQuery partialPrecondition, RelationalQue
 			candidateLiterals.add(must(EXISTS_SYMBOL.call(variable)));
 		}
 
-		var concreteness = rule.concreteness();
+		var concreteness = rule.concretenessSpecification();
 		var partialPreconditionBuilder = Query.builder(precondition.name() + "#partial")
 				.symbolicParameters(symbolicParameters);
 		if (concreteness != ConcretenessSpecification.CANDIDATE) {

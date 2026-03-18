@@ -21,6 +21,7 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.smt.expr.TermToExpr;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.store.reasoning.smt.internal.solver.RuleBasedSolver;
 import tools.refinery.store.tuple.Tuple;
@@ -32,13 +33,12 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class ModelContext implements AutoCloseable {
-	public static final int SOLVER_TIMEOUT = 10_000;
-	public static final int SOLVER_RLIMIT = 1_000_000;
-
 	private final Model model;
 	private final ModelQueryAdapter queryEngine;
 	private ReasoningAdapter reasoningAdapter;
 	private final List<PreparedSmtRule> rules;
+	private final int timeout;
+	private final int rlimit;
 	private final Context context;
 	private final Sort boolSort;
 	private final Sort intSort;
@@ -49,10 +49,12 @@ public class ModelContext implements AutoCloseable {
 	private final Map<PreparedSmtRule, Map<Tuple, Expr<?>>> exprCache = new HashMap<>();
 	private final InterruptibleWrapper interruptibleWrapper;
 
-	public ModelContext(Model model, Collection<PreparedSmtRule> rules) {
+	public ModelContext(Model model, Collection<PreparedSmtRule> rules, int timeout, int rlimit) {
 		this.model = model;
 		queryEngine = model.getAdapter(ModelQueryAdapter.class);
 		this.rules = List.copyOf(rules);
+		this.timeout = timeout;
+		this.rlimit = rlimit;
 		context = new Context();
 		boolSort = context.getBoolSort();
 		intSort = context.getIntSort();
@@ -91,8 +93,12 @@ public class ModelContext implements AutoCloseable {
 		var solver = context.mkSolver();
 		var params = context.mkParams();
 		params.add("model", concreteness == Concreteness.CANDIDATE);
-		params.add("timeout", SOLVER_TIMEOUT);
-		params.add("rlimit", SOLVER_RLIMIT);
+		if (timeout > 0) {
+			params.add("timeout", timeout);
+		}
+		if (rlimit > 0) {
+			params.add("rlimit", rlimit);
+		}
 		solver.setParameters(params);
 		return new RuleBasedSolver(this, concreteness, rules, solver);
 	}

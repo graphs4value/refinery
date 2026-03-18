@@ -60,7 +60,7 @@ public final class ProblemUtil {
 			case PredicateDefinition predicateDefinition -> predicateDefinition.getKind() == PredicateKind.SHADOW;
 			case FunctionDefinition functionDefinition -> functionDefinition.isShadow();
 			case OverloadedDeclaration overloadedDeclaration -> overloadedDeclaration.isShadow();
-			default -> false;
+			case null, default -> false;
 		};
 	}
 

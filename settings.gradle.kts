@@ -24,6 +24,7 @@ include(
 		"language-ide",
 		"language-model",
 		"language-semantics",
+		"language-semantics-z3",
 		"language-web",
 		"logic",
 		"store",

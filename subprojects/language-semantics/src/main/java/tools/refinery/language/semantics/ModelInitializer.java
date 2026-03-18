@@ -7,6 +7,7 @@ package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.expressions.ExprToTerm;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
@@ -14,10 +15,11 @@ import tools.refinery.language.scoping.imports.ImportAdapterProvider;
 import tools.refinery.language.scoping.imports.ImportCollector;
 import tools.refinery.language.semantics.internal.MutableRelationCollector;
 import tools.refinery.language.semantics.internal.MutableSeed;
+import tools.refinery.language.semantics.internal.annotations.TopLevelAnnotations;
 import tools.refinery.language.semantics.internal.query.FunctionCompiler;
 import tools.refinery.language.semantics.internal.query.QueryCompiler;
 import tools.refinery.language.semantics.internal.query.RuleCompiler;
-import tools.refinery.language.typesystem.DataExprType;
+import tools.refinery.language.semantics.theory.internal.TheoryManager;
 import tools.refinery.language.typesystem.SignatureProvider;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.BuiltinSymbols;
@@ -44,8 +46,6 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
-import tools.refinery.store.reasoning.smt.SmtPropagator;
-import tools.refinery.store.reasoning.smt.SmtRule;
 import tools.refinery.store.reasoning.translator.ConcretizationSettings;
 import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.reasoning.translator.attribute.AttributeInfo;
@@ -108,13 +108,19 @@ public class ModelInitializer {
 	@Inject
 	private ExprToTerm exprToTerm;
 
+	@Inject
+	private AnnotationContext annotationContext;
+
+	@Inject
+	private TheoryManager theoryManager;
+
 	private boolean keepNonExistingObjects;
 
 	private boolean keepShadowPredicates = true;
 
 	private Problem problem;
 
-	private final Set<Problem> importedProblems = new HashSet<>();
+	private final Set<Problem> importedProblems = new LinkedHashSet<>();
 
 	private BuiltinSymbols builtinSymbols;
 
@@ -136,8 +142,6 @@ public class ModelInitializer {
 
 	private ScopePropagator scopePropagator;
 
-	private SmtPropagator smtPropagator;
-
 	private int nodeCount;
 
 	private ModelSeed.Builder modelSeedBuilder;
@@ -153,11 +157,13 @@ public class ModelInitializer {
 		this.problem = problem;
 		loadImportedProblems();
 		importedProblems.add(problem);
+		var topLevelAnnotations = new TopLevelAnnotations(annotationContext, problem, importedProblems);
+		theoryManager.initialize(topLevelAnnotations, problemTrace, importedProblems);
 		mutableRelationCollector.collectMutableRelations(importedProblems);
 		problemTrace.setProblem(problem);
 		queryCompiler.setProblemTrace(problemTrace);
-		ruleCompiler.setQueryCompiler(queryCompiler);
-		functionCompiler.setQueryCompiler(queryCompiler);
+		ruleCompiler.initialize(queryCompiler, theoryManager);
+		functionCompiler.initialize(queryCompiler);
 		try {
 			builtinSymbols = importAdapterProvider.getBuiltinSymbols(problem);
 			var nodeInfo = collectPartialRelation(builtinSymbols.node(), 1, TruthValue.TRUE, TruthValue.TRUE);
@@ -247,12 +253,7 @@ public class ModelInitializer {
 			}
 			collectPredicates(storeBuilder);
 			collectRules(storeBuilder);
-			if (smtPropagator != null) {
-				if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {
-					throw new TracedException(problem, "SMT rules require a PropagationBuilder");
-				}
-				storeBuilder.with(smtPropagator);
-			}
+			theoryManager.configure(storeBuilder);
 			storeBuilder.tryGetAdapter(StateCoderBuilder.class)
 					.ifPresent(stateCoderBuilder -> stateCoderBuilder.individuals(individuals));
 			if (!keepShadowPredicates) {
@@ -407,12 +408,8 @@ public class ModelInitializer {
 
 	private AnyAbstractDomain getAbstractDomain(DatatypeDeclaration datatype, Relation relation) {
 		var type = signatureProvider.getDataType(datatype);
-		if (!(type instanceof DataExprType dataExprType)) {
-			throw new TracedException(relation, "Invalid type '%s' for function '%s'.".formatted(
-					type, relation.getName()));
-		}
 		return importAdapterProvider.getTermInterpreter(relation)
-				.getDomain(dataExprType)
+				.getDomain(type)
 				.orElseThrow(() -> new TracedException(relation,
 						"No abstract domain for datatype '%s'.".formatted(datatype.getName())));
 	}
@@ -1083,7 +1080,7 @@ public class ModelInitializer {
 						ConcretenessSpecification.CANDIDATE);
 				rules.addAll(propagationRules);
 				rules.addAll(concretizationRules);
-				addSmtRules(ruleCompiler.toSmtRules(name, ruleDefinition));
+				ruleCompiler.createTheoryRules(name, ruleDefinition, ConcretenessSpecification.UNSPECIFIED);
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, List.copyOf(rules));
 				storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder -> {
 					propagationBuilder.rules(propagationRules);
@@ -1092,9 +1089,7 @@ public class ModelInitializer {
 			}
 			case CONCRETIZATION -> {
 				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
-				addSmtRules(ruleCompiler.toSmtRules(name, ruleDefinition).stream()
-						.map(smtRule -> smtRule.withConcreteness(ConcretenessSpecification.CANDIDATE))
-						.toList());
+				ruleCompiler.createTheoryRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
 				storeBuilder.tryGetAdapter(PropagationBuilder.class)
 						.ifPresent(propagationBuilder -> propagationBuilder.concretizationRules(rules));
@@ -1116,15 +1111,5 @@ public class ModelInitializer {
 		} catch (RuntimeException e) {
 			throw TracedException.addTrace(ruleDefinition, e);
 		}
-	}
-
-	private void addSmtRules(Collection<SmtRule> smtRules) {
-		if (smtRules.isEmpty()) {
-			return;
-		}
-		if (smtPropagator == null) {
-			smtPropagator = new SmtPropagator();
-		}
-		smtPropagator.rules(smtRules);
 	}
 }

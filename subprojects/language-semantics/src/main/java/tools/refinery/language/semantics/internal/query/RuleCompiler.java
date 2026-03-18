@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.semantics.SemanticsUtils;
 import tools.refinery.language.semantics.TracedException;
+import tools.refinery.language.semantics.theory.internal.TheoryManager;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.validation.ReferenceCounter;
@@ -32,7 +33,7 @@ import tools.refinery.store.reasoning.literal.*;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.reasoning.representation.PartialRelation;
-import tools.refinery.store.reasoning.smt.SmtRule;
+import tools.refinery.store.reasoning.theory.TheoryRule;
 import tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator;
 
 import java.util.*;
@@ -49,8 +50,11 @@ public class RuleCompiler {
 
 	private QueryCompiler queryCompiler;
 
-	public void setQueryCompiler(QueryCompiler queryCompiler) {
+	private TheoryManager theoryManager;
+
+	public void initialize(QueryCompiler queryCompiler, TheoryManager theoryManager) {
 		this.queryCompiler = queryCompiler;
+		this.theoryManager = theoryManager;
 	}
 
 	public DecisionRule toDecisionRule(String name, RuleDefinition ruleDefinition) {
@@ -212,16 +216,16 @@ public class RuleCompiler {
 		return actionCount == 1 ? name : name + "#" + (i + 1);
 	}
 
-	public Collection<SmtRule> toSmtRules(String name, RuleDefinition ruleDefinition) {
+	public void createTheoryRules(String name, RuleDefinition ruleDefinition,
+	                              ConcretenessSpecification concretenessSpecification) {
 		var preparedRule = prepareRule(ruleDefinition, false);
 		var parameterMap = preparedRule.parameterMap();
 		var consequents = ruleDefinition.getConsequents();
 		if (consequents.isEmpty()) {
-			return List.of();
+			return;
 		}
 		var actions = consequents.getFirst().getActions();
 		int actionCount = actions.size();
-		var rules = new ArrayList<SmtRule>();
 		for (int i = 0; i < actionCount; i++) {
 			var action = actions.get(i);
 			if (!(action instanceof TheoryAction theoryAction)) {
@@ -237,12 +241,13 @@ public class RuleCompiler {
 						.map(Variable::asNodeVariable)
 						.toList();
 				var query = preparedRule.buildQuery(actionName, parameters, moreCommonLiterals, queryCompiler);
-				rules.add(new SmtRule(query, term));
+				var theoryRule = new TheoryRule(query, term, concretenessSpecification);
+				theoryManager.addRule(theoryAction, theoryRule);
+
 			} catch (RuntimeException e) {
 				throw TracedException.addTrace(action, e);
 			}
 		}
-		return rules;
 	}
 
 	public Rule toRule(String name, RuleDefinition ruleDefinition) {

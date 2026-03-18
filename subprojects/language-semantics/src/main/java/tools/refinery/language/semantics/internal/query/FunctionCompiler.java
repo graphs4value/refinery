@@ -43,7 +43,7 @@ public class FunctionCompiler {
 
 	private QueryCompiler queryCompiler;
 
-	public void setQueryCompiler(QueryCompiler queryCompiler) {
+	public void initialize(QueryCompiler queryCompiler) {
 		this.queryCompiler = queryCompiler;
 	}
 

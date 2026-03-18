@@ -22,9 +22,10 @@ public class BoundSmtPropagator implements BoundPropagator, ModelListener {
 	private final RuleBasedSolver propagationSolver;
 	private final RuleBasedSolver concretizationSolver;
 
-	public BoundSmtPropagator(SmtPropagator propagator, Model model, Collection<PreparedSmtRule> rules) {
+	public BoundSmtPropagator(SmtPropagator propagator, Model model, Collection<PreparedSmtRule> rules,
+							  int timeout, int rlimit) {
 		this.propagator = propagator;
-		context = new ModelContext(model, rules);
+		context = new ModelContext(model, rules, timeout, rlimit);
 		propagationSolver = context.createSolver(Concreteness.PARTIAL);
 		concretizationSolver = context.createSolver(Concreteness.CANDIDATE);
 	}

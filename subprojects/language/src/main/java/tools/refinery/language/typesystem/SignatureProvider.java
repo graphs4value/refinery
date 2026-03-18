@@ -91,6 +91,10 @@ public class SignatureProvider {
 		if (!(relation instanceof DatatypeDeclaration datatypeDeclaration)) {
 			return FixedType.INVALID;
 		}
+		return getDataType(datatypeDeclaration);
+	}
+
+	public DataExprType getDataType(DatatypeDeclaration datatypeDeclaration) {
 		var dataTypes = cache.get(DATATYPE_CACHE, datatypeDeclaration.eResource(),
 				() -> new HashMap<DatatypeDeclaration, DataExprType>());
 		return dataTypes.computeIfAbsent(datatypeDeclaration, this::computeDataType);
