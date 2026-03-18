@@ -21,6 +21,7 @@ import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
+import tools.refinery.store.reasoning.smt.expr.TermToExpr;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.store.reasoning.smt.internal.solver.RuleBasedSolver;
 import tools.refinery.store.tuple.Tuple;

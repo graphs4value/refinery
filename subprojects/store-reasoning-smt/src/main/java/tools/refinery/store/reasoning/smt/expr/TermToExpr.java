@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.smt.internal.context;
+package tools.refinery.store.reasoning.smt.expr;
 
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -14,6 +14,7 @@ import tools.refinery.logic.term.abstractdomain.*;
 import tools.refinery.logic.term.operators.*;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
+import tools.refinery.store.reasoning.smt.internal.context.ModelContext;
 import tools.refinery.store.tuple.Tuple;
 
 import java.math.BigDecimal;
