@@ -16,8 +16,12 @@
          <trust file="^gradle-\d+\.\d+(?:\.\d+)?(?:-(?:rc|milestone)-\d+)?-src\.zip$" regex="true"/>
       </trusted-artifacts>
       <trusted-keys>
+         <trusted-key id="0181A4828FA27B6BE6F1F5A68611CD28F472E006" group="org.apache.maven"/>
          <trusted-key id="019082BC00E0324E2AEF4CF00D3B328562A119A7" group="org.openjdk.jmh"/>
-         <trusted-key id="073F7A9345756F3B40CDB99E6C70A3B7599C5736" group="org.apache.maven"/>
+         <trusted-key id="073F7A9345756F3B40CDB99E6C70A3B7599C5736">
+            <trusting group="org.apache.maven"/>
+            <trusting group="org.codehaus.plexus" name="plexus-utils"/>
+         </trusted-key>
          <trusted-key id="077E8893A6DCC33DD4A4D5B256E73BA9A0B592D0" group="org.apache.logging.log4j"/>
          <trusted-key id="0785B3EFF60B1B1BEA94E0BB7C25280EAE63EBE5" group="^org[.]apache[.]httpcomponents($|([.].*))" regex="true"/>
          <trusted-key id="0A123C1ED3F13A6A0140E166C71FB765CD9DE313" group="org.apache.ant"/>
@@ -33,7 +37,10 @@
          <trusted-key id="1D85469D8559C2E1DF5F925131D2D79DF7E85DD3" group="org.jcommander" name="jcommander"/>
          <trusted-key id="1F47744C9B6E14F2049C2857F1F111AF65925306" group="io.github.classgraph" name="classgraph"/>
          <trusted-key id="21D09437979F5953FFEEA59C2753A900612D3FF1" group="jakarta.validation" name="jakarta.validation-api"/>
-         <trusted-key id="28118C070CB22A0175A2E8D43D12CA2AC19F3181" group="com.fasterxml.woodstox" name="woodstox-core"/>
+         <trusted-key id="28118C070CB22A0175A2E8D43D12CA2AC19F3181">
+            <trusting group="com.fasterxml.woodstox" name="woodstox-core"/>
+            <trusting group="org.codehaus.woodstox" name="stax2-api"/>
+         </trusted-key>
          <trusted-key id="2B1042677FD8190C7B9FC0DC2161D72E7DCD4258" group="org.sonarsource.scanner.lib"/>
          <trusted-key id="2DB4F1EF0FA761ECC4EA935C86FDC7E2A11262CB">
             <trusting group="commons-cli" name="commons-cli"/>
@@ -42,6 +49,7 @@
             <trusting group="commons-logging" name="commons-logging"/>
             <trusting group="org.apache.commons"/>
          </trusted-key>
+         <trusted-key id="32118CF76C9EC5D918E54967CA80D1F0EB6CA4BA" group="org.codehaus.plexus" name="plexus-xml"/>
          <trusted-key id="33FD4BFD33554634053D73C0C2148900BCD3C2AF" group="org.jetbrains" name="annotations"/>
          <trusted-key id="3E07544E2175A6B3608C515A5FEC689CA7E7B6BD" group="org.eclipse.jdt"/>
          <trusted-key id="4021EEEAFF5DE8404DCD0A270AA3E5C3D232E79B">
@@ -53,6 +61,7 @@
          <trusted-key id="475F3B8E59E6E63AA78067482C7B12F2A511E325" group="org.slf4j" name="slf4j-api"/>
          <trusted-key id="477E62A656AD5475A1882855C809CA3C41BA6E96" group="jakarta.validation" name="jakarta.validation-api"/>
          <trusted-key id="47EF0EC60C210BC6DFAA5819B7AE15C15C321C44" group="jakarta.transaction" name="jakarta.transaction-api"/>
+         <trusted-key id="4857D1CE04E78FAB2A172E8F39B48E1BADDB933F" group="com.gradleup.shadow" name="shadow-gradle-plugin"/>
          <trusted-key id="4DB1A49729B053CAF015CEE9A6ADFC93EF34893E" group="org.hamcrest" name="hamcrest-core"/>
          <trusted-key id="517B94F8D0A46317A28D8AB30DA8A5EC02D11EAD" group="net.sf.jopt-simple" name="jopt-simple"/>
          <trusted-key id="56CEE778E1531BD70ECB0F47BEC27E87C49F2E2B" group="com.google.inject" name="guice"/>
@@ -87,7 +96,6 @@
          <trusted-key id="AD55805DF40AFF486F04112A6D526876B9913351" group="org.glassfish.expressly" name="expressly"/>
          <trusted-key id="B02137D875D833D9B23392ECAE5A7FB608A0221C" group="org.apache.maven" name="maven-model"/>
          <trusted-key id="B1F2BE13E5A4A4C4C836296D9098E9F3D6AFA0D7" group="org.eclipse.emf"/>
-         <trusted-key id="B2460AF072132DD71CD98A63020BDA623C651E0E" group="io.github.goooler.shadow" name="shadow-gradle-plugin"/>
          <trusted-key id="BA3DD700481F03C9879973EAE2C9782DF41D39C0" group="^tools[.]refinery($|([.].*))" regex="true"/>
          <trusted-key id="BB785E0400E71390977E4D1ADF3CC7C64D56297B" group="jakarta.interceptor" name="jakarta.interceptor-api"/>
          <trusted-key id="BD7A06A58793C8CD6B23F29C48649310781A80FB" group="org.eclipse.lsp4j"/>
@@ -115,6 +123,7 @@
          <trusted-key id="EAFC1F3B2FCED6AFD046C7D5734AEF3D43509290" group="org.osgi"/>
          <trusted-key id="EE0CA873074092F806F59B65D364ABAA39A47320" group="com.google.errorprone" name="error_prone_annotations"/>
          <trusted-key id="F254B35617DC255D9344BCFA873A8E86B4372146" group="^org[.]eclipse[.]jetty($|([.].*))" regex="true"/>
+         <trusted-key id="F4DD59C90148BDC52BEB90A4530AA5F25C25011F" group="commons-codec" name="commons-codec"/>
          <trusted-key id="FA7929F83AD44C4590F6CC6815C71C0A4E0B8EDD" group="net.java.dev.jna"/>
          <trusted-key id="FAF0C43FF23519B701C237A01C82B802D1AE0CFD" group="^org[.]eclipse($|([.].*))" regex="true"/>
          <trusted-key id="FB35C8D02B4724DADA23DE0AFD116C1969FCCFF3" group="org.json" name="json"/>

@@ -27,7 +27,7 @@ catalog.versionCatalog {
 
 	// Let downstream users add the shadow plugin to bundle their dependencies.
 	version(shadowVersion, pluginLibs.versions.shadow.get())
-	plugin("shadow", "io.github.goooler.shadow").versionRef(shadowVersion)
+	plugin("shadow", "com.gradleup.shadow").versionRef(shadowVersion)
 }
 
 publishing.publications.named<MavenPublication>("mavenJava") {

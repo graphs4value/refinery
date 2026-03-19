@@ -5,14 +5,14 @@
 [versions]
 frontend = "10.0.0"
 pluginPublish = "2.1.1"
-shadow = "8.1.8"
+shadow = "9.4.0"
 sonarqube = "7.2.3.7755"
 versions = "0.53.0"
 
 [libraries]
 frontend = { group = "org.siouan", name = "frontend-jdk21", version.ref = "frontend" }
 pluginPublish = { group = "com.gradle.publish", name = "plugin-publish-plugin", version.ref = "pluginPublish" }
-shadow = { group = "io.github.goooler.shadow", name = "shadow-gradle-plugin", version.ref = "shadow" }
+shadow = { group = "com.gradleup.shadow", name = "shadow-gradle-plugin", version.ref = "shadow" }
 sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version.ref = "sonarqube" }
 
 [plugins]

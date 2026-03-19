@@ -23,4 +23,8 @@ public abstract class RefineryJavaExtension {
 	public abstract Property<Boolean> getUseSlf4JLog4J();
 
 	public abstract Property<Boolean> getUseSlf4JSimple();
+
+	public abstract Property<Boolean> getGuiceClassesOnly();
+
+	public abstract Property<Boolean> getAddJvmArgs();
 }

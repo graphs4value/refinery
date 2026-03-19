@@ -18,6 +18,7 @@ public final class RefineryPluginUtils {
 
 	private static final List<String> SHADOW_PLUGIN_IDS = List.of(
 			"com.github.johnrengelman.shadow",
+			"com.gradleup.shadow",
 			"io.github.goooler.shadow"
 	);
 
@@ -47,7 +48,7 @@ public final class RefineryPluginUtils {
 
 	public static void addConditionalDependency(DependencyHandler dependencies, String configuration,
                                                 Object dependency, Provider<Boolean> condition) {
-		var provider = condition.map(value -> Boolean.TRUE.equals(value) ? dependency : null);
+		var provider = condition.map(value -> value ? dependency : null);
 		dependencies.add(configuration, provider);
 	}
 }

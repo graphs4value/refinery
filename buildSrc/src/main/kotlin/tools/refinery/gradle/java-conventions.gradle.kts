@@ -6,6 +6,7 @@
 package tools.refinery.gradle
 
 import org.gradle.accessors.dm.LibrariesForLibs
+import tools.refinery.gradle.utils.JvmArgsUtils
 
 plugins {
 	id("tools.refinery.gradle.internal.java-basic-conventions")
@@ -30,7 +31,22 @@ dependencies {
 	}
 }
 
+configurations.forEach {
+	// See https://github.com/google/guice/issues/1926#issuecomment-3991531593
+	it.resolutionStrategy.dependencySubstitution {
+		substitute(module("com.google.inject:guice"))
+			.using(module("com.google.inject:guice:${libs.versions.guice.get()}"))
+			.withClassifier("classes")
+			.because("Use Java 25 compatible ASM with Guice instead of the bundled version")
+	}
+}
+
+tasks.withType(JavaExec::class) {
+	jvmArgs(JvmArgsUtils.JVM_ARGS)
+}
+
 tasks.test {
+	jvmArgs(JvmArgsUtils.JVM_ARGS)
 	// See
 	// https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
 	jvmArgs("-javaagent:${mockitoAgent.asPath}")

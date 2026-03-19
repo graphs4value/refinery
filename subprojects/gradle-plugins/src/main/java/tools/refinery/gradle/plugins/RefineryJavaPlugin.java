@@ -7,13 +7,14 @@ package tools.refinery.gradle.plugins;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.component.ConfigurationVariantDetails;
 import org.gradle.api.internal.tasks.JvmConstants;
 import org.gradle.api.plugins.ApplicationPlugin;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.bundling.Tar;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.api.tasks.testing.Test;
@@ -25,6 +26,7 @@ import tools.refinery.gradle.plugins.internal.Versions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class RefineryJavaPlugin implements Plugin<Project> {
@@ -33,6 +35,7 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 	private static final String JUNIT_ENGINE = "org.junit.jupiter:junit-jupiter-engine";
 	private static final String JUNIT_LAUNCHER = "org.junit.platform:junit-platform-launcher";
 	private static final String JUNIT_PARAMS = "org.junit.jupiter:junit-jupiter-params";
+	private static final String GUICE = "com.google.inject:guice";
 	private static final String HAMCREST = "org.hamcrest:hamcrest";
 	private static final String REFINERY_BOM = "tools.refinery:refinery-bom";
 	private static final String SLF4J_LOG4J = "org.slf4j:log4j-over-slf4j";
@@ -88,6 +91,14 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 				.gradleProperty("tools.refinery.java.use-slf4j-simple")
 				.map(Boolean::valueOf)
 				.orElse(extension.getUseSlf4JLog4J()));
+		extension.getGuiceClassesOnly().convention(target.getProviders()
+				.gradleProperty("tools.refinery.java.guice-classes-only")
+				.map(Boolean::valueOf)
+				.orElse(true));
+		extension.getAddJvmArgs().convention(target.getProviders()
+				.gradleProperty("tools.refinery.java.add-jvm-args")
+				.map(Boolean::valueOf)
+				.orElse(true));
 		return extension;
 	}
 
@@ -95,7 +106,7 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 		var dependencies = target.getDependencies();
 		dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, target.provider(() -> {
 			var artifact = REFINERY_BOM + ":" + extension.getRefineryVersion().get();
-			return Boolean.TRUE.equals(extension.getEnforcePlatform().get()) ?
+			return extension.getEnforcePlatform().get() ?
 					dependencies.enforcedPlatform(artifact) : dependencies.platform(artifact);
 		}));
 
@@ -105,13 +116,13 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 				SLF4J_LOG4J, extension.getUseSlf4JLog4J());
 		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
 				SLF4J_LOG4J, extension.getUseSlf4JLog4J().map(value ->
-						Boolean.TRUE.equals(value) && target.getPlugins().hasPlugin(ApplicationPlugin.class)));
+						value && target.getPlugins().hasPlugin(ApplicationPlugin.class)));
 
 		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
 				SLF4J_SIMPLE, extension.getUseSlf4JSimple());
 		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
 				SLF4J_SIMPLE, extension.getUseSlf4JSimple().map(value ->
-						Boolean.TRUE.equals(value) && target.getPlugins().hasPlugin(ApplicationPlugin.class)));
+						value && target.getPlugins().hasPlugin(ApplicationPlugin.class)));
 
 		var addJUnit5 = extension.getTestDependencies().map(TestDependencies::isAddJUnit5);
 		RefineryPluginUtils.addConditionalDependency(dependencies, JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
@@ -148,6 +159,7 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 				task.setEnabled(false);
 			}
 		});
+
 	}
 
 	private static void configureShadowPlugin(Project target) {
@@ -178,14 +190,20 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 
 	private static void configureAfterEvaluate(Project project) {
 		var extension = project.getExtensions().getByType(RefineryJavaExtension.class);
-		if (Boolean.TRUE.equals(extension.getAddBundleSymbolicName().get())) {
+		if (extension.getAddBundleSymbolicName().get()) {
 			addBundleSymbolicName(project);
 		}
-		if (Boolean.TRUE.equals(extension.getUseSlf4JLog4J().get())) {
+		if (extension.getUseSlf4JLog4J().get()) {
 			excludeLog4J(project);
 		}
 		if (extension.getTestDependencies().get().isAddJUnit5()) {
 			configureJunitPlatform(project);
+		}
+		if (extension.getGuiceClassesOnly().get()) {
+			configureGuiceClassesOnly(project);
+		}
+		if (extension.getAddJvmArgs().get()) {
+			addJvmArgs(project);
 		}
 	}
 
@@ -201,7 +219,7 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 	}
 
 	private static void excludeLog4J(Project project) {
-		project.getConfigurations().withType(Configuration.class, configuration -> {
+		project.getConfigurations().forEach(configuration -> {
 			if (configuration.getName().endsWith("Classpath")) {
 				configuration.exclude(Map.of("group", "log4j", "module", "log4j"));
 				configuration.exclude(Map.of("group", "ch.qos.reload4j", "module", "reload4j"));
@@ -211,5 +229,31 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 
 	private static void configureJunitPlatform(Project project) {
 		project.getTasks().named(JavaPlugin.TEST_TASK_NAME, Test.class, Test::useJUnitPlatform);
+	}
+
+	private static void configureGuiceClassesOnly(Project project) {
+		project.getConfigurations().forEach(configuration -> {
+			configuration.getResolutionStrategy().dependencySubstitution(dependencySubstitution -> {
+				dependencySubstitution.substitute(dependencySubstitution.module(GUICE))
+						.using(dependencySubstitution.module(GUICE + ":" + Versions.GUICE_VERSION))
+						.withClassifier("classes")
+						.because("Configured by refineryJava.guiceClassesOnly");
+			});
+		});
+	}
+
+	private static void addJvmArgs(Project project) {
+		var tasks = project.getTasks();
+		tasks.withType(JavaExec.class, task -> task.jvmArgs(Versions.JVM_ARGS));
+		tasks.withType(Test.class, task -> task.jvmArgs(Versions.JVM_ARGS));
+		var applicationExtension = project.getExtensions().findByType(JavaApplication.class);
+		if (applicationExtension != null) {
+			var applicationDefaultJvmArgs = new ArrayList<String>();
+			for (var arg : applicationExtension.getApplicationDefaultJvmArgs()) {
+				applicationDefaultJvmArgs.add(arg);
+			}
+			applicationDefaultJvmArgs.addAll(Versions.JVM_ARGS);
+			applicationExtension.setApplicationDefaultJvmArgs(applicationDefaultJvmArgs);
+		}
 	}
 }

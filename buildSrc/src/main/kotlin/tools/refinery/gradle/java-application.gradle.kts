@@ -6,6 +6,7 @@
 package tools.refinery.gradle
 
 import org.gradle.accessors.dm.LibrariesForLibs
+import tools.refinery.gradle.utils.JvmArgsUtils
 
 plugins {
 	application
@@ -19,6 +20,10 @@ dependencies {
 	runtimeOnly(libs.logback.classic)
 	implementation(libs.slf4j.log4j)
 	implementation(enforcedPlatform(project(":refinery-bom-dependencies")))
+}
+
+application {
+	applicationDefaultJvmArgs += JvmArgsUtils.JVM_ARGS
 }
 
 tasks.distZip {

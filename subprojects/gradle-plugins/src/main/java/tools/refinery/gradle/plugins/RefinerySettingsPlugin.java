@@ -30,32 +30,26 @@ public class RefinerySettingsPlugin implements Plugin<Settings> {
 		// We depend on unstable API to configure dependency management for the version catalog.
 		@SuppressWarnings("UnstableApiUsage")
 		var repositories = dependencyResolutionManagement.getRepositories();
+		repositories.mavenCentral();
 		var repository = target.getProviders()
 				.gradleProperty("tools.refinery.repository")
 				.map(Repository::valueOfIgnoreCase)
 				.getOrElse(Repository.getDefault());
 		switch (repository) {
-		case LOCAL:
-			repositories.mavenLocal();
-			break;
-		case SNAPSHOT:
-			repositories.maven(mavenArtifactRepository -> {
-				try {
-					mavenArtifactRepository.setUrl(new URI(MAVEN_SNAPSHOTS));
-				} catch (URISyntaxException e) {
-					throw new IllegalStateException(e);
-				}
-				mavenArtifactRepository.setName("refinery-snapshots");
-			});
-			break;
-		case CENTRAL: {
-			// Since the central repository is common for all configurations, we handle it below.
+		case LOCAL -> repositories.mavenLocal();
+		case SNAPSHOT -> repositories.maven(mavenArtifactRepository -> {
+			try {
+				mavenArtifactRepository.setUrl(new URI(MAVEN_SNAPSHOTS));
+			} catch (URISyntaxException e) {
+				throw new IllegalStateException(e);
+			}
+			mavenArtifactRepository.setName("refinery-snapshots");
+		});
+		case CENTRAL -> {
+			// Since the central repository is common for all configurations, we've handled it above.
 		}
-		break;
-		default:
-			throw new IllegalArgumentException("Unknown repository: " + repository);
+		default -> throw new IllegalArgumentException("Unknown repository: " + repository);
 		}
-		repositories.mavenCentral();
 	}
 
 	private static void createVersionCatalog(Settings target) {
@@ -71,7 +65,7 @@ public class RefinerySettingsPlugin implements Plugin<Settings> {
 	private static void configureAllProjects(Settings target) {
 		target.getGradle().allprojects(project -> project.getPlugins().withType(JavaPlugin.class, ignored -> {
 			var autoApply = project.findProperty("tools.refinery.auto-apply");
-			if (autoApply == null || !Boolean.FALSE.equals(Boolean.valueOf(autoApply.toString()))) {
+			if (autoApply == null || Boolean.parseBoolean(autoApply.toString())) {
 				project.getPlugins().apply("tools.refinery.java");
 			}
 		}));
