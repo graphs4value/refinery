@@ -246,16 +246,15 @@ class ProblemWebSocketServletIntegrationTest {
 	}
 
 	private Session connect(Object webSocketClient, String origin, String... subProtocols) {
-		var upgradeRequest = new ClientUpgradeRequest();
+		var uri = URI.create("ws://%s:%d%s".formatted(HOSTNAME, serverPort, SERVLET_URI));
+		var upgradeRequest = new ClientUpgradeRequest(uri);
 		if (origin != null) {
 			upgradeRequest.setHeader(HttpHeader.ORIGIN.name(), origin);
 		}
 		upgradeRequest.setSubProtocols(subProtocols);
 		CompletableFuture<Session> sessionFuture;
 		try {
-			sessionFuture = client.connect(webSocketClient,
-					URI.create("ws://%s:%d%s".formatted(HOSTNAME, serverPort, SERVLET_URI)),
-					upgradeRequest);
+			sessionFuture = client.connect(webSocketClient,	upgradeRequest);
 		} catch (IOException e) {
 			throw new AssertionError("Unexpected exception while connection to websocket", e);
 		}
