@@ -1,3 +1,5 @@
+import org.gradle.plugin.compatibility.compatibility
+
 /*
  * SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
  *
@@ -38,6 +40,11 @@ gradlePlugin {
 			description = "Configures common build settings for projects using Refinery"
 			tags = listOf("refinery", "settings", "conventions")
 			implementationClass = "tools.refinery.gradle.plugins.RefinerySettingsPlugin"
+			compatibility {
+				features {
+					configurationCache.set(true)
+				}
+			}
 		}
 
 		create("javaConventions") {
@@ -46,6 +53,11 @@ gradlePlugin {
 			description = "Configures common Java settings for projects using Refinery"
 			tags = listOf("refinery", "java", "conventions")
 			implementationClass = "tools.refinery.gradle.plugins.RefineryJavaPlugin"
+			compatibility {
+				features {
+					configurationCache.set(true)
+				}
+			}
 		}
 	}
 }

@@ -28,6 +28,7 @@
          <trusted-key id="1BD97A6A154E7810EE0BC832E2F38302C8075E3D">
             <trusting group="com.gradle.publish" name="plugin-publish-plugin"/>
             <trusting group="org.gradle.kotlin" name="gradle-kotlin-dsl-plugins"/>
+            <trusting group="org.gradle.plugin" name="compatibility-plugin"/>
          </trusted-key>
          <trusted-key id="1D85469D8559C2E1DF5F925131D2D79DF7E85DD3" group="org.jcommander" name="jcommander"/>
          <trusted-key id="1F47744C9B6E14F2049C2857F1F111AF65925306" group="io.github.classgraph" name="classgraph"/>
@@ -55,7 +56,6 @@
          <trusted-key id="4DB1A49729B053CAF015CEE9A6ADFC93EF34893E" group="org.hamcrest" name="hamcrest-core"/>
          <trusted-key id="517B94F8D0A46317A28D8AB30DA8A5EC02D11EAD" group="net.sf.jopt-simple" name="jopt-simple"/>
          <trusted-key id="56CEE778E1531BD70ECB0F47BEC27E87C49F2E2B" group="com.google.inject" name="guice"/>
-         <trusted-key id="5989BAF76217B843D66BE55B2D0E1FB8FE4B68B4" group="^org[.]eclipse[.]jetty($|([.].*))" regex="true"/>
          <trusted-key id="59A8E169739301FD48139CA00E325BECB6962A24" group="jakarta.annotation" name="jakarta.annotation-api"/>
          <trusted-key id="60200AC4AE761F1614D6C46766D68DAA073BE985">
             <trusting group="ch.qos.logback"/>
@@ -65,6 +65,7 @@
             <trusting group="com.fasterxml" name="classmate"/>
             <trusting group="org.codehaus.woodstox" name="stax2-api"/>
          </trusted-key>
+         <trusted-key id="66B1858E843E0723085C6D6C386F8FCD70E6AF64" group="org.eclipse.lsp4j"/>
          <trusted-key id="6DD3B8C64EF75253BEB2C53AD908A43FB7EC07AC" group="jakarta.activation" name="jakarta.activation-api"/>
          <trusted-key id="6F538074CCEBF35F28AF9B066A0975F8B1127B83" group="org.jetbrains.kotlin"/>
          <trusted-key id="72733997B400EAB50C8D78F18601C3316F18B969" group="org.eclipse.emf"/>
@@ -113,6 +114,7 @@
          <trusted-key id="E85AED155021AF8A6C6B7A4A7C7D8456294423BA" group="org.objenesis" name="objenesis"/>
          <trusted-key id="EAFC1F3B2FCED6AFD046C7D5734AEF3D43509290" group="org.osgi"/>
          <trusted-key id="EE0CA873074092F806F59B65D364ABAA39A47320" group="com.google.errorprone" name="error_prone_annotations"/>
+         <trusted-key id="F254B35617DC255D9344BCFA873A8E86B4372146" group="^org[.]eclipse[.]jetty($|([.].*))" regex="true"/>
          <trusted-key id="FA7929F83AD44C4590F6CC6815C71C0A4E0B8EDD" group="net.java.dev.jna"/>
          <trusted-key id="FAF0C43FF23519B701C237A01C82B802D1AE0CFD" group="^org[.]eclipse($|([.].*))" regex="true"/>
          <trusted-key id="FB35C8D02B4724DADA23DE0AFD116C1969FCCFF3" group="org.json" name="json"/>
