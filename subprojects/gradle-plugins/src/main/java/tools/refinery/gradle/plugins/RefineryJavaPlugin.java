@@ -9,6 +9,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.component.ConfigurationVariantDetails;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.internal.tasks.JvmConstants;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -25,7 +26,6 @@ import tools.refinery.gradle.plugins.internal.RefineryPluginUtils;
 import tools.refinery.gradle.plugins.internal.Versions;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -163,19 +163,22 @@ public class RefineryJavaPlugin implements Plugin<Project> {
 	}
 
 	private static void configureShadowPlugin(Project target) {
-		target.getTasks().named("shadowJar", Jar.class, task -> {
-			var shadowJarClass = task.getClass();
-			Method appendMethod;
-			try {
-				appendMethod = shadowJarClass.getMethod("append", String.class);
-			} catch (NoSuchMethodException e) {
-				throw new IllegalStateException("Failed to access ShadowJar task method", e);
+		target.getTasks().withType(Jar.class, task -> {
+			var taskClass = task.getClass();
+			if (!taskClass.getCanonicalName().startsWith(RefineryPluginUtils.SHADOW_JAR_TASK)) {
+				return;
 			}
 			try {
-				// Silence Xtext warning.
-				appendMethod.invoke(task, "plugin.properties");
-			} catch (IllegalAccessException | InvocationTargetException e) {
-				throw new IllegalStateException("Failed to add plugin.properties to the ShadowJar task", e);
+				// See https://gradleup.com/shadow/configuration/merging/#handling-duplicates-strategy
+				task.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
+				task.filesMatching("META-INF/services/**",
+						file -> file.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE));
+				task.filesMatching("plugin.properties",
+						file -> file.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE));
+				taskClass.getMethod("mergeServiceFiles").invoke(task);
+				taskClass.getMethod("append", String.class).invoke(task, "plugin.properties");
+			} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+				throw new RuntimeException("Failed to configure shadowJar task", e);
 			}
 		});
 

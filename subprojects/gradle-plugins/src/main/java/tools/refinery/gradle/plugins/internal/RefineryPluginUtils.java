@@ -11,16 +11,11 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.provider.Provider;
 
-import java.util.List;
-
 public final class RefineryPluginUtils {
 	public static final String VERSION_PROPERTY = "tools.refinery.version";
+	public static final String SHADOW_JAR_TASK = "com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar";
 
-	private static final List<String> SHADOW_PLUGIN_IDS = List.of(
-			"com.github.johnrengelman.shadow",
-			"com.gradleup.shadow",
-			"io.github.goooler.shadow"
-	);
+	private static final String SHADOW_PLUGIN_ID = "com.gradleup.shadow";
 
 	private RefineryPluginUtils() {
 		throw new IllegalArgumentException("This is a static utility class and should not be instantiated directly.");
@@ -31,19 +26,12 @@ public final class RefineryPluginUtils {
 		@SuppressWarnings("rawtypes")
 		Action<? super Plugin> pluginAction = ignored -> action.execute(project);
 		var plugins = project.getPlugins();
-		for (var pluginId : SHADOW_PLUGIN_IDS) {
-			plugins.withId(pluginId, pluginAction);
-		}
+		plugins.withId(SHADOW_PLUGIN_ID, pluginAction);
 	}
 
 	public static boolean hasShadowPlugin(Project project) {
 		var plugins = project.getPlugins();
-		for (var pluginId : SHADOW_PLUGIN_IDS) {
-			if (plugins.hasPlugin(pluginId)) {
-				return true;
-			}
-		}
-		return false;
+		return plugins.hasPlugin(SHADOW_PLUGIN_ID);
 	}
 
 	public static void addConditionalDependency(DependencyHandler dependencies, String configuration,
