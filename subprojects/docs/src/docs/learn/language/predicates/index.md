@@ -69,11 +69,11 @@ class Statechart extends CompositeElement.
 </details>
 
 [Assertions](../logic/#assertions) about graph predicates can prescribe where the predicate should (for positive assertions) or should not (for negative assertions) hold.
-When generating consistent models
+When generating consistent models, Refinery ensures these assertions are satisfied.
 
 ## Atoms
 
-An _atom_ is formed by a _symbol_ and _argument list_ of variables.
+An _atom_ is formed by a _symbol_ and an _argument list_ of variables.
 Possible symbols include [classes](../classes/#classes), [references](../classes/#references), and [predicates](../predicates).
 We may write a basic graph query as a conjunction (AND) of atoms.
 
@@ -234,11 +234,11 @@ pred sameName(CompositeElement a, CompositeElement b) <->
 
 ## Derived features
 
-Graph predicates may act as _derived types_ and _references_ in metamodel.
+Graph predicates may act as _derived types_ and _references_ in the metamodel.
 
 A graph predicate with exactly 1 parameter can be used as if it was a class: you may use it as a [_parameter type_](#atoms) in other graph patterns, as a _target type_ of a (non-containment) [reference](../classes/#references), or in a [_scope constraint_](../logic#type-scopes).
 
-_Derived references_ are graph predicates with exactly 2 parameters, which correspond the source and target node of the reference.
+_Derived references_ are graph predicates with exactly 2 parameters, which correspond to the source and target node of the reference.
 
 import TuneIcon from '@material-icons/svg/svg/tune/baseline.svg';
 import LabelIcon from '@material-icons/svg/svg/label/baseline.svg';
@@ -303,7 +303,7 @@ import DerivedFeature from './DerivedFeature.svg';
 
 A common use-case for graph predicates is _model validation_, where a predicate highlights _errors_ in the model.
 Such predicates are called _error predicates._
-In a consistent generated model, an error predicates should have no matches.
+In a consistent generated model, error predicates should have no matches.
 
 You can declare error predicates with the `error` keyword:
 
