@@ -122,7 +122,7 @@ public class ExampleMain {
             class File.
 
             class Directory extends File {
-                contains Directory[] children
+                contains File[] children
             }
 
             scope Filesystem = 1, File = 20.
