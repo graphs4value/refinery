@@ -43,32 +43,32 @@ jobs:
         with:
           fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
       - name: Cache Gradle packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
           key: ${{ matrix.os }}-gradle-${{ hashFiles('**/*.gradle.kts', 'gradle.properties', 'gradle/libs.versions.toml', 'gradle/pluginLibs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
       - name: Cache Sonar packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         if: ${{ steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         with:
           path: |
             ~/.sonar/cache
           key: ${{ matrix.os }}-sonar-${{ hashFiles('gradle/pluginLibs.versions.toml') }}
       - name: Cache node distribution
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             .node
           key: ${{ matrix.os }}-node-${{ hashFiles('gradle.properties') }}
       - name: Cache yarn packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
            .yarn/cache
           key: ${{ matrix.os }}-yarn-${{ hashFiles('yarn.lock') }}
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
            .playwright
@@ -85,7 +85,7 @@ jobs:
           ./gradlew sonar -Pci --info --stacktrace --no-parallel --no-daemon
       - name: Upload application artifacts
         if: ${{ matrix.os == 'ubuntu-22.04' }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: distributions
           path: |
@@ -151,17 +151,17 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
         with:
           platforms: arm64
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
         with:
           platforms: linux/amd64,linux/arm64
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download application artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: distributions
           path: subprojects
@@ -175,7 +175,7 @@ jobs:
           ./bake.sh false --set '*.cache-from=gha' --set '*.cache-to=type=gha,mode=max'
       - name: Log in to GitHub Container registry
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -186,7 +186,7 @@ jobs:
         run: |
           ./bake.sh true --set '*.cache-from=gha' --set '*.cache-to=type=gha,mode=max'
       - name: Delete application artifacts
-        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b
+        uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118
         with:
           name: distributions
   deploy:
@@ -200,7 +200,7 @@ jobs:
       url: https://refinery.services
     steps:
       - name: Set up SSH agent
-        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy to server
