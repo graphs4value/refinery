@@ -43,6 +43,9 @@ class QualifiedNameConverterTest {
 				Arguments.of("decision", QualifiedName.create("decision")),
 				Arguments.of("'a\\'b'", QualifiedName.create("a'b")),
 				Arguments.of("'a\\nb'", QualifiedName.create("a\nb")),
+				Arguments.of("'a\\\\nb'", QualifiedName.create("a\\nb")),
+				Arguments.of("'a\\\\\\nb'", QualifiedName.create("a\\\nb")),
+				Arguments.of("'a\\\\\\\\nb'", QualifiedName.create("a\\\\nb")),
 				Arguments.of("'a b'::c", QualifiedName.create("a b", "c")),
 				Arguments.of("'a b'::'c d'", QualifiedName.create("a b", "c d")),
 				Arguments.of("a::'b c'", QualifiedName.create("a", "b c")),
@@ -66,7 +69,9 @@ class QualifiedNameConverterTest {
 				Arguments.of("'a'", QualifiedName.create("a")),
 				Arguments.of("'contains'", QualifiedName.create("contains")),
 				Arguments.of("'decision'", QualifiedName.create("decision")),
-				Arguments.of("'a\nb'", QualifiedName.create("a\nb"))
+				Arguments.of("'a\nb'", QualifiedName.create("a\nb")),
+				Arguments.of("'a\\nb'", QualifiedName.create("a\nb")),
+				Arguments.of("'a\\\\\\nb'", QualifiedName.create("a\\\nb"))
 		));
 	}
 }
