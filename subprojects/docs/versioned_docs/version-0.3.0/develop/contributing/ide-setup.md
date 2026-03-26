@@ -37,7 +37,7 @@ You'll also need [VS Code](#vs-code) to edit the TypeScript code in Refinery.
 
 1. See the [required tools](/develop/contributing#required-tools) for compiling Refinery on obtaining the required JDK version.
 
-2. Download and extract the [Eclipse IDE for Java and DSL Developers 2023-12](https://www.eclipse.org/downloads/packages/release/2023-12/r/eclipse-ide-java-and-dsl-developers) package.
+2. Download and extract the [Eclipse IDE for Java and DSL Developers 2026-03](https://www.eclipse.org/downloads/packages/release/2026-03/r/eclipse-ide-java-and-dsl-developers) package.
 
 3. Launch Eclipse and create a new workspace.
 
@@ -45,7 +45,6 @@ You'll also need [VS Code](#vs-code) to edit the TypeScript code in Refinery.
     * _EclEmma Java Code Coverage_
     * _EcoreTools : Ecore Diagram Editor_
     * _Sirius_ (ignore the warning during installation about the solution _Sirius_ not being available)
-    * _SonarLint_
 
 5. Open _Window > Preferences_ and set the following preferences:
     * _General > Workspace > Text file encoding_ should be _UTF-8_.
