@@ -56,4 +56,12 @@ public class GenerateRequest {
 	public void setRandomSeed(long randomSeed) {
 		this.randomSeed = randomSeed;
 	}
+
+	public int getCount() {
+		return 1;
+	}
+
+	public boolean isMany() {
+		return false;
+	}
 }
