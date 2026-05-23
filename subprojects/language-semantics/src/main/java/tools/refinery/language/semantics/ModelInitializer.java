@@ -44,6 +44,8 @@ import tools.refinery.store.reasoning.representation.PartialRelation;
 import tools.refinery.store.reasoning.scope.ScopePropagator;
 import tools.refinery.store.reasoning.seed.ModelSeed;
 import tools.refinery.store.reasoning.seed.Seed;
+import tools.refinery.store.reasoning.ibex.IbexPropagator;
+import tools.refinery.store.reasoning.ibex.IbexRule;
 import tools.refinery.store.reasoning.smt.SmtPropagator;
 import tools.refinery.store.reasoning.smt.SmtRule;
 import tools.refinery.store.reasoning.translator.ConcretizationSettings;
@@ -137,6 +139,8 @@ public class ModelInitializer {
 	private ScopePropagator scopePropagator;
 
 	private SmtPropagator smtPropagator;
+
+	private IbexPropagator ibexPropagator;
 
 	private int nodeCount;
 
@@ -247,11 +251,11 @@ public class ModelInitializer {
 			}
 			collectPredicates(storeBuilder);
 			collectRules(storeBuilder);
-			if (smtPropagator != null) {
+			if (ibexPropagator != null) {
 				if (storeBuilder.tryGetAdapter(PropagationBuilder.class).isEmpty()) {
-					throw new TracedException(problem, "SMT rules require a PropagationBuilder");
+					throw new TracedException(problem, "IBEX rules require a PropagationBuilder");
 				}
-				storeBuilder.with(smtPropagator);
+				storeBuilder.with(ibexPropagator);
 			}
 			storeBuilder.tryGetAdapter(StateCoderBuilder.class)
 					.ifPresent(stateCoderBuilder -> stateCoderBuilder.individuals(individuals));
@@ -1083,7 +1087,7 @@ public class ModelInitializer {
 						ConcretenessSpecification.CANDIDATE);
 				rules.addAll(propagationRules);
 				rules.addAll(concretizationRules);
-				addSmtRules(ruleCompiler.toSmtRules(name, ruleDefinition));
+				addIbexRules(ruleCompiler.toSmtRules(name, ruleDefinition));
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, List.copyOf(rules));
 				storeBuilder.tryGetAdapter(PropagationBuilder.class).ifPresent(propagationBuilder -> {
 					propagationBuilder.rules(propagationRules);
@@ -1092,9 +1096,6 @@ public class ModelInitializer {
 			}
 			case CONCRETIZATION -> {
 				var rules = ruleCompiler.toPropagationRules(name, ruleDefinition, ConcretenessSpecification.CANDIDATE);
-				addSmtRules(ruleCompiler.toSmtRules(name, ruleDefinition).stream()
-						.map(smtRule -> smtRule.withConcreteness(ConcretenessSpecification.CANDIDATE))
-						.toList());
 				problemTrace.putPropagationRuleDefinition(ruleDefinition, rules);
 				storeBuilder.tryGetAdapter(PropagationBuilder.class)
 						.ifPresent(propagationBuilder -> propagationBuilder.concretizationRules(rules));
@@ -1126,5 +1127,17 @@ public class ModelInitializer {
 			smtPropagator = new SmtPropagator();
 		}
 		smtPropagator.rules(smtRules);
+	}
+
+	private void addIbexRules(Collection<SmtRule> smtRules) {
+		if (smtRules.isEmpty()) {
+			return;
+		}
+		if (ibexPropagator == null) {
+			ibexPropagator = new IbexPropagator();
+		}
+		ibexPropagator.rules(smtRules.stream()
+				.map(sr -> new IbexRule(sr.precondition(), sr.assertedTerm()))
+				.toList());
 	}
 }
