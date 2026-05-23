@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import tools.refinery.language.web.api.ConcretizeApi;
 import tools.refinery.language.web.api.GenerateApi;
+import tools.refinery.language.web.api.GenerateManyApi;
 import tools.refinery.language.web.api.SemanticsApi;
 import tools.refinery.language.web.api.provider.ConstraintViolationExceptionMapperProvider;
 import tools.refinery.language.web.api.provider.RefineryResponseFilter;
@@ -129,6 +130,7 @@ public class ServerLauncher {
 		resourceConfig.register(ConstraintViolationExceptionMapperProvider.class);
 		resourceConfig.register(ConcretizeApi.class);
 		resourceConfig.register(GenerateApi.class);
+		resourceConfig.register(GenerateManyApi.class);
 		resourceConfig.register(SemanticsApi.class);
 		var apiServletHolder = new ServletHolder(new ServletContainer(resourceConfig));
 		handler.addServlet(apiServletHolder, "/api/*");

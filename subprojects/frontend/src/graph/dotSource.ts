@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { escape } from 'lodash-es';
+import { escape as lodashEscape } from 'lodash-es';
 
 import type {
   NodeMetadata,
@@ -18,6 +18,20 @@ import { binarySearch, extractValue, extractValueColor } from './valueUtils';
 const EDGE_WEIGHT = 1;
 const CONTAINMENT_WEIGHT = 5;
 const UNKNOWN_WEIGHT_FACTOR = 0.5;
+
+/**
+ * Escape a string so that it can appear in a `dot` HTML value.
+ *
+ * While HTML doesn't require escaping `>` as `&gt;`, we rely on
+ * Lodash's behavior to escape it as well, because in `dot`,
+ * it terminates a HTML attribute value.
+ *
+ * @param value The input string.
+ * @returns The escaped string.
+ */
+function escape(value: string | undefined): string {
+  return lodashEscape(value).replaceAll('\\', '\\\\');
+}
 
 function nodeName(
   graph: GraphStore,
@@ -263,7 +277,7 @@ function createNodes(
             valueString = '?';
           }
           const attributeName = graph.getName(relation);
-          const attributeLabel = `${attributeName}: ${valueString}`;
+          const attributeLabel = `${attributeName}: ${escape(valueString)}`;
           const color = extractValueColor(value);
           lines.push(
             `<tr>

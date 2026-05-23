@@ -11,10 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.refinery.generator.*;
 import tools.refinery.language.model.problem.Problem;
-import tools.refinery.language.web.api.dto.GenerateRequest;
-import tools.refinery.language.web.api.dto.GenerateStatus;
-import tools.refinery.language.web.api.dto.GenerateSuccessResult;
-import tools.refinery.language.web.api.dto.RefineryResponse;
+import tools.refinery.language.web.api.dto.*;
 import tools.refinery.language.web.api.sink.ResponseSink;
 import tools.refinery.language.web.api.util.OutputSerializer;
 import tools.refinery.language.web.api.util.TimeoutManager;
@@ -117,17 +114,32 @@ public class GenerateWorker extends ScheduledWorker<GenerateRequest> {
 		modelGeneratorFactory.keepShadowPredicates(jsonFormat.getShadowPredicates().isKeep());
 		var generator = modelGeneratorFactory.createGenerator(problem);
 		generator.setRandomSeed(request.getRandomSeed());
-		generator.setMaxNumberOfSolutions(1);
+		generator.setMaxNumberOfSolutions(request.getCount());
 		return generator;
 	}
 
 
 	private void saveModel(ModelGenerator generator) throws IOException {
 		var request = getRequest();
+		if (!request.isMany()) {
+			setResponse(new RefineryResponse.Success(saveAsResult(generator)));
+			return;
+		}
+		int found = generator.getSolutionCount();
+		var results = new ArrayList<GenerateSuccessResult>(found);
+		for (int i = 0; i < found; i++) {
+			generator.loadSolution(i);
+			results.add(saveAsResult(generator));
+		}
+		setResponse(new RefineryResponse.Success(results));
+	}
+
+	private GenerateSuccessResult saveAsResult(ModelGenerator generator) throws IOException {
+		var request = getRequest();
 		boolean jsonEnabled = request.getFormat().getJson().isEnabled();
 		var json = jsonEnabled ? outputSerializer.savePartialInterpretation(generator) : null;
 		boolean sourceEnabled = request.getFormat().getSource().isEnabled();
 		var source = sourceEnabled ? outputSerializer.saveSource(generator) : null;
-		setResponse(new RefineryResponse.Success(new GenerateSuccessResult(json, source)));
+		return new GenerateSuccessResult(json, source);
 	}
 }
