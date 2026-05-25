@@ -23,10 +23,10 @@ import tools.refinery.language.web.api.sink.SseResponseSink;
 
 @Path("/v1/generateMany")
 public class GenerateManyApi {
-	private final GenerateWorker worker;
+	private final GenerateManyWorker worker;
 
 	@Inject
-	public GenerateManyApi(GenerateWorker worker) {
+	public GenerateManyApi(GenerateManyWorker worker) {
 		this.worker = worker;
 	}
 

@@ -8,10 +8,15 @@ package tools.refinery.store.dse.transition.statespace;
 import tools.refinery.store.dse.transition.VersionWithObjectiveValue;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 public interface SolutionStore {
 	boolean submit(VersionWithObjectiveValue version);
+
 	List<VersionWithObjectiveValue> getSolutions();
+
 	boolean hasEnoughSolution();
+
+	void addListener(SolutionStoreListener listener);
+
+	void removeListener(SolutionStoreListener listener);
 }

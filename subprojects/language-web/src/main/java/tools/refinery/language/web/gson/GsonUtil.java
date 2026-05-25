@@ -8,6 +8,7 @@ package tools.refinery.language.web.gson;
 import com.google.gson.FormattingStyle;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import tools.refinery.generator.GeneratorResult;
 import tools.refinery.language.semantics.metadata.FunctionDetailKind;
 import tools.refinery.language.semantics.metadata.NodeKind;
 import tools.refinery.language.semantics.metadata.PredicateDetailKind;
@@ -15,6 +16,7 @@ import tools.refinery.language.semantics.metadata.RelationDetail;
 import tools.refinery.language.utils.Visibility;
 import tools.refinery.language.web.api.dto.RefineryResponse;
 import tools.refinery.language.web.xtext.servlet.LowercaseTypeAdapter;
+import tools.refinery.language.web.xtext.servlet.LowercaseTypeAdapterFactory;
 import tools.refinery.language.web.xtext.servlet.RuntimeTypeAdapterFactory;
 
 /**
@@ -40,6 +42,7 @@ public class GsonUtil {
 			.registerTypeAdapter(NodeKind.class, new LowercaseTypeAdapter<>(NodeKind.class))
 			.registerTypeAdapter(PredicateDetailKind.class, new LowercaseTypeAdapter<>(PredicateDetailKind.class))
 			.registerTypeAdapter(FunctionDetailKind.class, new LowercaseTypeAdapter<>(FunctionDetailKind.class))
+			.registerTypeAdapterFactory(new LowercaseTypeAdapterFactory<>(GeneratorResult.class))
 			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RefineryResponse.class, "result")
 					.recognizeSubtypes()
 					.registerSubtype(RefineryResponse.Timeout.class, "timeout")

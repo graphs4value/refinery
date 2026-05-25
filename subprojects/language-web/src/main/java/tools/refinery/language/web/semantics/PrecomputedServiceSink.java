@@ -65,4 +65,9 @@ class PrecomputedServiceSink implements ResponseSink {
 			response = new RefineryResponse.Cancelled("Computation interrupted by server");
 		}
 	}
+
+	@Override
+	public boolean hasStatusReporting() {
+		return false;
+	}
 }

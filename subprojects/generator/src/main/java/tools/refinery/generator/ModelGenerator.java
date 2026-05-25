@@ -5,6 +5,8 @@
  */
 package tools.refinery.generator;
 
+import tools.refinery.store.dse.transition.statespace.SolutionStoreListener;
+
 import java.util.concurrent.TimeUnit;
 
 public interface ModelGenerator extends ModelFacade {
@@ -24,6 +26,10 @@ public interface ModelGenerator extends ModelFacade {
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isLastGenerationSuccessful();
 
+	// It makes more sense to check for success than for failure.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	boolean hasEnoughSolutions();
+
 	GeneratorResult tryGenerate();
 
 	default void generate() {
@@ -35,4 +41,8 @@ public interface ModelGenerator extends ModelFacade {
 	default void generateWithTimeout(long l, TimeUnit timeUnit) {
 		tryGenerateWithTimeout(l, timeUnit).orThrow();
 	}
+
+	void addListener(SolutionStoreListener listener);
+
+	void removeListener(SolutionStoreListener listener);
 }
