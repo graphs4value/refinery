@@ -154,6 +154,7 @@ export default class UpdateService {
     }
     if (isConflictResult(result, 'invalidStateId')) {
       await this.updateFullTextExclusive();
+      return;
     }
     throw parsedDocumentStateResult.error;
   }
