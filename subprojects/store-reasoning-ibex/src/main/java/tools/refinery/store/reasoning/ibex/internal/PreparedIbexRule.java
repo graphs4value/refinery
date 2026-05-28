@@ -37,28 +37,18 @@ import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
-/**
- * Pre-processed form of an {@link IbexRule} ready for use at runtime.
- * <p>
- * Created once at store-build time and shared across all model instances.
- * The embedded {@link Ibex} solver is stateless w.r.t. domain values (domains are passed per call
- * to {@code contract()}), so sharing it across models is safe as long as calls are not concurrent.
- */
 public record PreparedIbexRule(RelationalQuery partialPrecondition,
 							   Term<TruthValue> assertedTerm,
 							   ObjectIntMap<NodeVariable> parameterMap,
 							   List<Influence> influences,
 							   Ibex ibex) {
 
-	/** Precision for real-valued variables (e.g. RealInterval attributes). */
 	private static final double REAL_PRECISION = 1e-8;
 
 	public static PreparedIbexRule of(IbexRule rule) {
 		var precondition = rule.precondition().getDnf();
 		var symbolicParameters = precondition.getSymbolicParameters();
 		var parameterVariables = symbolicParameters.stream().map(SymbolicParameter::getVariable).toList();
-
-		// helper query: precondition holds AND the asserted term does not yet must-hold
 		var helper = Dnf.builder(precondition.name() + "#helper")
 				.symbolicParameters(symbolicParameters)
 				.clause(
@@ -80,7 +70,6 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition,
 				.clause(partialLiterals)
 				.build();
 
-		// parameter index map: NodeVariable → position in rule parameter list
 		int arity = parameterVariables.size();
 		var mutableParamMap = ObjectIntMaps.mutable.<NodeVariable>withInitialCapacity(arity);
 		for (int i = 0; i < arity; i++) {
@@ -88,24 +77,19 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition,
 		}
 		var parameterMap = mutableParamMap.toImmutable();
 
-		// collect which (partialFunction, parameterIndices) pairs appear in the assertedTerm
 		var collector = new InfluenceCollector(parameterMap);
 		collector.collectFromTerm(rule.assertedTerm());
 		var influences = collector.getInfluences();
 
-		// translate assertedTerm → IBEX constraint string, e.g. "({0}+18)<={1}"
 		var termToIbex = new TermToIbexConstraint(influences, parameterMap);
 		var constraintString = termToIbex.toConstraint(rule.assertedTerm());
 
-		// build the IBEX solver: one variable slot per influence
-		// -1 marks a variable as integral; >= 0 marks it as real with that precision
 		int numVars = influences.size();
 		var prec = new double[numVars];
 		for (int i = 0; i < numVars; i++) {
 			var domain = influences.get(i).partialFunction().abstractDomain();
 			prec[i] = IntIntervalDomain.INSTANCE.equals(domain) ? -1 : REAL_PRECISION;
 		}
-		// preserve_rounding=true: restores Java's FPU rounding mode after each call
 		var ibex = new Ibex(prec, true);
 		ibex.add_ctr(constraintString);
 		ibex.build();
@@ -113,10 +97,6 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition,
 		return new PreparedIbexRule(partialPrecondition, rule.assertedTerm(), parameterMap, influences, ibex);
 	}
 
-	/**
-	 * Maps a (partialFunction, parameterIndices) pair to an IBEX variable index.
-	 * The index is the position in the {@link #influences()} list.
-	 */
 	public record Influence(AnyPartialFunction partialFunction, Tuple parameterIndices) {
 	}
 
@@ -124,11 +104,11 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition,
 		private final ObjectIntMap<NodeVariable> parameterMap;
 		private final Set<Influence> influences = new LinkedHashSet<>();
 
-		InfluenceCollector(ObjectIntMap<NodeVariable> parameterMap) {
+		public InfluenceCollector(ObjectIntMap<NodeVariable> parameterMap) {
 			this.parameterMap = parameterMap;
 		}
 
-		List<Influence> getInfluences() {
+		public List<Influence> getInfluences() {
 			return List.copyOf(influences);
 		}
 

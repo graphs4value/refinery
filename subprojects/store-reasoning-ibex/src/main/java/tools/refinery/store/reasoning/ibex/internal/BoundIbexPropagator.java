@@ -15,18 +15,10 @@ import tools.refinery.store.reasoning.ibex.internal.solver.IbexSolver;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Model-bound propagator that drives IBEX interval contraction for all rules registered with
- * the parent {@link IbexPropagator}.
- * <p>
- * One {@link IbexSolver} is created per rule per model. Concretization is a no-op: IBEX only
- * narrows intervals during the propagation stage and never picks concrete point values.
- */
 public class BoundIbexPropagator implements BoundPropagator, ModelListener {
 	private final List<IbexSolver> solvers;
 
-	public BoundIbexPropagator(IbexPropagator propagator, Model model,
-							   Collection<PreparedIbexRule> rules) {
+	public BoundIbexPropagator(IbexPropagator propagator, Model model, Collection<PreparedIbexRule> rules) {
 		solvers = rules.stream()
 				.map(rule -> new IbexSolver(propagator, rule, model))
 				.toList();
@@ -45,7 +37,6 @@ public class BoundIbexPropagator implements BoundPropagator, ModelListener {
 		return overall;
 	}
 
-	/** IBEX does not concretize; always report that concretization is not needed. */
 	@Override
 	public boolean concretizationRequested() {
 		return false;
@@ -61,7 +52,6 @@ public class BoundIbexPropagator implements BoundPropagator, ModelListener {
 		return PropagationResult.UNCHANGED;
 	}
 
-	/** After a state restore (backtrack), all solvers must re-run because intervals may have changed. */
 	@Override
 	public void afterRestore() {
 		for (var solver : solvers) {
@@ -70,8 +60,5 @@ public class BoundIbexPropagator implements BoundPropagator, ModelListener {
 	}
 
 	@Override
-	public void beforeClose() {
-		// The Ibex native object lives in PreparedIbexRule (shared across models) and is not
-		// closed here. Call Ibex.release() on the PreparedIbexRule when the store itself is torn down.
-	}
+	public void beforeClose() {}
 }

@@ -1,0 +1,21 @@
+class Person {
+    int age
+    Person[] children opposite parent
+    Person[0..1] parent opposite children
+}
+
+age(Person::new): 0..100.
+?parent(Person::new, Person::new).
+
+propagation rule setAge(child, parent) <->
+    parent(child, parent)
+==>
+    assert age(child) + 18 <= age(parent).
+
+error selfParent(Person p) <->
+    parent(p, p).
+
+error noParentRelation() <->
+    !parent(_, _).
+
+scope Person = 3..20.

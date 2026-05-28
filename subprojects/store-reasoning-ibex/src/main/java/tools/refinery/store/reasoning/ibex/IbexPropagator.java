@@ -22,16 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Entry point for IBEX-based interval constraint propagation.
- * <p>
- * Usage mirrors {@code SmtPropagator}: add rules via {@link #rule}, then pass this object to
- * {@code ModelStore.builder().with(new IbexPropagator().rule(...))}.
- * <p>
- * IBEX only participates in the propagation stage (PARTIAL concreteness).
- * It narrows intervals in the partial model but does not pick concrete values.
- * The {@code libibex-java.so} native library must be on {@code java.library.path}.
- */
 public class IbexPropagator implements ModelStoreConfiguration {
 	private final List<IbexRule> rules = new ArrayList<>();
 
@@ -66,7 +56,6 @@ public class IbexPropagator implements ModelStoreConfiguration {
 		storeBuilder.getAdapter(PropagationBuilder.class)
 				.propagator(model -> new BoundIbexPropagator(this, model, preparedRules));
 
-		// IBEX inspects PARTIAL interpretations; CANDIDATE is required by the generator's concretization step.
 		storeBuilder.getAdapter(ReasoningBuilder.class)
 				.requiredInterpretations(Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE));
 	}

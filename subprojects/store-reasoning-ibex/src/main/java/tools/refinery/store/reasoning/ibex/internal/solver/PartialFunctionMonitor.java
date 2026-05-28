@@ -27,16 +27,6 @@ import tools.refinery.store.tuple.Tuple;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/**
- * Tracks which node-tuples for a given partial function are referenced by at least one active
- * rule match, and listens for changes to those values.
- * <p>
- * Also owns all double ↔ abstract-value conversion so that {@link IbexSolver} never needs to
- * call typed methods on a wildcard-typed monitor reference.
- *
- * @param <A> abstract value type (e.g. {@code IntInterval})
- * @param <C> concrete value type (e.g. {@code BigInteger})
- */
 class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements ResultSetListener<A> {
 	private static final String REJECTION_EMPTY = "IBEX contracted a domain to empty";
 
@@ -44,7 +34,6 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 	private final PartialFunction<A, C> partialFunction;
 	private final PartialInterpretation<A, C> interpretation;
 	private final PartialInterpretationRefiner<A, C> refiner;
-	/** Reference count per node-tuple: > 0 means the node is part of at least one active match. */
 	private final MutableObjectIntMap<Tuple> refCounts = ObjectIntMaps.mutable.empty();
 
 	PartialFunctionMonitor(IbexSolver ibexSolver, PartialFunction<A, C> partialFunction,
@@ -74,11 +63,6 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 		}
 	}
 
-	/**
-	 * Writes the current interval for {@code key} into {@code domains[2*idx..2*idx+1]}.
-	 *
-	 * @return {@code false} if the value is an error/bottom domain — the branch must be rejected.
-	 */
 	boolean fillDomain(Tuple key, double[] domains, int idx) {
 		var value = interpretation.get(key);
 		return switch ((Object) value) {
@@ -99,14 +83,7 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 		};
 	}
 
-	/**
-	 * Reads back the contracted interval from {@code domains[2*idx..2*idx+1]} and merges it
-	 * into the PARTIAL interpretation for {@code key}.
-	 *
-	 * @return {@link PropagationResult#UNCHANGED} if the value did not change,
-	 *         {@link PropagationResult#PROPAGATED} if the interval was narrowed,
-	 *         or a rejected result if the domain collapsed to empty.
-	 */
+
 	@SuppressWarnings("unchecked")
 	PropagationResult applyDomain(Tuple key, double[] domains, int idx, Object reason) {
 		var abstractDomain = partialFunction.abstractDomain();
@@ -132,17 +109,12 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 		return PropagationResult.PROPAGATED;
 	}
 
-	/** Notified whenever the interpretation changes; marks the solver dirty if the node is tracked. */
 	@Override
 	public void put(Tuple key, A fromValue, A toValue) {
 		if (refCounts.containsKey(key)) {
 			ibexSolver.markChanged();
 		}
 	}
-
-	// -------------------------------------------------------------------------
-	// Bound ↔ double helpers
-	// -------------------------------------------------------------------------
 
 	private static double intBoundToDouble(IntBound bound, double infinityValue) {
 		return bound instanceof IntBound.Finite(var v) ? v.doubleValue() : infinityValue;

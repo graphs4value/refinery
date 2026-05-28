@@ -19,16 +19,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-/**
- * Converts a {@code Term<TruthValue>} arithmetic comparison into an IBEX constraint string.
- * <p>
- * Each partial function reference in the term is mapped to an IBEX variable {@code {i}} based on
- * its position in the {@code influences} list. The resulting string can be passed directly to
- * {@code Ibex.add_ctr()}.
- * <p>
- * Only single arithmetic comparisons ({@code <=, >=, <, >, =}) are supported at the top level.
- * Logical connectives ({@code AND, OR}) are not supported and will throw.
- */
 public class TermToIbexConstraint {
 	private final List<Influence> influences;
 	private final ObjectIntMap<NodeVariable> parameterMap;
@@ -38,7 +28,7 @@ public class TermToIbexConstraint {
 		this.parameterMap = parameterMap;
 	}
 
-	/** Converts the top-level comparison term to an IBEX constraint string. */
+	// Converts the top-level comparison term to an IBEX constraint string.
 	public String toConstraint(Term<TruthValue> term) {
 		return switch (term) {
 			case AbstractDomainLessEqTerm<?, ?> t ->

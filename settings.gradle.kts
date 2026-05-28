@@ -34,7 +34,7 @@ include(
 		"store-reasoning",
 		"store-reasoning-scope",
 		"store-reasoning-ibex",
-	"store-reasoning-smt",
+		"store-reasoning-smt",
 		"versions",
 )
 

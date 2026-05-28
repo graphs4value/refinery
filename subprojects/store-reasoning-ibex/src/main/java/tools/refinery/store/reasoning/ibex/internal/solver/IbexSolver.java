@@ -21,17 +21,6 @@ import tools.refinery.store.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Bound to a single model instance. For one {@link PreparedIbexRule}, iterates every active match
- * in the PARTIAL interpretation and calls {@code Ibex.contract()} to narrow intervals.
- * <p>
- * Monitors are stored as {@code PartialFunctionMonitor<?,?>} (wildcard). All typed operations —
- * reading and writing intervals — are delegated to the monitor itself via the non-typed
- * {@link PartialFunctionMonitor#fillDomain} and {@link PartialFunctionMonitor#applyDomain} methods.
- * <p>
- * Initialization is lazy: {@link ReasoningAdapter} is only accessed on the first call to
- * {@link #propagate()}, after all model adapters have been created.
- */
 public class IbexSolver implements ResultSetListener<Boolean> {
 	private static final String REJECTION_EMPTY = "IBEX contracted a domain to empty";
 
@@ -60,11 +49,6 @@ public class IbexSolver implements ResultSetListener<Boolean> {
 		changed = true;
 	}
 
-	/**
-	 * Lazily initialises monitors from {@link ReasoningAdapter} (only available after all model
-	 * adapters are created), seeds reference counts from the current result set, and subscribes
-	 * to future changes.
-	 */
 	private void startIfNeeded() {
 		if (started) {
 			return;
@@ -83,13 +67,11 @@ public class IbexSolver implements ResultSetListener<Boolean> {
 		started = true;
 	}
 
-	/** Capture helper: the wildcard pair in {@code pf} is bound to concrete A,C inside. */
 	private <A extends AbstractValue<A, C>, C> PartialFunctionMonitor<A, C> createMonitor(
 			PartialFunction<A, C> pf, ReasoningAdapter ra) {
 		return new PartialFunctionMonitor<>(this, pf, ra);
 	}
 
-	/** Called by the result set when a match is added or removed. */
 	@Override
 	public void put(Tuple key, Boolean fromValue, Boolean toValue) {
 		boolean wasActive = Boolean.TRUE.equals(fromValue);
@@ -112,12 +94,6 @@ public class IbexSolver implements ResultSetListener<Boolean> {
 		}
 	}
 
-	/**
-	 * Runs IBEX contraction for every active match.
-	 * Returns {@link PropagationResult#UNCHANGED} when nothing changed,
-	 * {@link PropagationResult#PROPAGATED} when at least one interval was narrowed,
-	 * or a rejected result when a domain collapsed to empty.
-	 */
 	public PropagationResult propagate() {
 		startIfNeeded();
 		if (!changed) {
@@ -136,16 +112,11 @@ public class IbexSolver implements ResultSetListener<Boolean> {
 		return overall;
 	}
 
-	// -------------------------------------------------------------------------
-	// Per-match contraction
-	// -------------------------------------------------------------------------
-
 	private PropagationResult propagateMatch(Tuple matchKey) {
 		var influences = rule.influences();
 		int numVars = influences.size();
 		var domains = new double[numVars * 2];
 
-		// Read current intervals into domains[]
 		for (int i = 0; i < numVars; i++) {
 			var nodeTuple = extractNodeTuple(matchKey, influences.get(i).parameterIndices());
 			if (!monitors.get(i).fillDomain(nodeTuple, domains, i)) {
@@ -159,12 +130,10 @@ public class IbexSolver implements ResultSetListener<Boolean> {
 			case Ibex.FAIL -> new PropagationRejectedResult(reason, REJECTION_EMPTY);
 			case Ibex.ENTAILED, Ibex.NOTHING -> PropagationResult.UNCHANGED;
 			case Ibex.CONTRACT -> applyContracted(matchKey, domains);
-			// BAD_DOMAIN / NOT_BUILT should not occur in normal operation
 			default -> PropagationResult.UNCHANGED;
 		};
 	}
 
-	/** Writes the contracted domains back into the partial interpretations. */
 	private PropagationResult applyContracted(Tuple matchKey, double[] domains) {
 		var influences = rule.influences();
 		var overall = PropagationResult.UNCHANGED;
@@ -177,10 +146,6 @@ public class IbexSolver implements ResultSetListener<Boolean> {
 		}
 		return overall;
 	}
-
-	// -------------------------------------------------------------------------
-	// Utility
-	// -------------------------------------------------------------------------
 
 	private static Tuple extractNodeTuple(Tuple matchKey, Tuple paramIndices) {
 		int arity = paramIndices.getSize();
