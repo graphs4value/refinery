@@ -60,5 +60,5 @@ public class BoundIbexPropagator implements BoundPropagator, ModelListener {
 	}
 
 	@Override
-	public void beforeClose() {}
+	public void beforeClose() {} //c++-os objektumokat fel kell szabadítani
 }
