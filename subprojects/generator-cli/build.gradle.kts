@@ -19,6 +19,10 @@ application {
 	mainClass.set("tools.refinery.generator.cli.RefineryCli")
 }
 
+tasks.named<JavaExec>("run") {
+	jvmArgs("-Djava.library.path=/home/kmono/ibex-lib/build/src/java")
+}
+
 tasks.register<JavaExec>("cli") {
 	val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
 	dependsOn(mainRuntimeClasspath)

@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(xargs grep -l \"propagateOne\\\\|concretizeOne\\\\|checkConcretization\")",
-      "Bash(grep -E \"\\\\.\\(jar|so|class|java\\)$\")",
-      "Bash(wsl -e ls /home/kmono/)"
-    ]
-  }
-}
