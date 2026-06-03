@@ -41,7 +41,8 @@ public enum RoundingMode {
         }
 	};
 
-	private static final int PRECISION = 16;
+	public static final int PRECISION = 16;
+
 	private static final MathContext CEILING_CONTEXT = new MathContext(PRECISION, java.math.RoundingMode.CEILING);
 	private static final MathContext FLOOR_CONTEXT = new MathContext(PRECISION, java.math.RoundingMode.FLOOR);
 

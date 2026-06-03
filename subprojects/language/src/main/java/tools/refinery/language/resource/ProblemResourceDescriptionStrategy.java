@@ -39,6 +39,7 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 	public static final String SHADOWING_KEY_RELATION = "relation";
 	public static final String SHADOWING_KEY_AGGREGATOR = "aggregator";
 	public static final String SHADOWING_KEY_ANNOTATION = "annotation";
+	public static final String SHADOWING_KEY_THEORY = "theory";
 	public static final String PREFERRED_NAME = DATA_PREFIX + "PREFERRED_NAME";
 	public static final String PREFERRED_NAME_TRUE = "true";
 	public static final String IMPORTS = DATA_PREFIX + "IMPORTS";
@@ -145,7 +146,8 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 
 	protected Map<String, String> getUserData(EObject eObject) {
 		var builder = ImmutableMap.<String, String>builder();
-		if (eObject instanceof Problem problem) {
+		switch (eObject) {
+		case Problem problem -> {
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_PROBLEM);
 			var explicitImports = importCollector.getDirectImports(eObject.eResource());
 			var importsString = explicitImports.toList().stream()
@@ -153,17 +155,19 @@ public class ProblemResourceDescriptionStrategy extends DefaultResourceDescripti
 					.collect(Collectors.joining(IMPORTS_SEPARATOR));
 			builder.put(IMPORTS, importsString);
 			builder.put(MODULE_KIND, problem.getKind().getName());
-		} else if (eObject instanceof Node node) {
-			addNodeUserData(node, builder);
-		} else if (eObject instanceof Relation relation) {
-			addRelationUserData(relation, builder);
-		} else if (eObject instanceof RuleDefinition) {
+		}
+		case Node node -> addNodeUserData(node, builder);
+		case Relation relation -> addRelationUserData(relation, builder);
+		case RuleDefinition _ -> {
 			// Rule definitions and predicates live in the same namespace.
 			builder.put(SHADOWING_KEY, SHADOWING_KEY_RELATION);
-		} else if (eObject instanceof AggregatorDeclaration) {
-			builder.put(SHADOWING_KEY, SHADOWING_KEY_AGGREGATOR);
-		} else if (eObject instanceof AnnotationDeclaration) {
-			builder.put(SHADOWING_KEY, SHADOWING_KEY_ANNOTATION);
+		}
+		case AggregatorDeclaration _ -> builder.put(SHADOWING_KEY, SHADOWING_KEY_AGGREGATOR);
+		case AnnotationDeclaration _ -> builder.put(SHADOWING_KEY, SHADOWING_KEY_ANNOTATION);
+		case TheoryDeclaration _ -> builder.put(SHADOWING_KEY, SHADOWING_KEY_THEORY);
+		case null, default -> {
+			// No user data to add.
+		}
 		}
 		if (ProblemUtil.isError(eObject)) {
 			builder.put(ERROR_PREDICATE, ERROR_PREDICATE_TRUE);

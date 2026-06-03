@@ -62,13 +62,38 @@ public class ActionTargetCollector {
 	private static void collectTargets(RuleDefinition ruleDefinition, HashSet<Relation> targets) {
 		for (var consequent : ruleDefinition.getConsequents()) {
 			for (var action : consequent.getActions()) {
-				if (action instanceof AssertionAction assertionAction) {
-					var target = assertionAction.getRelation();
-					if (target != null) {
-						targets.add(target);
-					}
+				switch (action) {
+				case AssertionAction assertionAction -> collectTarget(assertionAction.getRelation(), targets);
+				case TheoryAction theoryAction -> collectTargetFunctions(theoryAction.getTerm(), targets);
+				case null, default -> throw new IllegalArgumentException("Unknown action: " + action);
 				}
 			}
+		}
+	}
+
+	private static void collectTargetFunctions(Expr expr, HashSet<Relation> targets) {
+		if (expr instanceof Atom atom) {
+			collectTargetFunction(atom, targets);
+		}
+		var iterator = expr.eAllContents();
+		while (iterator.hasNext()) {
+			var child = iterator.next();
+			if (child instanceof Atom atom) {
+				collectTargetFunction(atom, targets);
+			}
+			if (!(child instanceof Expr)) {
+				iterator.prune();
+			}
+		}
+	}
+
+	private static void collectTargetFunction(Atom atom, HashSet<Relation> targets) {
+		collectTarget(atom.getRelation(), targets);
+	}
+
+	private static void collectTarget(Relation target, HashSet<Relation> targets) {
+		if (target != null) {
+			targets.add(target);
 		}
 	}
 }

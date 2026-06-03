@@ -24,10 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.naming.NamingUtil;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
-import tools.refinery.language.typesystem.FixedType;
-import tools.refinery.language.typesystem.InvalidType;
-import tools.refinery.language.typesystem.ProblemTypeAnalyzer;
-import tools.refinery.language.typesystem.SignatureProvider;
+import tools.refinery.language.typesystem.*;
 import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ParameterBinding;
 import tools.refinery.language.utils.ProblemUtil;
@@ -165,8 +162,8 @@ public class ProblemValidator extends AbstractProblemValidator {
 		boolean isEmpty = "".equals(name);
 		if (isNull || isEmpty) {
 			var message = "A name must be specified for the element.";
-            error(message, namedElement, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
-                    INVALID_NAME_ISSUE);
+			error(message, namedElement, ProblemPackage.Literals.NAMED_ELEMENT__NAME, INSIGNIFICANT_INDEX,
+					INVALID_NAME_ISSUE);
 		}
 	}
 
@@ -239,6 +236,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		var nodes = new ArrayList<Node>();
 		var aggregators = new ArrayList<AggregatorDeclaration>();
 		var annotationDeclarations = new ArrayList<AnnotationDeclaration>();
+		var theoryDeclarations = new ArrayList<TheoryDeclaration>();
 		for (var statement : problem.getStatements()) {
 			switch (statement) {
 			case Relation relation -> relations.add(relation);
@@ -247,6 +245,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 			case NodeDeclaration nodeDeclaration -> nodes.addAll(nodeDeclaration.getNodes());
 			case AggregatorDeclaration aggregatorDeclaration -> aggregators.add(aggregatorDeclaration);
 			case AnnotationDeclaration annotationDeclaration -> annotationDeclarations.add(annotationDeclaration);
+			case TheoryDeclaration theoryDeclaration -> theoryDeclarations.add(theoryDeclaration);
 			default -> {
 				// Nothing to check.
 			}
@@ -256,6 +255,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 		checkUniqueSimpleNames(nodes);
 		checkUniqueSimpleNames(aggregators);
 		checkUniqueSimpleNames(annotationDeclarations);
+		checkUniqueSimpleNames(theoryDeclarations);
 	}
 
 	@Check
@@ -787,8 +787,12 @@ public class ProblemValidator extends AbstractProblemValidator {
 	private static void countRuleParameterUsages(Consequent consequent, Map<Parameter, Integer> useCounts) {
 		var usedParameters = new HashSet<Parameter>();
 		for (var action : consequent.getActions()) {
-			if (action instanceof AssertionAction assertionAction) {
-				collectUsedParameters(assertionAction, usedParameters);
+			switch (action) {
+			case AssertionAction assertionAction -> collectUsedParameters(assertionAction, usedParameters);
+			case TheoryAction theoryAction -> collectUsedParameters(theoryAction, usedParameters);
+			default -> {
+				// No parameters to collect.
+			}
 			}
 		}
 		for (var usedParameter : usedParameters) {
@@ -804,31 +808,61 @@ public class ProblemValidator extends AbstractProblemValidator {
 				usedParameters.add(usedParameter);
 			}
 		}
-		var value = assertionAction.getValue();
-		if (value instanceof VariableOrNodeExpr variableOrNodeExpr &&
-				variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
-				!usedParameter.eIsProxy()) {
-			usedParameters.add(usedParameter);
+		collectUsedParameters(assertionAction.getValue(), usedParameters);
+	}
+
+	private static void collectUsedParameters(TheoryAction theoryAction, HashSet<Parameter> usedParameters) {
+		collectUsedParameters(theoryAction.getTerm(), usedParameters);
+	}
+
+	private static void collectUsedParameters(Expr expr, HashSet<Parameter> usedParameters) {
+		if (expr == null) {
+			return;
 		}
-		var iterator = value.eAllContents();
+		if (expr instanceof VariableOrNodeExpr variableOrNodeExpr) {
+			collectUsedParameters(variableOrNodeExpr, usedParameters);
+			return;
+		}
+		var iterator = expr.eAllContents();
 		while (iterator.hasNext()) {
-			var expr = iterator.next();
-			if (expr instanceof VariableOrNodeExpr variableOrNodeExpr &&
-					variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter &&
-					!usedParameter.eIsProxy()) {
-				usedParameters.add(usedParameter);
+			var childExpr = iterator.next();
+			if (childExpr instanceof VariableOrNodeExpr variableOrNodeExpr) {
+				collectUsedParameters(variableOrNodeExpr, usedParameters);
+				iterator.prune();
 			}
 		}
 	}
 
-	@Check
-	public void checkAssertionActions(AssertionAction assertionAction) {
-		var variables = new HashSet<Variable>();
-		var ruleDeclaration = EcoreUtil2.getContainerOfType(assertionAction, ParametricDefinition.class);
-		if (ruleDeclaration != null) {
-			variables.addAll(ruleDeclaration.getParameters());
+	private static void collectUsedParameters(VariableOrNodeExpr variableOrNodeExpr,
+											  HashSet<Parameter> usedParameters) {
+		if (variableOrNodeExpr.getVariableOrNode() instanceof Parameter usedParameter && !usedParameter.eIsProxy()) {
+			usedParameters.add(usedParameter);
 		}
+	}
+
+	@Check
+	public void checkAssertionAction(AssertionAction assertionAction) {
+		var variables = getAllowedVariables(assertionAction);
 		checkOnlyAllowedVariables(assertionAction.getValue(), variables);
+	}
+
+	private static HashSet<Variable> getAllowedVariables(EObject eObject) {
+		var parametricDefinition = EcoreUtil2.getContainerOfType(eObject, ParametricDefinition.class);
+		var variables = new HashSet<Variable>();
+		if (parametricDefinition != null) {
+			variables.addAll(parametricDefinition.getParameters());
+		}
+		return variables;
+	}
+
+	@Check
+	public void checkTheoryAction(TheoryAction theoryAction) {
+		var variables = getAllowedVariables(theoryAction);
+		checkOnlyAllowedVariables(theoryAction.getTerm(), variables);
+		if (!ProblemUtil.supportsTheoryActions(theoryAction)) {
+			acceptError("Theory actions may only appear in propagation or concretization rules.", theoryAction, null,
+					0, INVALID_RULE_ISSUE);
+		}
 	}
 
 	@Check
@@ -838,11 +872,7 @@ public class ProblemValidator extends AbstractProblemValidator {
 
 	@Check
 	public void checkCase(Case match) {
-		var variables = new HashSet<Variable>();
-		var functionDeclaration = EcoreUtil2.getContainerOfType(match, ParametricDefinition.class);
-		if (functionDeclaration != null) {
-			variables.addAll(functionDeclaration.getParameters());
-		}
+		var variables = getAllowedVariables(match);
 		var value = match.getValue();
 		var condition = match.getCondition();
 		if (value == null) {
@@ -999,9 +1029,19 @@ public class ProblemValidator extends AbstractProblemValidator {
 			return;
 		}
 		if (ProblemUtil.isShadow(type)) {
-			var message = "Shadow relations '%s' is not allowed in type scopes.".formatted(type.getName());
+			var message = "Shadow relation '%s' is not allowed in type scopes.".formatted(type.getName());
 			acceptError(message, typeScope, ProblemPackage.Literals.TYPE_SCOPE__TARGET_TYPE, 0,
 					SHADOW_RELATION_ISSUE);
+		}
+	}
+
+	@Check
+	public void checkDatatype(DatatypeDeclaration datatypeDeclaration) {
+		var dataExprType = signatureProvider.getDataType(datatypeDeclaration);
+		var termInterpreter = importAdapterProvider.getTermInterpreter(datatypeDeclaration);
+		if (termInterpreter.getDomain(dataExprType).isEmpty()) {
+			var message = "Datatype '%s' has no associated abstract domain.".formatted(datatypeDeclaration.getName());
+			acceptError(message, datatypeDeclaration, ProblemPackage.Literals.NAMED_ELEMENT__NAME, 0, TYPE_ERROR);
 		}
 	}
 

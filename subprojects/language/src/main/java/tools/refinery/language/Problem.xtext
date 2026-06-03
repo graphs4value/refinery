@@ -42,6 +42,9 @@ AnnotatedStatement returns Statement:
 		"#" "primitive" shadow?="shadow"? name=Identifier
 		"(" (parameters+=Parameter ("," parameters+=Parameter)*)? ")" "."
 	|
+		{TheoryDeclaration.annotations=current}
+		"#" "theory" name=Identifier "."
+	|
 		{PredicateDefinition.annotations=current}
 		(kind=ErrorPredicateKind | kind=PredicateKind? "pred")
 		name=Identifier
@@ -140,7 +143,7 @@ Consequent:
 	actions+=Action ("," actions+=Action)*;
 
 Action:
-	AssertionAction;
+	AssertionAction | TheoryAction;
 
 AssertionAction:
 	relation=[Relation|QualifiedName]
@@ -149,6 +152,14 @@ AssertionAction:
 	value=ShortLogicConstant
 	relation=[Relation|QualifiedName]
 	"(" (arguments+=AssertionArgument ("," arguments+=AssertionArgument)*)? ")";
+
+TheoryAction:
+	"assert" term=Expr
+	(theoryOverride?="using" (
+		theories+=[TheoryDeclaration|QualifiedName] |
+		"{" (theories+=[TheoryDeclaration|QualifiedName]
+		("," theories+=[TheoryDeclaration|QualifiedName])*)? "}"
+	))?;
 
 Expr:
 	AssignmentExpr;
@@ -330,7 +341,7 @@ NonContainmentIdentifier:
 	ID | QUOTED_ID | "as" | "atom" | "multi" | "problem" | "module" |
 	"datatype" | "aggregator" | "primitive" |
 	"decision" | "propagation" | "concretization" |
-	"shadow";
+	"shadow" | "assert" | "theory" | "using";
 
 Integer returns ecore::EBigInteger:
 	INT;

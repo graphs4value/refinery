@@ -1,0 +1,9 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::theory::z3::core.
+
+#pred z3Timeout(int milliseconds).
+
+#pred z3Rlimit(int rlimit).

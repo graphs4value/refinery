@@ -8,6 +8,7 @@ package tools.refinery.store.reasoning.translator.opposite;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.map.AnyVersionedMap;
 import tools.refinery.store.map.Cursor;
+import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.AbstractPartialInterpretation;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
@@ -17,7 +18,8 @@ import tools.refinery.store.tuple.Tuple;
 
 import java.util.Set;
 
-class OppositeInterpretation<A extends AbstractValue<A, C>, C> extends AbstractPartialInterpretation<A, C> {
+class OppositeInterpretation<A extends AbstractValue<A, C>, C> extends AbstractPartialInterpretation<A, C>
+	implements ResultSetListener<A> {
 	private final PartialInterpretation<A, C> opposite;
 
 	private OppositeInterpretation(ReasoningAdapter adapter, Concreteness concreteness,
@@ -41,6 +43,21 @@ class OppositeInterpretation<A extends AbstractValue<A, C>, C> extends AbstractP
 			var opposite = adapter.getPartialInterpretation(concreteness, oppositeSymbol);
 			return new OppositeInterpretation<>(adapter, concreteness, partialSymbol, opposite);
 		};
+	}
+
+	@Override
+	protected void startListeningForChanges() {
+		opposite.addListener(this);
+	}
+
+	@Override
+	protected void stopListeningForChanges() {
+		opposite.removeListener(this);
+	}
+
+	@Override
+	public void put(Tuple key, A fromValue, A toValue) {
+		notifyChange(OppositeUtils.flip(key), fromValue, toValue);
 	}
 
 	private record OppositeCursor<T>(Cursor<Tuple, T> opposite) implements Cursor<Tuple, T> {
