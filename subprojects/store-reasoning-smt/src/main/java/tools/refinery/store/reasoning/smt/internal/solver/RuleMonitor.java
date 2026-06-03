@@ -11,6 +11,8 @@ import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.Objects;
+
 public class RuleMonitor implements ResultSetListener<Boolean> {
 	private final RuleBasedSolver solver;
 	private final PreparedSmtRule rule;
@@ -43,7 +45,7 @@ public class RuleMonitor implements ResultSetListener<Boolean> {
 
 	@Override
 	public void put(Tuple key, Boolean fromValue, Boolean toValue) {
-		if (fromValue != toValue) {
+		if (!Objects.equals(fromValue, toValue)) {
 			changeRefs(key, toValue);
 		}
 	}
