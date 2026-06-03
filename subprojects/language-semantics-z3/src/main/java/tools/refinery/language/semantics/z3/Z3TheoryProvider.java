@@ -9,7 +9,6 @@ import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.annotations.Annotations;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.theory.TheoryProvider;
-import tools.refinery.store.reasoning.smt.Z3Theory;
 import tools.refinery.store.reasoning.theory.Theory;
 
 import java.util.Optional;

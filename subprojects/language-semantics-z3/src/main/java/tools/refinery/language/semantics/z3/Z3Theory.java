@@ -3,9 +3,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package tools.refinery.store.reasoning.smt;
+package tools.refinery.language.semantics.z3;
 
 import tools.refinery.store.model.ModelStoreBuilder;
+import tools.refinery.store.reasoning.smt.SmtPropagator;
 import tools.refinery.store.reasoning.smt.expr.SmtExprChecker;
 import tools.refinery.store.reasoning.theory.Theory;
 import tools.refinery.store.reasoning.theory.TheoryRule;
@@ -13,7 +14,7 @@ import tools.refinery.store.reasoning.theory.TheorySupport;
 
 import java.util.Collection;
 
-public class Z3Theory implements Theory {
+class Z3Theory implements Theory {
 	private final SmtExprChecker checker = new SmtExprChecker();
 	private final int timeout;
 	private final int rlimit;
