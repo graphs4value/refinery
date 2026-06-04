@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,6 +17,9 @@ import tools.refinery.generator.cli.utils.CliUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.FileWriter;
 
 @Parameters(commandDescription = "Generate a model from a partial model")
 public class GenerateCommand implements Command {
@@ -30,6 +33,7 @@ public class GenerateCommand implements Command {
 	private List<String> overrideScopes = new ArrayList<>();
 	private long randomSeed = 1;
 	private int count = 1;
+	private boolean outputJson;
 
 	@Inject
 	public GenerateCommand(CliProblemLoader loader, ModelGeneratorFactory generatorFactory,
@@ -72,6 +76,11 @@ public class GenerateCommand implements Command {
 		this.count = count;
 	}
 
+	@Parameter(names = {"-json", "-j"}, description = "Output as JSON")
+	public void setOutputJson(boolean outputJson) {
+		this.outputJson = outputJson;
+	}
+
 	@Override
 	public int run() throws IOException {
 		if (count > 1 && CliUtils.isStandardStream(outputPath)) {
@@ -83,16 +92,35 @@ public class GenerateCommand implements Command {
 			generator.setRandomSeed(randomSeed);
 			generator.setMaxNumberOfSolutions(count);
 			generator.generate();
-			if (count == 1) {
-				serializer.saveModel(generator, outputPath);
-			} else {
-				int solutionCount = generator.getSolutionCount();
-				for (int i = 0; i < solutionCount; i++) {
-					generator.loadSolution(i);
-					var pathWithIndex = CliUtils.getFileNameWithIndex(outputPath, i + 1);
-					serializer.saveModel(generator, pathWithIndex, false);
-				}
-			}
+                        if (outputJson) {
+                                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                                if (count == 1) {
+                                        try (FileWriter writer = new FileWriter(outputPath)) {
+                                                gson.toJson(generator.getObjectNet(), writer);
+                                        }
+                                } else {
+                                        int solutionCount = generator.getSolutionCount();
+                                        for (int i = 0; i < solutionCount; i++) {
+                                                generator.loadSolution(i);
+                                                var pathWithIndex = CliUtils.getFileNameWithIndex(outputPath, i + 1);
+                                                try (FileWriter writer = new FileWriter(pathWithIndex)) {
+                                                        gson.toJson(generator.getObjectNet(), writer);
+                                                }
+                                        }
+                                }
+                        } else {
+                                if (count == 1) {
+                                        serializer.saveModel(generator, outputPath);
+                                } else {
+                                        int solutionCount = generator.getSolutionCount();
+                                        for (int i = 0; i < solutionCount; i++) {
+                                                generator.loadSolution(i);
+                                                var pathWithIndex = CliUtils.getFileNameWithIndex(outputPath, i + 1);
+                                                serializer.saveModel(generator, pathWithIndex, false);
+                                        }
+                                }
+                        }
+
 		}
 		return RefineryCli.EXIT_SUCCESS;
 	}
