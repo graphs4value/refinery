@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -106,8 +106,8 @@ public abstract class VersionedInterpretation<T> implements Interpretation<T> {
 	}
 
 	@Override
-	public DiffCursor<Tuple, T> getDiffCursor(Version to) {
-		return map.getDiffCursor(to);
+	public DiffCursor<Tuple, T> getDiffCursor(Version to, boolean consolidate) {
+		return map.getDiffCursor(to, consolidate);
 	}
 
 	Version commit() {
