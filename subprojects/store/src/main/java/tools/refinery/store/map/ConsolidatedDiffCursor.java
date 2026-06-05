@@ -1,10 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package tools.refinery.store.map;
 
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
+import java.util.Objects;
 
-public class ConsolidatedDiffCursor<K, V> implements DiffCursor<K, V> {
+class ConsolidatedDiffCursor<K, V> implements DiffCursor<K, V> {
 
 	private final DiffCursor<K, V> wrappedDiffCursor;
 	private DiffEntry<K, V>[] diff;
@@ -58,7 +64,7 @@ public class ConsolidatedDiffCursor<K, V> implements DiffCursor<K, V> {
 			var storedChange = consolidatedChanges.get(wrappedDiffCursor.getKey());
 			V fromValue;
 			if (storedChange != null) {
-				if (!storedChange.getValue().equals(wrappedDiffCursor.getFromValue())) {
+				if (!Objects.equals(storedChange.getValue(), wrappedDiffCursor.getFromValue())) {
 					throw new IllegalStateException("Inconsistent diff cursor: mismatched previous value and from value");
 				}
 				fromValue = storedChange.getKey();
@@ -67,7 +73,7 @@ public class ConsolidatedDiffCursor<K, V> implements DiffCursor<K, V> {
 			}
 			V toValue = wrappedDiffCursor.getToValue();
 
-			if (fromValue.equals(toValue)) {
+			if (Objects.equals(fromValue, toValue)) {
 				consolidatedChanges.remove(wrappedDiffCursor.getKey());
 			} else {
 				consolidatedChanges.put(wrappedDiffCursor.getKey(), new SimpleEntry<>(fromValue, toValue));
