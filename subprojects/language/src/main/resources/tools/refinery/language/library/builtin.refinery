@@ -73,42 +73,160 @@ pred contains(container container, contained contained).
  */
 error invalidContainer(contained contained).
 
+/**
+ * Standard Boolean data type.
+ *
+ * Represents truth values in the model.
+ */
 #datatype boolean.
 
+/**
+ * Arbitrary-precision mathematical integer data type.
+ */
 #datatype int.
 
+/**
+ * Real number data type with at least 16 decimal digits of precision.
+ */
 #datatype real.
 
+/**
+ * String data type consisting of sequences of characters.
+ */
 #datatype string.
 
+/**
+ * Aggregator that reifies a logical relation or evaluation formula, converting
+ * structural constraints or patterns into a concrete logical value.
+ *
+ * Use this aggregator without a value expression, e.g., `reify { f(a, _) }`
+ * to convert the truth value of the literal `f(a, _)` into a `boolean` value.
+ */
 #aggregator reify.
 
+/**
+ * Aggregator that performs a lattice meet operation of abstract values.
+ *
+ * This is the aggregator version of the `/\` binary operator.
+ */
 #aggregator meet.
 
+/**
+ * Aggregator that performs a lattice join operation of abstract values.
+ *
+ * This is the aggregator version of the `\/` binary operator.
+ */
 #aggregator join.
 
+/**
+ * Aggregator that returns the count of items or logic terms matching a
+ * guard expression as an integer. Evaluates to $0$ if the collection is empty.
+ *
+ * Use this aggregator without a value expression, e.g., `count { f(a, _) }`
+ * to determine the number of possible bindings of `b` such that `f(a, b)`
+ * holds.
+ */
 #aggregator count.
 
+/**
+ * Aggregator that extracts the minimum value from an evaluated collection of
+ * numerical terms.
+ */
 #aggregator min.
 
+/**
+ * Aggregator that extracts the maximum value from an evaluated collection of
+ * numerical terms.
+ */
 #aggregator max.
 
+/**
+ * Aggregator that calculates the arithmetic sum of an evaluated collection of
+ * numerical terms.
+ */
 #aggregator sum.
 
+/**
+ * Primitive function that returns the lesser of two numerical values.
+ *
+ * @param left The first operand.
+ * @param right The second operand.
+ */
 #primitive min(left, right).
 
+/**
+ * Primitive function that returns the greater of two numerical values.
+ *
+ * @param left The first operand.
+ * @param right The second operand.
+ */
 #primitive max(left, right).
 
+/**
+ * Primitive function implementing the natural exponential function `e^x`.
+ *
+ * @param value The exponent parameter `x`.
+ */
 #primitive exp(value).
 
+/**
+ * Primitive function implementing the natural logarithm (base `e`).
+ *
+ * Inputs `value <= 0` will produce `error` values.
+ *
+ * @param value The input numerical term.
+ */
 #primitive log(value).
 
+/**
+ * Primitive function implementing the square root function.
+ *
+ * Inputs `value < 0` will produce `error` values.
+ *
+ * @param value The input numerical term.
+ */
 #primitive sqrt(value).
 
+/**
+ * Determines if an abstract value is in an inconsistent, conflicting, or
+ * errored state.
+ *
+ * This primitive function can only be used in shadow contexts and will only
+ * output `true` or `false` values.
+ *
+ * @param value The input abstract value term.
+ */
 #primitive shadow isError(value).
 
+/**
+ * Determines if an abstract value has been fully refined and resolved into a
+ * single concrete value.
+ *
+ * This primitive function can only be used in shadow contexts and will only
+ * output `true` or `false` values.
+ *
+ * @param value The input abstract value term.
+ */
 #primitive shadow isConcrete(value).
 
+/**
+ * Retrieves the minimum possible value represented by a numerical abstract
+ * value.
+ *
+ * This primitive function can only be used in shadow contexts and will only
+ * output concrete or error values.
+ *
+ * @param value The input numerical term.
+ */
 #primitive shadow lowerBound(value).
 
+/**
+ * Retrieves the maximum possible value represented by a numerical abstract
+ * value.
+ *
+ * This primitive function can only be used in shadow contexts and will only
+ * output concrete or error values.
+ *
+ * @param value The input numerical term.
+ */
 #primitive shadow upperBound(value).

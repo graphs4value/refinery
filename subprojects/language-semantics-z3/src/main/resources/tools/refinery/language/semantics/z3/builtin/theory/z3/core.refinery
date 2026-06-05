@@ -2,4 +2,13 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
+/**
+ * Enables and configures the Z3 Satisfiability Modulo Theories (SMT) solver
+ * backend for the refinement process.
+ *
+ * Activating this theory allows the solver engine to delegate numerical
+ * and string constraints to the Z3 solver for high-performance reasoning.
+ *
+ * This solver is activated by default.
+ */
 #theory z3.

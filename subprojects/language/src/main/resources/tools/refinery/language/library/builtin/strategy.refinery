@@ -21,7 +21,7 @@ import builtin::annotations.
  * Allows a decision rule parameter to match objects that do not necessarily
  * exist.
  *
- * By default, decision rules parameters can only match objects that are _not_
+ * By default, decision rule parameters can only match objects that are _not_
  * multi-objects to avoid decisions that don't refine the model productively.
  */
 #pred lone().
@@ -29,7 +29,7 @@ import builtin::annotations.
 /**
  * Allows a decision rule parameter to match multi-objects.
  *
- * The postcondition of the rule will be executed without splitting of an
+ * The postcondition of the rule will be executed without splitting off an
  * object from the multi-object and will affect all objects represented by the
  * multi-object simultaneously.
  *
@@ -37,7 +37,7 @@ import builtin::annotations.
  * than once, e.g., `reference(multi, multi)`, because the partial model can't
  * represent such effects faithfully.
  *
- * By default, decision rules parameters can only match objects that are _not_
+ * By default, decision rule parameters can only match objects that are _not_
  * multi-objects to avoid decisions that don't refine the model productively.
  */
 #pred multi().

@@ -4,6 +4,43 @@
 
 import builtin::theory::z3::core.
 
+/**
+ * Configures the maximum execution time allowed for the Z3 solver.
+ *
+ * If the solver does not find a solution within this wall-clock duration
+ * during a **propagation** step, it will continue without solver-based
+ * propagation.
+ *
+ * Timeout during model **concretization** is considered a concretization
+ * failure, and will result in Refinery abandoning the solution to be
+ * concretized.
+ *
+ * Use this as a top-level annotation, e.g., `#z3Timeout(10000).` sets the
+ * timeout to 10 seconds per Z3 invocation.
+ *
+ * @param milliseconds The maximum execution time limit in milliseconds.
+ */
 #pred z3Timeout(int milliseconds).
 
+/**
+ * Configures a deterministic resource limit for the Z3 solver.
+ *
+ * Unlike wall-clock timeouts which vary based on machine performance, the
+ * resource limit ensures deterministic solver runs. A specific refinement task
+ * will always consume the same amount of resource units, producing identical
+ * and reproducible behaviors across different hardware and CPU architectures.
+ *
+ * If the solver does not find a solution within this resource limit during
+ * a **propagation** step, it will continue without solver-based propagation.
+ *
+ * Resource exhaustion during model **concretization** is considered a
+ * concretization failure, and will result in Refinery abandoning the solution
+ * to be concretized.
+ *
+ * Use this as a top-level annotation, e.g., `#z3Rlimit(100000).` sets the
+ * deterministic resource limit to 100000 per Z3 invocation.
+ *
+ * @param rlimit The maximum number of deterministic resource units allocated
+ *               to the solver step.
+ */
 #pred z3Rlimit(int rlimit).
