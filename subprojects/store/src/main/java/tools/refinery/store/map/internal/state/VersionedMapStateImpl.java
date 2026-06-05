@@ -82,7 +82,7 @@ public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
 			while (keyIterator.hasNext()) {
 				var key = keyIterator.next();
 				var value = valueIterator.next();
-				this.put(key,value);
+				this.put(key, value);
 			}
 		} else {
 			while (cursor.move()) {
@@ -122,6 +122,10 @@ public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
 		return new MapDiffCursor<>(this.defaultValue, fromCursor, toCursor);
 	}
 
+	@Override
+	public DiffCursor<K, V> getDiffCursor(Version state, boolean consolidate) {
+		return getDiffCursor(state);
+	}
 
 	@Override
 	public Version commit() {
@@ -157,7 +161,7 @@ public class VersionedMapStateImpl<K, V> implements VersionedMap<K, V> {
 	@Override
 	public int contentHashCode(ContentHashCode mode) {
 		// Calculating the root hashCode is always fast, because {@link Node} caches its hashCode.
-		if(root == null) {
+		if (root == null) {
 			return 0;
 		} else {
 			return root.hashCode();
