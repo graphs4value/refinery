@@ -5,16 +5,17 @@
  */
 package tools.refinery.store.reasoning.interpretation;
 
+import tools.refinery.logic.dnf.Query;
+import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.map.Cursor;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
-import tools.refinery.logic.dnf.Query;
 import tools.refinery.store.query.resultset.ResultSet;
+import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
-import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.Set;
@@ -69,7 +70,8 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 		}
 	}
 
-	private static class TwoValuedInterpretation extends AbstractPartialInterpretation<TruthValue, Boolean> {
+	private static class TwoValuedInterpretation extends AbstractPartialInterpretation<TruthValue, Boolean>
+		implements ResultSetListener<Boolean> {
 		private final ResultSet<Boolean> resultSet;
 
 		protected TwoValuedInterpretation(
@@ -87,6 +89,21 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 		@Override
 		public Cursor<Tuple, TruthValue> getAll() {
 			return new TwoValuedCursor(resultSet.getAll());
+		}
+
+		@Override
+		protected void startListeningForChanges() {
+			resultSet.addListener(this);
+		}
+
+		@Override
+		protected void stopListeningForChanges() {
+			resultSet.removeListener(this);
+		}
+
+		@Override
+		public void put(Tuple key, Boolean fromValue, Boolean toValue) {
+			notifyChange(key, TruthValue.of(fromValue), TruthValue.of(toValue));
 		}
 
 		private record TwoValuedCursor(Cursor<Tuple, Boolean> cursor) implements Cursor<Tuple, TruthValue> {
@@ -115,6 +132,8 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 	private static class FourValuedInterpretation extends AbstractPartialInterpretation<TruthValue, Boolean> {
 		private final ResultSet<Boolean> mayResultSet;
 		private final ResultSet<Boolean> mustResultSet;
+		private ResultSetListener<Boolean> mayListener;
+		private ResultSetListener<Boolean> mustListener;
 
 		public FourValuedInterpretation(
 				ReasoningAdapter adapter, Concreteness concreteness, PartialSymbol<TruthValue, Boolean> partialSymbol,
@@ -128,16 +147,36 @@ public class QueryBasedRelationInterpretationFactory implements PartialInterpret
 		public TruthValue get(Tuple key) {
 			boolean isMay = mayResultSet.get(key);
 			boolean isMust = mustResultSet.get(key);
-			if (isMust) {
-				return isMay ? TruthValue.TRUE : TruthValue.ERROR;
-			} else {
-				return isMay ? TruthValue.UNKNOWN : TruthValue.FALSE;
-			}
+			return TruthValue.of(isMay, isMust);
 		}
 
 		@Override
 		public Cursor<Tuple, TruthValue> getAll() {
 			return new FourValuedCursor();
+		}
+
+		@Override
+		protected void startListeningForChanges() {
+			if (mayListener == null) {
+				mayListener = (key, oldValue, newValue) -> {
+					boolean mustValue = mustResultSet.get(key);
+					notifyChange(key, TruthValue.of(oldValue, mustValue), TruthValue.of(newValue, mustValue));
+				};
+			}
+			if (mustListener == null) {
+				mustListener = (key, oldValue, newValue) -> {
+					boolean mayValue = mayResultSet.get(key);
+					notifyChange(key, TruthValue.of(mayValue, oldValue), TruthValue.of(mayValue, newValue));
+				};
+			}
+			mayResultSet.addListener(mayListener);
+			mustResultSet.addListener(mustListener);
+		}
+
+		@Override
+		protected void stopListeningForChanges() {
+			mayResultSet.removeListener(mayListener);
+			mustResultSet.removeListener(mustListener);
 		}
 
 		private final class FourValuedCursor implements Cursor<Tuple, TruthValue> {

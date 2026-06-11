@@ -209,6 +209,10 @@ public abstract class ScheduledWorker<T> {
 		responseSink.updateStatus(status);
 	}
 
+	protected boolean hasStatusReporting() {
+		return responseSink.hasStatusReporting();
+	}
+
 	protected void checkCancelled() {
 		cancellationToken.checkCancelled();
 	}

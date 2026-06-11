@@ -17,19 +17,25 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
-import { binarySearch, type Value } from '../graph/valueUtils';
+import { binarySearch } from '../graph/valueUtils';
 
 import TableToolbar from './TableToolbar';
-import ValueRenderer from './ValueRenderer';
+import ValueRenderer, { WrappedValue } from './ValueRenderer';
 
-interface NodeName {
-  name: string;
-  missing: boolean;
+class NodeName {
+  constructor(
+    public readonly name: string,
+    public readonly missing: boolean,
+  ) {}
+
+  toString() {
+    return this.name;
+  }
 }
 
 interface Row {
   nodes: NodeName[];
-  value: Value | undefined;
+  value: WrappedValue;
 }
 
 declare module '@mui/x-data-grid' {
@@ -150,7 +156,7 @@ function TableArea({
       field: 'value',
       headerName: namesOrEmpty.includes('value') ? '$VALUE' : 'value',
       flex: 1,
-      renderCell: ({ value }: GridRenderCellParams<Row, Value>) => (
+      renderCell: ({ value }: GridRenderCellParams<Row, WrappedValue>) => (
         <ValueRenderer
           concretize={cachedConcretize}
           value={value}
@@ -175,16 +181,13 @@ function TableArea({
           const node = nodes[index];
           const exists = binarySearch(existsInterpretation, [index]);
           if (node !== undefined) {
-            nodeNames.push({
-              name: node.name,
-              missing: exists === undefined,
-            });
+            nodeNames.push(new NodeName(node.name, exists === undefined));
           }
         }
       }
       return {
         nodes: nodeNames,
-        value: tuple[arity],
+        value: new WrappedValue(tuple[arity]),
       };
     });
   }, [arity, nodes, partialInterpretation, computedName]);

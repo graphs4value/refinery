@@ -22,4 +22,6 @@ public interface ResponseSink {
 	void updateStatus(Object status);
 
 	boolean isCancelled();
+
+	boolean hasStatusReporting();
 }

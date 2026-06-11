@@ -29,7 +29,6 @@ public abstract class ClasspathBasedLibrary implements RefineryLibrary {
 
 	protected ClasspathBasedLibrary(Class<?> context) {
 		this.context = context == null ? getClass() : context;
-
 	}
 
 	protected ClasspathBasedLibrary() {

@@ -28,6 +28,7 @@ import tools.refinery.language.library.RefineryLibrary;
 import tools.refinery.language.library.internal.CompositeLibrary;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.utils.BuiltinSymbols;
+import tools.refinery.language.utils.ServiceUtil;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -35,15 +36,15 @@ import java.util.*;
 
 public class ImportAdapter extends AdapterImpl {
 	private static final Logger LOG = Logger.getLogger(ImportAdapter.class);
-	private static final List<Class<? extends RefineryLibrary>> DEFAULT_LIBRARIES;
-	private static final List<Class<? extends TermInterpreter>> DEFAULT_TERM_INTERPRETERS;
-	private static final List<Class<? extends AnnotationValidator>> DEFAULT_ANNOTATION_VALIDATORS;
+	private static final List<Class<? extends RefineryLibrary>> DEFAULT_LIBRARIES =
+			ServiceUtil.loadServices(RefineryLibrary.class);
+	private static final List<Class<? extends TermInterpreter>> DEFAULT_TERM_INTERPRETERS =
+			ServiceUtil.loadServices(TermInterpreter.class);
+	private static final List<Class<? extends AnnotationValidator>> DEFAULT_ANNOTATION_VALIDATORS =
+			ServiceUtil.loadServices(AnnotationValidator.class);
 	private static final List<Path> DEFAULT_PATHS;
 
 	static {
-		DEFAULT_LIBRARIES = loadServices(RefineryLibrary.class);
-		DEFAULT_TERM_INTERPRETERS = loadServices(TermInterpreter.class);
-		DEFAULT_ANNOTATION_VALIDATORS = loadServices(AnnotationValidator.class);
 		var pathEnv = System.getenv("REFINERY_LIBRARY_PATH");
 		if (pathEnv == null) {
 			DEFAULT_PATHS = List.of();
@@ -53,22 +54,6 @@ public class ImportAdapter extends AdapterImpl {
 					.map(pathString -> Path.of(pathString).toAbsolutePath().normalize())
 					.toList();
 		}
-	}
-
-	private static <T> List<Class<? extends T>> loadServices(Class<T> serviceClass) {
-		return ServiceLoader.load(serviceClass).stream()
-				.<Class<? extends T>>mapMulti((provider, consumer) -> {
-					Class<? extends T> implementationClass = null;
-					try {
-						implementationClass = provider.type();
-					} catch (ServiceConfigurationError e) {
-						LOG.error("Error loading service: " + serviceClass.getName(), e);
-					}
-					if (implementationClass != null) {
-						consumer.accept(implementationClass);
-					}
-				})
-				.toList();
 	}
 
 	private ResourceSet resourceSet;
@@ -88,28 +73,12 @@ public class ImportAdapter extends AdapterImpl {
 
 	@Inject
 	public ImportAdapter(Injector injector) {
-		libraries = instantiate(injector, DEFAULT_LIBRARIES);
+		libraries = ServiceUtil.instantiate(injector, DEFAULT_LIBRARIES);
 		compositeLibrary = new CompositeLibrary(libraries);
-		termInterpreters = instantiate(injector, DEFAULT_TERM_INTERPRETERS);
+		termInterpreters = ServiceUtil.instantiate(injector, DEFAULT_TERM_INTERPRETERS);
 		termInterpreter = new CompositeTermInterpreter(termInterpreters);
-		annotationValidators = instantiate(injector, DEFAULT_ANNOTATION_VALIDATORS);
+		annotationValidators = ServiceUtil.instantiate(injector, DEFAULT_ANNOTATION_VALIDATORS);
 		annotationValidator = new CompositeAnnotationValidator(annotationValidators);
-	}
-
-	private <T> List<T> instantiate(Injector injector, List<Class<? extends T>> implementationClasses) {
-		var instances = new ArrayList<T>(implementationClasses.size());
-		for (var implementationClass : implementationClasses) {
-			T instance = null;
-			try {
-				instance = injector.getInstance(implementationClass);
-			} catch (RuntimeException e) {
-				LOG.error("Error loading service: " + implementationClass.getName(), e);
-			}
-			if (instance != null) {
-				instances.add(instance);
-			}
-		}
-		return instances;
 	}
 
 	void setResourceSet(ResourceSet resourceSet) {

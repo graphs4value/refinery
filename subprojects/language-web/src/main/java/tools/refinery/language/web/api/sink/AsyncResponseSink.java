@@ -47,4 +47,9 @@ public class AsyncResponseSink implements ResponseSink {
 	public boolean isCancelled() {
 		return asyncResponse.isCancelled();
 	}
+
+	@Override
+	public boolean hasStatusReporting() {
+		return false;
+	}
 }

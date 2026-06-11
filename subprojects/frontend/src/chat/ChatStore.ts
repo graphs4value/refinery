@@ -63,7 +63,8 @@ export default class ChatStore {
   }
 
   generate() {
-    if (this.editorStore === undefined) {
+    const { client, editorStore, message } = this;
+    if (client === undefined || editorStore === undefined) {
       return;
     }
     this.pushLog({
@@ -74,13 +75,10 @@ export default class ChatStore {
     this.abortController = new AbortController();
     const signal = this.abortController.signal;
     (async () => {
-      if (this.editorStore === undefined || this.client === undefined) {
-        return;
-      }
-      const result = await this.client.textToModel(
+      const result = await client.textToModel(
         {
-          metamodel: { source: this.editorStore.state.sliceDoc() },
-          text: this.message,
+          metamodel: { source: editorStore.state.sliceDoc() },
+          text: message,
           format: {
             source: { enabled: true },
             json: {
@@ -100,15 +98,15 @@ export default class ChatStore {
         content: 'Successfully generated model',
       });
       const uuid = nanoid();
-      this.editorStore.addGeneratedModel(uuid, 0);
+      editorStore.addGeneratedModel(uuid, 0);
       if (result.json !== undefined) {
-        this.editorStore.setGeneratedModelSemantics(
+        editorStore.setGeneratedModelSemantics(
           uuid,
           result.json,
           result.source,
         );
       } else {
-        this.editorStore.setGeneratedModelError(uuid, 'No JSON in AI response');
+        editorStore.setGeneratedModelError(uuid, 'No JSON in AI response');
       }
     })()
       .catch((error) => {
@@ -119,7 +117,10 @@ export default class ChatStore {
         });
       })
       .finally(() => {
-        runInAction(() => (this.running = false));
+        runInAction(() => {
+          this.running = false;
+          this.abortController = undefined;
+        });
       });
     this.message = '';
   }

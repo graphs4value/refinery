@@ -30,6 +30,16 @@ public class MissingInterpretation<A extends AbstractValue<A, C>, C>
 		return fail();
 	}
 
+	@Override
+	protected void startListeningForChanges() {
+		// No changes to track.
+	}
+
+	@Override
+	protected void stopListeningForChanges() {
+		// No changes to track.
+	}
+
 	private <T> T fail() {
 		throw new UnsupportedOperationException("No interpretation for shadow predicate: " + getPartialSymbol());
 	}

@@ -150,4 +150,9 @@ public class SseResponseSink implements ResponseSink {
 			LOG.error("Failed to close SSE sink", e);
 		}
 	}
+
+	@Override
+	public boolean hasStatusReporting() {
+		return true;
+	}
 }

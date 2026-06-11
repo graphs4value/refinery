@@ -31,7 +31,7 @@ export const sseHandler: RequestHandler = (req, res, next) => {
   res.writeHead(200, {
     Connection: 'keep-alive',
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-transform',
     'X-Accel-Buffering': 'no',
   });
 
@@ -71,14 +71,17 @@ export const sseHandler: RequestHandler = (req, res, next) => {
 
   signal.addEventListener('abort', () => {
     if (heartbeat !== undefined) {
-      clearTimeout(heartbeat);
+      clearInterval(heartbeat);
       heartbeat = undefined;
     }
     // `writeEvent` only writes the cancellation message if the request is still open.
     writeEvent(
       {
         result: 'cancelled',
-        message: 'Request cancelled',
+        message:
+          typeof signal.reason === 'string'
+            ? signal.reason
+            : 'Request cancelled',
       } satisfies RefineryResult.Cancelled,
       true,
     ).catch((err: unknown) => {
@@ -178,7 +181,7 @@ export const sseErrorHandler: ErrorRequestHandler = async (
   let errorMessage: RefineryResult.Error | undefined;
   if (err instanceof RefineryError.Base) {
     errorMessage = err.parsedResult as RefineryResult.Error;
-    if (errorMessage.result === 'requestError') {
+    if (errorMessage.result === 'serverError') {
       req.log.error(
         { err, parsedResult: errorMessage },
         'Refinery server error',
@@ -197,7 +200,7 @@ export const sseErrorHandler: ErrorRequestHandler = async (
     req.log.trace({ err }, 'OpenAI API user abort');
   } else if (err instanceof OpenAI.APIError && err.status === 401) {
     errorMessage = {
-      result: 'requestError',
+      result: 'serverError',
       message: 'Invalid AI API key',
     };
     req.log.debug({ err }, 'Invalid OpenAI API key');

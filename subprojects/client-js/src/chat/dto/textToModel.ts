@@ -14,7 +14,7 @@ export const TextToModelRequest = z.object({
   format: OutputFormats.prefault({}),
 });
 
-export type TextToModelRequest = z.infer<typeof TextToModelRequest>;
+export type TextToModelRequest = z.input<typeof TextToModelRequest>;
 
 export { ConcretizationSuccessResult as TextToModelResult } from '@tools.refinery/client';
 
@@ -23,4 +23,4 @@ export const TextToModelStatus = z.object({
   content: z.string(),
 });
 
-export type TextToModelStatus = z.infer<typeof TextToModelStatus>;
+export type TextToModelStatus = z.output<typeof TextToModelStatus>;

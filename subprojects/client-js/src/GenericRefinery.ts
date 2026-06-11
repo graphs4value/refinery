@@ -47,16 +47,25 @@ export interface StreamingClient<T, U, V> {
       onStatus?: 'iterate';
     },
   ): AsyncIterable<RefineryResult.Success<U> | RefineryResult.Status<V>>;
+  (
+    request: T,
+    init?: StreamingInit<V>,
+  ):
+    | Promise<U>
+    | AsyncIterable<RefineryResult.Success<U> | RefineryResult.Status<V>>;
 }
 
-const DATA_PREFIX = 'data: ';
+const DATA_PREFIX = 'data:';
 
 function* parseEvent(rawEvent: string): Iterable<unknown> {
   let data: string | undefined;
   const lines = rawEvent.split(/\n|\r\n|\r/);
   for (const line of lines) {
     if (line.startsWith(DATA_PREFIX)) {
-      const value = line.substring(DATA_PREFIX.length).trim();
+      let value = line.substring(DATA_PREFIX.length);
+      if (value.startsWith(' ')) {
+        value = value.substring(1);
+      }
       data = data === undefined ? value : `${data}\n${value}`;
     }
   }
@@ -90,7 +99,7 @@ async function* parseSSE(
       if (done) {
         break;
       }
-      const chunks = (previous + decoder.decode(value)).split(
+      const chunks = (previous + decoder.decode(value, { stream: true })).split(
         /\n\n|\r\n\r\n|\r\r/,
       );
       previous = chunks.pop() ?? '';
@@ -98,6 +107,7 @@ async function* parseSSE(
         yield* parseEvent(chunk);
       }
     }
+    previous += decoder.decode();
     yield* parseEvent(previous);
   } finally {
     reader.releaseLock();
@@ -156,17 +166,20 @@ export abstract class GenericRefinery {
     options: RefineryInit,
     accept: string,
   ): Promise<Response> {
+    const headers = new Headers(this.options.defaultHeaders);
+    if (options.headers) {
+      new Headers(options.headers).forEach((value, key) =>
+        headers.set(key, value),
+      );
+    }
+    headers.set('Content-Type', 'application/json');
+    headers.set('Accept', accept);
     return this.options.fetch(`${this.options.baseURL}/${endpoint}`, {
       credentials: this.options.defaultCredentials,
       ...options,
       method: 'POST',
       body: JSON.stringify(payload),
-      headers: {
-        ...this.options.defaultHeaders,
-        ...options.headers,
-        'Content-Type': 'application/json',
-        Accept: accept,
-      },
+      headers,
     });
   }
 
@@ -235,6 +248,7 @@ export abstract class GenericRefinery {
       { signal, ...init }: RefineryInit,
     ) {
       const parsedRequest = requestType.parse(request) as z.output<T>;
+      let listener = undefined;
       try {
         // We must create our own abortController to be able to close the connection in Firefox.
         // If the user provides their own `signal`, we propagate it to our own controller.
@@ -243,7 +257,8 @@ export abstract class GenericRefinery {
           if (signal.aborted) {
             abortController.abort();
           } else {
-            signal.addEventListener('abort', () => abortController.abort());
+            listener = () => abortController.abort();
+            signal.addEventListener('abort', listener, { once: true });
           }
         }
         const fetchRequest = await that.fetch(
@@ -280,6 +295,10 @@ export abstract class GenericRefinery {
           );
         } else {
           throw error;
+        }
+      } finally {
+        if (listener) {
+          signal?.removeEventListener('abort', listener);
         }
       }
     }

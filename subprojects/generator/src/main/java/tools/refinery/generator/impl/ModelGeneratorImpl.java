@@ -13,18 +13,23 @@ import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationRejectedException;
 import tools.refinery.store.dse.strategy.BestFirstStoreManager;
 import tools.refinery.store.dse.transition.statespace.SolutionStore;
+import tools.refinery.store.dse.transition.statespace.SolutionStoreListener;
 import tools.refinery.store.map.Version;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGenerator {
 	private final Version initialVersion;
 	private final CancellableCancellationToken cancellationToken;
+	private final List<SolutionStoreListener> listeners = new ArrayList<>();
 	private long randomSeed = 1;
 	private int maxNumberOfSolutions = 1;
+	private Status status = Status.RESET;
 	private SolutionStore solutionStore;
 
 	public ModelGeneratorImpl(Args args, CancellableCancellationToken cancellationToken) {
@@ -41,7 +46,7 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 	@Override
 	public void setRandomSeed(long randomSeed) {
 		this.randomSeed = randomSeed;
-		this.solutionStore = null;
+		clearLastGeneration();
 	}
 
 	@Override
@@ -52,7 +57,7 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 	@Override
 	public void setMaxNumberOfSolutions(int maxNumberOfSolutions) {
 		this.maxNumberOfSolutions = maxNumberOfSolutions;
-		this.solutionStore = null;
+		clearLastGeneration();
 	}
 
 	@Override
@@ -71,31 +76,61 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 		getModel().restore(solutionStore.getSolutions().get(index).version());
 	}
 
+	private void clearLastGeneration() {
+		status = Status.RESET;
+		solutionStore = null;
+	}
+
+	private void generationFailed() {
+		status = Status.FAILED;
+		solutionStore = null;
+	}
+
 	@Override
 	public boolean isLastGenerationSuccessful() {
-		return solutionStore != null;
+		return status == Status.SUCCESS;
+	}
+
+	@Override
+	public boolean hasEnoughSolutions() {
+		if (solutionStore == null) {
+			return false;
+		}
+		return solutionStore.hasEnoughSolution();
 	}
 
 	public GeneratorResult tryGenerate() {
+		if (status == Status.RUNNING) {
+			throw new IllegalStateException("Another model generation is already running");
+		}
 		if (cancellationToken.isCancelled()) {
 			throw new IllegalStateException("Model generation was previously cancelled");
 		}
-		solutionStore = null;
+		clearLastGeneration();
 		randomSeed++;
 		var bestFirst = new BestFirstStoreManager(getModelStore(), maxNumberOfSolutions);
-		try {
-			bestFirst.startExploration(initialVersion, randomSeed);
-		} catch (PropagationRejectedException e) {
-			// Fatal propagation error.
-			throw getDiagnostics().wrapPropagationRejectedException(e, getProblemTrace());
-		}
-		var solutions = bestFirst.getSolutionStore().getSolutions();
-		if (solutions.isEmpty()) {
-			return GeneratorResult.UNSATISFIABLE;
-		}
-		getModel().restore(solutions.getFirst().version());
 		solutionStore = bestFirst.getSolutionStore();
-		return GeneratorResult.SUCCESS;
+		listeners.forEach(solutionStore::addListener);
+		status = Status.RUNNING;
+		try {
+			try {
+				bestFirst.startExploration(initialVersion, randomSeed);
+			} catch (PropagationRejectedException e) {
+				// Fatal propagation error.
+				throw getDiagnostics().wrapPropagationRejectedException(e, getProblemTrace());
+			}
+			var solutions = bestFirst.getSolutionStore().getSolutions();
+			if (solutions.isEmpty()) {
+				generationFailed();
+				return GeneratorResult.UNSATISFIABLE;
+			}
+			getModel().restore(solutions.getFirst().version());
+		} catch (RuntimeException e) {
+			generationFailed();
+			throw e;
+		}
+		status = Status.SUCCESS;
+		return hasEnoughSolutions() ? GeneratorResult.REQUEST_FULFILLED : GeneratorResult.NO_MORE_SOLUTIONS;
 	}
 
 	@Override
@@ -116,19 +151,46 @@ public class ModelGeneratorImpl extends ConcreteModelFacade implements ModelGene
 	@Override
 	public <A extends AbstractValue<A, C>, C> PartialInterpretation<A, C> getPartialInterpretation(
 			PartialSymbol<A, C> partialSymbol) {
-		checkSuccessfulGeneration();
+		checkModelAccess();
 		return super.getPartialInterpretation(partialSymbol);
 	}
 
 	@Override
 	public Problem serialize() {
-		checkSuccessfulGeneration();
+		checkModelAccess();
 		return super.serialize();
 	}
 
-	private void checkSuccessfulGeneration() {
-		if (!isLastGenerationSuccessful()) {
-			throw new IllegalStateException("No generated model is available");
+	private void checkModelAccess() {
+		switch (status) {
+		case RESET -> throw new IllegalStateException("No generated model is available");
+		case FAILED -> throw new IllegalStateException("Last model generation has failed");
+		case RUNNING, SUCCESS -> {
+			// Access is allowed.
 		}
+		}
+	}
+
+	@Override
+	public void addListener(SolutionStoreListener listener) {
+		listeners.add(listener);
+		if (solutionStore != null) {
+			solutionStore.addListener(listener);
+		}
+	}
+
+	@Override
+	public void removeListener(SolutionStoreListener listener) {
+		listeners.remove(listener);
+		if (solutionStore != null) {
+			solutionStore.removeListener(listener);
+		}
+	}
+
+	private enum Status {
+		RESET,
+		RUNNING,
+		SUCCESS,
+		FAILED,
 	}
 }

@@ -150,7 +150,7 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 		var concretize = annotationsFor(relation).getAnnotation(CONCRETIZE)
 				.flatMap(a -> a.getBoolean(CONCRETIZE_AUTO));
 		boolean defaultValue;
-		if (concretize.isPresent() && Boolean.FALSE.equals(concretize.get())) {
+		if (concretize.isPresent() && !concretize.get()) {
 			defaultValue = false;
 		} else {
 			defaultValue = ProblemUtil.isDecideByDefault(relation);
@@ -198,19 +198,21 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 		}
 	}
 
-	@ValidateAnnotation("PRIORITY")
-	@ValidateAnnotation("WEIGHT")
-	private void validateDecisionRuleAnnotation(Annotation annotation) {
-		if (!(annotation.getAnnotatedElement() instanceof RuleDefinition ruleDefinition) ||
-				!RuleKind.DECISION.equals(ruleDefinition.getKind())) {
-			var message = "@%s can only be applied to decision rules."
-					.formatted(annotation.getAnnotation().getDeclaration().getName());
-			error(message, annotation);
-		}
+	// This method does not make sense inverted.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	private boolean isDecisionRuleDefinition(EObject annotatedElement) {
+		return annotatedElement instanceof RuleDefinition ruleDefinition &&
+				RuleKind.DECISION.equals(ruleDefinition.getKind());
 	}
 
 	@ValidateAnnotation("PRIORITY")
 	private void validatePriority(Annotation annotation) {
+		var annotatedElement = annotation.getAnnotatedElement();
+		if (!isDecisionRuleDefinition(annotatedElement) && !(annotatedElement instanceof TheoryDeclaration)) {
+			var message = "@%s can only be applied to decision rules and theory declarations."
+					.formatted(annotation.getAnnotation().getDeclaration().getName());
+			error(message, annotation);
+		}
 		var value = annotation.getBigInteger(PRIORITY_VALUE)
 				.map(BigInteger::intValue)
 				.orElse(DecisionSettings.DEFAULT_PRIORITY);
@@ -223,6 +225,11 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 
 	@ValidateAnnotation("WEIGHT")
 	private void validateWeight(Annotation annotation) {
+		if (!isDecisionRuleDefinition(annotation.getAnnotatedElement())) {
+			var message = "@%s can only be applied to decision rules."
+					.formatted(annotation.getAnnotation().getDeclaration().getName());
+			error(message, annotation);
+		}
 		var coefficient = annotation.getBigDecimal(WEIGHT_COEFFICIENT);
 		var exponent = annotation.getBigDecimal(WEIGHT_EXPONENT);
 		if (coefficient.isEmpty() && exponent.isEmpty()) {

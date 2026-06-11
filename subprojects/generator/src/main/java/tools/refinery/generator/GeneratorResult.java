@@ -6,12 +6,8 @@
 package tools.refinery.generator;
 
 public enum GeneratorResult {
-	SUCCESS {
-		@Override
-		public void orThrow() {
-			// No need to throw on error.
-		}
-	},
+	REQUEST_FULFILLED,
+	NO_MORE_SOLUTIONS,
 	UNSATISFIABLE {
 		@Override
 		public void orThrow() {
@@ -25,5 +21,7 @@ public enum GeneratorResult {
 		}
 	};
 
-	public abstract void orThrow();
+	public void orThrow() {
+		// No need to throw if there was no error.
+	}
 }

@@ -66,7 +66,7 @@ class ModelGeneratorTest {
 		generatorFactory.partialInterpretationBasedNeighborhoods(partialInterpretationBasedNeighborhoods);
 		try (var generator = generatorFactory.createGenerator(problem)) {
 			var result = generator.tryGenerate();
-			assertThat(result, is(GeneratorResult.SUCCESS));
+			assertThat(result, is(GeneratorResult.REQUEST_FULFILLED));
 		}
 	}
 

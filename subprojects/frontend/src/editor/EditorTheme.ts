@@ -8,6 +8,7 @@ import annotationSVG from '@material-icons/svg/svg/alternate_email/baseline.svg?
 import cancelSVG from '@material-icons/svg/svg/cancel/baseline.svg?raw';
 import namespaceSVG from '@material-icons/svg/svg/data_object/baseline.svg?raw';
 import expandMoreSVG from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
+import extensionSVG from '@material-icons/svg/svg/extension/baseline.svg?raw';
 import functionsSVG from '@material-icons/svg/svg/functions/baseline.svg?raw';
 import infoSVG from '@material-icons/svg/svg/info/baseline.svg?raw';
 import labelOutlinedSVG from '@material-icons/svg/svg/label/outline.svg?raw';
@@ -655,6 +656,7 @@ export default styled('div', {
     ...completionIconStyle('rule', gearSVG, { opacity: 0.7 }),
     ...completionIconStyle('variable', variableSVG),
     ...completionIconStyle('attribute', attributeSVG),
+    ...completionIconStyle('theory', extensionSVG, { opacity: 0.7 }),
     '.cm-tooltip.cm-completionInfo': {
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
         | CSSObject

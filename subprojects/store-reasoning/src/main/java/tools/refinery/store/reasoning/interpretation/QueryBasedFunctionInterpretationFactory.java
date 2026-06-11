@@ -13,6 +13,7 @@ import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.query.ModelQueryAdapter;
 import tools.refinery.store.query.ModelQueryBuilder;
 import tools.refinery.store.query.resultset.ResultSet;
+import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
@@ -56,7 +57,7 @@ public class QueryBasedFunctionInterpretationFactory<A extends AbstractValue<A, 
 	}
 
 	private static class FunctionInterpretation<A extends AbstractValue<A, C>, C>
-			extends AbstractPartialInterpretation<A, C> {
+			extends AbstractPartialInterpretation<A, C> implements ResultSetListener<A> {
 		private final ResultSet<A> resultSet;
 		private final A errorValue;
 
@@ -76,6 +77,23 @@ public class QueryBasedFunctionInterpretationFactory<A extends AbstractValue<A, 
 		@Override
 		public Cursor<Tuple, A> getAll() {
 			return resultSet.getAll();
+		}
+
+		@Override
+		protected void startListeningForChanges() {
+			resultSet.addListener(this);
+		}
+
+		@Override
+		protected void stopListeningForChanges() {
+			resultSet.removeListener(this);
+		}
+
+		@Override
+		public void put(Tuple key, A fromValue, A toValue) {
+			var fromValueOrError = fromValue == null ? errorValue : fromValue;
+			var toValueOrError = toValue == null ? errorValue : toValue;
+			notifyChange(key, fromValueOrError, toValueOrError);
 		}
 	}
 }

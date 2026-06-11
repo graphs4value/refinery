@@ -9,13 +9,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.emf.ecore.EObject;
 import tools.refinery.language.annotations.AnnotationContext;
+import tools.refinery.language.annotations.Annotations;
 import tools.refinery.language.annotations.BuiltinAnnotations;
 import tools.refinery.language.documentation.DocumentationCommentParser;
 import tools.refinery.language.documentation.TypeHashProvider;
-import tools.refinery.language.model.problem.ClassDeclaration;
-import tools.refinery.language.model.problem.Parameter;
-import tools.refinery.language.model.problem.Relation;
-import tools.refinery.language.model.problem.RuleDefinition;
+import tools.refinery.language.model.problem.*;
 
 import java.math.BigInteger;
 import java.util.Optional;
@@ -66,11 +64,7 @@ public class BuiltinAnnotationContext {
 
 	public DecisionSettings getDecisionSettings(RuleDefinition ruleDefinition) {
 		var annotations = annotationContext.annotationsFor(ruleDefinition);
-		var priorityAnnotation = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
-		int priority = priorityAnnotation.map(annotation -> annotation.getBigInteger(BuiltinAnnotations.PRIORITY_VALUE)
-						.map(BigInteger::intValue)
-						.orElse(DecisionSettings.DEFAULT_PRIORITY))
-				.orElse(DecisionSettings.DEFAULT_PRIORITY);
+		int priority = getPriority(annotations);
 		var weighAnnotation = annotations.getAnnotation(BuiltinAnnotations.WEIGHT);
 		if (weighAnnotation.isEmpty()) {
 			return new DecisionSettings(priority);
@@ -82,6 +76,19 @@ public class BuiltinAnnotationContext {
 				.getBigDecimal(BuiltinAnnotations.WEIGHT_EXPONENT)
 				.orElse(DecisionSettings.DEFAULT_EXPONENT);
 		return new DecisionSettings(priority, coefficient, exponent);
+	}
+
+	public int getPriority(TheoryDeclaration theoryDeclaration) {
+		var annotations = annotationContext.annotationsFor(theoryDeclaration);
+		return getPriority(annotations);
+	}
+
+	private int getPriority(Annotations annotations) {
+		var priorityAnnotation = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
+		return priorityAnnotation.map(annotation -> annotation.getBigInteger(BuiltinAnnotations.PRIORITY_VALUE)
+						.map(BigInteger::intValue)
+						.orElse(DecisionSettings.DEFAULT_PRIORITY))
+				.orElse(DecisionSettings.DEFAULT_PRIORITY);
 	}
 
 	public String getColor(EObject eObject) {

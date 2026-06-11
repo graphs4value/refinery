@@ -197,6 +197,11 @@ public class ModelImpl implements Model {
 	}
 
 	@Override
+	public CancellationToken getCancellationToken() {
+		return cancellationToken;
+	}
+
+	@Override
 	public void checkCancelled() {
 		cancellationToken.checkCancelled();
 	}

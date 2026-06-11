@@ -145,8 +145,9 @@ public class ProblemProposalUtils {
 		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
 			return "aggregator";
 		}
-		if (ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass)) {
-			// In contexts where we are auto-completing an annotation name, its type is obvious.
+		if (ProblemPackage.Literals.ANNOTATION_DECLARATION.isSuperTypeOf(eClass) ||
+				ProblemPackage.Literals.THEORY_DECLARATION.isSuperTypeOf(eClass)) {
+			// In contexts where we are auto-completing an annotation or theory name, its type is obvious.
 			return null;
 		}
 		return eClass.getName();
@@ -168,7 +169,7 @@ public class ProblemProposalUtils {
 			return "atom";
 		}
 		if (isMulti(candidate, eObject)) {
-			return "mutli";
+			return "multi";
 		}
 		return "node";
 	}
@@ -346,6 +347,9 @@ public class ProblemProposalUtils {
 		}
 		if (ProblemPackage.Literals.AGGREGATOR_DECLARATION.isSuperTypeOf(eClass)) {
 			return "aggregator";
+		}
+		if (ProblemPackage.Literals.THEORY_DECLARATION.isSuperTypeOf(eClass)) {
+			return "theory";
 		}
 		if (ProblemPackage.Literals.PROBLEM.isSuperTypeOf(eClass)) {
 			return "module";

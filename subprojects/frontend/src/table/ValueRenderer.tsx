@@ -18,6 +18,14 @@ import {
   extractValueColor,
 } from '../graph/valueUtils';
 
+export class WrappedValue {
+  constructor(public readonly value: Value | undefined) {}
+
+  toString() {
+    return extractValue(this.value);
+  }
+}
+
 const Label = styled('div', {
   name: 'ValueRenderer-Label',
   shouldForwardProp: (prop) => prop !== 'value',
@@ -48,10 +56,10 @@ export default function ValueRenderer({
   attribute,
 }: {
   concretize: boolean;
-  value: Value | undefined;
+  value: WrappedValue | undefined;
   attribute: boolean | undefined;
 }): React.ReactNode {
-  const color = extractValueColor(value);
+  const color = extractValueColor(value?.value);
   let icon: React.ReactNode;
   switch (color) {
     case 'true':
@@ -82,7 +90,7 @@ export default function ValueRenderer({
   }
   return (
     <Label concretize={concretize} value={color}>
-      {icon} {extractValue(value)}
+      {icon} {extractValue(value?.value)}
     </Label>
   );
 }

@@ -277,5 +277,11 @@
     <genClasses ecoreClass="problem.ecore#//OverloadedDeclaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//OverloadedDeclaration/shadow"/>
     </genClasses>
+    <genClasses ecoreClass="problem.ecore#//TheoryAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference problem.ecore#//TheoryAction/term"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference problem.ecore#//TheoryAction/theories"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute problem.ecore#//TheoryAction/theoryOverride"/>
+    </genClasses>
+    <genClasses ecoreClass="problem.ecore#//TheoryDeclaration"/>
   </genPackages>
 </genmodel:GenModel>
