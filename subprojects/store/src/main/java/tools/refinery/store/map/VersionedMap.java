@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,4 +17,11 @@ public non-sealed interface VersionedMap<K, V> extends AnyVersionedMap {
 	void putAll(Cursor<K, V> cursor);
 
 	DiffCursor<K, V> getDiffCursor(Version state);
+
+	default DiffCursor<K, V> getDiffCursor(Version state, boolean consolidate) {
+		if (!consolidate) {
+			return getDiffCursor(state);
+		}
+		return new ConsolidatedDiffCursor<>(getDiffCursor(state));
+	}
 }

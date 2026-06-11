@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -29,7 +29,11 @@ public interface Model extends Versioned, AutoCloseable {
 
 	<T> Interpretation<T> getInterpretation(Symbol<T> symbol);
 
-	ModelDiffCursor getDiffCursor(Version to);
+	default ModelDiffCursor getDiffCursor(Version to) {
+		return getDiffCursor(to, false);
+	}
+
+	ModelDiffCursor getDiffCursor(Version to, boolean consolidate);
 
 	<T extends ModelAdapter> Optional<T> tryGetAdapter(Class<? extends T> adapterType);
 

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -60,11 +60,12 @@ public class ModelImpl implements Model {
 	}
 
 	@Override
-	public ModelDiffCursor getDiffCursor(Version to) {
+	public ModelDiffCursor getDiffCursor(Version to, boolean consolidate) {
 		var diffCursors = HashMap.<AnySymbol, DiffCursor<?, ?>>newHashMap(interpretations.size());
 		int i = 0;
 		for (var entry : interpretations.entrySet()) {
-			diffCursors.put(entry.getKey(), entry.getValue().getDiffCursor(ModelVersion.getInternalVersion(to, i++)));
+			diffCursors.put(entry.getKey(), entry.getValue().getDiffCursor(ModelVersion.getInternalVersion(to, i++),
+					consolidate));
 		}
 		return new ModelDiffCursor(diffCursors);
 	}

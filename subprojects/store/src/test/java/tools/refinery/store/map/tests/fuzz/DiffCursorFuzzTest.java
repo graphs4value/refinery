@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -10,7 +10,11 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.refinery.store.map.*;
+import tools.refinery.store.map.DiffCursor;
+import tools.refinery.store.map.Version;
+import tools.refinery.store.map.VersionedMap;
+import tools.refinery.store.map.VersionedMapStore;
+import tools.refinery.store.map.VersionedMapStoreFactoryBuilder;
 import tools.refinery.store.map.tests.fuzz.utils.FuzzTestUtils;
 import tools.refinery.store.map.tests.utils.MapTestEnvironment;
 
@@ -19,13 +23,20 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
-import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.*;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.commitFrequencyOptions;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.keyCounts;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.nullDefaultOptions;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.randomSeedOptions;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.storeConfigs;
+import static tools.refinery.store.map.tests.fuzz.utils.FuzzTestCollections.valueCounts;
 
 class DiffCursorFuzzTest {
 	private void runFuzzTest(String scenario, int seed, int steps, int maxKey, int maxValue, boolean nullDefault,
-							 int commitFrequency, boolean commitBeforeDiffCursor,
-							 VersionedMapStoreFactoryBuilder<Integer, String> builder) {
+	                         int commitFrequency, boolean commitBeforeDiffCursor,
+	                         VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		String[] values = MapTestEnvironment.prepareValues(maxValue, nullDefault);
 
 		VersionedMapStore<Integer, String> store = builder.defaultValue(values[0]).build().createOne();
@@ -34,11 +45,11 @@ class DiffCursorFuzzTest {
 	}
 
 	private void iterativeRandomPutsAndCommitsThenDiffCursor(String scenario, VersionedMapStore<Integer, String> store,
-															 int steps, int maxKey, String[] values, int seed,
-															 int commitFrequency, boolean commitBeforeDiffCursor) {
+	                                                         int steps, int maxKey, String[] values, int seed,
+	                                                         int commitFrequency, boolean commitBeforeDiffCursor) {
 
 		int largestCommit = -1;
-		Map<Integer,Version> index2Version = new HashMap<>();
+		Map<Integer, Version> index2Version = new HashMap<>();
 
 		{
 			// 1. build a map with versions
@@ -56,7 +67,7 @@ class DiffCursorFuzzTest {
 				}
 				if (index % commitFrequency == 0) {
 					Version version = versioned.commit();
-					index2Version.put(index,version);
+					index2Version.put(index, version);
 					largestCommit = index;
 				}
 				if (index % 10000 == 0)
@@ -78,12 +89,27 @@ class DiffCursorFuzzTest {
 
 					VersionedMap<Integer, String> oracle = store.createMap(index2Version.get(travelToVersion));
 
-					if(commitBeforeDiffCursor) {
+					if (commitBeforeDiffCursor) {
 						moving.commit();
 					}
 					DiffCursor<Integer, String> diffCursor = moving.getDiffCursor(index2Version.get(travelToVersion));
+
+					DiffCursor<Integer, String> consolidatedDiffCursor =
+							moving.getDiffCursor(index2Version.get(travelToVersion), true);
+					HashMap<Integer, String> consolidatedToValues = new HashMap<>();
+					while (consolidatedDiffCursor.move()) {
+						assertEquals(moving.get(consolidatedDiffCursor.getKey()),
+								consolidatedDiffCursor.getFromValue());
+						assertFalse(consolidatedToValues.containsKey(consolidatedDiffCursor.getKey()));
+						consolidatedToValues.put(consolidatedDiffCursor.getKey(), consolidatedDiffCursor.getToValue());
+					}
+
 					moving.putAll(diffCursor);
 					moving.commit();
+
+					for (var entry : consolidatedToValues.entrySet()) {
+						assertEquals(moving.get(entry.getKey()), entry.getValue());
+					}
 
 					MapTestEnvironment.compareTwoMaps(scenario + ":c" + index, oracle, moving);
 
@@ -114,15 +140,15 @@ class DiffCursorFuzzTest {
 	@Timeout(value = 10)
 	@Tag("fuzz")
 	void parametrizedFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault,
-						  int commitFrequency, int seed, boolean commitBeforeDiffCursor,
-						  VersionedMapStoreFactoryBuilder<Integer, String> builder) {
+	                      int commitFrequency, int seed, boolean commitBeforeDiffCursor,
+	                      VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("DiffCursorS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps,
 				noKeys, noValues, nullDefault, commitFrequency, commitBeforeDiffCursor, builder);
 	}
 
 	static Stream<Arguments> parametrizedFuzz() {
 		return FuzzTestUtils.permutationWithSize(new Object[]{100}, keyCounts, valueCounts, nullDefaultOptions,
-				commitFrequencyOptions, randomSeedOptions, new Object[]{false,true}, storeConfigs);
+				commitFrequencyOptions, randomSeedOptions, new Object[]{false, true}, storeConfigs);
 	}
 
 	@ParameterizedTest(name = title)
@@ -130,7 +156,7 @@ class DiffCursorFuzzTest {
 	@Tag("fuzz")
 	@Tag("slow")
 	void parametrizedSlowFuzz(int ignoredTests, int steps, int noKeys, int noValues, boolean nullDefault, int commitFrequency,
-			int seed, boolean commitBeforeDiffCursor, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
+	                          int seed, boolean commitBeforeDiffCursor, VersionedMapStoreFactoryBuilder<Integer, String> builder) {
 		runFuzzTest("DiffCursorS" + steps + "K" + noKeys + "V" + noValues + "s" + seed, seed, steps, noKeys, noValues,
 				nullDefault, commitFrequency, commitBeforeDiffCursor, builder);
 	}

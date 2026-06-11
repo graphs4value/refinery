@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -25,7 +25,11 @@ public non-sealed interface Interpretation<T> extends AnyInterpretation {
 
 	void putAll(Cursor<Tuple, T> cursor);
 
-	DiffCursor<Tuple, T> getDiffCursor(Version to);
+	default DiffCursor<Tuple, T> getDiffCursor(Version to) {
+		return getDiffCursor(to, false);
+	}
+
+	DiffCursor<Tuple, T> getDiffCursor(Version to, boolean consolidate);
 
 	void addListener(InterpretationListener<T> listener, boolean alsoWhenRestoring);
 
