@@ -5,6 +5,7 @@
  */
 package tools.refinery.store.reasoning.translator.typehierarchy;
 
+import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
 import tools.refinery.store.reasoning.representation.PartialRelation;
@@ -13,8 +14,10 @@ import tools.refinery.store.representation.Symbol;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Function;
 
 public class TypeHierarchyInitializer implements PartialModelInitializer {
@@ -28,18 +31,35 @@ public class TypeHierarchyInitializer implements PartialModelInitializer {
 
 	@Override
 	public void initialize(Model model, ModelSeed modelSeed) {
+		var typeInterpretation = model.getInterpretation(typeSymbol);
+		eraseNodeTypesOverLimit(typeInterpretation, modelSeed.getNodeCount());
+
 		var inferredTypes = new InferredType[modelSeed.getNodeCount()];
 		Arrays.fill(inferredTypes, typeHierarchy.getUnknownType());
 		for (var type : typeHierarchy.getAllTypes()) {
 			model.checkCancelled();
 			initializeType(type, inferredTypes, model, modelSeed);
 		}
-		var typeInterpretation = model.getInterpretation(typeSymbol);
+
 		var uniqueTable = new HashMap<InferredType, InferredType>();
 		for (int i = 0; i < inferredTypes.length; i++) {
 			model.checkCancelled();
 			var uniqueType = uniqueTable.computeIfAbsent(inferredTypes[i], Function.identity());
 			typeInterpretation.put(Tuple.of(i), uniqueType);
+		}
+	}
+
+	private void eraseNodeTypesOverLimit(Interpretation<InferredType> interpretation, int limit) {
+		var cursor = interpretation.getAll();
+		List<Integer> toDelete = new ArrayList<>();
+		while(cursor.move()) {
+			int index = cursor.getKey().get(0);
+			if(index >= limit) {
+				toDelete.add(index);
+			}
+		}
+		for(var index : toDelete) {
+			interpretation.put(Tuple.of(index), typeSymbol.defaultValue());
 		}
 	}
 

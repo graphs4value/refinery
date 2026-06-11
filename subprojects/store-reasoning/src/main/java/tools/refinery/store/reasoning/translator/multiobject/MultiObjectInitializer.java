@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.translator.multiobject;
 
 import org.jetbrains.annotations.NotNull;
+import tools.refinery.store.model.Interpretation;
 import tools.refinery.store.model.Model;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.refinement.PartialModelInitializer;
@@ -17,8 +18,10 @@ import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Function;
 
 class MultiObjectInitializer implements PartialModelInitializer {
@@ -30,16 +33,34 @@ class MultiObjectInitializer implements PartialModelInitializer {
 
 	@Override
 	public void initialize(Model model, ModelSeed modelSeed) {
+		var countInterpretation = model.getInterpretation(countSymbol);
+		eraseNodeCardinalityOverLimit(countInterpretation, modelSeed.getNodeCount());
+
 		var intervals = initializeIntervals(model, modelSeed);
 		initializeExists(intervals, model, modelSeed);
 		initializeEquals(intervals, model, modelSeed);
-		var countInterpretation = model.getInterpretation(countSymbol);
+
 		var uniqueTable = new HashMap<CardinalityInterval, CardinalityInterval>();
 		for (int i = 0; i < intervals.length; i++) {
 			var uniqueInterval = uniqueTable.computeIfAbsent(intervals[i], Function.identity());
 			countInterpretation.put(Tuple.of(i), uniqueInterval);
 		}
 	}
+
+	private void eraseNodeCardinalityOverLimit(Interpretation<CardinalityInterval> interpretation, int limit) {
+		var cursor = interpretation.getAll();
+		List<Integer> toDelete = new ArrayList<>();
+		while(cursor.move()) {
+			int index = cursor.getKey().get(0);
+			if(index >= limit) {
+				toDelete.add(index);
+			}
+		}
+		for(var index : toDelete) {
+			interpretation.put(Tuple.of(index), countSymbol.defaultValue());
+		}
+	}
+
 
 	@NotNull
 	private CardinalityInterval[] initializeIntervals(Model model, ModelSeed modelSeed) {
@@ -126,4 +147,5 @@ class MultiObjectInitializer implements PartialModelInitializer {
 					.formatted(nodeId, intervals.length));
 		}
 	}
+
 }

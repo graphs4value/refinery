@@ -15,7 +15,9 @@ import tools.refinery.store.reasoning.translator.TranslationException;
 import tools.refinery.store.representation.Symbol;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 class UndirectedCrossReferenceInitializer implements PartialModelInitializer {
 	private final PartialRelation linkType;
@@ -30,10 +32,22 @@ class UndirectedCrossReferenceInitializer implements PartialModelInitializer {
 	public void initialize(Model model, ModelSeed modelSeed) {
 		var mergedMap = getMergedMap(modelSeed);
 		var interpretation = model.getInterpretation(symbol);
+
+		var oldCursor = interpretation.getAll();
+		Set<Tuple> oldKeys = new HashSet<>();
+		while (oldCursor.move()) {
+			oldKeys.add(oldCursor.getKey());
+		}
+
 		for (var entry : mergedMap.entrySet()) {
 			var key = entry.getKey();
 			var value = entry.getValue();
+			oldKeys.remove(key);
 			interpretation.put(key, value);
+		}
+
+		for (var unusedOldKey : oldKeys) {
+			interpretation.put(unusedOldKey, symbol.defaultValue());
 		}
 	}
 
