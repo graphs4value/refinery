@@ -863,6 +863,24 @@ public class ProblemValidator extends AbstractProblemValidator {
 			acceptError("Theory actions may only appear in propagation or concretization rules.", theoryAction, null,
 					0, INVALID_RULE_ISSUE);
 		}
+		if (!theoryAction.isTheoryOverride()) {
+			return;
+		}
+		var theories = theoryAction.getTheories();
+		if (theories.isEmpty()) {
+			acceptWarning("Theory assertion without theories will be ignored.", theoryAction, null,
+					0, INVALID_RULE_ISSUE);
+			return;
+		}
+		int size = theories.size();
+		var theoriesSet = HashSet.newHashSet(size);
+		for (int i = 0; i < size; i++) {
+			var theory = theories.get(i);
+			if (!theoriesSet.add(theory)) {
+				acceptError("Duplicate theory '%s'.".formatted(theory.getName()), theoryAction,
+						ProblemPackage.Literals.THEORY_ACTION__THEORIES, i, INVALID_RULE_ISSUE);
+			}
+		}
 	}
 
 	@Check
