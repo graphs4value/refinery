@@ -236,7 +236,11 @@ export default function ZoomCanvas({
           ref={elementRef}
         >
           {typeof children === 'function'
-            ? children(fitZoomCallback, zoom.k)
+            ? /* eslint-disable-next-line react-hooks/refs --
+                Children will not directly access `fitZoomCallback` during the render,
+                only in event handlers.
+              */
+              children(fitZoomCallback, zoom.k)
             : children}
         </Box>
       </Box>

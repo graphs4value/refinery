@@ -239,7 +239,7 @@ export default async function createConfigAsync() {
       },
     } satisfies UserThemeConfig & AlgoliaConfig,
     future: {
-      experimental_faster: {
+      faster: {
         lightningCssMinimizer: true,
         mdxCrossCompilerCache: true,
         // We can't migrate to rspack, since it doesn't support Yarn PnP yet.

@@ -28,8 +28,6 @@ export default defineConfig({
   plugins: isProduction
     ? [
         dts({
-          // We can't bundle our types due to https://github.com/qmhc/vite-plugin-dts/issues/321
-          rollupTypes: false,
           include: ['src/**/*.ts'],
           beforeWriteFile(filePath, content) {
             // Strip the `src/` prefix from the file paths.

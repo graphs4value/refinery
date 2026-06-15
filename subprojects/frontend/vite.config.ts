@@ -107,7 +107,6 @@ const viteConfig: ViteConfig = {
       output: {
         chunkFileNames: ({ isDynamicEntry, isEntry }) =>
           isDynamicEntry || isEntry ? '[name]-[hash].js' : '[hash].js',
-        experimentalMinChunkSize: 20 * 1024,
       },
     },
   },

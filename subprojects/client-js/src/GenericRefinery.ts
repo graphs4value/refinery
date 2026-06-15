@@ -193,7 +193,7 @@ export abstract class GenericRefinery {
       RefineryResult.Error,
     ]);
     return async (request, init = {}) => {
-      const parsedRequest = requestType.parse(request) as z.output<T>;
+      const parsedRequest = requestType.parse(request);
       let json: unknown;
       try {
         const response = await this.fetch(
@@ -247,7 +247,7 @@ export abstract class GenericRefinery {
       request: z.input<T>,
       { signal, ...init }: RefineryInit,
     ) {
-      const parsedRequest = requestType.parse(request) as z.output<T>;
+      const parsedRequest = requestType.parse(request);
       let listener = undefined;
       try {
         // We must create our own abortController to be able to close the connection in Firefox.

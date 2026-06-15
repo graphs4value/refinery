@@ -28,7 +28,7 @@ export class WrappedValue {
 
 const Label = styled('div', {
   name: 'ValueRenderer-Label',
-  shouldForwardProp: (prop) => prop !== 'value',
+  shouldForwardProp: (prop) => prop !== 'value' && prop !== 'concretize',
 })<{
   value: 'true' | 'unknown' | 'error';
   concretize: boolean;

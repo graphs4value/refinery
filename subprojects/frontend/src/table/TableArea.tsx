@@ -128,6 +128,10 @@ function TableArea({
   const [cachedConcretize, setCachedConcretize] = useState(false);
   useEffect(
     () => {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect --
+       * This causes a re-render when `semantics` is updated,
+       * but this lets us use a cached value of `concretize` without flashing colors.
+       */
       setCachedConcretize(concretize);
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps --
