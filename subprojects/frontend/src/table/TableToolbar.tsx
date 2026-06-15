@@ -68,7 +68,7 @@ export default function TableToolbar({
         justifyContent: 'space-between',
       }}
     >
-      <Stack direction="row" flexWrap="wrap">
+      <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
         <GridToolbarColumnsButton />
         <GridToolbarFilterButton />
         <GridToolbarExport />

@@ -20,7 +20,10 @@ export default function TablePane({
   touchesTop: boolean;
 }): React.ReactElement {
   return (
-    <Stack direction="column" height="100%" overflow="auto" alignItems="center">
+    <Stack
+      direction="column"
+      sx={{ height: '100%', overflow: 'auto', alignItems: 'center' }}
+    >
       <Suspense fallback={<Loading />}>
         <TableArea graph={graph} touchesTop={touchesTop} />
       </Suspense>

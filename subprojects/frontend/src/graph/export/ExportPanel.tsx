@@ -51,7 +51,7 @@ function getLabel(value: number): string {
 const marks = [100, 200, 300, 400].map((value) => ({
   value,
   label: (
-    <Stack direction="column" alignItems="center">
+    <Stack direction="column" sx={{ alignItems: 'center' }}>
       <ImageIcon sx={{ width: `${11 + (value / 100) * 3}px` }} />
       <Typography variant="caption">{getLabel(value)}</Typography>
     </Stack>
@@ -281,17 +281,26 @@ function ExportPanel({
       )}
       {exportSettingsStore.theme === 'dynamic' && (
         <>
-          <AutoThemeMessage mt={2}>
+          <AutoThemeMessage sx={{ mt: (theme) => theme.spacing(2) }}>
             For embedding into HTML directly
           </AutoThemeMessage>
-          <AutoThemeMessage variant="caption" mt={1}>
+          <AutoThemeMessage
+            variant="caption"
+            sx={{ mt: (theme) => theme.spacing(1) }}
+          >
             Set <code>data-theme=&quot;dark&quot;</code> on a containing element
             to use a dark theme
           </AutoThemeMessage>
         </>
       )}
       {exportSettingsStore.canScale && (
-        <Box mx={4} mt={1} mb={2}>
+        <Box
+          sx={(theme) => ({
+            mx: theme.spacing(4),
+            mt: theme.spacing(1),
+            mb: theme.spacing(2),
+          })}
+        >
           <Slider
             aria-label="Image scale"
             value={exportSettingsStore.scale}

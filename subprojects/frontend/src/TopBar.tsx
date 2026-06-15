@@ -163,7 +163,11 @@ export default observer(function TopBar(): React.ReactElement {
         }}
       >
         <RefineryIcon size={32} />
-        <Typography variant="h6" component="h1" pl={1}>
+        <Typography
+          variant="h6"
+          component="h1"
+          sx={{ pl: (theme) => theme.spacing(1) }}
+        >
           Refinery {import.meta.env.DEV && <DevModeBadge>Dev</DevModeBadge>}
         </Typography>
         {large && editorStore?.simpleName !== undefined && (
@@ -171,7 +175,14 @@ export default observer(function TopBar(): React.ReactElement {
             {editorStore.simpleName}
           </FileName>
         )}
-        <Stack direction="row" alignItems="center" flexGrow={1} marginLeft={1}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            flexGrow: 1,
+            marginLeft: (theme) => theme.spacing(1),
+          }}
+        >
           {medium && !large && (
             <PaneButtons themeStore={themeStore} hasChat={hasChat} hideLabel />
           )}
@@ -179,21 +190,28 @@ export default observer(function TopBar(): React.ReactElement {
         {large && (
           <Stack
             direction="row"
-            alignItems="center"
             sx={{
               position: 'absolute',
               top: 0,
               bottom: 0,
               left: '50%',
               transform: 'translateX(-50%)',
+              alignItems: 'center',
             }}
           >
             <PaneButtons themeStore={themeStore} hasChat={hasChat} />
           </Stack>
         )}
-        <Stack direction="row" marginLeft={1} gap={1} alignItems="center">
+        <Stack
+          direction="row"
+          sx={(theme) => ({
+            ml: theme.spacing(1),
+            gap: theme.spacing(1),
+            alignItems: 'center',
+          })}
+        >
           {veryLarge && (
-            <Stack direction="row" alignItems="center">
+            <Stack direction="row" sx={{ alignItems: 'center' }}>
               <Tooltip title="Refinery home page">
                 <IconButton
                   href="https://refinery.tools/"

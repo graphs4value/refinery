@@ -26,7 +26,7 @@ function EditorLoading(): React.ReactElement {
   );
 
   return (
-    <Box mx={2} width="100%">
+    <Box sx={{ mx: (theme) => theme.spacing(2), width: '100%' }}>
       {skeletonSizes.map((length, i) => (
         /* eslint-disable-next-line react/no-array-index-key --
           Random placeholders have no identity.
@@ -42,7 +42,14 @@ export default observer(function EditorPane(): React.ReactElement {
   const { width, ref } = useResizeDetector();
 
   return (
-    <Stack direction="column" height="100%" overflow="auto" ref={ref}>
+    <Stack
+      sx={{
+        direction: 'column',
+        height: '100%',
+        overflow: 'auto',
+      }}
+      ref={ref}
+    >
       <Toolbar
         variant="dense"
         sx={{
@@ -57,7 +64,14 @@ export default observer(function EditorPane(): React.ReactElement {
       >
         <EditorButtons editorStore={editorStore} />
       </Toolbar>
-      <Box display="flex" flexGrow={1} flexShrink={1} overflow="auto">
+      <Box
+        sx={{
+          display: 'flex',
+          flexGrow: 1,
+          flexShrink: 1,
+          overflow: 'auto',
+        }}
+      >
         {editorStore === undefined ? (
           <EditorLoading />
         ) : (

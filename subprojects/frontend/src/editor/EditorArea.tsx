@@ -34,7 +34,7 @@ export default observer(function EditorArea({
   );
 
   return (
-    <Box flexGrow={1} flexShrink={1} overflow="auto">
+    <Box sx={{ flexGrow: 1, flexShrink: 1, overflow: 'auto' }}>
       <EditorTheme
         showLineNumbers={editorStore.showLineNumbers}
         showActiveLine={!editorStore.hasSelection}

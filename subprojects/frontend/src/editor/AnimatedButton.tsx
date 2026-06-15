@@ -93,13 +93,15 @@ export default function AnimatedButton({
       }
     >
       <Box
-        display="flex"
-        flexDirection="row"
-        justifyContent="end"
-        overflow="hidden"
-        width="100%"
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'end',
+          overflow: 'hidden',
+          width: '100%',
+        }}
       >
-        <Box whiteSpace="nowrap" ref={setContentsElement}>
+        <Box sx={{ whiteSpace: 'nowrap' }} ref={setContentsElement}>
           {children}
         </Box>
       </Box>

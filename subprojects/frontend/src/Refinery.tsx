@@ -16,7 +16,7 @@ export default function Refinery(): React.ReactElement {
   return (
     <SnackbarProvider TransitionComponent={Grow}>
       <UpdateNotification />
-      <Stack direction="column" height="100%" overflow="auto">
+      <Stack direction="column" sx={{ height: '100%', overflow: 'auto' }}>
         <TopBar />
         <WorkArea />
       </Stack>

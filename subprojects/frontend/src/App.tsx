@@ -54,7 +54,7 @@ export default function App({
         <ThemeProvider>
           <CssBaseline enableColorScheme />
           <WindowControlsOverlayColor />
-          <Box height={`${innerHeight}px`} overflow="hidden">
+          <Box sx={{ height: `${innerHeight}px`, overflow: 'hidden' }}>
             <Suspense fallback={<Loading />}>
               <Refinery />
             </Suspense>

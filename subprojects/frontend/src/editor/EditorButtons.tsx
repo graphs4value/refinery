@@ -52,7 +52,7 @@ export default observer(function EditorButtons({
   editorStore: EditorStore | undefined;
 }): React.ReactElement {
   return (
-    <Stack direction="row" flexGrow={1}>
+    <Stack direction="row" sx={{ flexGrow: 1 }}>
       <Tooltip title="Open">
         <IconButton
           disabled={editorStore === undefined}

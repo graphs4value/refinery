@@ -82,7 +82,14 @@ export default observer(function SearchToolbar({
             : {}),
         }}
       >
-        <Stack direction="row" flexWrap="wrap" alignItems="center" rowGap={0.5}>
+        <Stack
+          direction="row"
+          sx={{
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            rowGap: (theme) => theme.spacing(0.5),
+          }}
+        >
           <TextField
             type="search"
             placeholder="Search"
@@ -125,10 +132,12 @@ export default observer(function SearchToolbar({
           )}
           <Stack
             direction="row"
-            flexWrap="wrap"
-            alignItems="center"
-            mr={1}
-            rowGap={0.5}
+            sx={(theme) => ({
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              mr: theme.spacing(1),
+              rowGap: theme.spacing(0.5),
+            })}
           >
             <Tooltip title="Previous match">
               <IconButton
@@ -151,9 +160,11 @@ export default observer(function SearchToolbar({
           </Stack>
           <Stack
             direction="row"
-            flexWrap="wrap"
-            alignItems="center"
-            rowGap={0.5}
+            sx={(theme) => ({
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              rowGap: theme.spacing(0.5),
+            })}
           >
             <DimLabel
               control={
@@ -223,10 +234,12 @@ export default observer(function SearchToolbar({
         <Stack
           id={replaceId}
           direction="row"
-          flexWrap="wrap"
-          alignItems="center"
-          rowGap={0.5}
-          display={showReplace ? 'flex' : 'none'}
+          sx={(theme) => ({
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            rowGap: theme.spacing(0.5),
+            display: showReplace ? 'flex' : 'none',
+          })}
         >
           <TextField
             placeholder="Replace with"
@@ -247,9 +260,11 @@ export default observer(function SearchToolbar({
           />
           <Stack
             direction="row"
-            flexWrap="wrap"
-            alignItems="center"
-            rowGap={0.5}
+            sx={(theme) => ({
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              rowGap: theme.spacing(0.5),
+            })}
           >
             <Button
               disabled={!valid}
@@ -271,11 +286,12 @@ export default observer(function SearchToolbar({
         </Stack>
       </Stack>
       <Stack
-        direction="row"
-        alignSelf="stretch"
-        alignItems="start"
-        mt="1px"
-        sx={split ? { display: 'none' } : {}}
+        sx={{
+          ...(split ? { display: 'none' } : {}),
+          alignSelf: 'stretch',
+          alignItems: 'start',
+          mt: '1px',
+        }}
       >
         <IconButton
           aria-label="Close find/replace"

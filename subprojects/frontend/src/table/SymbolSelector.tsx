@@ -43,13 +43,12 @@ function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
     <Autocomplete
       renderInput={(params) => (
         <TextField
-          {...{
-            ...params,
-            InputLabelProps: {
-              ...params.InputLabelProps,
+          {...params}
+          slotProps={{
+            ...params.slotProps,
+            inputLabel: {
+              ...params.slotProps.inputLabel,
               // Workaround for type errors.
-              className: params.InputLabelProps.className ?? '',
-              style: params.InputLabelProps.style ?? {},
               'aria-placeholder': placeholderText,
             },
           }}

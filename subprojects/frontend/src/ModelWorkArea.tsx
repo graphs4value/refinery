@@ -76,23 +76,25 @@ const GeneratedModelPane = observer(function GeneratedModelPane({
   return (
     <Stack
       direction="column"
-      alignItems="center"
-      justifyContent="center"
-      height="100%"
-      width="100%"
-      overflow="hidden"
-      my={2}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        width: '100%',
+        overflow: 'hidden',
+        my: (theme) => theme.spacing(2),
+      }}
     >
       <Stack
         direction="column"
-        alignItems="center"
-        flexGrow={1}
-        flexShrink={1}
-        flexBasis={0}
         sx={(theme) => ({
           maxHeight: '6rem',
           height: 'calc(100% - 8rem)',
           width: '100%',
+          alignItems: 'center',
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: 0,
           marginBottom: theme.spacing(1),
           padding: error ? 0 : theme.spacing(1),
           color: theme.palette.text.secondary,
@@ -162,7 +164,14 @@ function ModelWorkArea({
       : generatedModelNames.indexOf(selectedGeneratedModel) + 1;
 
   return (
-    <Stack direction="column" height="100%" width="100%" overflow="hidden">
+    <Stack
+      direction="column"
+      sx={{
+        height: '100%',
+        width: '100%',
+        overflow: 'hidden',
+      }}
+    >
       <Stack
         direction="row"
         sx={(theme) => ({
@@ -200,10 +209,12 @@ function ModelWorkArea({
       </Stack>
       <Stack
         direction="column"
-        height="100%"
-        width="100%"
-        overflow="hidden"
-        position="relative"
+        sx={{
+          height: '100%',
+          width: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
       >
         {generatedModel === undefined ? (
           <SplitGraphPane

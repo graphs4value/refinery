@@ -107,10 +107,12 @@ export default function GraphArea({
 
   return (
     <Box
-      width="100%"
-      height="100%"
-      overflow="hidden"
-      position="relative"
+      sx={{
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
       ref={ref}
     >
       <SVGIcons />

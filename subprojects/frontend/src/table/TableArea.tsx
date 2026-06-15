@@ -63,11 +63,13 @@ function NoRowsOverlay({
 }): React.ReactElement {
   return (
     <Stack
-      height="100%"
-      alignItems="center"
-      justifyContent="center"
-      textAlign="center"
-      p={2}
+      sx={{
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        p: (theme) => theme.spacing(2),
+      }}
     >
       {selectedSymbol === undefined ? (
         noSymbolMessage
@@ -86,7 +88,13 @@ function NoResultsOverlay({
   graph: GraphStore;
 }): React.ReactElement {
   return (
-    <Stack height="100%" alignItems="center" justifyContent="center">
+    <Stack
+      sx={{
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       {selectedSymbol === undefined ? (
         noSymbolMessage
       ) : (
@@ -197,7 +205,7 @@ function TableArea({
   }, [arity, nodes, partialInterpretation, computedName]);
 
   return (
-    <Box width="100%" height="100%">
+    <Box sx={{ width: '100%', height: '100%' }}>
       <DataGrid
         slots={{
           toolbar: TableToolbar,

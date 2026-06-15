@@ -163,8 +163,9 @@ function createResponsiveTheme(
                   (color[0] ?? '').toUpperCase() + color.substring(1);
                 return {
                   ...accumulator,
-                  [`&.MuiButton-text${colorCapitalized}, &.MuiButton-outlined${colorCapitalized}`]:
-                    shadedButtonStyle(theme.palette[color].main),
+                  [`&.MuiButton-color${colorCapitalized}`]: shadedButtonStyle(
+                    theme.palette[color].main,
+                  ),
                 };
               }, {}),
             },
@@ -201,24 +202,25 @@ function createResponsiveTheme(
       MuiToggleButtonGroup: {
         styleOverrides: {
           root: {
-            '&.rounded .MuiToggleButtonGroup-groupedHorizontal': {
-              ':first-of-type': {
-                paddingLeft: 15,
-                borderRadius: '50em 0 0 50em',
+            '&.rounded.MuiToggleButtonGroup-horizontal .MuiToggleButtonGroup-grouped':
+              {
+                '&.MuiToggleButtonGroup-firstButton': {
+                  paddingLeft: 15,
+                  borderRadius: '50em 0 0 50em',
+                },
+                '&.MuiToggleButtonGroup-lastButton': {
+                  paddingRight: 15,
+                  borderRadius: '0 50em 50em 0',
+                },
+                '&.MuiToggleButton-sizeSmall': {
+                  ':first-of-type': { paddingLeft: 9 },
+                  ':last-of-type': { paddingRight: 9 },
+                },
+                '&.MuiToggleButton-sizeLarge': {
+                  ':first-of-type': { paddingLeft: 21 },
+                  ':last-of-type': { paddingRight: 21 },
+                },
               },
-              ':last-of-type': {
-                paddingRight: 15,
-                borderRadius: '0 50em 50em 0',
-              },
-              '&.MuiToggleButton-sizeSmall': {
-                ':first-of-type': { paddingLeft: 9 },
-                ':last-of-type': { paddingRight: 9 },
-              },
-              '&.MuiToggleButton-sizeLarge': {
-                ':first-of-type': { paddingLeft: 21 },
-                ':last-of-type': { paddingRight: 21 },
-              },
-            },
           },
         },
       },

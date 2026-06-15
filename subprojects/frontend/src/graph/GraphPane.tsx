@@ -21,10 +21,12 @@ export default function GraphPane({
   return (
     <Stack
       direction="column"
-      height="100%"
-      overflow="auto"
-      alignItems="center"
-      justifyContent="center"
+      sx={{
+        height: '100%',
+        overflow: 'auto',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <Suspense fallback={<Loading />}>
         <GraphArea graph={graph} />

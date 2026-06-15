@@ -26,8 +26,12 @@ export default function ZoomButtons({
   return (
     <Stack
       direction="column"
-      p={1}
-      sx={{ position: 'absolute', bottom: 0, right: 0 }}
+      sx={{
+        position: 'absolute',
+        p: (theme) => theme.spacing(1),
+        bottom: 0,
+        right: 0,
+      }}
     >
       <Tooltip title="Zoom in" placement="left">
         <IconButton onClick={() => changeZoom(2)}>

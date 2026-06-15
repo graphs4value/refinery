@@ -64,11 +64,12 @@ export default function DirectionalSplitPane({
         width: '100%',
         overflow: 'hidden',
         position: 'relative',
+        justifyContent: 'stretch',
       }}
       ref={ref}
     >
       {!showRightOnly && (
-        <Box {...{ [axis]: primarySize }}>
+        <Box sx={{ [axis]: primarySize }}>
           {typeof left === 'function' ? left(horizontalSplit) : left}
         </Box>
       )}
@@ -198,7 +199,7 @@ export default function DirectionalSplitPane({
         </Box>
       </Box>
       {!showLeftOnly && (
-        <Box {...{ [axis]: secondarySize }}>
+        <Box sx={{ [axis]: secondarySize }}>
           {typeof right === 'function' ? right(horizontalSplit) : right}
         </Box>
       )}
