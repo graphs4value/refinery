@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 8
+  version: 10
   cacheKey: 10c0
 
 "@aashutoshrathi/word-wrap@npm:^1.2.3":
@@ -5648,6 +5648,15 @@ __metadata:
     react: "npm:^19.2.7"
     smol-toml: "npm:^1.6.1"
     typescript: "npm:6.0.3"
+  dependenciesMeta:
+    "@swc/core":
+      built: true
+    core-js:
+      built: true
+    esbuild:
+      built: true
+    unrs-resolver:
+      built: true
   languageName: unknown
   linkType: soft
 

@@ -37,7 +37,7 @@
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"
   },
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.17.0",
   "dependencies": {
     "react": "^19.2.7"
   },
@@ -64,6 +64,20 @@
     "prettier": "^3.8.4",
     "smol-toml": "^1.6.1",
     "typescript": "6.0.3"
+  },
+  "dependenciesMeta": {
+    "@swc/core": {
+      "built": true
+    },
+    "core-js": {
+      "built": true
+    },
+    "esbuild": {
+      "built": true
+    },
+    "unrs-resolver": {
+      "built": true
+    }
   },
   "resolutions": {
     "d3-zoom@npm:^3.0.0": "patch:d3-zoom@npm%3A3.0.0#~/.yarn/patches/d3-zoom-npm-3.0.0-18f706a421.patch",
