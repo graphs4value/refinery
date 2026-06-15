@@ -68,7 +68,7 @@ Workflow {
 			junitSupport = {
 				generateStub = false
 				skipXbaseTestingPackage = true
-				junitVersion = '5'
+				junitVersion = '6'
 			}
 			webSupport = {
 				// We only generate the {@code AbstractProblemWebModule},
