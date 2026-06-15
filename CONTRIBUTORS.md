@@ -20,6 +20,7 @@ Other contributors (in alphabetical order):
 * Nemes, Lili &lt;lili.nemes@outlook.com&gt;
 * Semeráth, Oszkár &lt;semerath@mit.bme.hu&gt;
 * Tamási, Máté &lt;matetamasi@protonmail.com&gt;
+* Telbisz, Csanád &lt;csanadtelbisz@gmail.com&gt;
 * Tímea, Hasas &lt;hasastimea@edu.bme.hu&gt;
 
 ## Support
