@@ -247,14 +247,10 @@ function TableArea({
           '.MuiDataGrid-withBorderColor': {
             borderColor: theme.palette.outer.border,
           },
-          '.MuiDataGrid-toolbarContainer': {
+          '.TableToolbar-root': {
             background: touchesTop
               ? 'transparent'
               : theme.palette.outer.background,
-            padding: theme.spacing(1),
-            // Correct for the non-integer height of the text box to match up with the editor area toolbar.
-            marginBottom: '-0.5px',
-            borderBottom: 'none',
           },
           '.MuiDataGrid-columnHeaders': {
             '.MuiDataGrid-columnHeader, .MuiDataGrid-filler, .MuiDataGrid-scrollbarFiller':

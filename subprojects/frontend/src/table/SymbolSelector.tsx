@@ -91,7 +91,7 @@ function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
       sx={(theme) => ({
         flexBasis: 200,
         maxWidth: 600,
-        flexGrow: 1,
+        flexGrow: 1000,
         flexShrink: 1,
         '.MuiInput-underline::before': {
           borderColor:

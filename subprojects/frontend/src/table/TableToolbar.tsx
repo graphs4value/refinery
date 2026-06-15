@@ -4,16 +4,19 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import {
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarFilterButton,
+  ColumnsPanelTrigger,
+  ExportCsv,
+  FilterPanelTrigger,
 } from '@mui/x-data-grid';
 import { observer } from 'mobx-react-lite';
 
@@ -60,21 +63,59 @@ export default function TableToolbar({
   graph: GraphStore;
 }): React.ReactElement {
   return (
-    <GridToolbarContainer
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap-reverse',
+    <Stack
+      direction="row"
+      className="TableToolbar-root"
+      sx={(theme) => ({
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
-      }}
+        p: theme.spacing(1),
+        rowGap: theme.spacing(1),
+        // Correct for the non-integer height of the text box to match up with the editor area toolbar.
+        marginBottom: '-0.5px',
+      })}
     >
-      <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarExport />
-        <ComputedCheckbox graph={graph} />
-      </Stack>
       <SymbolSelector graph={graph} />
-    </GridToolbarContainer>
+      <Stack
+        direction="row"
+        sx={{ flexGrow: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}
+      >
+        <Stack
+          direction="row"
+          sx={{ flexGrow: 1, mr: (theme) => theme.spacing(2) }}
+        >
+          <ComputedCheckbox graph={graph} />
+        </Stack>
+        <ColumnsPanelTrigger
+          render={
+            <Button
+              size="small"
+              color="inherit"
+              startIcon={<ViewColumnIcon />}
+            />
+          }
+        >
+          Columns
+        </ColumnsPanelTrigger>
+        <FilterPanelTrigger
+          render={
+            <Button
+              size="small"
+              color="inherit"
+              startIcon={<FilterListIcon />}
+            />
+          }
+        >
+          Filter
+        </FilterPanelTrigger>
+        <ExportCsv
+          render={
+            <Button size="small" color="inherit" startIcon={<SaveAltIcon />} />
+          }
+        >
+          Export
+        </ExportCsv>
+      </Stack>
+    </Stack>
   );
 }
