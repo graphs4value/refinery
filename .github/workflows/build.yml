@@ -108,7 +108,8 @@ jobs:
       - name: Merge Maven repository with site
         if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
-          mv build/repo subprojects/docs/build/docusaurus/maven
+          mkdir -p subprojects/docs/build/docusaurus/maven
+          mv build/repo subprojects/docs/build/docusaurus/maven/snapshots
       - name: Upload GithHub Pages artifact
         if: ${{ matrix.os == 'ubuntu-22.04' }}
         uses: actions/upload-pages-artifact@v4
