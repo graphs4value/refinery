@@ -86,7 +86,7 @@ export default class OccurrencesService {
   }
 
   /**
-   * Clears the occurences from a new immediate task to let the current editor transaction finish.
+   * Clears the occurrences from a new immediate task to let the current editor transaction finish.
    */
   private clearOccurrencesLater() {
     setTimeout(() => this.clearOccurrences(), 0);

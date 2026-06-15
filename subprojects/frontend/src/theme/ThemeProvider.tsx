@@ -40,7 +40,7 @@ interface HighlightPalette {
   selection: string;
   foldPlaceholder: string;
   activeLintRange: string;
-  occurences: {
+  occurrences: {
     read: string;
     write: string;
   };
@@ -289,7 +289,7 @@ export const lightTheme = (() => {
           selection: '#c8e4fb',
           foldPlaceholder: alpha(primaryText, 0.08),
           activeLintRange: alpha('#f2a60d', 0.28),
-          occurences: {
+          occurrences: {
             read: alpha(primaryText, 0.16),
             write: alpha(primaryText, 0.16),
           },
@@ -385,7 +385,7 @@ export const darkTheme = (() => {
           selection: '#404859',
           foldPlaceholder: alpha(primaryText, 0.12),
           activeLintRange: alpha('#fbc346', 0.28),
-          occurences: {
+          occurrences: {
             read: alpha(primaryText, 0.14),
             write: alpha(primaryText, 0.14),
           },

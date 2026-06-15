@@ -272,10 +272,10 @@ export default styled('div', {
 
   const matchingStyle: CSSObject = {
     '.cm-problem-read': {
-      background: theme.palette.highlight.occurences.read,
+      background: theme.palette.highlight.occurrences.read,
     },
     '.cm-problem-write': {
-      background: theme.palette.highlight.occurences.write,
+      background: theme.palette.highlight.occurrences.write,
     },
     '.cm-matchingBracket, .cm-nonmatchingBracket': {
       background: 'transparent',
