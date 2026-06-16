@@ -633,6 +633,10 @@ export default class EditorStore {
   }
 
   toggleShowComputed(): void {
-    this.showComputed = !this.showComputed;
+    this.setShowComputed(!this.showComputed);
+  }
+
+  setShowComputed(showComputed: boolean): void {
+    this.showComputed = showComputed;
   }
 }

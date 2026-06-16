@@ -247,6 +247,9 @@ export default class GraphStore {
 
   setSelectedSymbol(option: RelationMetadata | undefined): void {
     this.editorStore.setSelectedSymbolName(option?.name);
+    if (!this.selectedSymbolHasComputed) {
+      this.editorStore.setShowComputed(false);
+    }
   }
 
   get showComputed(): boolean {

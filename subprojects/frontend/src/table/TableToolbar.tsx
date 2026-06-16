@@ -4,27 +4,28 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
 import {
   ColumnsPanelTrigger,
   ExportCsv,
   FilterPanelTrigger,
 } from '@mui/x-data-grid';
+import { observer } from 'mobx-react-lite';
 
+import Tooltip from '../Tooltip';
 import type GraphStore from '../graph/GraphStore';
 
 import SymbolSelector from './SymbolSelector';
 
-export default function TableToolbar({
-  graph,
-}: {
-  graph: GraphStore;
-}): React.ReactElement {
+function TableToolbar({ graph }: { graph: GraphStore }): React.ReactElement {
+  const { showComputed } = graph;
+
   return (
     <Stack
       direction="row"
@@ -57,6 +58,22 @@ export default function TableToolbar({
           justifyContent: 'flex-end',
         }}
       >
+        <Tooltip
+          title={
+            showComputed ? 'Forward reasoning only' : 'Bidirectional reasoning'
+          }
+        >
+          <IconButton
+            disabled={!graph.selectedSymbolHasComputed}
+            onClick={() => graph.toggleShowComputed()}
+          >
+            {showComputed ? (
+              <ArrowForwardIcon fontSize="inherit" />
+            ) : (
+              <SwapHorizIcon fontSize="inherit" />
+            )}
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Columns">
           <ColumnsPanelTrigger render={<IconButton color="inherit" />}>
             <ViewColumnIcon fontSize="inherit" />
@@ -76,3 +93,5 @@ export default function TableToolbar({
     </Stack>
   );
 }
+
+export default observer(TableToolbar);

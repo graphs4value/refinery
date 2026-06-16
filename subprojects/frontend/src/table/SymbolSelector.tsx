@@ -4,17 +4,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
 
-import Tooltip from '../Tooltip';
 import type GraphStore from '../graph/GraphStore';
 import RelationName from '../graph/RelationName';
 import isBuiltIn from '../utils/isBuiltIn';
@@ -26,7 +22,6 @@ function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
   const {
     selectedSymbol,
     semantics: { relations },
-    showComputed,
   } = graph;
 
   const filteredRelations = useMemo(() => {
@@ -54,40 +49,6 @@ function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
             inputLabel: {
               ...params.slotProps.inputLabel,
               'aria-placeholder': placeholderText,
-            },
-            input: {
-              ...params.slotProps.input,
-              endAdornment: (
-                <>
-                  {graph.selectedSymbolHasComputed && (
-                    <Tooltip
-                      title={
-                        showComputed
-                          ? 'Forward reasoning only'
-                          : 'Bidirectional reasoning'
-                      }
-                    >
-                      <IconButton
-                        size="small"
-                        className="SymbolSelector-computedIcon"
-                        sx={{
-                          marginRight: '-6px',
-                          padding: '4px',
-                          visibility: 'hidden',
-                        }}
-                        onClick={() => graph.toggleShowComputed()}
-                      >
-                        {showComputed ? (
-                          <ArrowForwardIcon fontSize="small" />
-                        ) : (
-                          <SwapHorizIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {params.slotProps.input.endAdornment}
-                </>
-              ),
             },
           }}
           variant="standard"
@@ -133,14 +94,6 @@ function SymbolSelector({ graph }: { graph: GraphStore }): React.ReactElement {
             theme.palette.mode === 'dark'
               ? theme.palette.divider
               : theme.palette.outer.border,
-        },
-        '&.Mui-focused .SymbolSelector-computedIcon': {
-          visibility: 'visible',
-        },
-        '@media (pointer: fine)': {
-          '&:hover .SymbolSelector-computedIcon': {
-            visibility: 'visible',
-          },
         },
       })}
       slotProps={{
