@@ -7,9 +7,9 @@
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
@@ -48,7 +48,6 @@ const ComputedCheckbox = observer(function ComputedCheckbox({
             disabled={!selectedSymbolHasComputed}
             checked={graph.showComputed && selectedSymbolHasComputed}
             onClick={() => graph.toggleShowComputed()}
-            size="small"
           />
         }
         label="Computed"
@@ -68,53 +67,60 @@ export default function TableToolbar({
       className="TableToolbar-root"
       sx={(theme) => ({
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        p: theme.spacing(1),
-        rowGap: theme.spacing(1),
-        // Correct for the non-integer height of the text box to match up with the editor area toolbar.
-        marginBottom: '-0.5px',
+        alignItems: 'center',
+        px: theme.spacing(1),
+        py: theme.spacing(0.5),
       })}
     >
-      <SymbolSelector graph={graph} />
       <Stack
         direction="row"
-        sx={{ flexGrow: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}
+        sx={{
+          height: (theme) => theme.spacing(5),
+          alignItems: 'center',
+          flexBasis: 200,
+          maxWidth: 600,
+          flexGrow: 1000,
+          flexShrink: 1,
+        }}
+      >
+        <SymbolSelector graph={graph} />
+      </Stack>
+      <Stack
+        direction="row"
+        sx={{
+          flexGrow: 1,
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
       >
         <Stack
           direction="row"
-          sx={{ flexGrow: 1, mr: (theme) => theme.spacing(2) }}
+          sx={{
+            height: (theme) => theme.spacing(5),
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
         >
           <ComputedCheckbox graph={graph} />
         </Stack>
-        <ColumnsPanelTrigger
-          render={
-            <Button
-              size="small"
-              color="inherit"
-              startIcon={<ViewColumnIcon />}
-            />
-          }
-        >
-          Columns
-        </ColumnsPanelTrigger>
-        <FilterPanelTrigger
-          render={
-            <Button
-              size="small"
-              color="inherit"
-              startIcon={<FilterListIcon />}
-            />
-          }
-        >
-          Filter
-        </FilterPanelTrigger>
-        <ExportCsv
-          render={
-            <Button size="small" color="inherit" startIcon={<SaveAltIcon />} />
-          }
-        >
-          Export
-        </ExportCsv>
+        <Stack direction="row">
+          <Tooltip title="Columns">
+            <ColumnsPanelTrigger render={<IconButton color="inherit" />}>
+              <ViewColumnIcon fontSize="inherit" />
+            </ColumnsPanelTrigger>
+          </Tooltip>
+          <Tooltip title="Filter">
+            <FilterPanelTrigger render={<IconButton color="inherit" />}>
+              <FilterListIcon fontSize="inherit" />
+            </FilterPanelTrigger>
+          </Tooltip>
+          <Tooltip title="Export CSV">
+            <ExportCsv render={<IconButton color="inherit" />}>
+              <SaveAltIcon fontSize="inherit" />
+            </ExportCsv>
+          </Tooltip>
+        </Stack>
       </Stack>
     </Stack>
   );
