@@ -6,6 +6,7 @@
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
 import {
   DataGrid,
@@ -161,6 +162,16 @@ function TableArea({
       field: 'value',
       headerName: namesOrEmpty.includes('value') ? '$VALUE' : 'value',
       flex: 1,
+      renderHeader: ({ field }) => (
+        <Typography
+          component="span"
+          variant="body2"
+          color={showComputed ? 'primary' : 'textPrimary'}
+        >
+          {showComputed && 'computed '}
+          {field}
+        </Typography>
+      ),
       renderCell: ({ value }: GridRenderCellParams<Row, WrappedValue>) => (
         <ValueRenderer
           concretize={cachedConcretize}
@@ -170,7 +181,7 @@ function TableArea({
       ),
     });
     return defs;
-  }, [arity, attribute, cachedConcretize, parameterNames]);
+  }, [arity, attribute, cachedConcretize, parameterNames, showComputed]);
 
   const rows = useMemo<Row[]>(() => {
     if (computedName === undefined) {
