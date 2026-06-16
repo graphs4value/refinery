@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { lezer } from '@lezer/generator/rollup';
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import { defineConfig, type UserConfig as ViteConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import svgr from 'vite-plugin-svgr';
@@ -107,6 +107,18 @@ const viteConfig: ViteConfig = {
       output: {
         chunkFileNames: ({ isDynamicEntry, isEntry }) =>
           isDynamicEntry || isEntry ? '[name]-[hash].js' : '[hash].js',
+        // See https://github.com/rolldown/rolldown/issues/4932#issuecomment-4466274734
+        codeSplitting: {
+          minSize: 20_000,
+          minShareCount: 2,
+          groups: [
+            {
+              name: 'app',
+              entriesAware: true,
+              entriesAwareMergeThreshold: 20_000,
+            },
+          ],
+        },
       },
     },
   },

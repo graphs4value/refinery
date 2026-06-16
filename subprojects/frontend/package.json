@@ -103,7 +103,7 @@
     "@types/pnpapi": "^0.0.5",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react-swc": "^4.3.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "@xstate/cli": "^0.5.17",
     "fast-glob": "^3.3.3",
     "html-minifier-terser": "^7.2.0",
