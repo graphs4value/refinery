@@ -37,7 +37,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: 25
-          distribution: corretto
+          distribution: temurin
       - name: Checkout code
         uses: actions/checkout@v6
         with:
