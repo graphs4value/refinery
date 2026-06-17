@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: EPL-2.0
 
 set -euo pipefail
+shopt -s extglob
 
 refinery_version="$(./get_version.sh "version")"
 cli_distribution_name="refinery-generator-cli-${refinery_version}"
@@ -24,7 +25,7 @@ move_application_jars() {
     prefix="$1"
     # Our application itself is very small, so it will get added as the last layer
     # of both containers.
-    mv "${prefix}"_dist/lib/refinery-* "context/extracted/${prefix}_app_lib"
+    mv "${prefix}"_dist/lib/refinery-!(z3-solver*) "context/extracted/${prefix}_app_lib"
 }
 
 move_application_jars cli
@@ -38,10 +39,17 @@ for i in cli_dist/lib/*; do
     fi
 done
 
-# Move architecture-specific jars to their repsective directories.
-mv context/extracted/common_lib/ortools-linux-x86-64-*.jar context/extracted/common_amd64_lib
-mv context/extracted/common_lib/ortools-linux-aarch64-*.jar context/extracted/common_arm64_lib
-rm context/extracted/common_lib/ortools-{darwin,win32}-*.jar
+
+move_arch_specific_lib() {
+    name="$1"
+    # Move architecture-specific jars to their repsective directories.
+    mv context/extracted/common_lib/"${name}"-linux-x86-64-*.jar context/extracted/common_amd64_lib
+    mv context/extracted/common_lib/"${name}"-linux-aarch64-*.jar context/extracted/common_arm64_lib
+    rm context/extracted/common_lib/"${name}"-{darwin,win32}-*.jar
+}
+
+move_arch_specific_lib refinery-z3-solver
+move_arch_specific_lib ortools
 
 prepare_application() {
     prefix="$1"
@@ -51,10 +59,10 @@ prepare_application() {
     mv "${prefix}"_dist/lib/* "context/extracted/${prefix}_lib"
     # Omit references to jars not present for the current architecture from the
     # startup scripts.
-    sed 's/:\$APP_HOME\/lib\/ortools-\(darwin\|win32\|linux-aarch64\)[^:]\+\.jar//g' \
+    sed 's/:\$APP_HOME\/lib\/\(refinery-z3-solver\|ortools\)-\(darwin\|win32\|linux-aarch64\)[^:]\+\.jar//g' \
         "${prefix}_dist/bin/refinery-${suffix}" \
         > "context/extracted/${prefix}_amd64_bin/refinery-${suffix}"
-    sed 's/:\$APP_HOME\/lib\/ortools-\(darwin\|win32\|linux-x86-64\)[^:]\+\.jar//g' \
+    sed 's/:\$APP_HOME\/lib\/\(refinery-z3-solver\|ortools\)-\(darwin\|win32\|linux-x86-64\)[^:]\+\.jar//g' \
         "${prefix}_dist/bin/refinery-${suffix}" \
         > "context/extracted/${prefix}_arm64_bin/refinery-${suffix}"
     chmod a+x "context/extracted/${prefix}"_{amd64,arm64}_bin/refinery-"${suffix}"
