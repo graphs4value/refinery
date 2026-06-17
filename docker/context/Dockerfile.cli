@@ -4,12 +4,9 @@
 
 FROM base AS cli
 ARG TARGETARCH
-# Layer with platform-independent dependencies, slow changing.
 ADD --link extracted/cli_lib /app/lib
-ADD --link extracted/cli_${TARGETARCH}_bin /app/bin
-# Layer with platform-independent application jars.
 ADD --link extracted/cli_app_lib /app/lib
-# Common settings added on top.
+ADD --link extracted/cli_${TARGETARCH}_bin /app/bin
 ENV REFINERY_LIBRARY_PATH=/data
 USER 1000
 WORKDIR /data

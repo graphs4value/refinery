@@ -37,9 +37,6 @@ RUN jlink --no-header-files --no-man-pages \
 
 FROM docker.io/ubuntu:resolute AS base
 ARG TARGETARCH
-# The first layer contains the slimmed down JRE.
 COPY --link --from=jlink /jlink /usr/lib/java
 ENV JAVA_HOME="/usr/lib/java" PATH="/usr/lib/java/bin:${PATH}"
-# Layer with platform-independent dependencies, slow changing.
-ADD --link extracted/common_lib /app/lib
-ADD --link extracted/common_${TARGETARCH}_lib /app/lib
+ADD --link extracted/common_lib extracted/common_${TARGETARCH}_lib /app/lib

@@ -4,12 +4,9 @@
 
 FROM base AS web-base
 ARG TARGETARCH
-# Layer with platform-independent dependencies, slow changing.
 ADD --link extracted/web_lib /app/lib
-ADD --link extracted/web_${TARGETARCH}_bin /app/bin
-# Layer with platform-independent application jars.
 ADD --link extracted/web_app_lib /app/lib
-# Common settings added on top.
+ADD --link extracted/web_${TARGETARCH}_bin extracted/web_app_lib /app/bin
 ENV REFINERY_LISTEN_HOST=0.0.0.0 REFINERY_LISTEN_PORT=8888
 EXPOSE 8888
 USER 1000
