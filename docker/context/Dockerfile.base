@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 
-FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:25-jdk-resolute AS jlink-base
+FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:25-jdk-resolute AS jlink
+ARG BUILDARCH
+ARG TARGETARCH
 # We'll have to cross-jlink the JDK: https://stackoverflow.com/a/47611708
 # `jmods` are no longer packaged into the Temurin JDK Docker image.
-ARG TARGETARCH
 RUN set -eux; \
     case "$TARGETARCH" in \
       amd64) JMODS_ARCH=x64 ;; \
@@ -17,44 +18,28 @@ RUN set -eux; \
     mkdir -p /crossjdk/jmods; \
     tar -xzf /tmp/jmods.tar.gz --strip-components=1 -C /crossjdk/jmods; \
     rm /tmp/jmods.tar.gz
-
-FROM --platform=$BUILDPLATFORM jlink-base AS jlink-amd64-on-amd64
-
-FROM --platform=$BUILDPLATFORM jlink-base AS jlink-arm64-on-arm64
-
-FROM --platform=$BUILDPLATFORM jlink-base AS jlink-arm64-on-amd64
 # When cross-building the Docker image, we have the wrong toolchain for the
 # target architecture. We forcibly override the target for the objcopy tool.
-RUN apt-get update && \
-    apt-get -y install binutils-aarch64-linux-gnu && \
-    ln -sf /usr/bin/aarch64-linux-gnu-objcopy /usr/bin/objcopy && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM --platform=$BUILDPLATFORM jlink-base AS jlink-amd64-on-arm64
-RUN apt-get update && \
-    apt-get -y install binutils-x86-64-linux-gnu && \
-    ln -sf /usr/bin/x86_64-linux-gnu-objcopy /usr/bin/objcopy && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM --platform=$BUILDPLATFORM jlink-$TARGETARCH-on-$BUILDARCH AS jlink
+RUN set -eux; \
+    if [ "$TARGETARCH" != "$BUILDARCH" ]; then \
+      case "$TARGETARCH" in \
+        amd64) CROSS_PKG=binutils-x86-64-linux-gnu; CROSS_OBJCOPY=x86_64-linux-gnu-objcopy ;; \
+        arm64) CROSS_PKG=binutils-aarch64-linux-gnu; CROSS_OBJCOPY=aarch64-linux-gnu-objcopy ;; \
+        *) echo "unsupported arch: $TARGETARCH" >&2; exit 1 ;; \
+      esac; \
+      apt-get update && apt-get -y install --no-install-recommends "$CROSS_PKG" && rm -rf /var/lib/apt/lists/*; \
+      ln -sf "/usr/bin/$CROSS_OBJCOPY" /usr/bin/objcopy; \
+    fi
 RUN jlink --no-header-files --no-man-pages \
     --module-path=/crossjdk/jmods --strip-debug --add-modules \
     java.base,java.logging,java.management,java.naming,java.xml,jdk.zipfs \
     --output /jlink
 
 FROM docker.io/ubuntu:resolute AS base
+ARG TARGETARCH
 # The first layer contains the slimmed down JRE.
 COPY --link --from=jlink /jlink /usr/lib/java
 ENV JAVA_HOME="/usr/lib/java" PATH="/usr/lib/java/bin:${PATH}"
 # Layer with platform-independent dependencies, slow changing.
 ADD --link extracted/common_lib /app/lib
-
-FROM base AS base-amd64
-# Layer with platform-dependent dependencies, slow changing.
-ADD --link extracted/common_amd64_lib /app/lib
-
-FROM base AS base-arm64
-# Layer with platform-dependent dependencies, slow changing.
-ADD --link extracted/common_arm64_lib /app/lib
-
-FROM base-$TARGETARCH
+ADD --link extracted/common_${TARGETARCH}_lib /app/lib

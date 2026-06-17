@@ -1,22 +1,12 @@
-# SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+# SPDX-FileCopyrightText: 2024-2026 The Refinery Authors <https://refinery.tools/>
 #
 # SPDX-License-Identifier: EPL-2.0
 
-FROM base AS cli-base
-# Layer with platform-dependent dependencies, slow changing.
+FROM base AS cli
+ARG TARGETARCH
+# Layer with platform-independent dependencies, slow changing.
 ADD --link extracted/cli_lib /app/lib
-
-FROM cli-base AS cli-amd64
-# Layer with platform-dependent startup script containing references to all
-# dependency versions.
-ADD --link extracted/cli_amd64_bin /app/bin
-
-FROM cli-base AS cli-arm64
-# Layer with platform-dependent startup script containing references to all
-# dependency versions.
-ADD --link extracted/cli_arm64_bin /app/bin
-
-FROM cli-$TARGETARCH
+ADD --link extracted/cli_${TARGETARCH}_bin /app/bin
 # Layer with platform-independent application jars.
 ADD --link extracted/cli_app_lib /app/lib
 # Common settings added on top.
