@@ -2,11 +2,8 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 
-FROM docker.io/eclipse-temurin:25-jdk-resolute AS jdk
-
 FROM --platform=$BUILDPLATFORM docker.io/eclipse-temurin:25-jdk-resolute AS jlink-base
 # We'll have to cross-jlink the JDK: https://stackoverflow.com/a/47611708
-COPY --link --from=jdk /opt/java/openjdk /crossjdk
 # `jmods` are no longer packaged into the Temurin JDK Docker image.
 ARG TARGETARCH
 RUN set -eux; \
