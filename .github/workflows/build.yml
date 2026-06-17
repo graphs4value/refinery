@@ -18,14 +18,14 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-24.04
+          - ubuntu-26.04
           - windows-2022
           - macos-15
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check for Sonar secret
         id: check-secret
-        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        if: ${{ matrix.os == 'ubuntu-26.04' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -83,7 +83,7 @@ jobs:
         run: |
           ./gradlew sonar -Pci --info --stacktrace --no-parallel --no-daemon
       - name: Upload application artifacts
-        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        if: ${{ matrix.os == 'ubuntu-26.04' }}
         uses: actions/upload-artifact@v7
         with:
           name: distributions
@@ -93,7 +93,7 @@ jobs:
           compression-level: 0
           retention-days: 5  # No need to preserve for long, since they are uploaded to GHCR
       - name: Build signed Maven repository
-        if: ${{ matrix.os == 'ubuntu-24.04' && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
+        if: ${{ matrix.os == 'ubuntu-26.04' && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
         env:
           PGP_KEY: ${{ secrets.PGP_KEY }}
           PGP_KEY_ID: ${{ secrets.PGP_KEY_ID }}
@@ -101,16 +101,16 @@ jobs:
         run: |
           ./gradlew mavenRepository -Pci -PforceSign --info --stacktrace --max-workers 4 --no-daemon
       - name: Build unsigned Maven repository
-        if: ${{ matrix.os == 'ubuntu-24.04' && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
+        if: ${{ matrix.os == 'ubuntu-26.04' && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
         run: |
           ./gradlew mavenRepository -Pci --info --stacktrace --max-workers 4 --no-daemon
       - name: Merge Maven repository with site
-        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        if: ${{ matrix.os == 'ubuntu-26.04' }}
         run: |
           mkdir -p subprojects/docs/build/docusaurus/maven
           mv build/repo subprojects/docs/build/docusaurus/maven/snapshots
       - name: Upload GithHub Pages artifact
-        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        if: ${{ matrix.os == 'ubuntu-26.04' }}
         uses: actions/upload-pages-artifact@v4
         with:
           path: subprojects/docs/build/docusaurus/
@@ -119,7 +119,7 @@ jobs:
     name: REUSE Compliance Check
     permissions:
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -134,7 +134,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment:
       name: github-pages
       url: ${{steps.deployment.outputs.page_url}}
@@ -148,7 +148,7 @@ jobs:
     permissions:
       packages: write
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
@@ -194,7 +194,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
     needs: docker-build
     permissions: {}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment:
       name: production
       url: https://refinery.services
