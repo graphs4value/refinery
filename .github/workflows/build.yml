@@ -19,8 +19,9 @@ jobs:
       matrix:
         os:
           - ubuntu-26.04
-          - windows-2022
-          - macos-15
+          - ubuntu-26.04-arm
+          - windows-2025
+          - macos-26
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check for Sonar secret
