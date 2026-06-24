@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -36,6 +36,15 @@ import tools.refinery.store.reasoning.translator.TranslationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import tools.refinery.generator.dto.*;
+import tools.refinery.store.tuple.Tuple;
+import tools.refinery.store.reasoning.translator.typehierarchy.TypeHierarchyTranslator;
+import tools.refinery.store.reasoning.representation.PartialRelation;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public abstract class ModelFacadeImpl implements ModelFacade {
 	private final ProblemTrace problemTrace;
@@ -190,6 +199,99 @@ public abstract class ModelFacadeImpl implements ModelFacade {
 				errors.add(new ConsistencyCheckResult.Error<>(partialSymbol, cursor.getKey(), value));
 			}
 		}
+	}
+
+	public List<TypeDto> getAllSuperTypesOfType(TypeDto type) {
+		if (type.getSuperTypeObjects().isEmpty()) {
+			List<TypeDto> supertypes = new ArrayList<>();
+			supertypes.add(type);
+			return supertypes;
+		} else {
+			List<TypeDto> supertypes = new ArrayList<>();
+			for (TypeDto superType : type.getSuperTypeObjects()) {
+				supertypes.addAll(getAllSuperTypesOfType(superType));
+			}
+			supertypes.add(type);
+			return supertypes;
+		}
+	}
+
+	@Override
+	public ObjectNetDto getObjectNet() {
+		Map<PartialRelation, TypeDto> typeMap = new HashMap<>();
+		Map<PartialRelation, RelationTypeDto> relationTypeMap = new HashMap<>();
+		Map<Integer, InstanceDto> instanceMap = new HashMap<>();
+		Map<Tuple, RelationInstanceDto> relationInstanceMap = new HashMap<>();
+
+		var trace = getProblemTrace();
+		var metamodel = trace.getMetamodel();
+
+		metamodel.typeHierarchy().getAllTypes().forEach(type -> typeMap.put(type, new TypeDto(type, type.name())));
+
+		typeMap.forEach((key, value) -> {
+			for (PartialRelation subType : metamodel.typeHierarchy().getAnalysisResult(key).getDirectSubtypes()) {
+				TypeDto subTypeObj = typeMap.get(subType);
+				value.addSubType(subTypeObj);
+				subTypeObj.addSuperType(value);
+			}
+		});
+
+		metamodel.containmentHierarchy().forEach((rel, info) -> relationTypeMap.put(rel,
+				new RelationTypeDto(rel, RelationTypeDto.Kind.CONTAINMENT, rel.name(), typeMap.get(info.sourceType()),
+						typeMap.get(info.targetType()))));
+		metamodel.directedCrossReferences().forEach((rel, info) -> relationTypeMap.put(rel,
+				new RelationTypeDto(rel, RelationTypeDto.Kind.DIRECTED_CROSS_REF, rel.name(),
+						typeMap.get(info.sourceType()), typeMap.get(info.targetType()))));
+
+		var nodeTrace = trace.getNodeTrace();
+		var typeInterpretation = model.getInterpretation(TypeHierarchyTranslator.TYPE_SYMBOL);
+		var typeInterpretaionCursor = typeInterpretation.getAll();
+		while (typeInterpretaionCursor.move()) {
+			final var cursor = typeInterpretaionCursor;
+			typeMap.forEach((key, value) -> {
+				if (value.getName().equals(cursor.getValue().candidateType().name()) &&
+						cursor.getValue().isMust(cursor.getValue().candidateType())) {
+					int nodeId = cursor.getKey().get(0);
+					var nodes = nodeTrace.flipUniqueValues().get(nodeId);
+					String name = (nodes != null) ? nodes.getName() : "";
+					if ("new".equals(name) || "".equals(name)) {
+						name = value.getName() + nodeId;
+					}
+					instanceMap.put(nodeId, new InstanceDto(nodeId, value, name));
+				}
+			});
+		}
+
+		instanceMap.forEach((id, instance) -> {
+			TypeDto principalType = instance.getPrincipalTypeObject();
+			for (TypeDto superType : principalType.getSuperTypeObjects()) {
+				instance.addTypes(getAllSuperTypesOfType(superType));
+			}
+		});
+
+		for (Map.Entry<PartialRelation, RelationTypeDto> entry : relationTypeMap.entrySet()) {
+			var relationInterpretation = getPartialInterpretation(entry.getKey());
+			var relationCursor = relationInterpretation.getAll();
+			while (relationCursor.move()) {
+				if (relationCursor.getValue() == TruthValue.TRUE) {
+					Tuple pair = relationCursor.getKey();
+					InstanceDto sourceInstance = instanceMap.get(pair.get(0));
+					InstanceDto targetInstance = instanceMap.get(pair.get(1));
+					if (sourceInstance != null && targetInstance != null) {
+						relationInstanceMap.put(pair,
+								new RelationInstanceDto(entry.getKey(), entry.getValue(), sourceInstance,
+										targetInstance));
+					}
+				}
+			}
+		}
+
+		return new ObjectNetDto(
+				new ArrayList<>(typeMap.values()),
+				new ArrayList<>(relationTypeMap.values()),
+				new ArrayList<>(instanceMap.values()),
+				new ArrayList<>(relationInstanceMap.values())
+		);
 	}
 
 	@Override

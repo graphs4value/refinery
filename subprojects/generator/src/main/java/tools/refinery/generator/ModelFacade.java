@@ -1,10 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2023-2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2023-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package tools.refinery.generator;
 
+import tools.refinery.generator.dto.ObjectNetDto;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.metadata.NodesMetadata;
@@ -47,6 +48,8 @@ public interface ModelFacade extends AutoCloseable {
 	List<RelationMetadata> getRelationsMetadata();
 
 	ConsistencyCheckResult checkConsistency();
+
+	ObjectNetDto getObjectNet();
 
 	Problem serialize();
 
