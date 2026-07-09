@@ -82,7 +82,11 @@ gradle.projectsEvaluated {
 	mavenRepository.configure {
 		for (subproject in rootProject.subprojects) {
 			if (subproject.plugins.hasPlugin(MavenPublishPlugin::class)) {
-				dependsOn(subproject.tasks.named("publishMavenJavaPublicationToFileRepository"))
+				val publishTask = subproject.tasks.named("publishMavenJavaPublicationToFileRepository")
+				publishTask.configure {
+					mustRunAfter(cleanMavenRepository)
+				}
+				dependsOn(publishTask)
 			}
 		}
 
