@@ -1,0 +1,14 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+/**
+ * Enables and configures the IBEX constraints solver backend for the
+ * refinement process.
+ *
+ * Activating this theory allows the solver engine to delegate numerical
+ * and constraints to the IBEX solver for high-performance reasoning.
+ *
+ * This solver is activated by default.
+ */
+#theory ibex.

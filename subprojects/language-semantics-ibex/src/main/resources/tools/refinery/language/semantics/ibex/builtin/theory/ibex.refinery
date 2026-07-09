@@ -1,0 +1,35 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::theory::ibex::core.
+
+/**
+ * Configures the precision of `real` variables in the IBEX constraint solver.
+ *
+ * Use this as a top-level annotation, e.g., `#ibexPrecision(0.001).`, to set
+ * the default precision for all variables.
+ *
+ * Use this as an annotation on a declaration, e.g., `@ibexPrecision(0.001)`,
+ * to set the precision for a function symbol of `real` type.
+ *
+ * @param value The precision. Must be positive.
+ *
+ *              Default value: `0.01`.
+ */
+#pred ibexPrecision(real value).
+
+/**
+ * Configures the size of relative improvements considered significant by the
+ * IBEX constraint solver.
+ *
+ * Relative improvements smaller than this ratio will be ignored.
+ *
+ * Use this as a top-level annotation, e.g., `#ibexRelativeEpsilon(0.001).`
+ * sets the smallest relative improvement considered significant to be 0.1%.
+ *
+ * @param value The relative epsilon. Must be between 0 and 1 exclusive.
+ *
+ *              Default value: `0.01`.
+ */
+#pred ibexRelativeEpsilon(real value).
