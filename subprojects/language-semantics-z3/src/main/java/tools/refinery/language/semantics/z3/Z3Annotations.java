@@ -9,6 +9,8 @@ import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.annotations.Annotation;
 import tools.refinery.language.annotations.DeclarativeAnnotationValidator;
 import tools.refinery.language.annotations.ValidateAnnotation;
+import tools.refinery.language.model.problem.ModuleKind;
+import tools.refinery.language.model.problem.Problem;
 
 import java.math.BigInteger;
 
@@ -54,6 +56,16 @@ public class Z3Annotations extends DeclarativeAnnotationValidator {
 			throw new IllegalArgumentException("%s must be positive.".formatted(name));
 		}
 		return value;
+	}
+
+	@ValidateAnnotation("Z3_TIMEOUT")
+	@ValidateAnnotation("Z3_RLIMIT")
+	private void validateTopLevelAnnotation(Annotation annotation) {
+		if (!(annotation.getAnnotatedElement() instanceof Problem problem) ||
+				problem.getKind() != ModuleKind.PROBLEM) {
+			error("Annotations %s can only be applied at the top level."
+					.formatted(annotation.getAnnotationName().getLastSegment()), annotation);
+		}
 	}
 
 	@ValidateAnnotation("Z3_TIMEOUT")
