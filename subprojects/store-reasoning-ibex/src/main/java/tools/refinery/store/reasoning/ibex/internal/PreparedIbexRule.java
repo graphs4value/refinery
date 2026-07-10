@@ -8,6 +8,7 @@ package tools.refinery.store.reasoning.ibex.internal;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.ObjectDoubleMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
+import org.jetbrains.annotations.NotNull;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
@@ -28,10 +29,7 @@ import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.theory.TheoryRule;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static tools.refinery.logic.literal.Literals.check;
 import static tools.refinery.logic.literal.Literals.not;
@@ -92,6 +90,31 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition, List<Influen
 		return new PreparedIbexRule(partialPrecondition, influences, precision, constraintString);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof PreparedIbexRule(
+				RelationalQuery precondition, List<Influence> otherInfluences, double[] otherPrecision, String string
+		))) return false;
+		return Objects.deepEquals(precision, otherPrecision) &&
+				Objects.equals(constraintString, string) && Objects.equals(influences, otherInfluences) &&
+				Objects.equals(partialPrecondition, precondition);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(partialPrecondition, influences, Arrays.hashCode(precision), constraintString);
+	}
+
+	@Override
+	@NotNull
+	public String toString() {
+		return "PreparedIbexRule{" +
+				"partialPrecondition=" + partialPrecondition +
+				", influences=" + influences +
+				", precision=" + Arrays.toString(precision) +
+				", constraintString='" + constraintString + '\'' +
+				'}';
+	}
 
 	public record Influence(AnyPartialFunction partialFunction, Tuple parameterIndices) {
 	}
