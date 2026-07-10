@@ -24,6 +24,7 @@ include(
 		"language-ide",
 		"language-model",
 		"language-semantics",
+		"language-semantics-ibex",
 		"language-semantics-z3",
 		"language-web",
 		"logic",
@@ -33,7 +34,9 @@ include(
 		"store-query",
 		"store-query-interpreter",
 		"store-reasoning",
+		"store-reasoning-ibex",
 		"store-reasoning-scope",
+		"store-reasoning-ibex",
 		"store-reasoning-smt",
 		"versions",
 )

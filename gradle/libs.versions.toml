@@ -58,6 +58,7 @@ mwe2 = "2.26.0"
 opentest4j = "1.3.0"
 ortools = "9.15.6755"
 protobuf = "4.35.1"
+refinery-ibex = "2.9.1"
 refinery-z3 = "4.16.0"
 slf4j = "2.0.18"
 xtext = "2.43.0"
@@ -145,6 +146,7 @@ mwe2-runtime = { group = "org.eclipse.emf", name = "org.eclipse.emf.mwe2.runtime
 opentest4j = { group = "org.opentestj4", name = "opentest4j", version.ref = "opentest4j" }
 ortools = { group = "com.google.ortools", name = "ortools-java", version.ref = "ortools" }
 protobuf = { group = "com.google.protobuf", name = "protobuf-java", version.ref = "protobuf" }
+refinery-ibex = { group = "tools.refinery.ibex", name = "refinery-ibex-solver", version.ref = "refinery-ibex" }
 refinery-z3 = { group = "tools.refinery.z3", name = "refinery-z3-solver", version.ref = "refinery-z3" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }

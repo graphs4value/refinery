@@ -17,6 +17,7 @@ Other contributors (in alphabetical order):
 * Golej, Márton Marcell &lt;golejmarci@gmail.com&gt;
 * Kecskés, Boldizsár &lt;kecskesbodo@gmail.com&gt;
 * Marussy, Kristóf &lt;marussy@mit.bme.hu&gt;
+* Monostori, Dóra &lt;dorimonostori@gmail.com&gt;
 * Nemes, Lili &lt;lili.nemes@outlook.com&gt;
 * Semeráth, Oszkár &lt;semerath@mit.bme.hu&gt;
 * Tamási, Máté &lt;matetamasi@protonmail.com&gt;

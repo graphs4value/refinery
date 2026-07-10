@@ -17,6 +17,7 @@ dependencies {
 	api(project(":refinery-language-semantics"))
 	implementation(project(":refinery-store-query-interpreter"))
 	implementation(project(":refinery-store-reasoning-scope"))
+	runtimeOnly(project(":refinery-language-semantics-ibex"))
 	runtimeOnly(project(":refinery-language-semantics-z3"))
 	testFixturesApi(testFixtures(project(":refinery-language")))
 	testFixturesImplementation(libs.junit.api)
