@@ -11,7 +11,10 @@ import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.term.*;
 import tools.refinery.logic.term.abstractdomain.*;
+import tools.refinery.logic.term.int_.RealToIntTerm;
 import tools.refinery.logic.term.operators.*;
+import tools.refinery.logic.term.real.IntToRealTerm;
+import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
 import tools.refinery.store.reasoning.smt.internal.context.ModelContext;
@@ -46,6 +49,8 @@ public class TermToExpr {
 					case NotTerm<?> _ -> context.mkNot(body);
 					case PlusTerm<?> _ -> body;
 					case MinusTerm<?> _ -> context.mkUnaryMinus(body);
+					case IntToRealTerm _ -> context.mkInt2Real(body);
+					case RealToIntTerm _ -> context.mkReal2Int(body);
 					default -> throw new IllegalArgumentException(UNSUPPORTED_TERM.formatted(unaryTerm));
 				};
 			}
@@ -62,7 +67,13 @@ public class TermToExpr {
 					case AndTerm<?> _ -> context.mkAnd(x, y);
 					case OrTerm<?> _ -> context.mkOr(x, y);
 					case XorTerm<?> _ -> context.mkXor(x, y);
-					case AddTerm<?> _ -> context.mkAdd(x, y);
+					case AddTerm<?> _ -> {
+						if (StringValue.class.equals(term.getType())) {
+							yield context.mkConcat(new Expr[]{x, y});
+						} else {
+							yield context.mkAdd(x, y);
+						}
+					}
 					case SubTerm<?> _ -> context.mkSub(x, y);
 					case MulTerm<?> _ -> context.mkMul(x, y);
 					case DivTerm<?> _ -> context.mkDiv(x, y);
@@ -76,7 +87,7 @@ public class TermToExpr {
 
 	public Expr<?> toExpr(ConstantTerm<?> term) {
 		var value = term.getValue();
-		if (!(value instanceof AbstractValue<?,?> abstractValue) || !abstractValue.isConcrete()) {
+		if (!(value instanceof AbstractValue<?, ?> abstractValue) || !abstractValue.isConcrete()) {
 			throw new IllegalArgumentException(UNSUPPORTED_CONSTANT.formatted(value));
 		}
 		var concreteValue = abstractValue.getArbitrary();
@@ -90,7 +101,7 @@ public class TermToExpr {
 	}
 
 	public Expr<?> toExpr(PartialFunctionCallTerm<?, ?> partialFunctionCallTerm, Tuple parameterTuple,
-						  ObjectIntMap<NodeVariable> parameterMap) {
+	                      ObjectIntMap<NodeVariable> parameterMap) {
 		if (partialFunctionCallTerm.getConcreteness() != ConcretenessSpecification.UNSPECIFIED) {
 			throw new IllegalArgumentException(
 					"Partial function call with specified concreteness: " + partialFunctionCallTerm);
