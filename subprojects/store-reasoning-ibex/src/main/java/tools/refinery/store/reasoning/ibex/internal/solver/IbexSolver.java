@@ -26,6 +26,7 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 
 	private final Object reason;
 	private final PreparedIbexRule rule;
+	private Ibex ibex;
 	private final double relativeEpsilon;
 	private final Model model;
 	private final ResultSet<Boolean> resultSet;
@@ -41,6 +42,15 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 
 		var queryAdapter = model.getAdapter(ModelQueryAdapter.class);
 		resultSet = queryAdapter.getResultSet(rule.partialPrecondition());
+
+		ibex = new Ibex(rule.precision(), true);
+		try {
+			ibex.add_ctr(rule.constraintString());
+			ibex.build();
+		} catch (RuntimeException e) {
+			ibex.release();
+			ibex = null;
+		}
 	}
 
 	public boolean isChanged() {
@@ -97,6 +107,7 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 	}
 
 	public PropagationResult propagate() {
+		checkReleased();
 		startIfNeeded();
 		if (!changed) {
 			return PropagationResult.UNCHANGED;
@@ -126,7 +137,7 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 			}
 		}
 
-		int status = rule.ibex().contract(0, domains, relativeEpsilon);
+		int status = ibex.contract(0, domains, relativeEpsilon);
 
 		return switch (status) {
 			case Ibex.FAIL -> new PropagationRejectedResult(reason, REJECTION_EMPTY);
@@ -159,6 +170,14 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 
 	@Override
 	public void close() {
-		rule.close();
+		checkReleased();
+		ibex.release();
+		ibex = null;
+	}
+
+	private void checkReleased() {
+		if (ibex == null) {
+			throw new IllegalStateException("IBEX was already released.");
+		}
 	}
 }

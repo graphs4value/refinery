@@ -8,7 +8,6 @@ package tools.refinery.store.reasoning.ibex.internal;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.map.primitive.ObjectDoubleMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
-import tools.refinery.ibex.Ibex;
 import tools.refinery.logic.dnf.Dnf;
 import tools.refinery.logic.dnf.Query;
 import tools.refinery.logic.dnf.RelationalQuery;
@@ -39,11 +38,8 @@ import static tools.refinery.logic.literal.Literals.not;
 import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
-public record PreparedIbexRule(RelationalQuery partialPrecondition,
-                               Term<TruthValue> assertedTerm,
-                               ObjectIntMap<NodeVariable> parameterMap,
-                               List<Influence> influences,
-                               Ibex ibex) implements AutoCloseable {
+public record PreparedIbexRule(RelationalQuery partialPrecondition, List<Influence> influences, double[] precision,
+                               String constraintString) {
 
 	public static PreparedIbexRule of(TheoryRule rule, double defaultPrecision,
 	                                  ObjectDoubleMap<AnyPartialSymbol> precisionMap) {
@@ -86,23 +82,16 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition,
 		var constraintString = termToIbex.toConstraint(rule.assertedTerm());
 
 		int numVars = influences.size();
-		var prec = new double[numVars];
+		var precision = new double[numVars];
 		for (int i = 0; i < numVars; i++) {
 			var partialFunction = influences.get(i).partialFunction();
-			prec[i] = IntIntervalDomain.INSTANCE.equals(partialFunction.abstractDomain()) ?
+			precision[i] = IntIntervalDomain.INSTANCE.equals(partialFunction.abstractDomain()) ?
 					-1 : precisionMap.getIfAbsent(partialFunction, defaultPrecision);
 		}
-		var ibex = new Ibex(prec, true);
-		ibex.add_ctr(constraintString);
-		ibex.build();
 
-		return new PreparedIbexRule(partialPrecondition, rule.assertedTerm(), parameterMap, influences, ibex);
+		return new PreparedIbexRule(partialPrecondition, influences, precision, constraintString);
 	}
 
-	@Override
-	public void close() {
-		ibex.release();
-	}
 
 	public record Influence(AnyPartialFunction partialFunction, Tuple parameterIndices) {
 	}

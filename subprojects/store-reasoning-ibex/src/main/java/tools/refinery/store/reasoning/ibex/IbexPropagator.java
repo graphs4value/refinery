@@ -95,17 +95,9 @@ public class IbexPropagator implements ModelStoreConfiguration {
 	public void apply(ModelStoreBuilder storeBuilder) {
 		IbexSolverLoader.loadNativeLibraries();
 
-		var preparedRules = new ArrayList<PreparedIbexRule>(rules.size());
-		try {
-			for (var rule : rules) {
-				preparedRules.add(PreparedIbexRule.of(rule, defaultPrecision, precisionMap));
-			}
-		} catch (RuntimeException e) {
-			for (var preparedRule : preparedRules) {
-				preparedRule.close();
-			}
-			throw e;
-		}
+		var preparedRules = rules.stream()
+				.map(rule -> PreparedIbexRule.of(rule, defaultPrecision, precisionMap))
+				.toList();
 
 		var queryEngineBuilder = storeBuilder.getAdapter(ModelQueryBuilder.class);
 		for (var preparedRule : preparedRules) {
