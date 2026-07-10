@@ -206,13 +206,17 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 	}
 
 	@ValidateAnnotation("PRIORITY")
-	private void validatePriority(Annotation annotation) {
-		var annotatedElement = annotation.getAnnotatedElement();
-		if (!isDecisionRuleDefinition(annotatedElement) && !(annotatedElement instanceof TheoryDeclaration)) {
-			var message = "@%s can only be applied to decision rules and theory declarations."
+	@ValidateAnnotation("WEIGHT")
+	private void validateDecisionRuleAnnotation(Annotation annotation) {
+		if (!isDecisionRuleDefinition(annotation.getAnnotatedElement())) {
+			var message = "@%s can only be applied to decision rules."
 					.formatted(annotation.getAnnotation().getDeclaration().getName());
 			error(message, annotation);
 		}
+	}
+
+	@ValidateAnnotation("PRIORITY")
+	private void validatePriority(Annotation annotation) {
 		var value = annotation.getBigInteger(PRIORITY_VALUE)
 				.map(BigInteger::intValue)
 				.orElse(DecisionSettings.DEFAULT_PRIORITY);
@@ -225,11 +229,6 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 
 	@ValidateAnnotation("WEIGHT")
 	private void validateWeight(Annotation annotation) {
-		if (!isDecisionRuleDefinition(annotation.getAnnotatedElement())) {
-			var message = "@%s can only be applied to decision rules."
-					.formatted(annotation.getAnnotation().getDeclaration().getName());
-			error(message, annotation);
-		}
 		var coefficient = annotation.getBigDecimal(WEIGHT_COEFFICIENT);
 		var exponent = annotation.getBigDecimal(WEIGHT_EXPONENT);
 		if (coefficient.isEmpty() && exponent.isEmpty()) {

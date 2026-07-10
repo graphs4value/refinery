@@ -78,11 +78,6 @@ public class BuiltinAnnotationContext {
 		return new DecisionSettings(priority, coefficient, exponent);
 	}
 
-	public int getPriority(TheoryDeclaration theoryDeclaration) {
-		var annotations = annotationContext.annotationsFor(theoryDeclaration);
-		return getPriority(annotations);
-	}
-
 	private int getPriority(Annotations annotations) {
 		var priorityAnnotation = annotations.getAnnotation(BuiltinAnnotations.PRIORITY);
 		return priorityAnnotation.map(annotation -> annotation.getBigInteger(BuiltinAnnotations.PRIORITY_VALUE)

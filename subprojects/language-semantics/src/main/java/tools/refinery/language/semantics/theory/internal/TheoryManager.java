@@ -15,7 +15,6 @@ import tools.refinery.language.model.problem.TheoryDeclaration;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.TracedException;
 import tools.refinery.language.semantics.theory.TheoryProvider;
-import tools.refinery.language.utils.BuiltinAnnotationContext;
 import tools.refinery.language.utils.ServiceUtil;
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.theory.Theory;
@@ -30,17 +29,14 @@ public class TheoryManager {
 
 	private final List<TheoryProvider> theoryProviders;
 	private final IQualifiedNameProvider qualifiedNameProvider;
-	private final BuiltinAnnotationContext builtinAnnotationContext;
 	private Annotations annotations;
 	private ProblemTrace trace;
 	private final Map<TheoryDeclaration, ManagedTheory> theories = new LinkedHashMap<>();
 
 	@Inject
-	public TheoryManager(Injector injector, IQualifiedNameProvider qualifiedNameProvider,
-						 BuiltinAnnotationContext builtinAnnotationContext) {
+	public TheoryManager(Injector injector, IQualifiedNameProvider qualifiedNameProvider) {
 		this.qualifiedNameProvider = qualifiedNameProvider;
 		theoryProviders = ServiceUtil.instantiate(injector, DEFAULT_THEORY_PROVIDERS);
-		this.builtinAnnotationContext = builtinAnnotationContext;
 	}
 
 	public List<TheoryProvider> getTheoryProviders() {
@@ -55,8 +51,7 @@ public class TheoryManager {
 			for (var statement : problem.getStatements()) {
 				if (statement instanceof TheoryDeclaration theoryDeclaration) {
 					var theory = getTheory(theoryDeclaration);
-					int priority = builtinAnnotationContext.getPriority(theoryDeclaration);
-					theories.put(theoryDeclaration, new ManagedTheory(theoryDeclaration, theory, priority));
+					theories.put(theoryDeclaration, new ManagedTheory(theoryDeclaration, theory));
 				}
 			}
 		}
@@ -108,19 +103,18 @@ public class TheoryManager {
 	}
 
 	private void addRuleWithDefaultTheories(TheoryAction action, TheoryRule rule) {
-		int maxPriority = Integer.MIN_VALUE;
+		int maxPreference = Integer.MIN_VALUE;
 		var matchedTheories = new ArrayList<ManagedTheory>();
 		boolean supported = false;
 		for (var managedTheory : theories.values()) {
 			var support = managedTheory.checkSupport(rule);
 			supported = supported || support.isSupported();
-			if (support.isEnabledByDefault()) {
-				int priority = managedTheory.getPriority();
-				if (priority < maxPriority) {
+			if (support instanceof TheorySupport.EnabledByDefault(int preference)) {
+				if (preference < maxPreference) {
 					continue;
 				}
-				if (priority > maxPriority) {
-					maxPriority = priority;
+				if (preference > maxPreference) {
+					maxPreference = preference;
 					matchedTheories.clear();
 				}
 				matchedTheories.add(managedTheory);
@@ -139,7 +133,10 @@ public class TheoryManager {
 	}
 
 	public void configure(ModelStoreBuilder storeBuilder) {
-		for (var managedTheory : theories.values()) {
+		var theoryList = new ArrayList<>(theories.values());
+		// Larger priority theories should run first.
+		theoryList.sort((a, b) -> Integer.compare(b.getPriority(), a.getPriority()));
+		for (var managedTheory : theoryList) {
 			managedTheory.configure(storeBuilder);
 		}
 	}
@@ -147,18 +144,16 @@ public class TheoryManager {
 	private final static class ManagedTheory {
 		private final TheoryDeclaration declaration;
 		private final Theory theory;
-		private final int priority;
 		private final List<TheoryRule> rules;
 
-		public ManagedTheory(TheoryDeclaration declaration, Theory theory, int priority) {
+		public ManagedTheory(TheoryDeclaration declaration, Theory theory) {
 			this.declaration = declaration;
 			this.theory = theory;
-			this.priority = priority;
 			rules = new ArrayList<>();
 		}
 
 		public int getPriority() {
-			return priority;
+			return theory.getPriority();
 		}
 
 		public TheorySupport checkSupport(TheoryRule rule) {

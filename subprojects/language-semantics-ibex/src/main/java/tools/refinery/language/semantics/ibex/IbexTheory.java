@@ -45,4 +45,9 @@ class IbexTheory implements Theory {
 				.relativeEpsilon(relativeEpsilon)
 				.rules(collectedRules));
 	}
+
+	@Override
+	public int getPriority() {
+		return Theory.DIVERGING_PRIORITY;
+	}
 }
