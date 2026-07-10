@@ -15,6 +15,5 @@ mavenArtifact {
 
 dependencies {
 	api(project(":refinery-language-semantics"))
-	implementation(libs.refinery.ibex)
 	implementation(project(":refinery-store-reasoning-ibex"))
 }

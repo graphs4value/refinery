@@ -26,15 +26,17 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 
 	private final Object reason;
 	private final PreparedIbexRule rule;
+	private final double relativeEpsilon;
 	private final Model model;
 	private final ResultSet<Boolean> resultSet;
 	private List<PartialFunctionMonitor<?, ?>> monitors;
 	private boolean started = false;
 	private boolean changed = true;
 
-	public IbexSolver(Object reason, PreparedIbexRule rule, Model model) {
+	public IbexSolver(Object reason, PreparedIbexRule rule, double relativeEpsilon, Model model) {
 		this.reason = reason;
 		this.rule = rule;
+		this.relativeEpsilon = relativeEpsilon;
 		this.model = model;
 
 		var queryAdapter = model.getAdapter(ModelQueryAdapter.class);
@@ -124,11 +126,10 @@ public class IbexSolver implements ResultSetListener<Boolean>, AutoCloseable {
 			}
 		}
 
-		int status = rule.ibex().contract(0, domains);
+		int status = rule.ibex().contract(0, domains, relativeEpsilon);
 
 		return switch (status) {
 			case Ibex.FAIL -> new PropagationRejectedResult(reason, REJECTION_EMPTY);
-			case Ibex.ENTAILED, Ibex.NOTHING -> PropagationResult.UNCHANGED;
 			case Ibex.CONTRACT -> applyContracted(matchKey, domains);
 			default -> PropagationResult.UNCHANGED;
 		};

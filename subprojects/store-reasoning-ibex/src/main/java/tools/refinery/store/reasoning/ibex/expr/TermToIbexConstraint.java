@@ -6,17 +6,18 @@
 package tools.refinery.store.reasoning.ibex.expr;
 
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
-import tools.refinery.logic.term.*;
+import tools.refinery.logic.term.ConstantTerm;
+import tools.refinery.logic.term.NodeVariable;
+import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.abstractdomain.*;
 import tools.refinery.logic.term.intinterval.IntInterval;
 import tools.refinery.logic.term.operators.*;
+import tools.refinery.logic.term.realinterval.RealInterval;
 import tools.refinery.logic.term.truthvalue.TruthValue;
 import tools.refinery.store.reasoning.ibex.internal.PreparedIbexRule.Influence;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
 import tools.refinery.store.tuple.Tuple;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 public class TermToIbexConstraint {
@@ -28,7 +29,12 @@ public class TermToIbexConstraint {
 		this.parameterMap = parameterMap;
 	}
 
-	// Converts the top-level comparison term to an IBEX constraint string.
+	/**
+	 * Converts the top-level comparison term to an IBEX constraint string.
+	 *
+	 * @param term The term to convert.
+	 * @return The converted constraint string.
+	 */
 	public String toConstraint(Term<TruthValue> term) {
 		return switch (term) {
 			case AbstractDomainLessEqTerm<?, ?> t ->
@@ -46,7 +52,6 @@ public class TermToIbexConstraint {
 		};
 	}
 
-	@SuppressWarnings("rawtypes")
 	private String toArith(Term<?> term) {
 		return switch (term) {
 			case ConstantTerm<?> c -> toConstant(c);
@@ -65,12 +70,17 @@ public class TermToIbexConstraint {
 	private String toConstant(ConstantTerm<?> term) {
 		var value = term.getValue();
 		return switch (value) {
-			case BigInteger i -> i.toString();
-			case BigDecimal d -> d.toPlainString();
 			case IntInterval iv when iv.isConcrete() -> {
 				var concrete = iv.getConcrete();
 				if (concrete == null) {
 					throw new IllegalArgumentException("Concrete IntInterval has null value");
+				}
+				yield concrete.toString();
+			}
+			case RealInterval iv when iv.isConcrete() -> {
+				var concrete = iv.getConcrete();
+				if (concrete == null) {
+					throw new IllegalArgumentException("Concrete RealInterval has null value");
 				}
 				yield concrete.toString();
 			}

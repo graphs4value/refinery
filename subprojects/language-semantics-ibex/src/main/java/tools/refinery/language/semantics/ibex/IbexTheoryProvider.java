@@ -8,7 +8,6 @@ package tools.refinery.language.semantics.ibex;
 import com.google.inject.Inject;
 import org.eclipse.collections.api.factory.primitive.ObjectDoubleMaps;
 import org.eclipse.xtext.naming.QualifiedName;
-import tools.refinery.ibex.Ibex;
 import tools.refinery.language.annotations.AnnotationContext;
 import tools.refinery.language.annotations.Annotations;
 import tools.refinery.language.semantics.ProblemTrace;
@@ -19,10 +18,11 @@ import tools.refinery.store.reasoning.theory.Theory;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import static tools.refinery.store.reasoning.ibex.IbexPropagator.DEFAULT_PRECISION;
+import static tools.refinery.store.reasoning.ibex.IbexPropagator.DEFAULT_RELATIVE_EPSILON;
+
 public class IbexTheoryProvider implements TheoryProvider {
 	public static final QualifiedName IBEX_THEORY = IbexLibrary.IBEX_CORE_LIBRARY.append("ibex");
-
-	private static final double DEFAULT_PRECISION = 0.01;
 
 	@Inject
 	private AnnotationContext annotationContext;
@@ -41,7 +41,7 @@ public class IbexTheoryProvider implements TheoryProvider {
 		double relativeEpsilon = annotations.getAnnotation(IbexAnnotation.IBEX_RELATIVE_EPSILON)
 				.flatMap(annotation -> annotation.getBigDecimal(IbexAnnotation.IBEX_RELATIVE_EPSILON_VALUE))
 				.map(BigDecimal::doubleValue)
-				.orElse(Ibex.RATIO);
+				.orElse(DEFAULT_RELATIVE_EPSILON);
 		return Optional.of(new IbexTheory(defaultPrecision, precisionMap.toImmutable(), relativeEpsilon));
 	}
 

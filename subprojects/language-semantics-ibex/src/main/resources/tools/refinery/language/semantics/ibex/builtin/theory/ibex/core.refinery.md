@@ -5,4 +5,6 @@
 -->
 Bindings for the IBEX constraint solver.
 
-This library is implicitly imported into every Refinery domain specification.
+This library is suitable for being implicitly imported into every Refinery
+domain specification, but we currently refrain from doing so to avoid
+soundness issues with the `ibex` propagator.

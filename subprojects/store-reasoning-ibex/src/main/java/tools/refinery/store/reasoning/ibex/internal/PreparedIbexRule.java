@@ -6,6 +6,7 @@
 package tools.refinery.store.reasoning.ibex.internal;
 
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
+import org.eclipse.collections.api.map.primitive.ObjectDoubleMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import tools.refinery.ibex.Ibex;
 import tools.refinery.logic.dnf.Dnf;
@@ -24,6 +25,7 @@ import tools.refinery.logic.term.truthvalue.TruthValueTerms;
 import tools.refinery.store.reasoning.ibex.expr.TermToIbexConstraint;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
+import tools.refinery.store.reasoning.representation.AnyPartialSymbol;
 import tools.refinery.store.reasoning.theory.TheoryRule;
 import tools.refinery.store.tuple.Tuple;
 
@@ -38,14 +40,13 @@ import static tools.refinery.store.reasoning.literal.PartialLiterals.must;
 import static tools.refinery.store.reasoning.translator.multiobject.MultiObjectTranslator.MULTI_VIEW;
 
 public record PreparedIbexRule(RelationalQuery partialPrecondition,
-							   Term<TruthValue> assertedTerm,
-							   ObjectIntMap<NodeVariable> parameterMap,
-							   List<Influence> influences,
-							   Ibex ibex) implements AutoCloseable {
+                               Term<TruthValue> assertedTerm,
+                               ObjectIntMap<NodeVariable> parameterMap,
+                               List<Influence> influences,
+                               Ibex ibex) implements AutoCloseable {
 
-	private static final double REAL_PRECISION = 1e-8;
-
-	public static PreparedIbexRule of(TheoryRule rule) {
+	public static PreparedIbexRule of(TheoryRule rule, double defaultPrecision,
+	                                  ObjectDoubleMap<AnyPartialSymbol> precisionMap) {
 		var precondition = rule.precondition().getDnf();
 		var symbolicParameters = precondition.getSymbolicParameters();
 		var parameterVariables = symbolicParameters.stream().map(SymbolicParameter::getVariable).toList();
@@ -87,8 +88,9 @@ public record PreparedIbexRule(RelationalQuery partialPrecondition,
 		int numVars = influences.size();
 		var prec = new double[numVars];
 		for (int i = 0; i < numVars; i++) {
-			var domain = influences.get(i).partialFunction().abstractDomain();
-			prec[i] = IntIntervalDomain.INSTANCE.equals(domain) ? -1 : REAL_PRECISION;
+			var partialFunction = influences.get(i).partialFunction();
+			prec[i] = IntIntervalDomain.INSTANCE.equals(partialFunction.abstractDomain()) ?
+					-1 : precisionMap.getIfAbsent(partialFunction, defaultPrecision);
 		}
 		var ibex = new Ibex(prec, true);
 		ibex.add_ctr(constraintString);

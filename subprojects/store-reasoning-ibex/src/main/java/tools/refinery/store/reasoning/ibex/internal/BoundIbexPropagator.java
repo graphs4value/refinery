@@ -18,9 +18,10 @@ import java.util.List;
 public class BoundIbexPropagator implements BoundPropagator, ModelListener {
 	private final List<IbexSolver> solvers;
 
-	public BoundIbexPropagator(IbexPropagator propagator, Model model, Collection<PreparedIbexRule> rules) {
+	public BoundIbexPropagator(IbexPropagator propagator, Model model, Collection<PreparedIbexRule> rules,
+							   double relativeEpsilon) {
 		solvers = rules.stream()
-				.map(rule -> new IbexSolver(propagator, rule, model))
+				.map(rule -> new IbexSolver(propagator, rule, relativeEpsilon, model))
 				.toList();
 		model.addListener(this);
 	}
