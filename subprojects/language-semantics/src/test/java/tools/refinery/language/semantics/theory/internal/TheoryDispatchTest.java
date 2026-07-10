@@ -149,7 +149,7 @@ class TheoryDispatchTest {
 		// Route the rule to every theory so that all of them appear in the configuration order.
 		dispatch.addRule(override(diverging, normal, eager), rule());
 
-		assertThat(configurationOrder(), contains("eager", "normal", "diverging"));
+		assertThat(executionOrder(), contains("eager", "normal", "diverging"));
 	}
 
 	@Test
@@ -159,7 +159,7 @@ class TheoryDispatchTest {
 		var third = register("third", enabledByDefault(0), 0);
 		dispatch.addRule(override(first, second, third), rule());
 
-		assertThat(configurationOrder(), contains("first", "second", "third"));
+		assertThat(executionOrder(), contains("first", "second", "third"));
 	}
 
 	@Test
@@ -168,7 +168,7 @@ class TheoryDispatchTest {
 		register("unused", enabledByDefault(0));
 		dispatch.addRule(defaultAction(), rule());
 
-		assertThat(configurationOrder(), contains("used"));
+		assertThat(executionOrder(), contains("used"));
 	}
 
 	@Test
@@ -185,7 +185,7 @@ class TheoryDispatchTest {
 		assertThat(exception.getSourceElement(), is(faulty.declaration));
 	}
 
-	private List<String> configurationOrder() {
+	private List<String> executionOrder() {
 		return dispatch.getTheoriesToConfigure().stream()
 				.map(TheoryDispatch.ManagedTheory::toString)
 				.toList();

@@ -113,14 +113,14 @@ class TheoryDispatch {
 
 	/**
 	 * Returns the theories that have collected at least one rule, in the order in which their propagators should be
-	 * created.
+	 * executed.
 	 * <p>
 	 *     Theories with a higher {@link Theory#getPriority() priority} run earlier in the sequence of propagators.
 	 *     Theories with equal priority keep their registration order. Theories without any rules are omitted, since
 	 *     they would not create a propagator.
 	 * </p>
 	 *
-	 * @return The theories to configure, in propagator creation order.
+	 * @return The theories to configure, in propagator execution order.
 	 */
 	public List<ManagedTheory> getTheoriesToConfigure() {
 		var result = new ArrayList<ManagedTheory>();

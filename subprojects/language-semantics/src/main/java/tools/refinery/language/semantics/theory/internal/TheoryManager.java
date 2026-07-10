@@ -77,7 +77,9 @@ public class TheoryManager {
 	}
 
 	public void configure(ModelStoreBuilder storeBuilder) {
-		for (var managedTheory : dispatch.getTheoriesToConfigure()) {
+		// Register propagators in reverse order, because {@code PropagationBuilder} runs the last added propagator
+		// first.
+		for (var managedTheory : dispatch.getTheoriesToConfigure().reversed()) {
 			managedTheory.createPropagator(storeBuilder);
 		}
 	}
