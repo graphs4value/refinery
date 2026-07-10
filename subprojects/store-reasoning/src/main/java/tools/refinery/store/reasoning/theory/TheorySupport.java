@@ -10,6 +10,10 @@ public sealed interface TheorySupport {
 	TheorySupport EXPLICIT_ONLY = DisabledByDefault.EXPLICIT_ONLY;
 	TheorySupport UNSUPPORTED = DisabledByDefault.UNSUPPORTED;
 
+	static TheorySupport enabledByDefault(int preference) {
+		return new EnabledByDefault(preference);
+	}
+
 	default boolean isSupported() {
 		return true;
 	}
