@@ -3,4 +3,4 @@
 
   SPDX-License-Identifier: EPL-2.0
 -->
-Bindings and annotations for controlling the IBEX constraint solver.
+Bindings for the IBEX constraint solver.

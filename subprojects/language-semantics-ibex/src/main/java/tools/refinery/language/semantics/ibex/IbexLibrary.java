@@ -10,10 +10,8 @@ import tools.refinery.language.library.ClasspathBasedLibrary;
 
 public class IbexLibrary extends ClasspathBasedLibrary {
 	public static final QualifiedName IBEX_LIBRARY = QualifiedName.create("builtin", "theory", "ibex");
-	public static final QualifiedName IBEX_CORE_LIBRARY = IBEX_LIBRARY.append("core");
 
 	public IbexLibrary() {
 		addLibrary(IBEX_LIBRARY);
-		addLibrary(IBEX_CORE_LIBRARY);
 	}
 }

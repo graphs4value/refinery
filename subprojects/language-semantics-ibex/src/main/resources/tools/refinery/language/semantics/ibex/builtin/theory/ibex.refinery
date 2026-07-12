@@ -2,7 +2,14 @@
 %
 % SPDX-License-Identifier: EPL-2.0
 
-import builtin::theory::ibex::core.
+/**
+ * Enables and configures the IBEX constraints solver backend for the
+ * refinement process.
+ *
+ * Activating this theory allows the solver engine to delegate numerical
+ * and constraints to the IBEX solver for high-performance reasoning.
+ */
+#theory ibex.
 
 /**
  * Configures the precision of `real` variables in the IBEX constraint solver.

@@ -22,7 +22,7 @@ import static tools.refinery.store.reasoning.ibex.IbexPropagator.DEFAULT_PRECISI
 import static tools.refinery.store.reasoning.ibex.IbexPropagator.DEFAULT_RELATIVE_EPSILON;
 
 public class IbexTheoryProvider implements TheoryProvider {
-	public static final QualifiedName IBEX_THEORY = IbexLibrary.IBEX_CORE_LIBRARY.append("ibex");
+	public static final QualifiedName IBEX_THEORY = IbexLibrary.IBEX_LIBRARY.append("ibex");
 
 	@Inject
 	private AnnotationContext annotationContext;
