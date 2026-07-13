@@ -19,6 +19,12 @@
   padding: 2rem 0;
 }
 
+.section__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
 @media (max-width: 576px) {
   .hero, .section {
     padding-top: 2rem;

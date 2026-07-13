@@ -1,0 +1,76 @@
+.entry {
+  margin-bottom: 0.5rem;
+}
+
+.summary {
+  line-height: 1.6;
+}
+
+.panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  background: var(--ifm-background-surface-color);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-0.25rem);
+  transition:
+    grid-template-rows var(--ifm-transition-fast) ease,
+    opacity var(--ifm-transition-fast) ease,
+    transform var(--ifm-transition-fast) ease;
+}
+
+.panel--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.panel-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.content {
+  margin: 0;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+  background-color: var(--ifm-background-surface-color);
+  color: var(--ifm-color-content-secondary);
+}
+
+.content.mono {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 14px;
+}
+
+.copyButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-font-color-base);
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  transition:
+    opacity var(--ifm-transition-fast) ease,
+    background-color var(--ifm-transition-fast) ease,
+    color var(--ifm-transition-fast) ease;
+}
+
+.copyButton:hover,
+.copyButton:focus-visible {
+  opacity: 1;
+  background: var(--ifm-color-emphasis-300);
+}
