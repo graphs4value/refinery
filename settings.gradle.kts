@@ -15,6 +15,7 @@ include(
 		"frontend",
 		"generator",
 		"generator-cli",
+		"generator-core",
 		"gradle-plugins",
 		"interpreter",
 		"interpreter-localsearch",
