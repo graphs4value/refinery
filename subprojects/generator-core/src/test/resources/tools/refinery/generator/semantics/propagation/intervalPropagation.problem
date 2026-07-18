@@ -21,14 +21,14 @@ parents(anne, bob).
 ?age(anne).
 ?age(bob).
 
-% TEST: Propagation with exact value
+% TEST: propagation with exact value
 
 age(anne): 20.
 
 % EXPECT EXACTLY:
 age(bob): 38..*.
 
-% TEST: Propagation with intervals
+% TEST: propagation with intervals
 
 age(anne): 15..*.
 age(bob): 0..50.
@@ -37,7 +37,7 @@ age(bob): 0..50.
 age(anne): 15..32.
 age(bob): 33..50.
 
-% TEST WITH ERRORS: Propagation with inconsistent intervals
+% TEST WITH ERRORS: inconsistent intervals
 
 age(anne): 50..*.
 age(bob): 0..15.
