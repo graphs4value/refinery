@@ -8,6 +8,7 @@ package tools.refinery.generator.tests;
 import org.eclipse.emf.common.util.URI;
 import tools.refinery.generator.ProblemLoader;
 import tools.refinery.generator.tests.internal.*;
+import tools.refinery.language.semantics.ConstantParser;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,14 +20,16 @@ class SemanticsTestBuilder implements ChunkAcceptor {
 
 	private final ProblemLoader problemLoader;
 	private final URI uri;
+	private final ConstantParser parser;
 	private final StringBuilder commonBuilder = new StringBuilder();
 	private final List<SemanticsTestCase> testCases = new ArrayList<>();
 	private SemanticsTestCaseBuilder testCaseBuilder;
 	private boolean singleTestMode;
 
-	public SemanticsTestBuilder(ProblemLoader problemLoader, URI uri) {
+	public SemanticsTestBuilder(ProblemLoader problemLoader, URI uri, ConstantParser parser) {
 		this.problemLoader = problemLoader;
 		this.uri = uri;
+		this.parser = parser;
 	}
 
 	@Override
@@ -73,7 +76,7 @@ class SemanticsTestBuilder implements ChunkAcceptor {
 		if (body != null) {
 			problemStringBuilder.append(body);
 		}
-		testCaseBuilder = new SemanticsTestCaseBuilder(header, problemStringBuilder, problemLoader, uri);
+		testCaseBuilder = new SemanticsTestCaseBuilder(header, problemStringBuilder, problemLoader, uri, parser);
 	}
 
 	@Override

@@ -9,17 +9,23 @@ import com.google.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import tools.refinery.generator.ProblemLoader;
 import tools.refinery.generator.tests.internal.ProblemSplitter;
+import tools.refinery.language.semantics.ConstantParser;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+// This class is used as a fluent builder.
+@SuppressWarnings("UnusedReturnValue")
 public class SemanticsTestLoader {
 	@Inject
 	private ProblemSplitter problemSplitter;
 
 	@Inject
 	private ProblemLoader problemLoader;
+
+	@Inject
+	private ConstantParser parser;
 
 	public SemanticsTestLoader extraPath(String path) {
 		problemLoader.extraPath(Path.of(path));
@@ -32,7 +38,7 @@ public class SemanticsTestLoader {
 	}
 
 	public SemanticsTest loadString(String problemString, URI uri) {
-		var builder = new SemanticsTestBuilder(problemLoader, uri);
+		var builder = new SemanticsTestBuilder(problemLoader, uri, parser);
 		problemSplitter.transformProblem(problemString, builder);
 		return builder.build();
 	}

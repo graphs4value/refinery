@@ -6,30 +6,43 @@
 package tools.refinery.generator.tests;
 
 import org.eclipse.core.runtime.AssertionFailedException;
-import tools.refinery.generator.impl.FilteredInterpretation;
 import tools.refinery.generator.ModelSemantics;
+import tools.refinery.generator.impl.FilteredInterpretation;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.Node;
 import tools.refinery.language.model.problem.NodeAssertionArgument;
 import tools.refinery.language.model.problem.WildcardAssertionArgument;
-import tools.refinery.language.semantics.SemanticsUtils;
-import tools.refinery.logic.term.truthvalue.TruthValue;
+import tools.refinery.language.semantics.ConstantParser;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.reasoning.interpretation.PartialInterpretation;
 import tools.refinery.store.reasoning.literal.Concreteness;
+import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.tuple.Tuple;
 
 public record SemanticsExpectation(Assertion assertion, Concreteness concreteness, boolean exact,
-								   int lineNumber, String description, String source) {
+                                   int lineNumber, String description, String source, Object expected) {
+	public SemanticsExpectation(Assertion assertion, Concreteness concreteness, boolean exact,
+	                            int lineNumber, String description, String source, ConstantParser parser) {
+		this(assertion, concreteness, exact, lineNumber, description, source,
+				// Extract the constant from the expression while it's still part of the EResource and we can run
+				// type inference on it.
+				parser.parseConstant(assertion.getValue()));
+	}
+
 	public void execute(ModelSemantics semantics) {
-		var trace = semantics.getProblemTrace();
-		var symbol = trace.getPartialRelation(assertion.getRelation());
+		var symbol = semantics.getProblemTrace().getPartialSymbol(assertion.getRelation());
+		execute(semantics, (PartialSymbol<?, ?>) symbol);
+	}
+
+	private <A extends AbstractValue<A, C>, C> void execute(ModelSemantics semantics, PartialSymbol<A, C> symbol) {
 		var reasoningAdapter = semantics.getModel().getAdapter(ReasoningAdapter.class);
 		var interpretation = reasoningAdapter.getPartialInterpretation(concreteness, symbol);
 		var existsInterpretation = reasoningAdapter.getPartialInterpretation(concreteness,
 				ReasoningAdapter.EXISTS_SYMBOL);
 		var filteredInterpretation = FilteredInterpretation.of(interpretation, existsInterpretation);
 
+		var trace = semantics.getProblemTrace();
 		var arguments = assertion.getArguments();
 		int arity = arguments.size();
 		var nodeIds = new int[arity];
@@ -52,7 +65,8 @@ public record SemanticsExpectation(Assertion assertion, Concreteness concretenes
 			}
 		}
 
-		var expectedValue = SemanticsUtils.getTruthValue(assertion.getValue());
+		var abstractType = symbol.abstractDomain().abstractType();
+		var expectedValue = abstractType.cast(expected);
 		if (wildcard) {
 			checkWildcard(filteredInterpretation, nodeIds, expectedValue);
 		} else {
@@ -60,9 +74,8 @@ public record SemanticsExpectation(Assertion assertion, Concreteness concretenes
 		}
 	}
 
-
-	private void checkSingle(PartialInterpretation<TruthValue, Boolean> interpretation, int[] nodeIds,
-							 TruthValue expectedValue) {
+	private <A extends AbstractValue<A, C>, C> void checkSingle(
+			PartialInterpretation<A, C> interpretation, int[] nodeIds, A expectedValue) {
 		var tuple = Tuple.of(nodeIds);
 		var actual = interpretation.get(tuple);
 		if (assertionFailed(expectedValue, actual)) {
@@ -70,8 +83,8 @@ public record SemanticsExpectation(Assertion assertion, Concreteness concretenes
 		}
 	}
 
-	private void checkWildcard(PartialInterpretation<TruthValue, Boolean> interpretation, int[] nodeIds,
-							   TruthValue expectedValue) {
+	private <A extends AbstractValue<A, C>, C> void checkWildcard(
+			PartialInterpretation<A, C> interpretation, int[] nodeIds, A expectedValue) {
 		int arity = nodeIds.length;
 		var cursor = interpretation.getAll();
 		while (cursor.move()) {
@@ -89,11 +102,11 @@ public record SemanticsExpectation(Assertion assertion, Concreteness concretenes
 		}
 	}
 
-	private boolean assertionFailed(TruthValue expectedValue, TruthValue actual) {
+	private <A extends AbstractValue<A, C>, C> boolean assertionFailed(A expectedValue, A actual) {
 		return !(exact ? actual.equals(expectedValue) : actual.isRefinementOf(expectedValue));
 	}
 
-	private String getMessage(TruthValue actual) {
+	private String getMessage(Object actual) {
 		var messageBuilder = new StringBuilder();
 		messageBuilder.append("EXPECT");
 		if (concreteness == Concreteness.CANDIDATE) {

@@ -14,6 +14,7 @@ import tools.refinery.generator.tests.internal.TestCaseHeader;
 import tools.refinery.language.model.problem.Assertion;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.model.problem.Statement;
+import tools.refinery.language.semantics.ConstantParser;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -26,14 +27,16 @@ class SemanticsTestCaseBuilder {
 	private final StringBuilder stringBuilder;
 	private final ProblemLoader problemLoader;
 	private final URI uri;
+	private final ConstantParser parser;
 	private final Deque<ExpectationHeader> expectationsDeque = new ArrayDeque<>();
 
 	public SemanticsTestCaseBuilder(TestCaseHeader testCaseHeader, StringBuilder stringBuilder,
-									ProblemLoader problemLoader, URI uri) {
+	                                ProblemLoader problemLoader, URI uri, ConstantParser parser) {
 		this.testCaseHeader = testCaseHeader;
 		this.stringBuilder = stringBuilder;
 		this.problemLoader = problemLoader;
 		this.uri = uri;
+		this.parser = parser;
 	}
 
 	public void acceptExpectation(ExpectationHeader header, String body) {
@@ -74,14 +77,14 @@ class SemanticsTestCaseBuilder {
 		}
 		int statementCount = statements.size();
 		if (statementCount > initialStatementCount) {
+			// Remove expectations from the initial model.
 			statements.subList(initialStatementCount, statementCount).clear();
 		}
 		return new SemanticsTestCase(testCaseHeader.name(), testCaseHeader.allowErrors(), problem,
 				Collections.unmodifiableList(expectations));
 	}
 
-	private static SemanticsExpectation createExpectation(ExpectationHeader header, Statement statement,
-														  INode node) {
+	private SemanticsExpectation createExpectation(ExpectationHeader header, Statement statement, INode node) {
 		if (!(statement instanceof Assertion assertion)) {
 			throw new IllegalArgumentException("Only assertions are supported in EXPECT chunks, got %s instead."
 					.formatted(statement.eClass().getName()));
@@ -90,6 +93,6 @@ class SemanticsTestCaseBuilder {
 			throw new IllegalArgumentException("Default assertions are not supported in EXPECT chunks.");
 		}
 		return new SemanticsExpectation(assertion, header.concreteness(), header.exact(),
-				node.getStartLine(), header.description(), NodeModelUtils.getTokenText(node).strip());
+				node.getStartLine(), header.description(), NodeModelUtils.getTokenText(node).strip(), parser);
 	}
 }
