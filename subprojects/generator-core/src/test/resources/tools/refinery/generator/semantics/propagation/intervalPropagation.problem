@@ -1,0 +1,47 @@
+% Copyright (c) 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Person {
+    Person[0..2] parents
+    int age
+}
+
+propagation rule setAge(p, q) <->
+    parents(p, q)
+==>
+    age(p): age(q) - 18..*,
+    age(q): age(p) + 18..*.
+
+parents(anne, bob).
+
+% TEST: no propagation with open intervals
+
+% EXPECT EXACTLY:
+?age(anne).
+?age(bob).
+
+% TEST: Propagation with exact value
+
+age(anne): 20.
+
+% EXPECT EXACTLY:
+age(bob): 38..*.
+
+% TEST: Propagation with intervals
+
+age(anne): 15..*.
+age(bob): 0..50.
+
+% EXPECT EXACTLY:
+age(anne): 15..32.
+age(bob): 33..50.
+
+% TEST WITH ERRORS: Propagation with inconsistent intervals
+
+age(anne): 50..*.
+age(bob): 0..15.
+
+% EXPECT EXACTLY:
+age(anne): 50..-3.
+age(bob): 68..15.
