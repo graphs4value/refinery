@@ -50,7 +50,7 @@ class SemanticsTestBuilder implements ChunkAcceptor {
 		}
 		case ExpectationHeader expectationHeader -> {
 			if (testCaseBuilder == null) {
-				acceptTestCase(new TestCaseHeader(false, null), null);
+				acceptTestCase(new TestCaseHeader(TestCaseKind.NO_ERRORS, null), null);
 				singleTestMode = true;
 			}
 			testCaseBuilder.acceptExpectation(expectationHeader, body);

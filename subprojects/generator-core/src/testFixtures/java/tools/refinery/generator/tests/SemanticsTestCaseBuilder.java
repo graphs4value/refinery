@@ -51,7 +51,7 @@ class SemanticsTestCaseBuilder {
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to parse problem: " + uri, e);
 		}
-		if (expectationsDeque.isEmpty() && testCaseHeader.allowErrors()) {
+		if (expectationsDeque.isEmpty() && testCaseHeader.kind().requiresExpectations()) {
 			throw new IllegalStateException("Test has no EXPECT chunks.");
 		}
 		var statements = problem.getStatements();
@@ -80,7 +80,7 @@ class SemanticsTestCaseBuilder {
 			// Remove expectations from the initial model.
 			statements.subList(initialStatementCount, statementCount).clear();
 		}
-		return new SemanticsTestCase(testCaseHeader.name(), testCaseHeader.allowErrors(), problem,
+		return new SemanticsTestCase(testCaseHeader.name(), testCaseHeader.kind(), problem,
 				Collections.unmodifiableList(expectations));
 	}
 

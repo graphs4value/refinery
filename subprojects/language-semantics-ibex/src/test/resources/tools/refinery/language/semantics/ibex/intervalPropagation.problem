@@ -1,0 +1,52 @@
+% Copyright (c) 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::theory::ibex.
+
+class Person {
+    Person[0..2] parents
+    int age
+}
+
+propagation rule setAge(p, q) <->
+    parents(p, q)
+==>
+    assert age(p) <= age(q) - 18 using ibex.
+
+parents(anne, bob).
+
+% TEST: no propagation with open intervals
+
+% EXPECT EXACTLY:
+?age(anne).
+?age(bob).
+
+% TEST: propagation with exact value
+
+age(anne): 20.
+
+% EXPECT EXACTLY:
+age(bob): 38..*.
+
+% TEST: propagation with intervals
+
+age(anne): 15..*.
+age(bob): 0..50.
+
+% EXPECT EXACTLY:
+age(anne): 15..32.
+age(bob): 33..50.
+
+% TEST: propagation with wildcard
+
+age(*): 0..120.
+
+% EXPECT EXACTLY:
+age(anne): 0..102.
+age(bob): 18..120.
+
+% TEST WITH PROPAGATION FAILURE: inconsistent intervals
+
+age(anne): 50..*.
+age(bob): 0..15.

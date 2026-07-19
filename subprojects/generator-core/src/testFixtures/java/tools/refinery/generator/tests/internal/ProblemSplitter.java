@@ -15,6 +15,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenSource;
 import org.eclipse.xtext.parser.antlr.Lexer;
+import tools.refinery.generator.tests.TestCaseKind;
 import tools.refinery.language.parser.antlr.ProblemTokenSource;
 import tools.refinery.language.parser.antlr.lexer.InternalProblemLexer;
 import tools.refinery.store.reasoning.literal.Concreteness;
@@ -26,7 +27,9 @@ public class ProblemSplitter {
 	private static final String COMMENT_PREFIX = "(//|%)\\s*";
 
 	private static final Pattern TEST_CASE_PATTERN = Pattern.compile(COMMENT_PREFIX +
-			"TEST(?<allowErrors>\\s+WITH\\s+ERRORS)?(\\s*:\\s*(?<name>\\S.*)?)?");
+			"TEST(\\s+WITH\\s+((?<allowErrors>ERRORS)|" +
+			"((?<propagationFailure>PROPAGATION)|(?<concretizationFailure>CONCRETIZATION)) FAILURE))?" +
+			"(\\s*:\\s*(?<name>\\S.*)?)?");
 
 	private static final Pattern EXPECTATION_PATTERN = Pattern.compile(COMMENT_PREFIX +
 			"EXPECT(?<candidate>\\s+CANDIDATE)?(?<exact>\\s+EXACTLY)?(\\s*:\\s*(?<description>\\S.*)?)?");
@@ -76,8 +79,17 @@ public class ProblemSplitter {
 		var headerText = token.getText().strip();
 		var testCaseMatcher = TEST_CASE_PATTERN.matcher(headerText);
 		if (testCaseMatcher.matches()) {
-			boolean allowErrors = testCaseMatcher.group("allowErrors") != null;
-			return new TestCaseHeader(allowErrors, testCaseMatcher.group("name"));
+			TestCaseKind kind;
+			if (testCaseMatcher.group("allowErrors") != null) {
+				kind = TestCaseKind.ALLOW_ERRORS;
+			} else if (testCaseMatcher.group("propagationFailure") != null) {
+				kind = TestCaseKind.PROPAGATION_FAILURE;
+			} else if (testCaseMatcher.group("concretizationFailure") != null) {
+				kind = TestCaseKind.CONCRETIZATION_FAILURE;
+			} else {
+				kind = TestCaseKind.NO_ERRORS;
+			}
+			return new TestCaseHeader(kind, testCaseMatcher.group("name"));
 		}
 		var expectationMatcher = EXPECTATION_PATTERN.matcher(headerText);
 		if (expectationMatcher.matches()) {
