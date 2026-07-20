@@ -344,8 +344,7 @@ function fixTextBaseline(svg: SVGSVGElement, copyOfSVG: SVGSVGElement): void {
 }
 
 let serializePDFCached:
-  | ((svg: SVGSVGElement, embedFonts: boolean) => Promise<Blob>)
-  | undefined;
+  ((svg: SVGSVGElement, embedFonts: boolean) => Promise<Blob>) | undefined;
 
 async function serializePDF(
   svg: SVGSVGElement,

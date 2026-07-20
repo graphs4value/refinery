@@ -34,8 +34,7 @@ export interface AbortSignal {
 }
 
 export type CancellableResult<T> =
-  | { cancelled: false; data: T }
-  | { cancelled: true };
+  { cancelled: false; data: T } | { cancelled: true };
 
 export interface ContentAssistParams {
   caretOffset: number;

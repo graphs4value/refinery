@@ -37,20 +37,20 @@
     "g:lint": "node scripts/eslintReport.cjs",
     "g:tsc": "tsc"
   },
-  "packageManager": "yarn@4.17.0",
+  "packageManager": "yarn@4.17.1",
   "dependencies": {
     "react": "^19.2.7"
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
     "@types/graceful-fs": "^4.1.9",
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
-    "@typescript-eslint/eslint-plugin": "^8.61.1",
-    "@typescript-eslint/parser": "^8.61.1",
+    "@typescript-eslint/eslint-plugin": "^8.64.0",
+    "@typescript-eslint/parser": "^8.64.0",
     "cheerio": "^1.2.0",
     "corepack": "^0.35.0",
-    "eslint": "^9.39.4",
+    "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
@@ -60,9 +60,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "graceful-fs": "^4.2.11",
-    "playwright": "^1.61.0",
-    "prettier": "^3.8.4",
-    "smol-toml": "^1.6.1",
+    "playwright": "^1.61.1",
+    "prettier": "^3.9.5",
+    "smol-toml": "^1.7.0",
     "typescript": "6.0.3"
   },
   "dependenciesMeta": {
