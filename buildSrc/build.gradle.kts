@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -21,4 +21,9 @@ dependencies {
 	implementation(pluginLibs.sonarqube)
     // https://github.com/gradle/gradle/issues/15383
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
+	constraints {
+		implementation(pluginLibs.httpclient) {
+			because("CVE-2025-27820 in transitive dependency of org.siouan:frontend-jdk21")
+		}
+	}
 }
