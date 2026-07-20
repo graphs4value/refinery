@@ -78,7 +78,6 @@ tasks {
 
 	installFrontend {
 		inputs.files("package.json", "yarn.lock")
-		outputs.files(".pnp.cjs", ".pnp.loader.mjs")
 	}
 
 	register("clobberFrontend", Delete::class) {
@@ -87,7 +86,5 @@ tasks {
 		delete(".yarn/install-state.gz")
 		delete(".yarn/sdks")
 		delete(".yarn/unplugged")
-		delete(".pnp.cjs")
-		delete(".pnp.loader.mjs")
 	}
 }

@@ -5730,7 +5730,6 @@ __metadata:
     "@types/micromatch": "npm:^4.0.10"
     "@types/ms": "npm:^2.1.0"
     "@types/node": "npm:^24.13.3"
-    "@types/pnpapi": "npm:^0.0.5"
     "@types/react": "npm:^19.2.17"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^6.0.3"
@@ -5761,7 +5760,6 @@ __metadata:
     nanoid: "npm:^5.1.16"
     notistack: "npm:^3.0.2"
     pino: "npm:^10.3.1"
-    pnpapi: "npm:^0.0.0"
     react: "npm:^19.2.7"
     react-dom: "npm:^19.2.7"
     react-resize-detector: "npm:^12.3.0"
@@ -6621,13 +6619,6 @@ __metadata:
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
   checksum: 10c0/b1b863ac34a2c2172fbe0807a1ec4d5cb684e48d422d15ec95980b81475fac4fdb3768a8b13eef39130203a7c04340fc167bae057c7ebcafd7dec9fe6c36aeb1
-  languageName: node
-  linkType: hard
-
-"@types/pnpapi@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@types/pnpapi@npm:0.0.5"
-  checksum: 10c0/2ade69b20d0ad5d16e6f709b1a40a8c43034ae5e8ca3b979a7fc7c26fbf0cc75791b7e8539f84e98c0e910b9c31d805fb420840e73482c6ed7bba9760ee938be
   languageName: node
   linkType: hard
 
@@ -16011,13 +16002,6 @@ __metadata:
   version: 7.0.0
   resolution: "pngjs@npm:7.0.0"
   checksum: 10c0/0d4c7a0fd476a9c33df7d0a2a73e1d56537628a668841f6995c2bca070cf30819f9254a64363266bc14ef2fee47659dd3b4f2b18eec7ab65143015139f497b38
-  languageName: node
-  linkType: hard
-
-"pnpapi@npm:^0.0.0":
-  version: 0.0.0
-  resolution: "pnpapi@npm:0.0.0"
-  checksum: 10c0/7e718f0263073729486b35658fc502bc8f6f34e922da288731722fad5fa69f3817d29cce64d0135c41826c7f899999343daff5e49a9367f056ece9f1c1ded391
   languageName: node
   linkType: hard
 

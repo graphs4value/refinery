@@ -23,8 +23,3 @@ SPDX-FileCopyrightText = [
   "(c) Facebook, Inc. and its affiliates.",
 ]
 SPDX-License-Identifier = "BSD-2-Clause AND MIT"
-
-[[annotations]]
-path = ".yarn/sdks/**"
-SPDX-FileCopyrightText = "(c) 2016-present, Yarn Contributors. All rights reserved."
-SPDX-License-Identifier = "BSD-2-Clause"
