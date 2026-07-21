@@ -25,11 +25,7 @@ val productionAssets: Configuration by configurations.creating {
 	isCanBeResolved = false
 }
 
-val sourcesWithoutTypes: FileCollection = fileTree("src") {
-	exclude("**/*.typegen.ts")
-}
-
-val sourcesWithTypes: FileCollection = fileTree("src") + fileTree("types")
+val sources: FileCollection = fileTree("src") + fileTree("types")
 
 val installationState: FileCollection = files(
 	rootProject.file("yarn.lock"),
@@ -45,28 +41,18 @@ val assembleConfigFiles: FileCollection = installationState + files(
 	"vite.config.ts",
 ) + fileTree("config")
 
-val assembleSources: FileCollection = sourcesWithTypes + fileTree("public") + files("index.html")
+val assembleSources: FileCollection = sources + fileTree("public") + files("index.html")
 
 val assembleFiles: FileCollection = assembleSources + assembleConfigFiles
 
-val lintingFiles: FileCollection = sourcesWithTypes + assembleConfigFiles + files(
+val lintingFiles: FileCollection = sources + assembleConfigFiles + files(
 	rootProject.file(".eslintrc.cjs"),
 	rootProject.file("prettier.config.cjs"),
 )
 
 tasks {
-	val generateXStateTypes by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		inputs.files(sourcesWithoutTypes)
-		inputs.files(installationState)
-		outputs.dir("src")
-		args.set("run typegen")
-		description = "Generate TypeScript typings for XState state machines."
-	}
-
 	assembleFrontend {
 		dependsOn(rootProject.project("refinery-client-js").tasks.named("assembleFrontend"))
-		dependsOn(generateXStateTypes)
 		inputs.files(assembleFiles)
 		outputs.dir(productionResources)
 	}
@@ -74,7 +60,6 @@ tasks {
 	val typeCheckFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
 		dependsOn(rootProject.project("refinery-client-js").tasks.named("typeCheckFrontend"))
-		dependsOn(generateXStateTypes)
 		inputs.files(lintingFiles)
 		outputs.dir(layout.buildDirectory.dir("typescript"))
 		args.set("run typecheck")
@@ -84,7 +69,6 @@ tasks {
 
 	val lintFrontend by registering(RunYarnTaskType::class) {
 		dependsOn(installFrontend)
-		dependsOn(generateXStateTypes)
 		dependsOn(typeCheckFrontend)
 		inputs.files(lintingFiles)
 		outputs.file(layout.buildDirectory.file("eslint.json"))
@@ -95,7 +79,6 @@ tasks {
 
 	register<RunYarnTaskType>("fixFrontend") {
 		dependsOn(installFrontend)
-		dependsOn(generateXStateTypes)
 		dependsOn(typeCheckFrontend)
 		inputs.files(lintingFiles)
 		args.set("run lint:fix")
@@ -110,9 +93,6 @@ tasks {
 
 	clean {
 		delete("dev-dist")
-		delete(fileTree("src") {
-			include("**/*.typegen.ts")
-		})
 	}
 }
 

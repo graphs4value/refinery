@@ -12,7 +12,6 @@
   "scripts": {
     "build": "MODE=production vite build && node scripts/compressFiles.mjs",
     "dev": "MODE=development vite serve",
-    "typegen": "xstate typegen \"src/**/*.ts?(x)\"",
     "typecheck": "yarn run g:tsc -p subprojects/frontend/tsconfig.shared.json && yarn run g:tsc -p subprojects/frontend/tsconfig.node.json && yarn run g:tsc -p subprojects/frontend/tsconfig.json",
     "lint": "yarn run g:lint subprojects/frontend",
     "lint:fix": "yarn run lint --fix"
@@ -83,7 +82,6 @@
     "react-resize-detector": "^12.3.0",
     "secure-json-parse": "^4.1.0",
     "svg2pdf.js": "^2.7.0",
-    "xstate": "^4.38.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -103,7 +101,6 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "@xstate/cli": "^0.5.17",
     "fast-glob": "^3.3.3",
     "html-minifier-terser": "^7.2.0",
     "micromatch": "^4.0.8",

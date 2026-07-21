@@ -189,7 +189,7 @@ export default class EditorStore {
     return this.client?.webSocketClient.networkMissing ?? false;
   }
 
-  get connectionErrors(): string[] {
+  get connectionErrors(): readonly string[] {
     return this.client?.webSocketClient.errors ?? [];
   }
 

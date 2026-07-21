@@ -8,7 +8,6 @@
     "arcanis.vscode-zipfs",
     "dbaeumer.vscode-eslint",
     "EditorConfig.EditorConfig",
-    "esbenp.prettier-vscode",
-    "statelyai.stately-vscode"
+    "esbenp.prettier-vscode"
   ]
 }
