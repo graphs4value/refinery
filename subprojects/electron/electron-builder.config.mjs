@@ -56,9 +56,11 @@ const config = {
   linux: {
     target: ['AppImage'],
     category: 'Development',
+    icon: 'icons',
   },
   win: {
     target: ['nsis'],
+    icon: 'icons/icon.ico',
     extraFiles: [
       {
         from: 'build/launcher',
@@ -74,6 +76,7 @@ const config = {
     target: ['dmg'],
     category: 'public.app-category.developer-tools',
     darkModeSupport: true,
+    icon: 'icons/icon.icns',
   },
   appImage: {
     artifactName: '${productName}-${version}-${arch}.${ext}',
