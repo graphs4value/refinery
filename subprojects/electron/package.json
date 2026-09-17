@@ -11,6 +11,7 @@
   "main": "index.cjs",
   "scripts": {
     "build": "yarn run build:ts && yarn run build:electron",
+    "build:ci": "CI=true yarn run build",
     "build:ts": "MODE=production yarn run bundle",
     "build:electron": "MODE=production yarn run electron-builder --project . --config electron-builder.config.mjs",
     "bundle": "node esbuild.mjs",

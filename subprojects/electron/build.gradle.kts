@@ -13,7 +13,7 @@ plugins {
 }
 
 frontend {
-	assembleScript.set("run build")
+	assembleScript.set(if (project.hasProperty("ci")) "run build:ci" else "run build")
 	checkScript.set(if (project.hasProperty("ci")) "run test:run:ci" else "run test:run")
 }
 

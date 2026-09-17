@@ -9,6 +9,8 @@ import path from 'node:path';
 
 import rawVersion from './scripts/version.mjs';
 
+const isCI = process.env['CI'] === 'true';
+
 /** @type {unknown} */
 const packageJSON = JSON.parse(
   await readFile(path.join(import.meta.dirname, 'app/package.json'), 'utf-8'),
@@ -54,7 +56,10 @@ const config = {
     buildResources: 'build-resources',
   },
   linux: {
-    target: ['AppImage'],
+    target: [
+      'AppImage',
+      ...(isCI ? ['deb', 'rpm', 'pacman'] : []),
+    ],
     category: 'Development',
     icon: 'icons',
   },
