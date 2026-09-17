@@ -127,7 +127,7 @@ const config = {
     return false;
   },
   async afterPack(context) {
-    const { appOutDir, electronPlatformName, packager } = context;
+    const { appOutDir, electronPlatformName, packager, targets } = context;
     const app = packager.appInfo;
     const tpl = await readFile('build-resources/refinery-cli.sh.in', 'utf-8');
 
@@ -167,6 +167,19 @@ const config = {
         REL_CLI: 'resources/app.asar/cli/index.cjs',
         APP_DIR: `/opt/${app.sanitizedProductName}`,
       });
+
+      // electron-builder creates AppRun in its temporary AppImage staging
+      // directory before copying the packed application into it. Providing an
+      // AppRun in appOutDir therefore replaces the default launcher in the
+      // AppImage while leaving the other Linux targets unchanged in behavior.
+      if (targets.some(({ name }) => name === 'appImage')) {
+        const appRun = path.join(appOutDir, 'AppRun');
+        await writeFile(
+          appRun,
+          await readFile('build-resources/refinery-app-run.sh', 'utf-8'),
+        );
+        await chmod(appRun, 0o755);
+      }
     }
   },
 };
