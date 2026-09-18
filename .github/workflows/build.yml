@@ -257,3 +257,76 @@ jobs:
         run: |
           echo "${KNOWN_HOSTS}" >> ~/.ssh/known_hosts
           ssh refinery@refinery.services /var/lib/refinery/deploy.sh
+  publish-snapshot:
+    name: Publish snapshot release
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
+    needs:
+      - build
+      - publish-site
+      - docker-build
+    permissions:
+      contents: write
+    runs-on: *runner-ubuntu
+    steps:
+      - name: Check out commit
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Read Docker snapshot tag
+        id: docker-version
+        run: echo "tag=$(./docker/get_version.sh version)" >> "$GITHUB_OUTPUT"
+      - name: Download desktop artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-*
+          path: release-artifacts
+          merge-multiple: true
+      - name: Move snapshot tag
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag --force snapshot "${GITHUB_SHA}"
+          git push --force origin refs/tags/snapshot
+      - name: Remove previous snapshot assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/remove_github_release_assets.sh snapshot
+      - name: Publish snapshot release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          token: ${{ github.token }}
+          tag_name: snapshot
+          target_commitish: ${{ github.sha }}
+          name: Refinery snapshot
+          body: |
+            <p>Snapshot built from <code>${{ github.sha }}</code> on <code>main</code>.</p>
+            <h2>Snapshot Maven repository</h2>
+            <p>
+              Use the <a href="https://refinery.tools/maven/snapshots/">Refinery snapshot Maven repository</a>
+              for snapshot Java dependencies, following the
+              <a href="https://refinery.tools/snapshot/develop/java/">Java snapshot usage instructions</a>.
+            </p>
+            <p>Repository URL: <code>https://refinery.tools/maven/snapshots/</code></p>
+            <h2>Docker images</h2>
+            <ul>
+              <li>
+                <a href="https://github.com/graphs4value/refinery/pkgs/container/refinery">Refinery web/server</a>
+                (<code>ghcr.io/graphs4value/refinery:${{ steps.docker-version.outputs.tag }}</code>)
+              </li>
+              <li>
+                <a href="https://github.com/graphs4value/refinery/pkgs/container/refinery-cli">Refinery CLI</a>
+                (<code>ghcr.io/graphs4value/refinery-cli:${{ steps.docker-version.outputs.tag }}</code>)
+              </li>
+              <li>
+                <a href="https://github.com/graphs4value/refinery/pkgs/container/refinery-chat">Refinery Chat</a>
+                (<code>ghcr.io/graphs4value/refinery-chat:${{ steps.docker-version.outputs.tag }}</code>)
+              </li>
+            </ul>
+            <p>Pull an image with <code>docker pull ghcr.io/graphs4value/refinery:${{ steps.docker-version.outputs.tag }}</code>, replacing the image name as needed.</p>
+          prerelease: true
+          make_latest: false
+          files: release-artifacts/*
+          fail_on_unmatched_files: true
+          overwrite_files: true
