@@ -84,11 +84,11 @@ jobs:
           path: |
            .playwright
           key: ${{ matrix.os }}-playwright-${{ hashFiles('yarn.lock') }}
-      - name: Install Xvfb
+      - name: Install Linux build dependencies
         if: ${{ matrix.os == env.RUNNER_UBUNTU || matrix.os == env.RUNNER_UBUNTU_ARM }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb
+          sudo apt-get install -y --no-install-recommends libarchive-tools xvfb
       - name: Gradle build
         env:
           # Deterministically exercise the Xvfb fallback in the electron
@@ -124,6 +124,20 @@ jobs:
             subprojects/frontend/build/vite/production/**/*
           compression-level: 0
           retention-days: 5  # No need to preserve for long, since they are uploaded to GHCR
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.os }}
+          path: |
+            subprojects/electron/build/dist/*.AppImage
+            subprojects/electron/build/dist/*.deb
+            subprojects/electron/build/dist/*.rpm
+            subprojects/electron/build/dist/*.pkg.tar.xz
+            subprojects/electron/build/dist/*.exe
+            subprojects/electron/build/dist/*.dmg
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 5
       - name: Build signed Maven repository
         if: ${{ matrix.os == env.RUNNER_UBUNTU && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
         env:
