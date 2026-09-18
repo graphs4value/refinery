@@ -4,12 +4,19 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import javax.inject.Inject
+import org.gradle.api.file.FileSystemOperations
 import org.panteleyev.jlink.JLinkTask
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
 	id("tools.refinery.gradle.frontend-workspace")
+}
+
+interface InjectedFileSystemOperations {
+	@get:Inject
+	val fs: FileSystemOperations
 }
 
 frontend {
@@ -116,6 +123,13 @@ tasks {
 	}
 
 	assembleFrontend {
+		val distDirectoryPath = distDir.get().asFile.absolutePath
+		val injectedFileSystemOperations = project.objects.newInstance<InjectedFileSystemOperations>()
+		doFirst {
+			injectedFileSystemOperations.fs.delete {
+				delete(distDirectoryPath)
+			}
+		}
 		dependsOn(jlink)
 		dependsOn(extractBackend)
 		if (buildWindowsLauncher) {
@@ -140,7 +154,10 @@ tasks {
 		dependsOn(assembleFrontend)
 		inputs.dir(distDir)
 		inputs.files("vitest.e2e.config.ts")
-		inputs.dir("e2e")
+		inputs.files(fileTree("e2e") {
+			exclude("**/__diffs__/**")
+		})
+		outputs.file(layout.buildDirectory.file("e2e/results.json"))
 		args.set(if (project.hasProperty("ci")) "run test:e2e:ci" else "run test:e2e")
 		description = "Run end-to-end tests against the packaged Electron CLI"
 	}

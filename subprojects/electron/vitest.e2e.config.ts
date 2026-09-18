@@ -21,7 +21,8 @@ export default defineConfig({
     // which shows per-test lines without their `describe` names (those are
     // only shown for single-file runs). `verbose` always prints the full
     // `describe > test` path instead.
-    reporters: ['verbose'],
+    reporters: ['verbose', 'json'],
+    outputFile: './build/e2e/results.json',
     env: {
       // An unpacked `electron-builder` output doesn't have `chrome-sandbox`
       // configured the way an installed package does, so Chromium's SUID
