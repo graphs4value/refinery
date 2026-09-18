@@ -12,7 +12,7 @@ plugins {
 }
 
 // Workaround from https://github.com/gradle/gradle/issues/898#issuecomment-885765821
-val eclipseResourceEncoding by tasks.registering {
+val eclipseResourceEncoding = tasks.register("eclipseResourceEncoding") {
 	val outputFile = file(".settings/org.eclipse.core.resources.prefs")
 	val encoding = providers.systemProperty("file.encoding")
 

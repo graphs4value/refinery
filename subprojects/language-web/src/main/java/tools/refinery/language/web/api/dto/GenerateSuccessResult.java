@@ -6,6 +6,7 @@
 package tools.refinery.language.web.api.dto;
 
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.generator.json.PartialModelJson;
 
-public record GenerateSuccessResult(@Nullable JsonOutput json, @Nullable String source) {
+public record GenerateSuccessResult(@Nullable PartialModelJson json, @Nullable String source) {
 }

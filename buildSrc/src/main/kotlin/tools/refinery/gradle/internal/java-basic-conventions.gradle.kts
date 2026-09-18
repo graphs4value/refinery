@@ -80,15 +80,11 @@ tasks {
 		}
 	}
 
-	val generateEclipseSourceFolders by tasks.registering
+	val generateEclipseSourceFolders = tasks.register("generateEclipseSourceFolders")
 
 	register("prepareEclipse") {
 		dependsOn(generateEclipseSourceFolders)
 		dependsOn(tasks.named("eclipseJdt"))
-	}
-
-	eclipseClasspath {
-		dependsOn(generateEclipseSourceFolders)
 	}
 }
 
@@ -142,10 +138,5 @@ eclipse {
 		if (entry is org.gradle.plugins.ide.eclipse.model.ProjectDependency) {
 			entry.entryAttributes.remove("test")
 		}
-	}
-
-	jdt.file.withProperties {
-		// Allow @SuppressWarnings to suppress SonarLint warnings
-		this["org.eclipse.jdt.core.compiler.problem.unhandledWarningToken"] = "ignore"
 	}
 }

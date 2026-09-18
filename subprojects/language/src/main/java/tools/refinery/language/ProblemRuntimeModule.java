@@ -15,6 +15,7 @@ import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.conversion.impl.AbstractIDValueConverter;
 import org.eclipse.xtext.documentation.impl.AbstractMultiLineCommentProvider;
 import org.eclipse.xtext.findReferences.IReferenceFinder;
+import org.eclipse.xtext.formatting.ILineSeparatorInformation;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -33,6 +34,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.xbase.annotations.validation.DerivedStateAwareResourceValidator;
 import tools.refinery.language.conversion.IDValueConverter;
 import tools.refinery.language.conversion.ProblemValueConverterService;
+import tools.refinery.language.formatting2.NormalizedLineSeparatorInformation;
 import tools.refinery.language.linking.ProblemLinkingService;
 import tools.refinery.language.naming.ProblemQualifiedNameProvider;
 import tools.refinery.language.naming.ProblemQualifiedNameConverter;
@@ -159,5 +161,9 @@ public class ProblemRuntimeModule extends AbstractProblemRuntimeModule {
 		binder.bind(String.class)
 				.annotatedWith(Names.named(AbstractMultiLineCommentProvider.START_TAG))
 				.toInstance("/\\*\\*");
+	}
+
+	public Class<? extends ILineSeparatorInformation> bindILineSeparatorInformation() {
+		return NormalizedLineSeparatorInformation.class;
 	}
 }

@@ -435,6 +435,7 @@ export default styled('div', {
       // Appear above the scrollbar (and the splitter handle).
       zIndex: 2000,
       borderRadius: theme.shape.borderRadius,
+      border: 'none',
       overflow: 'hidden',
       maxWidth: 400,
     },
@@ -670,6 +671,7 @@ export default styled('div', {
       zIndex: 2000,
       padding: 0,
       borderRadius: theme.shape.borderRadius,
+      border: 'none',
       overflow: 'hidden',
       whiteSpace: 'normal',
       '&.cm-completionInfo-right': {

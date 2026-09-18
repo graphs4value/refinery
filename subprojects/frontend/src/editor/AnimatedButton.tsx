@@ -57,6 +57,8 @@ export default function AnimatedButton({
   sx?: SxProps<Theme> | undefined;
   children?: ReactNode;
 }): React.ReactElement {
+  const hasChildren =
+    children !== undefined && children !== null && children !== false;
   const [width, setWidth] = useState<string | undefined>();
   const [contentsElement, setContentsElement] = useState<HTMLDivElement | null>(
     null,
@@ -87,24 +89,26 @@ export default function AnimatedButton({
       disabled={disabled ?? false}
       startIcon={startIcon}
       width={
-        width === undefined
+        !hasChildren || width === undefined
           ? 'auto'
           : `calc(${width} + ${startIcon === undefined ? 28 : 50}px)`
       }
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'end',
-          overflow: 'hidden',
-          width: '100%',
-        }}
-      >
-        <Box sx={{ whiteSpace: 'nowrap' }} ref={setContentsElement}>
-          {children}
+      {hasChildren && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'end',
+            overflow: 'hidden',
+            width: '100%',
+          }}
+        >
+          <Box sx={{ whiteSpace: 'nowrap' }} ref={setContentsElement}>
+            {children}
+          </Box>
         </Box>
-      </Box>
+      )}
     </AnimatedButtonBase>
   );
 }

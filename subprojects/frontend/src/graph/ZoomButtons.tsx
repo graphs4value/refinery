@@ -28,18 +28,18 @@ export default function ZoomButtons({
       direction="column"
       sx={{
         position: 'absolute',
-        p: (theme) => theme.spacing(1),
+        p: (theme) => theme.spacing(1.375),
         bottom: 0,
         right: 0,
       }}
     >
       <Tooltip title="Zoom in" placement="left">
-        <IconButton onClick={() => changeZoom(2)}>
+        <IconButton onClick={() => changeZoom(2)} color="inherit">
           <AddIcon fontSize="small" />
         </IconButton>
       </Tooltip>
       <Tooltip title="Zoom out" placement="left">
-        <IconButton onClick={() => changeZoom(0.5)}>
+        <IconButton onClick={() => changeZoom(0.5)} color="inherit">
           <RemoveIcon fontSize="small" />
         </IconButton>
       </Tooltip>

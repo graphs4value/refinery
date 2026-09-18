@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-(cd .. && ./gradlew :refinery-generator-cli:distTar :refinery-language-web:distTar :refinery-chat:assembleFrontend)
+(cd .. && ./gradlew :refinery-generator-cli:distTar :refinery-language-web:distTar :refinery-chat:assembleFrontend :refinery-frontend:assembleFrontend)
 
 ./prepare_context.sh
 

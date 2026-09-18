@@ -1,5 +1,5 @@
 <!--
-    SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+    SPDX-FileCopyrightText: 2024-2026 The Refinery Authors <https://refinery.tools/>
 
     SPDX-License-Identifier: EPL-2.0
 -->
@@ -11,15 +11,11 @@
     <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
         <resetJUL>true</resetJUL>
     </contextListener>
-    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
-        <target>System.err</target>
-        <encoder>
-            <pattern>
-                %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
-            </pattern>
-        </encoder>
-    </appender>
-    <root level="INFO">
-        <appender-ref ref="STDERR"/>
-    </root>
+    <variable name="REFINERY_DEFAULT_LOG_LEVEL" value="INFO"/>
+    <include resource="logback-refinery.xml"/>
+    <!--
+        Silence warning about MessageBodyWriter<java.awt.image.RenderedImage>,
+        since we don't use this provider and don't need the noise in the logs.
+    -->
+    <logger name="org.glassfish.jersey.message.internal" level="ERROR"/>
 </configuration>

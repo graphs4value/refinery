@@ -22,6 +22,7 @@
 !.yarn/versions
 bin/
 build/
+subprojects/electron/e2e/__diffs__/
 emf-gen/
 node_modules/
 xtend-gen/

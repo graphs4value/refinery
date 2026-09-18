@@ -64,6 +64,9 @@ async function createReport(workspace, fix) {
   }
   const cli = new LegacyESLint(options);
   const report = await cli.lintFiles('.');
+  if (fix) {
+    await LegacyESLint.outputFixes(report);
+  }
   await Promise.all([
     reportToConsole(cli, report),
     reportToJson(cli, absoluteWorkspace, report),

@@ -5,13 +5,11 @@
  */
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
-import tools.refinery.gradle.MavenPublishPlugin
 
 plugins {
 	alias(pluginLibs.plugins.versions)
 	id("tools.refinery.gradle.eclipse")
 	id("tools.refinery.gradle.frontend-worktree")
-	id("tools.refinery.gradle.sonarqube")
 }
 
 val frontendFiles: FileCollection = files(
@@ -23,12 +21,13 @@ val frontendFiles: FileCollection = files(
 	"prettier.config.cjs",
 ) + fileTree("scripts") {
 	include("**/*.cjs")
+	include("**/*.mjs")
 }
 
 val mavenRepositoryDir = layout.buildDirectory.map { it.dir("repo") }
 
 tasks {
-	val typeCheckFrontend by registering(RunYarnTaskType::class) {
+	val typeCheckFrontend = register<RunYarnTaskType>("typeCheckFrontend") {
 		dependsOn(installFrontend)
 		inputs.files(frontendFiles)
 		outputs.dir(layout.buildDirectory.dir("typescript"))
@@ -37,7 +36,7 @@ tasks {
 		description = "Check for TypeScript type errors."
 	}
 
-	val lintFrontend by registering(RunYarnTaskType::class) {
+	val lintFrontend = register<RunYarnTaskType>("lintFrontend") {
 		dependsOn(installFrontend)
 		dependsOn(typeCheckFrontend)
 		inputs.files(frontendFiles)
@@ -60,8 +59,8 @@ tasks {
 		dependsOn(installFrontend)
 		inputs.files(frontendFiles)
 		outputs.dir(".playwright")
-        args.set(if (project.hasProperty("ci")) "run browsers:install:ci" else "run browsers:install")
-        description = "Install browser testing dependencies."
+		args.set(if (project.hasProperty("ci")) "run browsers:install:ci" else "run browsers:install")
+		description = "Install browser testing dependencies."
 	}
 
 	check {
@@ -70,18 +69,21 @@ tasks {
 	}
 }
 
-val cleanMavenRepository by tasks.registering(Delete::class) {
+val cleanMavenRepository = tasks.register<Delete>("cleanMavenRepository") {
 	delete(mavenRepositoryDir)
+	description = "Clean files published to the Maven repository directory"
 }
 
-val mavenRepository by tasks.registering(Task::class) {
+val mavenRepository = tasks.register<Task>("mavenRepository") {
 	dependsOn(cleanMavenRepository)
+	description = "Publish artifacts to Maven repository directory"
 }
 
 gradle.projectsEvaluated {
 	mavenRepository.configure {
 		for (subproject in rootProject.subprojects) {
-			if (subproject.plugins.hasPlugin(MavenPublishPlugin::class)) {
+			if (subproject.name != "refinery-gradle-plugins" && subproject.plugins.hasPlugin(
+					MavenPublishPlugin::class)) {
 				val publishTask = subproject.tasks.named("publishMavenJavaPublicationToFileRepository")
 				publishTask.configure {
 					mustRunAfter(cleanMavenRepository)
@@ -90,11 +92,10 @@ gradle.projectsEvaluated {
 			}
 		}
 
-		dependsOn(project("refinery-gradle-plugins").tasks.named("publishAllPublicationsToFileRepository"))
+		val pluginPublishTask = project("refinery-gradle-plugins").tasks.named("publishAllPublicationsToFileRepository")
+		pluginPublishTask.configure {
+			mustRunAfter(cleanMavenRepository)
+		}
+		dependsOn(pluginPublishTask)
 	}
-}
-
-sonarqube.properties {
-	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
-	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
 }

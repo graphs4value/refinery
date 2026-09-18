@@ -196,7 +196,18 @@ function createResponsiveTheme(
       },
       MuiToggleButton: {
         styleOverrides: {
-          root: { '&.iconOnly': { borderRadius: '100%' } },
+          root: {
+            '&.iconOnly': { borderRadius: '100%' },
+            '.MuiToggleButtonGroup-root.rounded &.MuiToggleButton-sizeMedium': {
+              padding: '7px 11px',
+            },
+            '.MuiToggleButtonGroup-root.rounded &.MuiToggleButton-sizeSmall': {
+              padding: '5px 7px',
+            },
+            '.MuiToggleButtonGroup-root.rounded &.MuiToggleButton-sizeLarge': {
+              padding: '9px 17px',
+            },
+          },
         },
       },
       MuiToggleButtonGroup: {
@@ -205,11 +216,9 @@ function createResponsiveTheme(
             '&.rounded.MuiToggleButtonGroup-horizontal .MuiToggleButtonGroup-grouped':
               {
                 '&.MuiToggleButtonGroup-firstButton': {
-                  paddingLeft: 15,
                   borderRadius: '50em 0 0 50em',
                 },
                 '&.MuiToggleButtonGroup-lastButton': {
-                  paddingRight: 15,
                   borderRadius: '0 50em 50em 0',
                 },
                 '&.MuiToggleButton-sizeSmall': {

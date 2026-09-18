@@ -290,7 +290,7 @@ public class BuiltinAnnotations extends DeclarativeAnnotationValidator {
 			return;
 		}
 		int arity = ProblemUtil.getArityWithoutProxyResolution(relation);
-		if (arity < 1 || arity > 2) {
+		if ((arity < 1 || arity > 2) && arity != ProblemUtil.REFERENCE_OR_ATTRIBUTE) {
 			error("Only unary (type) or binary (edge) relations can be shown or hidden.", annotation);
 		}
 	}

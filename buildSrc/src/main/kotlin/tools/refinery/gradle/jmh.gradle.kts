@@ -16,7 +16,7 @@ plugins {
 
 val sourceSets = the<SourceSetContainer>()
 
-val jmh: SourceSet by sourceSets.creating {
+val jmh = sourceSets.create("jmh") {
 	compileClasspath += sourceSets.main.get().output
 	runtimeClasspath += sourceSets.main.get().output
 	// Allow using test classes in benchmarks for now.
@@ -24,11 +24,11 @@ val jmh: SourceSet by sourceSets.creating {
 	runtimeClasspath += sourceSets.test.get().output
 }
 
-val jmhImplementation: Configuration by configurations.getting {
+val jmhImplementation = configurations.named("jmhImplementation") {
 	extendsFrom(configurations.implementation.get(), configurations.testImplementation.get())
 }
 
-val jmhAnnotationProcessor: Configuration by configurations.getting
+val jmhAnnotationProcessor = configurations.named("jmhAnnotationProcessor")
 
 configurations["jmhRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get(), configurations.testRuntimeOnly.get())
 

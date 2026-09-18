@@ -23,3 +23,8 @@ SPDX-FileCopyrightText = [
   "(c) Facebook, Inc. and its affiliates.",
 ]
 SPDX-License-Identifier = "BSD-2-Clause AND MIT"
+
+[[annotations]]
+path = "subprojects/electron/e2e/__snapshots__/*.png"
+SPDX-FileCopyrightText = "2026 The Refinery Authors <https://refinery.tools/>"
+SPDX-License-Identifier = "CC0-1.0"

@@ -8,7 +8,13 @@ import type {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
-import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands';
+import {
+  isolateHistory,
+  redo,
+  redoDepth,
+  undo,
+  undoDepth,
+} from '@codemirror/commands';
 import {
   type Diagnostic,
   setDiagnostics,
@@ -32,22 +38,19 @@ import {
 import { nanoid } from 'nanoid';
 
 import type PWAStore from '../PWAStore';
+import type RefineryContextBridge from '../RefineryContextBridge';
+import type DialogStore from '../dialog/DialogStore';
 import GraphStore, { type Visibility } from '../graph/GraphStore';
-import {
-  REFINERY_CONTENT_TYPE,
-  FILE_TYPE_OPTIONS,
-  type OpenResult,
-  type OpenTextFileResult,
-  openTextFile,
-  saveTextFile,
-  saveBlob,
-} from '../utils/fileIO';
+import type ThemeStore from '../theme/ThemeStore';
 import getLogger from '../utils/getLogger';
 import type XtextClient from '../xtext/XtextClient';
 import type { BackendConfigWithDefaults } from '../xtext/fetchBackendConfig';
 import type { SemanticsModelResult } from '../xtext/xtextServiceResults';
 
 import EditorErrors from './EditorErrors';
+import ElectronFileStore from './ElectronFileStore';
+import type FileStore from './FileStore';
+import FileSystemAccessFileStore from './FileSystemAccessFileStore';
 import GeneratedModelStore from './GeneratedModelStore';
 import LintPanelStore from './LintPanelStore';
 import SearchPanelStore from './SearchPanelStore';
@@ -64,11 +67,6 @@ import {
 
 const log = getLogger('editor.EditorStore');
 
-const FILE_PICKER_OPTIONS: FilePickerOptions = {
-  id: 'problem',
-  ...FILE_TYPE_OPTIONS,
-};
-
 export default class EditorStore {
   readonly id: string;
 
@@ -83,10 +81,6 @@ export default class EditorStore {
   readonly lintPanel: LintPanelStore;
 
   readonly delayedErrors: EditorErrors;
-
-  showLineNumbers = false;
-
-  colorIdentifiers = true;
 
   disposed = false;
 
@@ -104,11 +98,14 @@ export default class EditorStore {
 
   selectedGeneratedModel: string | undefined;
 
-  fileName: string | undefined;
+  private readonly fileStore: FileStore;
 
-  private fileHandle: FileSystemFileHandle | undefined;
+  private readonly refinery: RefineryContextBridge | undefined;
 
   unsavedChanges = false;
+
+  shareDialogOpen: 'toolbarButton' | 'copyLink' | 'pasteLink' | undefined =
+    undefined;
 
   hexTypeHashes: string[] = [];
 
@@ -120,15 +117,46 @@ export default class EditorStore {
 
   private visibilityMapReaction: IReactionDisposer;
 
+  private darkModeReaction: IReactionDisposer;
+
   constructor(
     initialValue: string,
+    initialFileName: string | undefined,
     initialVisibility: Record<string, Visibility> | undefined,
     pwaStore: PWAStore,
+    private readonly dialogStore: DialogStore,
+    private readonly themeStore: ThemeStore,
     public readonly backendConfig: BackendConfigWithDefaults,
     onUpdate: (text: string, visibility: Record<string, Visibility>) => void,
+    private readonly compressForShare: (
+      text: string,
+      visibility: Record<string, Visibility>,
+    ) => Promise<string>,
+    private readonly openShareInCurrentEditor: (fragment: string) => void,
+    onError: (title: string, body: string) => void,
+    private readonly onCloseWindow: () => void,
   ) {
     this.id = nanoid();
-    this.state = createEditorState(initialValue, this);
+    this.refinery = window.refinery;
+    this.setUnsavedChanges(false, true);
+    this.state = createEditorState(initialValue, this, themeStore.darkMode);
+    const onFileOpened = (text: string) => this.fileOpened(text);
+    const onFileSaved = () => this.clearUnsavedChanges();
+    const { refinery } = this;
+    this.fileStore = refinery
+      ? new ElectronFileStore(
+          refinery,
+          initialFileName,
+          onFileOpened,
+          onFileSaved,
+          onError,
+        )
+      : new FileSystemAccessFileStore(
+          initialFileName,
+          onFileOpened,
+          onFileSaved,
+          onError,
+        );
     this.delayedErrors = new EditorErrors(this);
     this.searchPanel = new SearchPanelStore(this);
     this.lintPanel = new LintPanelStore(this);
@@ -159,10 +187,36 @@ export default class EditorStore {
         onUpdate(this.state.sliceDoc(), visibilityMap);
       },
     );
-    makeAutoObservable<EditorStore, 'client'>(this, {
+    this.darkModeReaction = reaction(
+      () => this.themeStore.darkMode,
+      (darkMode) => {
+        log.debug('Update editor dark mode: %s', String(darkMode));
+        this.dispatch({
+          effects: [
+            StateEffect.appendConfig.of([EditorView.darkTheme.of(darkMode)]),
+          ],
+        });
+      },
+    );
+    makeAutoObservable<
+      EditorStore,
+      | 'client'
+      | 'compressForShare'
+      | 'dialogStore'
+      | 'fileStore'
+      | 'refinery'
+      | 'openShareInCurrentEditor'
+      | 'onCloseWindow'
+    >(this, {
       id: false,
       state: observable.ref,
       client: observable.ref,
+      compressForShare: false,
+      dialogStore: false,
+      fileStore: false,
+      refinery: false,
+      openShareInCurrentEditor: false,
+      onCloseWindow: false,
       view: observable.ref,
       searchPanel: false,
       lintPanel: false,
@@ -199,15 +253,6 @@ export default class EditorStore {
 
   disconnect(): void {
     this.client?.webSocketClient.disconnect();
-  }
-
-  setDarkMode(darkMode: boolean): void {
-    log.debug('Update editor dark mode: %s', String(darkMode));
-    this.dispatch({
-      effects: [
-        StateEffect.appendConfig.of([EditorView.darkTheme.of(darkMode)]),
-      ],
-    });
   }
 
   setEditorParent(editorParent: Element | undefined): void {
@@ -274,7 +319,7 @@ export default class EditorStore {
     this.state = tr.state;
     this.client?.onTransaction(tr);
     if (tr.docChanged) {
-      this.unsavedChanges = true;
+      this.setUnsavedChanges(true);
     }
   }
 
@@ -389,14 +434,20 @@ export default class EditorStore {
     log.debug('Redo: %s', String(this.doStateCommand(redo)));
   }
 
+  get showLineNumbers(): boolean {
+    return this.themeStore.showLineNumbers;
+  }
+
   toggleLineNumbers(): void {
-    this.showLineNumbers = !this.showLineNumbers;
-    log.debug('Show line numbers: %s', String(this.showLineNumbers));
+    this.themeStore.toggleLineNumbers();
+  }
+
+  get colorIdentifiers() {
+    return this.themeStore.colorIdentifiers;
   }
 
   toggleColorIdentifiers(): void {
-    this.colorIdentifiers = !this.colorIdentifiers;
-    log.debug('Color identifiers: %s', String(this.colorIdentifiers));
+    this.themeStore.toggleColorIdentifiers();
   }
 
   get hasSelection(): boolean {
@@ -443,6 +494,7 @@ export default class EditorStore {
   }
 
   dispose(): void {
+    this.darkModeReaction();
     this.visibilityMapReaction();
     this.client?.dispose();
     this.delayedErrors.dispose();
@@ -497,6 +549,18 @@ export default class EditorStore {
     this.generatedModels.delete(uuid);
   }
 
+  deleteAllGeneratedModels(): void {
+    let generating = false;
+    this.generatedModels.forEach((generatedModel) => {
+      generating = generating || generatedModel.running;
+    });
+    if (generating) {
+      this.cancelModelGeneration();
+    }
+    this.generatedModels.clear();
+    this.selectedGeneratedModel = undefined;
+  }
+
   get selectedGeneratedModelStore(): GeneratedModelStore | undefined {
     if (this.selectedGeneratedModel === undefined) {
       return undefined;
@@ -539,88 +603,227 @@ export default class EditorStore {
   }
 
   openFile(): boolean {
-    openTextFile(FILE_PICKER_OPTIONS)
-      .then((result) => this.fileOpened(result))
-      .catch((err: unknown) => log.error({ err }, 'Failed to open file'));
-    return true;
+    if (
+      (this.unsavedChanges || this.fileName !== undefined) &&
+      this.fileStore.openFileInNewWindow()
+    ) {
+      return true;
+    }
+    if (this.unsavedChanges) {
+      if (this.dialogStore.hasConfirmation('openFile')) {
+        return true;
+      }
+      this.dialogStore.showConfirmation({
+        kind: 'openFile',
+        title: 'Open another file?',
+        body: 'You have unsaved changes. Open another file anyway?',
+        dismissible: true,
+        actions: [
+          {
+            label: 'Open anyway',
+            defaultAction: true,
+            onClick: (dialogId) => {
+              this.dialogStore.dismissConfirmation(dialogId);
+              this.openFileWithoutConfirmation();
+            },
+          },
+          {
+            label: 'Cancel',
+            color: 'inherit',
+            onClick: (dialogId) =>
+              this.dialogStore.dismissConfirmation(dialogId),
+          },
+        ],
+      });
+      return true;
+    }
+    return this.openFileWithoutConfirmation();
+  }
+
+  private openFileWithoutConfirmation(): boolean {
+    return this.fileStore.openFile();
+  }
+
+  // Called after the platform's beforeunload hook has temporarily prevented closing.
+  closeRequested(): void {
+    if (!this.unsavedChanges) {
+      this.onCloseWindow();
+      return;
+    }
+    if (this.dialogStore.hasConfirmation('close')) {
+      return;
+    }
+    const fileDescription =
+      this.fileName === undefined ? 'this file' : `“${this.fileName}”`;
+    this.dialogStore.showConfirmation({
+      kind: 'close',
+      title: 'Unsaved changes',
+      body: `Save your changes to ${fileDescription} before closing?`,
+      dismissible: true,
+      actions: [
+        {
+          label: 'Save',
+          defaultAction: true,
+          onClick: (dialogId) => this.saveAndClose(dialogId),
+        },
+        {
+          label: 'Close anyway',
+          color: 'error',
+          onClick: (dialogId) => {
+            this.dialogStore.dismissConfirmation(dialogId);
+            this.onCloseWindow();
+          },
+        },
+      ],
+    });
+  }
+
+  private saveAndClose(dialogId: string): Promise<void> {
+    return new Promise((resolve) => {
+      let completed = false;
+      const complete = (saved: boolean) => {
+        if (completed) {
+          return;
+        }
+        completed = true;
+        if (saved) {
+          this.dialogStore.dismissConfirmation(dialogId);
+          this.onCloseWindow();
+        }
+        resolve();
+      };
+      try {
+        if (!this.fileStore.saveFile(this.state.sliceDoc(), complete)) {
+          complete(false);
+        }
+      } catch (error) {
+        log.error({ err: error }, 'Failed to save file before closing');
+        complete(false);
+      }
+    });
   }
 
   private clearUnsavedChanges(): void {
-    this.unsavedChanges = false;
+    this.setUnsavedChanges(false);
   }
 
-  private setFile({ name, handle }: OpenResult): void {
-    log.info('Opened file: %s', name);
-    this.fileName = name;
-    this.fileHandle = handle;
+  private setUnsavedChanges(unsavedChanges: boolean, force = false): void {
+    if (!force && this.unsavedChanges === unsavedChanges) {
+      return;
+    }
+    this.unsavedChanges = unsavedChanges;
+    this.refinery?.setUnsavedChanges(unsavedChanges);
   }
 
-  private fileOpened(result: OpenTextFileResult): void {
+  private replaceContents(
+    text: string,
+    visibility: Record<string, Visibility> | undefined,
+    transaction: Omit<TransactionSpec, 'changes'>,
+  ): void {
     this.dispatch({
+      ...transaction,
       changes: [
         {
           from: 0,
           to: this.state.doc.length,
-          insert: result.text,
+          insert: text,
         },
       ],
-      effects: [historyCompartment.reconfigure([])],
     });
     this.scrollToTop();
+    if (visibility !== undefined) {
+      this.graph.visibility.clear();
+      for (const [key, value] of Object.entries(visibility)) {
+        this.graph.visibility.set(key, value);
+      }
+    }
+    this.clearUnsavedChanges();
+  }
+
+  fileOpened(text: string, visibility?: Record<string, Visibility>): void {
+    this.replaceContents(text, visibility, {
+      effects: [historyCompartment.reconfigure([])],
+    });
     // Clear history by removing and re-adding the history extension. See
     // https://stackoverflow.com/a/77943295 and
     // https://discuss.codemirror.net/t/codemirror-6-cm-clearhistory-equivalent/2851/10
     this.dispatch({
       effects: [historyCompartment.reconfigure([createHistoryExtension()])],
     });
-    this.setFile(result);
-    this.clearUnsavedChanges();
+  }
+
+  sharedModelOpened(
+    text: string,
+    visibility: Record<string, Visibility>,
+  ): void {
+    if (this.fileName === undefined && !this.unsavedChanges) {
+      // No race condition was encountered, there is still no new file and no unsaved changes,
+      // so it's safe to replace the editor contents outright.
+      this.fileOpened(text, visibility);
+      return;
+    }
+    // Preserve any edits that happened in the meantime.
+    this.replaceContents(text, visibility, {
+      // Keep the replacement as a distinct undo step from nearby typing.
+      annotations: [isolateHistory.of('full')],
+    });
+    // A file-open operation may have completed while the shared model was
+    // being decompressed, so detach any file associated in the meantime.
+    if (this.fileName !== undefined) {
+      this.clearFile();
+    }
+  }
+
+  clearFile(): void {
+    this.fileStore.clearFile();
   }
 
   saveFile(): boolean {
-    if (!this.unsavedChanges) {
+    if (this.fileName !== undefined && !this.unsavedChanges) {
       return false;
     }
-    if (this.fileHandle === undefined) {
-      return this.saveFileAs();
-    }
-    saveTextFile(this.fileHandle, this.state.sliceDoc())
-      .then(() => this.clearUnsavedChanges())
-      .catch((err: unknown) => log.error({ err }, 'Failed to save file'));
-    return true;
+    return this.fileStore.saveFile(this.state.sliceDoc());
   }
 
   saveFileAs(): boolean {
-    const blob = new Blob([this.state.sliceDoc()], {
-      type: REFINERY_CONTENT_TYPE,
-    });
-    saveBlob(blob, this.fileName ?? 'graph.problem', FILE_PICKER_OPTIONS)
-      .then((result) => this.fileSavedAs(result))
-      .catch((err: unknown) => log.error({ err }, 'Failed to save file'));
-    return true;
+    return this.fileStore.saveFileAs(this.state.sliceDoc());
   }
 
-  private fileSavedAs(result: OpenResult | undefined) {
-    if (result !== undefined) {
-      this.setFile(result);
-    }
-    this.clearUnsavedChanges();
+  get fileName(): string | undefined {
+    return this.fileStore.fileName;
   }
 
   get simpleName(): string | undefined {
-    const { fileName } = this;
-    if (fileName === undefined) {
-      return undefined;
-    }
-    const index = fileName.lastIndexOf('.');
-    if (index < 0) {
-      return fileName;
-    }
-    return fileName.substring(0, index);
+    return this.fileStore.simpleName;
   }
 
   get simpleNameOrFallback(): string {
-    return this.simpleName ?? 'graph';
+    return this.fileStore.simpleNameOrFallback;
+  }
+
+  getShareFragment(): Promise<string> {
+    return this.compressForShare(
+      this.state.sliceDoc(),
+      this.graph.visibilityObject,
+    );
+  }
+
+  openShareDialog(
+    reason: 'toolbarButton' | 'copyLink' | 'pasteLink' = 'toolbarButton',
+  ): void {
+    this.shareDialogOpen = reason;
+  }
+
+  closeShareDialog(): void {
+    this.shareDialogOpen = undefined;
+  }
+
+  openShare(fragment: string): void {
+    if (this.fileName === undefined && !this.unsavedChanges) {
+      this.openShareInCurrentEditor(fragment);
+    } else {
+      this.fileStore.openShare(fragment);
+    }
   }
 
   toggleConcretize(): void {

@@ -17,9 +17,13 @@ tar -xvf "../subprojects/generator-cli/build/distributions/${cli_distribution_na
 mv "${cli_distribution_name}" cli_dist
 tar -xvf "../subprojects/language-web/build/distributions/${web_distribution_name}.tar"
 mv "${web_distribution_name}" web_dist
+
 mkdir -p context/extracted/{cli,web}_{,app_}lib \
     context/extracted/common_{,amd64_,arm64_}lib \
     context/extracted/{cli,web}_{amd64,arm64}_bin
+
+# Copy frontend assets to the context directory.
+cp -a ../subprojects/frontend/build/vite/production context/extracted/webapp
 
 move_application_jars() {
     prefix="$1"

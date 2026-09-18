@@ -28,11 +28,17 @@ export default function graphvizUMDVitePlugin(): PluginOption {
       if (command === 'serve') {
         url = `/@fs/${resolvedPath}`;
       } else {
-        const content = await readFile(resolvedPath, null);
+        const content = await readFile(resolvedPath, 'utf-8');
+        // Remove the reference to a source map, since we don't ship source maps,
+        // and trying to load a source map in the browser will generate a 404 error.
+        const contentWithoutSourceMap = content.replace(
+          /^\/\/# sourceMapping.*$/m,
+          '',
+        );
         url = this.emitFile({
           name: path.basename(resolvedPath),
           type: 'asset',
-          source: content,
+          source: contentWithoutSourceMap,
         });
       }
     },

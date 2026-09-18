@@ -9,6 +9,7 @@ import CodeIcon from '@mui/icons-material/Code';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ContrastIcon from '@mui/icons-material/Contrast';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import DataObjectIcon from '@mui/icons-material/DataObject';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
@@ -26,12 +27,13 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useRootStore } from '../../RootStoreProvider';
+import SlideInPanel from '../../dialog/SlideInPanel';
 import getLogger from '../../utils/getLogger';
+import useShiftKey from '../../utils/useShiftKey';
 import type GraphStore from '../GraphStore';
-import SlideInPanel from '../SlideInPanel';
 
 import exportDiagram from './exportDiagram';
 
@@ -108,7 +110,7 @@ function ExportPanel({
   dialog: boolean;
 }): React.ReactElement {
   const { exportSettingsStore } = useRootStore();
-  const [shiftDown, setShiftDown] = useState(false);
+  const shiftDown = useShiftKey();
 
   const icon = useCallback(
     (show: boolean) =>
@@ -116,10 +118,10 @@ function ExportPanel({
     [dialog],
   );
 
-  const { canCopy, format, plainText } = exportSettingsStore;
+  const { canCopy, canEdit, format, plainText } = exportSettingsStore;
   const emptyGraph = graph.semantics.nodes.length === 0;
-  const disabled = emptyGraph || (plainText && !graph.hasSource);
-  const shouldEdit = plainText && shiftDown && !disabled;
+  const disabled = emptyGraph || (canEdit && !graph.hasSource);
+  const shouldEdit = canEdit && shiftDown && !disabled;
   const buttons = useCallback(
     (close: () => void) => (
       <>
@@ -137,7 +139,7 @@ function ExportPanel({
         >
           Download
         </Button>
-        {('write' in navigator.clipboard || plainText) && canCopy && (
+        {(plainText || 'write' in navigator.clipboard) && canCopy && (
           <Button
             color="inherit"
             startIcon={shouldEdit ? <EditIcon /> : <ContentCopyIcon />}
@@ -179,21 +181,6 @@ function ExportPanel({
       icon={icon}
       iconLabel="Export"
       buttons={buttons}
-      onKeyDown={({ key }) => {
-        if (key === 'Shift') {
-          setShiftDown(true);
-        }
-      }}
-      onKeyUp={({ key }) => {
-        if (key === 'Shift') {
-          setShiftDown(false);
-        }
-      }}
-      onMouseMove={({ shiftKey }) => {
-        if (shiftKey !== shiftDown) {
-          setShiftDown(shiftKey);
-        }
-      }}
     >
       <Stack
         direction="row"
@@ -222,6 +209,9 @@ function ExportPanel({
           </MenuItem>
           <MenuItem value="refinery">
             <CodeIcon fontSize="small" /> Refinery
+          </MenuItem>
+          <MenuItem value="json">
+            <DataObjectIcon fontSize="small" /> JSON
           </MenuItem>
         </RoundedSelect>
         {exportSettingsStore.canSetTheme && (

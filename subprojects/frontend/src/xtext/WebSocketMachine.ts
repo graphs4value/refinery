@@ -179,7 +179,7 @@ export default class WebSocketMachine {
     return this.state.name === 'connected';
   }
 
-  get disconnectedByUser(): boolean {
+  get disconnected(): boolean {
     return this.state.name === 'disconnected';
   }
 

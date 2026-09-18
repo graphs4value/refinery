@@ -9,10 +9,7 @@ import com.beust.jcommander.JCommander;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.refinery.generator.cli.commands.CheckCommand;
-import tools.refinery.generator.cli.commands.Command;
-import tools.refinery.generator.cli.commands.ConcretizeCommand;
-import tools.refinery.generator.cli.commands.GenerateCommand;
+import tools.refinery.generator.cli.commands.*;
 import tools.refinery.generator.standalone.StandaloneRefinery;
 
 import java.io.IOException;
@@ -33,7 +30,19 @@ public class RefineryCli {
 	@Inject
 	private GenerateCommand generateCommand;
 
+	@Inject
+	private RenderCommand renderCommand;
+
+	@Inject
+	private SemanticsCommand semanticsCommand;
+
+	private boolean showGraphicalOutput;
 	private JCommander jCommander;
+
+	public void setShowGraphicalOutput(boolean showGraphicalOutput) {
+		this.showGraphicalOutput = showGraphicalOutput;
+		jCommander = null;
+	}
 
 	public int run(String[] args) {
 		Command command = null;
@@ -56,13 +65,23 @@ public class RefineryCli {
 
 	private JCommander getjCommander() {
 		if (jCommander == null) {
-			jCommander = JCommander.newBuilder()
+			var builder = JCommander.newBuilder()
 					.programName("refinery")
 					.addObject(this)
-					.addCommand("generate", generateCommand, "g")
-					.addCommand("check", checkCommand)
-					.addCommand("concretize", concretizeCommand)
-					.build();
+					.addCommand("check", checkCommand, "v")
+					.addCommand("concretize", concretizeCommand, "c")
+					.addCommand("generate", generateCommand, "g");
+			if (showGraphicalOutput) {
+				builder.addCommand("render", renderCommand, "r");
+			}
+			builder.addCommand("semantics", semanticsCommand, "s");
+			jCommander = builder.build();
+			var usageFormatter = new RefineryUsageFormatter(jCommander, showGraphicalOutput);
+			jCommander.setUsageFormatter(usageFormatter);
+			for (var command : jCommander.getCommands().values()) {
+				var commandUsageFormatter = new RefineryUsageFormatter(command, showGraphicalOutput);
+				command.setUsageFormatter(commandUsageFormatter);
+			}
 		}
 		return jCommander;
 	}
@@ -91,12 +110,14 @@ public class RefineryCli {
 	public static void main(String[] args) {
 		int exitValue = EXIT_FAILURE;
 		RefineryCli cli = null;
+		boolean showGraphicalOutput = "1".equals(System.getenv("REFINERY_SHOW_GRAPHICAL_OUTPUT"));
 		try {
 			cli = StandaloneRefinery.getInjector().getInstance(RefineryCli.class);
 		} catch (RuntimeException e) {
 			LOGGER.error("Initialization error", e);
 		}
 		if (cli != null) {
+			cli.setShowGraphicalOutput(showGraphicalOutput);
 			exitValue = cli.run(args);
 		}
 		System.exit(exitValue);

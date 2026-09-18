@@ -15,9 +15,13 @@ plugins {
 
 val libs = the<LibrariesForLibs>()
 
+val distTarConfiguration = configurations.create("distTar") {
+	isCanBeConsumed = true
+	isCanBeResolved = false
+}
+
 dependencies {
-	runtimeOnly(libs.logback.core)
-	runtimeOnly(libs.logback.classic)
+	runtimeOnly(project(":refinery-logging"))
 	implementation(libs.slf4j.log4j)
 	implementation(enforcedPlatform(project(":refinery-bom-dependencies")))
 }
@@ -28,4 +32,10 @@ application {
 
 tasks.distZip {
 	enabled = false
+}
+
+artifacts {
+	add("distTar", layout.buildDirectory.file("distributions/${name}-${version}.tar")) {
+		builtBy(tasks.distTar)
+	}
 }

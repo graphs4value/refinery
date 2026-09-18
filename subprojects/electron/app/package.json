@@ -1,0 +1,23 @@
+{
+  "//": [
+    "SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>",
+    "",
+    "SPDX-License-Identifier: EPL-2.0"
+  ],
+  "name": "refinery",
+  "desktopName": "tools.refinery.Refinery",
+  "version": "0.3.1-snapshot",
+  "description": "Refinery Desktop application",
+  "private": true,
+  "main": "index.cjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphs4value/refinery.git"
+  },
+  "author": "The Refinery Authors <https://refinery.tools/>",
+  "license": "EPL-2.0",
+  "bugs": {
+    "url": "https://github.com/graphs4value/refinery/issues"
+  },
+  "homepage": "https://refinery.tools"
+}

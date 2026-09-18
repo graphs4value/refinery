@@ -46,10 +46,10 @@ public class ImportAdapter extends AdapterImpl {
 
 	static {
 		var pathEnv = System.getenv("REFINERY_LIBRARY_PATH");
-		if (pathEnv == null) {
+		if (pathEnv == null || pathEnv.isBlank()) {
 			DEFAULT_PATHS = List.of();
 		} else {
-			DEFAULT_PATHS = Splitter.on(File.pathSeparatorChar)
+			DEFAULT_PATHS = Splitter.on(File.pathSeparatorChar).omitEmptyStrings()
 					.splitToStream(pathEnv)
 					.map(pathString -> Path.of(pathString).toAbsolutePath().normalize())
 					.toList();

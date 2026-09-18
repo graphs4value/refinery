@@ -11,6 +11,7 @@ package tools.refinery.language.web;
 
 import jakarta.servlet.DispatcherType;
 import org.eclipse.jetty.ee10.servlet.DefaultServlet;
+import org.eclipse.jetty.ee10.servlet.FilterHolder;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
@@ -68,7 +69,7 @@ public class ServerLauncher {
 	private final Server server;
 
 	public ServerLauncher(InetSocketAddress bindAddress, String[] allowedOrigins, String apiBase,
-                          String webSocketUrl, String chatBase) {
+	                      String webSocketUrl, String chatBase) {
 		server = new Server(bindAddress);
 		((QueuedThreadPool) server.getThreadPool()).setName("jetty");
 		var handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
@@ -83,8 +84,8 @@ public class ServerLauncher {
 			handler.setWelcomeFiles(new String[]{"index.html"});
 			addDefaultServlet(handler);
 		}
-		handler.addFilter(CacheControlFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-		handler.addFilter(SecurityHeadersFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+		addCacheControlFilter(handler);
+		addSecurityHeadersFilter(handler, allowedOrigins);
 		server.setHandler(handler);
 	}
 
@@ -137,7 +138,7 @@ public class ServerLauncher {
 	}
 
 	private void addBackendConfigServlet(ServletContextHandler handler, String apiBase, String webSocketUrl,
-										 String chatBase) {
+	                                     String chatBase) {
 		var backendConfigServletHolder = new ServletHolder(BackendConfigServlet.class);
 		backendConfigServletHolder.setInitParameter(BackendConfigServlet.API_BASE_INIT_PARAM, apiBase);
 		backendConfigServletHolder.setInitParameter(BackendConfigServlet.WEBSOCKET_URL_INIT_PARAM, webSocketUrl);
@@ -156,9 +157,22 @@ public class ServerLauncher {
 		// Avoid file locking on Windows: https://stackoverflow.com/a/4985717
 		// See also the related Jetty ticket:
 		// https://github.com/eclipse/jetty.project/issues/2925
-		defaultServletHolder.setInitParameter("useFileMappedBuffer", isWindows ? "false" : "true");
+		defaultServletHolder.setInitParameter("useFileMappedBuffer", Boolean.toString(!isWindows));
 		defaultServletHolder.setInitParameter("precompressed", "br=.br,gzip=.gz");
 		handler.addServlet(defaultServletHolder, "/");
+	}
+
+	private void addCacheControlFilter(ServletContextHandler handler) {
+		handler.addFilter(CacheControlFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+	}
+
+	private void addSecurityHeadersFilter(ServletContextHandler handler, String[] allowedOrigins) {
+		var filterHolder = new FilterHolder(SecurityHeadersFilter.class);
+		if (allowedOrigins != null) {
+			var allowedOriginsString = String.join(SecurityHeadersFilter.ALLOWED_ORIGINS_SEPARATOR, allowedOrigins);
+			filterHolder.setInitParameter(SecurityHeadersFilter.ALLOWED_ORIGINS_INIT_PARAM, allowedOriginsString);
+		}
+		handler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
 	}
 
 	private Resource getBaseResource() {

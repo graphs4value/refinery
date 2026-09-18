@@ -39,8 +39,8 @@ public class ProblemLinkingService extends DefaultLinkingService {
 		if (crossRefString == null || crossRefString.isEmpty()) {
 			return List.of();
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("before getLinkedObjects: node: '%s'".formatted(crossRefString));
+		if (logger.isTraceEnabled()) {
+			logger.trace("before getLinkedObjects: node: '%s'".formatted(crossRefString));
 		}
 		final IScope scope = getScope(context, ref);
 		if (scope == null) {
@@ -55,23 +55,23 @@ public class ProblemLinkingService extends DefaultLinkingService {
 			return List.of();
 		}
 		final Iterator<IEObjectDescription> iterator = scope.getElements(qualifiedLinkName).iterator();
-		StringBuilder debug = null;
+		StringBuilder trace = null;
 		final Set<EObject> result = new LinkedHashSet<>();
-		if (logger.isDebugEnabled()) {
-			debug = new StringBuilder()
+		if (logger.isTraceEnabled()) {
+			trace = new StringBuilder()
 					.append("after getLinkedObjects: node: '")
 					.append(crossRefString)
 					.append("' result: ");
 		}
 		while (iterator.hasNext()) {
 			var eObjectDescription = iterator.next();
-			if (debug != null) {
-				debug.append(eObjectDescription).append(", ");
+			if (trace != null) {
+				trace.append(eObjectDescription).append(", ");
 			}
 			result.add(eObjectDescription.getEObjectOrProxy());
 		}
-		if (debug != null) {
-			logger.debug(debug);
+		if (trace != null) {
+			logger.trace(trace);
 		}
 		return List.copyOf(result);
 	}

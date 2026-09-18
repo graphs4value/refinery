@@ -5,6 +5,7 @@
  */
 
 import CloseIcon from '@mui/icons-material/Close';
+import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -22,6 +23,7 @@ import GraphPane from './graph/GraphPane';
 import type GraphStore from './graph/GraphStore';
 import TablePane from './table/TablePane';
 import type ThemeStore from './theme/ThemeStore';
+import useShiftKey from './utils/useShiftKey';
 
 const SplitGraphPane = observer(function SplitGraphPane({
   graph,
@@ -125,6 +127,7 @@ function ModelWorkArea({
   touchesTop: boolean;
 }): React.ReactElement {
   const { editorStore, themeStore } = useRootStore();
+  const shiftDown = useShiftKey();
 
   if (editorStore === undefined) {
     return <Loading />;
@@ -197,14 +200,20 @@ function ModelWorkArea({
           {generatedModelTabs}
         </Tabs>
         <IconButton
-          aria-label="Close generated model"
-          onClick={() =>
-            editorStore.deleteGeneratedModel(selectedGeneratedModel)
+          aria-label={
+            shiftDown ? 'Close all generated models' : 'Close generated model'
           }
-          disabled={selectedIndex === 0}
+          onClick={() => {
+            if (shiftDown) {
+              editorStore.deleteAllGeneratedModels();
+            } else {
+              editorStore.deleteGeneratedModel(selectedGeneratedModel);
+            }
+          }}
+          disabled={!shiftDown && selectedIndex === 0}
           sx={{ mx: 1 }}
         >
-          <CloseIcon fontSize="small" />
+          {shiftDown ? <PlaylistRemoveIcon /> : <CloseIcon />}
         </IconButton>
       </Stack>
       <Stack

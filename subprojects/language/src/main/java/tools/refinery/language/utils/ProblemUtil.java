@@ -14,7 +14,7 @@ import tools.refinery.language.model.problem.*;
 
 public final class ProblemUtil {
 	public static final String MODULE_EXTENSION = "refinery";
-	public static final int UNKNOWN_STATIC_ARITY = -1;
+	public static final int REFERENCE_OR_ATTRIBUTE = -1;
 
 	private ProblemUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");
@@ -242,7 +242,7 @@ public final class ProblemUtil {
 			case ClassDeclaration ignoredClassDeclaration -> 1;
 			case EnumDeclaration ignoredEnumDeclaration -> 1;
 			case DatatypeDeclaration ignoredDatatypeDeclaration -> 1;
-			case ReferenceDeclaration ignoredReferenceDeclaration -> UNKNOWN_STATIC_ARITY;
+			case ReferenceDeclaration ignoredReferenceDeclaration -> REFERENCE_OR_ATTRIBUTE;
 			case ParametricDefinition parametricDefinition -> parametricDefinition.getParameters().size();
 			default -> throw new IllegalArgumentException("Unknown Relation: " + relation);
 		};

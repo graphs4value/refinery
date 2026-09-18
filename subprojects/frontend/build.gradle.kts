@@ -4,91 +4,54 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
-import tools.refinery.gradle.utils.SonarPropertiesUtils
-
 plugins {
 	id("tools.refinery.gradle.frontend-workspace")
-	id("tools.refinery.gradle.sonarqube")
-}
-
-frontend {
-	assembleScript.set("run build")
 }
 
 val viteOutputDir = layout.buildDirectory.dir("vite")
 
 val productionResources: Provider<Directory> = viteOutputDir.map { it.dir("production") }
 
-val productionAssets: Configuration by configurations.creating {
+val productionAssets = configurations.create("productionAssets") {
 	isCanBeConsumed = true
 	isCanBeResolved = false
 }
 
-val sources: FileCollection = fileTree("src") + fileTree("types")
+val types: FileCollection = fileTree("types")
 
-val installationState: FileCollection = files(
-	rootProject.file("yarn.lock"),
-	rootProject.file("package.json"),
-	"package.json",
-)
-
-val assembleConfigFiles: FileCollection = installationState + files(
-	rootProject.file("tsconfig.base.json"),
-	"tsconfig.json",
+val assembleConfigFiles: FileCollection = files(
 	"tsconfig.node.json",
 	"tsconfig.shared.json",
 	"vite.config.ts",
 ) + fileTree("config")
 
-val assembleSources: FileCollection = sources + fileTree("public") + files("index.html")
+val extraAssembleSources: FileCollection = types + fileTree("public") + files("index.html")
 
-val assembleFiles: FileCollection = assembleSources + assembleConfigFiles
+val assembleFiles: FileCollection = extraAssembleSources + assembleConfigFiles
 
-val lintingFiles: FileCollection = sources + assembleConfigFiles + files(
-	rootProject.file(".eslintrc.cjs"),
-	rootProject.file("prettier.config.cjs"),
-)
+val lintingFiles: FileCollection = types + assembleConfigFiles
+
+dependencies {
+	frontendImplementation(project(":refinery-client-js", "productionAssets"))
+	typeCheckTypes(project(":refinery-client-js", "typings"))
+}
 
 tasks {
 	assembleFrontend {
-		dependsOn(rootProject.project("refinery-client-js").tasks.named("assembleFrontend"))
 		inputs.files(assembleFiles)
 		outputs.dir(productionResources)
 	}
 
-	val typeCheckFrontend by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		dependsOn(rootProject.project("refinery-client-js").tasks.named("typeCheckFrontend"))
+	typeCheckFrontend {
 		inputs.files(lintingFiles)
-		outputs.dir(layout.buildDirectory.dir("typescript"))
-		args.set("run typecheck")
-		group = "verification"
-		description = "Check for TypeScript type errors."
 	}
 
-	val lintFrontend by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		dependsOn(typeCheckFrontend)
+	lintFrontend {
 		inputs.files(lintingFiles)
-		outputs.file(layout.buildDirectory.file("eslint.json"))
-		args.set("run lint")
-		group = "verification"
-		description = "Check for TypeScript lint errors and warnings."
 	}
 
-	register<RunYarnTaskType>("fixFrontend") {
-		dependsOn(installFrontend)
-		dependsOn(typeCheckFrontend)
+	fixFrontend {
 		inputs.files(lintingFiles)
-		args.set("run lint:fix")
-		group = "verification"
-		description = "Fix TypeScript lint errors and warnings."
-	}
-
-	check {
-		dependsOn(typeCheckFrontend)
-		dependsOn(lintFrontend)
 	}
 
 	clean {
@@ -100,10 +63,4 @@ artifacts {
 	add("productionAssets", productionResources) {
 		builtBy(tasks.assembleFrontend)
 	}
-}
-
-sonarqube.properties {
-	SonarPropertiesUtils.addToList(properties, "sonar.sources", "src")
-	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
-	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
 }

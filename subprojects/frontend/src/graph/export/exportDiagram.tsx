@@ -32,6 +32,7 @@ import type ExportSettingsStore from './ExportSettingsStore';
 const PROLOG = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
 const PNG_CONTENT_TYPE = 'image/png';
 const SVG_CONTENT_TYPE = 'image/svg+xml';
+const JSON_CONTENT_TYPE = 'application/json';
 const EXPORT_ID = 'export-image';
 
 function fixIDs(id: string, svgDocument: XMLDocument) {
@@ -130,6 +131,38 @@ async function fetchFontCSS(): Promise<string> {
   src: url(${italicDataURL}) format('woff2');
 }`;
   return fontCSS;
+}
+
+let openSansFontFacesReady: Promise<void> | undefined;
+
+// `svg2pdf` (used by `serializePDF`) measures text with a scratch
+// `<canvas>`/hidden `<svg>` of its own against the live `document`, not
+// `copyOfSVG` (which is never attached to the page, so its own `<style>`
+// with `fontsCSS` is inert as far as the browser's font resolution is
+// concerned). Unless 'Open Sans' is actually loaded here, that measurement
+// silently falls back to the system's default sans-serif font while the PDF
+// still embeds the real glyphs, drifting long labels out of position.
+function loadOpenSansFontFaces(): Promise<void> {
+  openSansFontFacesReady ??= Promise.all(
+    [
+      new FontFace('Open Sans', `url(${normalFontURL})`, {
+        weight: '400',
+        style: 'normal',
+      }),
+      new FontFace('Open Sans', `url(${boldFontURL})`, {
+        weight: '700',
+        style: 'normal',
+      }),
+      new FontFace('Open Sans', `url(${italicFontURL})`, {
+        weight: '400',
+        style: 'italic',
+      }),
+    ].map(async (face) => {
+      await face.load();
+      document.fonts.add(face);
+    }),
+  ).then(() => undefined);
+  return openSansFontFacesReady;
 }
 
 async function fetchVariableFontCSS(): Promise<string> {
@@ -359,6 +392,9 @@ async function exportRefinery(
   mode: 'download' | 'copy' | 'edit',
 ): Promise<void> {
   if (mode === 'edit') {
+    if (!graphStore.editorStore) {
+      throw new Error("Can't edit graph without editor");
+    }
     graphStore.editorStore.dispatch({
       changes: [
         {
@@ -381,14 +417,41 @@ async function exportRefinery(
   }
 }
 
-export default async function exportDiagram(
+async function exportJSON(
+  graphStore: GraphStore,
+  mode: 'download' | 'copy' | 'edit',
+): Promise<void> {
+  const semantics = { ...graphStore.semantics };
+  delete semantics.source;
+  const text = JSON.stringify(semantics);
+  if (mode === 'copy') {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  if (mode === 'edit') {
+    throw new Error("Can't open JSON output in the code editor");
+  }
+  const blob = new Blob([text], { type: JSON_CONTENT_TYPE });
+  await saveBlob(blob, `${graphStore.name}.json`, {
+    id: EXPORT_ID,
+    types: [
+      {
+        description: 'JSON files',
+        accept: {
+          [JSON_CONTENT_TYPE]: ['.json'],
+        },
+      },
+    ],
+  });
+}
+
+export async function exportBlob(
   svgContainer: HTMLElement | undefined,
   graph: GraphStore,
   settings: ExportSettingsStore,
-  mode: 'download' | 'copy' | 'edit',
-): Promise<void> {
-  if (settings.format === 'refinery') {
-    return exportRefinery(graph, mode);
+): Promise<Blob | undefined> {
+  if (settings.format === 'refinery' || settings.format === 'json') {
+    throw new Error("Can't export text as binary");
   }
 
   const svg = svgContainer?.querySelector('svg');
@@ -461,9 +524,39 @@ export default async function exportDiagram(
   );
 
   if (settings.format === 'pdf') {
+    if (settings.embedFonts) {
+      await loadOpenSansFontFaces();
+    }
     fixTextBaseline(svg, copyOfSVG);
-    const pdf = await serializePDF(copyOfSVG, settings);
-    await saveBlob(pdf, `${graph.name}.pdf`, {
+    return serializePDF(copyOfSVG, settings);
+  }
+  const serializedSVG = serializeSVG(svgDocument);
+  if (settings.format === 'png') {
+    return serializePNG(serializedSVG, svg, settings, theme);
+  }
+  return serializedSVG;
+}
+
+export default async function exportDiagram(
+  svgContainer: HTMLElement | undefined,
+  graph: GraphStore,
+  settings: ExportSettingsStore,
+  mode: 'download' | 'copy' | 'edit',
+): Promise<void> {
+  if (settings.format === 'refinery') {
+    return exportRefinery(graph, mode);
+  }
+  if (settings.format === 'json') {
+    return exportJSON(graph, mode);
+  }
+
+  const blob = await exportBlob(svgContainer, graph, settings);
+  if (blob === undefined) {
+    return;
+  }
+
+  if (settings.format === 'pdf') {
+    await saveBlob(blob, `${graph.name}.pdf`, {
       id: EXPORT_ID,
       types: [
         {
@@ -476,13 +569,11 @@ export default async function exportDiagram(
     });
     return;
   }
-  const serializedSVG = serializeSVG(svgDocument);
   if (settings.format === 'png') {
-    const png = await serializePNG(serializedSVG, svg, settings, theme);
     if (mode === 'copy') {
-      await copyBlob(png);
+      await copyBlob(blob);
     } else {
-      await saveBlob(png, `${graph.name}.png`, {
+      await saveBlob(blob, `${graph.name}.png`, {
         id: EXPORT_ID,
         types: [
           {
@@ -495,9 +586,9 @@ export default async function exportDiagram(
       });
     }
   } else if (mode === 'copy') {
-    await copyBlob(serializedSVG);
+    await copyBlob(blob);
   } else {
-    await saveBlob(serializedSVG, `${graph.name}.svg`, {
+    await saveBlob(blob, `${graph.name}.svg`, {
       id: EXPORT_ID,
       types: [
         {

@@ -1,0 +1,23 @@
+/*
+ * SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2025"],
+    "types": ["node"],
+    "emitDeclarationOnly": true,
+    "rootDir": "..",
+    "outDir": "build/typescript",
+    "paths": {
+      "@tools.refinery/frontend/*": ["../frontend/src/*"]
+    }
+  },
+  "include": ["."],
+  "exclude": ["build"],
+  "references": [
+    { "path": "../frontend/tsconfig.shared.json" }
+  ]
+}

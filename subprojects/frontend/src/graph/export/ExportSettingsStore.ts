@@ -6,7 +6,7 @@
 
 import { makeAutoObservable } from 'mobx';
 
-const validFormats = ['svg', 'pdf', 'png', 'refinery'] as const;
+const validFormats = ['svg', 'pdf', 'png', 'refinery', 'json'] as const;
 const validStaticThemes = ['light', 'dark'] as const;
 const validThemes = [...validStaticThemes, 'dynamic'] as const;
 
@@ -52,8 +52,16 @@ export default class ExportSettingsStore {
     this._transparent = !this._transparent;
   }
 
+  setTransparent(transparent: boolean): void {
+    this._transparent = transparent;
+  }
+
   toggleEmbedFonts(): void {
     this.embedFonts = !this.embedFonts;
+  }
+
+  setEmbedFonts(embedFonts: boolean): void {
+    this.embedFonts = embedFonts;
   }
 
   setScale(scale: number): void {
@@ -110,6 +118,10 @@ export default class ExportSettingsStore {
   }
 
   get plainText(): boolean {
+    return this.format === 'refinery' || this.format === 'json';
+  }
+
+  get canEdit(): boolean {
     return this.format === 'refinery';
   }
 }

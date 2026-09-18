@@ -109,13 +109,14 @@ abstract class GenerateVersionsFileTask : DefaultTask() {
 	}
 }
 
-val generateVersionsFile by tasks.registering(GenerateVersionsFileTask::class) {
+val generateVersionsFile = tasks.register<GenerateVersionsFileTask>("generateVersionsFile") {
 	outputs.dir(generatedSourcesDir)
 	outputFile = generatedSourceFile
 	refineryVersion = version.toString()
 	useMavenLocal = false
 	javaLanguageVersion = java.toolchain.languageVersion.map { it.asInt() }
 	guiceVersion = libs.versions.guice
+	description = "Generate source file with dependency versions"
 }
 
 gradle.taskGraph.whenReady {

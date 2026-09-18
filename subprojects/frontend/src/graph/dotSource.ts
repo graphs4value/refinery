@@ -13,7 +13,12 @@ import type {
 
 import type GraphStore from './GraphStore';
 import obfuscateColor from './obfuscateColor';
-import { binarySearch, extractValue, extractValueColor } from './valueUtils';
+import {
+  binarySearch,
+  extractConcreteValue,
+  extractValue,
+  extractValueColor,
+} from './valueUtils';
 
 const EDGE_WEIGHT = 1;
 const CONTAINMENT_WEIGHT = 5;
@@ -96,7 +101,10 @@ function computeNodeData(graph: GraphStore): NodeData[] {
     const interpretation = partialInterpretation[relation.name] ?? [];
     interpretation.forEach((tuple) => {
       const value = tuple[arity];
-      if (visibility !== 'all' && extractValueColor(value) === 'unknown') {
+      if (
+        visibility !== 'all' &&
+        extractValueColor(value, false) === 'unknown'
+      ) {
         return;
       }
       for (let i = 0; i < arity; i += 1) {
@@ -194,7 +202,7 @@ function setLabelWidth(
       measureDiv.style.lineHeight = String(14 / 12);
       measureDiv.style.fontOpticalSizing = 'none';
       measureDiv.style.letterSpacing = '0';
-      measureDiv.style.textRendering = 'geometricPreicision';
+      measureDiv.style.textRendering = 'geometricPrecision';
       measureDiv.ariaHidden = 'true';
       document.body.appendChild(measureDiv);
     }
@@ -218,6 +226,7 @@ function createNodes(
   sizeCache: SizeCache,
 ): void {
   const {
+    concretize,
     semantics: { nodes },
     scopes,
     showNonExistent,
@@ -234,8 +243,8 @@ function createNodes(
     }
     const classList = [
       `node-${node.kind}`,
-      `node-exists-${data.exists}`,
-      `node-equalsSelf-${data.equalsSelf}`,
+      `node-exists-${extractConcreteValue(data.exists, concretize)}`,
+      `node-equalsSelf-${extractConcreteValue(data.equalsSelf, concretize)}`,
     ];
     if (data.unaryPredicates.size === 0) {
       classList.push('node-empty');
@@ -258,6 +267,7 @@ function createNodes(
       data.unaryPredicates.forEach((value, relation) => {
         const encodedRelationName = `${encodedNodeName},${encodeName(relation.name)}`;
         if (relation.dataType === undefined) {
+          value = extractConcreteValue(value, concretize);
           const relationLabel = setLabelWidth(
             relationName(graph, relation),
             'left',
@@ -278,7 +288,7 @@ function createNodes(
           }
           const attributeName = graph.getName(relation);
           const attributeLabel = `${attributeName}: ${escape(valueString)}`;
-          const color = extractValueColor(value);
+          const color = extractValueColor(value, concretize);
           lines.push(
             `<tr>
                 <td><img src="#attribute-${color}"/></td>
@@ -299,6 +309,7 @@ function getEdgeLabel(
   containment: boolean,
   value: string,
   sizeCache: SizeCache,
+  concretize: boolean,
 ): string {
   const label = setLabelWidth(
     containment ? `<b>${name}</b>` : name,
@@ -309,11 +320,12 @@ function getEdgeLabel(
   if (value !== 'error') {
     return `<${label}>`;
   }
+  value = extractConcreteValue(value, concretize);
   // No need to set an id for the image for animation,
   // because it will be the only `<use>` element in its group.
   return `<<table align="left" border="0" cellborder="0" cellspacing="0" cellpadding="0">
     <tr>
-      <td><img src="#error"/></td>
+      <td><img src="#${value}"/></td>
       <td width="3.9375"></td>
       <td align="left">${label}</td>
     </tr>
@@ -329,6 +341,7 @@ function createRelationEdges(
   sizeCache: SizeCache,
 ): void {
   const {
+    concretize,
     semantics: { nodes, partialInterpretation },
     showNonExistent,
   } = graph;
@@ -410,7 +423,7 @@ function createRelationEdges(
     const encodedFrom = encodeName(fromNode.name);
     const encodedTo = encodeName(toNode.name);
     const id = `${encodedFrom},${encodedTo},${encodedRelation}`;
-    const label = getEdgeLabel(name, containment, value, sizeCache);
+    const label = getEdgeLabel(name, containment, value, sizeCache, concretize);
     lines.push(`n${from} -> n${to} [
       id="${id}",
       dir="${dir}",
@@ -420,7 +433,7 @@ function createRelationEdges(
       penwidth=${penwidth},
       arrowsize=${penwidth >= 2 ? 0.875 : 1},
       style="${isUnknown ? 'dashed' : 'solid'}",
-      class="edge-${value}"
+      class="edge-${extractConcreteValue(value, concretize)}"
     ]`);
   });
 }

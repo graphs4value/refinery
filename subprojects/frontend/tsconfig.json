@@ -26,6 +26,7 @@
     "types"
   ],
   "exclude": [
+    "src/RefineryContextBridge.ts",
     "src/xtext/BackendConfig.ts",
     "types/node"
   ],

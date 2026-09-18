@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
 	implementation(pluginLibs.frontend)
+	implementation(pluginLibs.jlink)
 	implementation(pluginLibs.pluginPublish)
 	implementation(pluginLibs.shadow)
 	implementation(pluginLibs.sonarqube)

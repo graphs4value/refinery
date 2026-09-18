@@ -1,0 +1,12 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Person {
+    Person[] friends opposite friendOf
+    Person[] friendOf opposite friends
+}
+
+Person(alice).
+Person(bob).
+friends(alice, bob).

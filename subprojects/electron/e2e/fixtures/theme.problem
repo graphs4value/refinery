@@ -1,0 +1,38 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::view.
+
+@color(0)
+class A.
+
+@color(1)
+class B.
+
+@color(2)
+class C.
+
+@color(3)
+class D.
+
+@color(4)
+class E.
+
+@color(5)
+class F.
+
+@color(6)
+class G.
+
+@color(7)
+class H.
+
+@color(8)
+class I.
+
+@color(9)
+class J.
+
+@color(hex = "#038a99")
+class K.

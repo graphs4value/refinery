@@ -5,6 +5,7 @@
 [versions]
 frontend = "10.0.0"
 httpclient = "5.6.2"
+jlink = "2.0.1"
 pluginPublish = "2.1.1"
 shadow = "9.6.0"
 sonarqube = "7.3.1.8318"
@@ -13,6 +14,7 @@ versions = "0.54.0"
 [libraries]
 frontend = { group = "org.siouan", name = "frontend-jdk21", version.ref = "frontend" }
 httpclient = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "httpclient" }
+jlink = { group = "org.panteleyev.jlinkplugin", name = "org.panteleyev.jlinkplugin.gradle.plugin", version.ref = "jlink" }
 pluginPublish = { group = "com.gradle.publish", name = "plugin-publish-plugin", version.ref = "pluginPublish" }
 shadow = { group = "com.gradleup.shadow", name = "shadow-gradle-plugin", version.ref = "shadow" }
 sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version.ref = "sonarqube" }

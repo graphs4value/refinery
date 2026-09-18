@@ -4,26 +4,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import com.sun.tools.javac.resources.compiler
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
 import tools.refinery.gradle.internal.JavaBasicLibraryPlugin
-import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
 	id("tools.refinery.gradle.frontend-workspace")
-	id("tools.refinery.gradle.sonarqube")
 }
 
-frontend {
-	assembleScript.set("run build")
-}
-
-val javadocs: Configuration by configurations.creating {
+val javadocs: Configuration = configurations.create("javadocs") {
 	isCanBeConsumed = false
 	isCanBeResolved = true
 }
 
-val releasedJavadocs: Configuration by configurations.creating {
+val releasedJavadocs: Configuration = configurations.create("releasedJavadocs") {
 	isCanBeConsumed = false
 	isCanBeResolved = true
 }
@@ -48,22 +40,12 @@ dependencies {
 	releasedJavadocs("tools.refinery:refinery-gradle-plugins:$releasedVersion:javadoc@jar")
 }
 
-val srcDir = "src"
 val docusaurusOutputDir = layout.buildDirectory.dir("docusaurus")
 val javadocsDir = layout.buildDirectory.dir("javadocs")
 
 val configFiles: FileCollection = files(
-	rootProject.file("yarn.lock"),
-	rootProject.file("package.json"),
-	"package.json",
-	rootProject.file("tsconfig.base.json"),
-	"tsconfig.json",
 	"babel.config.config.ts",
 	"docusaurus.config.ts",
-)
-
-val lintConfigFiles: FileCollection = configFiles + files(
-	rootProject.file(".eslintrc.cjs"), rootProject.file("prettier.config.cjs")
 )
 
 abstract class ExtractJavadocTask : DefaultTask() {
@@ -111,71 +93,42 @@ fun resolveJavadocs(configuration: Configuration): Provider<Map<String, File>> {
 }
 
 tasks {
-	val extractJavadocs by registering(ExtractJavadocTask::class) {
+	val extractJavadocs = register<ExtractJavadocTask>("extractJavadocs") {
 		dependsOn(javadocs)
 		targetDir = javadocsDir.map { it.dir("snapshot/develop/javadoc") }
 		resolvedJavadocArtifacts = resolveJavadocs(javadocs)
+		description = "Extract Javadoc HTML files"
 	}
 
-	val extractReleasedJavadocs by registering(ExtractJavadocTask::class) {
+	val extractReleasedJavadocs = register<ExtractJavadocTask>("extractReleasedJavadocs") {
 		dependsOn(releasedJavadocs)
 		targetDir = javadocsDir.map { it.dir("develop/javadoc") }
 		resolvedJavadocArtifacts = resolveJavadocs(releasedJavadocs)
+		description = "Extract released Javadoc HTML files"
 	}
 
 	assembleFrontend {
 		dependsOn(extractJavadocs, extractReleasedJavadocs)
-		inputs.dir(srcDir)
 		inputs.dir("static")
 		inputs.dir(javadocsDir)
 		inputs.files(configFiles)
 		outputs.dir(docusaurusOutputDir)
 	}
 
-	val typeCheckFrontend by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		inputs.dir(srcDir)
+	typeCheckFrontend {
 		inputs.files(configFiles)
-		outputs.dir(layout.buildDirectory.dir("typescript"))
-		args.set("run typecheck")
-		group = "verification"
-		description = "Check for TypeScript type errors."
 	}
 
-	val lintFrontend by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		dependsOn(typeCheckFrontend)
-		inputs.dir(srcDir)
-		inputs.files(lintConfigFiles)
-		outputs.file(layout.buildDirectory.file("eslint.json"))
-		args.set("run lint")
-		group = "verification"
-		description = "Check for TypeScript lint errors and warnings."
+	lintFrontend {
+		inputs.files(configFiles)
 	}
 
-	register<RunYarnTaskType>("fixFrontend") {
-		dependsOn(installFrontend)
-		dependsOn(typeCheckFrontend)
-		inputs.dir(srcDir)
-		inputs.files(lintConfigFiles)
-		args.set("run lint:fix")
-		group = "verification"
-		description = "Check for TypeScript lint errors and warnings."
-	}
-
-	check {
-		dependsOn(typeCheckFrontend)
-		dependsOn(lintFrontend)
+	fixFrontend {
+		inputs.files(configFiles)
 	}
 
 	clean {
 		delete(".docusaurus")
 		delete(".yarn")
 	}
-}
-
-sonarqube.properties {
-	SonarPropertiesUtils.addToList(properties, "sonar.sources", srcDir)
-	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
-	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
 }

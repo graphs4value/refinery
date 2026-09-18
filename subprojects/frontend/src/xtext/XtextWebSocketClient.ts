@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -12,6 +12,8 @@ import sjson from 'secure-json-parse';
 import CancelledError from '../utils/CancelledError';
 import PendingTask from '../utils/PendingTask';
 import getLogger from '../utils/getLogger';
+import isElectron from '../utils/isElectron';
+import isLocalBackend from '../utils/isLocalBackend';
 
 import WebSocketMachine from './WebSocketMachine';
 import type { BackendConfigWithDefaults } from './fetchBackendConfig';
@@ -29,18 +31,6 @@ const XTEXT_SUBPROTOCOL_V2 = 'tools.refinery.language.web.xtext.v2';
 const REQUEST_TIMEOUT = ms('5s');
 
 const log = getLogger('xtext.XtextWebSocketClient');
-
-// The browser can report the network as offline (e.g. with Wi-Fi disabled)
-// even though a loopback backend is still perfectly reachable.
-function isLocalBackend(webSocketURL: string): boolean {
-  const { hostname } = new URL(webSocketURL);
-  return (
-    hostname === 'localhost' ||
-    hostname === '::1' ||
-    hostname === '[::1]' ||
-    /^127(\.\d{1,3}){3}$/.test(hostname)
-  );
-}
 
 export type ReconnectHandler = () => void;
 
@@ -136,8 +126,6 @@ export default class XtextWebSocketClient {
     private readonly onDisconnect: DisconnectHandler,
     private readonly onPush: PushHandler,
   ) {
-    const ignoreNetworkStatus =
-      import.meta.env.DEV || isLocalBackend(backendConfig.webSocketURL);
     this.machine = new WebSocketMachine(
       {
         openWebSocket: () => this.openWebSocket(),
@@ -147,7 +135,13 @@ export default class XtextWebSocketClient {
         notifyDisconnect: () => this.onDisconnect(),
         sendPing: () => this.sendPing(),
       },
-      { ignoreNetworkStatus },
+      {
+        disconnectInBackground: !isElectron,
+        ignoreNetworkStatus:
+          import.meta.env.DEV ||
+          isElectron ||
+          isLocalBackend(backendConfig.webSocketURL),
+      },
     );
     makeAutoObservable<
       XtextWebSocketClient,
@@ -195,7 +189,19 @@ export default class XtextWebSocketClient {
         this.machine.setPageFrozen(false),
       );
     }
-    this.machine.connect();
+
+    if ('refinery' in window) {
+      // We're running inside Electron, let's wait for the server to start in the background.
+      window.refinery.onServerStateChange((healthy) => {
+        if (healthy) {
+          this.machine.connect();
+        } else {
+          this.machine.disconnect();
+        }
+      });
+    } else {
+      this.machine.connect();
+    }
   }
 
   get opening(): boolean {
@@ -207,7 +213,9 @@ export default class XtextWebSocketClient {
   }
 
   get disconnectedByUser(): boolean {
-    return this.machine.disconnectedByUser;
+    // There is no disconnect button in the Electron app, we're only disconnected
+    // from the server when we're waiting for it to start.
+    return !isElectron && this.machine.disconnected;
   }
 
   get networkMissing(): boolean {

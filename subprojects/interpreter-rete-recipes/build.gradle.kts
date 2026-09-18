@@ -34,7 +34,7 @@ sourceSets {
 }
 
 tasks {
-	val generateEPackage by registering(JavaExec::class) {
+	val generateEPackage = register<JavaExec>("generateEPackage") {
 		mainClass.set("org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher")
 		classpath(configurations.mwe2)
 		inputs.file("src/main/java/tools/refinery/interpreter/rete/recipes/GenerateReteRecipes.mwe2")
@@ -47,6 +47,7 @@ tasks {
 		outputs.dir("src/main/emf-gen")
 		args("src/main/java/tools/refinery/interpreter/rete/recipes/GenerateReteRecipes.mwe2",
 				"-p", "rootPath=/$projectDir")
+		description = "Generate EMF model source files"
 	}
 
 	for (taskName in listOf("compileJava", "processResources", "generateEclipseSourceFolders", "sourcesJar")) {

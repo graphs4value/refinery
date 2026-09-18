@@ -21,12 +21,14 @@
     "subprojects/chat",
     "subprojects/client-js",
     "subprojects/docs",
+    "subprojects/electron",
     "subprojects/frontend"
   ],
   "scripts": {
     "chat": "yarn workspace @tools.refinery/chat",
     "client": "yarn workspace @tools.refinery/client",
     "docs": "yarn workspace @tools.refinery/docs",
+    "electron": "yarn workspace @tools.refinery/electron",
     "frontend": "yarn workspace @tools.refinery/frontend",
     "typecheck": "yarn run g:tsc -p tsconfig.json",
     "lint": "yarn run g:lint",
@@ -60,7 +62,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "graceful-fs": "^4.2.11",
-    "playwright": "^1.61.1",
+    "playwright": "^1.62.1",
     "prettier": "^3.9.5",
     "smol-toml": "^1.7.0",
     "typescript": "6.0.3"
@@ -70,6 +72,9 @@
       "built": true
     },
     "core-js": {
+      "built": true
+    },
+    "electron-winstaller": {
       "built": true
     },
     "esbuild": {

@@ -66,6 +66,7 @@ export const Tuple = z
 export type Tuple = z.infer<typeof Tuple>;
 
 export const JsonOutput = z.object({
+  concreteness: z.enum(['partial', 'candidate']),
   nodes: NodeMetadata.array(),
   relations: RelationMetadata.array(),
   partialInterpretation: z.record(z.string(), Tuple.array()),

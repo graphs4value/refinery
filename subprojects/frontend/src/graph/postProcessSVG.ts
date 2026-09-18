@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import type { Graphviz } from 'd3-graphviz';
+import type { BaseType } from 'd3-selection';
+
 import { type BBox, parsePolygonBBox, parsePathBBox } from './parseBBox';
 
 export const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -149,6 +152,16 @@ function hrefToClass(node: SVGGElement) {
   });
 }
 
+export function addSVGIcons(
+  renderer: Graphviz<BaseType, unknown, null, undefined>,
+) {
+  ['true', 'unknown', 'error', 'error-concretize'].forEach((icon) => {
+    renderer.addImage(`#${icon}`, 16, 16);
+    renderer.addImage(`#attribute-${icon}`, 16, 16);
+    renderer.addImage(`#string-${icon}`, 16, 16);
+  });
+}
+
 function replaceImages(node: SVGGElement) {
   node.querySelectorAll<SVGImageElement>('image').forEach((image) => {
     const href =
@@ -171,7 +184,7 @@ function replaceImages(node: SVGGElement) {
     use.setAttribute('height', sizeString);
     let iconName = `icon-${href.replace('#', '')}`;
     const iconClass = iconName.replace('attribute-', '');
-    if (iconName.endsWith('-error')) {
+    if (iconName.endsWith('-error') || iconName.endsWith('-error-concretize')) {
       iconName = 'icon-error';
     }
     use.setAttribute('href', `#refinery-${iconName}`);
@@ -234,12 +247,16 @@ export default function postProcessSvg(svg: SVGSVGElement) {
   });
   replaceImages(svg);
   // Increase padding to fit box shadows for multi-objects.
+  const width = svg.viewBox.baseVal.width + 12;
+  const height = svg.viewBox.baseVal.height + 12;
   const viewBox = [
     svg.viewBox.baseVal.x - 6,
     svg.viewBox.baseVal.y - 6,
-    svg.viewBox.baseVal.width + 12,
-    svg.viewBox.baseVal.height + 12,
+    width,
+    height,
   ];
   svg.setAttribute('viewBox', viewBox.join(' '));
+  svg.setAttribute('width', `${width}pt`);
+  svg.setAttribute('height', `${height}pt`);
   markerColorToClass(svg);
 }

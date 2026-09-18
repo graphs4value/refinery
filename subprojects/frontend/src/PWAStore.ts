@@ -10,6 +10,8 @@ import ms from 'ms';
 import { registerSW } from 'virtual:pwa-register';
 
 import getLogger from './utils/getLogger';
+import isElectron from './utils/isElectron';
+import isLocalBackend from './utils/isLocalBackend';
 
 const log = getLogger('PWAStore');
 
@@ -25,7 +27,7 @@ export default class PWAStore {
   private registration: ServiceWorkerRegistration | undefined;
 
   constructor() {
-    if (window.location.host === 'localhost') {
+    if (isElectron || isLocalBackend(window.location.href)) {
       // Do not register service worker during local development.
       this.updateSW = () => Promise.resolve();
     } else {

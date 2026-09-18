@@ -28,11 +28,10 @@ export class WrappedValue {
 
 const Label = styled('div', {
   name: 'ValueRenderer-Label',
-  shouldForwardProp: (prop) => prop !== 'value' && prop !== 'concretize',
+  shouldForwardProp: (prop) => prop !== 'value',
 })<{
-  value: 'true' | 'unknown' | 'error';
-  concretize: boolean;
-}>(({ theme, value, concretize }) => ({
+  value: 'true' | 'unknown' | 'error' | 'error-concretize';
+}>(({ theme, value }) => ({
   display: 'flex',
   alignItems: 'center',
   ...(value === 'unknown'
@@ -42,7 +41,12 @@ const Label = styled('div', {
     : {}),
   ...(value === 'error'
     ? {
-        color: concretize ? theme.palette.info.main : theme.palette.error.main,
+        color: theme.palette.error.main,
+      }
+    : {}),
+  ...(value === 'error-concretize'
+    ? {
+        color: theme.palette.info.main,
       }
     : {}),
   '& svg': {
@@ -59,7 +63,7 @@ export default function ValueRenderer({
   value: WrappedValue | undefined;
   attribute: boolean | undefined;
 }): React.ReactNode {
-  const color = extractValueColor(value?.value);
+  const color = extractValueColor(value?.value, concretize);
   let icon: React.ReactNode;
   switch (color) {
     case 'true':
@@ -72,6 +76,7 @@ export default function ValueRenderer({
       }
       break;
     case 'error':
+    case 'error-concretize':
       icon = <CancelIcon fontSize="small" />;
       break;
     default:
@@ -89,7 +94,7 @@ export default function ValueRenderer({
       break;
   }
   return (
-    <Label concretize={concretize} value={color}>
+    <Label value={color}>
       {icon} {extractValue(value?.value)}
     </Label>
   );

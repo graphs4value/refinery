@@ -52,7 +52,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
-          fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
+          # gitVersion.mjs needs the complete history to calculate the commit
+          # count since the latest tag. This also improves SonarCloud analysis.
+          fetch-depth: 0
+      - name: Fetch upstream release tags
+        if: ${{ github.repository != 'graphs4value/refinery' }}
+        run: git fetch --no-tags https://github.com/graphs4value/refinery.git '+refs/tags/v*:refs/tags/v*'
       - name: Cache Gradle packages
         uses: actions/cache@v5
         with:
@@ -84,16 +89,35 @@ jobs:
           path: |
            .playwright
           key: ${{ matrix.os }}-playwright-${{ hashFiles('yarn.lock') }}
-      - name: Gradle build
+      - name: Install Linux build dependencies
+        if: ${{ matrix.os == env.RUNNER_UBUNTU || matrix.os == env.RUNNER_UBUNTU_ARM }}
         run: |
-          ./gradlew build -Pci --info --stacktrace --max-workers 4 --no-daemon
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libarchive-tools xvfb
+      - name: Gradle build
+        env:
+          # Deterministically exercise the Xvfb fallback in the electron
+          # e2e tests on Linux, instead of relying on the runner happening
+          # not to have a display. Harmless no-op on macOS/Windows.
+          DISPLAY: ''
+          WAYLAND_DISPLAY: ''
+        run: |
+          ./gradlew build -Pci --info --stacktrace --max-workers 2 --no-daemon
+      - name: Upload snapshot diff artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: snapshot-diffs-${{ matrix.os }}
+          path: subprojects/electron/e2e/__diffs__/
+          if-no-files-found: ignore
+          retention-days: 5
       - name: Sonar analyze
         if: ${{ steps.check-secret.outputs.is_SONAR_TOKEN_set }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed by Sonar to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew sonar -Pci --info --stacktrace --no-parallel --no-daemon
+          ./gradlew sonar -Pci --info --stacktrace --max-workers 2 --no-daemon
       - name: Upload application artifacts
         if: ${{ matrix.os == env.RUNNER_UBUNTU }}
         uses: actions/upload-artifact@v7
@@ -102,8 +126,23 @@ jobs:
           path: |
             subprojects/**/build/distributions/*.tar
             subprojects/chat/build/esbuild/production/index.mjs
+            subprojects/frontend/build/vite/production/**/*
           compression-level: 0
           retention-days: 5  # No need to preserve for long, since they are uploaded to GHCR
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.os }}
+          path: |
+            subprojects/electron/build/dist/*.AppImage
+            subprojects/electron/build/dist/*.deb
+            subprojects/electron/build/dist/*.rpm
+            subprojects/electron/build/dist/*.pkg.tar.xz
+            subprojects/electron/build/dist/*.exe
+            subprojects/electron/build/dist/*.dmg
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 5
       - name: Build signed Maven repository
         if: ${{ matrix.os == env.RUNNER_UBUNTU && github.event_name == 'push' && github.repository_owner == 'graphs4value' }}
         env:
@@ -111,11 +150,11 @@ jobs:
           PGP_KEY_ID: ${{ secrets.PGP_KEY_ID }}
           PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
         run: |
-          ./gradlew mavenRepository -Pci -PforceSign --info --stacktrace --max-workers 4 --no-daemon
+          ./gradlew mavenRepository -Pci -PforceSign --info --stacktrace --max-workers 2 --no-daemon
       - name: Build unsigned Maven repository
         if: ${{ matrix.os == env.RUNNER_UBUNTU && (github.event_name != 'push' || github.repository_owner != 'graphs4value') }}
         run: |
-          ./gradlew mavenRepository -Pci --info --stacktrace --max-workers 4 --no-daemon
+          ./gradlew mavenRepository -Pci --info --stacktrace --max-workers 2 --no-daemon
       - name: Merge Maven repository with site
         if: ${{ matrix.os == env.RUNNER_UBUNTU }}
         run: |
@@ -221,3 +260,76 @@ jobs:
         run: |
           echo "${KNOWN_HOSTS}" >> ~/.ssh/known_hosts
           ssh refinery@refinery.services /var/lib/refinery/deploy.sh
+  publish-snapshot:
+    name: Publish snapshot release
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.repository == 'graphs4value/refinery' }}
+    needs:
+      - build
+      - publish-site
+      - docker-build
+    permissions:
+      contents: write
+    runs-on: *runner-ubuntu
+    steps:
+      - name: Check out commit
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Read Docker snapshot tag
+        id: docker-version
+        run: echo "tag=$(./docker/get_version.sh version)" >> "$GITHUB_OUTPUT"
+      - name: Download desktop artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-*
+          path: release-artifacts
+          merge-multiple: true
+      - name: Move snapshot tag
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag --force snapshot "${GITHUB_SHA}"
+          git push --force origin refs/tags/snapshot
+      - name: Remove previous snapshot assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/remove_github_release_assets.sh snapshot
+      - name: Publish snapshot release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          token: ${{ github.token }}
+          tag_name: snapshot
+          target_commitish: ${{ github.sha }}
+          name: Refinery snapshot
+          body: |
+            <p>Snapshot built from <code>${{ github.sha }}</code> on <code>main</code>.</p>
+            <h2>Snapshot Maven repository</h2>
+            <p>
+              Use the <a href="https://refinery.tools/maven/snapshots/">Refinery snapshot Maven repository</a>
+              for snapshot Java dependencies, following the
+              <a href="https://refinery.tools/snapshot/develop/java/">Java snapshot usage instructions</a>.
+            </p>
+            <p>Repository URL: <code>https://refinery.tools/maven/snapshots/</code></p>
+            <h2>Docker images</h2>
+            <ul>
+              <li>
+                <a href="https://github.com/graphs4value/refinery/pkgs/container/refinery">Refinery web/server</a>
+                (<code>ghcr.io/graphs4value/refinery:${{ steps.docker-version.outputs.tag }}</code>)
+              </li>
+              <li>
+                <a href="https://github.com/graphs4value/refinery/pkgs/container/refinery-cli">Refinery CLI</a>
+                (<code>ghcr.io/graphs4value/refinery-cli:${{ steps.docker-version.outputs.tag }}</code>)
+              </li>
+              <li>
+                <a href="https://github.com/graphs4value/refinery/pkgs/container/refinery-chat">Refinery Chat</a>
+                (<code>ghcr.io/graphs4value/refinery-chat:${{ steps.docker-version.outputs.tag }}</code>)
+              </li>
+            </ul>
+            <p>Pull an image with <code>docker pull ghcr.io/graphs4value/refinery:${{ steps.docker-version.outputs.tag }}</code>, replacing the image name as needed.</p>
+          prerelease: true
+          make_latest: false
+          files: release-artifacts/*
+          fail_on_unmatched_files: true
+          overwrite_files: true

@@ -8,9 +8,7 @@ package tools.refinery.language.serializer;
 import com.google.inject.Inject;
 import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
-import tools.refinery.language.model.problem.Assertion;
-import tools.refinery.language.model.problem.LogicConstant;
-import tools.refinery.language.model.problem.LogicValue;
+import tools.refinery.language.model.problem.*;
 import tools.refinery.language.services.ProblemGrammarAccess;
 
 import static tools.refinery.language.model.problem.ProblemPackage.Literals.ABSTRACT_ASSERTION__RELATION;
@@ -18,6 +16,31 @@ import static tools.refinery.language.model.problem.ProblemPackage.Literals.ABST
 public class PreferShortAssertionsProblemSemanticSequencer extends ProblemSemanticSequencer {
 	@Inject
 	private ProblemGrammarAccess grammarAccess;
+
+	@Override
+	protected void sequence_Problem(ISerializationContext context, Problem semanticObject) {
+		var feeder = createSequencerFeeder(context, semanticObject);
+		var access = grammarAccess.getProblemAccess();
+		var statements = semanticObject.getStatements();
+		// Completely empty feeders lead to an exception, because they can't transition from the {@code start} state
+		// to the {@code stop} state directly. For a completely empty model, we always emit the {@code problem}
+		// declaration. Otherwise, we only emit it if needed.
+		boolean moduleKindNeeded = transientValues.isValueTransient(
+				semanticObject, ProblemPackage.Literals.PROBLEM__KIND) == ValueTransient.NO;
+		if (statements.isEmpty() || moduleKindNeeded) {
+			feeder.accept(access.getKindModuleKindEnumRuleCall_0_0_0(), semanticObject.getKind());
+			var name = semanticObject.getName();
+			if (name != null) {
+				feeder.accept(access.getNameQualifiedNameParserRuleCall_0_1_0(), name);
+			}
+		}
+		int index = 0;
+		for (var statement : statements) {
+			feeder.accept(access.getStatementsStatementParserRuleCall_1_0(), statement, index);
+			index++;
+		}
+		feeder.finish();
+	}
 
 	@Override
 	protected void sequence_Assertion(ISerializationContext context, Assertion semanticObject) {
