@@ -38,7 +38,13 @@ async function runGit(args) {
  */
 async function getGitMetadata() {
   const revision = await runGit(['rev-parse', '--short=12', 'HEAD']);
-  const latestTag = await runGit(['describe', '--tags', '--abbrev=0']);
+  const latestTag = await runGit([
+    'describe',
+    '--tags',
+    '--match',
+    'v[0-9]*',
+    '--abbrev=0',
+  ]);
   const commitCount = await runGit(
     latestTag
       ? ['rev-list', '--count', `${latestTag}..HEAD`]

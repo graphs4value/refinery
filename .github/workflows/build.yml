@@ -55,6 +55,9 @@ jobs:
           # gitVersion.mjs needs the complete history to calculate the commit
           # count since the latest tag. This also improves SonarCloud analysis.
           fetch-depth: 0
+      - name: Fetch upstream release tags
+        if: ${{ github.repository != 'graphs4value/refinery' }}
+        run: git fetch --no-tags https://github.com/graphs4value/refinery.git '+refs/tags/v*:refs/tags/v*'
       - name: Cache Gradle packages
         uses: actions/cache@v5
         with:
