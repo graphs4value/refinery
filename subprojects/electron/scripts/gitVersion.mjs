@@ -44,8 +44,10 @@ async function getGitMetadata() {
       ? ['rev-list', '--count', `${latestTag}..HEAD`]
       : ['rev-list', '--count', 'HEAD'],
   );
-  const branchFromEnvironment =
-    process.env['GITHUB_HEAD_REF'] ?? process.env['GITHUB_REF_NAME'];
+  const branchFromEnvironment = [
+    process.env['GITHUB_HEAD_REF'],
+    process.env['GITHUB_REF_NAME'],
+  ].find((branch) => branch !== undefined && branch !== '');
   const branch =
     branchFromEnvironment ?? (await runGit(['branch', '--show-current']));
   return {

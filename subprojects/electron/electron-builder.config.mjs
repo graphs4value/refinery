@@ -10,6 +10,49 @@ import path from 'node:path';
 import version from './scripts/gitVersion.mjs';
 
 const isCI = process.env['CI'] === 'true';
+const packageRevision = [
+  process.env['BUILD_NUMBER'],
+  process.env['TRAVIS_BUILD_NUMBER'],
+  process.env['APPVEYOR_BUILD_NUMBER'],
+  process.env['CIRCLE_BUILD_NUM'],
+  process.env['BUILD_BUILDNUMBER'],
+  process.env['CI_PIPELINE_IID'],
+].find((value) => value !== undefined && value !== '');
+
+const packageIteration = packageRevision?.replaceAll('-', '_');
+const fpmArtifactVersion = version.replaceAll('-', '~');
+const pacmanArtifactVersion = version.replaceAll('-', '_');
+const fpmArtifactRevision = packageIteration ?? '1';
+
+/** @type {Record<string, string>} */
+const linuxArchitectureNames = {
+  x64: 'x86_64',
+  arm64: 'aarch64',
+};
+const linuxArtifactArchitecture =
+  linuxArchitectureNames[process.arch] ?? process.arch;
+const debArtifactArchitecture = process.arch === 'x64' ? 'amd64' : process.arch;
+
+const appImageArtifactName =
+  '${productName}-${version}-' + linuxArtifactArchitecture + '.${ext}';
+const debArtifactName =
+  '${name}_' +
+  fpmArtifactVersion +
+  (packageIteration === undefined ? '' : `-${packageIteration}`) +
+  `_${debArtifactArchitecture}.deb`;
+const pacmanArtifactName =
+  '${name}-' +
+  pacmanArtifactVersion +
+  '-' +
+  fpmArtifactRevision +
+  `-${linuxArtifactArchitecture}.pkg.tar.xz`;
+const rpmArtifactName =
+  '${name}-' +
+  fpmArtifactVersion +
+  `-${fpmArtifactRevision}.${linuxArtifactArchitecture}.rpm`;
+const windowsArtifactName =
+  '${productName} Setup ${version}-' + process.arch + '.${ext}';
+const macArtifactName = '${productName}-${version}-' + process.arch + '.${ext}';
 
 /** @type {import('electron-builder').Configuration} */
 const config = {
@@ -55,6 +98,7 @@ const config = {
     ],
   },
   nsis: {
+    artifactName: windowsArtifactName,
     include: 'build-resources/installer.nsh',
   },
   mac: {
@@ -63,21 +107,26 @@ const config = {
     darkModeSupport: true,
     icon: 'icons/icon.icns',
   },
+  dmg: {
+    artifactName: macArtifactName,
+  },
   appImage: {
-    artifactName: '${productName}-${version}-${arch}.${ext}',
+    artifactName: appImageArtifactName,
   },
   deb: {
     afterInstall: 'build-resources/after-install.tpl',
     afterRemove: 'build-resources/after-remove.tpl',
+    artifactName: debArtifactName,
   },
   pacman: {
     afterInstall: 'build-resources/after-install.tpl',
     afterRemove: 'build-resources/after-remove.tpl',
-    artifactName: '${name}-${version}-${arch}.pkg.tar.xz',
+    artifactName: pacmanArtifactName,
   },
   rpm: {
     afterInstall: 'build-resources/after-install.tpl',
     afterRemove: 'build-resources/after-remove.tpl',
+    artifactName: rpmArtifactName,
   },
   npmRebuild: false,
   publish: null,

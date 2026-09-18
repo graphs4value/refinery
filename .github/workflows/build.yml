@@ -52,7 +52,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
-          fetch-depth: ${{ !steps.check-secret.outputs.is_SONAR_TOKEN_set && 1 || 0 }}  # Shallow clones should be disabled for a better relevancy of SonarCloud analysis
+          # gitVersion.mjs needs the complete history to calculate the commit
+          # count since the latest tag. This also improves SonarCloud analysis.
+          fetch-depth: 0
       - name: Cache Gradle packages
         uses: actions/cache@v5
         with:
