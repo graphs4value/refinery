@@ -83,7 +83,7 @@ function createWindow(
     backgroundColor,
     ...(isWindows ? {} : { accentColor }),
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
-    ...(isMac ? {} : { titleBarOverlay }),
+    titleBarOverlay: isMac ? true : titleBarOverlay,
   });
   const windowStore = openWindowsStore.createWindowStore(window);
   if (request !== undefined) {
