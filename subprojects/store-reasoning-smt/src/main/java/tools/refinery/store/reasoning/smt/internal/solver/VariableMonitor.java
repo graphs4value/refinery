@@ -12,15 +12,26 @@ import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.tuple.Tuple;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class VariableMonitor {
 	private final RuleBasedSolver ruleBasedSolver;
-	private final Map<AnyPartialFunction, PartialFunctionMonitor<?, ?>> monitorMap = new HashMap<>();
+	private final Collection<AnyPartialFunction> partialFunctionsToTrack;
+	private Map<AnyPartialFunction, PartialFunctionMonitor<?, ?>> monitorMap;
 
-	public VariableMonitor(RuleBasedSolver ruleBasedSolver) {
+	public VariableMonitor(RuleBasedSolver ruleBasedSolver, Collection<AnyPartialFunction> partialFunctionsToTrack) {
 		this.ruleBasedSolver = ruleBasedSolver;
+		this.partialFunctionsToTrack = partialFunctionsToTrack;
+	}
+
+	public void start() {
+		monitorMap = partialFunctionsToTrack.stream()
+				.collect(Collectors.toUnmodifiableMap(Function.identity(),
+						partialFunction -> new PartialFunctionMonitor<>(
+								ruleBasedSolver, (PartialFunction<?, ?>) partialFunction)));
 	}
 
 	public void changeRef(AnyPartialFunction partialFunction, Tuple tuple, boolean add) {
@@ -33,10 +44,12 @@ class VariableMonitor {
 	}
 
 	private PartialFunctionMonitor<?, ?> getMonitor(AnyPartialFunction partialFunction) {
+		if (monitorMap == null) {
+			throw new IllegalStateException("VariableMonitor hasn't been started yet");
+		}
 		var monitor = monitorMap.get(partialFunction);
 		if (monitor == null) {
-			monitor = new PartialFunctionMonitor<>(ruleBasedSolver, (PartialFunction<?, ?>) partialFunction);
-			monitorMap.put(partialFunction, monitor);
+			throw new IllegalArgumentException("No variable monitor for partial function: " + partialFunction);
 		}
 		return monitor;
 	}
@@ -46,6 +59,7 @@ class VariableMonitor {
 			entry.getValue().addAssertions(solver);
 		}
 	}
+
 	public boolean isTracking() {
 		for (var monitor : monitorMap.values()) {
 			if (monitor.isTracking()) {

@@ -18,6 +18,7 @@ import tools.refinery.store.reasoning.smt.internal.context.ModelContext;
 import tools.refinery.store.tuple.Tuple;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RuleBasedSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RuleBasedSolver.class);
@@ -41,7 +42,10 @@ public class RuleBasedSolver {
 		this.concreteness = concreteness;
 		this.solver = solver;
 		solver.interrupt();
-		variableMonitor = new VariableMonitor(this);
+		variableMonitor = new VariableMonitor(this, rules.stream()
+				.flatMap(rule -> rule.influences().stream()
+						.map(PreparedSmtRule.Influence::partialFunction))
+				.collect(Collectors.toUnmodifiableSet()));
 		ruleMonitors = rules.stream()
 				.map(rule -> new RuleMonitor(this, rule))
 				.toList();
@@ -89,6 +93,7 @@ public class RuleBasedSolver {
 		if (started) {
 			return;
 		}
+		variableMonitor.start();
 		for (var rule : ruleMonitors) {
 			rule.start();
 		}
