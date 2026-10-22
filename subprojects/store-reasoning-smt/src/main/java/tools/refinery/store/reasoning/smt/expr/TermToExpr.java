@@ -14,6 +14,7 @@ import tools.refinery.logic.term.abstractdomain.*;
 import tools.refinery.logic.term.int_.RealToIntTerm;
 import tools.refinery.logic.term.operators.*;
 import tools.refinery.logic.term.real.IntToRealTerm;
+import tools.refinery.logic.term.realinterval.AsRealIntervalTerm;
 import tools.refinery.logic.term.string.StringValue;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
@@ -49,7 +50,7 @@ public class TermToExpr {
 					case NotTerm<?> _ -> context.mkNot(body);
 					case PlusTerm<?> _ -> body;
 					case MinusTerm<?> _ -> context.mkUnaryMinus(body);
-					case IntToRealTerm _ -> context.mkInt2Real(body);
+					case IntToRealTerm _, AsRealIntervalTerm _ -> context.mkInt2Real(body);
 					case RealToIntTerm _ -> context.mkReal2Int(body);
 					default -> throw new IllegalArgumentException(UNSUPPORTED_TERM.formatted(unaryTerm));
 				};
