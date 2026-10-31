@@ -5,9 +5,8 @@
  */
 
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
 import type EditorStore from './EditorStore';
 import EditorTheme from './EditorTheme';
@@ -17,15 +16,6 @@ export default observer(function EditorArea({
 }: {
   editorStore: EditorStore;
 }): React.ReactElement {
-  const {
-    palette: { mode: paletteMode },
-  } = useTheme();
-
-  useEffect(
-    () => editorStore.setDarkMode(paletteMode === 'dark'),
-    [editorStore, paletteMode],
-  );
-
   const editorParentRef = useCallback(
     (editorParent: HTMLDivElement | null) => {
       editorStore.setEditorParent(editorParent ?? undefined);

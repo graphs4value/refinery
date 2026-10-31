@@ -430,12 +430,12 @@ export default styled('div', {
          Removing this assertion makes the whole enclosing `CSSObject` fail to typecheck.
        */
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
-        | CSSObject
-        | undefined) ?? {}),
+        CSSObject | undefined) ?? {}),
       ...theme.typography.body2,
       // Appear above the scrollbar (and the splitter handle).
       zIndex: 2000,
       borderRadius: theme.shape.borderRadius,
+      border: 'none',
       overflow: 'hidden',
       maxWidth: 400,
     },
@@ -665,13 +665,13 @@ export default styled('div', {
          Removing this assertion makes the whole enclosing `CSSObject` fail to typecheck.
        */
       ...((theme.components?.MuiTooltip?.styleOverrides?.tooltip as
-        | CSSObject
-        | undefined) ?? {}),
+        CSSObject | undefined) ?? {}),
       ...theme.typography.body2,
       // Appear above the scrollbar (and the splitter handle).
       zIndex: 2000,
       padding: 0,
       borderRadius: theme.shape.borderRadius,
+      border: 'none',
       overflow: 'hidden',
       whiteSpace: 'normal',
       '&.cm-completionInfo-right': {

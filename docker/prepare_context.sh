@@ -17,15 +17,19 @@ tar -xvf "../subprojects/generator-cli/build/distributions/${cli_distribution_na
 mv "${cli_distribution_name}" cli_dist
 tar -xvf "../subprojects/language-web/build/distributions/${web_distribution_name}.tar"
 mv "${web_distribution_name}" web_dist
+
 mkdir -p context/extracted/{cli,web}_{,app_}lib \
     context/extracted/common_{,amd64_,arm64_}lib \
     context/extracted/{cli,web}_{amd64,arm64}_bin
+
+# Copy frontend assets to the context directory.
+cp -a ../subprojects/frontend/build/vite/production context/extracted/webapp
 
 move_application_jars() {
     prefix="$1"
     # Our application itself is very small, so it will get added as the last layer
     # of both containers.
-    mv "${prefix}"_dist/lib/refinery-!(z3-solver*) "context/extracted/${prefix}_app_lib"
+    mv "${prefix}"_dist/lib/refinery-!(z3-solver*|ibex-solver*) "context/extracted/${prefix}_app_lib"
 }
 
 move_application_jars cli
@@ -39,7 +43,6 @@ for i in cli_dist/lib/*; do
     fi
 done
 
-
 move_arch_specific_lib() {
     name="$1"
     # Move architecture-specific jars to their repsective directories.
@@ -48,6 +51,7 @@ move_arch_specific_lib() {
     rm context/extracted/common_lib/"${name}"-{darwin,win32}-*.jar
 }
 
+move_arch_specific_lib refinery-ibex-solver
 move_arch_specific_lib refinery-z3-solver
 move_arch_specific_lib ortools
 
@@ -59,10 +63,10 @@ prepare_application() {
     mv "${prefix}"_dist/lib/* "context/extracted/${prefix}_lib"
     # Omit references to jars not present for the current architecture from the
     # startup scripts.
-    sed 's/:\$APP_HOME\/lib\/\(refinery-z3-solver\|ortools\)-\(darwin\|win32\|linux-aarch64\)[^:]\+\.jar//g' \
+    sed 's/:\$APP_HOME\/lib\/\(refinery-ibex-solver\|refinery-z3-solver\|ortools\)-\(darwin\|win32\|linux-aarch64\)[^:]\+\.jar//g' \
         "${prefix}_dist/bin/refinery-${suffix}" \
         > "context/extracted/${prefix}_amd64_bin/refinery-${suffix}"
-    sed 's/:\$APP_HOME\/lib\/\(refinery-z3-solver\|ortools\)-\(darwin\|win32\|linux-x86-64\)[^:]\+\.jar//g' \
+    sed 's/:\$APP_HOME\/lib\/\(refinery-ibex-solver\|refinery-z3-solver\|ortools\)-\(darwin\|win32\|linux-x86-64\)[^:]\+\.jar//g' \
         "${prefix}_dist/bin/refinery-${suffix}" \
         > "context/extracted/${prefix}_arm64_bin/refinery-${suffix}"
     chmod a+x "context/extracted/${prefix}"_{amd64,arm64}_bin/refinery-"${suffix}"

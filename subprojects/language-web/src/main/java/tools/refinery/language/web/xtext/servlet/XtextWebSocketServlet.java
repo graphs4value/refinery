@@ -13,18 +13,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serial;
 import java.time.Duration;
 import java.util.Set;
 
 public class XtextWebSocketServlet extends JettyWebSocketServlet implements JettyWebSocketCreator {
-	@Serial
-	private static final long serialVersionUID = -3772740838165122685L;
+	private static final Logger LOG = LoggerFactory.getLogger(XtextWebSocketServlet.class);
 
 	public static final String ALLOWED_ORIGINS_SEPARATOR = ",";
 
 	public static final String ALLOWED_ORIGINS_INIT_PARAM =
-			"tools.refinery.language.web.xtext.XtextWebSocketServlet.allowedOrigin";
+			"tools.refinery.language.web.xtext.XtextWebSocketServlet.allowedOrigins";
 
 	public static final String XTEXT_SUBPROTOCOL_V2 = "tools.refinery.language.web.xtext.v2";
 
@@ -35,18 +33,16 @@ public class XtextWebSocketServlet extends JettyWebSocketServlet implements Jett
 
 	private static final Duration IDLE_TIMEOUT = Duration.ofSeconds(30);
 
-	private final transient Logger log = LoggerFactory.getLogger(getClass());
-
 	private transient Set<String> allowedOrigins = null;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		var allowedOriginsStr = config.getInitParameter(ALLOWED_ORIGINS_INIT_PARAM);
 		if (allowedOriginsStr == null) {
-			log.warn("All WebSocket origins are allowed! This setting should not be used in production!");
+			LOG.warn("All WebSocket origins are allowed! This setting should not be used in production!");
 		} else {
 			allowedOrigins = Set.of(allowedOriginsStr.split(ALLOWED_ORIGINS_SEPARATOR));
-			log.info("Allowed origins: {}", allowedOrigins);
+			LOG.info("Allowed origins: {}", allowedOrigins);
 		}
 		super.init(config);
 	}
@@ -63,11 +59,11 @@ public class XtextWebSocketServlet extends JettyWebSocketServlet implements Jett
 		if (allowedOrigins != null) {
 			var origin = req.getOrigin();
 			if (origin == null || !allowedOrigins.contains(origin.toLowerCase())) {
-				log.error("Connection from {} from forbidden origin {}", req.getRemoteSocketAddress(), origin);
+				LOG.error("Connection from {} from forbidden origin {}", req.getRemoteSocketAddress(), origin);
 				try {
 					resp.sendForbidden("Origin not allowed");
 				} catch (IOException e) {
-					log.error("Cannot send forbidden origin error", e);
+					LOG.error("Cannot send forbidden origin error", e);
 				}
 				return null;
 			}
@@ -75,7 +71,7 @@ public class XtextWebSocketServlet extends JettyWebSocketServlet implements Jett
 		if (req.getSubProtocols().contains(XTEXT_SUBPROTOCOL_V2)) {
 			resp.setAcceptedSubProtocol(XTEXT_SUBPROTOCOL_V2);
 		} else {
-			log.error("None of the subprotocols {} offered by {} are supported", req.getSubProtocols(),
+			LOG.error("None of the subprotocols {} offered by {} are supported", req.getSubProtocols(),
 					req.getRemoteSocketAddress());
 			resp.setAcceptedSubProtocol(null);
 		}

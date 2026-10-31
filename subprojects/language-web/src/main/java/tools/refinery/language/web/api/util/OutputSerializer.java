@@ -11,9 +11,9 @@ import org.eclipse.xtext.web.server.validation.ValidationResult;
 import tools.refinery.generator.ModelFacade;
 import tools.refinery.generator.ModelFacadeResult;
 import tools.refinery.generator.RefineryDiagnostics;
-import tools.refinery.language.web.api.dto.JsonOutput;
+import tools.refinery.generator.json.PartialModel2Json;
+import tools.refinery.generator.json.PartialModelJson;
 import tools.refinery.language.web.api.dto.RefineryResponse;
-import tools.refinery.language.web.semantics.PartialInterpretation2Json;
 import tools.refinery.store.reasoning.ReasoningAdapter;
 import tools.refinery.store.util.CancellationToken;
 
@@ -34,7 +34,7 @@ public class OutputSerializer {
 	private static final int MAX_SERIALIZED_MODEL_SIZE = 200;
 
 	@Inject
-	private PartialInterpretation2Json partialInterpretation2Json;
+	private PartialModel2Json partialModel2Json;
 
 	@Inject
 	private RefineryDiagnostics refineryDiagnostics;
@@ -77,14 +77,8 @@ public class OutputSerializer {
 		return true;
 	}
 
-	public JsonOutput savePartialInterpretation(ModelFacade facade) {
-		checkCancelled();
-		var nodes = facade.getNodesMetadata().list();
-		checkCancelled();
-		var relations = facade.getRelationsMetadata();
-		checkCancelled();
-		var partialInterpretation = partialInterpretation2Json.getPartialInterpretation(facade, cancellationToken);
-		return new JsonOutput(nodes, relations, partialInterpretation);
+	public PartialModelJson savePartialInterpretation(ModelFacade facade) {
+		return partialModel2Json.savePartialInterpretation(facade, cancellationToken);
 	}
 
 	public List<ValidationResult.Issue> getIssues(ModelFacade facade) {

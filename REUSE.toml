@@ -25,6 +25,6 @@ SPDX-FileCopyrightText = [
 SPDX-License-Identifier = "BSD-2-Clause AND MIT"
 
 [[annotations]]
-path = ".yarn/sdks/**"
-SPDX-FileCopyrightText = "(c) 2016-present, Yarn Contributors. All rights reserved."
-SPDX-License-Identifier = "BSD-2-Clause"
+path = "subprojects/electron/e2e/__snapshots__/*.png"
+SPDX-FileCopyrightText = "2026 The Refinery Authors <https://refinery.tools/>"
+SPDX-License-Identifier = "CC0-1.0"

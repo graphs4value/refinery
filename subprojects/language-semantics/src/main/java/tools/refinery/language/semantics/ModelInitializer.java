@@ -6,9 +6,7 @@
 package tools.refinery.language.semantics;
 
 import com.google.inject.Inject;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import tools.refinery.language.annotations.AnnotationContext;
-import tools.refinery.language.expressions.ExprToTerm;
 import tools.refinery.language.library.BuiltinLibrary;
 import tools.refinery.language.model.problem.*;
 import tools.refinery.language.scoping.imports.ImportAdapterProvider;
@@ -28,8 +26,6 @@ import tools.refinery.logic.AbstractDomain;
 import tools.refinery.logic.AbstractValue;
 import tools.refinery.logic.AnyAbstractDomain;
 import tools.refinery.logic.dnf.InvalidClauseException;
-import tools.refinery.logic.term.ConstantTerm;
-import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityInterval;
 import tools.refinery.logic.term.cardinalityinterval.CardinalityIntervals;
 import tools.refinery.logic.term.truthvalue.TruthValue;
@@ -91,9 +87,6 @@ public class ModelInitializer {
 	private BuiltinAnnotationContext builtinAnnotationContext;
 
 	@Inject
-	private IQualifiedNameProvider qualifiedNameProvider;
-
-	@Inject
 	private SignatureProvider signatureProvider;
 
 	@Inject
@@ -106,7 +99,7 @@ public class ModelInitializer {
 	private FunctionCompiler functionCompiler;
 
 	@Inject
-	private ExprToTerm exprToTerm;
+	private ConstantParser constantParser;
 
 	@Inject
 	private AnnotationContext annotationContext;
@@ -657,19 +650,8 @@ public class ModelInitializer {
 		}
 	}
 
-	private <T> Term<T> parseTerm(Expr value, Class<T> type) {
-		return exprToTerm.toTerm(value)
-				.orElseThrow(() -> new TracedException(value, "Invalid assertion value expression"))
-				.asType(type)
-				.reduce();
-	}
-
 	private <T> T parseConstant(Expr value, Class<T> type) {
-		var simplifiedTerm = parseTerm(value, type);
-		if (!(simplifiedTerm instanceof ConstantTerm<T> constantTerm)) {
-			throw new TracedException(value, "Assertion value must be constant");
-		}
-		return constantTerm.getValue();
+		return constantParser.parseConstant(value, type);
 	}
 
 	private void fixClassDeclarationAssertions() {

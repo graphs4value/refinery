@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2024 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2024-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -9,15 +9,10 @@ import com.google.gson.FormattingStyle;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import tools.refinery.generator.GeneratorResult;
-import tools.refinery.language.semantics.metadata.FunctionDetailKind;
-import tools.refinery.language.semantics.metadata.NodeKind;
-import tools.refinery.language.semantics.metadata.PredicateDetailKind;
-import tools.refinery.language.semantics.metadata.RelationDetail;
-import tools.refinery.language.utils.Visibility;
+import tools.refinery.generator.json.LowercaseTypeAdapterFactory;
+import tools.refinery.generator.json.PartialModelJson;
+import tools.refinery.generator.json.RuntimeTypeAdapterFactory;
 import tools.refinery.language.web.api.dto.RefineryResponse;
-import tools.refinery.language.web.xtext.servlet.LowercaseTypeAdapter;
-import tools.refinery.language.web.xtext.servlet.LowercaseTypeAdapterFactory;
-import tools.refinery.language.web.xtext.servlet.RuntimeTypeAdapterFactory;
 
 /**
  * Utility class containing global configuration for Gson.
@@ -27,34 +22,26 @@ import tools.refinery.language.web.xtext.servlet.RuntimeTypeAdapterFactory;
  * </p>
  */
 public class GsonUtil {
-	private static final Gson GSON = new GsonBuilder()
-			.disableJdkUnsafe()
-			.setFormattingStyle(FormattingStyle.COMPACT)
-			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RelationDetail.class, "type")
-					.registerSubtype(RelationDetail.Class.class, "class")
-					.registerSubtype(RelationDetail.Computed.class, "computed")
-					.registerSubtype(RelationDetail.Reference.class, "reference")
-					.registerSubtype(RelationDetail.Attribute.class, "attribute")
-					.registerSubtype(RelationDetail.Opposite.class, "opposite")
-					.registerSubtype(RelationDetail.Predicate.class, "pred")
-					.registerSubtype(RelationDetail.Function.class, "function")
-					.registerSubtype(RelationDetail.Domain.class, "domain"))
-			.registerTypeAdapter(NodeKind.class, new LowercaseTypeAdapter<>(NodeKind.class))
-			.registerTypeAdapter(PredicateDetailKind.class, new LowercaseTypeAdapter<>(PredicateDetailKind.class))
-			.registerTypeAdapter(FunctionDetailKind.class, new LowercaseTypeAdapter<>(FunctionDetailKind.class))
-			.registerTypeAdapterFactory(new LowercaseTypeAdapterFactory<>(GeneratorResult.class))
-			.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RefineryResponse.class, "result")
-					.recognizeSubtypes()
-					.registerSubtype(RefineryResponse.Timeout.class, "timeout")
-					.registerSubtype(RefineryResponse.Cancelled.class, "cancelled")
-					.registerSubtype(RefineryResponse.RequestError.class, "requestError")
-					.registerSubtype(RefineryResponse.ServerError.class, "serverError")
-					.registerSubtype(RefineryResponse.InvalidProblem.class, "invalidProblem")
-					.registerSubtype(RefineryResponse.Unsatisfiable.class, "unsatisfiable")
-					.registerSubtype(RefineryResponse.Success.class, "success")
-					.registerSubtype(RefineryResponse.Status.class, "status"))
-			.registerTypeAdapter(Visibility.class, new LowercaseTypeAdapter<>(Visibility.class))
-			.create();
+	private static final Gson GSON;
+
+	static {
+		var builder = new GsonBuilder()
+				.disableJdkUnsafe()
+				.setFormattingStyle(FormattingStyle.COMPACT)
+				.registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(RefineryResponse.class, "result")
+						.recognizeSubtypes()
+						.registerSubtype(RefineryResponse.Timeout.class, "timeout")
+						.registerSubtype(RefineryResponse.Cancelled.class, "cancelled")
+						.registerSubtype(RefineryResponse.RequestError.class, "requestError")
+						.registerSubtype(RefineryResponse.ServerError.class, "serverError")
+						.registerSubtype(RefineryResponse.InvalidProblem.class, "invalidProblem")
+						.registerSubtype(RefineryResponse.Unsatisfiable.class, "unsatisfiable")
+						.registerSubtype(RefineryResponse.Success.class, "success")
+						.registerSubtype(RefineryResponse.Status.class, "status"))
+				.registerTypeAdapterFactory(new LowercaseTypeAdapterFactory<>(GeneratorResult.class));
+		PartialModelJson.register(builder);
+		GSON = builder.create();
+	}
 
 	private GsonUtil() {
 		throw new IllegalStateException("This is a static utility class and should not be instantiated directly");

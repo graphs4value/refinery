@@ -80,15 +80,11 @@ tasks {
 		}
 	}
 
-	val generateEclipseSourceFolders by tasks.registering
+	val generateEclipseSourceFolders = tasks.register("generateEclipseSourceFolders")
 
 	register("prepareEclipse") {
 		dependsOn(generateEclipseSourceFolders)
 		dependsOn(tasks.named("eclipseJdt"))
-	}
-
-	eclipseClasspath {
-		dependsOn(generateEclipseSourceFolders)
 	}
 }
 
@@ -117,10 +113,12 @@ gradle.projectsEvaluated {
 		collectDependentProjectsTransitively(project, dependentProjects)
 		val links = ArrayList<JavadocOfflineLink>()
 		for (dependentProject in dependentProjects.sortedBy { it.name }) {
-			dependsOn(dependentProject.tasks.javadoc)
-			val javadocDir = dependentProject.layout.buildDirectory.map { it.dir("docs/javadoc") }
-			inputs.dir(javadocDir)
-			links += JavadocOfflineLink("../${dependentProject.name}", javadocDir.get().asFile.path)
+			if (dependentProject.tasks.javadoc.orNull?.enabled ?: false) {
+				dependsOn(dependentProject.tasks.javadoc)
+				val javadocDir = dependentProject.layout.buildDirectory.map { it.dir("docs/javadoc") }
+				inputs.dir(javadocDir)
+				links += JavadocOfflineLink("../${dependentProject.name}", javadocDir.get().asFile.path)
+			}
 		}
 		options {
 			this as StandardJavadocDocletOptions
@@ -140,10 +138,5 @@ eclipse {
 		if (entry is org.gradle.plugins.ide.eclipse.model.ProjectDependency) {
 			entry.entryAttributes.remove("test")
 		}
-	}
-
-	jdt.file.withProperties {
-		// Allow @SuppressWarnings to suppress SonarLint warnings
-		this["org.eclipse.jdt.core.compiler.problem.unhandledWarningToken"] = "ignore"
 	}
 }

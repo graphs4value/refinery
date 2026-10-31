@@ -1,0 +1,110 @@
+<!--
+    SPDX-FileCopyrightText: 2024-2026 The Refinery Authors <https://refinery.tools/>
+
+    SPDX-License-Identifier: EPL-2.0
+-->
+<included>
+    <conversionRule conversionWord="pinoLevel"
+                    class="tools.refinery.logging.PinoLevelConverter"/>
+    <conversionRule conversionWord="throwableType"
+                    class="tools.refinery.logging.ThrowableTypeConverter"/>
+    <conversionRule conversionWord="throwableMessage"
+                    class="tools.refinery.logging.ThrowableMessageConverter"/>
+    <conversionRule conversionWord="stack"
+                    class="net.logstash.logback.stacktrace.ShortenedThrowableConverter"/>
+    <define name="PID" class="tools.refinery.logging.PidPropertyDefiner"/>
+    <appender name="refinery-console"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+            <key>REFINERY_LOG_DESTINATION</key>
+            <value>stdout</value>
+        </condition>
+        <if>
+            <then>
+                <target>System.out</target>
+            </then>
+            <else>
+                <target>System.err</target>
+            </else>
+        </if>
+        <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+            <key>REFINERY_LOG_FORMAT</key>
+            <value>json</value>
+        </condition>
+        <if>
+            <then>
+                <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                    <providers>
+                        <timestamp>
+                            <fieldName>time</fieldName>
+                            <pattern>[UNIX_TIMESTAMP_AS_NUMBER]</pattern>
+                        </timestamp>
+                        <mdc>
+                            <excludeMdcKeyName>err</excludeMdcKeyName>
+                            <excludeMdcKeyName>hostname</excludeMdcKeyName>
+                            <excludeMdcKeyName>level</excludeMdcKeyName>
+                            <excludeMdcKeyName>msg</excludeMdcKeyName>
+                            <excludeMdcKeyName>name</excludeMdcKeyName>
+                            <excludeMdcKeyName>pid</excludeMdcKeyName>
+                            <excludeMdcKeyName>thread</excludeMdcKeyName>
+                            <excludeMdcKeyName>time</excludeMdcKeyName>
+                        </mdc>
+                        <pattern>
+                            <omitEmptyFields>true</omitEmptyFields>
+                            <pattern>
+                                {
+                                    "level": "#asLong{%pinoLevel}",
+                                    "hostname": "${HOSTNAME}",
+                                    "pid": "#asLong{${PID}}",
+                                    "thread": "%thread",
+                                    "name": "%logger",
+                                    "msg": "%message",
+                                    "err": {
+                                        "type": "%throwableType",
+                                        "message": "%throwableMessage",
+                                        "stack": "%stack{20,full,2048,rootFirst,omitCommonFrames,^jdk\\.internal\\..*}"
+                                    }
+                                }
+                            </pattern>
+                        </pattern>
+                    </providers>
+                </encoder>
+            </then>
+            <else>
+                <encoder>
+                    <pattern>
+                        %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+                    </pattern>
+                </encoder>
+            </else>
+        </if>
+    </appender>
+    <define name="REFINERY_LOG_LEVEL_OR_DEFAULT"
+            class="tools.refinery.logging.FirstValidLogLevelDefiner">
+        <candidate>${REFINERY_LOG_LEVEL}</candidate>
+        <candidate>${REFINERY_ALL_LOG_LEVEL}</candidate>
+        <candidate>${REFINERY_DEFAULT_LOG_LEVEL}</candidate>
+        <candidate>DEBUG</candidate>
+    </define>
+    <define name="REFINERY_LOG_LEVEL_GATED"
+            class="tools.refinery.logging.GatedLogLevelDefiner">
+        <minLevel>INFO</minLevel>
+        <level>${REFINERY_LOG_LEVEL_OR_DEFAULT}</level>
+    </define>
+    <define name="REFINERY_ALL_LOG_LEVEL_OR_DEFAULT"
+            class="tools.refinery.logging.FirstValidLogLevelDefiner">
+        <candidate>${REFINERY_ALL_LOG_LEVEL}</candidate>
+        <candidate>${REFINERY_LOG_LEVEL_GATED}</candidate>
+    </define>
+    <define name="REFINERY_INTERPRETER_LOG_LEVEL_OR_DEFAULT"
+            class="tools.refinery.logging.FirstValidLogLevelDefiner">
+        <candidate>${REFINERY_INTERPRETER_LOG_LEVEL}</candidate>
+        <candidate>${REFINERY_ALL_LOG_LEVEL_OR_DEFAULT}</candidate>
+    </define>
+    <logger name="tools.refinery" level="${REFINERY_LOG_LEVEL_OR_DEFAULT}"/>
+    <logger name="tools.refinery.interpreter"
+            level="${REFINERY_INTERPRETER_LOG_LEVEL_OR_DEFAULT}"/>
+    <root level="${REFINERY_ALL_LOG_LEVEL_OR_DEFAULT}">
+        <appender-ref ref="refinery-console"/>
+    </root>
+</included>

@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import java.io.File
+
 plugins {
 	id("tools.refinery.gradle.java-application")
 	id("tools.refinery.gradle.xtext-generated")
 }
 
-val webapp: Configuration by configurations.creating {
+val webapp = configurations.create("webapp") {
 	isCanBeConsumed = false
 	isCanBeResolved = true
 }
@@ -50,13 +52,6 @@ application {
 }
 
 tasks {
-	jar {
-		dependsOn(webapp)
-		from(webapp) {
-			into("webapp")
-		}
-	}
-
 	register<JavaExec>("serve") {
 		dependsOn(webapp)
 		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
@@ -74,7 +69,17 @@ tasks {
 		val mainRuntimeClasspath = sourceSets.main.map { it.runtimeClasspath }
 		dependsOn(mainRuntimeClasspath)
 		classpath(mainRuntimeClasspath)
+		System.getenv("CLASSPATH")
+			?.split(File.pathSeparator)
+			?.filter(String::isNotBlank)
+			?.map(::file)
+			?.let { classpath(it) }
 		mainClass.set(application.mainClass)
+		providers.gradleProperty("tools.refinery.maxMemoryBytes").orNull
+			?.toLongOrNull()
+			?.let { maxMemoryBytes ->
+				jvmArgs("-Xmx${maxMemoryBytes / (1024 * 1024)}m")
+			}
 		standardInput = System.`in`
 		group = "run"
 		description = "Start a Jetty web server serving the Xtext API without assets."

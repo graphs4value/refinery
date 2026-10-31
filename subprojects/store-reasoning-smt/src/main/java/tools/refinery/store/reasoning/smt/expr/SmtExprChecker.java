@@ -11,7 +11,9 @@ import tools.refinery.logic.term.ConstantTerm;
 import tools.refinery.logic.term.Term;
 import tools.refinery.logic.term.UnaryTerm;
 import tools.refinery.logic.term.abstractdomain.*;
+import tools.refinery.logic.term.int_.RealToIntTerm;
 import tools.refinery.logic.term.operators.*;
+import tools.refinery.logic.term.real.IntToRealTerm;
 import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 import tools.refinery.store.reasoning.literal.PartialFunctionCallTerm;
 
@@ -26,7 +28,8 @@ public class SmtExprChecker {
 			case ConstantTerm<?> constantTerm -> isSupported(constantTerm);
 			case PartialFunctionCallTerm<?, ?> partialFunctionCallTerm -> isSupported(partialFunctionCallTerm);
 			case UnaryTerm<?, ?> unaryTerm -> switch (unaryTerm) {
-				case NotTerm<?> _, PlusTerm<?> _, MinusTerm<?> _ -> isSupported(unaryTerm.getBody());
+				case NotTerm<?> _, PlusTerm<?> _, MinusTerm<?> _, IntToRealTerm _, RealToIntTerm _ ->
+						isSupported(unaryTerm.getBody());
 				default -> false;
 			};
 			case BinaryTerm<?, ?, ?> binaryTerm -> switch (binaryTerm) {

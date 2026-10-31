@@ -84,17 +84,14 @@ export function createGraphTheme({
   theme,
   colorNodes,
   hexTypeHashes,
-  concretize,
   useOpacity,
 }: {
   theme: Theme;
   colorNodes: boolean;
   hexTypeHashes: string[];
-  concretize: boolean;
   useOpacity?: boolean;
 }): CSSObject {
   const shadowAlapha = theme.palette.mode === 'dark' ? 0.32 : 0.24;
-  const errorColor = concretize ? theme.palette.info : theme.palette.error;
 
   return {
     '.node': {
@@ -152,7 +149,8 @@ export function createGraphTheme({
       },
     },
     ...createEdgeColor('unknown', theme.palette.text.secondary, 'none'),
-    ...createEdgeColor('error', errorColor.main),
+    ...createEdgeColor('error', theme.palette.error.main),
+    ...createEdgeColor('error-concretize', theme.palette.info.main),
     '.icon-true': {
       fill: theme.palette.text.primary,
     },
@@ -160,13 +158,19 @@ export function createGraphTheme({
       fill: theme.palette.text.secondary,
     },
     '.icon-error': {
-      fill: errorColor.main,
+      fill: theme.palette.error.main,
+    },
+    '.icon-error-concretize': {
+      fill: theme.palette.info.main,
     },
     'text.label-unknown': {
       fill: theme.palette.text.secondary,
     },
     'text.label-error': {
-      fill: errorColor.main,
+      fill: theme.palette.error.main,
+    },
+    'text.label-error-concretize': {
+      fill: theme.palette.info.main,
     },
     '.node-exists-false': {
       'text:not(.label-error)': {
@@ -185,7 +189,15 @@ export function createGraphTheme({
     },
     '.node-exists-error': {
       '.node-outline': {
-        stroke: errorColor.main,
+        stroke: theme.palette.error.main,
+      },
+      '.node-header': {
+        fill: `${theme.palette.background.default} !important`,
+      },
+    },
+    '.node-exists-error-concretize': {
+      '.node-outline': {
+        stroke: theme.palette.info.main,
       },
       '.node-header': {
         fill: `${theme.palette.background.default} !important`,
@@ -197,61 +209,55 @@ export function createGraphTheme({
 export default styled('div', {
   name: 'GraphTheme',
   shouldForwardProp: (prop) =>
-    prop !== 'colorNodes' && prop !== 'hexTypeHashes' && prop !== 'concretize',
-})<{ colorNodes: boolean; hexTypeHashes: string[]; concretize: boolean }>(
-  (args) => ({
-    '& svg': {
-      userSelect: 'none',
-      ...createGraphTheme(args),
-      text: {
-        // In WebKit, the cursor for `text` elements is `text` by default,
-        // but it is `default` everywhere else. We set `default` to normalize behavior.
-        cursor: 'default',
-      },
+    prop !== 'colorNodes' && prop !== 'hexTypeHashes',
+})<{ colorNodes: boolean; hexTypeHashes: string[] }>((args) => ({
+  '& svg': {
+    userSelect: 'none',
+    ...createGraphTheme(args),
+    text: {
+      // In WebKit, the cursor for `text` elements is `text` by default,
+      // but it is `default` everywhere else. We set `default` to normalize behavior.
+      cursor: 'default',
     },
-    '&.simplified svg': {
-      'text, .edge-arrow, .icon, .node-shadow.node-bg': {
-        display: 'none !important',
-      },
-      '.edge-line, .node-exists-unknown .node-outline, .node-exists-false .node-outline':
-        {
-          strokeDasharray: 'none !important',
-        },
+  },
+  '&.simplified svg': {
+    'text, .edge-arrow, .icon, .node-shadow.node-bg': {
+      display: 'none !important',
     },
+    '.edge-line, .node-exists-unknown .node-outline, .node-exists-false .node-outline':
+      {
+        strokeDasharray: 'none !important',
+      },
+  },
+  '.node-header': {
+    transition: args.theme.transitions.create('fill', {
+      duration: args.theme.transitions.duration.short,
+    }),
+  },
+  '&.dimmed svg': {
     '.node-header': {
-      transition: args.theme.transitions.create('fill', {
-        duration: args.theme.transitions.duration.short,
-      }),
+      fill: saturate(
+        args.theme.palette.mode === 'dark'
+          ? args.theme.palette.primary.dark
+          : args.theme.palette.primary.light,
+        0.6,
+      ),
     },
-    '&.dimmed svg': {
+    ...createTypeHashStyles(
+      args.theme,
+      args.colorNodes,
+      args.hexTypeHashes,
+      0.6,
+    ),
+    '@media (prefers-reduced-motion: reduce)': {
       '.node-header': {
-        fill: saturate(
+        fill:
           args.theme.palette.mode === 'dark'
             ? args.theme.palette.primary.dark
             : args.theme.palette.primary.light,
-          0.6,
-        ),
+        transition: 'none',
       },
-      ...createTypeHashStyles(
-        args.theme,
-        args.colorNodes,
-        args.hexTypeHashes,
-        0.6,
-      ),
-      '@media (prefers-reduced-motion: reduce)': {
-        '.node-header': {
-          fill:
-            args.theme.palette.mode === 'dark'
-              ? args.theme.palette.primary.dark
-              : args.theme.palette.primary.light,
-          transition: 'none',
-        },
-        ...createTypeHashStyles(
-          args.theme,
-          args.colorNodes,
-          args.hexTypeHashes,
-        ),
-      },
+      ...createTypeHashStyles(args.theme, args.colorNodes, args.hexTypeHashes),
     },
-  }),
-);
+  },
+}));

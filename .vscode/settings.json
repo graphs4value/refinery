@@ -4,16 +4,14 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 {
-  "eslint.nodePath": ".yarn/sdks",
-  "prettier.prettierPath": ".yarn/sdks/prettier/index.cjs",
   "search.exclude": {
     "**/.yarn": true,
-    "**/.pnp.*": true
+    "**/.pnp.*": true,
+    "**/node_modules": true
   },
   "sonarlint.connectedMode.project": {
     "connectionId": "graphs4value",
     "projectKey": "graphs4value_refinery"
   },
-  "js/ts.tsdk.path": ".yarn/sdks/typescript/lib",
   "js/ts.tsdk.promptToUseWorkspaceVersion": true
 }

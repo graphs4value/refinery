@@ -1,0 +1,19 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+abstract class Animal {
+  Animal[] next
+  int age
+}
+
+class Cat extends Animal.
+class Dog extends Animal.
+
+Cat(c).
+Dog(d).
+Cat(cd).
+Dog(cd).
+age(c): 10..0.
+age(d): error.
+next(c, d): error.

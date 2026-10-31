@@ -13,6 +13,7 @@
     "outDir": "build/typescript/shared"
   },
   "include": [
+    "src/RefineryContextBridge.ts",
     "src/xtext/BackendConfig.ts"
   ]
 }

@@ -11,10 +11,18 @@ export type BackendConfigWithDefaults = BackendConfig & {
   webSocketURL: NonNullable<BackendConfig['webSocketURL']>;
 };
 
-export default async function fetchBackendConfig(): Promise<BackendConfigWithDefaults> {
+async function fetchRawConfig() {
+  if ('refinery' in window) {
+    // We're running inside Electron, ask the main process directly for configuration.
+    return window.refinery.getBackendConfig();
+  }
   const configURL = `${import.meta.env.BASE_URL}${ENDPOINT}`;
   const response = await fetch(configURL);
-  const rawConfig = (await response.json()) as unknown;
+  return response.json() as Promise<unknown>;
+}
+
+export default async function fetchBackendConfig(): Promise<BackendConfigWithDefaults> {
+  const rawConfig = await fetchRawConfig();
   const parsedConfig = BackendConfig.parse(rawConfig);
   return {
     ...parsedConfig,

@@ -30,12 +30,13 @@ function TableToolbar({ graph }: { graph: GraphStore }): React.ReactElement {
     <Stack
       direction="row"
       className="TableToolbar-root"
-      sx={(theme) => ({
+      sx={{
         flexWrap: 'wrap',
         alignItems: 'center',
-        px: theme.spacing(1),
-        py: theme.spacing(0.5),
-      })}
+        pl: 1.25,
+        pr: 1,
+        py: 0.5,
+      }}
     >
       <Stack
         direction="row"

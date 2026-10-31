@@ -21,11 +21,11 @@ import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 
 import Tooltip from '../Tooltip';
+import SlideInPanel from '../dialog/SlideInPanel';
 import isBuiltIn from '../utils/isBuiltIn';
 
 import GraphStore, { isVisibilityAllowed } from './GraphStore';
 import RelationName from './RelationName';
-import SlideInPanel from './SlideInPanel';
 
 const VisibilityDialogScroll = styled('div', {
   name: 'VisibilityDialog-Scroll',

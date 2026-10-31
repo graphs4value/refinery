@@ -6,4 +6,5 @@
 
 set -euo pipefail
 
-grep "^$1=" ../gradle.properties | cut -d'=' -f2
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+grep "^$1=" "${script_dir}/../gradle.properties" | cut -d'=' -f2

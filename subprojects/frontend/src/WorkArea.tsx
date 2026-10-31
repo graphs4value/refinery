@@ -14,9 +14,13 @@ import { useRootStore } from './RootStoreProvider';
 import ChatPane from './chat/ChatPane';
 import EditorPane from './editor/EditorPane';
 
-export default observer(function WorkArea(): React.ReactElement {
-  const { themeStore, editorStore } = useRootStore();
+export default observer(function WorkArea(): React.ReactNode {
+  const { themeStore, editorStore, errorDialog } = useRootStore();
   const lintPanelOpen = editorStore?.lintPanel.state ?? false;
+
+  if (errorDialog?.fatal) {
+    return null;
+  }
 
   return (
     <Stack

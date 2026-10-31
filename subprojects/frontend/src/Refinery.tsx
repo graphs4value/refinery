@@ -11,11 +11,15 @@ import { SnackbarProvider } from 'notistack';
 import TopBar from './TopBar';
 import UpdateNotification from './UpdateNotification';
 import WorkArea from './WorkArea';
+import ConfirmationDialog from './dialog/ConfirmationDialog';
+import ErrorDialog from './dialog/ErrorDialog';
 
 export default function Refinery(): React.ReactElement {
   return (
     <SnackbarProvider TransitionComponent={Grow}>
       <UpdateNotification />
+      <ConfirmationDialog />
+      <ErrorDialog />
       <Stack direction="column" sx={{ height: '100%', overflow: 'auto' }}>
         <TopBar />
         <WorkArea />

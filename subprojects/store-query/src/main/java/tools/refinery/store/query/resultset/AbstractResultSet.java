@@ -34,6 +34,10 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
 
 	@Override
 	public void addListener(ResultSetListener<T> listener) {
+		if (adapter.hasPendingChanges()) {
+			throw new IllegalStateException(
+					"Listeners can only be added when there are no pending query engine changes");
+		}
 		if (listeners.isEmpty()) {
 			startListeningForChanges();
 		}
@@ -42,6 +46,10 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
 
 	@Override
 	public void removeListener(ResultSetListener<T> listener) {
+		if (adapter.hasPendingChanges()) {
+			throw new IllegalStateException(
+					"Listeners can only be removed when there are no pending query engine changes");
+		}
 		listeners.remove(listener);
 		if (listeners.isEmpty()) {
 			stopListeningForChanges();

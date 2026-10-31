@@ -13,26 +13,25 @@ import { useRef } from 'react';
 import { flushSync } from 'react-dom';
 
 import { useRootStore } from './RootStoreProvider';
-import ThemeStore from './theme/ThemeStore';
 import getLogger from './utils/getLogger';
 
 const logger = getLogger('ToggleDarkModeButton');
 
-function toggleWithViewTransition(
-  themeStore: ThemeStore,
-  button: HTMLElement | null,
+function runWithViewTransition(
+  callback: () => void,
+  anchor: HTMLElement | null,
 ): void {
   document.body.classList.add('notransition');
   let x = '100%';
   let y = '0%';
   let maxRadius = '100%';
-  if (button !== null) {
+  if (anchor !== null) {
     const {
       x: buttonX,
       y: buttonY,
       width,
       height,
-    } = button.getBoundingClientRect();
+    } = anchor.getBoundingClientRect();
     const { width: documentWidth, height: documentHeight } =
       document.documentElement.getBoundingClientRect();
     const centerX = buttonX + width / 2;
@@ -47,7 +46,7 @@ function toggleWithViewTransition(
   document.documentElement.style.setProperty('--origin-y', y);
   document.documentElement.style.setProperty('--max-radius', maxRadius);
   const transition = document.startViewTransition(() => {
-    flushSync(() => themeStore.toggleDarkMode());
+    flushSync(callback);
   });
   transition.finished
     .finally(() => {
@@ -58,12 +57,26 @@ function toggleWithViewTransition(
     });
 }
 
-function toggleWithoutViewTransition(themeStore: ThemeStore): void {
+function runWithoutViewTransition(callback: () => void): void {
   document.body.classList.add('notransition');
   try {
-    flushSync(() => themeStore.toggleDarkMode());
+    flushSync(callback);
   } finally {
     document.body.classList.remove('notransition');
+  }
+}
+
+export function runThemeChange(
+  callback: () => void,
+  anchor: HTMLElement | null,
+): void {
+  if (
+    'startViewTransition' in document ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    runWithViewTransition(callback, anchor);
+  } else {
+    runWithoutViewTransition(callback);
   }
 }
 
@@ -72,20 +85,15 @@ export default observer(function ToggleDarkModeButton(): React.ReactElement {
   const { darkMode } = themeStore;
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  const callback = () => {
-    if (
-      'startViewTransition' in document ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      toggleWithViewTransition(themeStore, buttonRef.current);
-    } else {
-      toggleWithoutViewTransition(themeStore);
-    }
-  };
-
   return (
     <Tooltip title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
-      <IconButton color="inherit" onClick={callback} ref={buttonRef}>
+      <IconButton
+        color="inherit"
+        onClick={() =>
+          runThemeChange(() => themeStore.toggleDarkMode(), buttonRef.current)
+        }
+        ref={buttonRef}
+      >
         {darkMode ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
       </IconButton>
     </Tooltip>

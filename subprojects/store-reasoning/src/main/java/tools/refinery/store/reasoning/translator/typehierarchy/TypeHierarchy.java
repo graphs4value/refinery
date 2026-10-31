@@ -16,6 +16,7 @@ public class TypeHierarchy {
 	private final Map<PartialRelation, PartialRelation> replacements = new LinkedHashMap<>();
 	private final InferredType unknownType;
 	private final Map<PartialRelation, TypeAnalysisResult> preservedTypes;
+	private final Map<PartialRelation, Integer> weightMap;
 
 	TypeHierarchy(Map<PartialRelation, TypeInfo> typeInfoMap) {
 		int size = typeInfoMap.size();
@@ -38,6 +39,12 @@ public class TypeHierarchy {
 		computeDirectSubtypes();
 		eliminateTrivialSupertypes();
 		preservedTypes = computeAnalysisResults();
+		weightMap = LinkedHashMap.newLinkedHashMap(typeInfoMap.size());
+		int i = 0;
+		for (var partialRelation : typeInfoMap.keySet()) {
+			weightMap.put(partialRelation, i);
+			i++;
+		}
 	}
 
 	public boolean isEmpty() {
@@ -77,6 +84,14 @@ public class TypeHierarchy {
 				.filter(extendedTypeInfo -> !extendedTypeInfo.isAllowFocusing())
 				.map(ExtendedTypeInfo::getType)
 				.toList();
+	}
+
+	public int getWeight(PartialRelation partialRelation) {
+		var weight = weightMap.get(partialRelation);
+		if (weight == null) {
+			throw new IllegalArgumentException("Unknown type: " + partialRelation);
+		}
+		return weight;
 	}
 
 	private void computeAllSupertypes() {

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import path from 'node:path';
+
 import micromatch from 'micromatch';
 import type { PluginOption } from 'vite';
 
@@ -14,7 +16,11 @@ export default function preloadFontsVitePlugin(
     name: 'refinery-preload-fonts',
     apply: 'build',
     enforce: 'post',
-    transformIndexHtml(_html, { bundle }) {
+    transformIndexHtml(_html, { filename, bundle }) {
+      if (path.basename(filename) === 'headless.html') {
+        // Do not preload on the Electron app headless page.
+        return [];
+      }
       return micromatch(Object.keys(bundle ?? {}), fontsGlob).map((href) => ({
         tag: 'link',
         attrs: {

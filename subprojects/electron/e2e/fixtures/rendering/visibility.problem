@@ -1,0 +1,24 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+import builtin::view.
+
+class Node {
+  @show
+  Node[] shown
+
+  @hide
+  Node[] hidden
+
+  @show(true)
+  Node[] onlyTrue
+}
+
+Node(a).
+Node(b).
+Node(c).
+
+shown(a, b).
+hidden(a, b).
+onlyTrue(a, b).

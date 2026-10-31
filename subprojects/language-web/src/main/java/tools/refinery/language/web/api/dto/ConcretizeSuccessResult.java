@@ -7,9 +7,10 @@ package tools.refinery.language.web.api.dto;
 
 import org.eclipse.xtext.web.server.validation.ValidationResult;
 import org.jetbrains.annotations.Nullable;
+import tools.refinery.generator.json.PartialModelJson;
 
 import java.util.List;
 
-public record ConcretizeSuccessResult(List<ValidationResult.Issue> issues, @Nullable JsonOutput json,
+public record ConcretizeSuccessResult(List<ValidationResult.Issue> issues, @Nullable PartialModelJson json,
 									  @Nullable String source) {
 }

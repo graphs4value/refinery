@@ -21,22 +21,45 @@ export function extractValue(data: Value | undefined): string | undefined {
   return data.error;
 }
 
+export function extractConcreteValue<T extends string>(
+  value: T,
+  concretize: false,
+): T;
+export function extractConcreteValue(
+  value: 'error',
+  concretize: true,
+): 'error-concretize';
+export function extractConcreteValue<T extends string>(
+  value: T,
+  concretize: boolean,
+): 'error' extends T ? T | 'error-concretize' : T;
+export function extractConcreteValue(value: string, concretize: boolean) {
+  if (value === 'error' && concretize) {
+    return 'error-concretize';
+  }
+  return value;
+}
+
 export function extractValueColor(
   data: Value | undefined,
-): 'true' | 'unknown' | 'error' {
+  concretize: boolean,
+): 'true' | 'unknown' | 'error' | 'error-concretize' {
   if (data === undefined || typeof data === 'number') {
     return 'unknown';
   }
   if (typeof data === 'string') {
-    if (data === 'unknown' || data === 'error') {
+    if (data === 'unknown') {
       return data;
+    }
+    if (data === 'error') {
+      return extractConcreteValue(data, concretize);
     }
     return 'true';
   }
   if ('unknown' in data) {
     return 'unknown';
   }
-  return 'error';
+  return extractConcreteValue('error', concretize);
 }
 
 function compare(a: Tuple, b: readonly number[]): number {

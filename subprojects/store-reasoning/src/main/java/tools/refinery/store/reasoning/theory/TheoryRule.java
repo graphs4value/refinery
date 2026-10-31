@@ -12,6 +12,13 @@ import tools.refinery.store.reasoning.literal.ConcretenessSpecification;
 
 public record TheoryRule(RelationalQuery precondition, Term<TruthValue> assertedTerm,
 						 ConcretenessSpecification concretenessSpecification) {
+	public TheoryRule(RelationalQuery precondition, Term<TruthValue> assertedTerm,
+					  ConcretenessSpecification concretenessSpecification) {
+		this.precondition = precondition;
+		this.assertedTerm = assertedTerm.reduce();
+		this.concretenessSpecification = concretenessSpecification;
+	}
+
 	public TheoryRule(RelationalQuery precondition, Term<TruthValue> assertedTerm) {
 		this(precondition, assertedTerm, ConcretenessSpecification.UNSPECIFIED);
 	}

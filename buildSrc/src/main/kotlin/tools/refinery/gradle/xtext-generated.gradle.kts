@@ -14,7 +14,7 @@ plugins {
 
 val xtextGenPath = "src/main/xtext-gen"
 
-val xtextGenerated: Configuration by configurations.creating {
+val xtextGenerated = configurations.create("xtextGenerated") {
 	isCanBeConsumed = false
 	isCanBeResolved = true
 }
@@ -27,7 +27,7 @@ sourceSets.main {
 tasks {
 	// Based on the idea from https://stackoverflow.com/a/57788355 to safely consume generated sources in sibling
 	// projects.
-	val syncXtextGeneratedSources by tasks.registering(Sync::class) {
+	val syncXtextGeneratedSources = tasks.register<Sync>("syncXtextGeneratedSources") {
 		from(xtextGenerated)
 		into(xtextGenPath)
 	}
@@ -42,7 +42,6 @@ tasks {
 		delete(xtextGenPath)
 	}
 }
-
 
 sonarqube.properties {
 	SonarPropertiesUtils.addToList(properties, "sonar.exclusions", "$xtextGenPath/**")

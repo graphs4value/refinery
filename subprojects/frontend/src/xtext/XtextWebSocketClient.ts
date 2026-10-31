@@ -1,21 +1,22 @@
 /*
- * SPDX-FileCopyrightText: 2021-2023 The Refinery Authors <https://refinery.tools/>
+ * SPDX-FileCopyrightText: 2021-2026 The Refinery Authors <https://refinery.tools/>
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { createAtom, makeAutoObservable, observable } from 'mobx';
+import { makeAutoObservable, observable } from 'mobx';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
 import sjson from 'secure-json-parse';
-import { interpret } from 'xstate';
 
 import CancelledError from '../utils/CancelledError';
 import PendingTask from '../utils/PendingTask';
 import getLogger from '../utils/getLogger';
+import isElectron from '../utils/isElectron';
+import isLocalBackend from '../utils/isLocalBackend';
 
+import WebSocketMachine from './WebSocketMachine';
 import type { BackendConfigWithDefaults } from './fetchBackendConfig';
-import webSocketMachine from './webSocketMachine';
 import {
   type XtextWebPushService,
   XtextResponse,
@@ -43,29 +44,11 @@ export type PushHandler = (
 ) => void;
 
 export default class XtextWebSocketClient {
-  private readonly stateAtom = createAtom('state');
-
   private webSocket: WebSocket | undefined;
 
   private readonly pendingRequests = new Map<string, PendingTask<unknown>>();
 
-  private readonly interpreter = interpret(
-    webSocketMachine.withConfig({
-      actions: {
-        openWebSocket: () => this.openWebSocket(),
-        closeWebSocket: () => this.closeWebSocket(),
-        notifyReconnect: () => this.onReconnect(),
-        notifyDisconnect: () => this.onDisconnect(),
-        cancelPendingRequests: () => this.cancelPendingRequests(),
-      },
-      services: {
-        pingService: () => this.sendPing(),
-      },
-    }),
-    {
-      logger: log.info.bind(log),
-    },
-  );
+  private readonly machine: WebSocketMachine;
 
   private readonly openListener = () => {
     if (this.webSocket === undefined) {
@@ -75,32 +58,23 @@ export default class XtextWebSocketClient {
       webSocket: { protocol },
     } = this;
     if (protocol === XTEXT_SUBPROTOCOL_V2) {
-      this.interpreter.send('OPENED');
+      this.machine.socketOpened();
     } else {
-      this.interpreter.send({
-        type: 'ERROR',
-        message: `Unknown subprotocol ${protocol}`,
-      });
+      this.machine.reportError(`Unknown subprotocol ${protocol}`);
     }
   };
 
   private readonly errorListener = (event: Event) => {
     log.error({ err: event }, 'WebSocket error');
-    this.interpreter.send({ type: 'ERROR', message: 'WebSocket error' });
+    this.machine.reportError('WebSocket error');
   };
 
   private readonly closeListener = ({ code, reason }: CloseEvent) =>
-    this.interpreter.send({
-      type: 'ERROR',
-      message: `Socket closed unexpectedly: ${code} ${reason}`,
-    });
+    this.machine.reportError(`Socket closed unexpectedly: ${code} ${reason}`);
 
   private readonly messageListener = ({ data }: MessageEvent) => {
     if (typeof data !== 'string') {
-      this.interpreter.send({
-        type: 'ERROR',
-        message: 'Unexpected message format',
-      });
+      this.machine.reportError('Unexpected message format');
       return;
     }
     let json: unknown;
@@ -111,7 +85,7 @@ export default class XtextWebSocketClient {
       });
     } catch (err) {
       log.error({ err }, 'JSON parse error');
-      this.interpreter.send({ type: 'ERROR', message: 'Malformed message' });
+      this.machine.reportError('Malformed message');
       return;
     }
     const responseResult = XtextResponse.safeParse(json);
@@ -120,7 +94,7 @@ export default class XtextWebSocketClient {
         { err: responseResult.error, response: json },
         'Malformed Xtext response',
       );
-      this.interpreter.send({ type: 'ERROR', message: 'Malformed message' });
+      this.machine.reportError('Malformed message');
       return;
     }
     const { data: response } = responseResult;
@@ -152,11 +126,27 @@ export default class XtextWebSocketClient {
     private readonly onDisconnect: DisconnectHandler,
     private readonly onPush: PushHandler,
   ) {
+    this.machine = new WebSocketMachine(
+      {
+        openWebSocket: () => this.openWebSocket(),
+        closeWebSocket: () => this.closeWebSocket(),
+        cancelPendingRequests: () => this.cancelPendingRequests(),
+        notifyReconnect: () => this.onReconnect(),
+        notifyDisconnect: () => this.onDisconnect(),
+        sendPing: () => this.sendPing(),
+      },
+      {
+        disconnectInBackground: !isElectron,
+        ignoreNetworkStatus:
+          import.meta.env.DEV ||
+          isElectron ||
+          isLocalBackend(backendConfig.webSocketURL),
+      },
+    );
     makeAutoObservable<
       XtextWebSocketClient,
-      | 'stateAtom'
       | 'webSocket'
-      | 'interpreter'
+      | 'machine'
       | 'openListener'
       | 'openWebSocket'
       | 'errorListener'
@@ -164,9 +154,8 @@ export default class XtextWebSocketClient {
       | 'messageListener'
       | 'sendPing'
     >(this, {
-      stateAtom: false,
       webSocket: observable.ref,
-      interpreter: false,
+      machine: false,
       openListener: false,
       openWebSocket: false,
       errorListener: false,
@@ -177,80 +166,76 @@ export default class XtextWebSocketClient {
   }
 
   start(): void {
-    this.interpreter
-      .onTransition((state, event) => {
-        log.trace({ state, event }, 'WebSocket state transition');
-        this.stateAtom.reportChanged();
-      })
-      .start();
+    this.machine.start();
 
-    this.interpreter.send(window.navigator.onLine ? 'ONLINE' : 'OFFLINE');
-    window.addEventListener('offline', () => this.interpreter.send('OFFLINE'));
-    window.addEventListener('online', () => this.interpreter.send('ONLINE'));
+    this.machine.setOnline(window.navigator.onLine);
+    window.addEventListener('offline', () => this.machine.setOnline(false));
+    window.addEventListener('online', () => this.machine.setOnline(true));
     this.updateVisibility();
     document.addEventListener('visibilitychange', () =>
       this.updateVisibility(),
     );
-    window.addEventListener('pagehide', () =>
-      this.interpreter.send('PAGE_HIDE'),
-    );
+    window.addEventListener('pagehide', () => this.machine.setPageFrozen(true));
     window.addEventListener('pageshow', () => {
       this.updateVisibility();
-      this.interpreter.send('PAGE_SHOW');
+      this.machine.setPageFrozen(false);
     });
     // https://developer.chrome.com/blog/page-lifecycle-api/#new-features-added-in-chrome-68
     if ('wasDiscarded' in document) {
       document.addEventListener('freeze', () =>
-        this.interpreter.send('PAGE_FREEZE'),
+        this.machine.setPageFrozen(true),
       );
       document.addEventListener('resume', () =>
-        this.interpreter.send('PAGE_RESUME'),
+        this.machine.setPageFrozen(false),
       );
     }
-    this.interpreter.send('CONNECT');
-  }
 
-  get state() {
-    this.stateAtom.reportObserved();
-    return this.interpreter.getSnapshot();
+    if ('refinery' in window) {
+      // We're running inside Electron, let's wait for the server to start in the background.
+      window.refinery.onServerStateChange((healthy) => {
+        if (healthy) {
+          this.machine.connect();
+        } else {
+          this.machine.disconnect();
+        }
+      });
+    } else {
+      this.machine.connect();
+    }
   }
 
   get opening(): boolean {
-    return this.state.matches('connection.socketCreated.open.opening');
+    return this.machine.opening;
   }
 
   get opened(): boolean {
-    return this.state.matches('connection.socketCreated.open.opened');
+    return this.machine.opened;
   }
 
   get disconnectedByUser(): boolean {
-    return this.state.matches('connection.disconnected');
+    // There is no disconnect button in the Electron app, we're only disconnected
+    // from the server when we're waiting for it to start.
+    return !isElectron && this.machine.disconnected;
   }
 
   get networkMissing(): boolean {
-    return (
-      this.state.matches('connection.temporarilyOffline') ||
-      (this.disconnectedByUser && this.state.matches('network.offline'))
-    );
+    return this.machine.networkMissing;
   }
 
-  get errors(): string[] {
-    return this.state.context.errors;
+  get errors(): readonly string[] {
+    return this.machine.errors;
   }
 
   connect(): void {
-    this.interpreter.send('CONNECT');
+    this.machine.connect();
   }
 
   disconnect(): void {
-    this.interpreter.send('DISCONNECT');
+    this.machine.disconnect();
   }
 
   forceReconnectOnError(): void {
-    this.interpreter.send({
-      type: 'ERROR',
-      message: 'Client error',
-    });
+    this.machine.reportError('Client error');
   }
 
   send(request: unknown): Promise<unknown> {
@@ -262,10 +247,7 @@ export default class XtextWebSocketClient {
 
     const promise = new Promise((resolve, reject) => {
       const task = new PendingTask(resolve, reject, REQUEST_TIMEOUT, () => {
-        this.interpreter.send({
-          type: 'ERROR',
-          message: 'Connection timed out',
-        });
+        this.machine.reportError('Connection timed out');
         this.removeTask(id);
       });
       this.pendingRequests.set(id, task);
@@ -279,13 +261,11 @@ export default class XtextWebSocketClient {
   }
 
   setKeepAlive(keepAlive: boolean): void {
-    this.interpreter.send({
-      type: keepAlive ? 'GENERATION_STARTED' : 'GENERATION_ENDED',
-    });
+    this.machine.setKeepAlive(keepAlive);
   }
 
   private updateVisibility(): void {
-    this.interpreter.send(document.hidden ? 'TAB_HIDDEN' : 'TAB_VISIBLE');
+    this.machine.setTabHidden(document.hidden);
   }
 
   private openWebSocket(): void {

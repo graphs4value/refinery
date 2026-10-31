@@ -7,7 +7,6 @@
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-import Toolbar from '@mui/material/Toolbar';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
@@ -50,9 +49,13 @@ export default observer(function EditorPane(): React.ReactElement {
       }}
       ref={ref}
     >
-      <Toolbar
-        variant="dense"
+      <Stack
+        direction="row"
         sx={{
+          alignItems: 'center',
+          minHeight: '48px',
+          px: 1,
+          py: 0.5,
           overflowY: 'scroll',
           scrollbarWidth: 'none',
           '::-webkit-scrollbar': {
@@ -63,7 +66,7 @@ export default observer(function EditorPane(): React.ReactElement {
         }}
       >
         <EditorButtons editorStore={editorStore} />
-      </Toolbar>
+      </Stack>
       <Box
         sx={{
           display: 'flex',

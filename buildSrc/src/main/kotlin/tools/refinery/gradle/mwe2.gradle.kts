@@ -11,7 +11,7 @@ plugins {
 	id("tools.refinery.gradle.java-conventions")
 }
 
-val mwe2: Configuration by configurations.creating {
+val mwe2 = configurations.create("mwe2") {
 	isCanBeConsumed = false
 	isCanBeResolved = true
 	extendsFrom(configurations.implementation.get())

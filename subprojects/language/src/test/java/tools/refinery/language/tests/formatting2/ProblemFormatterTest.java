@@ -7,17 +7,21 @@ package tools.refinery.language.tests.formatting2;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import org.eclipse.xtext.formatting2.FormatterPreferences;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.formatting2.IFormatter2;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
+import org.eclipse.xtext.preferences.IPreferenceValuesProvider;
+import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.testing.util.ParseHelper;
 import org.junit.jupiter.api.Test;
 import tools.refinery.language.model.problem.Problem;
 import tools.refinery.language.tests.InjectWithRefinery;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,6 +40,10 @@ class ProblemFormatterTest {
 
 	@Inject
 	private IFormatter2 formatter2;
+
+	@Inject
+	@FormatterPreferences
+	private IPreferenceValuesProvider formatterPreferenceValuesProvider;
 
 	@Test
 	void problemNameTest() {
@@ -149,7 +157,9 @@ class ProblemFormatterTest {
 	@Test
 	void predicateWithBodyTest() {
 		testFormatter(
-				"  pred  foo  (  node  a  ,  b  )  <->  equal  (a  ,  _c  )  ,  !  equal  (  a  ,  b  )  ;  equal+(  a" +
+				"  pred  foo  (  node  a  ,  b  )  <->  equal  (a  ,  _c  )  ,  !  equal  (  a  ,  b  )  ;  equal+( " +
+						" " +
+						"a" +
 						"  ,  b  )  .  ",
 				"pred foo(node a, b) <-> equal(a, _c), !equal(a, b); equal+(a, b).\n");
 	}
@@ -338,6 +348,7 @@ class ProblemFormatterTest {
 				pred foo(@Example node a, @Example() @Example("foo", 3) @Example(b = 2, a = "bar") b).
 				""");
 	}
+
 	@Test
 	void referenceDeclarationAnnotationTest() {
 		testFormatter("""
@@ -373,12 +384,16 @@ class ProblemFormatterTest {
 		}
 		var resource = (XtextResource) problem.eResource();
 		FormatterRequest request = formatterRequestProvider.get();
+		// Inject the formatter preferences as in the web backend so that we test also
+		// {@link NormalizedLineSeparatorInformation}.
+		request.setPreferences(new MapBasedPreferenceValues(
+				formatterPreferenceValuesProvider.getPreferenceValues(resource), new LinkedHashMap<>()));
 		request.setAllowIdentityEdits(false);
 		request.setFormatUndefinedHiddenRegionsOnly(false);
 		ITextRegionAccess regionAccess = regionBuilder.forNodeModel(resource).create();
 		request.setTextRegionAccess(regionAccess);
 		List<ITextReplacement> replacements = formatter2.format(request);
 		var formattedString = regionAccess.getRewriter().renderToString(replacements);
-		assertThat(formattedString.replace("\r\n", "\n"), equalTo(expected.replace("\r\n", "\n")));
+		assertThat(formattedString, equalTo(expected));
 	}
 }

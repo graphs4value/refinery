@@ -16,7 +16,6 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
-import Toolbar from '@mui/material/Toolbar';
 import { styled } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useState } from 'react';
@@ -30,6 +29,22 @@ const DimLabel = styled(FormControlLabel)(({ theme }) => ({
     ...theme.typography.body2,
     color: theme.palette.text.secondary,
     userSelect: 'none',
+  },
+}));
+
+const ToolbarRow = styled(Stack)(({ theme }) => ({
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  rowGap: theme.spacing(0.5),
+  '& > *': {
+    minHeight: theme.spacing(5),
+  },
+  '& > .MuiTextField-root': {
+    justifyContent: 'center',
+  },
+  '& > .RefineryTooltip-Container': {
+    display: 'flex',
+    alignItems: 'center',
   },
 }));
 
@@ -60,36 +75,36 @@ export default observer(function SearchToolbar({
   );
 
   return (
-    <Toolbar
-      variant="dense"
+    <Stack
+      direction="row"
       sx={{
-        // Match the height of the editor toolbar.
-        py: '5px',
         alignItems: 'center',
-        minHeight: 'auto',
+        pl: 1.5,
+        pr: 1,
+        pt: 0.5,
+        pb: 0.5,
+        overflowY: 'scroll',
+        scrollbarWidth: 'none',
+        '::-webkit-scrollbar': {
+          background: 'transparent',
+          width: 0,
+          height: 0,
+        },
       }}
     >
       <Stack
         direction={split ? 'column' : 'row'}
         sx={{
-          alignItems: 'center',
+          alignItems: 'stretch',
           flexGrow: 1,
           ...(split
             ? {
-                alignItems: 'start',
                 gap: 0.5,
               }
             : {}),
         }}
       >
-        <Stack
-          direction="row"
-          sx={{
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            rowGap: (theme) => theme.spacing(0.5),
-          }}
-        >
+        <ToolbarRow direction="row">
           <TextField
             type="search"
             placeholder="Search"
@@ -113,8 +128,8 @@ export default observer(function SearchToolbar({
               }
             }}
             variant="standard"
-            size="small"
-            sx={{ mt: '4px', mr: 1 }}
+            size="medium"
+            sx={{ mr: 1 }}
             inputRef={searchFieldRef}
           />
           {invalidRegexp && (
@@ -125,19 +140,16 @@ export default observer(function SearchToolbar({
                 mr: 1,
                 fontSize: 'inherit',
                 color: theme.palette.error.main,
+                display: 'flex',
+                alignItems: 'center',
               })}
             >
               Invalid regexp
             </FormHelperText>
           )}
-          <Stack
+          <ToolbarRow
             direction="row"
-            sx={(theme) => ({
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              mr: theme.spacing(1),
-              rowGap: theme.spacing(0.5),
-            })}
+            sx={(theme) => ({ mr: theme.spacing(1) })}
           >
             <Tooltip title="Previous match">
               <IconButton
@@ -157,15 +169,8 @@ export default observer(function SearchToolbar({
                 <KeyboardArrowDownIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-          </Stack>
-          <Stack
-            direction="row"
-            sx={(theme) => ({
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              rowGap: theme.spacing(0.5),
-            })}
-          >
+          </ToolbarRow>
+          <ToolbarRow direction="row">
             <DimLabel
               control={
                 <Checkbox
@@ -229,17 +234,14 @@ export default observer(function SearchToolbar({
                 </ToggleButton>
               </Tooltip>
             )}
-          </Stack>
-        </Stack>
-        <Stack
+          </ToolbarRow>
+        </ToolbarRow>
+        <ToolbarRow
           id={replaceId}
           direction="row"
-          sx={(theme) => ({
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            rowGap: theme.spacing(0.5),
+          sx={{
             display: showReplace ? 'flex' : 'none',
-          })}
+          }}
         >
           <TextField
             placeholder="Replace with"
@@ -255,17 +257,10 @@ export default observer(function SearchToolbar({
               }
             }}
             variant="standard"
-            size="small"
-            sx={{ mt: '4px', mr: 1 }}
+            size="medium"
+            sx={{ mr: 1 }}
           />
-          <Stack
-            direction="row"
-            sx={(theme) => ({
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              rowGap: theme.spacing(0.5),
-            })}
-          >
+          <ToolbarRow direction="row">
             <Button
               disabled={!valid}
               onClick={() => searchPanelStore.replaceNext()}
@@ -282,15 +277,14 @@ export default observer(function SearchToolbar({
             >
               Replace all
             </Button>
-          </Stack>
-        </Stack>
+          </ToolbarRow>
+        </ToolbarRow>
       </Stack>
       <Stack
         sx={{
           ...(split ? { display: 'none' } : {}),
           alignSelf: 'stretch',
-          alignItems: 'start',
-          mt: '1px',
+          alignItems: 'center',
         }}
       >
         <IconButton
@@ -298,9 +292,9 @@ export default observer(function SearchToolbar({
           onClick={() => searchPanelStore.close()}
           color="inherit"
         >
-          <CloseIcon fontSize="small" />
+          <CloseIcon />
         </IconButton>
       </Stack>
-    </Toolbar>
+    </Stack>
   );
 });

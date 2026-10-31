@@ -25,8 +25,12 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import MuiTooltip from '@mui/material/Tooltip';
 import { observer } from 'mobx-react-lite';
+import { useId } from 'react';
 
 import Tooltip from '../Tooltip';
+import ShareButton from '../persistence/ShareButton';
+import ShareDialog from '../persistence/ShareDialog';
+import isElectron from '../utils/isElectron';
 
 import ConnectButton from './ConnectButton';
 import type EditorStore from './EditorStore';
@@ -51,6 +55,8 @@ export default observer(function EditorButtons({
 }: {
   editorStore: EditorStore | undefined;
 }): React.ReactElement {
+  const shareDialogID = useId();
+
   return (
     <Stack direction="row" sx={{ flexGrow: 1 }}>
       <Tooltip title="Open">
@@ -71,8 +77,8 @@ export default observer(function EditorButtons({
           <SaveIcon fontSize="small" />
         </IconButton>
       </Tooltip>
-      {'showSaveFilePicker' in window && (
-        <Tooltip title={`Save as\u2026`}>
+      {('showSaveFilePicker' in window || isElectron) && (
+        <Tooltip title="Save as">
           <IconButton
             disabled={editorStore === undefined}
             onClick={() => editorStore?.saveFileAs()}
@@ -82,6 +88,8 @@ export default observer(function EditorButtons({
           </IconButton>
         </Tooltip>
       )}
+      <ShareButton editorStore={editorStore} dialogID={shareDialogID} />
+      <ShareDialog editorStore={editorStore} dialogID={shareDialogID} />
       <Tooltip title="Undo">
         <IconButton
           disabled={!editorStore?.canUndo}
@@ -169,7 +177,7 @@ export default observer(function EditorButtons({
           <FormatPaintIcon fontSize="small" />
         </IconButton>
       </Tooltip>
-      <ConnectButton editorStore={editorStore} />
+      {isElectron || <ConnectButton editorStore={editorStore} />}
     </Stack>
   );
 });

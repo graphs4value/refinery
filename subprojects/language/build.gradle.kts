@@ -18,12 +18,12 @@ mavenArtifact {
 	description = "Partial modeling language"
 }
 
-val generatedIdeSources: Configuration by configurations.creating {
+val generatedIdeSources = configurations.create("generatedIdeSources") {
 	isCanBeConsumed = true
 	isCanBeResolved = false
 }
 
-val generatedWebSources: Configuration by configurations.creating {
+val generatedWebSources = configurations.create("generatedWebSources") {
 	isCanBeConsumed = true
 	isCanBeResolved = false
 }
@@ -47,7 +47,7 @@ sourceSets {
 	}
 }
 
-val generateXtextLanguage by tasks.registering(JavaExec::class) {
+val generateXtextLanguage = tasks.register<JavaExec>("generateXtextLanguage") {
 	mainClass.set("org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher")
 	classpath(configurations.mwe2)
 	inputs.file("src/main/java/tools/refinery/language/GenerateProblem.mwe2")
@@ -59,6 +59,7 @@ val generateXtextLanguage by tasks.registering(JavaExec::class) {
 	outputs.dir(layout.buildDirectory.dir("generated/sources/xtext/ide"))
 	outputs.dir(layout.buildDirectory.dir("generated/sources/xtext/web"))
 	args("src/main/java/tools/refinery/language/GenerateProblem.mwe2", "-p", "rootPath=/$projectDir/..")
+	description = "Generate Xtext source files"
 }
 
 tasks {

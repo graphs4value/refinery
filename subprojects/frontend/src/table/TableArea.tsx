@@ -134,14 +134,6 @@ function TableArea({
   const attribute = selectedSymbol?.dataType !== undefined;
   const parameterNames = selectedSymbol?.parameterNames;
 
-  const cachedConcretize = useMemo(
-    () => concretize,
-    /* eslint-disable-next-line react-hooks/exhaustive-deps --
-     * Deliberately only update `concretize` whenever `semantics` changes to avoid flashing colors.
-     */
-    [semantics],
-  );
-
   const columns = useMemo<GridColDef<Row>[]>(() => {
     const namesOrEmpty = parameterNames ?? [];
     const defs: GridColDef<Row>[] = [];
@@ -174,14 +166,14 @@ function TableArea({
       ),
       renderCell: ({ value }: GridRenderCellParams<Row, WrappedValue>) => (
         <ValueRenderer
-          concretize={cachedConcretize}
+          concretize={concretize}
           value={value}
           attribute={attribute}
         />
       ),
     });
     return defs;
-  }, [arity, attribute, cachedConcretize, parameterNames, showComputed]);
+  }, [arity, attribute, concretize, parameterNames, showComputed]);
 
   const rows = useMemo<Row[]>(() => {
     if (computedName === undefined) {

@@ -1,0 +1,24 @@
+% SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Node {
+  int intValue
+  string stringValue
+}
+
+Node(a).
+intValue(a): 5.
+stringValue(a): "Hello".
+
+Node(b).
+intValue(b): 0..10.
+stringValue(b): "a\nb\nc".
+
+Node(c).
+intValue(c): 0..*.
+stringValue(c): "<script>alert(\"Hello\");</script>".
+
+Node(d).
+intValue(d): error.
+stringValue(d): "&lt;script&gt;alert(\"\\\");&lt;script&gt;".

@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunYarnTaskType
 import tools.refinery.gradle.utils.SonarPropertiesUtils
 
 plugins {
@@ -12,80 +11,48 @@ plugins {
 	id("tools.refinery.gradle.sonarqube")
 }
 
+val productionAssets = configurations.create("productionAssets") {
+	isCanBeConsumed = true
+	isCanBeResolved = false
+}
+
 frontend {
-	assembleScript.set("run build")
 	checkScript.set(if (project.hasProperty("ci")) "run test:run:ci" else "run test:run")
 }
 
-val srcDir = "src"
+val distDir = layout.projectDirectory.dir("dist")
 
-val distDir = "dist"
+val assembleConfigFiles: FileCollection = files("vite.config.ts")
 
-val configFiles: FileCollection = files(
-	rootProject.file("yarn.lock"),
-	rootProject.file("package.json"),
-	"package.json",
-	rootProject.file("tsconfig.base.json"),
-	"tsconfig.json",
-	"vite.config.ts",
+val configFiles: FileCollection = assembleConfigFiles + files(
 	"vitest.config.ts",
 	"vitest.workspace.ts",
 )
 
-val lintConfigFiles: FileCollection = configFiles + files(
-	rootProject.file(".eslintrc.cjs"), rootProject.file("prettier.config.cjs")
-)
-
 tasks {
 	assembleFrontend {
-		inputs.dir(srcDir)
-		inputs.files(configFiles)
+		inputs.files(assembleConfigFiles)
 		outputs.dir(distDir)
 		outputs.dir(layout.buildDirectory.dir("vite"))
 	}
 
 	checkFrontend {
 		dependsOn(rootProject.tasks.named("installBrowsers"))
-		inputs.dir(srcDir)
 		inputs.files(configFiles)
 		inputs.dir(rootProject.layout.projectDirectory.dir(".playwright"))
 		outputs.dir(layout.buildDirectory.dir("coverage"))
 	}
 
-	val typeCheckFrontend by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		inputs.dir(srcDir)
+	typeCheckFrontend {
 		inputs.files(configFiles)
-		outputs.dir(layout.buildDirectory.dir("typescript"))
-		args.set("run typecheck")
-		group = "verification"
-		description = "Check for TypeScript type errors."
 	}
 
-	val lintFrontend by registering(RunYarnTaskType::class) {
-		dependsOn(installFrontend)
-		dependsOn(typeCheckFrontend)
-		inputs.dir(srcDir)
-		inputs.files(lintConfigFiles)
-		outputs.file(layout.buildDirectory.file("eslint.json"))
-		args.set("run lint")
-		group = "verification"
-		description = "Check for TypeScript lint errors and warnings."
+	lintFrontend {
+		inputs.files(configFiles)
 	}
 
-	register<RunYarnTaskType>("fixFrontend") {
-		dependsOn(installFrontend)
-		dependsOn(typeCheckFrontend)
-		inputs.dir(srcDir)
-		inputs.files(lintConfigFiles)
-		args.set("run lint:fix")
-		group = "verification"
-		description = "Check for TypeScript lint errors and warnings."
-	}
-
-	check {
-		dependsOn(typeCheckFrontend)
-		dependsOn(lintFrontend)
+	fixFrontend {
+		inputs.files(configFiles)
 	}
 
 	clean {
@@ -93,14 +60,17 @@ tasks {
 	}
 }
 
+artifacts {
+	add("productionAssets", distDir) {
+		builtBy(tasks.assembleFrontend)
+	}
+}
+
 sonarqube.properties {
-	SonarPropertiesUtils.addToList(properties, "sonar.sources", srcDir)
-	SonarPropertiesUtils.addToList(properties, "sonar.tests", srcDir)
+	SonarPropertiesUtils.addToList(properties, "sonar.tests", "src")
 	SonarPropertiesUtils.addToList(properties, "sonar.exclusions", "**/__fixtures__/**", "**/__tests__/**",
 		"**/*.test.ts")
 	SonarPropertiesUtils.addToList(properties, "sonar.test.inclusions", "**/__fixtures__/**", "**/__tests__/**",
 		"**/*.test.ts")
-	property("sonar.nodejs.executable", "${frontend.nodeInstallDirectory.get()}/bin/node")
-	property("sonar.eslint.reportPaths", "${layout.buildDirectory.get()}/eslint.json")
 	property("sonar.javascript.lcov.reportPaths", "${layout.buildDirectory.get()}/coverage/lcov.info")
 }

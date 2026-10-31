@@ -28,6 +28,7 @@ public class BoundSmtPropagator implements BoundPropagator, ModelListener {
 		context = new ModelContext(model, rules, timeout, rlimit);
 		propagationSolver = context.createSolver(Concreteness.PARTIAL);
 		concretizationSolver = context.createSolver(Concreteness.CANDIDATE);
+		model.addListener(this);
 	}
 
 	@Override

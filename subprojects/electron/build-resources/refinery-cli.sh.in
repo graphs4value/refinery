@@ -1,0 +1,10 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+#
+# SPDX-License-Identifier: EPL-2.0
+
+DIR=$(dirname -- "$(readlink -f -- "$0")")
+ROOT=$(cd -- "$DIR/@REL_ROOT@" && pwd -P)
+[ -f "$ROOT/@REL_EXE@" ] || ROOT=@APP_DIR@
+export ELECTRON_RUN_AS_NODE=1
+exec "$ROOT/@REL_EXE@" "$ROOT/@REL_CLI@" "$@"
