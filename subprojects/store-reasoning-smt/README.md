@@ -1,3 +1,9 @@
+<!--
+  SPDX-FileCopyrightText: 2026 The Refinery Authors <https://refinery.tools/>
+
+  SPDX-License-Identifier: EPL-2.0
+-->
+
 # SMT solver strategies
 
 The following strategies are the available integrations in the SMT propagator:
