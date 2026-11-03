@@ -11,6 +11,7 @@ import tools.refinery.store.model.Model;
 import tools.refinery.store.model.ModelListener;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.smt.SmtPropagator;
+import tools.refinery.store.reasoning.smt.SmtSolverStrategy;
 import tools.refinery.store.reasoning.smt.internal.context.ModelContext;
 import tools.refinery.store.reasoning.smt.internal.solver.RuleBasedSolver;
 
@@ -23,11 +24,11 @@ public class BoundSmtPropagator implements BoundPropagator, ModelListener {
 	private final RuleBasedSolver concretizationSolver;
 
 	public BoundSmtPropagator(SmtPropagator propagator, Model model, Collection<PreparedSmtRule> rules,
-							  int timeout, int rlimit) {
+							  int timeout, int rlimit, SmtSolverStrategy strategy) {
 		this.propagator = propagator;
 		context = new ModelContext(model, rules, timeout, rlimit);
-		propagationSolver = context.createSolver(Concreteness.PARTIAL);
-		concretizationSolver = context.createSolver(Concreteness.CANDIDATE);
+		propagationSolver = context.createSolver(Concreteness.PARTIAL, strategy);
+		concretizationSolver = context.createSolver(Concreteness.CANDIDATE, strategy);
 		model.addListener(this);
 	}
 

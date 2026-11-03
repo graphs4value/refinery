@@ -30,9 +30,12 @@ import tools.refinery.store.reasoning.representation.PartialFunction;
 import tools.refinery.store.tuple.Tuple;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.function.Consumer;
 
-// Z3 assertions create unchecked generic arrays.
-// Moreover, we need to convert `FuncDecl<?>` to the specific Z3 sort for assertions.
+// Convert FuncDecl<?> to the specific Z3 sort for assertions.
 @SuppressWarnings("unchecked")
 class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements ResultSetListener<A> {
 	private final RuleBasedSolver ruleBasedSolver;
@@ -40,6 +43,10 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 	private final PartialInterpretation<A, C> partialInterpretation;
 	private final PartialInterpretationRefiner<A, C> refiner;
 	private final MutableObjectIntMap<Tuple> refCounts;
+	private final Set<Tuple> dirty = new LinkedHashSet<>();
+
+	private record Source(PartialFunctionMonitor<?, ?> monitor, Tuple tuple) {
+	}
 
 	public PartialFunctionMonitor(RuleBasedSolver ruleBasedSolver, PartialFunction<A, C> partialFunction) {
 		this.ruleBasedSolver = ruleBasedSolver;
@@ -56,6 +63,7 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 	public void put(Tuple key, A fromValue, A toValue) {
 		if (refCounts.containsKey(key)) {
 			ruleBasedSolver.markChanged();
+			dirty.add(key);
 		}
 	}
 
@@ -63,6 +71,7 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 		int newValue = refCounts.addToValue(key, 1);
 		if (newValue == 1) {
 			ruleBasedSolver.markChanged();
+			dirty.add(key);
 		}
 	}
 
@@ -74,45 +83,55 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 		}
 		if (newValue == 0) {
 			refCounts.remove(key);
+			dirty.add(key);
+			ruleBasedSolver.markChanged();
 		}
 	}
 
-	public void addAssertions(Solver solver) {
+	public void synchronizeAssertions() {
 		var context = ruleBasedSolver.getContext();
-		var z3Context = context.getZ3Context();
-		for (var entry : refCounts.keyValuesView()) {
-			var tuple = entry.getOne();
-			var variable = context.getVariable(partialFunction, tuple);
-			var value = partialInterpretation.get(tuple);
-			addAssertion(z3Context, solver, variable, value);
+		for (var tuple : dirty) {
+			var source = new Source(this, tuple);
+			if (refCounts.containsKey(tuple)) {
+				var value = partialInterpretation.get(tuple);
+				var expressions = new ArrayList<Expr<BoolSort>>();
+				addAssertion(context.getZ3Context(), expressions::add,
+						context.getVariable(partialFunction, tuple), value);
+				ruleBasedSolver.putAssertions(source, value, expressions);
+			} else {
+				ruleBasedSolver.removeAssertions(source);
+			}
 		}
+		dirty.clear();
 	}
 
-	private void addAssertion(Context context, Solver solver, FuncDecl<?> variable, A value) {
+	private void addAssertion(Context context, Consumer<Expr<BoolSort>> assertions, FuncDecl<?> variable, A value) {
 		switch (value) {
-			case TruthValue truthValue -> addAssertion(context, solver, (FuncDecl<BoolSort>) variable, truthValue);
-			case IntInterval intValue -> addAssertion(context, solver, (FuncDecl<IntSort>) variable, intValue);
-			case RealInterval realValue -> addAssertion(context, solver, (FuncDecl<RealSort>) variable, realValue);
-			case StringValue stringValue -> addAssertion(context, solver, (FuncDecl<CharSort>) variable, stringValue);
+			case TruthValue truthValue -> addAssertion(context, assertions, (FuncDecl<BoolSort>) variable, truthValue);
+			case IntInterval intValue -> addAssertion(context, assertions, (FuncDecl<IntSort>) variable, intValue);
+			case RealInterval realValue -> addAssertion(context, assertions, (FuncDecl<RealSort>) variable, realValue);
+			case StringValue stringValue -> addAssertion(context, assertions, (FuncDecl<CharSort>) variable, stringValue);
 			default -> throw new IllegalArgumentException("Unknown value %s for partial function %s".formatted(
 					value, partialFunction));
 		}
 	}
 
-	private void addAssertion(Context context, Solver solver, FuncDecl<BoolSort> variable, TruthValue value) {
+	private void addAssertion(Context context, Consumer<Expr<BoolSort>> assertions, FuncDecl<BoolSort> variable,
+							  TruthValue value) {
 		switch (value) {
 		case UNKNOWN -> {
 			// Nothing to assert.
 		}
-		case TRUE -> solver.add(context.mkConst(variable));
-		case FALSE -> solver.add(context.mkNot(context.mkConst(variable)));
-		case ERROR -> solver.add(context.mkFalse());
+		case TRUE -> assertions.accept(context.mkConst(variable));
+		case FALSE -> assertions.accept(context.mkNot(context.mkConst(variable)));
+		case ERROR -> assertions.accept(context.mkFalse());
 		}
 	}
 
-	private void addAssertion(Context context, Solver solver, FuncDecl<IntSort> variable, IntInterval intValue) {
+	private void addAssertion(Context context, Consumer<Expr<BoolSort>> assertions, FuncDecl<IntSort> variable,
+							  IntInterval intValue) {
 		if (intValue.isError()) {
-			solver.add(context.mkFalse());
+			assertions.accept(context.mkFalse());
 			return;
 		}
 		if (intValue.isConcrete()) {
@@ -120,20 +139,21 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 			if (concreteValue == null) {
 				throw new IllegalStateException("Concrete value cannot be null for concrete int interval");
 			}
-			solver.add(context.mkEq(context.mkConst(variable), context.mkInt(concreteValue.toString(10))));
+			assertions.accept(context.mkEq(context.mkConst(variable), context.mkInt(concreteValue.toString(10))));
 			return;
 		}
 		if (intValue.lowerBound() instanceof IntBound.Finite(var lowerBound)) {
-			solver.add(context.mkGe(context.mkConst(variable), context.mkInt(lowerBound.toString(10))));
+			assertions.accept(context.mkGe(context.mkConst(variable), context.mkInt(lowerBound.toString(10))));
 		}
 		if (intValue.upperBound() instanceof IntBound.Finite(var upperBound)) {
-			solver.add(context.mkLe(context.mkConst(variable), context.mkInt(upperBound.toString(10))));
+			assertions.accept(context.mkLe(context.mkConst(variable), context.mkInt(upperBound.toString(10))));
 		}
 	}
 
-	private void addAssertion(Context context, Solver solver, FuncDecl<RealSort> variable, RealInterval realValue) {
+	private void addAssertion(Context context, Consumer<Expr<BoolSort>> assertions, FuncDecl<RealSort> variable,
+							  RealInterval realValue) {
 		if (realValue.isError()) {
-			solver.add(context.mkFalse());
+			assertions.accept(context.mkFalse());
 			return;
 		}
 		if (realValue.isConcrete()) {
@@ -141,25 +161,26 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 			if (concreteValue == null) {
 				throw new IllegalStateException("Concrete value cannot be null for concrete real interval");
 			}
-			solver.add(context.mkEq(context.mkConst(variable), context.mkReal(concreteValue.toString())));
+			assertions.accept(context.mkEq(context.mkConst(variable), context.mkReal(concreteValue.toString())));
 			return;
 		}
 		if (realValue.lowerBound() instanceof RealBound.Finite(var lowerBound)) {
-			solver.add(context.mkGe(context.mkConst(variable), context.mkReal(lowerBound.toString())));
+			assertions.accept(context.mkGe(context.mkConst(variable), context.mkReal(lowerBound.toString())));
 		}
 		if (realValue.upperBound() instanceof RealBound.Finite(var upperBound)) {
-			solver.add(context.mkLe(context.mkConst(variable), context.mkReal(upperBound.toString())));
+			assertions.accept(context.mkLe(context.mkConst(variable), context.mkReal(upperBound.toString())));
 		}
 	}
 
-	private void addAssertion(Context context, Solver solver, FuncDecl<CharSort> variable, StringValue stringValue) {
+	private void addAssertion(Context context, Consumer<Expr<BoolSort>> assertions, FuncDecl<CharSort> variable,
+							  StringValue stringValue) {
 		switch (stringValue) {
 		case StringValue.Unknown _ -> {
 			// Nothing to assert.
 		}
-		case StringValue.Concrete(var concreteValue) -> solver.add(context.mkEq(context.mkConst(variable),
+		case StringValue.Concrete(var concreteValue) -> assertions.accept(context.mkEq(context.mkConst(variable),
 				context.mkString(concreteValue)));
-		case StringValue.Error _ -> solver.add(context.mkFalse());
+		case StringValue.Error _ -> assertions.accept(context.mkFalse());
 		}
 	}
 

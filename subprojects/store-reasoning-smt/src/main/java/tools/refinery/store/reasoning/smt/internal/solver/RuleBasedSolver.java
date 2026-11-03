@@ -5,14 +5,18 @@
  */
 package tools.refinery.store.reasoning.smt.internal.solver;
 
+import com.microsoft.z3.BoolSort;
+import com.microsoft.z3.Expr;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.refinery.logic.AbstractValue;
 import tools.refinery.store.dse.propagation.PropagationRejectedResult;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.reasoning.literal.Concreteness;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
+import tools.refinery.store.reasoning.smt.SmtSolverStrategy;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.store.reasoning.smt.internal.context.ModelContext;
 import tools.refinery.store.tuple.Tuple;
@@ -30,6 +34,8 @@ public class RuleBasedSolver {
 	private final ModelContext context;
 	private final Concreteness concreteness;
 	private final Solver solver;
+	private final AssertionJournal assertions;
+	private boolean cachedConcretization;
 	private final VariableMonitor variableMonitor;
 	private final List<RuleMonitor> ruleMonitors;
 	private boolean started;
@@ -37,10 +43,11 @@ public class RuleBasedSolver {
 	private PropagationResult cachedResult;
 
 	public RuleBasedSolver(ModelContext context, Concreteness concreteness, List<PreparedSmtRule> rules,
-						   Solver solver) {
+						   Solver solver, SmtSolverStrategy strategy) {
 		this.context = context;
 		this.concreteness = concreteness;
 		this.solver = solver;
+		assertions = new AssertionJournal(context.getZ3Context(), solver, strategy);
 		solver.interrupt();
 		variableMonitor = new VariableMonitor(this, rules.stream()
 				.flatMap(rule -> rule.influences().stream()
@@ -60,6 +67,7 @@ public class RuleBasedSolver {
 	}
 
 	public boolean isChanged() {
+		context.flushChanges();
 		return changed;
 	}
 
@@ -79,14 +87,21 @@ public class RuleBasedSolver {
 		variableMonitor.changeRef(partialFunction, tuple, add);
 	}
 
+	void putAssertions(Object source, AbstractValue<?, ?> value, List<Expr<BoolSort>> expressions) {
+		assertions.put(source, value, expressions);
+	}
+
+	void removeAssertions(Object source) {
+		assertions.remove(source);
+	}
+
 	private Status doCheckSatisfiable() {
 		startIfNeeded();
-		solver.reset();
-		variableMonitor.addAssertions(solver);
+		variableMonitor.synchronizeAssertions();
 		for (var ruleMonitor : ruleMonitors) {
-			ruleMonitor.addAssertions(solver);
+			ruleMonitor.synchronizeAssertions();
 		}
-		return context.callWithInterrupt(solver::check);
+		return context.callWithInterrupt(assertions::check);
 	}
 
 	private void startIfNeeded() {
@@ -101,10 +116,11 @@ public class RuleBasedSolver {
 	}
 
 	public PropagationResult checkSatisfiable(Object reason) {
-		if (canReuseResult()) {
+		if (canReuseResult() && !cachedConcretization) {
 			return cachedResult;
 		}
 		var status = doCheckSatisfiable();
+		cachedConcretization = false;
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("checkSatisfiable {}", solver.getStatistics());
 		}
@@ -117,10 +133,11 @@ public class RuleBasedSolver {
 	}
 
 	public PropagationResult concretize(Object reason) {
-		if (canReuseResult()) {
+		if (canReuseResult() && cachedConcretization) {
 			return cachedResult;
 		}
 		var status = doCheckSatisfiable();
+		markUnchanged();
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("concretize {}", solver.getStatistics());
 		}
@@ -138,7 +155,7 @@ public class RuleBasedSolver {
 			case UNKNOWN -> new PropagationRejectedResult(reason, REJECTION_UNKNOWN);
 			case UNSATISFIABLE -> new PropagationRejectedResult(reason, REJECTION_UNSAT);
 		};
-		markUnchanged();
+		cachedConcretization = true;
 		return cachedResult;
 	}
 }

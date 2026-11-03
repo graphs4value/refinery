@@ -22,12 +22,14 @@ import tools.refinery.z3.Z3SolverLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class SmtPropagator implements ModelStoreConfiguration {
 	private final List<TheoryRule> rules = new ArrayList<>();
 	private int timeout;
 	private int rlimit;
+	private SmtSolverStrategy solverStrategy = SmtSolverStrategy.POP_REPLAY;
 
 	public SmtPropagator rule(RelationalQuery precondition, Term<TruthValue> assertedTerm) {
 		return rule(new TheoryRule(precondition, assertedTerm));
@@ -57,6 +59,12 @@ public class SmtPropagator implements ModelStoreConfiguration {
 		return this;
 	}
 
+	/** Selects the assertion lifecycle strategy; defaults to pop/replay. */
+	public SmtPropagator solverStrategy(SmtSolverStrategy solverStrategy) {
+		this.solverStrategy = Objects.requireNonNull(solverStrategy);
+		return this;
+	}
+
 	@Override
 	public void apply(ModelStoreBuilder storeBuilder) {
 		Z3SolverLoader.loadNativeLibraries();
@@ -66,7 +74,7 @@ public class SmtPropagator implements ModelStoreConfiguration {
 			queryEngineBuilder.queries(preparedRule.partialPrecondition(), preparedRule.candidatePrecondition());
 		}
 		storeBuilder.getAdapter(PropagationBuilder.class)
-				.propagator(model -> new BoundSmtPropagator(this, model, preparedRules, timeout, rlimit));
+				.propagator(model -> new BoundSmtPropagator(this, model, preparedRules, timeout, rlimit, solverStrategy));
 		// SMT rules rely on `PARTIAL` interpretations for attributes.
 		storeBuilder.getAdapter(ReasoningBuilder.class)
 				.requiredInterpretations(Set.of(Concreteness.PARTIAL, Concreteness.CANDIDATE));
