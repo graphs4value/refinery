@@ -59,6 +59,10 @@ class PartialFunctionMonitor<A extends AbstractValue<A, C>, C> implements Result
 		}
 	}
 
+	public void close() {
+		partialInterpretation.removeListener(this);
+	}
+
 	public void addRef(Tuple key) {
 		int newValue = refCounts.addToValue(key, 1);
 		if (newValue == 1) {
