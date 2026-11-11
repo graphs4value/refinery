@@ -276,18 +276,37 @@
   abstract       = {In the early stages of model driven development, models are frequently incomplete and partial. Partial models represent multiple possible concrete models, and thus, they are able to capture uncertainty and possible design decisions. When using models of a complex modeling language, several well-formedness constraints need to be continuously checked to highlight conceptual design flaws for the engineers in an early phase. While well-formedness constraints can be efficiently checked for (fully specified) concrete models, checking the same constraints over partial models is more challenging since, for instance, a currently valid constraint may be violated (or an invalid constraint may be respected) when refining a partial model into a concrete model. In this paper we propose a novel technique to evaluate well-formedness constraints on partial models in order to detect if (i) a concretization may potentially violate or (ii) any concretization will surely violate a well-formedness constraint to help engineers gradually to resolve uncertainty without violating well-formedness. For that purpose, we map the problem of constraint evaluation over partial models into a regular graph pattern matching problem over complete models by semantically equivalent rewrites of graph queries.}
 }
 
-@article{semerathIncomplete2017,
-  author         = {Semeráth, Oszkár and Varró, Dániel},
-  title          = {{Evaluating Well-Formedness Constraints on Incomplete Models}},
-  journal        = {Acta Cybernetica},
+@article{semerathFormalValidation2017,
+  author         = {Semeráth, Oszkár and Barta, Ágnes and Horváth, Ákos and Szatmári, Zoltán and Varró, Dániel},
+  title          = {{Formal validation of domain-specific languages with derived features and well-formedness constraints}},
+  journal        = {Software and Systems Modeling},
   year           = {2017},
-  pages          = {687--713},
-  doi            = {10.14232/actacyb.23.2.2017.15},
-  url            = {https://doi.org/10.14232/actacyb.23.2.2017.15},
+  pages          = {357--392},
+  doi            = {10.1007/s10270-015-0485-x},
+  url            = {https://doi.org/10.1007/s10270-015-0485-x},
   language       = {english},
-  volume         = {23},
+  volume         = {16},
   number         = {2},
-  abstract       = {In modern modeling tools used for model-driven development, the validation of several well-formedness constraints is continuously been carried out by exploiting advanced graph query engines to highlight conceptual design flaws. However, while models are still under development, they are frequently partial and incomplete. Validating constraints on incomplete, partial models may identify a large number of irrelevant problems. By switching off the validation of these constraints, one may fail to reveal problematic cases which are difficult to correct when the model becomes sufficiently detailed. Here, we propose a novel validation technique for evaluating well-formedness constraints on incomplete, partial models with may and must semantics, e.g. a constraint without a valid match is satisfiable if there is a completion of the partial model that may satisfy it. To this end, we map the problem of constraint evaluation over partial models into regular graph pattern matching over complete models by semantically equivalent rewrites of graph queries.}
+  publisher      = {Springer},
+  issn           = {1619-1366},
+  abstract       = {This article presents an automated method for validating domain-specific language specifications that combine EMF metamodels with derived features and well-formedness constraints. Graph queries and a subset of OCL invariants are translated into an effectively propositional fragment of first-order logic for analysis by logic solvers. Approximations handle features such as transitive closure and multiplicities that cannot be expressed directly in the target formalism. The implementation is demonstrated on an avionics language, with performance experiments using Z3 and Alloy.}
+}
+
+@inproceedings{semerathDerivedFeatures2013,
+  author         = {Semeráth, Oszkár and Horváth, Ákos and Varró, Dániel},
+  title          = {{Validation of Derived Features and Well-Formedness Constraints in DSLs: By Mapping Graph Queries to an SMT-Solver}},
+  booktitle      = {Model-Driven Engineering Languages and Systems},
+  year           = {2013},
+  pages          = {538--554},
+  doi            = {10.1007/978-3-642-41533-3_33},
+  url            = {https://doi.org/10.1007/978-3-642-41533-3_33},
+  language       = {english},
+  publisher      = {Springer},
+  editor         = {Moreira, Ana and Schätz, Bernhard and Gray, Jeff and Vallecillo, Antonio and Clarke, Peter},
+  series         = {Lecture Notes in Computer Science},
+  volume         = {8107},
+  isbn           = {978-3-642-41533-3},
+  abstract       = {This paper validates domain-specific language specifications by translating EMF metamodels and EMF-IncQuery graph queries into an effectively propositional fragment of first-order logic analyzed by Z3. The method checks derived features and well-formedness constraints for specification problems, including inconsistency, ambiguity, and incompleteness. Overapproximations support query constructs such as transitive closure and recursion. An avionics language provides the illustrative case study.}
 }
 
 @inproceedings{semerathIncremental2016,
