@@ -11,14 +11,18 @@ import tools.refinery.language.annotations.DeclarativeAnnotationValidator;
 import tools.refinery.language.annotations.ValidateAnnotation;
 import tools.refinery.language.model.problem.ModuleKind;
 import tools.refinery.language.model.problem.Problem;
+import tools.refinery.store.reasoning.smt.SmtSolverStrategy;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class Z3Annotations extends DeclarativeAnnotationValidator {
 	public static final QualifiedName Z3_TIMEOUT = Z3Library.Z3_LIBRARY.append("z3Timeout");
 	public static final String Z3_TIMEOUT_MILLISECONDS = "milliseconds";
 	public static final QualifiedName Z3_RLIMIT = Z3Library.Z3_LIBRARY.append("z3Rlimit");
 	public static final String Z3_RLIMIT_RLIMIT = "rlimit";
+	public static final QualifiedName Z3_SOLVER_STRATEGY = Z3Library.Z3_LIBRARY.append("z3SolverStrategy");
+	public static final String Z3_SOLVER_STRATEGY_STRATEGY = "strategy";
 
 	public static final BigInteger MAX_TIMEOUT_MILLISECONDS =
 			getValueFromEnvironment("REFINERY_Z3_MAX_TIMEOUT_MS", 10_000);
@@ -60,11 +64,30 @@ public class Z3Annotations extends DeclarativeAnnotationValidator {
 
 	@ValidateAnnotation("Z3_TIMEOUT")
 	@ValidateAnnotation("Z3_RLIMIT")
+	@ValidateAnnotation("Z3_SOLVER_STRATEGY")
 	private void validateTopLevelAnnotation(Annotation annotation) {
 		if (!(annotation.getAnnotatedElement() instanceof Problem problem) ||
 				problem.getKind() != ModuleKind.PROBLEM) {
 			error("Annotations %s can only be applied at the top level."
 					.formatted(annotation.getAnnotationName().getLastSegment()), annotation);
+		}
+	}
+
+	@ValidateAnnotation("Z3_SOLVER_STRATEGY")
+	private void validateSolverStrategy(Annotation annotation) {
+		var strategyOption = annotation.getString(Z3_SOLVER_STRATEGY_STRATEGY);
+		if (strategyOption.isEmpty()) {
+			error("Must specify solver strategy.", annotation);
+			return;
+		}
+		try {
+			SmtSolverStrategy.valueOf(strategyOption.get());
+		} catch (IllegalArgumentException e) {
+			var strategies = Arrays.stream(SmtSolverStrategy.values())
+					.map(Enum::name)
+					.toList();
+			error("Unknown solver strategy '%s'. Expected one of %s."
+					.formatted(strategyOption.get(), String.join(", ", strategies)), annotation);
 		}
 	}
 
