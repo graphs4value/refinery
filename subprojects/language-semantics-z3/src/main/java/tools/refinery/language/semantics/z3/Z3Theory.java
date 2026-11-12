@@ -7,6 +7,7 @@ package tools.refinery.language.semantics.z3;
 
 import tools.refinery.store.model.ModelStoreBuilder;
 import tools.refinery.store.reasoning.smt.SmtPropagator;
+import tools.refinery.store.reasoning.smt.SmtSolverStrategy;
 import tools.refinery.store.reasoning.smt.expr.SmtExprChecker;
 import tools.refinery.store.reasoning.theory.Theory;
 import tools.refinery.store.reasoning.theory.TheoryRule;
@@ -18,10 +19,16 @@ class Z3Theory implements Theory {
 	private final SmtExprChecker checker = new SmtExprChecker();
 	private final int timeout;
 	private final int rlimit;
+	private final SmtSolverStrategy solverStrategy;
 
-	public Z3Theory(int timeout, int rlimit) {
+	public Z3Theory(int timeout, int rlimit, SmtSolverStrategy solverStrategy) {
 		this.timeout = timeout;
 		this.rlimit = rlimit;
+		this.solverStrategy = solverStrategy;
+	}
+
+	SmtSolverStrategy getSolverStrategy() {
+		return solverStrategy;
 	}
 
 	@Override
@@ -37,6 +44,7 @@ class Z3Theory implements Theory {
 		storeBuilder.with(new SmtPropagator()
 				.rules(collectedRules)
 				.timeout(timeout)
-				.rlimit(rlimit));
+				.rlimit(rlimit)
+				.solverStrategy(solverStrategy));
 	}
 }
