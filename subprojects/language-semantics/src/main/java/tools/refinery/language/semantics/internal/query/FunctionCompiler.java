@@ -152,13 +152,19 @@ public class FunctionCompiler {
 			for (var expr : condition.getLiterals()) {
 				queryCompiler.toLiteralsTraced(expr, localScope, helperLiterals);
 			}
-			var helperParameters = new ArrayList<Variable>(localScope.values());
+			var bodyLiterals = new ArrayList<Literal>();
+			var bodyTerm = queryCompiler.interpretTerm(match.getValue(), localScope, bodyLiterals)
+					.asType(abstractDomain.abstractType());
+			helperLiterals.addAll(bodyLiterals);
+			var helperParameterSet = new LinkedHashSet<Variable>(localScope.values());
+			for (var literal : bodyLiterals) {
+				helperParameterSet.addAll(literal.getOutputVariables());
+			}
+			var helperParameters = new ArrayList<>(helperParameterSet);
 			var helper = Dnf.builder(name + "#case" + i)
 					.parameters(helperParameters)
 					.clause(helperLiterals)
 					.build();
-			var bodyTerm = queryCompiler.interpretTerm(match.getValue(), localScope, helperLiterals)
-					.asType(abstractDomain.abstractType());
 			mayTerms.add(new PartialAggregationTerm<>(joinAggregator, helper, List.copyOf(helperParameters),
 					bodyTerm));
 			// Renew private variables.
