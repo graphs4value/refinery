@@ -1,0 +1,59 @@
+@misc{semerathPhd2019,
+  author         = {Semeráth, Oszkár},
+  title          = {{Formal Validation and Model Generation for Domain-Specific Languages by Logic Solvers}},
+  year           = {2019},
+  type           = {Thesis},
+  institution    = {Budapest University of Technology and Economics},
+  school         = {Budapest University of Technology and Economics},
+  note           = {PhD Thesis, Budapest University of Technology and Economics},
+  language       = {english},
+  pagetotal      = {186},
+  url            = {https://oszkarsemerath.github.io/content/phd-thesis-semerath.pdf},
+  url_pdf        = {https://oszkarsemerath.github.io/content/phd-thesis-semerath.pdf}
+}
+
+@misc{marussyPhd2023,
+  author         = {Marussy, Kristóf},
+  title          = {{Abstraction Techniques for the Analysis and Synthesis of Critical Cyber-Physical System Architectures}},
+  year           = {2023},
+  type           = {Thesis},
+  institution    = {Budapest University of Technology and Economics},
+  school         = {Budapest University of Technology and Economics},
+  note           = {PhD Thesis, Budapest University of Technology and Economics},
+  language       = {english},
+  supervisor     = {Majzik, István},
+  url            = {https://marussy.com/phd-thesis.pdf},
+  url_pdf        = {https://marussy.com/phd-thesis.pdf},
+  url_booklet    = {https://marussy.com/phd-thesis-booklet.pdf}
+}
+
+@misc{freyMsc2023,
+  author         = {Frey, Dominik},
+  title          = {{Complex Event Processing for Design-Space Exploration}},
+  year           = {2023},
+  date           = {2023-12-17},
+  type           = {Thesis},
+  institution    = {Budapest University of Technology and Economics},
+  school         = {Budapest University of Technology and Economics},
+  note           = {Master's Thesis, Budapest University of Technology and Economics},
+  language       = {english},
+  pagetotal      = {78},
+  supervisor     = {Marussy, Kristóf and Vörös, András},
+  url            = {https://dominikfrey.dev/files/theses/msc-thesis-2023-complex-event-processing-dse.pdf},
+  url_pdf        = {https://dominikfrey.dev/files/theses/msc-thesis-2023-complex-event-processing-dse.pdf},
+  abstract       = {The safe and correct operation of critical Cyber-Physical Systems (CPS) often depends on their operating context, including environmental effects, the deployment of components, and the communication between them. To capture complex interdependence of the system and environment, time-evolving graph models describing the state of the system and its context are used in model-driven systems engineering. Thus, high-level requirements can be formalized as runtime monitors observing the time evolution of the graph. For example, in autonomous driving applications, a runtime model can represent the state and relationships of the vehicle and other actors in the scene, while runtime monitors can detect traffic rule violations and ensure safe driving. Verifying the correctness of such context-dependent systems requires a test suite of system model trajectories (i.e., sequences of graphs) that cover the behaviour of the system and the monitors. In autonomous driving, test scenarios corresponding to various traffic situations are used to verify the adherence to traffic rules. However, the large amount of behaviours makes manual construction of such test sequences with sufficient coverage infeasible. Exhaustive enumeration is also prohibitively time-consuming, and random exploration lacks the focus to generate interesting and valuable test sequences. This research aims to leverage Design-Space Exploration (DSE) heuristics to automatically and efficiently derive test sequences. We explicitly reuse the runtime monitors to guide the exploration and reach sufficient coverage. In particular, (i) we extend the Parametric Timed Automata (PTA) formalism with graph pattern matching, which will serve as a comprehensive background formalism for runtime monitors. This extension incorporates Complex Event Processing (CEP) and temporal logic-based monitors, that can represent Metric Temporal Graph Logic (MTGL) specifications. We introduce a (ii) specialized objective function for guiding DSE based on the monitoring automata, ensuring the derivation of relevant test sequences reaching the sufficient coverage of bevaiours. We (iii) integrate the proposed monitors into the open-source Refinery graph processing framework for both runtime execution and design space exploration. We (iv) evaluate the applicability and scalability of the proposed approach on multiple case studies, including scenario generation for autonomous vehicles. As a result, engineers can utilize high-level specifications with monitor automata both for testing complex context-dependent systems, as well as for their runtime monitoring.}
+}
+
+@misc{babikianPhd2024,
+  author         = {Babikian, Aren A.},
+  title          = {{System-Level Testing of Autonomous Vehicles Through Consistent Model Generation with Qualitative Abstractions and Abstract Coverage}},
+  year           = {2024},
+  type           = {Thesis},
+  institution    = {McGill University},
+  school         = {McGill University},
+  note           = {PhD Thesis, McGill University; defended in 2024, catalogued by Érudit in 2025},
+  language       = {english},
+  supervisor     = {Mussbacher, Gunter and Varró, Dániel},
+  url            = {https://www.mcgill.ca/ece/channels/event/phd-defence-aren-babikian-system-level-testing-autonomous-vehicles-through-consistent-model-358492},
+  abstract       = {In recent years, autonomous vehicles (AVs) controlled by advanced machine learning techniques have significantly gained in popularity. With many promising functionalities, citizens are quick to transition from regular road vehicles to (at least partially) autonomous vehicles for their daily travels. However, as the number of AVs on our roads increases, so do the related safety assurance concerns. To identify and address such safety concerns, researchers and practitioners often refer to existing safety standards for autonomous (e.g. ISO 21448) and for regular vehicles (e.g. ISO 26262-1). Of note is the level of detail in such standards: although there exist requirements for the individual components involved in AVs, safety standards place system-level requirements and restrictions on the AV-under-test. Unfortunately, research has shown that despite being efficient in their scope, component-level testing approaches often do not adapt well to the system level. Therefore, system-level testing approaches must be derived independently and may make certain assumptions wrt. the correctness of the various underlying components. System-level safety assurance approaches for AVs are often based on adaptations of existing approaches for general software systems. However, existing research suggests that such adaptations are not adequate for AV testing. On one hand, upfront design time verification of AVs is practically infeasible considering the potentially infinite number of environments (contexts) an AV must interact with. On the other hand, runtime techniques, such as on-road monitoring, are unsustainable as they place untested or partially tested AVs on real roads, which poses a serious threat to the safety of surrounding vehicles and pedestrians. To address such testing challenges, recent safety assurance approaches adopt the scenario-based testing paradigm: they test AVs by (1) automatically deriving traffic scenarios, (2) executing them in simulation and (3) evaluating the system-level safety of the AV-under-test. In this thesis, I propose a scenario-based AV testing approach that builds upon automated generation of critical test traffic scenarios. I provide contributions in accordance to three foundational research questions. As an initial step, I propose (FRQ1) a multi-faceted, formal scenario specification language that incorporates relevant traffic concepts at various levels of abstraction for adequate representation of AV test cases. To evaluate the (practical) relevance of traffic scenarios, I propose (FRQ2) various coverage metrics at different abstraction levels. In particular, such metrics incorporate concepts related to potential danger in traffic scenarios (e.g. collisions, near-misses). To complete the AV testing workflow, I then propose (FRQ3) various approaches that derive consistent, simulation-ready traffic scenarios with high abstract coverage from abstract specifications given as input. I compare different approaches in accordance to the particularities of the input specification language it handles and to the relevance of traffic scenarios it derives. As a practical outcome of my contributions, I provide safety evaluation data and analysis for three state-of-the-art AV controllers (i.e. TransFuser, Dave2 and BeamNG.AI) within two simulation environments (i.e. CARLA, BeamNG.tech).}
+}
