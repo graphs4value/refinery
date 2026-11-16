@@ -1,0 +1,45 @@
+% Copyright (c) 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Event {
+    int value
+}
+
+Event(sel).
+Event(src).
+Event(dst).
+atom sel, src, dst.
+
+% A node constant appears only in the value of a branch.
+int pick() =
+    value(sel) != 0 -> 0;
+    value(sel) == 0 -> value(src).
+
+propagation rule setDst() <->
+    true
+==>
+    value(dst): pick().
+
+% TEST: node constant in branch value is selected
+
+value(sel): 0.
+value(src): 5.
+
+% EXPECT:
+value(dst): 5.
+
+% TEST: other branch is selected
+
+value(sel): 1.
+value(src): 5.
+
+% EXPECT:
+value(dst): 0.
+
+% TEST: both branches may apply
+
+value(src): 5.
+
+% EXPECT:
+value(dst): 0..5.

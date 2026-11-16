@@ -1,0 +1,52 @@
+% Copyright (c) 2026 The Refinery Authors <https://refinery.tools/>
+%
+% SPDX-License-Identifier: EPL-2.0
+
+class Event {
+    int value
+    Event[0..1] next
+}
+
+Event(fallback).
+atom fallback.
+value(fallback): 7.
+
+% The branch value mixes a parameter and a node constant.
+int pick(Event e) =
+    value(e) != 0 -> value(e);
+    value(e) == 0 -> value(fallback).
+
+propagation rule setNext(Event e, Event f) <->
+    next(e, f)
+==>
+    value(f): pick(e).
+
+next(a, b).
+
+% TEST: parameter branch is selected
+
+value(a): 3.
+
+% EXPECT:
+value(b): 3.
+
+% TEST: node constant branch is selected
+
+value(a): 0.
+
+% EXPECT:
+value(b): 7.
+
+% TEST: node constant only in branch conditions
+
+int isFallbackSet() =
+    value(fallback) != 0 -> 1;
+    value(fallback) == 0 -> 0.
+
+propagation rule setFlag(Event e) <->
+    next(e, _)
+==>
+    value(e): isFallbackSet().
+
+% EXPECT:
+value(a): 1.

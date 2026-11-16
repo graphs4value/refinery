@@ -13,7 +13,7 @@ public interface AbstractValue<A extends AbstractValue<A, C>, C> extends Compara
 	C getConcrete();
 
 	default boolean isConcrete() {
-		return getConcrete() == null;
+		return getConcrete() != null;
 	}
 
 	@Nullable
