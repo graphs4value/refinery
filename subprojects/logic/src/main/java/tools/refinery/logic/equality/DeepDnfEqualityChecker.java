@@ -27,8 +27,12 @@ public class DeepDnfEqualityChecker implements DnfEqualityChecker {
 		if (arity != other.arity()) {
 			return false;
 		}
+		// Parameters of different types cannot be unified (the substitution would reject them).
 		for (int i = 0; i < arity; i++) {
-			if (!symbolicParameters.get(i).getDirection().equals(other.getSymbolicParameters().get(i).getDirection())) {
+			var parameter = symbolicParameters.get(i);
+			var otherParameter = other.getSymbolicParameters().get(i);
+			if (!parameter.getDirection().equals(otherParameter.getDirection()) ||
+					!parameter.getVariable().tryGetType().equals(otherParameter.getVariable().tryGetType())) {
 				return false;
 			}
 		}
