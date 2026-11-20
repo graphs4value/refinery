@@ -122,9 +122,10 @@ public abstract class CommunicationTracker {
         final Graph<Node> reducedGraph = getReducedGraph();
         final List<Node> representatives = TopologicalSorting.compute(reducedGraph);
 
-        for (int i = 0; i < representatives.size(); i++) { // groups for SCC representatives
-            final Node representative = representatives.get(i);
-            createAndStoreGroup(representative, i);
+        // the topological order is a linked list, so indexed access would make this quadratic.
+        int groupId = 0;
+        for (final Node representative : representatives) { // groups for SCC representatives
+            createAndStoreGroup(representative, groupId++);
         }
 
         minGroupId = 0;
