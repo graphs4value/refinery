@@ -9,6 +9,7 @@ import org.eclipse.xtext.naming.QualifiedName;
 import tools.refinery.language.annotations.Annotations;
 import tools.refinery.language.semantics.ProblemTrace;
 import tools.refinery.language.semantics.theory.TheoryProvider;
+import tools.refinery.store.reasoning.smt.SmtSolverStrategy;
 import tools.refinery.store.reasoning.theory.Theory;
 
 import java.util.Optional;
@@ -29,6 +30,10 @@ public class Z3TheoryProvider implements TheoryProvider {
 				.flatMap(annotation -> annotation.getBigInteger(Z3Annotations.Z3_RLIMIT_RLIMIT))
 				.orElse(Z3Annotations.DEFAULT_RLIMIT)
 				.intValue();
-		return Optional.of(new Z3Theory(timeout, rlimit));
+		var solverStrategy = annotations.getAnnotation(Z3Annotations.Z3_SOLVER_STRATEGY)
+				.flatMap(annotation -> annotation.getString(Z3Annotations.Z3_SOLVER_STRATEGY_STRATEGY))
+				.map(SmtSolverStrategy::valueOf)
+				.orElse(SmtSolverStrategy.POP_REPLAY);
+		return Optional.of(new Z3Theory(timeout, rlimit, solverStrategy));
 	}
 }

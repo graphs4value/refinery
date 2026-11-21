@@ -6,7 +6,6 @@
 package tools.refinery.store.reasoning.smt.internal.solver;
 
 import com.microsoft.z3.Model;
-import com.microsoft.z3.Solver;
 import tools.refinery.store.dse.propagation.PropagationResult;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.PartialFunction;
@@ -54,9 +53,9 @@ class VariableMonitor {
 		return monitor;
 	}
 
-	public void addAssertions(Solver solver) {
+	public void synchronizeAssertions() {
 		for (var entry : monitorMap.entrySet()) {
-			entry.getValue().addAssertions(solver);
+			entry.getValue().synchronizeAssertions();
 		}
 	}
 

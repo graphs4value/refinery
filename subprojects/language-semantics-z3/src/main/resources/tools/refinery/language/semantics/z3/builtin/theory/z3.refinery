@@ -44,3 +44,23 @@ import builtin::theory::z3::core.
  *               to the solver step.
  */
 #pred z3Rlimit(int rlimit).
+
+/**
+ * Selects the assertion lifecycle strategy used by the Z3 solver.
+ *
+ * Use this as a top-level annotation, e.g.,
+ * `#z3SolverStrategy("POP_REPLAY").`.
+ *
+ * Available strategies are:
+ *
+ * - `"RESET"`: resets and replays all assertions before each solver check.
+ * - `"POP_REPLAY"`: keeps a shared assertion prefix and replays only the
+ *   changed suffix.
+ * - `"GUARDED_ASSUMPTIONS"`: guards assertions with assumptions instead of
+ *   removing them from the solver.
+ *
+ * @param strategy The name of the solver strategy.
+ *
+ *                 Default value: `"POP_REPLAY"`.
+ */
+#pred z3SolverStrategy(string strategy).

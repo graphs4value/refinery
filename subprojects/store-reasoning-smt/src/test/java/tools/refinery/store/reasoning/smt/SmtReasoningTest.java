@@ -62,10 +62,10 @@ class SmtReasoningTest {
 	private final PartialRelation isolated = PartialSymbol.of("isolated", 1);
 	private final PartialRelation invalidParentAge = PartialSymbol.of("invalidParentAge", 2);
 
-	@ParameterizedTest(name = "isolated = {0}")
+	@ParameterizedTest(name = "isolated = {0}, strategy = {1}")
 	@MethodSource
-	void modelGenerationTest(CardinalityInterval isolatedScope) {
-		var store = getModelStore(isolatedScope);
+	void modelGenerationTest(CardinalityInterval isolatedScope, SmtSolverStrategy strategy) {
+		var store = getModelStore(isolatedScope, strategy);
 
 		try (var model = store.getAdapter(ReasoningStoreAdapter.class).createInitialModel(getModelSeed())) {
 			var bestFirst = new BestFirstStoreManager(store, 1);
@@ -94,14 +94,12 @@ class SmtReasoningTest {
 	}
 
 	public static Stream<Arguments> modelGenerationTest() {
-		return Stream.of(
-				Arguments.of(CardinalityIntervals.NONE),
-				Arguments.of(CardinalityIntervals.ONE),
-				Arguments.of(PERSON_SCOPE)
-		);
+		return Stream.of(SmtSolverStrategy.values()).flatMap(strategy ->
+				Stream.of(CardinalityIntervals.NONE, CardinalityIntervals.ONE, PERSON_SCOPE)
+						.map(scope -> Arguments.of(scope, strategy)));
 	}
 
-	private ModelStore getModelStore(CardinalityInterval isolatedScope) {
+	private ModelStore getModelStore(CardinalityInterval isolatedScope, SmtSolverStrategy strategy) {
 		var metamodel = Metamodel.builder()
 				.type(person)
 				.reference(parents, builder -> builder
@@ -154,7 +152,7 @@ class SmtReasoningTest {
 				.with(new ScopePropagator()
 						.scope(person, PERSON_SCOPE)
 						.scope(isolated, isolatedScope))
-				.with(new SmtPropagator()
+				.with(new SmtPropagator().solverStrategy(strategy)
 						.rule(
 								Query.of("parent", builder -> builder
 										.parameters(p, q)

@@ -22,6 +22,7 @@ import tools.refinery.store.reasoning.refinement.PartialInterpretationRefiner;
 import tools.refinery.store.reasoning.representation.AnyPartialFunction;
 import tools.refinery.store.reasoning.representation.PartialSymbol;
 import tools.refinery.store.reasoning.smt.expr.TermToExpr;
+import tools.refinery.store.reasoning.smt.SmtSolverStrategy;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.store.reasoning.smt.internal.solver.RuleBasedSolver;
 import tools.refinery.store.tuple.Tuple;
@@ -64,6 +65,10 @@ public class ModelContext implements AutoCloseable {
 		interruptibleWrapper = new InterruptibleWrapper(model.getCancellationToken(), context);
 	}
 
+	public void flushChanges() {
+		queryEngine.flushChanges();
+	}
+
 	public Context getZ3Context() {
 		return context;
 	}
@@ -89,7 +94,7 @@ public class ModelContext implements AutoCloseable {
 		return reasoningAdapter;
 	}
 
-	public RuleBasedSolver createSolver(Concreteness concreteness) {
+	public RuleBasedSolver createSolver(Concreteness concreteness, SmtSolverStrategy strategy) {
 		var solver = context.mkSolver();
 		var params = context.mkParams();
 		params.add("model", concreteness == Concreteness.CANDIDATE);
@@ -100,7 +105,7 @@ public class ModelContext implements AutoCloseable {
 			params.add("rlimit", rlimit);
 		}
 		solver.setParameters(params);
-		return new RuleBasedSolver(this, concreteness, rules, solver);
+		return new RuleBasedSolver(this, concreteness, rules, solver, strategy);
 	}
 
 	public FuncDecl<?> getVariable(AnyPartialFunction partialFunction, Tuple input) {

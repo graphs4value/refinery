@@ -5,18 +5,24 @@
  */
 package tools.refinery.store.reasoning.smt.internal.solver;
 
-import com.microsoft.z3.Solver;
 import tools.refinery.store.query.resultset.ResultSet;
 import tools.refinery.store.query.resultset.ResultSetListener;
 import tools.refinery.store.reasoning.smt.internal.PreparedSmtRule;
 import tools.refinery.store.tuple.Tuple;
 
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class RuleMonitor implements ResultSetListener<Boolean> {
 	private final RuleBasedSolver solver;
 	private final PreparedSmtRule rule;
 	private final ResultSet<Boolean> resultSet;
+	private final Set<Tuple> dirty = new LinkedHashSet<>();
+
+	private record Source(RuleMonitor monitor, Tuple tuple) {
+	}
 
 	public RuleMonitor(RuleBasedSolver solver, PreparedSmtRule rule) {
 		this.solver = solver;
@@ -32,15 +38,16 @@ public class RuleMonitor implements ResultSetListener<Boolean> {
 		resultSet.addListener(this);
 	}
 
-	// Z3 assertions create unchecked generic arrays.
-	@SuppressWarnings("unchecked")
-	public void addAssertions(Solver z3solver) {
-		var context = solver.getContext();
-		var cursor = resultSet.getAll();
-		while (cursor.move()) {
-			var key = cursor.getKey();
-			z3solver.add(context.getExpr(rule, key));
+	public void synchronizeAssertions() {
+		for (var tuple : dirty) {
+			var source = new Source(this, tuple);
+			if (Boolean.TRUE.equals(resultSet.get(tuple))) {
+				solver.putAssertions(source, null, List.of(solver.getContext().getExpr(rule, tuple)));
+			} else {
+				solver.removeAssertions(source);
+			}
 		}
+		dirty.clear();
 	}
 
 	@Override
@@ -52,6 +59,7 @@ public class RuleMonitor implements ResultSetListener<Boolean> {
 
 	private void changeRefs(Tuple key, boolean add) {
 		solver.markChanged();
+		dirty.add(key);
 		for (var influence : rule.influences()) {
 			var indexTuple = influence.parameterIndices();
 			int arity = indexTuple.getSize();
